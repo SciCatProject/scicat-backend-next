@@ -1,0 +1,5 @@
+node_modules
+**/*.local.js*
+**/*.production.js*
+**/*.staging.js*
+**/*.development.js*

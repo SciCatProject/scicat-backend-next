@@ -1,0 +1,103 @@
+{
+    "name": "RawDataset",
+    "base": "Dataset",
+    "idInjection": false,
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {
+        "principalInvestigator": {
+            "type": "string",
+            "required": true,
+            "description": "Email of principal investigator"
+        },
+        "endTime": {
+            "type": "date",
+            "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339"
+        },
+        "creationLocation": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name"
+        },
+        "dataFormat": {
+            "type": "string",
+            "description": "Defines format of subsequent scientific meta data, e.g Nexus Version x.y"
+        },
+        "scientificMetadata": {
+            "type": "object",
+            "description": "JSON object containing the scientific meta data"
+        }
+    },
+    "validations": [],
+    "relations": {
+        "proposal": {
+            "type": "belongsTo",
+            "model": "Proposal",
+            "foreignKey": ""
+        },
+        "sample": {
+            "type": "belongsTo",
+            "model": "Sample",
+            "foreignKey": ""
+        }
+    },
+    "indexes": {
+        "proposalId_index": {
+            "keys": {
+                "proposalId": 1
+            }
+        },
+        "sampleId_index": {
+            "sampleId": 1
+        }
+    },
+    "acls": [{
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY",
+            "property": "facetSearch"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW",
+            "property": "facetSearch"
+        }
+    ],
+    "methods": {
+        "facet": {
+            "accepts": [{
+                    "arg": "creationLocation",
+                    "type": "string"
+                },
+                {
+                    "arg": "ownerGroup",
+                    "type": "string"
+                },
+                {
+                    "arg": "startDate",
+                    "type": "string"
+                },
+                {
+                    "arg": "endDate",
+                    "type": "string"
+                },
+                {
+                    "arg": "text",
+                    "type": "object"
+                }
+            ],
+            "returns": {
+                "arg": "results",
+                "type": "Object"
+            },
+            "description": "Find all datasets within a date range",
+            "http": {
+                "path": "/facet",
+                "verb": "get"
+            }
+        }
+    }
+}
