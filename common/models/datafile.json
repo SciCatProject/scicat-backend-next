@@ -1,0 +1,69 @@
+{
+  "name": "Datafile",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "path": {
+      "type": "string",
+      "id": "true",
+      "required": true,
+      "description": "Relative path of the file within the dataset folder"
+    },
+    "size": {
+      "type": "number",
+      "description": "Uncompressed file size in bytes"
+    },
+    "time": {
+      "type": "date",
+      "description": "Time of file creation on disk, format according to chapter 5.6 internet date/time format in RFC 3339"
+    },
+    "sha": {
+      "type": "string",
+      "description": "Checksum for the file, e.g. sha-2"
+    },
+    "uid": {
+      "type": "string",
+      "description": "optional: user ID name as seen on filesystem"
+    },
+    "gid":{
+      "type": "string",
+      "description": "optional: group ID name as seen on filesystem"
+    },
+    "perm":{
+      "type": "string",
+      "description": "optional: Posix permission bits"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}
