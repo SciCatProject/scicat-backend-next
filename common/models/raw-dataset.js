@@ -5,8 +5,8 @@ module.exports = function(Rawdataset) {
   //     message: 'SourceFolder is not unique'
   // });
 
-  Rawdataset.facet = function(creationLocation, ownerGroup, startDate, endDate,
-                              text, cb) {
+  Rawdataset.facet = function(creationLocation, ownerGroup, startDate, endDate, text,
+                              cb) {
     var findFilter = [];
     // add user provided arguments and check
     var match = {};

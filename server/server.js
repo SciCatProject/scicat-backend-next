@@ -35,7 +35,7 @@ var passportConfigurator = new PassportConfigurator(app);
 
 
 var bodyParser = require('body-parser');
-
+var ENV = process.env.NODE_ENV || 'local';
 app.start = function() {
     // start the web server
     return app.listen(function() {
@@ -87,7 +87,7 @@ try {
 }
 var configEnv={};
 try {
-    configEnv = require('./providers.' + process.env.NODE_ENV);
+    configEnv = require('./providers.' + ENV);
 } catch (err) {
     console.error('Info: No environment specific providers file found`.');
 }
