@@ -18,6 +18,6 @@ RUN npm install --production
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
-COPY ldapauth.js /usr/src/app/node_modules/ldapauth-fork/lib/
+
 # Start the app
 CMD ["node", "."]

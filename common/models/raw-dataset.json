@@ -86,7 +86,7 @@
                 },
                 {
                     "arg": "text",
-                    "type": "string"
+                    "type": "object"
                 }
             ],
             "returns": {

@@ -26,15 +26,15 @@ module.exports = function(Rawdataset) {
         match.ownerGroup = {'$in' : ownerGroup};
       } else if (ownerGroup) {
         var groups = ownerGroup.split(',');
-        match.ownerGroup = {'$in': groups};
+        match.ownerGroup = {'$in' : groups};
       }
-    }
+      }
     if (creationLocation) {
       match.creationLocation = creationLocation;
       }
     if (text) {
-      match['$text'] = {'$search': text}
-    }
+      match['$text'] = text;
+      }
     if (startDate && endDate) {
       match.creationTime = {
         $gte : new Date(startDate),
