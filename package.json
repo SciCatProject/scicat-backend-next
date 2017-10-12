@@ -5,7 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "start": "node .",
-    "posttest": "npm run lint && nsp check"
+    "posttests": "npm run lint && nsp check",
+    "test": "mocha --timeout=5000 --reporter nyan"
   },
   "dependencies": {
     "compression": "1.6.2",
@@ -27,16 +28,19 @@
     "strong-error-handler": "2.0.0"
   },
   "devDependencies": {
-    "@angular/http": "2.4.10",
     "@mean-expert/loopback-sdk-builder": "2.1.0-rc.9",
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "eslint": "3.19.0",
     "eslint-config-loopback": "8.0.0",
-    "nsp": "2.6.3"
+    "mocha": "^3.5.3",
+    "nsp": "2.6.3",
+    "supertest": "^3.0.0"
   },
   "repository": {
     "type": "",
     "url": ""
   },
-  "license": "UNLICENSED",
+  "license": "GPL3",
   "description": "dacat-api"
 }
