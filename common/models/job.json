@@ -5,7 +5,8 @@
     "options": {
         "validateUpsert": true
     },
-    "properties": {
+    "replaceOnPUT": false,
+      "properties": {
         "emailJobInitiator": {
             "type": "string",
             "required": true,
@@ -34,6 +35,14 @@
         "jobStatusMessage": {
             "type": "string",
             "description": "Defines current status of job lifecycle"
+        },
+        "archiveReturnMessage": {
+            "type": "string",
+            "description": "Detailed status or error message returned by archive system at archive job creation time. If One Job request triggers many archive requests, e.g. when archiving multiple datasets in one job, then this message contains the result of the last dataset handled"
+        },
+        "dateOfLastMessage": {
+          "type": "date",
+          "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
         },
         "datasetList": {
             "type": "object",

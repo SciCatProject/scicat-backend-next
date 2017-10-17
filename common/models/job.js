@@ -1,10 +1,24 @@
 'use strict';
 
 module.exports = function(Job) {
+
+    Job.observe('before save', (ctx, next) => {
+        if (ctx.instance) {
+            // auto fill dataOfLastMessage
+            var now = new Date();
+            if (!ctx.instance.dateOfLastMessage) {
+                ctx.instance.dateOfLastMessage = now.toISOString()
+            }
+        }
+        next();
+    })
+
     Job.observe('after save', (ctx, next) => {
         if (ctx.instance) {
-            console.log('Saved %s#%s', ctx.Model.modelName, ctx.instance.id);
-            Job.publishJob(ctx.instance, "jobqueue")
+            if(ctx.isNewInstance) {
+                Job.publishJob(ctx.instance, "jobqueue")
+                console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
+            }
         } else {
             console.log('Updated %s matching %j',
                 ctx.Model.pluralModelName,
