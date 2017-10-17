@@ -23,11 +23,19 @@
     },
     "archiveStatusMessage": {
       "type": "string",
-      "description": "Latest status update message for this dataset from archive system, e.g. archive-in-progress,  60%-stored-on-tape etc"
+      "description": "Current status of Dataset with respect to storage on disk/tape"
     },
     "retrieveStatusMessage": {
       "type": "string",
-      "description": "Latest status update message for this dataset concerning retrieve from archive system"
+      "description": "Latest message for this dataset concerning retrieve from archive system"
+    },
+    "lastUpdateMessage": {
+      "type": "string",
+      "description": "Latest status update / transition message for this dataset"
+    },
+    "archiveReturnMessage": {
+        "type": "string",
+        "description": "Detailed status or error message returned by archive system when treating this dataset"
     },
     "dateOfLastMessage": {
       "type": "date",
