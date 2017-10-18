@@ -74,7 +74,7 @@
                 },
                 {
                     "arg": "ownerGroup",
-                    "type": "string"
+                    "type": "array"
                 },
                 {
                     "arg": "startDate",
@@ -96,7 +96,7 @@
             "description": "Find all datasets within a date range",
             "http": {
                 "path": "/facet",
-                "verb": "get"
+                "verb": "post"
             }
         }
     }
