@@ -4,31 +4,59 @@ module.exports = function(Rawdataset) {
   // Rawdataset.validatesUniquenessOf('sourceFolder', {
   //     message: 'SourceFolder is not unique'
   // });
+  var app = require('../../server/server');
+
+  Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
+    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
+    var User = app.models.User;
+    let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
+    User.findById(userId, function(err, instance) {
+        if (instance) {
+            // check if a normal user or an internal ROLE
+            if (instance.username.split('.').length < 2) {
+                console.log("Functional account, apply ACLs only: ",instance.username);
+                ctx.args.ownerGroup = ctx.args.ownerGroup && ctx.args.ownerGroup.length > 0 ? ctx.args.ownerGroup : undefined;
+                next();
+            } else {
+                var filter = {
+                    where: {
+                        sAMAccountName: instance.username.split('.')[1]
+                    }
+                };
+                var AccessUser = app.models.AccessUser;
+                AccessUser.findOne(filter, function(err, auser) {
+                    if (auser) {
+                        // filter pgroups p[digits]
+                        var foundGroups = auser.memberOf.filter(function(el) {
+                            return /p\d+/.test(el);
+                        }); // ['p12672'];
+                        if (typeof groups === 'undefined') {
+                            foundGroups = [];
+                        }
+                        groups = foundGroups.filter(function(el){
+                          return groups.indexOf( el ) < 0;
+                        });
+                        ctx.args.ownerGroup = groups;
+                        console.log(groups);
+                        next();
+                    }
+                    ctx.args.ownerGroup = []; 
+                    next();
+                })
+            }
+        }
+    });
+  });
 
   Rawdataset.facet = function(creationLocation, ownerGroup, startDate, endDate, text,
                               cb) {
     var findFilter = [];
     // add user provided arguments and check
     var match = {};
+    console.log(ownerGroup);
     if (ownerGroup) {
-      /** NOTE Loopback SDK cannot handle sending arrays
-       * This could be fixed in the generated SDK but would then
-       * need to be fixed in every subsequent replace.
-       * Until this is fixed, this HACK must stay in
-       */
-      if (ownerGroup.length > 0 && typeof ownerGroup[0] === "object") {
-        var groupsArray = [];
-        var keys = Object.keys(ownerGroup[0]);
-        for (var i = 0; i < keys.length; i++) {
-          groupsArray.push(ownerGroup[0][keys[i]]);
-        }
-        ownerGroup = groupsArray;
-        match.ownerGroup = {'$in' : ownerGroup};
-      } else if (ownerGroup) {
-        var groups = ownerGroup.split(',');
-        match.ownerGroup = {'$in' : groups};
-      }
-      }
+      match.ownerGroup = {'$in' : ownerGroup};
+    }
     if (creationLocation) {
       match.creationLocation = creationLocation;
       }
@@ -66,7 +94,7 @@ module.exports = function(Rawdataset) {
           {$sort : {count : -1, _id : -1}}
         ],
         groups : [
-          // Count the number of books published in a given year
+          // Count the number of groups
           {$group : {_id : "$ownerGroup", count : {$sum : 1}}},
           // Sort by name ascending
           {$sort : {count : -1, _id : 1}}
