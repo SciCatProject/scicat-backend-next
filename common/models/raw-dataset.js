@@ -33,16 +33,16 @@ module.exports = function(Rawdataset) {
                         if (typeof groups === 'undefined') {
                             foundGroups = [];
                         }
-                        groups = foundGroups.filter(function(el){
+                        subgroups = foundGroups.filter(function(el){
                           return groups.indexOf( el ) < 0;
                         });
-                        ctx.args.ownerGroup = groups;
+                        ctx.args.ownerGroup = subgroups;
                         console.log(groups);
                         next();
                     }
                     ctx.args.ownerGroup = []; 
                     next();
-                })
+                });
             }
         }
     });
