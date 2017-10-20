@@ -4,7 +4,6 @@ FROM mhart/alpine-node:6
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000
-
 # create local user to avoid running as root
 RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 

@@ -32,16 +32,22 @@ module.exports = function(Rawdataset) {
                         }); // ['p12672'];
                         if (typeof groups === 'undefined') {
                             foundGroups = [];
+                            ctx.args.ownerGroup = foundGroups;
+                            next();
                         }
-                        subgroups = foundGroups.filter(function(el){
-                          return groups.indexOf( el ) < 0;
-                        });
+                        var a = new Set(groups);
+                        var b = new Set(foundGroups);
+                        var intersection = new Set([...a].filter(x => b.has(x)));
+                        var subgroups = Array.from(intersection);
+                        if (subgroups.length === 0){
+                          subgroups = foundGroups;
+                        }
                         ctx.args.ownerGroup = subgroups;
-                        console.log(groups);
                         next();
+                    } else {
+                      ctx.args.ownerGroup = []; 
+                      next();
                     }
-                    ctx.args.ownerGroup = []; 
-                    next();
                 });
             }
         }
