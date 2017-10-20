@@ -56,14 +56,14 @@
     "acls": [{
             "principalType": "ROLE",
             "principalId": "$everyone",
-            "permission": "DENY",
-            "property": "facetSearch"
+            "permission": "ALLOW",
+            "property": "facet"
         },
         {
             "principalType": "ROLE",
             "principalId": "ingestor",
             "permission": "ALLOW",
-            "property": "facetSearch"
+            "property": "facet"
         }
     ],
     "methods": {
