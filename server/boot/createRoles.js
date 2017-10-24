@@ -30,8 +30,11 @@ module.exports = function(app) {
                         email: data[1],
                         emailVerified: true
                     }, function(err, user) {
-                        if (err) throw account + " user not found, please create";
-                        utils.connectRole(app, account.toLowerCase(), user);
+                        if (err) {
+                            console.log("User create:"+err+" "+user)
+                        } else {
+                            utils.connectRole(app, account.toLowerCase(), user);
+                        }
                     });
                 } else {
                     User.create({
@@ -41,11 +44,13 @@ module.exports = function(app) {
                         email: account + '@change.com',
                         emailVerified: true
                     }, function(err, user) {
-                        if (err) throw account + " user not found, please create";
-                        utils.connectRole(app, account.toLowerCase(), user);
+                        if (err) {
+                            console.log("User create:"+err+" "+user)
+                        } else {
+                            utils.connectRole(app, account.toLowerCase(), user);
+                        }
                     });
                 }
-
             } else {
                 console.log('Found ' + account + ' user:', users[0].username);
                 //create the role if not yet there
