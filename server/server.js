@@ -1,28 +1,5 @@
 'use strict';
 
-function isObjectAndNotArray(object) {
-    return (typeof object === 'object' && !Array.isArray(object));
-}
-
-// 'createNew' defaults to false
-function overwriteKeys(baseObject, overrideObject, createNew) {
-  if (!baseObject) {
-    baseObject = {};
-  }
-  if (createNew) {
-    baseObject = JSON.parse(JSON.stringify(baseObject));
-  }
-  Object.keys(overrideObject).forEach(function(key) {
-    if (isObjectAndNotArray(baseObject[key]) && isObjectAndNotArray(overrideObject[key])) {
-      overwriteKeys(baseObject[key], overrideObject[key]);
-    }
-    else {
-      baseObject[key] = overrideObject[key];
-    }
-  });
-  return baseObject;
-}
-
 var loopback = require('loopback');
 var path = require('path');
 var boot = require('loopback-boot');
@@ -78,26 +55,6 @@ try {
     console.error('Please configure your passport strategy in `providers.json`.');
     process.exit(1);
 }
-var configLocal={};
-try {
-    configLocal = require('./providers.local');
-} catch (err) {
-    console.error('Info: No providers.local.js(on) file found`.');
-    process.exit(1);
-}
-var configEnv={};
-try {
-    configEnv = require('./providers.' + ENV);
-} catch (err) {
-    console.error('Info: No environment specific providers file found`.');
-}
-
-// merge values into config
-for (var s in configLocal) {
-    config[s]=configLocal[s];
-}
-// override with values in configEnv
-var merged=overwriteKeys(configLocal,configEnv,false);
 
 // Initialize passport
 passportConfigurator.init();
