@@ -24,11 +24,13 @@ describe('RawDatasets', () => {
   describe('Get All RawDatasets', function() {
     it('fails with incorrect credentials', function(done) {
       request(app)
-          .get('/api/v2/RawDatasets?access_token=' + accessToken)
+          .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
           .set('Accept', 'application/json')
           .expect(200)
           .expect('Content-Type', /json/)
           .end((err, res) => {
+            if (err)
+              return done(err);
             res.body.should.be.instanceof(Array);
             done();
           });
