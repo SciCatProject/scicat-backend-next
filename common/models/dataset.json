@@ -14,8 +14,8 @@
     },
     "owner": {
       "type": "string",
-      "index": true,
       "required": true,
+      "index": true,
       "description": "Owner of the data set, usually first name + lastname"
     },
     "ownerEmail": {
@@ -84,7 +84,7 @@
       "type": "string",
       "description": "Name of license under which data can be used"
     },
-    "version":{
+    "version": {
       "type": "string",
       "description": "Version of API used in creation of dataset"
     },

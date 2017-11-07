@@ -2,6 +2,13 @@
   "name": "Datablock",
   "base": "Ownable",
   "idInjection": false,
+  "indexes": {
+    "datasetId_index": {
+      "keys": {
+        "datasetId": 1
+      }
+    }
+  },
   "options": {
     "validateUpsert": true
   },
@@ -14,14 +21,14 @@
     },
     "archiveId": {
       "type": "string",
-      "index": true,
       "required": "true",
+      "index": true,
       "description": "Unique identifier given bey archive system to the stored datablock. This id is used when data is retrieved back."
     },
     "size": {
       "type": "number",
-      "index": true,
       "required": "true",
+      "index": true,
       "description": "Total size in bytes of all files in datablock when unpacked"
     },
     "packedSize": {
@@ -34,7 +41,9 @@
       "description": "Version string defining format of how data is packed and stored in archive"
     },
     "dataFileList": {
-      "type": ["Datafile"],
+      "type": [
+        "Datafile"
+      ],
       "required": true
     }
   },
@@ -46,13 +55,6 @@
       "foreignKey": "",
       "required": true
     }
-  },
-  "indexes": {
-      "datasetId_index": {
-          "keys": {
-              "datasetId": 1
-          }
-      }
   },
   "acls": [
     {
@@ -86,6 +88,5 @@
       "permission": "ALLOW"
     }
   ],
-  "methods": {
-  }
+  "methods": {}
 }

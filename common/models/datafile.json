@@ -28,11 +28,11 @@
       "type": "string",
       "description": "optional: user ID name as seen on filesystem"
     },
-    "gid":{
+    "gid": {
       "type": "string",
       "description": "optional: group ID name as seen on filesystem"
     },
-    "perm":{
+    "perm": {
       "type": "string",
       "description": "optional: Posix permission bits"
     }

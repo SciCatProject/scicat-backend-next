@@ -2,10 +2,26 @@
   "name": "DatasetLifecycle",
   "base": "PersistedModel",
   "idInjection": false,
+  "indexes": {
+    "datasetId_index": {
+      "keys": {
+        "datasetId": 1
+      }
+    }
+  },
   "options": {
     "validateUpsert": true
   },
   "replaceOnPUT": false,
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "createdAt",
+      "updatedAt": "updatedAt",
+      "required": false,
+      "validateUpsert": true,
+      "silenceWarnings": false
+    }
+  },
   "properties": {
     "id": {
       "type": "string",
@@ -34,8 +50,8 @@
       "description": "Latest status update / transition message for this dataset"
     },
     "archiveReturnMessage": {
-        "type": "string",
-        "description": "Detailed status or error message returned by archive system when treating this dataset"
+      "type": "string",
+      "description": "Detailed status or error message returned by archive system when treating this dataset"
     },
     "dateOfLastMessage": {
       "type": "date",
@@ -71,13 +87,6 @@
       "required": true
     }
   },
-  "indexes": {
-      "datasetId_index": {
-          "keys": {
-              "datasetId": 1
-          }
-      }
-  },
   "acls": [
     {
       "accessType": "*",
@@ -104,14 +113,5 @@
       "permission": "ALLOW"
     }
   ],
-  "methods": {},
-  "mixins": {
-      "TimeStamp": {
-          "createdAt" : "createdAt",
-          "updatedAt" : "updatedAt",
-          "required" : false,
-          "validateUpsert": true,
-          "silenceWarnings": false
-      }
-  }
+  "methods": {}
 }

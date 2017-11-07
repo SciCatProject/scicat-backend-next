@@ -23,4 +23,6 @@ coverage
 node_modules
 npm-debug.log
 server/pass
+server/providers.json
 client/api/angular2
+
