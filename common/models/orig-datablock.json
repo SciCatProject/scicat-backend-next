@@ -2,6 +2,13 @@
   "name": "OrigDatablock",
   "base": "Ownable",
   "idInjection": true,
+  "indexes": {
+    "datasetId_index": {
+      "keys": {
+        "datasetId": 1
+      }
+    }
+  },
   "options": {
     "validateUpsert": true
   },
@@ -12,11 +19,13 @@
     },
     "size": {
       "type": "number",
-      "index": true,
-      "required": true
+      "required": true,
+      "index": true
     },
     "dataFileList": {
-      "type": ["Datafile"],
+      "type": [
+        "Datafile"
+      ],
       "required": true
     }
   },
@@ -28,13 +37,6 @@
       "foreignKey": "",
       "required": true
     }
-  },
-  "indexes": {
-      "datasetId_index": {
-          "keys": {
-              "datasetId": 1
-          }
-      }
   },
   "acls": [
     {
