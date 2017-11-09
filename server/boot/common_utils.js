@@ -4,6 +4,7 @@
 exports.connectRole = function(app, roleName, user) {
     var Role = app.models.Role;
     var RoleMapping = app.models.RoleMapping;
+    RoleMapping.settings.strictObjectIDCoercion = true;
 
     Role.find({
         where: {
