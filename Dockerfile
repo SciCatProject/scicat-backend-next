@@ -15,6 +15,9 @@ USER myuser
 # Install our packages
 RUN npm install --production
 
+#  patch for loopback-component-passport
+RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
+
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
 
