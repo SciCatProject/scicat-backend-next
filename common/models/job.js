@@ -23,6 +23,7 @@ module.exports = function(Job) {
         transporter.verify(function(error, success) {
           if (error) {
             console.log(error);
+            next();
           } else {
             console.log('Server is ready to take our messages');
             var message = Object.assign({}, config.smtpMessage);
@@ -40,13 +41,13 @@ module.exports = function(Job) {
         });
         console.log('Saved Job %s#%s and published to message broker',
                     ctx.Model.modelName, ctx.instance.id);
+      } else {
+        console.log('Updated %s matching %j', ctx.Model.pluralModelName,
+                    ctx.where);
+        next();
       }
     } else {
-      console.log('Updated %s matching %j', ctx.Model.pluralModelName,
-                  ctx.where);
-       next();
-    } else {
-       next();
+      next();
     }
-  })
+  });
 };
