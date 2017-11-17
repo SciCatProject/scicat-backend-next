@@ -5,6 +5,7 @@ module.exports = function(app) {
   console.log("Datasource host %s, database %s",
               dataSource.connector.settings.host,
               dataSource.connector.settings.database)
+
   dataSource.isActual(function(err, actual) {
     // console.log("Database actual:", actual)
     // if (!actual) {
