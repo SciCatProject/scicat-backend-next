@@ -34,6 +34,7 @@ module.exports = function(Job) {
               } else {
                 console.log('Email sent');
               }
+              next();
             });
           }
         });
@@ -43,7 +44,9 @@ module.exports = function(Job) {
     } else {
       console.log('Updated %s matching %j', ctx.Model.pluralModelName,
                   ctx.where);
+       next();
+    } else {
+       next();
     }
-    next();
   })
 };
