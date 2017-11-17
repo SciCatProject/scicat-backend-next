@@ -35,6 +35,10 @@
       "type": "number",
       "description": "Size of datablock package file"
     },
+    "chkAlg": {
+      "type": "string",
+      "description": "Algoritm used for calculation of checksums, e.g. sha2"
+    },
     "version": {
       "type": "string",
       "required": "true",
