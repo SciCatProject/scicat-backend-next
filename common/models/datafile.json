@@ -20,9 +20,9 @@
       "type": "date",
       "description": "Time of file creation on disk, format according to chapter 5.6 internet date/time format in RFC 3339"
     },
-    "sha": {
+    "chk": {
       "type": "string",
-      "description": "Checksum for the file, e.g. sha-2"
+      "description": "Checksum for the file, e.g. its sha-2 hashstring"
     },
     "uid": {
       "type": "string",
