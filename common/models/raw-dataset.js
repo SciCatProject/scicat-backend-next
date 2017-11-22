@@ -54,12 +54,57 @@ module.exports = function(Rawdataset) {
     });
   });
 
-  Rawdataset.facet = function(creationLocation, ownerGroup, startDate, endDate, text,
-                              cb) {
+  Rawdataset.facet = function(fields, cb) {
     var findFilter = [];
-    // add user provided arguments and check
     var match = {};
-    console.log(ownerGroup);
+    if (fields) {
+      var keys = Object.keys(fields);
+      var RawDataset = app.models.RawDataset;
+      for (var i = 0; i < keys.length; i++) {
+        var modelType = RawDataset.getPropertyType(keys[i]);
+        var value = fields[keys[i]];
+        if (modelType !== undefined) {
+          switch (modelType) {
+            case 'String':
+              if (Array.isArray(value)) {
+                match[keys[i]] = {'$in': value};
+              } else {
+                match[keys[i]] = value;
+              }
+              break;
+            case 'Date':
+              var reqType = typeof(value);
+              switch (reqType) {
+                case 'string':
+                  match[keys[i]] = new Date(value);
+                  break;
+                case 'object':
+                  if (Object.keys(value).length === 2) {
+                      match[keys[i]] = {
+                        '$gte': new Date(value['start']),
+                        '$lte': new Date(value['end']),
+                      };
+                  } else {
+                    cb('Only one date specified, need a range', null);
+                  }
+                  break;
+              }
+              console.log(reqType);
+
+              break;
+          }
+        } else if (keys[i] === 'text') {
+          match['$text'] = value;
+          // TODO check in config map for extra strings, i.e. creationTime start and end
+        } else {
+          cb('Key ' + keys[i] + ' not recognised.', null);
+        }
+      }
+    }
+    console.log(match);
+    // add user provided arguments and check
+    /* console.log(ownerGroup);
+    console.log(RawDataset.getPropertyType('creationTime'));
     if (ownerGroup) {
       match.ownerGroup = {'$in' : ownerGroup};
     }
@@ -78,6 +123,7 @@ module.exports = function(Rawdataset) {
       cb("Only one date specified, need a range", null);
       }
     // ensure fields have been specified and both dates have been set
+    */
     if (Object.keys(match).length !== 0) {
       findFilter.push({$match : match});
     }

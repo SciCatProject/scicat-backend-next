@@ -71,23 +71,7 @@
     "facet": {
       "accepts": [
         {
-          "arg": "creationLocation",
-          "type": "string"
-        },
-        {
-          "arg": "ownerGroup",
-          "type": "array"
-        },
-        {
-          "arg": "startDate",
-          "type": "string"
-        },
-        {
-          "arg": "endDate",
-          "type": "string"
-        },
-        {
-          "arg": "text",
+          "arg": "fields",
           "type": "object"
         }
       ],
