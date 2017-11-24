@@ -97,7 +97,7 @@ module.exports = function(Rawdataset) {
           match['$text'] = value;
           // TODO check in config map for extra strings, i.e. creationTime start and end
         } else {
-          cb('Key ' + keys[i] + ' not recognised.', null);
+          // ignore
         }
       }
     }
@@ -131,7 +131,7 @@ module.exports = function(Rawdataset) {
       $facet : {
         // The `years` property will be the output of the 'count by year'
         // pipeline
-        years : [
+        creationTime : [
           {
             $group : {
               _id : {
@@ -145,13 +145,13 @@ module.exports = function(Rawdataset) {
           // Sort by year descending
           {$sort : {count : -1, _id : -1}}
         ],
-        groups : [
+        ownerGroup : [
           // Count the number of groups
           {$group : {_id : "$ownerGroup", count : {$sum : 1}}},
           // Sort by name ascending
           {$sort : {count : -1, _id : 1}}
         ],
-        locations : [
+        creationLocation : [
           {$group : {_id : "$creationLocation", count : {$sum : 1}}},
           {$sort : {count : -1, _id : 1}}
         ]
