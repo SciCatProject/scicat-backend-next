@@ -58,12 +58,13 @@ module.exports = function(Rawdataset) {
     var findFilter = [];
     var match = {};
     if (fields) {
+      console.log(fields)
       var keys = Object.keys(fields);
       var RawDataset = app.models.RawDataset;
       for (var i = 0; i < keys.length; i++) {
         var modelType = RawDataset.getPropertyType(keys[i]);
         var value = fields[keys[i]];
-        if (modelType !== undefined) {
+        if (modelType !== undefined && value !== 'undefined' && value !== 'null') {
           switch (modelType) {
             case 'String':
               if (Array.isArray(value)) {
@@ -79,7 +80,7 @@ module.exports = function(Rawdataset) {
                   match[keys[i]] = new Date(value);
                   break;
                 case 'object':
-                  if (Object.keys(value).length === 2) {
+                  if (Object.keys(value).length === 2 && value['start']) {
                       match[keys[i]] = {
                         '$gte': new Date(value['start']),
                         '$lte': new Date(value['end']),
@@ -89,11 +90,9 @@ module.exports = function(Rawdataset) {
                   }
                   break;
               }
-              console.log(reqType);
-
               break;
           }
-        } else if (keys[i] === 'text') {
+        } else if (keys[i] === 'text' && value !== 'null') {
           match['$text'] = value;
           // TODO check in config map for extra strings, i.e. creationTime start and end
         } else {
@@ -101,7 +100,6 @@ module.exports = function(Rawdataset) {
         }
       }
     }
-    console.log(match);
     // add user provided arguments and check
     /* console.log(ownerGroup);
     console.log(RawDataset.getPropertyType('creationTime'));
@@ -127,6 +125,7 @@ module.exports = function(Rawdataset) {
     if (Object.keys(match).length !== 0) {
       findFilter.push({$match : match});
     }
+    console.log(match);
     findFilter.push({
       $facet : {
         // The `years` property will be the output of the 'count by year'
