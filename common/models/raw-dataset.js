@@ -54,12 +54,55 @@ module.exports = function(Rawdataset) {
     });
   });
 
-  Rawdataset.facet = function(creationLocation, ownerGroup, startDate, endDate, text,
-                              cb) {
+  Rawdataset.facet = function(fields, cb) {
     var findFilter = [];
-    // add user provided arguments and check
     var match = {};
-    console.log(ownerGroup);
+    if (fields) {
+      console.log(fields)
+      var keys = Object.keys(fields);
+      var RawDataset = app.models.RawDataset;
+      for (var i = 0; i < keys.length; i++) {
+        var modelType = RawDataset.getPropertyType(keys[i]);
+        var value = fields[keys[i]];
+        if (modelType !== undefined && value !== 'undefined' && value !== 'null') {
+          switch (modelType) {
+            case 'String':
+              if (Array.isArray(value)) {
+                match[keys[i]] = {'$in': value};
+              } else {
+                match[keys[i]] = value;
+              }
+              break;
+            case 'Date':
+              var reqType = typeof(value);
+              switch (reqType) {
+                case 'string':
+                  match[keys[i]] = new Date(value);
+                  break;
+                case 'object':
+                  if (Object.keys(value).length === 2 && value['start']) {
+                      match[keys[i]] = {
+                        '$gte': new Date(value['start']),
+                        '$lte': new Date(value['end']),
+                      };
+                  } else {
+                    cb('Only one date specified, need a range', null);
+                  }
+                  break;
+              }
+              break;
+          }
+        } else if (keys[i] === 'text' && value !== 'null') {
+          match['$text'] = value;
+          // TODO check in config map for extra strings, i.e. creationTime start and end
+        } else {
+          // ignore
+        }
+      }
+    }
+    // add user provided arguments and check
+    /* console.log(ownerGroup);
+    console.log(RawDataset.getPropertyType('creationTime'));
     if (ownerGroup) {
       match.ownerGroup = {'$in' : ownerGroup};
     }
@@ -78,14 +121,16 @@ module.exports = function(Rawdataset) {
       cb("Only one date specified, need a range", null);
       }
     // ensure fields have been specified and both dates have been set
+    */
     if (Object.keys(match).length !== 0) {
       findFilter.push({$match : match});
     }
+    console.log(match);
     findFilter.push({
       $facet : {
         // The `years` property will be the output of the 'count by year'
         // pipeline
-        years : [
+        creationTime : [
           {
             $group : {
               _id : {
@@ -99,13 +144,13 @@ module.exports = function(Rawdataset) {
           // Sort by year descending
           {$sort : {count : -1, _id : -1}}
         ],
-        groups : [
+        ownerGroup : [
           // Count the number of groups
           {$group : {_id : "$ownerGroup", count : {$sum : 1}}},
           // Sort by name ascending
           {$sort : {count : -1, _id : 1}}
         ],
-        locations : [
+        creationLocation : [
           {$group : {_id : "$creationLocation", count : {$sum : 1}}},
           {$sort : {count : -1, _id : 1}}
         ]
