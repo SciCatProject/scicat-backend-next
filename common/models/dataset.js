@@ -5,7 +5,7 @@ var p = require('../../package.json');
 
 module.exports = function(Dataset) {
 
-
+    var app = require('../../server/server');
     // Dataset.validatesUniquenessOf('sourceFolder', {
     //     message: 'SourceFolder is not unique'
     // });
@@ -16,8 +16,13 @@ module.exports = function(Dataset) {
         if (ctx.instance) {
             ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
             console.log(' new pid:', ctx.instance.pid);
-            ctx.instance.version=p.version
+            ctx.instance.version = p.version
         }
         next();
-})
+    })
+
+    Dataset.reset = function(id, cb) {
+
+
+    }
 };

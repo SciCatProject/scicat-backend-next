@@ -142,5 +142,23 @@
       "permission": "DENY"
     }
   ],
-  "methods": {}
+  "methods": {
+    "resetArchiveStatus": {
+      "accepts": [
+        {
+          "arg": "datasetId",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "arg": "result",
+        "type": "string"
+      },
+      "description": "Delete datablocks of dataset and reset status message",
+      "http": {
+        "path": "/resetArchiveStatus",
+        "verb": "post"
+      }
+    }
+  }
 }
