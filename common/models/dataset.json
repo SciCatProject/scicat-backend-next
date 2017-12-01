@@ -140,6 +140,12 @@
       "principalType": "ROLE",
       "principalId": "proposalingestor",
       "permission": "DENY"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archiveManager",
+      "permission": "ALLOW",
+      "property": "reset"
     }
   ],
   "methods": {

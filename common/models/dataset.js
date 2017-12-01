@@ -9,19 +9,6 @@ module.exports = function(Dataset) {
   //     message: 'SourceFolder is not unique'
   // });
   //
-  Dataset.beforeRemote('reset', function(ctx, userDetails, next) {
-    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    var User = app.models.User;
-    let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
-    User.findById(userId, function(err, instance) {
-      if (instance && instance.username === 'archiveManager') {
-        next();
-      } else {
-        next(new Error('No access to endpoint'));
-      }
-    });
-  });
-  // prepend PID prefix, e.g. 20.500.12345 and add version number of API
 
   Dataset.observe('before save', (ctx, next) => {
     if (ctx.instance) {
