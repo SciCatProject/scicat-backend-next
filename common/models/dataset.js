@@ -19,44 +19,29 @@ module.exports = function(Dataset) {
     next();
   });
 
-  Dataset.reset = function(id, cb) {
-    console.log('resetting');
+  Dataset.reset = function(id, options, cb) {
+    console.log('resetting ' + id);
     var Datablock = app.models.Datablock;
     var DatasetLifecycle = app.models.DatasetLifecycle;
-    console.log(id);
-    DatasetLifecycle.findOne({datasetId: id}, function(err, l) {
-      console.log(l);
+    DatasetLifecycle.findOne({datasetId: id}, options, function(err, l) {
+      if (err) {
+        cb(err);
+      }
       l['archiveStatusMessage'] = 'datasetCreated';
       l['retrieveStatusMessage'] = '';
       DatasetLifecycle.update(l, function(err, inst) {
         if (err) {
           cb(err);
         }
-        // cb('Dataset reset successfully');
-      });
-      Datablock.find({datasetId: "20.500.11935/cf59ce47-f645-4f37-a0c3-54f1ff7682bd"}, function(err, b) {
-        console.log(b === 'undefined');
-      });
-    });
-    /* Datablock.find({datasetId: id}, function(err, blocks) {
-      console.log(err, blocks);
-      if (err) {
-        cb(err);
-      }
-      console.log('Deleted datablocks');
-      DatasetLifecycle.findOne({'where': {'datasetId': id}}, function(err, lifecycle) {
-        if (err) {
-          cb(err);
-        }
-        lifecycle['archiveStatusMessage'] = 'datasetCreated';
-        lifecycle['retrieveStatusMessage'] = '';
-        DatasetLifecycle.update(lifecycle, function(err, inst) {
+        console.log('Dataset Lifecycle reset');
+        Datablock.destroyAll({datasetId: id}, options, function(err, b) {
           if (err) {
             cb(err);
           }
-          cb('Dataset reset successfully');
+          console.log('Deleted blocks');
+          cb();
         });
       });
-    });*/
+    });
   };
 };

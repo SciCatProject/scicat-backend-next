@@ -154,6 +154,11 @@
         {
           "arg": "datasetId",
           "type": "string"
+        },
+        {
+          "arg": "options",
+          "type": "object",
+          "http": "optionsFromRequest"
         }
       ],
       "returns": {
