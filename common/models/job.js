@@ -16,7 +16,8 @@ module.exports = function(Job) {
     Job.observe('after save', (ctx, next) => {
         if (ctx.instance) {
             if(ctx.isNewInstance) {
-                Job.publishJob(ctx.instance, "jobqueue")
+                // TODO THIS should go to RABBIT OR KAFKA OR ANY QUEUING SYSTEM
+                // Job.publishJob(ctx.instance, "jobqueue")
                 console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
             }
         } else {
