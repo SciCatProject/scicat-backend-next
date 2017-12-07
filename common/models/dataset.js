@@ -20,9 +20,26 @@ module.exports = function(Dataset) {
   });
 
   Dataset.reset = function(id, cb) {
+    console.log('resetting');
     var Datablock = app.models.Datablock;
     var DatasetLifecycle = app.models.DatasetLifecycle;
-    Datablock.destroyAll({'where': {'datasetId': id}}, function(err, blocks) {
+    console.log(id);
+    DatasetLifecycle.findOne({datasetId: id}, function(err, l) {
+      console.log(l);
+      l['archiveStatusMessage'] = 'datasetCreated';
+      l['retrieveStatusMessage'] = '';
+      DatasetLifecycle.update(l, function(err, inst) {
+        if (err) {
+          cb(err);
+        }
+        // cb('Dataset reset successfully');
+      });
+      Datablock.find({datasetId: "20.500.11935/cf59ce47-f645-4f37-a0c3-54f1ff7682bd"}, function(err, b) {
+        console.log(b === 'undefined');
+      });
+    });
+    /* Datablock.find({datasetId: id}, function(err, blocks) {
+      console.log(err, blocks);
       if (err) {
         cb(err);
       }
@@ -40,6 +57,6 @@ module.exports = function(Dataset) {
           cb('Dataset reset successfully');
         });
       });
-    });
+    });*/
   };
 };
