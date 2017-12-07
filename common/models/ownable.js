@@ -5,7 +5,6 @@ module.exports = function(Ownable) {
     var app = require('../../server/server');
 
     Ownable.observe('access', function(ctx, next) {
-
         const token = ctx.options && ctx.options.accessToken;
         const userId = token && token.userId;
         const user = userId ? 'user#' + userId : '<anonymous>';
@@ -52,6 +51,11 @@ module.exports = function(Ownable) {
                         next();
                     })
                 }
+            } else {
+              // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+              var e = new Error('Access Not Allowed');
+              e.statusCode = 401;
+              next(e);
             }
         })
     });

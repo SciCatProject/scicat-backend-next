@@ -140,7 +140,36 @@
       "principalType": "ROLE",
       "principalId": "proposalingestor",
       "permission": "DENY"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archiveManager",
+      "permission": "ALLOW",
+      "property": "reset"
     }
   ],
-  "methods": {}
+  "methods": {
+    "reset": {
+      "accepts": [
+        {
+          "arg": "datasetId",
+          "type": "string"
+        },
+        {
+          "arg": "options",
+          "type": "object",
+          "http": "optionsFromRequest"
+        }
+      ],
+      "returns": {
+        "arg": "result",
+        "type": "string"
+      },
+      "description": "Delete datablocks of dataset and reset status message",
+      "http": {
+        "path": "/resetArchiveStatus",
+        "verb": "post"
+      }
+    }
+  }
 }
