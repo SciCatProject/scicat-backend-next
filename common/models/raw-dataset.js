@@ -80,13 +80,18 @@ module.exports = function(Rawdataset) {
                   match[keys[i]] = new Date(value);
                   break;
                 case 'object':
-                  if (Object.keys(value).length === 2 && value['start']) {
+                  if (Object.keys(value).length === 2) {
+                    if (value['start'] && value['start'] !== 'null' && value['end'] && value['end'] !== 'null') {
                       match[keys[i]] = {
                         '$gte': new Date(value['start']),
                         '$lte': new Date(value['end']),
                       };
-                  } else {
-                    cb('Only one date specified, need a range', null);
+                    } else {
+                      //TODO change from null in Catanie to undefined
+                      // cb(new Error('Dates are an invalid format'), null);
+                    }
+                  } else if (Object.keys(value).length !== 2) {
+                    cb(new Error('Only one date specified, need a range'), null);
                   }
                   break;
               }
