@@ -13,13 +13,6 @@
       "required": false,
       "validateUpsert": true,
       "silenceWarnings": false
-    },
-    "MessageQueue": {
-      "producers": {
-        "publishJob": {
-          "exchange": "jobs.write"
-        }
-      }
     }
   },
   "properties": {
