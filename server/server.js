@@ -10,6 +10,44 @@ var app = module.exports = loopback();
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
 
+// enhance the profile definition to allow for applying regexp based substitution rules to be applied
+// to the outcome of e.g. LDAP queries. This can for example be exploited to define the groups
+// a user belongs to by scanning the output of the memberOf fields of a user
+//
+// example of a profile entry in providers.json:
+// "accessGroups": ["memberOf", {match-string}, {substitution-string}]
+//
+// Please note: the match and substitution strings must escape the backslash and 
+// double quote characters inside providers.json by prepending a backslash
+
+passportConfigurator.buildUserLdapProfile = function(user, options) {
+  var profile = {};
+  for (var profileAttributeName in options.profileAttributesFromLDAP) {
+    var profileAttributeValue = options.profileAttributesFromLDAP[profileAttributeName];
+    if (profileAttributeValue.constructor === Array){
+        var regex = new RegExp(profileAttributeValue[1],'g')
+        var str=JSON.stringify(user[profileAttributeValue[0]])
+        profile[profileAttributeName]=JSON.parse(str.replace(regex, profileAttributeValue[2]));
+    } else {
+        profile[profileAttributeName]=JSON.parse(JSON.stringify( user[profileAttributeValue]  ));
+    }
+  }
+  // If missing, add profile attributes required by UserIdentity Model
+  if (!profile.username) {
+    profile.username = [].concat(user['cn'])[0];
+  }
+  if (!profile.id) {
+    profile.id = user['uid'];
+  }
+  if (!profile.emails) {
+    var email = [].concat(user['mail'])[0];
+    if (!!email) {
+      profile.emails = [{value: email}];
+    }
+  }
+  console.log("++++++++++ Profile:",profile)
+  return profile;
+};
 
 var bodyParser = require('body-parser');
 var ENV = process.env.NODE_ENV || 'local';
