@@ -1,6 +1,6 @@
 var app = require('../../server/server');
+var moment = require('moment-timezone');
 var exports = module.exports = {};
-
 // Utility function to transfer size information from the datablock storage to the related dataset
 
 // Just a hint
@@ -154,4 +154,31 @@ exports.linkToProperDatasetType = function(ctx, next) {
     } else {
         next()
     }
+}
+
+// transform date strings in all fields with key dateKeys to updateTimesToUTC
+// do nothing if input values are already UTC
+
+exports.updateTimesToUTC = function(dateKeys, instance) {
+    dateKeys.map(function(dateKey) {
+        if (instance[dateKey]) {
+            console.log("Updating old ",dateKey,instance[dateKey])
+            instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
+            console.log("New time:",instance[dateKey])
+        }
+    });
+}
+
+// dito but for array of instances
+exports.updateAllTimesToUTC = function(dateKeys, instances) {
+    dateKeys.map(function(dateKey) {
+        console.log("Updating all time field %s to UTC for %s instances:",dateKey,instances.length)
+        instances.map(function(instance){
+            if (instance[dateKey]) {
+                // console.log("Updating old ",dateKey,instance[dateKey])
+                instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
+                // console.log("New time:",instance[dateKey])
+            }
+        })
+    });
 }

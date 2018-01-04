@@ -2,11 +2,28 @@
 var config = require('../../server/config.local');
 var utils = require('./utils');
 
-module.exports = function(Datasetlifecycle) {
-    var app = require('../../server/server');
 
-    // now explicitly tested in utils.linkToProperDatasetType
-    // Datasetlifecycle.validatesPresenceOf('datasetId')
+module.exports = function(Datasetlifecycle) {
+
+    var app = require('../../server/server');
+    // put
+    Datasetlifecycle.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+        utils.updateTimesToUTC(["dateOfLastMessage"], ctx.args.data)
+        next();
+    });
+
+    //patch
+    Datasetlifecycle.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+        utils.updateTimesToUTC(["dateOfLastMessage"], ctx.args.data)
+        next();
+    });
+
+    //post
+    Datasetlifecycle.beforeRemote('create', function(ctx, unused, next) {
+        utils.updateTimesToUTC(["dateOfLastMessage"], ctx.args.data)
+        next();
+    });
+
 
     Datasetlifecycle.observe('before save', (ctx, next) => {
         if (ctx.instance) {
@@ -17,12 +34,12 @@ module.exports = function(Datasetlifecycle) {
             }
             if (!ctx.instance.archiveRetentionTime) {
                 var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
-                ctx.instance.archiveRetentionTime = retention.toISOString()
+                ctx.instance.archiveRetentionTime = retention.toISOString().substring(0, 10)
             }
             if (!ctx.instance.dateOfPublishing) {
                 var now = new Date(); // now was modified above
                 var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
-                ctx.instance.dateOfPublishing = pubDate.toISOString()
+                ctx.instance.dateOfPublishing = pubDate.toISOString().substring(0, 10)
             }
         }
         utils.linkToProperDatasetType(ctx, next)
