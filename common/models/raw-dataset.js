@@ -1,10 +1,26 @@
 "use strict";
+var utils = require('./utils');
 
 module.exports = function(Rawdataset) {
-  // Rawdataset.validatesUniquenessOf('sourceFolder', {
-  //     message: 'SourceFolder is not unique'
-  // });
   var app = require('../../server/server');
+
+  // put
+  Rawdataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+      utils.updateTimesToUTC(["endTime"], ctx.args.data)
+      next();
+  });
+
+  //patch
+  Rawdataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+      utils.updateTimesToUTC(["endTime"], ctx.args.data)
+      next();
+  });
+
+  //post
+  Rawdataset.beforeRemote('create', function(ctx, unused, next) {
+      utils.updateTimesToUTC(["endTime"], ctx.args.data)
+      next();
+  });
 
   Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
     const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
@@ -45,7 +61,7 @@ module.exports = function(Rawdataset) {
                         ctx.args.ownerGroup = subgroups;
                         next();
                     } else {
-                      ctx.args.ownerGroup = []; 
+                      ctx.args.ownerGroup = [];
                       next();
                     }
                 });
