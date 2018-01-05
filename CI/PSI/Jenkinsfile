@@ -5,15 +5,11 @@ node {
        }
 
 
-       stage('Build Docker'){
-
+       stage('Build Docker') {
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
-       stage('Unit Test Catanie '){
-            sh 'docker run  --privileged -t catamel_test npm run -- ng test --watch false --single-run true'
-       }
-       stage('e2e Test Catanie '){
-            sh 'docker run  --privileged -t catamel_test npm run e2e --environment qa'
+       stage('SuperTest Catamel ') {
+            sh 'docker run  --privileged -t catamel_test npm run test'
        }
 
 }
