@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "start": "node .",
     "posttests": "npm run lint && nsp check",
-    "test": "mocha --timeout=5000 --reporter nyan"
+    "test": "./node_modules/mocha/bin/mocha --timeout=5000 --reporter nyan --exit"
   },
   "dependencies": {
     "compression": "1.7.1",
@@ -35,7 +35,7 @@
     "chai-http": "^3.0.0",
     "eslint": "4.10.0",
     "eslint-config-loopback": "8.0.0",
-    "mocha": "^4.0.1",
+    "mocha": "^4.1.0",
     "nsp": "2.8.1",
     "supertest": "^3.0.0"
   },

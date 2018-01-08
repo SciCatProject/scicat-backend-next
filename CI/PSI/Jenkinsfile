@@ -1,0 +1,15 @@
+node {
+       stage('Checkout'){
+
+          checkout scm
+       }
+
+
+       stage('Build Docker') {
+            sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
+       }
+       stage('SuperTest Catamel ') {
+            sh 'docker run  --privileged -t catamel_test npm run test'
+       }
+
+}
