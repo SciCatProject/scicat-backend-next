@@ -9,18 +9,22 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 
 # Prepare app directory
 WORKDIR /usr/src/app
-COPY envfiles/ /usr/src/app/server
 COPY package.json /usr/src/app/
-
+RUN npm config set -g production false
 USER myuser
 # Install our packages
-RUN npm install --production
+RUN npm install
 
 #  patch for loopback-component-passport
 RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
-
+COPY CI/PSI/envfiles/config.local.js /usr/src/app/server/
+COPY CI/PSI/envfiles/middleware.json /usr/src/app/server/
+COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
+COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
+COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
+RUN NODE_ENV=qa
 # Start the app
 CMD ["npm", "run", "test"]
