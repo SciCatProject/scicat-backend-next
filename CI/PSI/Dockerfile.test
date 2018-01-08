@@ -22,4 +22,4 @@ RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.r
 COPY . /usr/src/app
 
 # Start the app
-CMD ["node", "."]
+CMD ["npm", "run", "test"]
