@@ -9,6 +9,7 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 
 # Prepare app directory
 WORKDIR /usr/src/app
+COPY envfiles/ /usr/src/app/server
 COPY package.json /usr/src/app/
 
 USER myuser
