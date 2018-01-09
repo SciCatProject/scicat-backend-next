@@ -1,10 +1,21 @@
 node {
        stage('Checkout'){
-
           checkout scm
        }
+       stage('Preprepare Docker with config files'){
+            withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                // available as an env variable, but will be masked if you try to print it out any which way
+                // also available as a Groovy variable—note double quotes for string interpolation
+                echo "$USERNAME"
+                sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
+                sh "git clone https://$USERNAME:$PASSWORDgit.psi.ch/MELANIE/catamel-psiconfig.git"
 
-
+                copy(file:"catamel-psisecrets/server/pass-db-qa/datasources.json", tofile:"server/datasources.json")
+                copy(file:"catamel-psisecrets/server/providers.json", tofile:"server/providers.json")
+                copy(file:"catamel-psiconfig/server/config.local.js", tofile:"server/config.local.js")
+                copy(file:"catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/", tofile:"server/")
+            }
+       }
        stage('Build Docker') {
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
