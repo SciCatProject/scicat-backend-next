@@ -22,7 +22,7 @@ describe('AccessUsers', () => {
             });
     });
     describe('Get All AccessUsers', function () {
-        it('fails with incorrect credentials', function (done) {
+        it('fetches array of access users', function (done) {
             request(app)
                 .get('/api/v2/AccessUsers?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')
