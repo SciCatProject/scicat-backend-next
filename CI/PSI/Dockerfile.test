@@ -20,11 +20,6 @@ RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.r
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
-COPY CI/PSI/envfiles/config.local.js /usr/src/app/server/
-COPY CI/PSI/envfiles/middleware.json /usr/src/app/server/
-COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
-COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
-COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
 RUN NODE_ENV=qa
 # Start the app
 CMD ["npm", "run", "test"]
