@@ -32,7 +32,6 @@ describe('AccessUsers', () => {
                     if (err)
                         return done(err);
                     res.body.should.be.instanceof(Array);
-                    console.log(res);
 
                     done();
                 });

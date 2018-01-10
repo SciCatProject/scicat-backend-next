@@ -13,6 +13,44 @@ var utils = require('./LoginUtils');
 
 var accessToken = null;
 
+
+var testraw = {
+    "principalInvestigator": "string",
+    "endTime": "2018-01-09T14:39:47.477Z",
+    "creationLocation": "string",
+    "dataFormat": "string",
+    "scientificMetadata": {},
+    "pid": "string",
+    "owner": "string",
+    "ownerEmail": "string",
+    "orcidOfOwner": "string",
+    "contactEmail": "string",
+    "sourceFolder": "string",
+    "size": 0,
+    "packedSize": 0,
+    "creationTime": "2018-01-09T14:39:47.477Z",
+    "type": "string",
+    "validationStatus": "string",
+    "keywords": [
+        "string"
+    ],
+    "description": "string",
+    "userTargetLocation": "string",
+    "classification": "string",
+    "license": "string",
+    "version": "string",
+    "doi": "string",
+    "isPublished": true,
+    "ownerGroup": "string",
+    "accessGroups": [
+        "string"
+    ],
+    "createdAt": "2018-01-09T14:39:47.477Z",
+    "updatedAt": "2018-01-09T14:39:47.477Z",
+    "sampleId": "string",
+    "proposalId": "string"
+};
+
 describe('RawDatasets', () => {
     beforeEach((done) => {
         utils.getToken(app, {'username': 'ingestor', 'password': 'aman'},
@@ -21,11 +59,11 @@ describe('RawDatasets', () => {
                 done();
             });
     });
-    describe('POST /api/v2/Users/RawDataset', function () {
+    describe('POST /api/v2/RawDatasets', function () {
         it('adds a new dataset', function (done) {
             request(app)
-                .post('/api/v2/Users/Dataset')
-                .send({'username': 'ingestor', 'password': 'aman'})
+                .post('/api/v2/RawDatasets?access_token=' + accessToken)
+                .send(testraw)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -48,7 +86,6 @@ describe('RawDatasets', () => {
                     if (err)
                         return done(err);
                     res.body.should.be.instanceof(Array);
-                    console.log(res.body);
                     done();
                 });
         });
