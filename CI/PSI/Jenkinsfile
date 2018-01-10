@@ -10,7 +10,11 @@ node {
                 echo "$PASSWORD"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
+<<<<<<< HEAD
                 sh "mkdir -p /usr/src/app/server"
+=======
+                sh "mkdir -p /usr/src/app"
+>>>>>>> 8d139fb2df00964d2b4b4a9b49c98fb7a807d250
                 sh "cp catamel-psisecrets/server/pass-db-qa/datasources.json server/datasources.json"
                 sh "cp catamel-psisecrets/server/providers.json /usr/src/app/server/providers.json"
                 sh "cp catamel-psiconfig/server/config.local.js /usr/src/app/server/config.local.js"
