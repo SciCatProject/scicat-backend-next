@@ -10,11 +10,10 @@ node {
                 echo "$PASSWORD"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
-
-                copy(file:"catamel-psisecrets/server/pass-db-qa/datasources.json", tofile:"server/datasources.json")
-                copy(file:"catamel-psisecrets/server/providers.json", tofile:"server/providers.json")
-                copy(file:"catamel-psiconfig/server/config.local.js", tofile:"server/config.local.js")
-                copy(file:"catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/", tofile:"server/")
+                sh "cp catamel-psisecrets/server/pass-db-qa/datasources.json server/datasources.json"
+                sh "cp catamel-psisecrets/server/providers.json server/providers.json"
+                sh "cp catamel-psiconfig/server/config.local.js server/config.local.js"
+                sh "cp -r catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/ server/"
             }
        }
        stage('Build Docker') {
