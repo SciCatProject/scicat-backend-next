@@ -14,26 +14,43 @@ var utils = require('./LoginUtils');
 var accessToken = null;
 
 describe('RawDatasets', () => {
-  beforeEach((done) => {
-    utils.getToken(app, {'username' : 'ingestor', 'password' : 'aman'},
-                   (tokenVal) => {
-                     accessToken = tokenVal;
-                     done();
-                   });
-  });
-  describe('Get All RawDatasets', function() {
-    it('fails with incorrect credentials', function(done) {
-      request(app)
-          .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
-          .set('Accept', 'application/json')
-          .expect(200)
-          .expect('Content-Type', /json/)
-          .end((err, res) => {
-            if (err)
-              return done(err);
-            res.body.should.be.instanceof(Array);
-            done();
-          });
+    beforeEach((done) => {
+        utils.getToken(app, {'username': 'ingestor', 'password': 'aman'},
+            (tokenVal) => {
+                accessToken = tokenVal;
+                done();
+            });
     });
-  });
+    describe('POST /api/v2/Users/RawDataset', function () {
+        it('adds a new dataset', function (done) {
+            request(app)
+                .post('/api/v2/Users/Dataset')
+                .send({'username': 'ingestor', 'password': 'aman'})
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end(function (err, res) {
+                    if (err)
+                        return done(err);
+                    res.body.should.have.property('user').and.be.instanceof(Object);
+                    done();
+                });
+        });
+    });
+    describe('Get All RawDatasets', function () {
+        it('fails with incorrect credentials', function (done) {
+            request(app)
+                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    res.body.should.be.instanceof(Array);
+                    console.log(res.body);
+                    done();
+                });
+        });
+    });
 });
