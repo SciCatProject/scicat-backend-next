@@ -7,8 +7,9 @@ node {
                 // available as an env variable, but will be masked if you try to print it out any which way
                 // also available as a Groovy variable—note double quotes for string interpolation
                 echo "$USERNAME"
+                echo "$PASSWORD"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
-                sh "git clone https://$USERNAME:$PASSWORDgit.psi.ch/MELANIE/catamel-psiconfig.git"
+                sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
 
                 copy(file:"catamel-psisecrets/server/pass-db-qa/datasources.json", tofile:"server/datasources.json")
                 copy(file:"catamel-psisecrets/server/providers.json", tofile:"server/providers.json")
