@@ -10,13 +10,15 @@ node {
                 echo "$PASSWORD"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
+                sh "mkdir -p /usr/src/app"
                 sh "cp catamel-psisecrets/server/pass-db-qa/datasources.json server/datasources.json"
-                sh "cp catamel-psisecrets/server/providers.json server/providers.json"
-                sh "cp catamel-psiconfig/server/config.local.js server/config.local.js"
-                sh "cp -r catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/ server/"
+                sh "cp catamel-psisecrets/server/providers.json /usr/src/app/server/providers.json"
+                sh "cp catamel-psiconfig/server/config.local.js /usr/src/app/server/config.local.js"
+                sh "cp -r catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/ /usr/src/app/server/"
             }
        }
        stage('Build Docker') {
+            sh 'ls -ahl server/'
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
        stage('SuperTest Catamel ') {
