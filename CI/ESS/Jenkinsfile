@@ -6,7 +6,7 @@ node {
 
 
        stage('Build Docker') {
-            sh 'docker build -f CI/ESS/Dockerfile.test . -t catamel_test'
+            sh 'docker-compose build -f CI/ESS/docker-compose.yaml'
        }
        stage('SuperTest Catamel ') {
             sh 'docker run  --privileged -t catamel_test npm run test'
