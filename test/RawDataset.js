@@ -115,7 +115,6 @@ describe('RawDatasets', () => {
                 .end(function (err, res) {
                     if (err)
                         return done(err);
-                    res.body.should.have.property('user').and.be.instanceof(Object);
                     done();
                 });
         });
@@ -153,7 +152,7 @@ describe('RawDatasets', () => {
 
 
     describe('Get All RawDatasets', function () {
-        it('fails with incorrect credentials', function (done) {
+        it('should fetch all raw datasets', function (done) {
             request(app)
                 .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')
