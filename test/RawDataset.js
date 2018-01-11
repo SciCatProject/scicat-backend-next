@@ -115,6 +115,7 @@ describe('RawDatasets', () => {
                 .end(function (err, res) {
                     if (err)
                         return done(err);
+                    res.body.should.have.property('owner').and.be.string;
                     done();
                 });
         });
