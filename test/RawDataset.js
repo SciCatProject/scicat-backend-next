@@ -15,41 +15,86 @@ var accessToken = null;
 
 
 var testraw = {
-    "principalInvestigator": "string",
-    "endTime": "2018-01-09T14:39:47.477Z",
-    "creationLocation": "string",
-    "dataFormat": "string",
-    "scientificMetadata": {},
-    "pid": "string",
-    "owner": "string",
-    "ownerEmail": "string",
-    "orcidOfOwner": "string",
-    "contactEmail": "string",
-    "sourceFolder": "string",
+    "principalInvestigator": "bertram.astor@grumble.com",
+    "endTime": "2011-09-14T06:31:25.000Z",
+    "creationLocation": "/SU/XQX/RAMJET",
+    "dataFormat": "Upchuck pre 2017",
+    "scientificMetadata": {
+    "beamlineParameters": {
+        "Monostripe": "Ru/C",
+            "Ring current": {
+            "v": 0.402246,
+                "u": "A"
+        },
+        "Beam energy": {
+            "v": 22595,
+                "u": "eV"
+        }
+    },
+    "detectorParameters": {
+        "Objective": 20,
+            "Scintillator": "LAG 20um",
+            "Exposure time": {
+            "v": 0.4,
+                "u": "s"
+        }
+    },
+    "scanParameters": {
+        "Number of projections": 1801,
+            "Rot Y min position": {
+            "v": 0,
+                "u": "deg"
+        },
+        "Inner scan flag": 0,
+            "File Prefix": "817b_B2_",
+            "Sample In": {
+            "v": 0,
+                "u": "m"
+        },
+        "Sample folder": "/ramjet/817b_B2_",
+            "Number of darks": 10,
+            "Rot Y max position": {
+            "v": 180,
+                "u": "deg"
+        },
+        "Angular step": {
+            "v": 0.1,
+                "u": "deg"
+        },
+        "Number of flats": 120,
+            "Sample Out": {
+            "v": -0.005,
+                "u": "m"
+        },
+        "Flat frequency": 0,
+            "Number of inter-flats": 0
+    }
+},
+    "pid": "10.540.16635/0606568c-68666666c-a181-6af42972af57",
+    "owner": "Bertram Astor",
+    "ownerEmail": "bertram.astor@grumble.com",
+    "orcidOfOwner": "unknown",
+    "contactEmail": "bertram.astor@grumble.com",
+    "sourceFolder": "/iramjet/tif/",
     "size": 0,
-    "packedSize": 0,
-    "creationTime": "2018-01-09T14:39:47.477Z",
-    "type": "string",
-    "validationStatus": "string",
-    "keywords": [
-        "string"
-    ],
-    "description": "string",
-    "userTargetLocation": "string",
-    "classification": "string",
-    "license": "string",
-    "version": "string",
-    "doi": "string",
-    "isPublished": true,
-    "ownerGroup": "string",
-    "accessGroups": [
-        "string"
-    ],
-    "createdAt": "2018-01-09T14:39:47.477Z",
-    "updatedAt": "2018-01-09T14:39:47.477Z",
-    "sampleId": "string",
-    "proposalId": "string"
-};
+    "creationTime": "2011-09-14T06:08:25.000Z",
+    "type": "raw",
+    "description": "None",
+    "classification": "AV=medium,CO=low",
+    "license": "CC BY-SA 4.0",
+    "version": "2.5.0",
+    "doi": "not yet defined",
+    "isPublished": false,
+    "ownerGroup": "p13388",
+    "accessGroups": [],
+    "createdAt": "2017-11-01T18:02:49.825Z",
+    "updatedAt": "2017-11-01T18:03:04.673Z",
+    "user": "ingestor",
+    "proposalId": "10.540.16635/20110123"
+}
+
+var object_id = testraw.pid.replace(/\//g, '%2F');
+object_id = '%3CPID%3E%2F'+testraw.pid.replace(/\//g, '%2F');
 
 describe('RawDatasets', () => {
     beforeEach((done) => {
@@ -75,6 +120,38 @@ describe('RawDatasets', () => {
                 });
         });
     });
+
+    describe('get one rawdataset', function () {
+        it('should fetch one dataset', function (done) {
+            request(app)
+                .get('/api/v2/RawDatasets/' + object_id + '?access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    done();
+                });
+        });
+    });
+
+    describe('delete  a RawDataset', function () {
+        it('should delete a rawdataset', function (done) {
+            request(app)
+                .delete('/api/v2/RawDatasets/'  + object_id  + '?access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    done();
+                });
+        });
+    });
+
+
     describe('Get All RawDatasets', function () {
         it('fails with incorrect credentials', function (done) {
             request(app)
