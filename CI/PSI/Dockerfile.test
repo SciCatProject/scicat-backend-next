@@ -26,5 +26,5 @@ COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
 COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
 COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
 # Start the app
-RUN cat /usr/src/app/server/datasources.json
+RUN cat /usr/src/app/server/component-config.json
 CMD ["npm", "run", "test"]
