@@ -1,7 +1,7 @@
 # gives a docker image below 200 MB
 FROM node:9.4-alpine
 
-ENV NODE_ENV "production"
+ENV NODE_ENV "qa"
 ENV PORT 3000
 EXPOSE 3000
 # create local user to avoid running as root
@@ -25,6 +25,6 @@ COPY CI/PSI/envfiles/middleware.json /usr/src/app/server/
 COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
 COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
 COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
-RUN NODE_ENV=qa
 # Start the app
+RUN cat /usr/src/app/server/datasources.json
 CMD ["npm", "run", "test"]

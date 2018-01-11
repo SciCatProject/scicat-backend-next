@@ -12,13 +12,13 @@ node {
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
                 // sh "mkdir -p /usr/src/app/server"
-                sh "cp catamel-psisecrets/server/pass-db-qa/datasources.json CI/PSI/envfiles/datasources.json"
+                sh "cp catamel-psisecrets/server/pass-db-qa/datasources_new.json CI/PSI/envfiles/datasources.json"
                 sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
                 sh "cp catamel-psiconfig/server/config.local.js CI/PSI/envfiles/config.local.js"
                 sh "cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/component-config.json CI/PSI/envfiles/component-config.json"
                 sh "cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/middleware.json CI/PSI/envfiles/middleware.json"
             }
-            sh 'docker build --no-cache -f CI/PSI/Dockerfile.test . -t catamel_test'
+            sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
        stage('SuperTest Catamel ') {
             sh 'docker run  --privileged -t catamel_test npm run test'
