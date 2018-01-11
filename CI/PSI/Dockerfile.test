@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM mhart/alpine-node:6
+FROM node:latest
 
 ENV NODE_ENV "production"
 ENV PORT 3000
