@@ -18,7 +18,7 @@ node {
                 sh "cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/component-config.json CI/PSI/envfiles/component-config.json"
                 sh "cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/middleware.json CI/PSI/envfiles/middleware.json"
             }
-            sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
+            sh 'docker build --no-cache -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
        stage('SuperTest Catamel ') {
             sh 'docker run  --privileged -t catamel_test npm run test'
