@@ -9,7 +9,6 @@ RUN addgroup mygroup
 RUN useradd -ms /bin/bash myuser
 RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 RUN apt update && apt install -y rabbitmq-server
-RUN service rabbitmq-server start
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
@@ -24,11 +23,11 @@ RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.r
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
 COPY CI/PSI/envfiles/config.local.js /usr/src/app/server/
-COPY CI/PSI/envfiles/middleware.json /usr/src/app/server/
 COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
 COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
 COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
+COPY CI/PSI/start.sh /usr/src/app/start.sh
 # Start the app
 RUN cat /usr/src/app/server/component-config.json
-# RUN curl 127.0.0.1:5672
-# CMD ["npm", "run", "test"]
+RUN echo "Running startup script"
+CMD ./start.sh
