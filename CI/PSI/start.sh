@@ -1,6 +1,9 @@
 #!/bin/bash
 
-service rabbitmq-server start && npm run test
+pwd
+service rabbitmq-server start 
+
+npm run test
 
 # sleep 5
 
