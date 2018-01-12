@@ -20,7 +20,7 @@ node {
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
        stage('SuperTest Catamel ') {
-            sh 'docker run  --privileged -t catamel_test'
+            sh 'docker run  --privileged -t catamel_test service rabbitmq-server start && npm run test'
        }
 
 }
