@@ -28,6 +28,6 @@ COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
 COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
 COPY CI/PSI/start.sh /usr/src/app/start.sh
 # Start the app
-RUN cat /usr/src/app/server/component-config.json
+RUN cat /usr/src/app/server/middleware.json
 RUN echo "Running startup script"
 CMD ./start.sh
