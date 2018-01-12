@@ -10,4 +10,4 @@ cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/compone
 # cp catamel-psiconfig/server/kubernetes/helm/dacat-api-server/envfiles-qa/middleware.json middleware.json
 cd ../../..
 docker build -f CI/PSI/Dockerfile.test . -t catamel_test
-docker run  --privileged -t catamel_test
+docker run  --privileged -t catamel_test service rabbitmq-server start && NODE_ENV=qa ./node_modules/mocha/bin/mocha --timeout=5000 --reporter nyan --exit
