@@ -15,7 +15,6 @@ node {
                 sh "cp catamel-psisecrets/server/pass-db-qa/datasources_new.json CI/PSI/envfiles/datasources.json"
                 sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
                 sh "cp catamel-psiconfig/server/config.local.js CI/PSI/envfiles/config.local.js"
-                sh "cp CI/PSI/component-config.json CI/PSI/envfiles/component-config.json"
             }
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
        }
