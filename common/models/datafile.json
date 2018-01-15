@@ -18,7 +18,7 @@
     },
     "time": {
       "type": "date",
-      "description": "Time of file creation on disk, format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time of file creation on disk, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "chk": {
       "type": "string",

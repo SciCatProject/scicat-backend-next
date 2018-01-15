@@ -51,7 +51,7 @@
       "type": "date",
       "required": true,
       "index": true,
-      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
     },
     "type": {
       "type": "string",

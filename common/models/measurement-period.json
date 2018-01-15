@@ -21,12 +21,12 @@
     "start": {
       "type": "Date",
       "index": true,
-      "description": "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "end": {
       "type": "Date",
       "index": true,
-      "description": "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "comment": {
       "type": "string",
