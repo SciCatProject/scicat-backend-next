@@ -55,7 +55,7 @@
     },
     "dateOfLastMessage": {
       "type": "date",
-      "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
+      "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "dateOfDiskPurging": {
       "type": "date",

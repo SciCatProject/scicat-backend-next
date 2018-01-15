@@ -23,7 +23,7 @@
     },
     "endTime": {
       "type": "date",
-      "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "creationLocation": {
       "type": "string",

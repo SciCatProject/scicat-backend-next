@@ -17,7 +17,7 @@ var passportConfigurator = new PassportConfigurator(app);
 // example of a profile entry in providers.json:
 // "accessGroups": ["memberOf", {match-string}, {substitution-string}]
 //
-// Please note: the match and substitution strings must escape the backslash and 
+// Please note: the match and substitution strings must escape the backslash and
 // double quote characters inside providers.json by prepending a backslash
 
 passportConfigurator.buildUserLdapProfile = function(user, options) {
@@ -26,8 +26,15 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     var profileAttributeValue = options.profileAttributesFromLDAP[profileAttributeName];
     if (profileAttributeValue.constructor === Array){
         var regex = new RegExp(profileAttributeValue[1],'g')
-        var str=JSON.stringify(user[profileAttributeValue[0]])
-        profile[profileAttributeName]=JSON.parse(str.replace(regex, profileAttributeValue[2]));
+        // transform array elements to simple group names
+        // then filter relevant elements by applying regular expression on element names
+        var newList=[]
+        user[profileAttributeValue[0]].map(function(elem){
+            if(elem.match(regex)){
+                newList.push(elem.replace(regex,profileAttributeValue[2]))
+            }
+        })
+        profile[profileAttributeName]=newList
     } else {
         profile[profileAttributeName]=JSON.parse(JSON.stringify( user[profileAttributeValue]  ));
     }
