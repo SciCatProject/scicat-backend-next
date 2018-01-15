@@ -1,0 +1,100 @@
+version: "3"
+services:
+  local-mongodb-mongodb.dev:
+    image: 'bitnami/mongodb:latest'
+    labels:
+      kompose.service.type: nodeport
+    ports:
+      - "27017:27017"
+    volumes:
+      - './mongodb:/bitnami'
+
+  local-rabbit-rabbitmq.dev:
+    hostname: local-rabbit-rabbitmq.dev
+    image: 'bitnami/rabbitmq:latest'
+    labels:
+      kompose.service.type: nodeport
+    ports:
+      - '4369:4369'
+      - '5672:5672'
+      - '25672:25672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_USERNAME=admin
+    volumes:
+      - './rabbitmq:/bitnami'
+    depends_on: 
+      - local-mongodb-mongodb.dev
+
+#  catanie:
+#    build: 
+#      context: catanie
+#      dockerfile: Dockerfile.catanie
+#    image: garethcmurphy/catanie
+#    ports:
+#      - '4200:4200'
+#    depends_on: 
+#      - local-rabbit-rabbitmq.dev
+#      - local-mongodb-mongodb.dev
+
+#  catamel:
+#    build: 
+#      context: catamel
+#      dockerfile: Dockerfile.catamel
+#    image: garethcmurphy/catamel
+#    ports:
+#      - '3000:3000'
+#    depends_on: 
+#      - local-mongodb-mongodb.dev
+#      - local-rabbit-rabbitmq.dev
+#      - myshell
+#    links:
+#      - local-mongodb-mongodb.dev
+#
+#  zookeeper:
+#    image: wurstmeister/zookeeper
+#    ports:
+#      - "2181:2181"
+#
+#  kafka:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_ADVERTISED_HOST_NAME: "kafka"
+#      KAFKA_ADVERTISED_PORT: "9092"
+#      KAFKA_CREATE_TOPICS: "test:1:1"
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#  consumer:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - kafka
+#    command: [ "sh", "-c", "sleep 10 && $$KAFKA_HOME/bin/kafka-console-consumer.sh --topic=test --zookeeper=zookeeper:2181" ]
+#  producer:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - kafka
+#    command: [ "sh", "-c", "sleep 15 && echo 'hello kafka' | $$KAFKA_HOME/bin/kafka-console-producer.sh --topic=test --broker-list=kafka:9092" ]
+#
+#  nodered:
+#    build: nodered
+#    ports:
+#     - "1880:1880"
+# 
+#  myshell:
+#    build:
+#      context: myshell
+#    image: garethcmurphy/myshell
+#    depends_on: 
+#      - local-mongodb-mongodb.dev
+#      - local-rabbit-rabbitmq.dev
+    
+
+volumes:
+  mongodb_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
