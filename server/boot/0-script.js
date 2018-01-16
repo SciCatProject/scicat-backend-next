@@ -14,4 +14,24 @@ module.exports = function(app) {
         });
         //}
     });
+
+    var loopback = require('loopback');
+    var DataModel = loopback.PersistedModel;
+
+    console.log("Adding ACLS for UserIdentity")
+
+    DataModel.extend('UserIdentity', null, {
+        acls: [{
+                principalType: 'ROLE',
+                principalId: '$everyone',
+                permission: 'DENY'
+            },
+            {
+                accessType: 'READ',
+                principalType: 'ROLE',
+                principalId: '$owner',
+                permission: 'ALLOW'
+            }
+        ]
+    });
 };
