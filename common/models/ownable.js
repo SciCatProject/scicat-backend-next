@@ -9,13 +9,32 @@ module.exports = function(Ownable) {
         const userId = token && token.userId;
         // const user = userId ? 'user#' + userId : '<anonymous>';
         var UserIdentity = app.models.UserIdentity;
-        var User = app.models.User;
-        // TODO add check for functional accounts and ignore below if true
-        User.findById(userId, function(err, user) {
-            if (err) {
-                next(err);
-            } else if (user['username'].indexOf('.') === -1) {
-                next();
+        UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
+            // console.log("UserIdentity Instance:",instance)
+            if(!instance){
+                next()
+            } else if (instance.profile) {
+                var groups=instance.profile.accessGroups
+                // check if a normal user or an internal ROLE
+                if (typeof groups === 'undefined') {
+                    groups = []
+                }
+                // console.log("Found groups:", groups);
+                var groupCondition = {
+                    ownerGroup: {
+                        inq: groups
+                    }
+                };
+                if (!ctx.query.where) {
+                    ctx.query.where = groupCondition
+                } else {
+                    ctx.query.where = {
+                        and: [ctx.query.where, groupCondition]
+                    }
+                }
+                const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
+                console.log('%s: %s accessed %s:%s', new Date(), instance.profile.login, ctx.Model.modelName, scope);
+                next()
             } else {
                 UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
                     console.log("UserIdentity Instance:",instance)
@@ -52,5 +71,4 @@ module.exports = function(Ownable) {
 
         });
     });
-
 };
