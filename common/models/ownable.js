@@ -10,8 +10,10 @@ module.exports = function(Ownable) {
         // const user = userId ? 'user#' + userId : '<anonymous>';
         var UserIdentity = app.models.UserIdentity;
         UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
-            // console.log("UserIdentity Instance:",instance)
-            if (instance && instance.profile) {
+            console.log("UserIdentity Instance:",instance)
+            if(!instance){
+                next()
+            } else if (instance.profile) {
                 var groups=instance.profile.accessGroups
                 // check if a normal user or an internal ROLE
                 if (typeof groups === 'undefined') {
@@ -41,5 +43,4 @@ module.exports = function(Ownable) {
             }
         })
     });
-
 };
