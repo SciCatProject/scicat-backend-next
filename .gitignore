@@ -25,3 +25,4 @@ npm-debug.log
 server/pass
 server/providers.json
 client/api/angular2
+CI/PSI/envfiles

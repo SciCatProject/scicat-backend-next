@@ -22,7 +22,7 @@ describe('Datablocks', () => {
             });
     });
     describe('Get All Datablocks', function () {
-        it('fetches array of access users', function (done) {
+        it('fetches array of Datablocks', function (done) {
             request(app)
                 .get('/api/v2/Datablocks?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')

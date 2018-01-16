@@ -23,37 +23,49 @@ module.exports = function(Rawdataset) {
   });
 
   Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
-      const token = ctx.options && ctx.options.accessToken;
-      const userId = token && token.userId;
-      // const user = userId ? 'user#' + userId : '<anonymous>';
-      var UserIdentity = app.models.UserIdentity;
-      let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
-      UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
-          // console.log("UserIdentity Instance:",instance)
-          if (instance && instance.profile) {
-              var foundGroups=instance.profile.accessGroups
-              // check if a normal user or an internal ROLE
-              if (typeof foundGroups === 'undefined') {
-                  groups = []
-                  ctx.args.ownerGroup = groups;
-                  next()
-              }
-              var a = new Set(groups);
-              var b = new Set(foundGroups);
-              var intersection = new Set([...a].filter(x => b.has(x)));
-              var subgroups = Array.from(intersection);
-              if (subgroups.length === 0){
-                subgroups = foundGroups;
-              }
-              ctx.args.ownerGroup = subgroups;
+
+    const token = ctx.options && ctx.options.accessToken;
+        const userId = token && token.userId;
+        // const user = userId ? 'user#' + userId : '<anonymous>';
+        var UserIdentity = app.models.UserIdentity;
+        var User = app.models.User;
+        // TODO add check for functional accounts and ignore below if true
+        User.findById(userId, function(err, user) {
+            if (err) {
+                next(err);
+            } else if (user['username'].indexOf('.') === -1) {
+              ctx.args.ownerGroup = [];
               next()
-          } else {
-            // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
-            var e = new Error('Access Not Allowed');
-            e.statusCode = 401;
-            next(e);
-          }
-      })
+            } else {
+                let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
+                UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
+                    console.log("UserIdentity Instance:",instance)
+                    if (instance && instance.profile) {
+                      var foundGroups=instance.profile.accessGroups
+                        // check if a normal user or an internal ROLE
+                        if (typeof foundGroups === 'undefined') {
+                          ctx.args.ownerGroup = [];
+                          next()
+                        }
+                        var a = new Set(groups);
+                        var b = new Set(foundGroups);
+                        var intersection = new Set([...a].filter(x => b.has(x)));
+                        var subgroups = Array.from(intersection);
+                        if (subgroups.length === 0){
+                          subgroups = foundGroups;
+                        }
+                        ctx.args.ownerGroup = subgroups;
+                        next()
+                    } else {
+                      // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+                      var e = new Error('Access Not Allowed');
+                      e.statusCode = 401;
+                      next(e);
+                    }
+                })
+            }
+
+        });
   });
 
   Rawdataset.facet = function(fields, cb) {

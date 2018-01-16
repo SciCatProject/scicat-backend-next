@@ -9,6 +9,7 @@ RUN addgroup mygroup
 RUN useradd -ms /bin/bash myuser
 RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 RUN apt update && apt install -y rabbitmq-server
+RUN apt install -y mongodb-server
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
@@ -25,9 +26,9 @@ COPY . /usr/src/app
 COPY CI/PSI/envfiles/config.local.js /usr/src/app/server/
 COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
 COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
-COPY CI/PSI/envfiles/component-config.json /usr/src/app/server/
+COPY CI/PSI/component-config.json /usr/src/app/server/
 COPY CI/PSI/start.sh /usr/src/app/start.sh
 # Start the app
-RUN cat /usr/src/app/server/middleware.json
+RUN cat /usr/src/app/server/datasources.json
 RUN echo "Running startup script"
 CMD ./start.sh

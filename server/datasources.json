@@ -1,16 +1,12 @@
 {
-  "db": {
-    "name": "db",
-    "connector": "memory"
-  },
-  "mongo": {
-    "host": "localhost",
+    "mongo": {
+    "host": "mongodbprod.psi.ch",
     "port": 27017,
     "url": "",
     "database": "dacat",
-    "password": "",
+    "password": "o4LKxP%2F%257A26DU8w",
     "name": "mongo",
-    "user": "",
+    "user": "dacatDBAdmin",
     "connector": "mongodb"
   },
   "transient": {
@@ -18,5 +14,3 @@
     "connector": "transient"
   }
 }
-
-
