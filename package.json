@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "start": "node .",
     "posttests": "npm run lint && nsp check",
-    "test": "NODE_ENV=qa ./node_modules/mocha/bin/mocha --timeout=10000 --reporter nyan --exit"
+    "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter nyan --exit"
   },
   "dependencies": {
     "compression": "1.7.1",
