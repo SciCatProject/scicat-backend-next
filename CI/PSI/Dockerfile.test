@@ -9,7 +9,6 @@ RUN addgroup mygroup
 RUN useradd -ms /bin/bash myuser
 RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 RUN apt update && apt install -y rabbitmq-server
-RUN apt install -y mongodb-server
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
