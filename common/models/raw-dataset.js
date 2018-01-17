@@ -23,33 +23,29 @@ module.exports = function(Rawdataset) {
   });
 
   Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
-    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    var User = app.models.User;
-    let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
-    User.findById(userId, function(err, instance) {
-        if (instance) {
-            // check if a normal user or an internal ROLE
-            if (instance.username.split('.').length < 2) {
-                console.log("Functional account, apply ACLs only: ",instance.username);
-                ctx.args.ownerGroup = ctx.args.ownerGroup && ctx.args.ownerGroup.length > 0 ? ctx.args.ownerGroup : undefined;
-                next();
+
+    const token = ctx.options && ctx.options.accessToken;
+        const userId = token && token.userId;
+        // const user = userId ? 'user#' + userId : '<anonymous>';
+        var UserIdentity = app.models.UserIdentity;
+        var User = app.models.User;
+        // TODO add check for functional accounts and ignore below if true
+        User.findById(userId, function(err, user) {
+            if (err) {
+                next(err);
+            } else if (user['username'].indexOf('.') === -1) {
+              ctx.args.ownerGroup = [];
+              next()
             } else {
-                var filter = {
-                    where: {
-                        sAMAccountName: instance.username.split('.')[1]
-                    }
-                };
-                var AccessUser = app.models.AccessUser;
-                AccessUser.findOne(filter, function(err, auser) {
-                    if (auser) {
-                        // filter pgroups p[digits]
-                        var foundGroups = auser.memberOf.filter(function(el) {
-                            return /p\d+/.test(el);
-                        }); // ['p12672'];
-                        if (typeof groups === 'undefined') {
-                            foundGroups = [];
-                            ctx.args.ownerGroup = foundGroups;
-                            next();
+                let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
+                UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
+                    console.log("UserIdentity Instance:",instance)
+                    if (instance && instance.profile) {
+                      var foundGroups=instance.profile.accessGroups
+                        // check if a normal user or an internal ROLE
+                        if (typeof foundGroups === 'undefined') {
+                          ctx.args.ownerGroup = [];
+                          next()
                         }
                         var a = new Set(groups);
                         var b = new Set(foundGroups);
@@ -59,15 +55,17 @@ module.exports = function(Rawdataset) {
                           subgroups = foundGroups;
                         }
                         ctx.args.ownerGroup = subgroups;
-                        next();
+                        next()
                     } else {
-                      ctx.args.ownerGroup = [];
-                      next();
+                      // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+                      var e = new Error('Access Not Allowed');
+                      e.statusCode = 401;
+                      next(e);
                     }
-                });
+                })
             }
-        }
-    });
+
+        });
   });
 
   Rawdataset.facet = function(fields, cb) {

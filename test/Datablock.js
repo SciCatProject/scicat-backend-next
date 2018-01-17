@@ -21,7 +21,7 @@ describe('Datablock', () => {
                 done();
             });
     });
-    describe('Get all Datablocks', function () {
+/*    describe('Get all Datablocks', function () {
         it('fetches array of datablocks ', function (done) {
             request(app)
                 .get('/api/v2/AccessUsers?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
@@ -35,5 +35,5 @@ describe('Datablock', () => {
                     done();
                 });
         });
-    });
+    });*/
 });
