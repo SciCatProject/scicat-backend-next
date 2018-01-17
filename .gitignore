@@ -24,4 +24,6 @@ node_modules
 npm-debug.log
 server/pass
 server/providers.json
+server/datasources.json
+CI/PSI/envfiles/datasources.json
 client/api/angular2
