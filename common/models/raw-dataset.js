@@ -23,9 +23,9 @@ module.exports = function(Rawdataset) {
   });
 
   Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
-
-    const token = ctx.options && ctx.options.accessToken;
-        const userId = token && token.userId;
+    // const token = ctx.options && ctx.options.accessToken;
+    //     const userId = token && token.userId;
+        const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
         // const user = userId ? 'user#' + userId : '<anonymous>';
         var UserIdentity = app.models.UserIdentity;
         var User = app.models.User;
@@ -72,7 +72,6 @@ module.exports = function(Rawdataset) {
     var findFilter = [];
     var match = {};
     if (fields) {
-      console.log(fields)
       var keys = Object.keys(fields);
       var RawDataset = app.models.RawDataset;
       for (var i = 0; i < keys.length; i++) {
@@ -144,7 +143,6 @@ module.exports = function(Rawdataset) {
     if (Object.keys(match).length !== 0) {
       findFilter.push({$match : match});
     }
-    console.log(match);
     findFilter.push({
       $facet : {
         // The `years` property will be the output of the 'count by year'
