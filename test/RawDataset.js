@@ -11,8 +11,8 @@ var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
-var accessToken = null;
-
+var accessToken = null,
+    pid = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -70,7 +70,6 @@ var testraw = {
             "Number of inter-flats": 0
     }
 },
-    "pid": "10.540.16635/0606568c-68666666c-a181-6af42972af57",
     "owner": "Bertram Astor",
     "ownerEmail": "bertram.astor@grumble.com",
     "orcidOfOwner": "unknown",
@@ -93,8 +92,6 @@ var testraw = {
     "proposalId": "10.540.16635/20110123"
 }
 
-var object_id = testraw.pid.replace(/\//g, '%2F');
-object_id = '%3CPID%3E%2F'+testraw.pid.replace(/\//g, '%2F');
 
 describe('RawDatasets', () => {
     beforeEach((done) => {
@@ -116,6 +113,8 @@ describe('RawDatasets', () => {
                     if (err)
                         return done(err);
                     res.body.should.have.property('owner').and.be.string;
+                    res.body.should.have.property('pid').and.be.string;
+                    pid = encodeURIComponent(res.body['pid']);
                     done();
                 });
         });
@@ -124,7 +123,7 @@ describe('RawDatasets', () => {
     describe('get one rawdataset', function () {
         it('should fetch one dataset', function (done) {
             request(app)
-                .get('/api/v2/RawDatasets/' + object_id + '?access_token=' + accessToken)
+                .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -139,7 +138,7 @@ describe('RawDatasets', () => {
     describe('delete  a RawDataset', function () {
         it('should delete a rawdataset', function (done) {
             request(app)
-                .delete('/api/v2/RawDatasets/'  + object_id  + '?access_token=' + accessToken)
+                .delete('/api/v2/RawDatasets/'  + pid  + '?access_token=' + accessToken)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -155,7 +154,7 @@ describe('RawDatasets', () => {
     describe('Get All RawDatasets', function () {
         it('should fetch all raw datasets', function (done) {
             request(app)
-                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
+                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
