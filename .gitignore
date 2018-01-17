@@ -24,5 +24,10 @@ node_modules
 npm-debug.log
 server/pass
 server/providers.json
+server/datasources.json
+CI/PSI/envfiles/datasources.json
+CI/PSI/envfiles/providers.json
+CI/PSI/envfiles/catamel-psisecrets
+CI/PSI/envfiles/catamel-psiconfig
 client/api/angular2
 CI/PSI/envfiles

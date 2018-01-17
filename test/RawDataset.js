@@ -11,16 +11,65 @@ var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
-var accessToken = null;
-var pid = null;
-
+var accessToken = null,
+    pid = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
     "endTime": "2011-09-14T06:31:25.000Z",
     "creationLocation": "/SU/XQX/RAMJET",
     "dataFormat": "Upchuck pre 2017",
-    "scientificMetadata": {},
+    "scientificMetadata": {
+    "beamlineParameters": {
+        "Monostripe": "Ru/C",
+            "Ring current": {
+            "v": 0.402246,
+                "u": "A"
+        },
+        "Beam energy": {
+            "v": 22595,
+                "u": "eV"
+        }
+    },
+    "detectorParameters": {
+        "Objective": 20,
+            "Scintillator": "LAG 20um",
+            "Exposure time": {
+            "v": 0.4,
+                "u": "s"
+        }
+    },
+    "scanParameters": {
+        "Number of projections": 1801,
+            "Rot Y min position": {
+            "v": 0,
+                "u": "deg"
+        },
+        "Inner scan flag": 0,
+            "File Prefix": "817b_B2_",
+            "Sample In": {
+            "v": 0,
+                "u": "m"
+        },
+        "Sample folder": "/ramjet/817b_B2_",
+            "Number of darks": 10,
+            "Rot Y max position": {
+            "v": 180,
+                "u": "deg"
+        },
+        "Angular step": {
+            "v": 0.1,
+                "u": "deg"
+        },
+        "Number of flats": 120,
+            "Sample Out": {
+            "v": -0.005,
+                "u": "m"
+        },
+        "Flat frequency": 0,
+            "Number of inter-flats": 0
+    }
+},
     "owner": "Bertram Astor",
     "ownerEmail": "bertram.astor@grumble.com",
     "orcidOfOwner": "unknown",
@@ -43,8 +92,6 @@ var testraw = {
     "proposalId": "10.540.16635/20110123"
 }
 
-// var object_id = testraw.pid.replace(/\//g, '%2F');
-// object_id = '%3CPID%3E%2F'+testraw.pid.replace(/\//g, '%2F');
 
 describe('RawDatasets', () => {
     beforeEach((done) => {
@@ -67,7 +114,7 @@ describe('RawDatasets', () => {
                         return done(err);
                     res.body.should.have.property('owner').and.be.string;
                     res.body.should.have.property('pid').and.be.string;
-                    pid = encodeURIComponent(res.body.pid);
+                    pid = encodeURIComponent(res.body['pid']);
                     done();
                 });
         });
@@ -107,7 +154,7 @@ describe('RawDatasets', () => {
     describe('Get All RawDatasets', function () {
         it('should fetch all raw datasets', function (done) {
             request(app)
-                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
+                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
