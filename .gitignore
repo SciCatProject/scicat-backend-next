@@ -26,4 +26,7 @@ server/pass
 server/providers.json
 server/datasources.json
 CI/PSI/envfiles/datasources.json
+CI/PSI/envfiles/providers.json
+CI/PSI/catamel-psisecrets
+CI/PSI/catamel-psiconfig
 client/api/angular2
