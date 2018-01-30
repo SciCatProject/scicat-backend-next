@@ -2,7 +2,8 @@
   "name": "OrigDatablock",
   "base": "Ownable",
   "idInjection": true,
-  "indexes": {
+  "strict": true,
+    "indexes": {
     "datasetId_index": {
       "keys": {
         "datasetId": 1

@@ -2,6 +2,7 @@
   "name": "Datablock",
   "base": "Ownable",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "datasetId_index": {
       "keys": {

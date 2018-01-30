@@ -88,7 +88,6 @@ var testraw = {
     "accessGroups": [],
     "createdAt": "2017-11-01T18:02:49.825Z",
     "updatedAt": "2017-11-01T18:03:04.673Z",
-    "user": "ingestor",
     "proposalId": "10.540.16635/20110123"
 }
 

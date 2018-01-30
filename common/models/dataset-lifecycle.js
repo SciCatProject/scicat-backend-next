@@ -42,6 +42,5 @@ module.exports = function(Datasetlifecycle) {
                 ctx.instance.dateOfPublishing = pubDate.toISOString().substring(0, 10)
             }
         }
-        utils.linkToProperDatasetType(ctx, next)
     })
 };

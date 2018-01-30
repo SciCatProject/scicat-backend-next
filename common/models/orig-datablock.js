@@ -4,7 +4,7 @@ var utils = require('./utils');
 
 module.exports = function(Origdatablock) {
     var app = require('../../server/server');
-    
+
     // put
     Origdatablock.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         // handle embedded datafile documents
@@ -23,10 +23,6 @@ module.exports = function(Origdatablock) {
         utils.updateAllTimesToUTC(["time"], ctx.args.data.dataFileList)
         next();
     });
-
-    Origdatablock.observe('before save', (ctx, next) => {
-        utils.linkToProperDatasetType(ctx,next)
-    })
 
     Origdatablock.validatesPresenceOf('datasetId');
 

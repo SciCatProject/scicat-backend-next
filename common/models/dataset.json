@@ -2,8 +2,12 @@
   "name": "Dataset",
   "base": "Ownable",
   "idInjection": false,
-  "options": {
-    "validateUpsert": true
+  "strict": true,
+ "options": {
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "pid": {
@@ -56,7 +60,8 @@
     "type": {
       "type": "string",
       "required": true,
-      "description": "Characterize data, e.g. as raw, derived, test, calibration data"
+      "index": true,
+      "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled"
     },
     "validationStatus": {
       "type": "string",
