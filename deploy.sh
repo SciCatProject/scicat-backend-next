@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # script that (re-)installs catamel with the most recent version on master
 
