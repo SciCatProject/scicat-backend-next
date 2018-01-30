@@ -38,8 +38,8 @@ export env=$1
 
 # create docker image
 cd $DACATHOME/catamel/
-git checkout master
-git pull
+# git checkout master
+# git pull
 tag=$(git rev-parse HEAD )
 sudo docker build -t registry.psi.ch:5000/egli/dacatapiserver:$tag .
 sudo docker push registry.psi.ch:5000/egli/dacatapiserver:$tag
