@@ -63,7 +63,7 @@ module.exports = function(Rawdataset) {
                 UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
                     console.log("UserIdentity Instance:",instance)
                     if (instance && instance.profile) {
-                      var foundGroups=instance.profile.accessGroups
+                        var foundGroups = instance.profile.accessGroups
                         // check if a normal user or an internal ROLE
                         if (typeof foundGroups === 'undefined') {
                           ctx.args.ownerGroup = [];
@@ -73,11 +73,14 @@ module.exports = function(Rawdataset) {
                         var b = new Set(foundGroups);
                         var intersection = new Set([...a].filter(x => b.has(x)));
                         var subgroups = Array.from(intersection);
-                        if (subgroups.length === 0){
-                          subgroups = foundGroups;
+                        if (subgroups.length === 0) {
+                          var e = new Error('User has no group access');
+                          e.statusCode = 401;
+                          next(e);
+                        } else {
+                          ctx.args.ownerGroup = subgroups;
+                          next();  
                         }
-                        ctx.args.ownerGroup = subgroups;
-                        next()
                     } else {
                       // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
                       var e = new Error('Access Not Allowed');
@@ -197,7 +200,7 @@ module.exports = function(Rawdataset) {
     });
     Rawdataset.getDataSource().connector.connect(function(err, db) {
       var collection = db.collection("RawDataset");
-      console.log(JSON.stringify(findFilter));
+      // console.log(JSON.stringify(findFilter));
       var res = collection.aggregate(findFilter,
                                      function(err, res) { cb(err, res); });
     });
