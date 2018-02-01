@@ -2,7 +2,7 @@
   "name": "Dataset",
   "base": "Ownable",
   "idInjection": false,
-  "strict": true,
+  "strict": false,
  "options": {
     "validateUpsert": true,
     "mongodb": {

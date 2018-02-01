@@ -75,7 +75,7 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "*",
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "ingestor",
       "permission": "ALLOW"

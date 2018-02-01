@@ -14,7 +14,7 @@ var utils = require('./LoginUtils');
 var accessToken = null;
 
 describe('DatasetLifecycles', () => {
-    beforeEach((done) => {
+    before((done) => {
         utils.getToken(app, {'username': 'ingestor', 'password': 'aman'},
             (tokenVal) => {
                 accessToken = tokenVal;
@@ -22,7 +22,7 @@ describe('DatasetLifecycles', () => {
             });
     });
     describe('Get All DatasetLifecycles', function () {
-        it('fetches array of access users', function (done) {
+        it('fetches array of Dataset Lifecycle infos', function (done) {
             request(app)
                 .get('/api/v2/DatasetLifecycles?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
                 .set('Accept', 'application/json')

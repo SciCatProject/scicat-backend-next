@@ -16,7 +16,7 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
     if (ctx.instance) {
         // get all current objects connected to the same dataset
         if (ctx.instance.datasetId !== undefined) {
-            const datasetId = ctx.instance.datasetId
+            const datasetId = decodeURIComponent(ctx.instance.datasetId)
             // get all current datablocks connected to the same dataset
             var filter = {
                 where: {
@@ -30,7 +30,6 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                 var total = instances.reduce(function(sum, value) {
                     return sum + value[sizeField]
                 }, 0);
-                // TODO refactor repeating code segments into functions
 
                 var Dataset = app.models.Dataset
                 Dataset.findById(datasetId, null, ctx.options).then(instance => {
@@ -39,15 +38,20 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                             [sizeField]: total
                         }, function(err, instance) {
                             if (err) {
-                                console.log("Error when updating Dataset: %j", err)
+                                var error = new Error();
+                                error.statusCode = 403;
+                                error.message = err;
+                                next(error)
                             } else {
-                                console.log("Updated Dataset pid %s", instance.pid)
+                                next()
                             }
-                            next()
                         })
                     } else {
-                        console.log("No dataset found with pid %s ", datasetId)
-                        next()
+                        var error = new Error();
+                        error.statusCode = 404;
+                        error.message = "No dataset found with pid " + datasetId
+                        next(error)
+
                     }
                 })
 
@@ -55,7 +59,7 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
         } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
             var error = new Error();
-            error.statusCode = 422;
+            error.statusCode = 417;
             error.message = 'DatasetId must be defined';
             next(error)
         }
