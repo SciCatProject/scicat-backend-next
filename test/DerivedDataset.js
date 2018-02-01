@@ -1,0 +1,121 @@
+/* jshint node:true */
+/* jshint esversion:6 */
+'use strict';
+
+// process.env.NODE_ENV = 'test';
+
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var request = require('supertest');
+var app = require('../server/server');
+var should = chai.should();
+var utils = require('./LoginUtils');
+
+var accessToken = null,
+    pid = null;
+
+var testderived = {
+    "investigator": "egon.meier@web.de",
+    "inputDatasets": [
+        "/data/input/file1.dat"
+    ],
+    "usedSoftware": [
+        "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c"
+    ],
+    "jobParameters": {
+        "nscans": 10
+    },
+    "jobLogData": "Output of log file...",
+
+    "owner": "Egon Meier",
+    "ownerEmail": "egon.meier@web.de",
+    "contactEmail": "egon.meier@web.de",
+    "sourceFolder": "/data/example/2017",
+    "creationTime": "2017-01-31T09:20:19.562Z",
+    "keywords": [
+        "Test", "Derived", "Science", "Math"
+    ],
+    "description": "Some fancy description",
+    "doi": "not yet defined",
+    "isPublished": false,
+    "ownerGroup": "p34123"
+}
+
+
+describe('DerivedDatasets', () => {
+    before((done) => {
+        utils.getToken(app, {
+                'username': 'ingestor',
+                'password': 'aman'
+            },
+            (tokenVal) => {
+                accessToken = tokenVal;
+                done();
+            });
+    });
+    describe('POST /api/v2/DerivedDatasets', function() {
+        it('adds a new derived dataset', function(done) {
+            request(app)
+                .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+                .send(testderived)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end(function(err, res) {
+                    if (err)
+                        return done(err);
+                    res.body.should.have.property('type').and.equal('derived');
+                    res.body.should.have.property('pid').and.be.string;
+                    pid = encodeURIComponent(res.body['pid']);
+                    done();
+                });
+        });
+    });
+
+    describe('get one derived dataset', function() {
+        it('should fetch one derived dataset', function(done) {
+            request(app)
+                .get('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    done();
+                });
+        });
+    });
+
+    describe('delete a DerivedDataset', function() {
+        it('should delete a derived dataset', function(done) {
+            request(app)
+                .delete('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    done();
+                });
+        });
+    });
+
+
+    describe('Get All DerivedDatasets', function() {
+        it('should fetch all derived datasets', function(done) {
+            request(app)
+                .get('/api/v2/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    res.body.should.be.instanceof(Array);
+                    done();
+                });
+        });
+    });
+});
