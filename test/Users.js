@@ -14,7 +14,7 @@ var should = chai.should();
 var accessToken = null;
 
 describe('Users', () => {
-  beforeEach((done) => {
+  before((done) => {
     console.log(utils.getToken)
     utils.getToken(app, {'username' : 'ingestor', 'password' : 'aman'},
                    (token) => {

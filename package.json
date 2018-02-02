@@ -1,12 +1,12 @@
 {
   "name": "dacat-api",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "main": "server/server.js",
   "scripts": {
     "lint": "eslint .",
     "start": "node .",
     "posttests": "npm run lint && nsp check",
-    "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter nyan --exit"
+    "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter spec --exit"
   },
   "dependencies": {
     "compression": "1.7.1",

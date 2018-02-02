@@ -12,6 +12,8 @@ module.exports = function(Dataset) {
     // });
     //
 
+    // make sure that all times are UTC
+
     // put
     Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(["creationTime"], ctx.args.data)
@@ -30,8 +32,6 @@ module.exports = function(Dataset) {
         next();
     });
 
-
-
     // auto add pid
     Dataset.observe('before save', (ctx, next) => {
         if (ctx.instance) {
@@ -42,6 +42,7 @@ module.exports = function(Dataset) {
                 console.log('  unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
+            ctx.instance.type='base';
         }
         next();
     });
