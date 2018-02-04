@@ -17,9 +17,8 @@ var accessTokenUser = null;
 
 var pid = null;
 var idDatablock = null;
+var idOrigDatablock = null;
 var idDatablock2 = null;
-
-// TODO only archiveManager should be allowed to write
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -147,8 +146,54 @@ var testdataBlock = {
     "ownerGroup": "p10021"
 }
 
+var testorigDataBlock = {
+    "size": 41780189,
+    "dataFileList": [{
+            "path": "N1039__B410489.tif",
+            "size": 8356037,
+            "time": "2017-07-24T13:56:30.000Z",
+            "uid": "egon.meiera@psi.ch",
+            "gid": "p16738",
+            "perm": "-rw-rw-r--"
+        },
+        {
+            "path": "N1039__B410613.tif",
+            "size": 8356038,
+            "time": "2017-07-24T13:56:35.000Z",
+            "uid": "egon.meiera@psi.ch",
+            "gid": "p16738",
+            "perm": "-rw-rw-r--"
+        },
+        {
+            "path": "N1039__B410729.tif",
+            "size": 8356038,
+            "time": "2017-07-24T13:56:41.000Z",
+            "uid": "egon.meiera@psi.ch",
+            "gid": "p16738",
+            "perm": "-rw-rw-r--"
+        },
+        {
+            "path": "N1039__B410200.tif",
+            "size": 8356038,
+            "time": "2017-07-24T13:56:18.000Z",
+            "uid": "egon.meiera@psi.ch",
+            "gid": "p16738",
+            "perm": "-rw-rw-r--"
+        },
+        {
+            "path": "N1039__B410377.tif",
+            "size": 8356038,
+            "time": "2017-07-24T13:56:25.000Z",
+            "uid": "egon.meiera@psi.ch",
+            "gid": "p16738",
+            "perm": "-rw-rw-r--"
+        }
+    ],
+    "ownerGroup": "p10021"
+}
 
-describe('Datablock', () => {
+
+describe('Test Datablocks and OrigDatablocks and their relation to Datasets', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -167,157 +212,186 @@ describe('Datablock', () => {
             });
     });
 
-    describe('adds a new raw dataset', function() {
-        it('adds a new raw dataset', function(done) {
-            request(app)
-                .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
-                .send(testraw)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('owner').and.be.string;
-                    res.body.should.have.property('type').and.equal('raw');
-                    res.body.should.have.property('pid').and.be.string;
-                    testdataBlock.datasetId = res.body['pid']
-                    pid = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
+    it('adds a new raw dataset', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
+            .send(testraw)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('owner').and.be.string;
+                res.body.should.have.property('type').and.equal('raw');
+                res.body.should.have.property('pid').and.be.string;
+                // store link to this dataset in datablocks
+                testdataBlock.datasetId = res.body['pid']
+                testorigDataBlock.datasetId = res.body['pid']
+                pid = encodeURIComponent(res.body['pid']);
+                done();
+            });
     });
 
-
-    describe('adds a new datablock', function() {
-        it('adds a new datablock', function(done) {
-            request(app)
-                .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-                .send(testdataBlock)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('size');
-                    res.body.should.have.property('id').and.be.string;
-                    idDatablock = encodeURIComponent(res.body['id']);
-                    done();
-                });
-        });
-    });
-    describe('adds a new datablock again', function() {
-        it('fails because already stored', function(done) {
-            request(app)
-                .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-                .send(testdataBlock)
-                .set('Accept', 'application/json')
-                .expect(401)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    res.body.should.have.property('error');
-                    done();
-                });
-
-        });
+    it('adds a new origDatablock', function(done) {
+        request(app)
+            .post('/api/v2/OrigDatablocks?access_token=' + accessTokenArchiveManager)
+            .send(testorigDataBlock)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('size').and.equal(41780189);
+                res.body.should.have.property('id').and.be.string;
+                idOrigDatablock = encodeURIComponent(res.body['id']);
+                done();
+            });
     });
 
-    describe('adds a new datablock as wrong account', function() {
-        it('fails with incorrect credentials', function(done) {
-            request(app)
-                .post('/api/v2/Datablocks?access_token=' + accessTokenIngestor)
-                .send(testdataBlock)
-                .set('Accept', 'application/json')
-                .expect(401)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    res.body.should.have.property('error');
-                    done();
-                });
-
-        });
+    it('adds a new datablock', function(done) {
+        request(app)
+            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .send(testdataBlock)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('size');
+                res.body.should.have.property('id').and.be.string;
+                idDatablock = encodeURIComponent(res.body['id']);
+                done();
+            });
     });
 
-    describe('adds a second datablock for same dataset', function() {
-        it('adds a second datablock for same dataset', function(done) {
-            testdataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
-                request(app)
-                .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-                .send(testdataBlock)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('size');
-                    res.body.should.have.property('id').and.be.string;
-                    idDatablock2 = encodeURIComponent(res.body['id']);
-                    done();
-                });
+    it('adds a new datablock again which should fail because it is already stored', function(done) {
+        request(app)
+            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .send(testdataBlock)
+            .set('Accept', 'application/json')
+            .expect(401)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
+                done();
+            });
 
-        });
     });
 
-    describe('Get all Datablocks for this dataset', function() {
-        it('fetches array of datablocks ', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    // console.log("res.body:", res.body)
-                    if (err)
-                        return done(err);
-                    res.body.should.be.instanceof(Array).and.to.have.length(2);
-                    done();
-                });
-        });
+    it('adds a new datablock which should fail because wrong functional account', function(done) {
+        request(app)
+            .post('/api/v2/Datablocks?access_token=' + accessTokenIngestor)
+            .send(testdataBlock)
+            .set('Accept', 'application/json')
+            .expect(401)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
+                done();
+            });
+
     });
 
-    describe('delete a Datablock', function() {
-        it('should delete a datablock', function(done) {
+    it('adds a second datablock for same dataset', function(done) {
+        testdataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
             request(app)
-                .delete('/api/v2/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
+            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .send(testdataBlock)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('size');
+                res.body.should.have.property('id').and.be.string;
+                idDatablock2 = encodeURIComponent(res.body['id']);
+                done();
+            });
+
     });
 
-    describe('delete 2nd Datablock', function() {
-        it('should delete a datablock', function(done) {
-            request(app)
-                .delete('/api/v2/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
+    it('Should fetch all datablocks belonging to the new dataset', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Array).and.to.have.length(2);
+                done();
+            });
     });
 
-    describe('delete a Dataset', function() {
-        it('should delete a dataset', function(done) {
-            request(app)
-                .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
-    });});
+    it('The size fields in the dataset should be correctly updated', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('size').and.equal(41780189);
+                res.body.should.have.property('packedSize').and.equal(83560380)
+                done();
+            });
+    });
+
+    it('should delete a datablock', function(done) {
+        request(app)
+            .delete('/api/v2/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete a OrigDatablock', function(done) {
+        request(app)
+            .delete('/api/v2/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete the 2nd datablock', function(done) {
+        request(app)
+            .delete('/api/v2/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete the newly created dataset', function(done) {
+        request(app)
+            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+});

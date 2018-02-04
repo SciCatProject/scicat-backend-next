@@ -14,10 +14,8 @@ var utils = require('./LoginUtils');
 var accessToken = null;
 
 // TODO
-// add tests for normal users
-// add tests for jobs and orig(datablocks)
-// TODO check if sizes are correctly filled from origDatablock and datablock to dataset
-
+// add tests for normal users (non functional accounts)
+// add tests for jobs
 
 var testdataset = {
     "owner": "Bertram Astor",
@@ -138,14 +136,14 @@ var testderived = {
     "ownerGroup": "p34123"
 }
 
-var countDataset=0;
-var rawCountDataset=0;
-var derivedCountDataset=0;
+var countDataset = 0;
+var rawCountDataset = 0;
+var derivedCountDataset = 0;
 var pid = null;
 var pidraw = null;
 var pidderived = null;
 
-describe('CombinedDatasetTypes', () => {
+describe('Check different dataset types and their inheritance', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -159,394 +157,332 @@ describe('CombinedDatasetTypes', () => {
 
     // get counts
 
-    describe('get dataset count', function() {
-        it('should get count of datasets', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    countDataset=res.body.count
-                    done();
-                });
-        });
+    it('should get count of datasets', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                countDataset = res.body.count
+                done();
+            });
+
     });
 
-    describe('get rawdataset count', function() {
-        it('should get count of raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    rawCountDataset=res.body.count
-                    done();
-                });
-        });
+    it('should get count of raw datasets', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                rawCountDataset = res.body.count
+                done();
+            });
+
     });
 
-    describe('get deriveddataset count', function() {
-        it('should get count of derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    derivedCountDataset=res.body.count
-                    done();
-                });
-        });
+    it('should get count of derived datasets', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                derivedCountDataset = res.body.count
+                done();
+            });
     });
 
     // add dataset and check what happened to counts
 
-    describe('POST /api/v2/Datasets', function() {
-        it('adds a new dataset', function(done) {
-            request(app)
-                .post('/api/v2/Datasets?access_token=' + accessToken)
-                .send(testdataset)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('version').and.be.string;
-                    res.body.should.have.property('type').and.equal('base');
-                    res.body.should.have.property('pid').and.be.string;
-                    pid = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
+    it('adds a new dataset', function(done) {
+        request(app)
+            .post('/api/v2/Datasets?access_token=' + accessToken)
+            .send(testdataset)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('version').and.be.string;
+                res.body.should.have.property('type').and.equal('base');
+                res.body.should.have.property('pid').and.be.string;
+                pid = encodeURIComponent(res.body['pid']);
+                done();
+            });
     });
 
     // get counts again
 
-    describe('get dataset count', function() {
-        it('should get count of datasets', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-countDataset).should.equal(1);
-                    done();
-                });
-        });
+    it('check for correct new count of datasets', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - countDataset).should.equal(1);
+                done();
+            });
     });
 
-    describe('get raw dataset count', function() {
-        it('should get count of raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-rawCountDataset).should.equal(0);
-                    done();
-                });
-        });
+    it('check for unchanged count of raw datasets', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - rawCountDataset).should.equal(0);
+                done();
+            });
     });
 
-    describe('get derived dataset count', function() {
-        it('should get count of derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-derivedCountDataset).should.equal(0);
-                    done();
-                });
-        });
+    it('check for unchanged count of derived datasets', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - derivedCountDataset).should.equal(0);
+                done();
+            });
     });
 
 
-    // add rawdataset and check what happened to counts
-
-    describe('POST /api/v2/RawDatasets', function() {
-        it('adds a new raw dataset', function(done) {
-            request(app)
-                .post('/api/v2/RawDatasets?access_token=' + accessToken)
-                .send(testraw)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('version').and.be.string;
-                    res.body.should.have.property('type').and.equal('raw');
-                    res.body.should.have.property('pid').and.be.string;
-                    pidraw = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
+    it('should add a new raw dataset', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets?access_token=' + accessToken)
+            .send(testraw)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('version').and.be.string;
+                res.body.should.have.property('type').and.equal('raw');
+                res.body.should.have.property('pid').and.be.string;
+                pidraw = encodeURIComponent(res.body['pid']);
+                done();
+            });
     });
 
-    // get counts again
-
-    describe('get dataset count', function() {
-        it('should get count of datasets', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-countDataset).should.equal(2);
-                    done();
-                });
-        });
-    });
-
-    describe('get raw dataset count', function() {
-        it('should get count of raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-rawCountDataset).should.equal(1);
-                    done();
-                });
-        });
-    });
-
-    describe('get derived dataset count', function() {
-        it('should get count of derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-derivedCountDataset).should.equal(0);
-                    done();
-                });
-        });
+    it('new dataset count should be incremented', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - countDataset).should.equal(2);
+                done();
+            });
     });
 
 
-    // add derived dataset and check what happened to counts
-
-    describe('POST /api/v2/DerivedDatasets', function() {
-        it('adds a new derived dataset', function(done) {
-            request(app)
-                .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
-                .send(testderived)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('version').and.be.string;
-                    res.body.should.have.property('type').and.equal('derived');
-                    res.body.should.have.property('pid').and.be.string;
-                    pidderived = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
+    it('new raw dataset count should be incremented', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - rawCountDataset).should.equal(1);
+                done();
+            });
     });
 
-    // get counts again
-
-    describe('get dataset count', function() {
-        it('should get count of datasets', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-countDataset).should.equal(3);
-                    done();
-                });
-        });
-    });
-
-    describe('get raw dataset count', function() {
-        it('should get count of raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-rawCountDataset).should.equal(1);
-                    done();
-                });
-        });
-    });
-
-    describe('get derived dataset count', function() {
-        it('should get count of derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-derivedCountDataset).should.equal(1);
-                    done();
-                });
-        });
-    });
-
-    describe('delete a Dataset', function() {
-        it('should delete a dataset', function(done) {
-            request(app)
-                .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
-    });
-
-    describe('delete a Dataset', function() {
-        it('should delete a dataset', function(done) {
-            request(app)
-                .delete('/api/v2/Datasets/' + pidraw + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
-    });
-
-    describe('delete a Dataset', function() {
-        it('should delete a dataset', function(done) {
-            request(app)
-                .delete('/api/v2/Datasets/' + pidderived + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
-    });
-
-    describe('get dataset count', function() {
-        it('should get count of datasets', function(done) {
-            request(app)
-                .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-countDataset).should.equal(0);
-                    done();
-                });
-        });
-    });
-
-    describe('get raw dataset count', function() {
-        it('should get count of raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-rawCountDataset).should.equal(0);
-                    done();
-                });
-        });
-    });
-
-    describe('get derived dataset count', function() {
-        it('should get count of derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    // console.log("Count:", res.body)
-                    res.body.should.have.property('count').and.be.a('number');
-                    (res.body.count-derivedCountDataset).should.equal(0);
-                    done();
-                });
-        });
+    it('new derived dataset count should be unchanged', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - derivedCountDataset).should.equal(0);
+                done();
+            });
     });
 
 
+
+    it('adds a new derived dataset', function(done) {
+        request(app)
+            .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+            .send(testderived)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('version').and.be.string;
+                res.body.should.have.property('type').and.equal('derived');
+                res.body.should.have.property('pid').and.be.string;
+                pidderived = encodeURIComponent(res.body['pid']);
+                done();
+            });
+    });
+
+
+    it('new dataset count should be incremented', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - countDataset).should.equal(3);
+                done();
+            });
+    });
+
+    it('new raw dataset count should be unchanged', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - rawCountDataset).should.equal(1);
+                done();
+            });
+    });
+
+    it('new derived dataset count should be incremented', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - derivedCountDataset).should.equal(1);
+                done();
+            });
+    });
+
+    it('should delete the created new dataset', function(done) {
+        request(app)
+            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete the created new raw dataset', function(done) {
+        request(app)
+            .delete('/api/v2/Datasets/' + pidraw + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete the created new derived dataset', function(done) {
+        request(app)
+            .delete('/api/v2/Datasets/' + pidderived + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('new dataset count should be back to old count', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - countDataset).should.equal(0);
+                done();
+            });
+    });
+
+    it('new raw dataset count should be back to old count', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - rawCountDataset).should.equal(0);
+                done();
+            });
+    });
+
+    it('new derived dataset count should be back to old count', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.be.a('number');
+                (res.body.count - derivedCountDataset).should.equal(0);
+                done();
+            });
+    });
 });

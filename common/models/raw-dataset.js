@@ -16,8 +16,8 @@ module.exports = function(Rawdataset) {
               and: [ctx.query.where, typeCondition]
           }
       }
-      const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
-      console.log('%s: %s accessed %s:%s', new Date(), ctx.Model.modelName, scope);
+      // const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
+      // console.log('%s: %s accessed %s:%s', new Date(), ctx.Model.modelName, scope);
       next()
   });
 
@@ -79,7 +79,7 @@ module.exports = function(Rawdataset) {
                           next(e);
                         } else {
                           ctx.args.ownerGroup = subgroups;
-                          next();  
+                          next();
                         }
                     } else {
                       // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html

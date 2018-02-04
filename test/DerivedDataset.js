@@ -53,69 +53,62 @@ describe('DerivedDatasets', () => {
                 done();
             });
     });
-    describe('POST /api/v2/DerivedDatasets', function() {
-        it('adds a new derived dataset', function(done) {
-            request(app)
-                .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
-                .send(testderived)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('type').and.equal('derived');
-                    res.body.should.have.property('pid').and.be.string;
-                    pid = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
+    it('adds a new derived dataset', function(done) {
+        request(app)
+            .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+            .send(testderived)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('type').and.equal('derived');
+                res.body.should.have.property('pid').and.be.string;
+                pid = encodeURIComponent(res.body['pid']);
+                done();
+            });
     });
 
-    describe('get one derived dataset', function() {
-        it('should fetch one derived dataset', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
+    it('should fetch one derived dataset', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+
     });
 
-    describe('delete a DerivedDataset', function() {
-        it('should delete a derived dataset', function(done) {
-            request(app)
-                .delete('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
+    it('should delete a derived dataset', function(done) {
+        request(app)
+            .delete('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
     });
 
 
-    describe('Get All DerivedDatasets', function() {
-        it('should fetch all derived datasets', function(done) {
-            request(app)
-                .get('/api/v2/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    res.body.should.be.instanceof(Array);
-                    done();
-                });
-        });
+    it('should fetch all derived datasets', function(done) {
+        request(app)
+            .get('/api/v2/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Array);
+                done();
+            });
     });
 });
