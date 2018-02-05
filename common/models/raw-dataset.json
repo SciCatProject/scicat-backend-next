@@ -2,6 +2,7 @@
   "name": "RawDataset",
   "base": "Dataset",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "proposalId_index": {
       "keys": {
@@ -13,7 +14,10 @@
     }
   },
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "principalInvestigator": {

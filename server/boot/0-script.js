@@ -29,7 +29,7 @@ module.exports = function(app) {
             {
                 accessType: 'READ',
                 principalType: 'ROLE',
-                principalId: '$owner',
+                principalId: '$authenticated',
                 permission: 'ALLOW'
             }
         ]

@@ -79,10 +79,6 @@
     "dataSource": "mongo",
     "public": true
   },
-  "SynchTimes": {
-    "dataSource": "mongo",
-    "public": true
-  },
   "UserCredential": {
     "dataSource": "mongo",
     "public": true

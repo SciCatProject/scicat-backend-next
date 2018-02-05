@@ -2,6 +2,7 @@
   "name": "Datafile",
   "base": "PersistedModel",
   "idInjection": false,
+  "strict": true,
   "options": {
     "validateUpsert": true
   },

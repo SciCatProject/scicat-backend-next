@@ -2,6 +2,7 @@
   "name": "Proposal",
   "base": "Ownable",
   "idInjection": false,
+  "strict": true,
   "options": {
     "validateUpsert": true
   },
