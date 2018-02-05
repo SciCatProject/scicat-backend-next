@@ -34,8 +34,8 @@ module.exports = function(Ownable) {
                         and: [ctx.query.where, groupCondition]
                     }
                 }
-                const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
-                console.log('%s: %s accessed %s:%s', new Date(), instance.profile.login, ctx.Model.modelName, scope);
+                // const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
+                // console.log('%s: %s accessed %s:%s', new Date(), instance.profile.login, ctx.Model.modelName, scope);
                 next()
             } else {
               // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
