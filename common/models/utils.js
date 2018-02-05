@@ -12,7 +12,6 @@ var exports = module.exports = {};
 
 
 exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
-
     if (ctx.instance) {
         // get all current objects connected to the same dataset
         if (ctx.instance.datasetId !== undefined) {
@@ -74,9 +73,9 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 exports.updateTimesToUTC = function(dateKeys, instance) {
     dateKeys.map(function(dateKey) {
         if (instance[dateKey]) {
-            console.log("Updating old ", dateKey, instance[dateKey])
+            // console.log("Updating old ", dateKey, instance[dateKey])
             instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
-            console.log("New time:", instance[dateKey])
+            // console.log("New time:", instance[dateKey])
         }
     });
 }
@@ -84,7 +83,7 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
 // dito but for array of instances
 exports.updateAllTimesToUTC = function(dateKeys, instances) {
     dateKeys.map(function(dateKey) {
-        console.log("Updating all time field %s to UTC for %s instances:", dateKey, instances.length)
+        // console.log("Updating all time field %s to UTC for %s instances:", dateKey, instances.length)
         instances.map(function(instance) {
             if (instance[dateKey]) {
                 // console.log("Updating old ",dateKey,instance[dateKey])

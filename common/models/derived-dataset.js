@@ -14,8 +14,8 @@ module.exports = function(Deriveddataset) {
                 and: [ctx.query.where, typeCondition]
             }
         }
-        const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
-        console.log('%s: %s accessed %s:%s', new Date(), ctx.Model.modelName, scope);
+        // const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
+        // console.log('%s: %s accessed %s:%s', new Date(), ctx.Model.modelName, scope);
         next()
     });
 

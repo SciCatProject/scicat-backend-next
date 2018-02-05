@@ -97,70 +97,64 @@ describe('RawDatasets', () => {
                 done();
             });
     });
-    describe('POST /api/v2/RawDatasets', function() {
-        it('adds a new dataset', function(done) {
-            request(app)
-                .post('/api/v2/RawDatasets?access_token=' + accessToken)
-                .send(testraw)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function(err, res) {
-                    if (err)
-                        return done(err);
-                    res.body.should.have.property('owner').and.be.string;
-                    res.body.should.have.property('type').and.equal('raw');
-                    res.body.should.have.property('pid').and.be.string;
-                    pid = encodeURIComponent(res.body['pid']);
-                    done();
-                });
-        });
-    });
-
-    describe('get one rawdataset', function() {
-        it('should fetch one dataset', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
-    });
-
-    describe('delete  a RawDataset', function() {
-        it('should delete a rawdataset', function(done) {
-            request(app)
-                .delete('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    done();
-                });
-        });
+    it('adds a new raw dataset', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets?access_token=' + accessToken)
+            .send(testraw)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('owner').and.be.string;
+                res.body.should.have.property('type').and.equal('raw');
+                res.body.should.have.property('pid').and.be.string;
+                pid = encodeURIComponent(res.body['pid']);
+                done();
+            });
     });
 
 
-    describe('Get All RawDatasets', function() {
-        it('should fetch all raw datasets', function(done) {
-            request(app)
-                .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err)
-                        return done(err);
-                    res.body.should.be.instanceof(Array);
-                    done();
-                });
-        });
+    it('should fetch several raw datasets', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Array);
+                done();
+            });
     });
+
+    it('should fetch this raw dataset', function(done) {
+        request(app)
+            .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete this raw dataset', function(done) {
+        request(app)
+            .delete('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+
 });
