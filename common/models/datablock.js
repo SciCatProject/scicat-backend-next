@@ -20,6 +20,13 @@ module.exports = function(Datablock) {
     //post
     Datablock.beforeRemote('create', function(ctx, unused, next) {
         utils.updateAllTimesToUTC(["time"], ctx.args.data.dataFileList)
+        // var Dataset = app.models.RawDataset; always shown as empty, DB isues?
+        // Datablock.count().then(count => {
+        //     console.log(count);
+        // })
+        if (!('ownerGroup' in ctx.args.data)) {
+            ctx.args.data.ownerGroup = ['p16738'];
+        }
         next();
     });
 
