@@ -21,6 +21,9 @@ module.exports = function(Datasetlifecycle) {
     //post
     Datasetlifecycle.beforeRemote('create', function(ctx, unused, next) {
         utils.updateTimesToUTC(["dateOfLastMessage"], ctx.args.data)
+        if (!('ownerGroup' in ctx.args.data)) {
+            ctx.args.data.ownerGroup = ['p16738'];
+        }
         next();
     });
 
