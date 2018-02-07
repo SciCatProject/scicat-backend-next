@@ -7,39 +7,39 @@ module.exports = function(Datablock) {
     // put
     Datablock.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         // handle embedded datafile documents
-        utils.updateAllTimesToUTC(["time"], ctx.args.data.dataFileList)
+        utils.updateAllTimesToUTC(['time'], ctx.args.data.dataFileList);
         next();
     });
 
     //patch
     Datablock.beforeRemote('patchOrCreate', function(ctx, instance, next) {
-        utils.updateAllTimesToUTC(["time"], ctx.args.data.dataFileList)
+        utils.updateAllTimesToUTC(['time'], ctx.args.data.dataFileList);
         next();
     });
 
     //post
     Datablock.beforeRemote('create', function(ctx, unused, next) {
-        utils.updateAllTimesToUTC(["time"], ctx.args.data.dataFileList)
+        utils.updateAllTimesToUTC(['time'], ctx.args.data.dataFileList);
         // var Dataset = app.models.RawDataset; always shown as empty, DB isues?
         // Datablock.count().then(count => {
         //     console.log(count);
         // })
         if (!('ownerGroup' in ctx.args.data)) {
-            ctx.args.data.ownerGroup = ['p16738'];
+            ctx.args.data.ownerGroup = ['p16738']; // TODO change to access actual group!
         }
         next();
     });
 
     Datablock.validatesUniquenessOf('archiveId', {
-        message: 'ArchiveId is not unique'
+        message: 'ArchiveId is not unique',
     });
 
     Datablock.validatesPresenceOf('datasetId');
 
     // transfer packedSize info to dataset
     Datablock.observe('after save', (ctx, next) => {
-        var Datablock = app.models.Datablock
-        utils.transferSizeToDataset(Datablock, 'packedSize', ctx, next)
+        var Datablock = app.models.Datablock;
+        utils.transferSizeToDataset(Datablock, 'packedSize', ctx, next);
 
     })
 };

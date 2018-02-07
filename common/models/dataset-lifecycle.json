@@ -2,7 +2,7 @@
   "name": "DatasetLifecycle",
   "base": "PersistedModel",
   "idInjection": false,
-  "strict": true,
+  "strict": false,
   "indexes": {
     "datasetId_index": {
       "keys": {
