@@ -82,86 +82,32 @@ module.exports = function(Dataset) {
      * Inherited models will not call this before access, so it must be replicated
      */
     Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
-        // const token = ctx.options && ctx.options.accessToken;
-        //     const userId = token && token.userId;
-        const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-        if (userId === null) {
-            userId = ctx.req.args.accessToken;
-        }
-        // const user = userId ? 'user#' + userId : '<anonymous>';
-        var UserIdentity = app.models.UserIdentity;
-        var User = app.models.User;
-        if (!userId) {
-            var e = new Error('Cannot find access token');
-            e.statusCode = 401;
-            next(e);
-        }
-        // console.log(ctx.req);
-        // TODO add check for functional accounts and ignore below if true
-        User.findById(userId, function (err, user) {
-            if (err) {
-                next(err);
-            } else if (user['username'].indexOf('.') === -1) {
-                ctx.args.ownerGroup = [];
-                next()
-            } else {
-                let groups = ctx.args.ownerGroup ? ctx.args.ownerGroup : [];
-                UserIdentity.findOne({
-                    where: {
-                        userId: userId
-                    }
-                }, function (err, instance) {
-                    console.log("UserIdentity Instance:", instance)
-                    if (instance && instance.profile) {
-                        var foundGroups = instance.profile.accessGroups
-                        // check if a normal user or an internal ROLE
-                        if (typeof foundGroups === 'undefined') {
-                            ctx.args.ownerGroup = [];
-                            next()
-                        }
-                        var a = new Set(groups);
-                        var b = new Set(foundGroups);
-                        var intersection = new Set([...a].filter(x => b.has(x)));
-                        var subgroups = Array.from(intersection);
-                        if (subgroups.length === 0) {
-                            var e = new Error('User has no group access');
-                            e.statusCode = 401;
-                            next(e);
-                        } else {
-                            ctx.args.ownerGroup = subgroups;
-                            next();
-                        }
-                    } else {
-                        // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
-                        var e = new Error('Access Not Allowed');
-                        e.statusCode = 401;
-                        next(e);
-                    }
-                })
-            }
-            console.log(ctx)
-
-        });
+        if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = undefined
+        utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
     Dataset.facet = function (fields, cb) {
         var findFilter = [];
         var match = {};
+        var type = undefined;
         if (fields) {
+            if ('type' in fields)
+                type = fields['type'];
             var keys = Object.keys(fields);
             // var RawDataset = app.models.RawDataset;
-            match['type'] = fields['type'] || 'raw';
             for (var i = 0; i < keys.length; i++) {
                 var modelType = Dataset.getPropertyType(keys[i]);
                 var value = fields[keys[i]];
                 if (modelType !== undefined && value !== 'undefined' && value !== 'null') {
                     switch (modelType) {
                         case 'String':
-                            if (Array.isArray(value)) {
+                            if (Array.isArray(value) && value.length > 0) { //TODO  security flaw if somehow an empty array is received (remote hook should prevent this)
                                 match[keys[i]] = {
                                     '$in': value
                                 };
-                            } else {
+                            } else if (typeof(value) === 'string' && value) {
                                 match[keys[i]] = value;
                             }
                             break;
@@ -271,6 +217,7 @@ module.exports = function(Dataset) {
             var collection = db.collection("Dataset");
             var res = collection.aggregate(findFilter,
                 function (err, res) {
+                    res[0]['type'] = type; //TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
         });
