@@ -65,6 +65,7 @@ module.exports = function(Dataset) {
                     cb(err);
                 }
                 console.log('Dataset Lifecycle reset');
+                cb();
                 // Datablock.destroyAll({
                 //     datasetId: id
                 // }, options, function(err, b) {
