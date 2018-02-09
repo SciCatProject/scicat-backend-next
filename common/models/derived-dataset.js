@@ -1,9 +1,11 @@
 'use strict';
 
-module.exports = function(Deriveddataset) {
+module.exports = function (Deriveddataset) {
+    var app = require('../../server/server');
+    var utils = require('./utils');
 
     // filter on dataset type (raw, derived etc)
-    Deriveddataset.observe('access', function(ctx, next) {
+    Deriveddataset.observe('access', function (ctx, next) {
         var typeCondition = {
             type: 'derived'
         };
@@ -19,8 +21,17 @@ module.exports = function(Deriveddataset) {
         next()
     });
 
-    Deriveddataset.observe('before save', function(ctx, next) {
+    Deriveddataset.observe('before save', function (ctx, next) {
         ctx.instance.type = 'derived';
         next();
     });
+
+    Deriveddataset.beforeRemote('facet', function (ctx, userDetails, next) {
+        if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = 'derived';
+        utils.handleOwnerGroups(ctx, userDetails, next);
+        // const user = userId ? 'user#' + userId : '<anonymous>';
+        
+    })
 };
