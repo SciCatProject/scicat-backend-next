@@ -52,28 +52,29 @@ module.exports = function(Dataset) {
         console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findOne({
-            datasetId: id
-        }, options, function(err, l) {
+        DatasetLifecycle.findById(id, options, function(err, l) {
             if (err) {
                 cb(err);
             }
+            console.log(l);
             l['archiveStatusMessage'] = 'datasetCreated';
             l['retrieveStatusMessage'] = '';
-            DatasetLifecycle.update(l, function(err, inst) {
+            console.log(l);
+            DatasetLifecycle.replaceById(id, l, function(err, inst) {
                 if (err) {
                     cb(err);
                 }
                 console.log('Dataset Lifecycle reset');
-                Datablock.destroyAll({
-                    datasetId: id
-                }, options, function(err, b) {
-                    if (err) {
-                        cb(err);
-                    }
-                    console.log('Deleted blocks');
-                    cb();
-                });
+                cb();
+                // Datablock.destroyAll({
+                //     datasetId: id
+                // }, options, function(err, b) {
+                //     if (err) {
+                //         cb(err);
+                //     }
+                //     console.log('Deleted blocks');
+                //     cb();
+                // });
             });
         });
     };
