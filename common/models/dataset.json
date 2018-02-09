@@ -151,6 +151,18 @@
       "principalId": "archiveManager",
       "permission": "ALLOW",
       "property": "reset"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": "facet"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW",
+      "property": "facet"
     }
   ],
   "methods": {
@@ -173,6 +185,23 @@
       "description": "Delete datablocks of dataset and reset status message",
       "http": {
         "path": "/resetArchiveStatus",
+        "verb": "post"
+      }
+    },
+    "facet": {
+      "accepts": [
+        {
+          "arg": "fields",
+          "type": "object"
+        }
+      ],
+      "returns": {
+        "arg": "results",
+        "type": "Object"
+      },
+      "description": "Find all datasets within a date range",
+      "http": {
+        "path": "/facet",
         "verb": "post"
       }
     }
