@@ -42,40 +42,48 @@ module.exports = function(Dataset) {
                 console.log('  unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
-            ctx.instance.type='base';
+            ctx.instance.type = 'base';
         }
         next();
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
-    Dataset.reset = function(id, options, cb) {
-        console.log('resetting ' + id);
+    // TODO change API to a put/patch or even delete command ? Pass ID in URL
+
+
+    Dataset.reset = function(id, options, next) {
+        // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
         DatasetLifecycle.findById(id, options, function(err, l) {
             if (err) {
-                cb(err);
+                next(err);
+            } else {
+                l.updateAttributes({
+                    archiveStatusMessage: 'datasetCreated',
+                    retrieveStatusMessage: ''
+                });
+                // console.log('Dataset Lifecycle reset');
+                Datablock.destroyAll({
+                    datasetId: id
+                }, options, function(err, b) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        // console.log('Deleted blocks', b);
+                        Dataset.findById(id, options, function(err, instance) {
+                            if (err) {
+                                next(err);
+                            } else {
+                                instance.updateAttributes({
+                                    packedSize: 0
+                                })
+                                next()
+                            }
+                        });
+                    }
+                });
             }
-            console.log(l);
-            l['archiveStatusMessage'] = 'datasetCreated';
-            l['retrieveStatusMessage'] = '';
-            console.log(l);
-            DatasetLifecycle.replaceById(id, l, function(err, inst) {
-                if (err) {
-                    cb(err);
-                }
-                console.log('Dataset Lifecycle reset');
-                cb();
-                // Datablock.destroyAll({
-                //     datasetId: id
-                // }, options, function(err, b) {
-                //     if (err) {
-                //         cb(err);
-                //     }
-                //     console.log('Deleted blocks');
-                //     cb();
-                // });
-            });
         });
     };
 };

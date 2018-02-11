@@ -148,7 +148,7 @@
     },
     {
       "principalType": "ROLE",
-      "principalId": "archiveManager",
+      "principalId": "archivemanager",
       "permission": "ALLOW",
       "property": "reset"
     }
