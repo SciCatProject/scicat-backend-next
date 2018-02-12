@@ -86,4 +86,149 @@ module.exports = function(Dataset) {
             }
         });
     };
+
+    /**
+     * Inherited models will not call this before access, so it must be replicated
+     */
+    Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
+        if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = undefined
+        utils.handleOwnerGroups(ctx, userDetails, next);
+    });
+
+    Dataset.facet = function (fields, cb) {
+        var findFilter = [];
+        var match = {};
+        var type = undefined;
+        if (fields) {
+            if ('type' in fields)
+                type = fields['type'];
+            var keys = Object.keys(fields);
+            // var RawDataset = app.models.RawDataset;
+            for (var i = 0; i < keys.length; i++) {
+                var modelType = Dataset.getPropertyType(keys[i]);
+                var value = fields[keys[i]];
+                if (modelType !== undefined && value !== 'undefined' && value !== 'null') {
+                    switch (modelType) {
+                        case 'String':
+                            if (Array.isArray(value) && value.length > 0) { //TODO  security flaw if somehow an empty array is received (remote hook should prevent this)
+                                match[keys[i]] = {
+                                    '$in': value
+                                };
+                            } else if (typeof(value) === 'string' && value) {
+                                match[keys[i]] = value;
+                            }
+                            break;
+                        case 'Date':
+                            var reqType = typeof (value);
+                            switch (reqType) {
+                                case 'string':
+                                    match[keys[i]] = new Date(value);
+                                    break;
+                                case 'object':
+                                    if (Object.keys(value).length === 2) {
+                                        if (value['start'] && value['start'] !== 'null' && value['end'] && value['end'] !== 'null') {
+                                            match[keys[i]] = {
+                                                '$gte': new Date(value['start']),
+                                                '$lte': new Date(value['end']),
+                                            };
+                                        } else {
+                                            //TODO change from null in Catanie to undefined
+                                            // cb(new Error('Dates are an invalid format'), null);
+                                        }
+                                    } else if (Object.keys(value).length !== 2) {
+                                        cb(new Error('Only one date specified, need a range'), null);
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                } else if (keys[i] === 'text' && value !== 'null') {
+                    match['$text'] = value;
+                    // TODO check in config map for extra strings, i.e. creationTime start and end
+                } else {
+                    // ignore
+                }
+            }
+        }
+        if (Object.keys(match).length !== 0) {
+            findFilter.push({
+                $match: match
+            });
+        }
+        findFilter.push({
+            $facet: {
+                // The `years` property will be the output of the 'count by year'
+                // pipeline
+                creationTime: [{
+                        $group: {
+                            _id: {
+                                year: {
+                                    $year: "$creationTime"
+                                },
+                                month: {
+                                    $month: "$creationTime"
+                                },
+                                day: {
+                                    $dayOfMonth: "$creationTime"
+                                },
+                            },
+                            count: {
+                                $sum: 1
+                            }
+                        }
+                    },
+                    // Sort by year descending
+                    {
+                        $sort: {
+                            count: -1,
+                            _id: -1
+                        }
+                    }
+                ],
+                ownerGroup: [
+                    // Count the number of groups
+                    {
+                        $group: {
+                            _id: "$ownerGroup",
+                            count: {
+                                $sum: 1
+                            }
+                        }
+                    },
+                    // Sort by name ascending
+                    {
+                        $sort: {
+                            count: -1,
+                            _id: 1
+                        }
+                    }
+                ],
+                creationLocation: [{
+                        $group: {
+                            _id: "$creationLocation",
+                            count: {
+                                $sum: 1
+                            }
+                        }
+                    },
+                    {
+                        $sort: {
+                            count: -1,
+                            _id: 1
+                        }
+                    }
+                ]
+            }
+        });
+        Dataset.getDataSource().connector.connect(function (err, db) {
+            var collection = db.collection("Dataset");
+            var res = collection.aggregate(findFilter,
+                function (err, res) {
+                    res[0]['type'] = type; //TODO check array length is 1 (since it is only aggregate and return just that)
+                    cb(err, res);
+                });
+        });
+    };
 };
