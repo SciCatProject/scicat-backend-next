@@ -1,8 +1,8 @@
 {
   "name": "DatasetLifecycle",
-  "base": "PersistedModel",
+  "base": "Ownable",
   "idInjection": false,
-  "strict": false,
+  "strict": true,
   "indexes": {
     "datasetId_index": {
       "keys": {

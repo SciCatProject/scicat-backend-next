@@ -95,7 +95,8 @@ var testDatasetLifecycle = {
     "isOnTape": false,
     "archiveStatusMessage": "datasetCreated",
     "retrieveStatusMessage": "",
-    "isExported": false
+    "isExported": false,
+    "ownerGroup": "p10021"
 }
 
 
@@ -184,6 +185,8 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             });
     });
 
+    // TODO add test if one can update via PUt command single field or if mandatory fields are needed
+
 
     it('should delete the DatasetLifecycle', function(done) {
         request(app)
@@ -211,4 +214,7 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 done();
             });
     });
+
+
+
 });

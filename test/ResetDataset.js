@@ -152,7 +152,8 @@ var testDatasetLifecycle = {
     "isOnTape": false,
     "archiveStatusMessage": "datasetIsArchived",
     "retrieveStatusMessage": "",
-    "isExported": false
+    "isExported": false,
+    "ownerGroup": "p10021"
 }
 
 describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
