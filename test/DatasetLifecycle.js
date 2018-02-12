@@ -95,8 +95,7 @@ var testDatasetLifecycle = {
     "isOnTape": false,
     "archiveStatusMessage": "datasetCreated",
     "retrieveStatusMessage": "",
-    "isExported": false,
-    "ownerGroup": "p10021"
+    "isExported": false
 }
 
 
@@ -185,7 +184,21 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             });
     });
 
-    // TODO add test if one can update via PUt command single field or if mandatory fields are needed
+    it('Should update a single field in DatasetLifecycle via PUT command', function(done) {
+        request(app)
+            .put('/api/v2/DatasetLifecycles/' + pid +'?access_token=' + accessTokenArchiveManager)
+            .send({"archiveStatusMessage":"someDummyMessage"})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                console.log(res.body)
+                res.body.archiveStatusMessage.should.be.equal('someDummyMessage');
+                done();
+            });
+    });
 
 
     it('should delete the DatasetLifecycle', function(done) {

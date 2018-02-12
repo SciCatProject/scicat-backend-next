@@ -29,6 +29,11 @@ module.exports = function(Datablock) {
 
     Datablock.validatesPresenceOf('datasetId');
 
+    Datablock.observe('before save', (ctx, next) => {
+        // add ownerGroup field from linked Datasets
+        utils.addOwnerGroup(ctx, next)
+    })
+
     // transfer packedSize info to dataset
     Datablock.observe('after save', (ctx, next) => {
         var Datablock = app.models.Datablock;

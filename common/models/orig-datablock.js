@@ -26,6 +26,12 @@ module.exports = function(Origdatablock) {
 
     Origdatablock.validatesPresenceOf('datasetId');
 
+    Origdatablock.observe('before save', (ctx, next) => {
+        // add ownerGroup field from linked Datasets
+        utils.addOwnerGroup(ctx, next)
+    })
+
+
     // transfer size info to dataset
     Origdatablock.observe('after save', (ctx, next) => {
         var OrigDatablock = app.models.OrigDatablock

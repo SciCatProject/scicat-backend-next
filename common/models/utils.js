@@ -67,6 +67,38 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
     }
 }
 
+// add ownerGroup field from linked Datasets
+exports.addOwnerGroup = function(ctx, next) {
+    if (ctx.instance) {
+        // get all current objects connected to the same dataset
+        //console.log("instance.datasetId", ctx.instance.datasetId)
+        if (ctx.instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(ctx.instance.datasetId)
+            // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
+            if (ctx.instance.ownerGroup == undefined) {
+                // TODO get group from dataset
+                var Dataset = app.models.Dataset
+                // console.log("Looking for dataset with id:", datasetId)
+                Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
+                    console.log("adding ownerGroup:", datasetInstance.ownerGroup)
+                    ctx.instance.ownerGroup = datasetInstance.ownerGroup
+                    next()
+                })
+            } else {
+                next()
+            }
+        } else {
+            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
+            var error = new Error();
+            error.statusCode = 417;
+            error.message = 'DatasetId must be defined';
+            next(error)
+        }
+    } else {
+        next()
+    }
+}
+
 // transform date strings in all fields with key dateKeys to updateTimesToUTC
 // do nothing if input values are already UTC
 
@@ -100,58 +132,58 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
         userId = ctx.req.args.accessToken;
     }
     var UserIdentity = app.models.UserIdentity;
-        var User = app.models.User;
-        if (!userId) {
-            var e = new Error('Cannot find access token');
-            e.statusCode = 401;
-            next(e);
-        }
-        // console.log(ctx.req);
-        // TODO add check for functional accounts and ignore below if true
-        const fields = ctx.args.fields || undefined;
-        let groups = [];
-        if (fields && fields['ownerGroup']) {
-            groups = fields.ownerGroup;
-        }
-        User.findById(userId, function (err, user) {
-            if (err) {
-                next(err);
-            } else if (user['username'].indexOf('.') === -1) {
-                ctx.args.fields.ownerGroup = groups;
-                next()
-            } else {
-                UserIdentity.findOne({
-                    where: {
-                        userId: userId
+    var User = app.models.User;
+    if (!userId) {
+        var e = new Error('Cannot find access token');
+        e.statusCode = 401;
+        next(e);
+    }
+    // console.log(ctx.req);
+    // TODO add check for functional accounts and ignore below if true
+    const fields = ctx.args.fields || undefined;
+    let groups = [];
+    if (fields && fields['ownerGroup']) {
+        groups = fields.ownerGroup;
+    }
+    User.findById(userId, function(err, user) {
+        if (err) {
+            next(err);
+        } else if (user['username'].indexOf('.') === -1) {
+            ctx.args.fields.ownerGroup = groups;
+            next()
+        } else {
+            UserIdentity.findOne({
+                where: {
+                    userId: userId
+                }
+            }, function(err, instance) {
+                console.log("UserIdentity Instance:", instance)
+                if (instance && instance.profile) {
+                    var foundGroups = instance.profile.accessGroups
+                    // check if a normal user or an internal ROLE
+                    if (typeof foundGroups === 'undefined') {
+                        ctx.args.fields.ownerGroup = [];
+                        next()
                     }
-                }, function (err, instance) {
-                    console.log("UserIdentity Instance:", instance)
-                    if (instance && instance.profile) {
-                        var foundGroups = instance.profile.accessGroups
-                        // check if a normal user or an internal ROLE
-                        if (typeof foundGroups === 'undefined') {
-                            ctx.args.fields.ownerGroup = [];
-                            next()
-                        }
-                        var a = new Set(groups);
-                        var b = new Set(foundGroups);
-                        var intersection = new Set([...a].filter(x => b.has(x)));
-                        var subgroups = Array.from(intersection);
-                        if (subgroups.length === 0) {
-                            var e = new Error('User has no group access');
-                            e.statusCode = 401;
-                            next(e);
-                        } else {
-                            ctx.args.fields.ownerGroup = subgroups;
-                            next();
-                        }
-                    } else {
-                        // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
-                        var e = new Error('Access Not Allowed');
+                    var a = new Set(groups);
+                    var b = new Set(foundGroups);
+                    var intersection = new Set([...a].filter(x => b.has(x)));
+                    var subgroups = Array.from(intersection);
+                    if (subgroups.length === 0) {
+                        var e = new Error('User has no group access');
                         e.statusCode = 401;
                         next(e);
+                    } else {
+                        ctx.args.fields.ownerGroup = subgroups;
+                        next();
                     }
-                })
-            }
-        });
+                } else {
+                    // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+                    var e = new Error('Access Not Allowed');
+                    e.statusCode = 401;
+                    next(e);
+                }
+            })
+        }
+    });
 }

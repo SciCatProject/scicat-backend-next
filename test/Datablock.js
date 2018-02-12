@@ -188,8 +188,7 @@ var testorigDataBlock = {
             "gid": "p16738",
             "perm": "-rw-rw-r--"
         }
-    ],
-    "ownerGroup": "p10021"
+    ]
 }
 
 

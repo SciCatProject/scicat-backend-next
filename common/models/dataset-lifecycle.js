@@ -15,6 +15,7 @@ module.exports = function(Datasetlifecycle) {
     //patch
     Datasetlifecycle.beforeRemote('patchOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['dateOfLastMessage'], ctx.args.data);
+
         next();
     });
 
@@ -44,6 +45,7 @@ module.exports = function(Datasetlifecycle) {
                 ctx.instance.dateOfPublishing = pubDate.toISOString().substring(0, 10);
             }
         }
-        next();
-    })
+        // add ownerGroup field from linked Datasets
+        utils.addOwnerGroup(ctx, next)
+     })
 };
