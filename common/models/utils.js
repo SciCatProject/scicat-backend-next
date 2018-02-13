@@ -9,13 +9,18 @@ var exports = module.exports = {};
 // this translation is done automatically behind the scenes. One could use a line
 // like the following to make this more explicit
 // var block = ctx.instance.toObject()
+// Note: Depending on the request PUT/POST etc either ctx.instance or ctx.currentInstance is set
 
 
 exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
-    if (ctx.instance) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
         // get all current objects connected to the same dataset
-        if (ctx.instance.datasetId !== undefined) {
-            const datasetId = decodeURIComponent(ctx.instance.datasetId)
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
             // get all current datablocks connected to the same dataset
             var filter = {
                 where: {
@@ -56,7 +61,7 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 
             })
         } else {
-            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
+            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);
             var error = new Error();
             error.statusCode = 417;
             error.message = 'DatasetId must be defined';
@@ -69,19 +74,26 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 
 // add ownerGroup field from linked Datasets
 exports.addOwnerGroup = function(ctx, next) {
-    if (ctx.instance) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
         // get all current objects connected to the same dataset
-        //console.log("instance.datasetId", ctx.instance.datasetId)
-        if (ctx.instance.datasetId !== undefined) {
-            const datasetId = decodeURIComponent(ctx.instance.datasetId)
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
             // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
-            if (ctx.instance.ownerGroup == undefined) {
+            if (instance.ownerGroup == undefined) {
                 // TODO get group from dataset
                 var Dataset = app.models.Dataset
                 // console.log("Looking for dataset with id:", datasetId)
                 Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
                     console.log("adding ownerGroup:", datasetInstance.ownerGroup)
-                    ctx.instance.ownerGroup = datasetInstance.ownerGroup
+                    instance.ownerGroup = datasetInstance.ownerGroup
+                    // for partial updates the ownergroup must be added to ctx.data in order to be persisted
+                    if(ctx.data){
+                        ctx.data.ownerGroup=datasetInstance.ownerGroup
+                    }
                     next()
                 })
             } else {

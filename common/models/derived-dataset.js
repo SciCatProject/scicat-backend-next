@@ -22,7 +22,9 @@ module.exports = function (Deriveddataset) {
     });
 
     Deriveddataset.observe('before save', function (ctx, next) {
-        ctx.instance.type = 'derived';
+        if(ctx.instance){
+            ctx.instance.type = 'derived';
+        }
         next();
     });
 
@@ -32,6 +34,6 @@ module.exports = function (Deriveddataset) {
         ctx.args.fields.type = 'derived';
         utils.handleOwnerGroups(ctx, userDetails, next);
         // const user = userId ? 'user#' + userId : '<anonymous>';
-        
+
     })
 };

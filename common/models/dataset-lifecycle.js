@@ -28,8 +28,9 @@ module.exports = function(Datasetlifecycle) {
 
 
     Datasetlifecycle.observe('before save', (ctx, next) => {
-        console.log('about to save');
-        if (ctx.instance) { // Is this not stored in ctx.currentInstance or ctx.data?
+        // auto fill retention and publishing time only at initial creation time
+        // in this case only ctx.instance is defined
+        if (ctx.instance) {
             // auto fill retention and publishing time
             var now = new Date();
             if (!ctx.instance.dateOfLastMessage) {
