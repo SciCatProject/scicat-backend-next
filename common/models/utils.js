@@ -179,7 +179,7 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
                     }
                     var a = new Set(groups);
                     var b = new Set(foundGroups);
-                    var intersection = new Set([...a].filter(x => b.has(x)));
+                    var intersection = new Set([...b].filter(x => a.has(x)));
                     var subgroups = Array.from(intersection);
                     if (subgroups.length === 0) {
                         var e = new Error('User has no group access');
