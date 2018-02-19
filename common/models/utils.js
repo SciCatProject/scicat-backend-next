@@ -9,13 +9,18 @@ var exports = module.exports = {};
 // this translation is done automatically behind the scenes. One could use a line
 // like the following to make this more explicit
 // var block = ctx.instance.toObject()
+// Note: Depending on the request PUT/POST etc either ctx.instance or ctx.currentInstance is set
 
 
 exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
-    if (ctx.instance) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
         // get all current objects connected to the same dataset
-        if (ctx.instance.datasetId !== undefined) {
-            const datasetId = decodeURIComponent(ctx.instance.datasetId)
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
             // get all current datablocks connected to the same dataset
             var filter = {
                 where: {
@@ -56,6 +61,45 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 
             })
         } else {
+            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);
+            var error = new Error();
+            error.statusCode = 417;
+            error.message = 'DatasetId must be defined';
+            next(error)
+        }
+    } else {
+        next()
+    }
+}
+
+// add ownerGroup field from linked Datasets
+exports.addOwnerGroup = function(ctx, next) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
+        // get all current objects connected to the same dataset
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
+            // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
+            if (instance.ownerGroup == undefined) {
+                // TODO get group from dataset
+                var Dataset = app.models.Dataset
+                // console.log("Looking for dataset with id:", datasetId)
+                Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
+                    console.log("adding ownerGroup:", datasetInstance.ownerGroup)
+                    instance.ownerGroup = datasetInstance.ownerGroup
+                    // for partial updates the ownergroup must be added to ctx.data in order to be persisted
+                    if(ctx.data){
+                        ctx.data.ownerGroup=datasetInstance.ownerGroup
+                    }
+                    next()
+                })
+            } else {
+                next()
+            }
+        } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
             var error = new Error();
             error.statusCode = 417;
@@ -91,5 +135,67 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
                 // console.log("New time:",instance[dateKey])
             }
         })
+    });
+}
+
+exports.handleOwnerGroups = function(ctx, userDetails, next) {
+    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
+    if (userId === null) {
+        userId = ctx.req.args.accessToken;
+    }
+    var UserIdentity = app.models.UserIdentity;
+    var User = app.models.User;
+    if (!userId) {
+        var e = new Error('Cannot find access token');
+        e.statusCode = 401;
+        next(e);
+    }
+    // console.log(ctx.req);
+    // TODO add check for functional accounts and ignore below if true
+    const fields = ctx.args.fields || undefined;
+    let groups = [];
+    if (fields && fields['ownerGroup']) {
+        groups = fields.ownerGroup;
+    }
+    User.findById(userId, function(err, user) {
+        if (err) {
+            next(err);
+        } else if (user['username'].indexOf('.') === -1) {
+            ctx.args.fields.ownerGroup = groups;
+            next()
+        } else {
+            UserIdentity.findOne({
+                where: {
+                    userId: userId
+                }
+            }, function(err, instance) {
+                console.log("UserIdentity Instance:", instance)
+                if (instance && instance.profile) {
+                    var foundGroups = instance.profile.accessGroups
+                    // check if a normal user or an internal ROLE
+                    if (typeof foundGroups === 'undefined') {
+                        ctx.args.fields.ownerGroup = [];
+                        next()
+                    }
+                    var a = new Set(groups);
+                    var b = new Set(foundGroups);
+                    var intersection = new Set([...b].filter(x => a.has(x)));
+                    var subgroups = Array.from(intersection);
+                    if (subgroups.length === 0) {
+                        var e = new Error('User has no group access');
+                        e.statusCode = 401;
+                        next(e);
+                    } else {
+                        ctx.args.fields.ownerGroup = subgroups;
+                        next();
+                    }
+                } else {
+                    // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+                    var e = new Error('Access Not Allowed');
+                    e.statusCode = 401;
+                    next(e);
+                }
+            })
+        }
     });
 }

@@ -184,6 +184,37 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             });
     });
 
+    it('Should update a single field in DatasetLifecycle via PUT command', function(done) {
+        request(app)
+            .put('/api/v2/DatasetLifecycles/' + pid +'?access_token=' + accessTokenArchiveManager)
+            .send({"archiveStatusMessage":"someDummyMessage"})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.archiveStatusMessage.should.be.equal('someDummyMessage');
+                done();
+            });
+    });
+
+    // it('==================== Should update a single field in existing DatasetLifecycle via PUT command', function(done) {
+    //     request(app)
+    //         .put('/api/v2/DatasetLifecycles/20.500.11935%2F0013c3d2-48d2-473c-baa3-3c5fde04052b?access_token=' + accessTokenArchiveManager)
+    //         .send({"archiveStatusMessage":"someDummyMessage2"})
+    //         .set('Accept', 'application/json')
+    //         .expect(200)
+    //         .expect('Content-Type', /json/)
+    //         .end((err, res) => {
+    //             if (err)
+    //                 return done(err);
+    //             console.log(res.body)
+    //             res.body.archiveStatusMessage.should.be.equal('someDummyMessage2');
+    //             done();
+    //         });
+    // });
+
 
     it('should delete the DatasetLifecycle', function(done) {
         request(app)
@@ -211,4 +242,7 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 done();
             });
     });
+
+
+
 });
