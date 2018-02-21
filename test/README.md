@@ -46,6 +46,8 @@ Authenticate can be user or admin, depending on the type of account you have spe
 
 If you include a `body` property, then that will be sent with the request.
 
+If you include a `response` array, then the string content should be valid JS. Note that this uses the unsafe `eval` method so be careful!
+
 
 ### Writing Tests
 
