@@ -1,0 +1,14 @@
+{
+    "baseURL": "http://localhost:3000/",
+    "apiPrefix": "api/v2/",
+    "admin": {
+        "username": "USER",
+        "password": "PWD"
+    },
+    "user": {
+        "username": "USER",
+        "password": "PWD"
+    },
+    "adminLogin": "Users/login",
+    "userLogin": "auth/msad"
+}
