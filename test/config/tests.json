@@ -8,7 +8,10 @@
         "method": "GET",
         "route": "Datasets?filter=%7B%22limit%22%3A10%7D",
         "expect": 200,
-        "authenticate": "admin"
+        "authenticate": "admin",
+        "response": [
+            "res.body.should.be.instanceof(Array);"
+        ]
     },
     {
         "method": "POST",
@@ -37,6 +40,11 @@
             "isPublished": false,
             "ownerGroup": "p13388",
             "accessGroups": []
-        }
+        },
+        "response": [
+            "res.body.should.have.property('version').and.be.string;",
+            "res.body.should.have.property('type').and.equal('base');",
+            "res.body.should.have.property('pid').and.be.string;"
+        ]
     }
 ]

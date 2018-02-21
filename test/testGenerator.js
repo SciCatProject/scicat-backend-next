@@ -112,6 +112,9 @@ module.exports = {
                                     done(err);
                                     return asyncCallback();
                                 } else {
+                                    (c.response || []).map(check => {
+                                        eval(check);
+                                    });
                                     done();
                                     return asyncCallback();
                                 }
