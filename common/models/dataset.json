@@ -192,7 +192,13 @@
       "accepts": [
         {
           "arg": "fields",
-          "type": "object"
+          "type": "object",
+          "description": "Define the fields to search by, these will be mapped to the Dataset object and ensure the fields exist. There is also support for a `text` search to look for keywords."
+        },
+        {
+          "arg": "facets",
+          "type": "object",
+          "description": "This should follow the Mongo Facet syntax (https://docs.mongodb.com/manual/reference/operator/aggregation/facet/)"
         }
       ],
       "returns": {
