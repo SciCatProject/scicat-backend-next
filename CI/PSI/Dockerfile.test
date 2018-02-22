@@ -16,6 +16,7 @@ RUN npm config set -g production false
 # USER myuser
 # Install our packages
 RUN npm install
+RUN npm install mocha
 
 #  patch for loopback-component-passport
 # RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
