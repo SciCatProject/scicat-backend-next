@@ -12,16 +12,19 @@ In the `test/config/settings.json` file, you should have the following fields:
 {
     "baseURL": "http://localhost:3000/",
     "apiPrefix": "api/v2/",
-    "admin": {
-        "username": "<USER>",
-        "password": "<PWD>"
+    "users": {
+        "admin": {
+            "username": "<USER>",
+            "password": "<PWD>",
+            "login": "api/v2/Users/login"
+
+        },
+        "user": {
+            "username": "<USER>",
+            "password": "<PWD>",
+            "login":"auth/msad"
+        },
     },
-    "user": {
-        "username": "<USER>",
-        "password": "<PWD?"
-    },
-    "adminLogin": "Users/login",
-    "userLogin": "auth/msad"
 }
 ```
 

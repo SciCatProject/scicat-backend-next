@@ -40,7 +40,8 @@ module.exports = {
                 const url = settings.apiPrefix + route;
                 const withData = c.body || false;
                 const isWithAuthentication = c.authenticate || false;
-                console.log(isWithAuthentication);
+
+                
 
                 var authenticationDescription = (isWithAuthentication) ? 'authenticated' : 'unauthenticated';
 
@@ -66,10 +67,11 @@ module.exports = {
                 }
 
                 if (isWithAuthentication) {
+                    var user = settings.users[c.authenticate];
                     loginBlock = function (loginCallback) {
                         agent
-                            .post(isWithAuthentication === 'admin' ? 'api/v2/' + settings.adminLogin : settings.userLogin)
-                            .send(isWithAuthentication === 'admin' ? settings.admin : settings.user)
+                            .post(user.login)
+                            .send(user)
                             .set('Accept', 'application/json')
                             .set('Content-Type', 'application/json')
                             .expect(200)

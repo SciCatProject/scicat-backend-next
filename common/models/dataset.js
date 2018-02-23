@@ -97,7 +97,7 @@ module.exports = function(Dataset) {
         utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
-    Dataset.facet = function (fields, cb) {
+    Dataset.facet = function (fields, facets, cb) {
         var findFilter = [];
         var match = {};
         var type = undefined;
@@ -157,75 +157,80 @@ module.exports = function(Dataset) {
                 $match: match
             });
         }
-        findFilter.push({
-            $facet: {
-                // The `years` property will be the output of the 'count by year'
-                // pipeline
-                creationTime: [{
-                        $group: {
-                            _id: {
-                                year: {
-                                    $year: "$creationTime"
-                                },
-                                month: {
-                                    $month: "$creationTime"
-                                },
-                                day: {
-                                    $dayOfMonth: "$creationTime"
-                                },
+        let facetObject = {
+            // The `years` property will be the output of the 'count by year'
+            // pipeline
+            creationTime: [{
+                    $group: {
+                        _id: {
+                            year: {
+                                $year: "$creationTime"
                             },
-                            count: {
-                                $sum: 1
-                            }
-                        }
-                    },
-                    // Sort by year descending
-                    {
-                        $sort: {
-                            count: -1,
-                            _id: -1
-                        }
-                    }
-                ],
-                ownerGroup: [
-                    // Count the number of groups
-                    {
-                        $group: {
-                            _id: "$ownerGroup",
-                            count: {
-                                $sum: 1
-                            }
-                        }
-                    },
-                    // Sort by name ascending
-                    {
-                        $sort: {
-                            count: -1,
-                            _id: 1
+                            month: {
+                                $month: "$creationTime"
+                            },
+                            day: {
+                                $dayOfMonth: "$creationTime"
+                            },
+                        },
+                        count: {
+                            $sum: 1
                         }
                     }
-                ],
-                creationLocation: [{
-                        $group: {
-                            _id: "$creationLocation",
-                            count: {
-                                $sum: 1
-                            }
-                        }
-                    },
-                    {
-                        $sort: {
-                            count: -1,
-                            _id: 1
+                },
+                // Sort by year descending
+                {
+                    $sort: {
+                        count: -1,
+                        _id: -1
+                    }
+                }
+            ],
+            ownerGroup: [
+                // Count the number of groups
+                {
+                    $group: {
+                        _id: "$ownerGroup",
+                        count: {
+                            $sum: 1
                         }
                     }
-                ]
-            }
+                },
+                // Sort by name ascending
+                {
+                    $sort: {
+                        count: -1,
+                        _id: 1
+                    }
+                }
+            ],
+            creationLocation: [{
+                    $group: {
+                        _id: "$creationLocation",
+                        count: {
+                            $sum: 1
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        count: -1,
+                        _id: 1
+                    }
+                }
+            ]
+        };
+        facetObject = Object.assign({}, facetObject, facets);
+        findFilter.push({
+            $facet: facetObject
         });
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection("Dataset");
             var res = collection.aggregate(findFilter,
                 function (err, res) {
+                    if(err)
+                        console.log(err);
+                    // console.log(res);
                     res[0]['type'] = type; //TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
