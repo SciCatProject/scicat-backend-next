@@ -2,8 +2,12 @@
   "name": "Dataset",
   "base": "Ownable",
   "idInjection": false,
-  "options": {
-    "validateUpsert": true
+  "strict": false,
+ "options": {
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "pid": {
@@ -51,12 +55,13 @@
       "type": "date",
       "required": true,
       "index": true,
-      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
     },
     "type": {
       "type": "string",
       "required": true,
-      "description": "Characterize data, e.g. as raw, derived, test, calibration data"
+      "index": true,
+      "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled"
     },
     "validationStatus": {
       "type": "string",
@@ -140,7 +145,65 @@
       "principalType": "ROLE",
       "principalId": "proposalingestor",
       "permission": "DENY"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "ALLOW",
+      "property": "reset"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": "facet"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW",
+      "property": "facet"
     }
   ],
-  "methods": {}
+  "methods": {
+    "reset": {
+      "accepts": [
+        {
+          "arg": "datasetId",
+          "type": "string"
+        },
+        {
+          "arg": "options",
+          "type": "object",
+          "http": "optionsFromRequest"
+        }
+      ],
+      "returns": {
+        "arg": "result",
+        "type": "string"
+      },
+      "description": "Delete datablocks of dataset and reset status message",
+      "http": {
+        "path": "/resetArchiveStatus",
+        "verb": "post"
+      }
+    },
+    "facet": {
+      "accepts": [
+        {
+          "arg": "fields",
+          "type": "object"
+        }
+      ],
+      "returns": {
+        "arg": "results",
+        "type": "Object"
+      },
+      "description": "Find all datasets within a date range",
+      "http": {
+        "path": "/facet",
+        "verb": "post"
+      }
+    }
+  }
 }

@@ -11,8 +11,12 @@ var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
-var accessToken = null,
-    pid = null;
+var accessTokenIngestor = null;
+var accessTokenArchiveManager = null;
+var accessTokenUser = null;
+
+var pid = null;
+var idDatasetLifecycle = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -85,21 +89,38 @@ var testraw = {
     "proposalId": "10.540.16635/20110123"
 }
 
+var testDatasetLifecycle = {
+    "id": "", // must be set to the id of the dataset,
+    "isOnDisk": true,
+    "isOnTape": false,
+    "archiveStatusMessage": "datasetCreated",
+    "retrieveStatusMessage": "",
+    "isExported": false
+}
 
-describe('RawDatasets', () => {
+
+describe('Test DatasetLifecycle and the relation to Datasets', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
                 'password': 'aman'
             },
             (tokenVal) => {
-                accessToken = tokenVal;
+                accessTokenIngestor = tokenVal;
+            });
+        utils.getToken(app, {
+                'username': 'archiveManager',
+                'password': 'aman'
+            },
+            (tokenVal) => {
+                accessTokenArchiveManager = tokenVal;
                 done();
             });
     });
+
     it('adds a new raw dataset', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessToken)
+            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
@@ -110,29 +131,94 @@ describe('RawDatasets', () => {
                 res.body.should.have.property('owner').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
+                // store link to this dataset in datablocks
+                testDatasetLifecycle.id = res.body['pid']
+                testDatasetLifecycle.datasetId = res.body['pid']
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
     });
 
-
-    it('should fetch several raw datasets', function(done) {
+    it('adds a new DatasetLifecycle', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+            .post('/api/v2/DatasetLifecycles?access_token=' + accessTokenIngestor)
+            .send(testDatasetLifecycle)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                idDatasetLifecycle = encodeURIComponent(res.body['id']);
+                done();
+            });
+    });
+
+
+    it('Should update archive status message from archiveManager account', function(done) {
+        request(app)
+            .patch('/api/v2/DatasetLifecycles/' + pid +'?access_token=' + accessTokenArchiveManager)
+            .send({"archiveStatusMessage":"dataArchivedOnTape"})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('archiveStatusMessage').and.equal("dataArchivedOnTape");
+                done();
+            });
+
+    });
+
+
+    it('Should fetch the datasetLifefycle belonging to the new dataset', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 if (err)
                     return done(err);
-                res.body.should.be.instanceof(Array);
+                res.body.should.be.instanceof(Object);
                 done();
             });
     });
 
-    it('should fetch this raw dataset', function(done) {
+    it('Should update a single field in DatasetLifecycle via PUT command', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .put('/api/v2/DatasetLifecycles/' + pid +'?access_token=' + accessTokenArchiveManager)
+            .send({"archiveStatusMessage":"someDummyMessage"})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.archiveStatusMessage.should.be.equal('someDummyMessage');
+                done();
+            });
+    });
+
+    // it('==================== Should update a single field in existing DatasetLifecycle via PUT command', function(done) {
+    //     request(app)
+    //         .put('/api/v2/DatasetLifecycles/20.500.11935%2F0013c3d2-48d2-473c-baa3-3c5fde04052b?access_token=' + accessTokenArchiveManager)
+    //         .send({"archiveStatusMessage":"someDummyMessage2"})
+    //         .set('Accept', 'application/json')
+    //         .expect(200)
+    //         .expect('Content-Type', /json/)
+    //         .end((err, res) => {
+    //             if (err)
+    //                 return done(err);
+    //             console.log(res.body)
+    //             res.body.archiveStatusMessage.should.be.equal('someDummyMessage2');
+    //             done();
+    //         });
+    // });
+
+
+    it('should delete the DatasetLifecycle', function(done) {
+        request(app)
+            .delete('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -143,9 +229,10 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should delete this raw dataset', function(done) {
+
+    it('should delete the newly created dataset', function(done) {
         request(app)
-            .delete('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -156,21 +243,6 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should contain an array of facets with a type description', function(done) {
-        request(app)
-            .post('/api/v2/RawDatasets/facet?access_token=' + accessToken)
-            .set('Accept', 'application/json')
-            .send({'ownerGroup': ['p11114']})
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
-                res.body.results[0].should.have.property('type').and.equal('raw');
-                if(err)
-                    done(err);
-                done();
-            });
-    });
 
 
 });

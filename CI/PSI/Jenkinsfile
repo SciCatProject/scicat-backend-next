@@ -1,0 +1,33 @@
+podTemplate(label: 'docker',
+  containers: [containerTemplate(name: 'docker', image:'docker:18.02-git', ttyEnabled: true, command: 'cat')],
+  volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
+  ) {
+node('docker') {
+    container('docker') {
+       stage('Checkout'){
+          checkout scm
+       }
+       stage('Build Docker') {
+            sh 'ls -ahl server/'
+            withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                // available as an env variable, but will be masked if you try to print it out any which way
+                // also available as a Groovy variable—note double quotes for string interpolation
+                echo "$USERNAME"
+                echo "$PASSWORD"
+                sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
+                sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
+                sh "mkdir -p CI/PSI/envfiles"
+                sh "cp catamel-psisecrets/server/pass-db-qa/datasources_new.json CI/PSI/envfiles/datasources.json"
+                sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
+                sh "cp catamel-psiconfig/server/config.local.js CI/PSI/envfiles/config.local.js"
+            }
+            sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
+       }
+       stage('SuperTest Catamel ') {
+            sh 'docker run  --privileged -t catamel_test'
+       }
+    }
+
+}
+  }
+

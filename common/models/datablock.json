@@ -2,6 +2,7 @@
   "name": "Datablock",
   "base": "Ownable",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "datasetId_index": {
       "keys": {
@@ -34,6 +35,10 @@
     "packedSize": {
       "type": "number",
       "description": "Size of datablock package file"
+    },
+    "chkAlg": {
+      "type": "string",
+      "description": "Algoritm used for calculation of checksums, e.g. sha2"
     },
     "version": {
       "type": "string",
@@ -70,7 +75,7 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "*",
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "ingestor",
       "permission": "ALLOW"

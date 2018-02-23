@@ -10,6 +10,65 @@ var app = module.exports = loopback();
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
 
+// enhance the profile definition to allow for applying regexp based substitution rules to be applied
+// to the outcome of e.g. LDAP queries. This can for example be exploited to define the groups
+// a user belongs to by scanning the output of the memberOf fields of a user
+//
+// example of a profile entry in providers.json:
+// "accessGroups": ["memberOf", {match-string}, {substitution-string}]
+//
+// Please note: the match and substitution strings must escape the backslash and
+// double quote characters inside providers.json by prepending a backslash
+
+passportConfigurator.buildUserLdapProfile = function(user, options) {
+    var profile = {};
+    // console.log("User:", user)
+    for (var profileAttributeName in options.profileAttributesFromLDAP) {
+        var profileAttributeValue = options.profileAttributesFromLDAP[profileAttributeName];
+        if (profileAttributeValue.constructor === Array) {
+            var regex = new RegExp(profileAttributeValue[1], 'g')
+            // transform array elements to simple group names
+            // then filter relevant elements by applying regular expression on element names
+            var newList = []
+            var memberOfList=user[profileAttributeValue[0]]
+            if ( memberOfList instanceof Array) {
+                user[profileAttributeValue[0]].map(function(elem) {
+                    if (elem.match(regex)) {
+                        newList.push(elem.replace(regex, profileAttributeValue[2]))
+                    }
+                })
+            } else if ( typeof memberOfList == 'string'){
+                if (memberOfList.match(regex)) {
+                    newList.push(memberOfList.replace(regex, profileAttributeValue[2]))
+                }
+            }
+            profile[profileAttributeName] = newList
+        } else {
+            if (profileAttributeValue in user){
+              profile[profileAttributeName] = JSON.parse(JSON.stringify(user[profileAttributeValue]));
+          } else {
+               profile[profileAttributeName]=''
+          }
+        }
+    }
+    // If missing, add profile attributes required by UserIdentity Model
+    if (!profile.username) {
+        profile.username = [].concat(user['cn'])[0];
+    }
+    if (!profile.id) {
+        profile.id = user['uid'];
+    }
+    if (!profile.emails) {
+        var email = [].concat(user['mail'])[0];
+        if (!!email) {
+            profile.emails = [{
+                value: email
+            }];
+        }
+    }
+    console.log("++++++++++ Profile:", profile)
+    return profile;
+};
 
 var bodyParser = require('body-parser');
 var ENV = process.env.NODE_ENV || 'local';
@@ -37,14 +96,17 @@ boot(app, __dirname, function(err) {
 });
 
 // to support JSON-encoded bodies
-app.middleware('parse', bodyParser.json({limit: '50mb'}));
+app.middleware('parse', bodyParser.json({
+    limit: '50mb'
+}));
 // to support URL-encoded bodies
 app.middleware('parse', bodyParser.urlencoded({
-  limit: '50mb', extended: true,
+    limit: '50mb',
+    extended: true,
 }));
 // // The access token is only available after boot
 app.middleware('auth', loopback.token({
-  model: app.models.accessToken,
+    model: app.models.accessToken,
 }));
 
 // Load the provider configurations

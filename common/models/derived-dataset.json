@@ -1,9 +1,13 @@
 {
   "name": "DerivedDataset",
   "base": "Dataset",
+  "strict": true,
   "idInjection": false,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "investigator": {

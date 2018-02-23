@@ -1,7 +1,8 @@
 {
   "name": "DatasetLifecycle",
-  "base": "PersistedModel",
+  "base": "Ownable",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "datasetId_index": {
       "keys": {
@@ -55,15 +56,15 @@
     },
     "dateOfLastMessage": {
       "type": "date",
-      "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
+      "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "dateOfDiskPurging": {
       "type": "date",
-      "description": "Time when dataset will be removed from disk, assuming that is already stored on tape. Format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Day when dataset will be removed from disk, assuming that is already stored on tape."
     },
     "archiveRetentionTime": {
       "type": "date",
-      "description": "When the dataset's future fate will be evaluated again, e.g. to decide if the dataset can be deleted from archive. Format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Day when the dataset's future fate will be evaluated again, e.g. to decide if the dataset can be deleted from archive."
     },
     "isExported": {
       "type": "boolean",
@@ -75,7 +76,7 @@
     },
     "dateOfPublishing": {
       "type": "date",
-      "description": "Date when dataset is supposed to become public according to data policy"
+      "description": "Day when dataset is supposed to become public according to data policy"
     }
   },
   "validations": [],
