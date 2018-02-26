@@ -220,6 +220,12 @@ module.exports = function(Dataset) {
                 }
             ]
         };
+        // Ensure that the count value is numerical (the SDK seems to parse this request as string)
+        Object.keys(facets).map(function(k) {
+            facets[k][1]['$sort']['count'] = Number(facets[k][1]['$sort']['count']);
+            facets[k][1]['$sort']['_id'] = Number(facets[k][1]['$sort']['_id']);
+        });
+        
         facetObject = Object.assign({}, facetObject, facets);
         findFilter.push({
             $facet: facetObject
