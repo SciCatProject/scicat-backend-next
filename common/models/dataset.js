@@ -5,7 +5,7 @@ var p = require('../../package.json');
 var utils = require('./utils');
 
 
-module.exports = function(Dataset) {
+module.exports = function (Dataset) {
     var app = require('../../server/server');
     // Dataset.validatesUniquenessOf('sourceFolder', {
     //     message: 'SourceFolder is not unique'
@@ -15,19 +15,19 @@ module.exports = function(Dataset) {
     // make sure that all times are UTC
 
     // put
-    Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(["creationTime"], ctx.args.data)
         next();
     });
 
     //patch
-    Dataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(["creationTime"], ctx.args.data)
         next();
     });
 
     //post
-    Dataset.beforeRemote('create', function(ctx, unused, next) {
+    Dataset.beforeRemote('create', function (ctx, unused, next) {
         utils.updateTimesToUTC(["creationTime"], ctx.args.data)
         next();
     });
@@ -51,11 +51,11 @@ module.exports = function(Dataset) {
     // TODO change API to a put/patch or even delete command ? Pass ID in URL
 
 
-    Dataset.reset = function(id, options, next) {
+    Dataset.reset = function (id, options, next) {
         // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findById(id, options, function(err, l) {
+        DatasetLifecycle.findById(id, options, function (err, l) {
             if (err) {
                 next(err);
             } else {
@@ -66,12 +66,12 @@ module.exports = function(Dataset) {
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
                     datasetId: id
-                }, options, function(err, b) {
+                }, options, function (err, b) {
                     if (err) {
                         next(err);
                     } else {
                         // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function(err, instance) {
+                        Dataset.findById(id, options, function (err, instance) {
                             if (err) {
                                 next(err);
                             } else {
@@ -116,7 +116,7 @@ module.exports = function(Dataset) {
                                 match[keys[i]] = {
                                     '$in': value
                                 };
-                            } else if (typeof(value) === 'string' && value) {
+                            } else if (typeof (value) === 'string' && value) {
                                 match[keys[i]] = value;
                             }
                             break;
@@ -222,14 +222,16 @@ module.exports = function(Dataset) {
         };
         // Ensure that the count value is numerical (the SDK seems to parse this request as string)
         // TODO this needs to be more general, $sort is not the only key supported and
-        Object.keys(facets).map(function(k) {
-            const f = facets[k];
-            if(f.length == 2 && '$sort' in f[1]) {
-                f[1]['$sort']['count'] = Number(f[1]['$sort']['count']);
-                f[1]['$sort']['_id'] = Number(f[1]['$sort']['_id']);
-            }
-        });
-        
+        if (facets) {
+            Object.keys(facets).map(function (k) {
+                const f = facets[k];
+                if (f.length == 2 && '$sort' in f[1]) {
+                    f[1]['$sort']['count'] = Number(f[1]['$sort']['count']);
+                    f[1]['$sort']['_id'] = Number(f[1]['$sort']['_id']);
+                }
+            });
+        }
+
         facetObject = Object.assign({}, facetObject, facets);
         findFilter.push({
             $facet: facetObject
@@ -238,7 +240,7 @@ module.exports = function(Dataset) {
             var collection = db.collection("Dataset");
             var res = collection.aggregate(findFilter,
                 function (err, res) {
-                    if(err)
+                    if (err)
                         console.log(err);
                     // console.log(res);
                     res[0]['type'] = type; //TODO check array length is 1 (since it is only aggregate and return just that)
