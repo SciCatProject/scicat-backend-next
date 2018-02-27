@@ -17,6 +17,7 @@ node('docker') {
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
                 sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
                 sh "mkdir -p CI/PSI/envfiles"
+                sh "mkdir -p CI/PSI/test/config"
                 sh "cp catamel-psisecrets/server/pass-db-qa/datasources_new.json CI/PSI/envfiles/datasources.json"
                 sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
                 sh "cp catamel-psisecrets/server/settings.json CI/PSI/test/config/settings.json"
