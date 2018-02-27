@@ -192,14 +192,20 @@
       "accepts": [
         {
           "arg": "fields",
-          "type": "object"
+          "type": "object",
+          "description": "Define the fields to search by, these will be mapped to the Dataset object and ensure the fields exist. There is also support for a `text` search to look for keywords. Can be undefined."
+        },
+        {
+          "arg": "facets",
+          "type": "object",
+          "description": "This should follow the Mongo Facet syntax (https://docs.mongodb.com/manual/reference/operator/aggregation/facet/). Can be undefined and uses defaults explained in description of route."
         }
       ],
       "returns": {
         "arg": "results",
         "type": "Object"
       },
-      "description": "Find all datasets within a date range",
+      "description": "Search for numbers associated with dataset properties. I.e. How many datasets in Group A. Default returns: Creation Location, Owner Groups and Creation Time",
       "http": {
         "path": "/facet",
         "verb": "post"
