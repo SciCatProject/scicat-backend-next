@@ -221,9 +221,13 @@ module.exports = function(Dataset) {
             ]
         };
         // Ensure that the count value is numerical (the SDK seems to parse this request as string)
+        // TODO this needs to be more general, $sort is not the only key supported and
         Object.keys(facets).map(function(k) {
-            facets[k][1]['$sort']['count'] = Number(facets[k][1]['$sort']['count']);
-            facets[k][1]['$sort']['_id'] = Number(facets[k][1]['$sort']['_id']);
+            const f = facets[k];
+            if(f.length == 2 && '$sort' in f[1]) {
+                f[1]['$sort']['count'] = Number(f[1]['$sort']['count']);
+                f[1]['$sort']['_id'] = Number(f[1]['$sort']['_id']);
+            }
         });
         
         facetObject = Object.assign({}, facetObject, facets);
