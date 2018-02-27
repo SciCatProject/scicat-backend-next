@@ -27,7 +27,7 @@ COPY CI/PSI/envfiles/config.local.js /usr/src/app/server/
 COPY CI/PSI/envfiles/providers.json /usr/src/app/server/
 COPY CI/PSI/envfiles/datasources.json /usr/src/app/server/
 COPY CI/PSI/component-config.json /usr/src/app/server/
-COPY CI/PSI/envfiles/settings.json /usr/src/app/test/settings/
+COPY CI/PSI/envfiles/settings.json /usr/src/app/test/config/
 COPY CI/PSI/start.sh /usr/src/app/start.sh
 # Start the app
 RUN cat /usr/src/app/server/datasources.json
