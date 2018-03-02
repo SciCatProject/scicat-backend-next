@@ -22,7 +22,7 @@ module.exports = function (Rawdataset) {
   });
 
     Rawdataset.observe('before save', function (ctx, next) {
-        if(ctx.instance){
+        if(ctx.instance) {
              ctx.instance.type = 'raw';
         }
         next();

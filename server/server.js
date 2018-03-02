@@ -96,12 +96,6 @@ boot(app, __dirname, function (err) {
 });
 
 // to support JSON-encoded bodies
-<<<<<<< HEAD
-app.middleware('parse', bodyParser.json({ limit: '50mb' }));
-// to support URL-encoded bodies
-app.middleware('parse', bodyParser.urlencoded({
-    limit: '50mb', extended: true,
-=======
 app.middleware('parse', bodyParser.json({
     limit: '50mb'
 }));
@@ -109,7 +103,6 @@ app.middleware('parse', bodyParser.json({
 app.middleware('parse', bodyParser.urlencoded({
     limit: '50mb',
     extended: true,
->>>>>>> develop
 }));
 // // The access token is only available after boot
 app.middleware('auth', loopback.token({
