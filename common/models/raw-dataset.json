@@ -2,6 +2,7 @@
   "name": "RawDataset",
   "base": "Dataset",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "proposalId_index": {
       "keys": {
@@ -13,7 +14,10 @@
     }
   },
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "principalInvestigator": {
@@ -23,7 +27,7 @@
     },
     "endTime": {
       "type": "date",
-      "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
     },
     "creationLocation": {
       "type": "string",
@@ -54,36 +58,7 @@
     }
   },
   "acls": [
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": "facet"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW",
-      "property": "facet"
-    }
   ],
   "methods": {
-    "facet": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object"
-        }
-      ],
-      "returns": {
-        "arg": "results",
-        "type": "Object"
-      },
-      "description": "Find all datasets within a date range",
-      "http": {
-        "path": "/facet",
-        "verb": "post"
-      }
-    }
   }
 }

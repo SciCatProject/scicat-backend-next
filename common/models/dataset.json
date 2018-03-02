@@ -2,8 +2,12 @@
   "name": "Dataset",
   "base": "Ownable",
   "idInjection": false,
-  "options": {
-    "validateUpsert": true
+  "strict": false,
+ "options": {
+    "validateUpsert": true,
+    "mongodb": {
+        "collection":"Dataset"
+    }
   },
   "properties": {
     "pid": {
@@ -51,12 +55,13 @@
       "type": "date",
       "required": true,
       "index": true,
-      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339"
+      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
     },
     "type": {
       "type": "string",
       "required": true,
-      "description": "Characterize data, e.g. as raw, derived, test, calibration data"
+      "index": true,
+      "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled"
     },
     "validationStatus": {
       "type": "string",
@@ -143,9 +148,21 @@
     },
     {
       "principalType": "ROLE",
-      "principalId": "archiveManager",
+      "principalId": "archivemanager",
       "permission": "ALLOW",
       "property": "reset"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": "facet"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW",
+      "property": "facet"
     }
   ],
   "methods": {
@@ -168,6 +185,29 @@
       "description": "Delete datablocks of dataset and reset status message",
       "http": {
         "path": "/resetArchiveStatus",
+        "verb": "post"
+      }
+    },
+    "facet": {
+      "accepts": [
+        {
+          "arg": "fields",
+          "type": "object",
+          "description": "Define the fields to search by, these will be mapped to the Dataset object and ensure the fields exist. There is also support for a `text` search to look for keywords. Can be undefined."
+        },
+        {
+          "arg": "facets",
+          "type": "object",
+          "description": "This should follow the Mongo Facet syntax (https://docs.mongodb.com/manual/reference/operator/aggregation/facet/). Can be undefined and uses defaults explained in description of route."
+        }
+      ],
+      "returns": {
+        "arg": "results",
+        "type": "Object"
+      },
+      "description": "Search for numbers associated with dataset properties. I.e. How many datasets in Group A. Default returns: Creation Location, Owner Groups and Creation Time",
+      "http": {
+        "path": "/facet",
         "verb": "post"
       }
     }

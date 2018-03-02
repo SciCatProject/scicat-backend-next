@@ -1,12 +1,12 @@
 {
   "name": "dacat-api",
-  "version": "2.5.0",
+  "version": "2.6.2",
   "main": "server/server.js",
   "scripts": {
     "lint": "eslint .",
     "start": "node .",
     "posttests": "npm run lint && nsp check",
-    "test": "mocha --timeout=5000 --reporter nyan"
+    "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter spec --exit 2>/dev/null"
   },
   "dependencies": {
     "compression": "1.7.1",
@@ -20,6 +20,7 @@
     "loopback-component-visualizer": "1.2.1",
     "loopback-connector-mongodb": "3.3.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
+    "moment-timezone": "^0.5.14",
     "nodemailer": "^4.3.1",
     "passport-ldapauth": "2.0.0",
     "passport-local": "1.0.0",
@@ -33,7 +34,7 @@
     "chai-http": "^3.0.0",
     "eslint": "4.10.0",
     "eslint-config-loopback": "8.0.0",
-    "mocha": "^4.0.1",
+    "mocha": "^4.1.0",
     "nsp": "2.8.1",
     "supertest": "^3.0.0"
   },

@@ -2,6 +2,7 @@
   "name": "Sample",
   "base": "Ownable",
   "idInjection": true,
+  "strict": true,
   "options": {
     "validateUpsert": true
   },

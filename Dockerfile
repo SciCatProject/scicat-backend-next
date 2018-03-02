@@ -1,6 +1,7 @@
 # gives a docker image below 200 MB
-FROM mhart/alpine-node:6
+FROM mhart/alpine-node:8
 
+RUN apk add --update 	python 	build-base
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000
@@ -14,9 +15,6 @@ COPY package.json /usr/src/app/
 USER myuser
 # Install our packages
 RUN npm install --production
-
-#  patch for loopback-component-passport
-RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app

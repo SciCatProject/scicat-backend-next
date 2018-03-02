@@ -7,50 +7,36 @@ module.exports = function(Ownable) {
     Ownable.observe('access', function(ctx, next) {
         const token = ctx.options && ctx.options.accessToken;
         const userId = token && token.userId;
-        const user = userId ? 'user#' + userId : '<anonymous>';
-        var User = app.models.User;
-        // console.log("Inside access observer of Ownable for userid ",token, userId, user)
-        User.findById(userId, function(err, instance) {
-            if (instance) {
+        // const user = userId ? 'user#' + userId : '<anonymous>';
+        var UserIdentity = app.models.UserIdentity;
+        UserIdentity.findOne({where: {userId: userId}},function(err, instance) {
+            //console.log("UserIdentity Instance:",instance)
+            if (!instance){
+                // In case of non user accounts (no UserIdentity entry) do nothing
+                next()
+            } else if (instance.profile) {
+                // if user account update where query to append group groupCondition
+                var groups=instance.profile.accessGroups
                 // check if a normal user or an internal ROLE
-                if (instance.username.split('.').length < 2) {
-                    // console.log("Functional account, apply ACLs only: ",instance.username)
-                    next()
-                } else {
-                    var filter = {
-                        where: {
-                            sAMAccountName: instance.username.split('.')[1]
-                        }
-                    };
-                    var AccessUser = app.models.AccessUser;
-                    AccessUser.findOne(filter, function(err, auser) {
-                        if (auser) {
-                            // filter pgroups p[digits]
-                            var groups = auser.memberOf.filter(function(el) {
-                                return /p\d+/.test(el)
-                            }); // ['p12672'];
-                            if (typeof groups === 'undefined') {
-                                groups = []
-                            }
-                            console.log("Found groups:", groups);
-                            var groupCondition = {
-                                ownerGroup: {
-                                    inq: groups
-                                }
-                            };
-                            if (!ctx.query.where) {
-                                ctx.query.where = groupCondition
-                            } else {
-                                ctx.query.where = {
-                                    and: [ctx.query.where, groupCondition]
-                                }
-                            }
-                            const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
-                            console.log('%s: %s accessed %s:%s', new Date(), instance.username, ctx.Model.modelName, scope);
-                        }
-                        next();
-                    })
+                if (typeof groups === 'undefined') {
+                    groups = []
                 }
+                // console.log("Found groups:", groups);
+                var groupCondition = {
+                    ownerGroup: {
+                        inq: groups
+                    }
+                };
+                if (!ctx.query.where) {
+                    ctx.query.where = groupCondition
+                } else {
+                    ctx.query.where = {
+                        and: [ctx.query.where, groupCondition]
+                    }
+                }
+                // const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
+                // console.log('%s: %s accessed %s:%s', new Date(), instance.profile.login, ctx.Model.modelName, scope);
+                next()
             } else {
               // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
               var e = new Error('Access Not Allowed');
@@ -59,5 +45,4 @@ module.exports = function(Ownable) {
             }
         })
     });
-
 };

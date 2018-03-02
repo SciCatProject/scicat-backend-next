@@ -1,5 +1,6 @@
 node_modules
-**/*.local.js*
+package-lock.json
+# **/*.local.js*
 **/*.production.js*
 **/*.staging.js*
 **/*.development.js*
