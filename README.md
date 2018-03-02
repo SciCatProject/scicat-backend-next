@@ -48,6 +48,16 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept:applicat
 
 ```
 
+## Queuing Options
+
+Jobs in Catamel are published to a queue when they are received. It is your responsibility to configure that queue and there is NO default in place.
+
+Without setting this up, none of your job submissions will go anywhere.
+
+The two supported options are:
+1. RabbitMQ (loopback-component-mq)
+2. Apache Kafka (loopback-connector-kafka)
+
 # Data models
 
 The data model is defined inside the common/models directory according to the rules defined by the Loopback API framework
