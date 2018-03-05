@@ -32,7 +32,8 @@ node('docker') {
     stage('configure') {
       withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
         sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
-        sh "export KUBECONFIG=$(pwd)+/catamel-psisecrets/server/kubernetes/admin.conf"
+        def workspace = pwd() 
+        sh "export KUBECONFIG=${workspace}@catamel-psisecrets/server/kubernetes/admin.conf"
       }
       sh 'kubectl version'
       sh 'helm version'
