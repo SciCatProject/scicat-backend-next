@@ -17,8 +17,8 @@ var accessTokenUser = null;
 
 var pid = null;
 var idDatablock = null;
-var idOrigDatablock = null;
 var idDatablock2 = null;
+var idDatasetLifecycle = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -91,7 +91,7 @@ var testraw = {
     "proposalId": "10.540.16635/20110123"
 }
 
-var testdataBlock = {
+var testDataBlock = {
     "archiveId": "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
@@ -146,53 +146,17 @@ var testdataBlock = {
     "ownerGroup": "p10021"
 }
 
-var testorigDataBlock = {
-    "size": 41780189,
-    "dataFileList": [{
-            "path": "N1039__B410489.tif",
-            "size": 8356037,
-            "time": "2017-07-24T13:56:30.000Z",
-            "uid": "egon.meiera@psi.ch",
-            "gid": "p16738",
-            "perm": "-rw-rw-r--"
-        },
-        {
-            "path": "N1039__B410613.tif",
-            "size": 8356038,
-            "time": "2017-07-24T13:56:35.000Z",
-            "uid": "egon.meiera@psi.ch",
-            "gid": "p16738",
-            "perm": "-rw-rw-r--"
-        },
-        {
-            "path": "N1039__B410729.tif",
-            "size": 8356038,
-            "time": "2017-07-24T13:56:41.000Z",
-            "uid": "egon.meiera@psi.ch",
-            "gid": "p16738",
-            "perm": "-rw-rw-r--"
-        },
-        {
-            "path": "N1039__B410200.tif",
-            "size": 8356038,
-            "time": "2017-07-24T13:56:18.000Z",
-            "uid": "egon.meiera@psi.ch",
-            "gid": "p16738",
-            "perm": "-rw-rw-r--"
-        },
-        {
-            "path": "N1039__B410377.tif",
-            "size": 8356038,
-            "time": "2017-07-24T13:56:25.000Z",
-            "uid": "egon.meiera@psi.ch",
-            "gid": "p16738",
-            "perm": "-rw-rw-r--"
-        }
-    ]
+var testDatasetLifecycle = {
+    "id": "", // must be set to the id of the dataset,
+    "isOnDisk": true,
+    "isOnTape": false,
+    "archiveStatusMessage": "datasetIsArchived",
+    "retrieveStatusMessage": "",
+    "isExported": false,
+    "ownerGroup": "p10021"
 }
 
-
-describe('Test Datablocks and OrigDatablocks and their relation to Datasets', () => {
+describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -224,27 +188,11 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                 res.body.should.have.property('owner').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
-                // store link to this dataset in datablocks
-                testdataBlock.datasetId = res.body['pid']
-                testorigDataBlock.datasetId = res.body['pid']
+                // store link to this dataset in datablocks and datasetlifecycle
+                testDataBlock.datasetId = res.body['pid']
+                testDatasetLifecycle.id = res.body['pid']
+                testDatasetLifecycle.datasetId = res.body['pid']
                 pid = encodeURIComponent(res.body['pid']);
-                done();
-            });
-    });
-
-    it('adds a new origDatablock', function(done) {
-        request(app)
-            .post('/api/v2/OrigDatablocks?access_token=' + accessTokenArchiveManager)
-            .send(testorigDataBlock)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                res.body.should.have.property('size').and.equal(41780189);
-                res.body.should.have.property('id').and.be.string;
-                idOrigDatablock = encodeURIComponent(res.body['id']);
                 done();
             });
     });
@@ -252,7 +200,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     it('adds a new datablock', function(done) {
         request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-            .send(testdataBlock)
+            .send(testDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -266,39 +214,11 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('adds a new datablock again which should fail because it is already stored', function(done) {
-        request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-            .send(testdataBlock)
-            .set('Accept', 'application/json')
-            .expect(401)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                res.body.should.have.property('error');
-                done();
-            });
-
-    });
-
-    it('adds a new datablock which should fail because wrong functional account', function(done) {
-        request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenIngestor)
-            .send(testdataBlock)
-            .set('Accept', 'application/json')
-            .expect(401)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                res.body.should.have.property('error');
-                done();
-            });
-
-    });
-
     it('adds a second datablock for same dataset', function(done) {
-        testdataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
+        testDataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
             request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
-            .send(testdataBlock)
+            .send(testDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -312,6 +232,23 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
 
     });
+
+
+    it('adds a new DatasetLifecycle', function(done) {
+        request(app)
+            .post('/api/v2/DatasetLifecycles?access_token=' + accessTokenIngestor)
+            .send(testDatasetLifecycle)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                idDatasetLifecycle = encodeURIComponent(res.body['id']);
+                done();
+            });
+    });
+
 
     it('Should fetch all datablocks belonging to the new dataset', function(done) {
         request(app)
@@ -327,37 +264,25 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('The size fields in the dataset should be correctly updated', function(done) {
+    it('Should fetch the datasetLifefycle belonging to the new dataset', function(done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 if (err)
                     return done(err);
-                res.body.should.have.property('size').and.equal(41780189);
-                res.body.should.have.property('packedSize').and.equal(83560380)
+                res.body.should.be.instanceof(Object);
                 done();
             });
     });
 
-    it('should delete a datablock', function(done) {
-        request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                done();
-            });
-    });
 
-    it('should delete a OrigDatablock', function(done) {
+    it('should reset the archive information from the newly created dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .post('/api/v2/Datasets/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
+            .send({datasetId:testDataBlock.datasetId})
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -368,9 +293,40 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('should delete the 2nd datablock', function(done) {
+    it('The archive Status Message should now be reset', function(done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
+            .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Object);
+                res.body.archiveStatusMessage.should.be.equal('datasetCreated')
+                res.body.retrieveStatusMessage.should.be.equal('')
+                done();
+            });
+    });
+
+    it('There should be no datablocks any more for this dataset', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/' + pid + '/datablocks/count?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Object);
+                res.body.count.should.be.equal(0)
+                done();
+            });
+    });
+
+    it('should delete the DatasetLifecycle', function(done) {
+        request(app)
+            .delete('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -380,6 +336,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                 done();
             });
     });
+
 
     it('should delete the newly created dataset', function(done) {
         request(app)
@@ -393,4 +350,5 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                 done();
             });
     });
+
 });

@@ -2,6 +2,7 @@
   "name": "Datablock",
   "base": "Ownable",
   "idInjection": false,
+  "strict": true,
   "indexes": {
     "datasetId_index": {
       "keys": {
@@ -74,7 +75,7 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "*",
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "ingestor",
       "permission": "ALLOW"

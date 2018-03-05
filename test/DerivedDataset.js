@@ -14,25 +14,35 @@ var utils = require('./LoginUtils');
 var accessToken = null,
     pid = null;
 
-var testdataset = {
-    "owner": "Bertram Astor",
-    "ownerEmail": "bertram.astor@grumble.com",
-    "orcidOfOwner": "unknown",
-    "contactEmail": "bertram.astor@grumble.com",
-    "sourceFolder": "/iramjet/tif/",
-    "creationTime": "2011-09-14T06:08:25.000Z",
-    "keywords": [
-        "Cryo", "Calibration"
+var testderived = {
+    "investigator": "egon.meier@web.de",
+    "inputDatasets": [
+        "/data/input/file1.dat"
     ],
-    "description": "None",
-    "license": "CC BY-SA 4.0",
+    "usedSoftware": [
+        "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c"
+    ],
+    "jobParameters": {
+        "nscans": 10
+    },
+    "jobLogData": "Output of log file...",
+
+    "owner": "Egon Meier",
+    "ownerEmail": "egon.meier@web.de",
+    "contactEmail": "egon.meier@web.de",
+    "sourceFolder": "/data/example/2017",
+    "creationTime": "2017-01-31T09:20:19.562Z",
+    "keywords": [
+        "Test", "Derived", "Science", "Math"
+    ],
+    "description": "Some fancy description",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p13388",
-    "accessGroups": []
+    "ownerGroup": "p34123"
 }
 
-describe('Simple Dataset tests', () => {
+
+describe('DerivedDatasets', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -43,28 +53,40 @@ describe('Simple Dataset tests', () => {
                 done();
             });
     });
-
-    it('adds a new dataset', function(done) {
+    it('adds a new derived dataset', function(done) {
         request(app)
-            .post('/api/v2/Datasets?access_token=' + accessToken)
-            .send(testdataset)
+            .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+            .send(testderived)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                res.body.should.have.property('version').and.be.string;
-                res.body.should.have.property('type').and.equal('base');
+                res.body.should.have.property('type').and.equal('derived');
                 res.body.should.have.property('pid').and.be.string;
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
     });
 
-    it('should fetch this new dataset', function(done) {
+    it('should fetch one derived dataset', function(done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
+            .get('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+
+    });
+
+    it('should delete a derived dataset', function(done) {
+        request(app)
+            .delete('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -76,23 +98,9 @@ describe('Simple Dataset tests', () => {
     });
 
 
-    it('should delete this dataset', function(done) {
+    it('should fetch all derived datasets', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                done();
-            });
-    });
-
-
-    it('fetches array of Datasets', function(done) {
-        request(app)
-            .get('/api/v2/Datasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
+            .get('/api/v2/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -104,16 +112,17 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-    it('should contain an array of facets with NO type description', function(done) {
+    it('should contain an array of facets with a type description', function(done) {
         request(app)
-            .post('/api/v2/Datasets/facet?access_token=' + accessToken)
+            .post('/api/v2/DerivedDatasets/facet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
-                if(err)
+                if(err) 
                     done(err);
+                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
+                res.body.results[0].should.have.property('type').and.equal('derived');
                 done();
             });
     });

@@ -1,6 +1,7 @@
 # gives a docker image below 200 MB
-FROM mhart/alpine-node:6
+FROM mhart/alpine-node:8
 
+RUN apk add --update 	python 	build-base
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000

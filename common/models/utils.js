@@ -9,14 +9,18 @@ var exports = module.exports = {};
 // this translation is done automatically behind the scenes. One could use a line
 // like the following to make this more explicit
 // var block = ctx.instance.toObject()
+// Note: Depending on the request PUT/POST etc either ctx.instance or ctx.currentInstance is set
 
 
 exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
-
-    if (ctx.instance) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
         // get all current objects connected to the same dataset
-        if (ctx.instance.datasetId !== undefined) {
-            const datasetId = ctx.instance.datasetId
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
             // get all current datablocks connected to the same dataset
             var filter = {
                 where: {
@@ -30,64 +34,36 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                 var total = instances.reduce(function(sum, value) {
                     return sum + value[sizeField]
                 }, 0);
-                // TODO refactor repeating code segments into functions
-                if (ctx.instance.rawDatasetId !== undefined) {
-                    var RawDataset = app.models.RawDataset
-                    RawDataset.findById(datasetId, null, ctx.options).then(instance => {
-                        if (instance) {
-                            instance.updateAttributes({
-                                [sizeField]: total
-                            }, function(err, instance) {
-                                if (err) {
-                                    console.log("Error when updating rawdataset: %j", err)
-                                } else {
-                                    console.log("Updated Rawdataset pid %s", instance.pid)
-                                }
+
+                var Dataset = app.models.Dataset
+                Dataset.findById(datasetId, null, ctx.options).then(instance => {
+                    if (instance) {
+                        instance.updateAttributes({
+                            [sizeField]: total
+                        }, function(err, instance) {
+                            if (err) {
+                                var error = new Error();
+                                error.statusCode = 403;
+                                error.message = err;
+                                next(error)
+                            } else {
                                 next()
-                            })
-                        }
-                    })
-                } else if (ctx.instance.derivedDatasetId !== undefined) {
-                    var DerivedDataset = app.models.DerivedDataset
-                    DerivedDataset.findById(datasetId, null, ctx.options).then(instance => {
-                        if (instance) {
-                            instance.updateAttributes({
-                                [sizeField]: total
-                            }, function(err, instance) {
-                                if (err) {
-                                    console.log("Error when updating DerivedDataset: %j", err)
-                                } else {
-                                    console.log("Updated DerivedDataset pid %s", instance.pid)
-                                }
-                                next()
-                            })
-                        }
-                    })
-                } else {
-                    var Dataset = app.models.Dataset
-                    Dataset.findById(datasetId, null, ctx.options).then(instance => {
-                        if (instance) {
-                            instance.updateAttributes({
-                                [sizeField]: total
-                            }, function(err, instance) {
-                                if (err) {
-                                    console.log("Error when updating Dataset: %j", err)
-                                } else {
-                                    console.log("Updated Dataset pid %s", instance.pid)
-                                }
-                                next()
-                            })
-                        } else {
-                            console.log("No dataset found with pid %s ", datasetId)
-                            next()
-                        }
-                    })
-                }
+                            }
+                        })
+                    } else {
+                        var error = new Error();
+                        error.statusCode = 404;
+                        error.message = "No dataset found with pid " + datasetId
+                        next(error)
+
+                    }
+                })
+
             })
         } else {
-            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
+            console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);
             var error = new Error();
-            error.statusCode = 422;
+            error.statusCode = 417;
             error.message = 'DatasetId must be defined';
             next(error)
         }
@@ -96,58 +72,37 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
     }
 }
 
-// see https://loopback.io/doc/en/lb3/Using-current-context.html#write-a-custom-remote-method-with-options
-// for explanation of the following constructs with ctx.options parameters
-
-
-exports.linkToProperDatasetType = function(ctx, next) {
-    if (ctx.instance) {
-        if (ctx.instance.datasetId !== undefined) {
-            const datasetId = ctx.instance.datasetId
-            var RawDataset = app.models.RawDataset
-            RawDataset.findById(datasetId, null, ctx.options).then(instance => {
-                if (instance) {
-                    ctx.instance.rawDatasetId = datasetId
-                    // make sure that ownerGroup is defined
-                    if (ctx.instance.ownerGroup == undefined) {
-                        ctx.instance.ownerGroup = instance.ownerGroup
+// add ownerGroup field from linked Datasets
+exports.addOwnerGroup = function(ctx, next) {
+    var instance=ctx.instance
+    if(!instance){
+        instance=ctx.currentInstance
+    }
+    if (instance) {
+        // get all current objects connected to the same dataset
+        if (instance.datasetId !== undefined) {
+            const datasetId = decodeURIComponent(instance.datasetId)
+            // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
+            if (instance.ownerGroup == undefined) {
+                // TODO get group from dataset
+                var Dataset = app.models.Dataset
+                // console.log("Looking for dataset with id:", datasetId)
+                Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
+                    console.log("adding ownerGroup:", datasetInstance.ownerGroup)
+                    instance.ownerGroup = datasetInstance.ownerGroup
+                    // for partial updates the ownergroup must be added to ctx.data in order to be persisted
+                    if(ctx.data){
+                        ctx.data.ownerGroup=datasetInstance.ownerGroup
                     }
                     next()
-                } else {
-                    var DerivedDataset = app.models.DerivedDataset;
-                    DerivedDataset.findById(datasetId, null, ctx.options).then(instance => {
-                        if (instance) {
-                            ctx.instance.derivedDatasetId = datasetId
-                            // make sure that ownerGroup is defined
-                            if (ctx.instance.ownerGroup == undefined) {
-                                ctx.instance.ownerGroup = instance.ownerGroup
-                            }
-                            next()
-                        } else {
-                            var Dataset = app.models.Dataset;
-                            Dataset.findById(datasetId, null, ctx.options).then(instance => {
-                                if (instance) {
-                                    // make sure that ownerGroup is defined
-                                    if (ctx.instance.ownerGroup == undefined) {
-                                        ctx.instance.ownerGroup = instance.ownerGroup
-                                    }
-                                    next()
-                                } else {
-                                    console.log('%s: Error: Instance %j links to non existing datasetId %s', new Date(), ctx.instance, datasetId);
-                                    var error = new Error();
-                                    error.statusCode = 422;
-                                    error.message = 'DatasetId must point to existing dataset';
-                                    next(error)
-                                }
-                            })
-                        }
-                    })
-                }
-            })
+                })
+            } else {
+                next()
+            }
         } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), ctx.instance);
             var error = new Error();
-            error.statusCode = 422;
+            error.statusCode = 417;
             error.message = 'DatasetId must be defined';
             next(error)
         }
@@ -162,9 +117,9 @@ exports.linkToProperDatasetType = function(ctx, next) {
 exports.updateTimesToUTC = function(dateKeys, instance) {
     dateKeys.map(function(dateKey) {
         if (instance[dateKey]) {
-            console.log("Updating old ",dateKey,instance[dateKey])
+            // console.log("Updating old ", dateKey, instance[dateKey])
             instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
-            console.log("New time:",instance[dateKey])
+            // console.log("New time:", instance[dateKey])
         }
     });
 }
@@ -172,13 +127,75 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
 // dito but for array of instances
 exports.updateAllTimesToUTC = function(dateKeys, instances) {
     dateKeys.map(function(dateKey) {
-        console.log("Updating all time field %s to UTC for %s instances:",dateKey,instances.length)
-        instances.map(function(instance){
+        // console.log("Updating all time field %s to UTC for %s instances:", dateKey, instances.length)
+        instances.map(function(instance) {
             if (instance[dateKey]) {
                 // console.log("Updating old ",dateKey,instance[dateKey])
                 instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
                 // console.log("New time:",instance[dateKey])
             }
         })
+    });
+}
+
+exports.handleOwnerGroups = function(ctx, userDetails, next) {
+    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
+    if (userId === null) {
+        userId = ctx.req.args.accessToken;
+    }
+    var UserIdentity = app.models.UserIdentity;
+    var User = app.models.User;
+    if (!userId) {
+        var e = new Error('Cannot find access token');
+        e.statusCode = 401;
+        next(e);
+    }
+    // console.log(ctx.req);
+    // TODO add check for functional accounts and ignore below if true
+    const fields = ctx.args.fields || undefined;
+    let groups = [];
+    if (fields && fields['ownerGroup']) {
+        groups = fields.ownerGroup;
+    }
+    User.findById(userId, function(err, user) {
+        if (err) {
+            next(err);
+        } else if (user['username'].indexOf('.') === -1) {
+            ctx.args.fields.ownerGroup = groups;
+            next()
+        } else {
+            UserIdentity.findOne({
+                where: {
+                    userId: userId
+                }
+            }, function(err, instance) {
+                console.log("UserIdentity Instance:", instance)
+                if (instance && instance.profile) {
+                    var foundGroups = instance.profile.accessGroups
+                    // check if a normal user or an internal ROLE
+                    if (typeof foundGroups === 'undefined') {
+                        ctx.args.fields.ownerGroup = [];
+                        next()
+                    }
+                    var a = new Set(groups);
+                    var b = new Set(foundGroups);
+                    var intersection = new Set([...b].filter(x => a.has(x)));
+                    var subgroups = Array.from(intersection);
+                    if (subgroups.length === 0) {
+                        var e = new Error('User has no group access');
+                        e.statusCode = 401;
+                        next(e);
+                    } else {
+                        ctx.args.fields.ownerGroup = subgroups;
+                        next();
+                    }
+                } else {
+                    // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
+                    var e = new Error('Access Not Allowed');
+                    e.statusCode = 401;
+                    next(e);
+                }
+            })
+        }
     });
 }
