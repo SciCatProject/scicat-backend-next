@@ -19,7 +19,7 @@ module.exports = function (Job) {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 Job.publishJob(ctx.instance, 'jobqueue');
-                if ('smtpSettings' in config) {
+                if ('smtpSettings' in config && 'smtpMessage' in config)  {
                     let transporter = nodemailer.createTransport(config.smtpSettings);
                     transporter.verify(function (error, success) {
                         if (error) {

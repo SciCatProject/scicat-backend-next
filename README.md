@@ -34,6 +34,30 @@ server/datasources.local.json e.g.
 
 ```
 
+## Email Notifications
+
+Inside your `config.local.js`, you can add the following blocks to enable email notification on submission of a Job. In the future, other notification types will be supported.
+
+```
+    smtpSettings: {
+      host: 'mail.ethz.ch',
+      port: 587,
+      secure: false,
+      auth: {user: 'psich\\USER', pass: 'PWD'}
+    },
+    smtpMessage: {
+      from: 'USER@psi.ch',
+      to: undefined,
+      subject: '[SciCat]',
+      text: undefined // can also set html key and this will override this
+    }
+```
+
+The Job model checks for the existence of these blocks and sends an email from the User specified. You can override the object with the `html` key and send much more prettified content.
+
+
+
+
 ## Start API server
 ```
 node .
