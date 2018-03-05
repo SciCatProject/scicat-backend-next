@@ -5,7 +5,7 @@ podTemplate(label: 'docker',
 node('docker') {
     container('docker') {
        stage('Checkout'){
-          sh 'kubectl config view'
+          checkout scm
        }
        stage('Build Docker') {
             sh 'ls -ahl server/'
