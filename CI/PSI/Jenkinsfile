@@ -28,10 +28,7 @@ node('docker') {
             sh 'docker run  --privileged -t catamel_test'
        }
     }
-
-},
-node('helm') {
-  container('helm') {
+     container('helm') {
     stage('configure') {
       withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
         sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
