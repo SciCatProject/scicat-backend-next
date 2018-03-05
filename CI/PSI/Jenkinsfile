@@ -19,6 +19,7 @@ node('docker') {
                 sh "mkdir -p CI/PSI/envfiles"
                 sh "cp catamel-psisecrets/server/pass-db-qa/datasources_new.json CI/PSI/envfiles/datasources.json"
                 sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
+                sh "cp catamel-psisecrets/server/settings.json CI/PSI/envfiles/settings.json"
                 sh "cp catamel-psiconfig/server/config.local.js CI/PSI/envfiles/config.local.js"
             }
             sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'

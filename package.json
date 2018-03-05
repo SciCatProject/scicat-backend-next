@@ -1,6 +1,6 @@
 {
   "name": "dacat-api",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "main": "server/server.js",
   "scripts": {
     "lint": "eslint .",
