@@ -30,7 +30,7 @@ node('docker') {
        stage('Build release') {
             withCredentials([usernamePassword(credentialsId: 'dockerpsi', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
              sh "docker login registry.psi.ch:5000 -u $USERNAME -p $PASSWORD"
-             sh 'tag=\$(git rev-parse HEAD)'
+             def tag = sh(script: 'git rev-parse HEAD', returnStdout: true)
              sh "docker build -t registry.psi.ch:5000/jenkins/dacatapiserver:$tag ."
              sh "docker push registry.psi.ch:5000/jenkins/dacatapiserver:$tag"
             }
@@ -43,8 +43,8 @@ node('docker') {
         sh 'kubectl version'
         sh 'helm version'
         sh 'cd catamel-psiconfig/server/kubernetes/helm/'
-        // sh 'helm del --purge dacat-api-server-development'
-        // sh 'helm install dacat-api-server --namespace=development --name=dacat-api-server-development --set image.tag=\$tag'
+        sh 'helm del --purge dacat-api-server-development'
+        sh "helm install dacat-api-server --namespace=development --name=dacat-api-server-development --set image.tag=$tag"
       }
     }
 }
