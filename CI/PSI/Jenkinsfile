@@ -43,7 +43,7 @@ podTemplate(label: 'docker',
     sh 'kubectl version'
     sh 'helm version'
     sh 'cd catamel-psiconfig/server/kubernetes/helm/'
-    sh 'helm del --purge dacat-api-server-development'
+    // sh 'helm del --purge dacat-api-server-development'
     def tag = sh(script: 'git rev-parse HEAD', returnStdout: true)
     sh "helm install dacat-api-server --namespace=development --name=dacat-api-server-development --set image.tag=$tag"
    }
