@@ -16,8 +16,7 @@
     {
         "method": "POST",
         "route": "Datasets",
-        "expect": 401,
-        "authenticate": "user"
+        "expect": 401
     },
     {
         "method": "POST",
