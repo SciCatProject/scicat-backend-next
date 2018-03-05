@@ -31,8 +31,8 @@ node('docker') {
             withCredentials([usernamePassword(credentialsId: 'dockerpsi', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
              sh "docker login registry.psi.ch:5000 -u $USERNAME -p $PASSWORD"
              sh 'tag=\$(git rev-parse HEAD)'
-             sh 'docker build -t registry.psi.ch:5000/jenkins/dacatapiserver:\$tag .'
-             sh 'docker push registry.psi.ch:5000/jenkins/dacatapiserver:\$tag'
+             sh "docker build -t registry.psi.ch:5000/jenkins/dacatapiserver:$tag ."
+             sh "docker push registry.psi.ch:5000/jenkins/dacatapiserver:$tag"
             }
        }
     }
