@@ -99,6 +99,8 @@ module.exports = function (Dataset) {
 
     Dataset.facet = function (fields, facets, cb) {
         var findFilter = [];
+        var unwind = {$unwind: '$keywords'};
+        findFilter.push(unwind);
         var match = {};
         var type = undefined;
         if (fields) {
