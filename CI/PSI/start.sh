@@ -2,7 +2,7 @@
 
 pwd
 service rabbitmq-server start 
-NODE_ENV=qa
+# NODE_ENV=qa
 npm run test
 
 # sleep 5
