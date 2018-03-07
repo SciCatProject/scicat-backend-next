@@ -27,13 +27,13 @@ RUN npm install
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
-COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local
+#COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local
 COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
-COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
-COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
-COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
 COPY CI/ESS/start.sh /usr/src/app/start.sh
-COPY CI/ESS/settings.json /usr/src/app/test/config/
+#COPY CI/ESS/settings.json /usr/src/app/test/config/
 RUN NODE_ENV=dev
 # Start the app
 CMD ["./start.sh"]
