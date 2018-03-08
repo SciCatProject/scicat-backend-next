@@ -28,12 +28,23 @@ module.exports = function (Deriveddataset) {
         next();
     });
 
-    Deriveddataset.beforeRemote('facet', function (ctx, userDetails, next) {
-        if (!ctx.args.fields)
+    Deriveddataset.beforeRemote('facet', function(ctx, userDetails, next) {
+            if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
         utils.handleOwnerGroups(ctx, userDetails, next);
         // const user = userId ? 'user#' + userId : '<anonymous>';
 
     })
+
+    Deriveddataset.isValid = function (dataset, next) {
+        var ds=new Deriveddataset(dataset)
+        ds.isValid(function(valid) {
+            if(!valid) {
+                next(null, {'errors': ds.errors, 'valid': false})
+            }else{
+                next(null, {'valid': true})
+            }
+        });
+    }
 };

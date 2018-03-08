@@ -49,4 +49,21 @@ module.exports = function(Datasetlifecycle) {
         // add ownerGroup field from linked Datasets
         utils.addOwnerGroup(ctx, next)
      })
+
+     Datasetlifecycle.isValid = function(instance, next) {
+         var ds = new Datasetlifecycle(instance)
+         ds.isValid(function(valid) {
+             if (!valid) {
+                 next(null, {
+                     'errors': ds.errors,
+                     'valid': false
+                 })
+             } else {
+                 next(null, {
+                     'valid': true
+                 })
+             }
+         });
+     }
+
 };
