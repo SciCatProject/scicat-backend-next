@@ -1,49 +1,72 @@
 {
-  "name": "Ownable",
-  "base": "PersistedModel",
-  "idInjection": true,
-  "strict": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "mixins": {
-    "TimeStamp": {
-      "createdAt": "createdAt",
-      "updatedAt": "updatedAt",
-      "required": false,
-      "validateUpsert": true,
-      "silenceWarnings": false
-    }
-  },
-  "properties": {
-    "ownerGroup": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Defines the group which owns the data, and therefore has unrestricted access to this data. Usually a pgroup like p12151"
+    "name": "Ownable",
+    "base": "PersistedModel",
+    "idInjection": true,
+    "strict": true,
+    "options": {
+        "validateUpsert": true
     },
-    "accessGroups": {
-      "type": [
-        "string"
-      ],
-      "description": "Optional additional groups which have read access to the data. Users which are member in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users"
-    }
-  },
-  "validations": [],
-  "relations": {},
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
+    "mixins": {
+        "TimeStamp": {
+            "createdAt": "createdAt",
+            "updatedAt": "updatedAt",
+            "required": false,
+            "validateUpsert": true,
+            "silenceWarnings": false
+        }
     },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
+    "properties": {
+        "ownerGroup": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Defines the group which owns the data, and therefore has unrestricted access to this data. Usually a pgroup like p12151"
+        },
+        "accessGroups": {
+            "type": [
+                "string"
+            ],
+            "description": "Optional additional groups which have read access to the data. Users which are member in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users"
+        }
+    },
+    "validations": [],
+    "relations": {},
+    "acls": [{
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "admin",
+            "permission": "ALLOW"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": "isValid"
+        }
+    ],
+    "methods": {
+        "isValid": {
+          "accepts": [
+            {
+                "arg": "ownableItem",
+                "type": "object",
+                "http": { "source": "body" }
+            }
+          ],
+          "returns": {
+             "root": true
+          },
+          "description": "Check if data is valid according to a schema",
+          "http": {
+            "path": "/isValid",
+            "verb": "post"
+          }
+        }
     }
-  ],
-  "methods": {}
 }

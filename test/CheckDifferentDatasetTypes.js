@@ -106,7 +106,8 @@ var testraw = {
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": [],
-    "proposalId": "10.540.16635/20110123"
+    "proposalId": "10.540.16635/20110123",
+    "type":"raw"
 }
 
 var testderived = {
@@ -204,6 +205,39 @@ describe('Check different dataset types and their inheritance', () => {
             });
     });
 
+    // check if dataset is valid
+
+    it('check if raw dataset is valid', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets/isValid')
+            .send(testraw)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                console.log(res.body)
+                if (err)
+                    return done(err);
+                res.body.should.have.property('valid').and.equal(true);
+                done();
+            });
+    });
+
+    it('check if wrong data is recognized as invalid', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets/isValid')
+            .send(testderived)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                console.log(res.body)
+                if (err)
+                    return done(err);
+                res.body.should.have.property('valid').and.equal(false);
+                done();
+            });
+    });
     // add dataset and check what happened to counts
 
     it('adds a new dataset', function(done) {

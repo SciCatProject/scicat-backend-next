@@ -7,19 +7,19 @@ module.exports = function(Proposal) {
     // put
     Proposal.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         // handle embedded datafile documents
-        utils.updateAllTimesToUTC(["start","end"], ctx.args.data.MeasurementPeriodList)
+        utils.updateAllTimesToUTC(["start", "end"], ctx.args.data.MeasurementPeriodList)
         next();
     });
 
     //patch
     Proposal.beforeRemote('patchOrCreate', function(ctx, instance, next) {
-        utils.updateAllTimesToUTC(["start","end"], ctx.args.data.MeasurementPeriodList)
+        utils.updateAllTimesToUTC(["start", "end"], ctx.args.data.MeasurementPeriodList)
         next();
     });
 
     //post
     Proposal.beforeRemote('create', function(ctx, unused, next) {
-        utils.updateAllTimesToUTC(["start","end"], ctx.args.data.MeasurementPeriodList)
+        utils.updateAllTimesToUTC(["start", "end"], ctx.args.data.MeasurementPeriodList)
         next();
     });
 
@@ -46,5 +46,23 @@ module.exports = function(Proposal) {
             }
         )
     };
+
+
+    Proposal.isValid = function(instance, next) {
+        var ds = new Proposal(instance)
+        ds.isValid(function(valid) {
+            if (!valid) {
+                next(null, {
+                    'errors': ds.errors,
+                    'valid': false
+                })
+            } else {
+                next(null, {
+                    'valid': true
+                })
+            }
+        });
+    }
+
 
 };
