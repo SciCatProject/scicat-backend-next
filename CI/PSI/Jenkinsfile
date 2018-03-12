@@ -24,6 +24,7 @@ podTemplate(label: 'docker',
 ) {
  node('docker') {
      try{
+         notifySlack()
   container('docker') {
    stage('Checkout') {
     checkout scm
