@@ -13,9 +13,9 @@ var exports = module.exports = {};
 
 
 exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
-    var instance=ctx.instance
-    if(!instance){
-        instance=ctx.currentInstance
+    var instance = ctx.instance
+    if (!instance) {
+        instance = ctx.currentInstance
     }
     if (instance) {
         // get all current objects connected to the same dataset
@@ -38,27 +38,27 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                 var Dataset = app.models.Dataset
                 Dataset.findById(datasetId, null, ctx.options).then(instance => {
                     if (instance) {
+                        // important to pass options here, otherwise context gets lost
                         instance.updateAttributes({
-                            [sizeField]: total
-                        }, function(err, instance) {
-                            if (err) {
-                                var error = new Error();
-                                error.statusCode = 403;
-                                error.message = err;
-                                next(error)
-                            } else {
-                                next()
-                            }
-                        })
+                                [sizeField]: total
+                            }, ctx.options,
+                            function(err, instance) {
+                                if (err) {
+                                    var error = new Error();
+                                    error.statusCode = 403;
+                                    error.message = err;
+                                    next(error)
+                                } else {
+                                    next()
+                                }
+                            })
                     } else {
                         var error = new Error();
                         error.statusCode = 404;
                         error.message = "No dataset found with pid " + datasetId
                         next(error)
-
                     }
                 })
-
             })
         } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);
@@ -74,9 +74,9 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 
 // add ownerGroup field from linked Datasets
 exports.addOwnerGroup = function(ctx, next) {
-    var instance=ctx.instance
-    if(!instance){
-        instance=ctx.currentInstance
+    var instance = ctx.instance
+    if (!instance) {
+        instance = ctx.currentInstance
     }
     if (instance) {
         // get all current objects connected to the same dataset
@@ -91,8 +91,8 @@ exports.addOwnerGroup = function(ctx, next) {
                     console.log("adding ownerGroup:", datasetInstance.ownerGroup)
                     instance.ownerGroup = datasetInstance.ownerGroup
                     // for partial updates the ownergroup must be added to ctx.data in order to be persisted
-                    if(ctx.data){
-                        ctx.data.ownerGroup=datasetInstance.ownerGroup
+                    if (ctx.data) {
+                        ctx.data.ownerGroup = datasetInstance.ownerGroup
                     }
                     next()
                 })
@@ -181,10 +181,13 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
                     var b = new Set(foundGroups);
                     var intersection = new Set([...b].filter(x => a.has(x)));
                     var subgroups = Array.from(intersection);
-                    if (subgroups.length === 0) {
+                    if (foundGroups.length === 0) {
                         var e = new Error('User has no group access');
                         e.statusCode = 401;
                         next(e);
+                    } else if (subgroups.length === 0) {
+                        ctx.args.fields.ownerGroup = foundGroups;
+                        next();
                     } else {
                         ctx.args.fields.ownerGroup = subgroups;
                         next();

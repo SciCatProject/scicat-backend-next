@@ -80,7 +80,7 @@ var testraw = {
     "description": "None",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p10021",
+    "ownerGroup": "p10029",
     "accessGroups": [],
     "proposalId": "10.540.16635/20110123"
 }

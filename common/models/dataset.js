@@ -56,7 +56,7 @@ module.exports = function(Dataset) {
                 l.updateAttributes({
                     archiveStatusMessage: 'datasetCreated',
                     retrieveStatusMessage: ''
-                });
+                },options);
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
                     datasetId: id
@@ -71,7 +71,7 @@ module.exports = function(Dataset) {
                             } else {
                                 instance.updateAttributes({
                                     packedSize: 0
-                                })
+                                },options)
                                 next()
                             }
                         });
