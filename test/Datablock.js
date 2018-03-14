@@ -86,13 +86,13 @@ var testraw = {
     "description": "None",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p10021",
+    "ownerGroup": "p10029",
     "accessGroups": [],
     "proposalId": "10.540.16635/20110123"
 }
 
 var testdataBlock = {
-    "archiveId": "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    "archiveId": "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
     "chkAlg": "sha1",
@@ -143,7 +143,7 @@ var testdataBlock = {
             "perm": "-rw-rw-r--"
         }
     ],
-    "ownerGroup": "p10021"
+    "ownerGroup": "p10029"
 }
 
 var testorigDataBlock = {
@@ -295,7 +295,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     });
 
     it('adds a second datablock for same dataset', function(done) {
-        testdataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
+        testdataBlock.archiveId = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
             request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
