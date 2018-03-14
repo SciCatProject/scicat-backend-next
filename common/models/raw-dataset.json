@@ -1,64 +1,63 @@
 {
-  "name": "RawDataset",
-  "base": "Dataset",
-  "idInjection": false,
-  "strict": true,
-  "indexes": {
-    "proposalId_index": {
-      "keys": {
-        "proposalId": 1
-      }
+    "name": "RawDataset",
+    "description": "Contains the information for datasets which are the result of measurements or of simulations. Often raw datasets are automatically added as part of an automated ingest step as part of the data acquisition chain at an instrument. This schema inherits the fields from the generic Dataset collection and adds specific fields as defined below.",
+    "base": "Dataset",
+    "idInjection": false,
+    "strict": true,
+    "indexes": {
+        "proposalId_index": {
+            "keys": {
+                "proposalId": 1
+            }
+        },
+        "sampleId_index": {
+            "sampleId": 1
+        }
     },
-    "sampleId_index": {
-      "sampleId": 1
-    }
-  },
-  "options": {
-    "validateUpsert": true,
-    "mongodb": {
-        "collection":"Dataset"
-    }
-  },
-  "properties": {
-    "principalInvestigator": {
-      "type": "string",
-      "required": true,
-      "description": "Email of principal investigator"
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "Dataset"
+        }
     },
-    "endTime": {
-      "type": "date",
-      "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    "properties": {
+        "principalInvestigator": {
+            "type": "string",
+            "required": true,
+            "description": "Email of principal investigator"
+        },
+        "endTime": {
+            "type": "date",
+            "description": "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+        },
+        "creationLocation": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name"
+        },
+        "dataFormat": {
+            "type": "string",
+            "description": "Defines format of subsequent scientific meta data, e.g Nexus Version x.y"
+        },
+        "scientificMetadata": {
+            "type": "object",
+            "description": "JSON object containing the scientific meta data"
+        }
     },
-    "creationLocation": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name"
+    "validations": [],
+    "relations": {
+        "proposal": {
+            "type": "belongsTo",
+            "model": "Proposal",
+            "foreignKey": ""
+        },
+        "sample": {
+            "type": "belongsTo",
+            "model": "Sample",
+            "foreignKey": ""
+        }
     },
-    "dataFormat": {
-      "type": "string",
-      "description": "Defines format of subsequent scientific meta data, e.g Nexus Version x.y"
-    },
-    "scientificMetadata": {
-      "type": "object",
-      "description": "JSON object containing the scientific meta data"
-    }
-  },
-  "validations": [],
-  "relations": {
-    "proposal": {
-      "type": "belongsTo",
-      "model": "Proposal",
-      "foreignKey": ""
-    },
-    "sample": {
-      "type": "belongsTo",
-      "model": "Sample",
-      "foreignKey": ""
-    }
-  },
-  "acls": [
-  ],
-  "methods": {
-  }
+    "acls": [],
+    "methods": {}
 }

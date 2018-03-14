@@ -1,30 +1,31 @@
 {
-  "name": "Policy",
-  "plural": "Policies",
-  "base": "Ownable",
-  "idInjection": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "availability": {
-      "type": "string",
-      "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
-      "default": "low"
+    "name": "Policy",
+    "description": "Definition of policy parameters relevant for the storgae lifecycle management of the datasets",
+    "plural": "Policies",
+    "base": "Ownable",
+    "idInjection": true,
+    "options": {
+        "validateUpsert": true
     },
-    "tapeRetentionTime": {
-      "type": "number",
-      "description": "Number of years after creation time, where datasets are subject to retention policies, possibly leading to deletion of data on tape.",
-      "default": 10
+    "properties": {
+        "availability": {
+            "type": "string",
+            "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
+            "default": "low"
+        },
+        "tapeRetentionTime": {
+            "type": "number",
+            "description": "Number of years after creation time, where datasets are subject to retention policies, possibly leading to deletion of data on tape.",
+            "default": 10
+        },
+        "autoArchiveDelay": {
+            "type": "number",
+            "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
+            "default": 7
+        }
     },
-    "autoArchiveDelay": {
-      "type": "number",
-      "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
-      "default": 7
-    }
-  },
-  "validations": [],
-  "relations": {},
-  "acls": [],
-  "methods": {}
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
 }

@@ -1,5 +1,6 @@
 {
     "name": "Dataset",
+    "description": "Stores the meta data information for a given collection of files. It defines a list of mandatory and optional metadata fields to be defined. Datasets have a PID field for unique identification. A DOI field can be added for publication purposes later. This is the base 'class' for derived documents like raw datasets or derived datasets. The type field is used to distinguish between the different types of datasets. For each dataset in addition a DatasetLifecycle and a OrigDatablock type of container can be created, giving additional information about the datasets lifecycles and its containing files.",
     "base": "Ownable",
     "idInjection": false,
     "strict": false,
@@ -40,7 +41,7 @@
             "type": "string",
             "required": true,
             "index": true,
-            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder"
+            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data file the string can also be the full path to this single file."
         },
         "size": {
             "type": "number",
