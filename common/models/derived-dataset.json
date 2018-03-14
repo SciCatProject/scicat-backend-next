@@ -1,46 +1,47 @@
 {
-  "name": "DerivedDataset",
-  "base": "Dataset",
-  "strict": true,
-  "idInjection": false,
-  "options": {
-    "validateUpsert": true,
-    "mongodb": {
-        "collection":"Dataset"
-    }
-  },
-  "properties": {
-    "investigator": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Email of person pursuing the data analysis"
+    "name": "DerivedDataset",
+    "description": "Contains the information for datasets which are the result of an analysis step, typically based on raw datasets or other derived datasets as input. Derived datasets are typically added by the researcher pursuing the specific analysis. This schema inherits the fields from the generic Dataset collection and adds specific fields as defined below.",
+    "base": "Dataset",
+    "strict": true,
+    "idInjection": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "Dataset"
+        }
     },
-    "inputDatasets": {
-      "type": [
-        "string"
-      ],
-      "required": true,
-      "description": "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs"
+    "properties": {
+        "investigator": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Email of person pursuing the data analysis"
+        },
+        "inputDatasets": {
+            "type": [
+                "string"
+            ],
+            "required": true,
+            "description": "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs"
+        },
+        "usedSoftware": {
+            "type": [
+                "string"
+            ],
+            "required": true,
+            "description": "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data"
+        },
+        "jobParameters": {
+            "type": "object",
+            "description": "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here"
+        },
+        "jobLogData": {
+            "type": "string",
+            "description": "The output job logfile. Keep the size of this log data well below 15 MB "
+        }
     },
-    "usedSoftware": {
-      "type": [
-        "string"
-      ],
-      "required": true,
-      "description": "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data"
-    },
-    "jobParameters": {
-      "type": "object",
-      "description": "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here"
-    },
-    "jobLogData": {
-      "type": "string",
-      "description": "The output job logfile. Keep the size of this log data well below 15 MB "
-    }
-  },
-  "validations": [],
-  "relations": {},
-  "acls": [],
-  "methods": {}
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
 }
