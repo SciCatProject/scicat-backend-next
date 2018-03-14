@@ -6,6 +6,9 @@ var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
 
+const uuidv3 = require('uuid/v3');
+
+
 // Create an instance of PassportConfigurator with the app instance
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
@@ -57,6 +60,11 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     }
     if (!profile.id) {
         profile.id = user['uid'];
+		if (!(uid in user)){
+			const MY_NAMESPACE = '1b671a64-40d5-491e-99b0-da01ff1f3341';
+			const generated_id = uuidv3( user['mail'], MY_NAMESPACE);
+			profile.id = generated_id;
+		}
     }
     if (!profile.emails) {
         var email = [].concat(user['mail'])[0];
