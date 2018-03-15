@@ -5,6 +5,7 @@ var path = require('path');
 var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
+var configlocal = require('./config.local');
 
 const uuidv3 = require('uuid/v3');
 
@@ -74,6 +75,9 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             }];
         }
     }
+	if ( configlocal.site === 'ESS'){
+		profile.accessGroups = ['ess', 'loki', 'odin'];
+	}
     console.log("++++++++++ Profile:", profile)
     return profile;
 };
