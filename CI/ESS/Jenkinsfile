@@ -1,4 +1,4 @@
-node {
+node ('docker') {
        stage('Checkout'){
 
           checkout scm
@@ -6,10 +6,11 @@ node {
 
 
        stage('Build Docker') {
-            sh 'docker-compose build -f CI/ESS/docker-compose.yaml'
+            sh 'docker  build -f CI/ESS/Dockerfile.proxy  . -t catamel_test'
        }
        stage('SuperTest Catamel ') {
-            sh 'docker run  --privileged -t catamel_test npm run test'
+            //sh 'docker run  --privileged -t catamel_test npm run test'
        }
 
 }
+
