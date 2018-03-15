@@ -76,7 +76,9 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
         }
     }
 	if ( configlocal.site === 'ESS'){
+	       if (!profile.accessGroups) {
 		profile.accessGroups = ['ess', 'loki', 'odin'];
+					         }
 	}
     console.log("++++++++++ Profile:", profile)
     return profile;
