@@ -52,11 +52,28 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept:applicat
 
 Jobs in Catamel are published to a queue when they are received. It is your responsibility to configure that queue and there is NO default in place.
 
-Without setting this up, none of your job submissions will go anywhere.
+Without setting this up, none of your job submissions will NOT go anywhere.
 
 The two supported options are:
 1. RabbitMQ (loopback-component-mq)
 2. Apache Kafka (loopback-connector-kafka)
+
+Both packages are installed at time of install and you can select a queue in `config.local.js`, like this:
+
+`queue: "rabbitmq" // also accepts "kafka" or null`
+
+
+### Rabbit
+
+1. Set `config.local.js` queue value to "rabbitmq".
+2. Provide configuration for rabbitmq as a new block in `component-config.json`. NOTE: Make sure this is empty
+
+### Kafka
+
+1. Set `config.local.js` queue value to "kafka".
+2. Instructions for configuring Kafka can be found [here](https://www.npmjs.com/package/loopback-connector-kafka)
+
+* Creating a datasource programatically in the model you want to attach will often be the easiest solution.
 
 # Data models
 
