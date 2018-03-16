@@ -109,5 +109,30 @@
             "res.body.should.be.instanceof(Object);",
             "res.body.should.have.property('results').and.be.instanceof(Array);"
         ]
+    },
+    {
+        "method": "POST",
+        "route": "Jobs",
+        "expect": 400,
+        "authenticate": "user",
+        "body": {
+            "emailJobInitiator": "scicatingestor@psi.ch",
+            "type": "archive",
+            "creationTime": "2018-03-16T13:09:52.336Z",
+            "jobParams": {
+                "username": "ingestor",
+                "tapeCopies": "one"
+            },
+            "dateOfLastMessage": "2018-03-16T13:10:16.918Z",
+            "datasetList": [
+                {
+                "pid": "wrong_pid",
+                "files": []
+                }
+            ],
+            "id": "5aabc238f1d1b50008b90525",
+            "createdAt": "2018-03-16T13:10:16.918Z",
+            "updatedAt": "2018-03-16T13:10:16.918Z"
+            }
     }
 ]
