@@ -2,6 +2,7 @@
 
 var nodemailer = require('nodemailer');
 var config = require('../../server/config.local');
+var app = require('../../server/server');
 
 module.exports = function (Job) {
     Job.observe('before save', (ctx, next) => {
@@ -16,6 +17,20 @@ module.exports = function (Job) {
     });
 
     Job.observe('after save', (ctx, next) => {
+        const j  = ctx.instance;
+        var Dataset = app.models.Dataset;
+        // Ensure that each dataset is valid. Could also extend to check data files
+        j.datasetList.map(function(entry) {
+            Dataset.findById(entry.pid, function(err, res) {
+                if (err || !res) {
+                    var e = new Error();
+                    e.statusCode = 400;
+                    e.message = 'Dataset provided other does not exist or provided an error';
+                    next(e);
+                }
+            });
+        });
+
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 Job.publishJob(ctx.instance, 'jobqueue');
