@@ -1,0 +1,39 @@
+# gives a docker image below 200 MB
+FROM node:9
+
+ENV NODE_ENV "production"
+ENV PORT 3000
+EXPOSE 3000
+# create local user to avoid running as root
+
+
+ENV http_proxy "http://192.168.1.1:8123"
+ENV https_proxy $http_proxy
+ENV no_proxy "localhost, 127.0.0.1"
+RUN apt-get update && apt-get install -y rabbitmq-server mongodb-clients netcat mongodb vim
+
+# Prepare app directory
+WORKDIR /usr/src/app
+COPY package.json /usr/src/app/
+
+RUN npm config set -g production false
+# Install our packages
+RUN npm config set proxy  $http_proxy
+RUN npm config set https-proxy  $http_proxy
+RUN npm config set registry http://registry.npmjs.org/
+RUN npm config set strict-ssl false
+RUN npm install
+
+
+# Copy the rest of our application, node_modules is ignored via .dockerignore
+COPY . /usr/src/app
+#COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local
+COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
+#COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
+COPY CI/ESS/start.sh /usr/src/app/start.sh
+#COPY CI/ESS/settings.json /usr/src/app/test/config/
+RUN NODE_ENV=dev
+# Start the app
+CMD ["./start.sh"]

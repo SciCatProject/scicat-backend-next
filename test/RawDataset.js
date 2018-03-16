@@ -80,7 +80,7 @@ var testraw = {
     "description": "None",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p10021",
+    "ownerGroup": "p10029",
     "accessGroups": [],
     "proposalId": "10.540.16635/20110123"
 }
@@ -164,7 +164,6 @@ describe('RawDatasets', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                console.log(res);
                 res.body.should.have.property('results').and.be.an('array').and.have.length(1);
                 res.body.results[0].should.have.property('type').and.equal('raw');
                 if(err)

@@ -1,67 +1,75 @@
 {
-  "name": "Job",
-  "base": "PersistedModel",
-  "idInjection": true,
-  "strict": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "replaceOnPUT": false,
-  "mixins": {
-    "TimeStamp": {
-      "createdAt": "createdAt",
-      "updatedAt": "updatedAt",
-      "required": false,
-      "validateUpsert": true,
-      "silenceWarnings": false
-    }
-  },
-  "properties": {
-    "emailJobInitiator": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "The email of the person initiating the job request"
+    "name": "Job",
+    "description": "This collection keeps information about jobs to be excuted in external systems. In particular it keeps information about the jobs submitted for archiving or retrieving datasets stored inside an archive system. It can also be used to keep track of analysis jobs e.g. for automated analysis workflows.",
+    "base": "PersistedModel",
+    "idInjection": true,
+    "strict": true,
+    "options": {
+        "validateUpsert": true
     },
-    "type": {
-      "type": "string",
-      "required": true,
-      "description": "Type of job, e.g. archive, retrieve etc",
-      "default": "retrieve"
+    "replaceOnPUT": false,
+    "mixins": {
+        "TimeStamp": {
+            "createdAt": "createdAt",
+            "updatedAt": "updatedAt",
+            "required": false,
+            "validateUpsert": true,
+            "silenceWarnings": false
+        },
+        "MessageQueue": {
+            "producers": {
+                "publishJob": {
+                    "exchange": "jobs.write"
+                }
+            }
+        }
     },
-    "creationTime": {
-      "type": "date",
-      "index": true,
-      "description": "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
+    "properties": {
+        "emailJobInitiator": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "The email of the person initiating the job request"
+        },
+        "type": {
+            "type": "string",
+            "required": true,
+            "description": "Type of job, e.g. archive, retrieve etc",
+            "default": "retrieve"
+        },
+        "creationTime": {
+            "type": "date",
+            "index": true,
+            "description": "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
+        },
+        "executionTime": {
+            "type": "date",
+            "description": "Time when job should be executed. If not specified then the Job will be executed asap. Format according to chapter 5.6 internet date/time format in RFC 3339"
+        },
+        "jobParams": {
+            "type": "object",
+            "description": "Object of key-value pairs defining job input parameters, e.g. 'desinationPath' for retrieve jobs or 'tapeCopies' for archive jobs"
+        },
+        "jobStatusMessage": {
+            "type": "string",
+            "description": "Defines current status of job lifecycle"
+        },
+        "archiveReturnMessage": {
+            "type": "string",
+            "description": "Detailed status or error message returned by archive system at archive job creation time. If One Job request triggers many archive requests, e.g. when archiving multiple datasets in one job, then this message contains the result of the last dataset handled"
+        },
+        "dateOfLastMessage": {
+            "type": "date",
+            "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
+        },
+        "datasetList": {
+            "type": "object",
+            "required": true,
+            "description": "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected"
+        }
     },
-    "executionTime": {
-      "type": "date",
-      "description": "Time when job should be executed. If not specified then the Job will be executed asap. Format according to chapter 5.6 internet date/time format in RFC 3339"
-    },
-    "jobParams": {
-      "type": "object",
-      "description": "Object of key-value pairs defining job input parameters, e.g. 'desinationPath' for retrieve jobs or 'tapeCopies' for archive jobs"
-    },
-    "jobStatusMessage": {
-      "type": "string",
-      "description": "Defines current status of job lifecycle"
-    },
-    "archiveReturnMessage": {
-      "type": "string",
-      "description": "Detailed status or error message returned by archive system at archive job creation time. If One Job request triggers many archive requests, e.g. when archiving multiple datasets in one job, then this message contains the result of the last dataset handled"
-    },
-    "dateOfLastMessage": {
-      "type": "date",
-      "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
-    },
-    "datasetList": {
-      "type": "object",
-      "required": true,
-      "description": "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected"
-    }
-  },
-  "validations": [],
-  "relations": {},
-  "acls": [],
-  "methods": {}
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
 }

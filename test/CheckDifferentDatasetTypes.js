@@ -32,7 +32,8 @@ var testdataset = {
     "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
-    "accessGroups": []
+    "accessGroups": [],
+    "type":"base"
 }
 
 var testraw = {
@@ -106,7 +107,8 @@ var testraw = {
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": [],
-    "proposalId": "10.540.16635/20110123"
+    "proposalId": "10.540.16635/20110123",
+    "type":"raw"
 }
 
 var testderived = {
@@ -133,7 +135,8 @@ var testderived = {
     "description": "Some fancy description",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p34123"
+    "ownerGroup": "p34123",
+    "type":"derived"
 }
 
 var countDataset = 0;
@@ -204,6 +207,39 @@ describe('Check different dataset types and their inheritance', () => {
             });
     });
 
+    // check if dataset is valid
+
+    it('check if raw dataset is valid', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets/isValid')
+            .send(testraw)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                console.log(res.body)
+                if (err)
+                    return done(err);
+                res.body.should.have.property('valid').and.equal(true);
+                done();
+            });
+    });
+
+    it('check if wrong data is recognized as invalid', function(done) {
+        request(app)
+            .post('/api/v2/RawDatasets/isValid')
+            .send(testderived)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                console.log(res.body)
+                if (err)
+                    return done(err);
+                res.body.should.have.property('valid').and.equal(false);
+                done();
+            });
+    });
     // add dataset and check what happened to counts
 
     it('adds a new dataset', function(done) {
@@ -219,6 +255,7 @@ describe('Check different dataset types and their inheritance', () => {
                 res.body.should.have.property('version').and.be.string;
                 res.body.should.have.property('type').and.equal('base');
                 res.body.should.have.property('pid').and.be.string;
+                res.body.should.have.property('createdBy').and.equal('ingestor')
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });

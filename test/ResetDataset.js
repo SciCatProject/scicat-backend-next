@@ -86,13 +86,13 @@ var testraw = {
     "description": "None",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p10021",
+    "ownerGroup": "p10029",
     "accessGroups": [],
     "proposalId": "10.540.16635/20110123"
 }
 
 var testDataBlock = {
-    "archiveId": "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    "archiveId": "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
     "chkAlg": "sha1",
@@ -143,7 +143,7 @@ var testDataBlock = {
             "perm": "-rw-rw-r--"
         }
     ],
-    "ownerGroup": "p10021"
+    "ownerGroup": "p10029"
 }
 
 var testDatasetLifecycle = {
@@ -153,7 +153,7 @@ var testDatasetLifecycle = {
     "archiveStatusMessage": "datasetIsArchived",
     "retrieveStatusMessage": "",
     "isExported": false,
-    "ownerGroup": "p10021"
+    "ownerGroup": "p10029"
 }
 
 describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
@@ -188,6 +188,7 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 res.body.should.have.property('owner').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
+                res.body.should.have.property('createdBy').and.equal('ingestor');
                 // store link to this dataset in datablocks and datasetlifecycle
                 testDataBlock.datasetId = res.body['pid']
                 testDatasetLifecycle.id = res.body['pid']
@@ -209,13 +210,14 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                     return done(err);
                 res.body.should.have.property('size');
                 res.body.should.have.property('id').and.be.string;
+                res.body.should.have.property('createdBy').and.equal('archiveManager')
                 idDatablock = encodeURIComponent(res.body['id']);
                 done();
             });
     });
 
     it('adds a second datablock for same dataset', function(done) {
-        testDataBlock.archiveId = "oneCopyBig/p10021/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
+        testDataBlock.archiveId = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
             request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testDataBlock)
@@ -282,7 +284,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
     it('should reset the archive information from the newly created dataset', function(done) {
         request(app)
             .post('/api/v2/Datasets/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
-            .send({datasetId:testDataBlock.datasetId})
+            .send({
+                datasetId: testDataBlock.datasetId
+            })
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -337,6 +341,21 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
+    it('should check createdBy and updatedBy fields of the newly created dataset', function(done) {
+        request(app)
+            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.be.instanceof(Object);
+                res.body.should.have.property('createdBy').and.equal('ingestor');
+                res.body.should.have.property('updatedBy').and.equal('archiveManager');
+                done();
+            });
+    });
 
     it('should delete the newly created dataset', function(done) {
         request(app)

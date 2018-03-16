@@ -1,75 +1,78 @@
 {
-  "name": "OrigDatablock",
-  "base": "Ownable",
-  "idInjection": true,
-  "strict": true,
+    "name": "OrigDatablock",
+    "description": "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
+    "base": "Ownable",
+    "idInjection": true,
+    "strict": true,
     "indexes": {
-    "datasetId_index": {
-      "keys": {
-        "datasetId": 1
-      }
-    }
-  },
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "id": {
-      "type": "string",
-      "required": true
+        "datasetId_index": {
+            "keys": {
+                "datasetId": 1
+            }
+        }
     },
-    "size": {
-      "type": "number",
-      "required": true,
-      "index": true
+    "options": {
+        "validateUpsert": true
     },
-    "dataFileList": {
-      "type": [
-        "Datafile"
-      ],
-      "required": true
-    }
-  },
-  "validations": [],
-  "relations": {
-    "dataset": {
-      "type": "belongsTo",
-      "model": "Dataset",
-      "foreignKey": "",
-      "required": true
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
+    "properties": {
+        "id": {
+            "type": "string",
+            "required": true,
+            "description": "Automatically created ID"
+        },
+        "size": {
+            "type": "number",
+            "required": true,
+            "index": true,
+            "description": "Total size in bytes of all files contained in the dataFileList"
+        },
+        "dataFileList": {
+            "type": [
+                "Datafile"
+            ],
+            "required": true,
+            "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. In case the linked dataset has a source *folder* all file paths are relative file paths. In the single file dataset case the path is the fullpath to the dataset file on the source system."
+        }
     },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
+    "validations": [],
+    "relations": {
+        "dataset": {
+            "type": "belongsTo",
+            "model": "Dataset",
+            "foreignKey": "",
+            "required": true
+        }
     },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
-    }
-  ],
-  "methods": {}
+    "acls": [{
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "admin",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "admin",
+            "permission": "ALLOW"
+        }
+    ],
+    "methods": {}
 }

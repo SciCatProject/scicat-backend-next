@@ -1,5 +1,6 @@
 {
   "name": "DatasetLifecycle",
+  "description":"For each dataset there exists exactly one dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
   "base": "Ownable",
   "idInjection": false,
   "strict": true,
