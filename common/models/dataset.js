@@ -87,7 +87,7 @@ module.exports = function(Dataset) {
     Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
-        ctx.args.fields.type = undefined
+        ctx.args.fields.type = undefined;
         utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
