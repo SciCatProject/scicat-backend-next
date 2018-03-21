@@ -1,7 +1,6 @@
 'use strict';
 
 module.exports = function (Deriveddataset) {
-    var app = require('../../server/server');
     var utils = require('./utils');
 
     // filter on dataset type (raw, derived etc)
