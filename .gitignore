@@ -29,4 +29,5 @@ CI/PSI/envfiles/*
 CI/PSI/catamel-psiconfig/
 CI/PSI/catamel-psisecrets/
 client/api/angular2
+client/api/python
 test/config/settings.json
