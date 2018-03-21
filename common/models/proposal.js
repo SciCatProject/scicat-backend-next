@@ -1,5 +1,4 @@
 'use strict';
-var config = require('../../server/config.local');
 var utils = require('./utils');
 
 module.exports = function(Proposal) {
