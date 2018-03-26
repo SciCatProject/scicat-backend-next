@@ -41,8 +41,8 @@ module.exports = function (Dataset) {
         next();
     });
 
-    // clean up data connected to a dataset, e.g. if archiving failed
-    // TODO change API to a put/patch or even delete command ? Pass ID in URL
+  // clean up data connected to a dataset, e.g. if archiving failed
+  // TODO change API to a put/patch or even delete command ? Pass ID in URL
 
     Dataset.reset = function (id, options, next) {
         // console.log('resetting ' + id);
@@ -78,9 +78,11 @@ module.exports = function (Dataset) {
                 });
             }
         });
-    };
+      }
+    });
+  };
 
-    /**
+  /**
      * Inherited models will not call this before access, so it must be replicated
      */
     Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
@@ -136,13 +138,18 @@ module.exports = function (Dataset) {
                             }
                             break;
                     }
-                } else if (keys[i] === 'text' && value !== 'null') {
-                    match['$text'] = value;
-                    // TODO check in config map for extra strings, i.e. creationTime start and end
-                } else {
-                    // ignore
-                }
-            }
+                  } else if (Object.keys(value).length !== 2) {
+                    cb(new Error('Only one date specified, need a range'), null);
+                  }
+                  break;
+              }
+              break;
+          }
+        } else if (keys[i] === 'text' && value !== 'null') {
+          match['$text'] = value;
+          // TODO check in config map for extra strings, i.e. creationTime start and end
+        } else {
+          // ignore
         }
         let facetObject = {};
         var baseFacets = [{

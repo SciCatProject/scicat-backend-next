@@ -18,6 +18,11 @@
         "no-unreachable": "warn",
         "no-unused-vars": "warn",
         "constructor-super": "warn",
-        "valid-typeof": "warn"
+        "valid-typeof": "warn",
+        "max-len": ["error", 140, 4, {
+            "ignoreComments": true,
+            "ignoreUrls": true,
+            "ignorePattern": "^\\s*var\\s.+=\\s*(require\\s*\\()|(/)"
+          }]
     }
 }

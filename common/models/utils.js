@@ -159,7 +159,7 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
 }
 
 exports.handleOwnerGroups = function(ctx, userDetails, next) {
-    const userId = ctx.req.accessToken && ctx.req.accessToken.userId;
+    let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
     if (userId === null) {
         userId = ctx.req.args.accessToken;
     }

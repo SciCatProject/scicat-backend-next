@@ -26,17 +26,17 @@ module.exports = function (Job) {
                             console.log(error);
                             next();
                         } else {
-                            console.log('Server is ready to take our messages');
                             var message = Object.assign({}, config.smtpMessage);
                             message['to'] = ctx.instance.emailJobInitiator;
                             message['subject'] += ' Job Submitted Successfully';
-                            let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.';
+                            let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + 
+                            ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.';
                             message['text'] = text;
                             transporter.sendMail(message, function (err, info) {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log('Email sent');
+                                    console.log('Email sent:' + info);
                                 }
                                 next();
                             });
