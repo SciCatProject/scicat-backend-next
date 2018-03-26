@@ -80,7 +80,7 @@
         "expect": 200,
         "authenticate": "user",
         "body": {
-            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "keywords"} }]
+            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "$keywords"} }]
         },
         "response": [
             "res.body.should.be.instanceof(Object);",
