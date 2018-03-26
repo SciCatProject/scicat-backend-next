@@ -118,10 +118,30 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
     dateKeys.map(function(dateKey) {
         if (instance[dateKey]) {
             // console.log("Updating old ", dateKey, instance[dateKey])
-            instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
+            instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format();
             // console.log("New time:", instance[dateKey])
         }
     });
+}
+
+exports.createFacetPipeline = function(name, type, preConditions, query) {
+    const pipeline = [];
+    if (preConditions) {
+        pipeline.push(preConditions);
+    }
+    let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
+    if (type === 'date') {
+        grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
+    }
+    pipeline.push(grp);
+    if (query && Object.keys(query).length > 0) {
+        var q = Object.assign({}, query);
+        delete q[name];
+        pipeline.push({$match: q});
+    }
+    const sort = {$sort: {count: -1, _id: -1}};
+    pipeline.push(sort);
+    return pipeline;
 }
 
 // dito but for array of instances
@@ -171,11 +191,11 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
             }, function(err, instance) {
                 console.log("UserIdentity Instance:", instance)
                 if (instance && instance.profile) {
-                    var foundGroups = instance.profile.accessGroups
+                    var foundGroups = instance.profile.accessGroups;
                     // check if a normal user or an internal ROLE
                     if (typeof foundGroups === 'undefined') {
                         ctx.args.fields.ownerGroup = [];
-                        next()
+                        next();
                     }
                     var a = new Set(groups);
                     var b = new Set(foundGroups);
