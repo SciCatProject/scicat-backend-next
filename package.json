@@ -3,7 +3,7 @@
   "version": "2.6.2",
   "main": "server/server.js",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint common/models",
     "start": "node .",
     "posttests": "npm run lint && nsp check",
     "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter spec --exit 2>/dev/null"
