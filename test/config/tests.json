@@ -80,15 +80,12 @@
         "expect": 200,
         "authenticate": "user",
         "body": {
-            "facets": [{
-                "name": "owner",
-                "type": "text"
-            }]
+            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "$keywords"} }]
         },
         "response": [
             "res.body.should.be.instanceof(Object);",
             "res.body.should.have.property('results').and.be.instanceof(Array);",
-            "res.body['results'][0].should.have.property('owner');"
+            "res.body['results'][0].should.have.property('keywords');"
         ]
     },
     {
