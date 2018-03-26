@@ -92,10 +92,6 @@ module.exports = function (Dataset) {
 
     Dataset.facet = function (fields, facets, cb) {
         var findFilter = [];
-        var unwind = {
-            $unwind: '$keywords'
-        };
-        // findFilter.push(unwind);
         var match = {};
         var type = undefined;
         if (fields) {
@@ -149,120 +145,25 @@ module.exports = function (Dataset) {
                 }
             }
         }
-        let facetObject = {
-            // The `years` property will be the output of the 'count by year'
-            // pipeline
-            creationTime: [{
-                    $group: {
-                        _id: {
-                            year: {
-                                $year: '$creationTime',
-                            },
-                            month: {
-                                $month: '$creationTime',
-                            },
-                            day: {
-                                $dayOfMonth: '$creationTime',
-                            },
-                        },
-                        count: {
-                            $sum: 1,
-                        },
-                    },
-                },
-                // Sort by year descending
-                {
-                    $sort: {
-                        count: -1,
-                        _id: -1,
-                    },
-                },
-            ],
-            ownerGroup: [
-                // Count the number of groups
-                {
-                    $group: {
-                        _id: '$ownerGroup',
-                        count: {
-                            $sum: 1,
-                        },
-                    },
-                },
-                // Sort by name ascending
-                {
-                    $sort: {
-                        count: -1,
-                        _id: 1,
-                    },
-                },
-            ],
-            creationLocation: [{
-                    $group: {
-                        _id: '$creationLocation',
-                        count: {
-                            $sum: 1,
-                        },
-                    },
-                },
-                {
-                    $sort: {
-                        count: -1,
-                        _id: 1,
-                    },
-                },
-            ],
-            keywords: [{
-                    $unwind: '$keywords',
-                }, {
-                    $group: {
-                        _id: '$keywords',
-                        count: {
-                            $sum: 1,
-                        },
-                    },
-                },
-                {
-                    $sort: {
-                        count: -1,
-                        _id: 1,
-                    },
-                },
-            ]
-        };
-        // add queries to each facet object and remove the query of that type
-        if (Object.keys(match).length !== 0) {
-            Object.keys(facetObject).map(function(k) {
-                delete match[k];
-                console.log(k);
-                facetObject[k].push({
-                    $match: match
-                });
-            });
-        }
-        // Ensure that the count value is numerical (the SDK seems to parse this request as string)
-        // TODO this needs to be more general, $sort is not the only key supported
-        if (facets) {
-            Object.keys(facets).map(function (k) {
-                const f = facets[k];
-                if (f.length == 2 && '$sort' in f[1]) {
-                    f[1]['$sort']['count'] = Number(f[1]['$sort']['count']);
-                    f[1]['$sort']['_id'] = Number(f[1]['$sort']['_id']);
-                }
-            });
-        }
+        let facetObject = {};
+        var baseFacets = [{name: 'creationTime', type: 'date'}, {name: 'ownerGroup', type: 'text'}, {name: 'creationLocation', type: 'text'}];
+        baseFacets.map(function(f) {
+          facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
+        });
+        facets.map(function(f) {
+            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
+        });
+        
 
-        facetObject = Object.assign({}, facetObject);
         findFilter.push({
             $facet: facetObject,
         });
-        console.log(findFilter);
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
                 function (err, res) {
                     if (err)
                         console.log(err);
-                    // console.log(res);
                     res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
