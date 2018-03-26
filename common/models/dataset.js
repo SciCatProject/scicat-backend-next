@@ -127,7 +127,7 @@ module.exports = function (Dataset) {
                                             };
                                         } else {
                                             // TODO change from null in Catanie to undefined
-                                            cb(new Error('Dates are an invalid format'), null);
+                                            // cb(new Error('Dates are an invalid format'), null);
                                         }
                                     } else if (Object.keys(value).length !== 2) {
                                         cb(new Error('Only one date specified, need a range'), null);
