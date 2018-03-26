@@ -201,8 +201,8 @@
                 },
                 {
                     "arg": "facets",
-                    "type": "object",
-                    "description": "This should follow the Mongo Facet syntax (https://docs.mongodb.com/manual/reference/operator/aggregation/facet/). Can be undefined and uses defaults explained in description of route."
+                    "type": "array",
+                    "description": "This should be an array of objects with the structure: {name: key in mongo (without $ prefix), type: date|text|etc, preConditions: object to include in the query (i.e. unwind)}"
                 }
             ],
             "returns": {

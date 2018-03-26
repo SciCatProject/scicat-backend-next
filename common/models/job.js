@@ -9,9 +9,9 @@ module.exports = function (Job) {
 
     // Attach job submission to Kafka
     if ('queue' in config && config.queue === 'kafka') {
-        var options = {
-            connectionString: 'localhost:2181/'
-        };
+        // var options = {
+        //     connectionString: 'localhost:2181/'
+        // };
         var dataSource = new DataSource('kafka', options);
         Job.attachTo(dataSource);
     }

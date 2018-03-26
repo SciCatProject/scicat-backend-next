@@ -4,26 +4,25 @@ var config = require('../../server/config.local');
 var p = require('../../package.json');
 var utils = require('./utils');
 
-module.exports = function(Dataset) {
-
+module.exports = function (Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
     // put
-    Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
-        utils.updateTimesToUTC(["creationTime"], ctx.args.data)
+    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
-    //patch
-    Dataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
-        utils.updateTimesToUTC(["creationTime"], ctx.args.data)
+    // patch
+    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
-    //post
-    Dataset.beforeRemote('create', function(ctx, unused, next) {
-        utils.updateTimesToUTC(["creationTime"], ctx.args.data)
+    // post
+    Dataset.beforeRemote('create', function (ctx, unused, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
@@ -45,34 +44,34 @@ module.exports = function(Dataset) {
     // clean up data connected to a dataset, e.g. if archiving failed
     // TODO change API to a put/patch or even delete command ? Pass ID in URL
 
-    Dataset.reset = function(id, options, next) {
+    Dataset.reset = function (id, options, next) {
         // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findById(id, options, function(err, l) {
+        DatasetLifecycle.findById(id, options, function (err, l) {
             if (err) {
                 next(err);
             } else {
                 l.updateAttributes({
                     archiveStatusMessage: 'datasetCreated',
-                    retrieveStatusMessage: ''
-                },options);
+                    retrieveStatusMessage: '',
+                }, options);
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
-                    datasetId: id
-                }, options, function(err, b) {
+                    datasetId: id,
+                }, options, function (err, b) {
                     if (err) {
                         next(err);
                     } else {
                         // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function(err, instance) {
+                        Dataset.findById(id, options, function (err, instance) {
                             if (err) {
                                 next(err);
                             } else {
                                 instance.updateAttributes({
-                                    packedSize: 0
-                                },options)
-                                next()
+                                    packedSize: 0,
+                                }, options);
+                                next();
                             }
                         });
                     }
@@ -84,40 +83,37 @@ module.exports = function(Dataset) {
     /**
      * Inherited models will not call this before access, so it must be replicated
      */
-    Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
-        ctx.args.fields.type = undefined
+        ctx.args.fields.type = undefined;
         utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
-    Dataset.facet = function(fields, facets, cb) {
+    Dataset.facet = function (fields, facets = [], cb) {
         var findFilter = [];
-        var unwind = {$unwind: '$keywords'};
-        findFilter.push(unwind);
         var match = {};
-        var type = undefined;
+        var type;
         if (fields) {
             if ('type' in fields)
                 type = fields['type'];
             var keys = Object.keys(fields);
-            // var RawDataset = app.models.RawDataset;
             for (var i = 0; i < keys.length; i++) {
                 var modelType = Dataset.getPropertyType(keys[i]);
                 var value = fields[keys[i]];
-                if (modelType !== undefined && value !== 'undefined' && value !== 'null') {
+                if (modelType !== undefined && value !== undefined && value !== 'null') {
                     switch (modelType) {
                         case 'String':
-                            if (Array.isArray(value) && value.length > 0) { //TODO  security flaw if somehow an empty array is received (remote hook should prevent this)
+                            if (Array.isArray(value) && value.length > 0) { // TODO security flaw if somehow an empty array is received (remote hook should prevent this)
                                 match[keys[i]] = {
-                                    '$in': value
+                                    '$in': value,
                                 };
-                            } else if (typeof(value) === 'string' && value) {
+                            } else if (typeof (value) === 'string' && value) {
                                 match[keys[i]] = value;
                             }
                             break;
                         case 'Date':
-                            var reqType = typeof(value);
+                            var reqType = typeof (value);
                             switch (reqType) {
                                 case 'string':
                                     match[keys[i]] = new Date(value);
@@ -130,8 +126,8 @@ module.exports = function(Dataset) {
                                                 '$lte': new Date(value['end']),
                                             };
                                         } else {
-                                            //TODO change from null in Catanie to undefined
-                                            // cb(new Error('Dates are an invalid format'), null);
+                                            // TODO change from null in Catanie to undefined
+                                            cb(new Error('Dates are an invalid format'), null);
                                         }
                                     } else if (Object.keys(value).length !== 2) {
                                         cb(new Error('Only one date specified, need a range'), null);
@@ -148,117 +144,51 @@ module.exports = function(Dataset) {
                 }
             }
         }
-        if (Object.keys(match).length !== 0) {
-            findFilter.push({
-                $match: match
-            });
-        }
-        let facetObject = {
-            // The `years` property will be the output of the 'count by year'
-            // pipeline
-            creationTime: [{
-                    $group: {
-                        _id: {
-                            year: {
-                                $year: "$creationTime"
-                            },
-                            month: {
-                                $month: "$creationTime"
-                            },
-                            day: {
-                                $dayOfMonth: "$creationTime"
-                            },
-                        },
-                        count: {
-                            $sum: 1
-                        }
-                    }
-                },
-                // Sort by year descending
-                {
-                    $sort: {
-                        count: -1,
-                        _id: -1
-                    }
-                }
-            ],
-            ownerGroup: [
-                // Count the number of groups
-                {
-                    $group: {
-                        _id: "$ownerGroup",
-                        count: {
-                            $sum: 1
-                        }
-                    }
-                },
-                // Sort by name ascending
-                {
-                    $sort: {
-                        count: -1,
-                        _id: 1
-                    }
-                }
-            ],
-            creationLocation: [{
-                    $group: {
-                        _id: "$creationLocation",
-                        count: {
-                            $sum: 1
-                        }
-                    }
-                },
-                {
-                    $sort: {
-                        count: -1,
-                        _id: 1
-                    }
-                }
-            ]
-        };
-        // Ensure that the count value is numerical (the SDK seems to parse this request as string)
-        // TODO this needs to be more general, $sort is not the only key supported and
-        if (facets) {
-            Object.keys(facets).map(function(k) {
-                const f = facets[k];
-                if (f.length == 2 && '$sort' in f[1]) {
-                    f[1]['$sort']['count'] = Number(f[1]['$sort']['count']);
-                    f[1]['$sort']['_id'] = Number(f[1]['$sort']['_id']);
-                }
-            });
-        }
-
-        facetObject = Object.assign({}, facetObject, facets);
-        findFilter.push({
-            $facet: facetObject
+        let facetObject = {};
+        var baseFacets = [{
+            name: 'creationTime',
+            type: 'date'
+        }, {
+            name: 'ownerGroup',
+            type: 'text'
+        }, {
+            name: 'creationLocation',
+            type: 'text'
+        }];
+        baseFacets.map(function (f) {
+            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
         });
-        Dataset.getDataSource().connector.connect(function(err, db) {
-            var collection = db.collection("Dataset");
+        facets.map(function (f) {
+            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
+        });
+        findFilter.push({
+            $facet: facetObject,
+        });
+        Dataset.getDataSource().connector.connect(function (err, db) {
+            var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
-                function(err, res) {
+                function (err, res) {
                     if (err)
                         console.log(err);
-                    // console.log(res);
-                    res[0]['type'] = type; //TODO check array length is 1 (since it is only aggregate and return just that)
+                    res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
         });
     };
 
-
-    Dataset.isValid = function(dataset, next) {
-        var ds = new Dataset(dataset)
-        ds.isValid(function(valid) {
+    Dataset.isValid = function (dataset, next) {
+        var ds = new Dataset(dataset);
+        ds.isValid(function (valid) {
             if (!valid) {
                 next(null, {
                     'errors': ds.errors,
-                    'valid': false
-                })
+                    'valid': false,
+                });
             } else {
                 next(null, {
-                    'valid': true
-                })
+                    'valid': true,
+                });
             }
         });
-    }
+    };
 };

@@ -79,25 +79,13 @@
         "route": "Datasets/facet",
         "expect": 200,
         "authenticate": "user",
-        "body": {"facets":{
-            "owner": [{
-                "$group": {
-                    "_id": "$owner",
-                    "count": {
-                        "$sum": 1
-                    }
-                }
-            }, {
-                "$sort": {
-                    "count": -1,
-                    "_id": 1
-                }
-            }]}
+        "body": {
+            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "$keywords"} }]
         },
-        "response":[
+        "response": [
             "res.body.should.be.instanceof(Object);",
             "res.body.should.have.property('results').and.be.instanceof(Array);",
-            "res.body['results'][0].should.have.property('owner');"
+            "res.body['results'][0].should.have.property('keywords');"
         ]
     },
     {
@@ -105,7 +93,7 @@
         "route": "Datasets/facet",
         "expect": 200,
         "authenticate": "user",
-        "response":[
+        "response": [
             "res.body.should.be.instanceof(Object);",
             "res.body.should.have.property('results').and.be.instanceof(Array);"
         ]
