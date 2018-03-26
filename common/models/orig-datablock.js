@@ -38,4 +38,20 @@ module.exports = function(Origdatablock) {
         utils.transferSizeToDataset(OrigDatablock, 'size', ctx, next)
 
     })
+
+    Origdatablock.isValid = function(instance, next) {
+        var ds = new Origdatablock(instance)
+        ds.isValid(function(valid) {
+            if (!valid) {
+                next(null, {
+                    'errors': ds.errors,
+                    'valid': false
+                })
+            } else {
+                next(null, {
+                    'valid': true
+                })
+            }
+        });
+    }
 };

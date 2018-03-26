@@ -5,7 +5,6 @@ var utils = require('./utils');
 
 module.exports = function(Datasetlifecycle) {
 
-    var app = require('../../server/server');
     // put
     Datasetlifecycle.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['dateOfLastMessage'], ctx.args.data);
@@ -15,7 +14,6 @@ module.exports = function(Datasetlifecycle) {
     //patch
     Datasetlifecycle.beforeRemote('patchOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['dateOfLastMessage'], ctx.args.data);
-
         next();
     });
 
@@ -49,4 +47,21 @@ module.exports = function(Datasetlifecycle) {
         // add ownerGroup field from linked Datasets
         utils.addOwnerGroup(ctx, next)
      })
+
+     Datasetlifecycle.isValid = function(instance, next) {
+         var ds = new Datasetlifecycle(instance)
+         ds.isValid(function(valid) {
+             if (!valid) {
+                 next(null, {
+                     'errors': ds.errors,
+                     'valid': false
+                 })
+             } else {
+                 next(null, {
+                     'valid': true
+                 })
+             }
+         });
+     }
+
 };

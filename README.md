@@ -34,6 +34,30 @@ server/datasources.local.json e.g.
 
 ```
 
+## Email Notifications
+
+Inside your `config.local.js`, you can add the following blocks to enable email notification on submission of a Job. In the future, other notification types will be supported.
+
+```
+    smtpSettings: {
+      host: 'mail.ethz.ch',
+      port: 587,
+      secure: false,
+      auth: {user: 'psich\\USER', pass: 'PWD'}
+    },
+    smtpMessage: {
+      from: 'USER@psi.ch',
+      to: undefined,
+      subject: '[SciCat]',
+      text: undefined // can also set html key and this will override this
+    }
+```
+
+The Job model checks for the existence of these blocks and sends an email from the User specified. You can override the object with the `html` key and send much more prettified content.
+
+
+
+
 ## Start API server
 ```
 node .
@@ -47,6 +71,35 @@ Insert in the following curl commands the respective usernames like admin , arch
 curl -X POST --header 'Content-Type: application/json' --header 'Accept:application/json' -d'{"realm":"my.site","username":"...","password":"...!","email":"valid.email@my.site","emailVerified":true}' 'http://localhost:3000/api/v2/Users'
 
 ```
+
+## Queuing Options
+
+Jobs in Catamel are published to a queue when they are received. It is your responsibility to configure that queue and there is NO default in place.
+
+Without setting this up, none of your job submissions will NOT go anywhere.
+
+The two supported options are:
+1. RabbitMQ (loopback-component-mq)
+2. Apache Kafka (loopback-connector-kafka)
+
+Both packages are installed at time of install and you can select a queue in `config.local.js`, like this:
+
+`queue: "rabbitmq" // also accepts "kafka" or null`
+
+
+### Rabbit
+
+1. Set `config.local.js` queue value to "rabbitmq".
+2. Provide configuration for rabbitmq as a new block in `component-config.json`. NOTE: Make sure this is empty
+
+### Kafka
+
+1. Set `config.local.js` queue value to "kafka".
+2. Instructions for configuring Kafka can be found [here](https://www.npmjs.com/package/loopback-connector-kafka)
+
+* Creating a datasource programatically in the model you want to attach will often be the easiest solution.
+
+NOTE: An example of kafka has been set in `Job.js`
 
 # Data models
 
