@@ -15,6 +15,7 @@
     "urlencoded": {
       "extended": true
     },
-    "cors": false
+    "cors": false,
+    "queue": "rabbit"
   }
 }
