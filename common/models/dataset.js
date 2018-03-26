@@ -90,22 +90,21 @@ module.exports = function (Dataset) {
         utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
-    Dataset.facet = function (fields, facets, cb) {
+    Dataset.facet = function (fields, facets = [], cb) {
         var findFilter = [];
         var match = {};
-        var type = undefined;
+        var type;
         if (fields) {
             if ('type' in fields)
                 type = fields['type'];
             var keys = Object.keys(fields);
-            // var RawDataset = app.models.RawDataset;
             for (var i = 0; i < keys.length; i++) {
                 var modelType = Dataset.getPropertyType(keys[i]);
                 var value = fields[keys[i]];
                 if (modelType !== undefined && value !== undefined && value !== 'null') {
                     switch (modelType) {
                         case 'String':
-                            if (Array.isArray(value) && value.length > 0) { // TODO  security flaw if somehow an empty array is received (remote hook should prevent this)
+                            if (Array.isArray(value) && value.length > 0) { // TODO security flaw if somehow an empty array is received (remote hook should prevent this)
                                 match[keys[i]] = {
                                     '$in': value,
                                 };
@@ -128,7 +127,7 @@ module.exports = function (Dataset) {
                                             };
                                         } else {
                                             // TODO change from null in Catanie to undefined
-                                            // cb(new Error('Dates are an invalid format'), null);
+                                            cb(new Error('Dates are an invalid format'), null);
                                         }
                                     } else if (Object.keys(value).length !== 2) {
                                         cb(new Error('Only one date specified, need a range'), null);
@@ -146,15 +145,22 @@ module.exports = function (Dataset) {
             }
         }
         let facetObject = {};
-        var baseFacets = [{name: 'creationTime', type: 'date'}, {name: 'ownerGroup', type: 'text'}, {name: 'creationLocation', type: 'text'}];
-        baseFacets.map(function(f) {
-          facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
-        });
-        facets.map(function(f) {
+        var baseFacets = [{
+            name: 'creationTime',
+            type: 'date'
+        }, {
+            name: 'ownerGroup',
+            type: 'text'
+        }, {
+            name: 'creationLocation',
+            type: 'text'
+        }];
+        baseFacets.map(function (f) {
             facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
         });
-        
-
+        facets.map(function (f) {
+            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
+        });
         findFilter.push({
             $facet: facetObject,
         });
