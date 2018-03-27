@@ -103,6 +103,10 @@
     "dataSource": "mongo",
     "public": true
   },
+  "DatasetAttachment": {
+    "dataSource": "mongo",
+    "public": true
+  },
   "OrigDatablock": {
     "dataSource": "mongo",
     "public": true
