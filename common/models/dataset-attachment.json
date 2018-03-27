@@ -30,7 +30,14 @@
         }
 	},
     "validations": [],
-    "relations": {},
+    "relations": {
+        "dataset": {
+            "type": "belongsTo",
+            "model": "Dataset",
+            "foreignKey": "dataset_id",
+            "required": true
+        }
+    },
     "acls": [],
     "methods": {}
 }
