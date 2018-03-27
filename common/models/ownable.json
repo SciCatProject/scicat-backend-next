@@ -1,5 +1,6 @@
 {
     "name": "Ownable",
+    "description": "This is the base model for all models which 'belong' to entities like pgroups. It is crucial to implemtn a user dependent access control to datasets or other ownable documents.",
     "base": "PersistedModel",
     "idInjection": true,
     "strict": true,
@@ -27,6 +28,14 @@
                 "string"
             ],
             "description": "Optional additional groups which have read access to the data. Users which are member in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users"
+        },
+        "createdBy": {
+            "type": "string",
+            "description": "Functional or user account name who created this instance"
+        },
+        "updatedBy": {
+            "type": "string",
+            "description": "Functional or user account name who last updated this instance"
         }
     },
     "validations": [],
@@ -52,21 +61,21 @@
     ],
     "methods": {
         "isValid": {
-          "accepts": [
-            {
+            "accepts": [{
                 "arg": "ownableItem",
                 "type": "object",
-                "http": { "source": "body" }
+                "http": {
+                    "source": "body"
+                }
+            }],
+            "returns": {
+                "root": true
+            },
+            "description": "Check if data is valid according to a schema",
+            "http": {
+                "path": "/isValid",
+                "verb": "post"
             }
-          ],
-          "returns": {
-             "root": true
-          },
-          "description": "Check if data is valid according to a schema",
-          "http": {
-            "path": "/isValid",
-            "verb": "post"
-          }
         }
     }
 }

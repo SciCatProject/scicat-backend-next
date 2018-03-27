@@ -32,7 +32,8 @@ var testdataset = {
     "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
-    "accessGroups": []
+    "accessGroups": [],
+    "type":"base"
 }
 
 var testraw = {
@@ -134,7 +135,8 @@ var testderived = {
     "description": "Some fancy description",
     "doi": "not yet defined",
     "isPublished": false,
-    "ownerGroup": "p34123"
+    "ownerGroup": "p34123",
+    "type":"derived"
 }
 
 var countDataset = 0;
@@ -253,6 +255,7 @@ describe('Check different dataset types and their inheritance', () => {
                 res.body.should.have.property('version').and.be.string;
                 res.body.should.have.property('type').and.equal('base');
                 res.body.should.have.property('pid').and.be.string;
+                res.body.should.have.property('createdBy').and.equal('ingestor')
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });

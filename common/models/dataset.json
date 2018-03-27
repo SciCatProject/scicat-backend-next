@@ -1,215 +1,219 @@
 {
-  "name": "Dataset",
-  "base": "Ownable",
-  "idInjection": false,
-  "strict": false,
- "options": {
-    "validateUpsert": true,
-    "mongodb": {
-        "collection":"Dataset"
-    }
-  },
-  "properties": {
-    "pid": {
-      "type": "string",
-      "id": true,
-      "description": "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
-      "defaultFn": "uuidv4"
+    "name": "Dataset",
+    "description": "Stores the meta data information for a given collection of files. It defines a list of mandatory and optional metadata fields to be defined. Datasets have a PID field for unique identification. A DOI field can be added for publication purposes later. This is the base 'class' for derived documents like raw datasets or derived datasets. The type field is used to distinguish between the different types of datasets. For each dataset in addition a DatasetLifecycle and a OrigDatablock type of container can be created, giving additional information about the datasets lifecycles and its containing files.",
+    "base": "Ownable",
+    "idInjection": false,
+    "strict": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "Dataset"
+        }
     },
-    "owner": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Owner of the data set, usually first name + lastname"
+    "properties": {
+        "pid": {
+            "type": "string",
+            "id": true,
+            "description": "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
+            "defaultFn": "uuidv4"
+        },
+        "owner": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Owner of the data set, usually first name + lastname"
+        },
+        "ownerEmail": {
+            "type": "string",
+            "description": "Email of owner of the data set"
+        },
+        "orcidOfOwner": {
+            "type": "string",
+            "description": "ORCID of owner https://orcid.org if available"
+        },
+        "contactEmail": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Email of contact person for this dataset"
+        },
+        "sourceFolder": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data file the string can also be the full path to this single file."
+        },
+        "size": {
+            "type": "number",
+            "index": true,
+            "description": "Total size of all source files contained in source folder on disk when unpacked"
+        },
+        "packedSize": {
+            "type": "number",
+            "description": "Total size of all datablock package files created for this dataset"
+        },
+        "creationTime": {
+            "type": "date",
+            "required": true,
+            "index": true,
+            "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
+        },
+        "type": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled"
+        },
+        "validationStatus": {
+            "type": "string",
+            "description": "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
+        },
+        "keywords": {
+            "type": [
+                "string"
+            ],
+            "description": "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
+        },
+        "description": {
+            "type": "string",
+            "description": "Free text explanation of contents of dataset"
+        },
+        "userTargetLocation": {
+            "type": "string",
+            "description": "User choosable absolute virtual path where datasets are stored. Mainly used as a help for the enduser at dataset retrieval time to find the proper dataset. Will be prepended by p-group"
+        },
+        "classification": {
+            "type": "string",
+            "description": "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'"
+        },
+        "license": {
+            "type": "string",
+            "description": "Name of license under which data can be used"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of API used in creation of dataset"
+        },
+        "doi": {
+            "type": "string",
+            "index": true,
+            "description": "Digital object Identifier like doi: used for publication purposes"
+        },
+        "isPublished": {
+            "type": "boolean",
+            "description": "Flag is true when data are made publically available"
+        }
     },
-    "ownerEmail": {
-      "type": "string",
-      "description": "Email of owner of the data set"
+    "validations": [],
+    "relations": {
+        "datasetlifecycle": {
+            "type": "hasOne",
+            "model": "DatasetLifecycle",
+            "foreignKey": ""
+        },
+        "datablocks": {
+            "type": "hasMany",
+            "model": "Datablock",
+            "foreignKey": ""
+        },
+        "origdatablocks": {
+            "type": "hasMany",
+            "model": "OrigDatablock",
+            "foreignKey": ""
+        }
     },
-    "orcidOfOwner": {
-      "type": "string",
-      "description": "ORCID of owner https://orcid.org if available"
-    },
-    "contactEmail": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Email of contact person for this dataset"
-    },
-    "sourceFolder": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder"
-    },
-    "size": {
-      "type": "number",
-      "index": true,
-      "description": "Total size of all source files contained in source folder on disk when unpacked"
-    },
-    "packedSize": {
-      "type": "number",
-      "description": "Total size of all datablock package files created for this dataset"
-    },
-    "creationTime": {
-      "type": "date",
-      "required": true,
-      "index": true,
-      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
-    },
-    "type": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled"
-    },
-    "validationStatus": {
-      "type": "string",
-      "description": "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
-    },
-    "keywords": {
-      "type": [
-        "string"
-      ],
-      "description": "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
-    },
-    "description": {
-      "type": "string",
-      "description": "Free text explanation of contents of dataset"
-    },
-    "userTargetLocation": {
-      "type": "string",
-      "description": "User choosable absolute virtual path where datasets are stored. Mainly used as a help for the enduser at dataset retrieval time to find the proper dataset. Will be prepended by p-group"
-    },
-    "classification": {
-      "type": "string",
-      "description": "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'"
-    },
-    "license": {
-      "type": "string",
-      "description": "Name of license under which data can be used"
-    },
-    "version": {
-      "type": "string",
-      "description": "Version of API used in creation of dataset"
-    },
-    "doi": {
-      "type": "string",
-      "index": true,
-      "description": "Digital object Identifier like doi: used for publication purposes"
-    },
-    "isPublished": {
-      "type": "boolean",
-      "description": "Flag is true when data are made publically available"
-    }
-  },
-  "validations": [],
-  "relations": {
-    "datasetlifecycle": {
-      "type": "hasOne",
-      "model": "DatasetLifecycle",
-      "foreignKey": ""
-    },
-    "datablocks": {
-      "type": "hasMany",
-      "model": "Datablock",
-      "foreignKey": ""
-    },
-    "origdatablocks": {
-      "type": "hasMany",
-      "model": "OrigDatablock",
-      "foreignKey": ""
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "usergroupingestor",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "proposalingestor",
-      "permission": "DENY"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "ALLOW",
-      "property": "reset"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": "facet"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW",
-      "property": "facet"
-    }
-  ],
-  "methods": {
-    "reset": {
-      "accepts": [
-        {
-          "arg": "datasetId",
-          "type": "string"
+    "acls": [{
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
         },
         {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
-        }
-      ],
-      "returns": {
-        "arg": "result",
-        "type": "string"
-      },
-      "description": "Delete datablocks of dataset and reset status message",
-      "http": {
-        "path": "/resetArchiveStatus",
-        "verb": "post"
-      }
-    },
-    "facet": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "description": "Define the fields to search by, these will be mapped to the Dataset object and ensure the fields exist. There is also support for a `text` search to look for keywords. Can be undefined."
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
         },
         {
-          "arg": "facets",
-          "type": "object",
-          "description": "This should follow the Mongo Facet syntax (https://docs.mongodb.com/manual/reference/operator/aggregation/facet/). Can be undefined and uses defaults explained in description of route."
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "usergroupingestor",
+            "permission": "DENY"
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "proposalingestor",
+            "permission": "DENY"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "ALLOW",
+            "property": "reset"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": "facet"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW",
+            "property": "facet"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW",
+            "property": ["create"]
         }
-      ],
-      "returns": {
-        "arg": "results",
-        "type": "Object"
-      },
-      "description": "Search for numbers associated with dataset properties. I.e. How many datasets in Group A. Default returns: Creation Location, Owner Groups and Creation Time",
-      "http": {
-        "path": "/facet",
-        "verb": "post"
-      }
+    ],
+    "methods": {
+        "reset": {
+            "accepts": [{
+                    "arg": "datasetId",
+                    "type": "string"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "arg": "result",
+                "type": "string"
+            },
+            "description": "Delete datablocks of dataset and reset status message",
+            "http": {
+                "path": "/resetArchiveStatus",
+                "verb": "post"
+            }
+        },
+        "facet": {
+            "accepts": [{
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the fields to search by, these will be mapped to the Dataset object and ensure the fields exist. There is also support for a `text` search to look for keywords. Can be undefined."
+                },
+                {
+                    "arg": "facets",
+                    "type": "array",
+                    "description": "This should be an array of objects with the structure: {name: key in mongo (without $ prefix), type: date|text|etc, preConditions: object to include in the query (i.e. unwind)}"
+                }
+            ],
+            "returns": {
+                "arg": "results",
+                "type": "Object"
+            },
+            "description": "Search for numbers associated with dataset properties. I.e. How many datasets in Group A. Default returns: Creation Location, Owner Groups and Creation Time",
+            "http": {
+                "path": "/facet",
+                "verb": "post"
+            }
+        }
     }
-  }
 }

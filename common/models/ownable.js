@@ -65,4 +65,52 @@ module.exports = function(Ownable) {
             }
         });
     }
+
+    Ownable.observe('before save', function(ctx, next) {
+
+
+        if (ctx.instance) {
+            if (ctx.options.accessToken) {
+                var User = app.models.User;
+                User.findById(ctx.options.accessToken.userId, function(err, instance) {
+                    if (instance) {
+                        if (ctx.instance.createdBy) {
+                            ctx.instance.updatedBy = instance.username;
+                        } else {
+                            ctx.instance.createdBy = instance.username
+                        }
+                    } else {
+                        if (ctx.instance.createdBy) {
+                            ctx.instance.updatedBy = "anonymous";
+                        } else {
+                            ctx.instance.createdBy = "anonymous"
+                        }
+                    }
+                    next()
+                })
+            } else {
+                if (ctx.instance.createdBy) {
+                    ctx.instance.updatedBy = "anonymous";
+                } else {
+                    ctx.instance.createdBy = "anonymous"
+                }
+                next();
+            }
+        } else if (ctx.data) {
+            if (ctx.options.accessToken) {
+                var User = app.models.User;
+                User.findById(ctx.options.accessToken.userId, function(err, instance) {
+                    if (instance) {
+                        ctx.data.updatedBy = instance.username
+                    } else {
+                        ctx.data.updatedBy = "anonymous";
+                    }
+                    next()
+                })
+            } else {
+                ctx.data.updatedBy = "anonymous";
+                next();
+            }
+        }
+    });
 };
