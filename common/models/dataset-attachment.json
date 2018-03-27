@@ -1,6 +1,36 @@
 {
     "name": "DatasetAttachment",
-    "datasetid": "string",
-    "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset",
-	"thumbnail": "string"
+    "idInjection": false,
+    "base": "PersistedModel",
+    "strict": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "DatasetAttachment"
+        }
+    },
+    "description": "Small less than 16 MB attchments for datasets, envisaged for png/jpeg previews",
+    "properties": {
+        "dataset_id": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Dataset owning attachment id"
+        },
+        "thumbnail": {
+            "type": "string",
+            "required": true,
+            "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset",
+            "default": "retrieve"
+        },
+        "creationTime": {
+            "type": "date",
+            "index": true,
+            "description": "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
+        }
+	},
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
 }
