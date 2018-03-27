@@ -11,12 +11,6 @@
     },
     "description": "Small less than 16 MB attchments for datasets, envisaged for png/jpeg previews",
     "properties": {
-        "dataset_id": {
-            "type": "string",
-            "required": true,
-            "index": true,
-            "description": "Dataset owning attachment id"
-        },
         "thumbnail": {
             "type": "string",
             "required": true,
@@ -34,7 +28,7 @@
         "dataset": {
             "type": "belongsTo",
             "model": "Dataset",
-            "foreignKey": "dataset_id",
+            "foreignKey": "",
             "required": true
         }
     },
