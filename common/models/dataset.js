@@ -92,58 +92,13 @@ module.exports = function (Dataset) {
 
     Dataset.facet = function (fields, facets = [], cb) {
         var findFilter = [];
-        var match = {};
+        var match = fields || {};
         var type;
-        if (fields) {
-            if ('type' in fields)
-                type = fields['type'];
-            var keys = Object.keys(fields);
-            for (var i = 0; i < keys.length; i++) {
-                var modelType = Dataset.getPropertyType(keys[i]);
-                var value = fields[keys[i]];
-                if (modelType !== undefined && value !== undefined && value !== 'null') {
-                    switch (modelType) {
-                        case 'String':
-                            if (Array.isArray(value) && value.length > 0) { // TODO security flaw if somehow an empty array is received (remote hook should prevent this)
-                                match[keys[i]] = {
-                                    '$in': value,
-                                };
-                            } else if (typeof (value) === 'string' && value) {
-                                match[keys[i]] = value;
-                            }
-                            break;
-                        case 'Date':
-                            var reqType = typeof (value);
-                            switch (reqType) {
-                                case 'string':
-                                    match[keys[i]] = new Date(value);
-                                    break;
-                                case 'object':
-                                    if (Object.keys(value).length === 2) {
-                                        if (value['start'] && value['start'] !== 'null' && value['end'] && value['end'] !== 'null') {
-                                            match[keys[i]] = {
-                                                '$gte': new Date(value['start']),
-                                                '$lte': new Date(value['end']),
-                                            };
-                                        } else {
-                                            // TODO change from null in Catanie to undefined
-                                            // cb(new Error('Dates are an invalid format'), null);
-                                        }
-                                    } else if (Object.keys(value).length !== 2) {
-                                        cb(new Error('Only one date specified, need a range'), null);
-                                    }
-                                    break;
-                            }
-                            break;
-                    }
-                } else if (keys[i] === 'text' && value !== 'null') {
-                    match['$text'] = value;
-                    // TODO check in config map for extra strings, i.e. creationTime start and end
-                } else {
-                    // ignore
-                }
-            }
-        }
+        // Object.keys(match).forEach(function(k) {
+        //     if(!match[k] || (Array.isArray(match[k]) && match[k].length === 0)) {
+        //         delete match[k];
+        //     }
+        // });
         let facetObject = {};
         var baseFacets = [{
             name: 'creationTime',
@@ -164,12 +119,14 @@ module.exports = function (Dataset) {
         findFilter.push({
             $facet: facetObject,
         });
+        // console.log(JSON.stringify(findFilter, null, 4));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
                 function (err, res) {
                     if (err)
                         console.log(err);
+                    console.log(JSON.stringify(res, null, 4));
                     res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
