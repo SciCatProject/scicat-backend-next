@@ -98,6 +98,11 @@ module.exports = function (Dataset) {
             if(match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
                 delete match[k];
             }
+            if (k === 'creationTime'){
+                const d = match[k];
+                match[k]['$gte'] = new Date(d['$gte']);
+                match[k]['$lte'] = new Date(d['$lte']);
+            }
         });
         let facetObject = {};
         var baseFacets = [{
