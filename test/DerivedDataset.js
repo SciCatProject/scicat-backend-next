@@ -121,8 +121,8 @@ describe('DerivedDatasets', () => {
             .end((err, res) => {
                 if(err) 
                     done(err);
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
-                res.body.results[0].should.have.property('type').and.equal('derived');
+                res.body.should.have.property('results').and.be.an('array').and.have.length(2);
+                res.body.results[1].should.have.property('type').and.equal('derived');
                 done();
             });
     });

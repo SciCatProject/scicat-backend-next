@@ -86,14 +86,15 @@ module.exports = function (Dataset) {
     Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
-        ctx.args.fields.type = undefined;
+        // ctx.args.fields.type = undefined;
         utils.handleOwnerGroups(ctx, userDetails, next);
     });
 
     Dataset.facet = function (fields, facets = [], cb) {
         var findFilter = [];
         var match = fields || {};
-        var type;
+        var type = match['type'] || undefined;
+        console.log(fields);
         Object.keys(match).forEach(function(k) {
             if(match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
                 delete match[k];
@@ -124,7 +125,7 @@ module.exports = function (Dataset) {
         findFilter.push({
             $facet: facetObject,
         });
-        console.log(JSON.stringify(findFilter, null, 4));
+        // console.log(JSON.stringify(findFilter, null, 4));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
@@ -132,7 +133,8 @@ module.exports = function (Dataset) {
                     if (err)
                         console.log(err);
                     // console.log(JSON.stringify(res, null, 4));
-                    res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
+                    if (type !== undefined)
+                        res.push({'type': type}); // TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });
         });

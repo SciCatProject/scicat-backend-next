@@ -164,8 +164,8 @@ describe('RawDatasets', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
-                res.body.results[0].should.have.property('type').and.equal('raw');
+                res.body.should.have.property('results').and.be.an('array').and.have.length(2);
+                res.body.results[1].should.have.property('type').and.equal('raw');
                 if(err)
                     done(err);
                 done();
