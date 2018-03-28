@@ -6,6 +6,8 @@ var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
 
+var configLocal = require('./config.local.js');
+
 // Create an instance of PassportConfigurator with the app instance
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
@@ -69,6 +71,25 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     console.log("++++++++++ Profile:", profile)
     return profile;
 };
+
+if ('queue' in configLocal) {
+    var msg = 'Queue configured to be ';
+    switch(configLocal.queue) {
+        case 'rabbitmq':
+            console.log(msg + 'RabbitMQ');
+            break;
+        case 'kafka':
+            console.log(msg + 'Apache Kafka');
+            break;
+        default:
+            console.log('Queuing system not configured.');
+            break;
+    }
+}
+
+if ('smtpSettings' in configLocal) {
+    console.log('Email settings detected');
+}
 
 var bodyParser = require('body-parser');
 var ENV = process.env.NODE_ENV || 'local';
