@@ -129,16 +129,17 @@ exports.createFacetPipeline = function(name, type, preConditions, query) {
     if (preConditions) {
         pipeline.push(preConditions);
     }
+    if (query && Object.keys(query).length > 0) {
+        console.log(query);
+        var q = Object.assign({}, query);
+        delete q[name];
+        pipeline.push({$match: q});
+    }
     let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
     if (type === 'date') {
         grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
     }
     pipeline.push(grp);
-    if (query && Object.keys(query).length > 0) {
-        var q = Object.assign({}, query);
-        delete q[name];
-        pipeline.push({$match: q});
-    }
     const sort = {$sort: {count: -1, _id: -1}};
     pipeline.push(sort);
     return pipeline;
