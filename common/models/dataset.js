@@ -94,11 +94,11 @@ module.exports = function (Dataset) {
         var findFilter = [];
         var match = fields || {};
         var type;
-        // Object.keys(match).forEach(function(k) {
-        //     if(!match[k] || (Array.isArray(match[k]) && match[k].length === 0)) {
-        //         delete match[k];
-        //     }
-        // });
+        Object.keys(match).forEach(function(k) {
+            if(match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
+                delete match[k];
+            }
+        });
         let facetObject = {};
         var baseFacets = [{
             name: 'creationTime',
@@ -119,14 +119,14 @@ module.exports = function (Dataset) {
         findFilter.push({
             $facet: facetObject,
         });
-        // console.log(JSON.stringify(findFilter, null, 4));
+        console.log(JSON.stringify(findFilter, null, 4));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
                 function (err, res) {
                     if (err)
                         console.log(err);
-                    console.log(JSON.stringify(res, null, 4));
+                    // console.log(JSON.stringify(res, null, 4));
                     res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
                     cb(err, res);
                 });

@@ -130,6 +130,7 @@ exports.createFacetPipeline = function(name, type, preConditions, query) {
         pipeline.push(preConditions);
     }
     if (query && Object.keys(query).length > 0) {
+        console.log(query);
         var q = Object.assign({}, query);
         delete q[name];
         pipeline.push({$match: q});
