@@ -5,6 +5,10 @@ var path = require('path');
 var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
+var configlocal = require('./config.local');
+
+const uuidv3 = require('uuid/v3');
+
 
 var configLocal = require('./config.local.js');
 
@@ -59,6 +63,11 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     }
     if (!profile.id) {
         profile.id = user['uid'];
+		if (!(uid in user)){
+			const MY_NAMESPACE = '1b671a64-40d5-491e-99b0-da01ff1f3341';
+			const generated_id = uuidv3( user['mail'], MY_NAMESPACE);
+			profile.id = generated_id;
+		}
     }
     if (!profile.emails) {
         var email = [].concat(user['mail'])[0];
@@ -68,6 +77,11 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             }];
         }
     }
+	if ( configlocal.site === 'ESS'){
+	       if (!profile.accessGroups) {
+		profile.accessGroups = ['ess', 'loki', 'odin'];
+					         }
+	}
     console.log("++++++++++ Profile:", profile)
     return profile;
 };

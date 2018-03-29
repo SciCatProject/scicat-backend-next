@@ -29,7 +29,8 @@
     "passport-local": "1.0.0",
     "passport-openidconnect": "0.0.2",
     "serve-favicon": "2.4.5",
-    "strong-error-handler": "2.3.0"
+    "strong-error-handler": "2.3.0",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "@mean-expert/loopback-sdk-builder": "2.1.0",
