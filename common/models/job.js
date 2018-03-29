@@ -4,6 +4,7 @@ var DataSource = require('loopback-datasource-juggler').DataSource;
 
 var nodemailer = require('nodemailer');
 var config = require('../../server/config.local');
+var app = require('../../server/server');
 
 module.exports = function (Job) {
 
@@ -22,7 +23,20 @@ module.exports = function (Job) {
             if (!ctx.instance.dateOfLastMessage) {
                 ctx.instance.dateOfLastMessage = now.toISOString();
             }
+            var Dataset = app.models.Dataset;
+            // Ensure that each dataset is valid. Could also extend to check data files
+            ctx.instance.datasetList.map(function(entry) {
+                Dataset.findById(entry.pid, function(err, res) {
+                    if (err || !res) {
+                        var e = new Error();
+                        e.statusCode = 400;
+                        e.message = 'Dataset provided either does not exist or provided an error';
+                        next(e);
+                    }
+                });
+            });
         }
+        
         next();
     });
 
