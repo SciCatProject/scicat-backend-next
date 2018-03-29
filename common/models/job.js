@@ -25,7 +25,7 @@ module.exports = function (Job) {
                 if (err || !res) {
                     var e = new Error();
                     e.statusCode = 400;
-                    e.message = 'Dataset provided other does not exist or provided an error';
+                    e.message = 'Dataset provided either does not exist or provided an error';
                     next(e);
                 }
             });
