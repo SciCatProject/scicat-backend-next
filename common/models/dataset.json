@@ -116,6 +116,11 @@
             "model": "Datablock",
             "foreignKey": ""
         },
+        "datasetattachments": {
+            "type": "hasMany",
+            "model": "DatasetAttachment",
+            "foreignKey": ""
+        },
         "origdatablocks": {
             "type": "hasMany",
             "model": "OrigDatablock",
