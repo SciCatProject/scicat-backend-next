@@ -5,12 +5,9 @@ var path = require('path');
 var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
-var configlocal = require('./config.local');
+var configLocal = require('./config.local');
 
 const uuidv3 = require('uuid/v3');
-
-
-var configLocal = require('./config.local.js');
 
 // Create an instance of PassportConfigurator with the app instance
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
@@ -77,11 +74,13 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             }];
         }
     }
-	if ( configlocal.site === 'ESS'){
-	       if (!profile.accessGroups) {
-		profile.accessGroups = ['ess', 'loki', 'odin'];
-					         }
-	}
+
+    if (configLocal.site === 'ESS') {
+        if (!profile.accessGroups) {
+            profile.accessGroups = ['ess', 'loki', 'odin'];
+        }
+    }
+
     console.log("++++++++++ Profile:", profile)
     return profile;
 };
