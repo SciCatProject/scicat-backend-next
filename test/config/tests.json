@@ -80,7 +80,13 @@
         "expect": 200,
         "authenticate": "user",
         "body": {
-            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "$keywords"} }]
+            "facets": [{
+                "name": "keywords",
+                "type": "text",
+                "preConditions": {
+                    "$unwind": "$keywords"
+                }
+            }]
         },
         "response": [
             "res.body.should.be.instanceof(Object);",
@@ -112,15 +118,15 @@
                 "tapeCopies": "one"
             },
             "dateOfLastMessage": "2018-03-16T13:10:16.918Z",
-            "datasetList": [
+            "datasetList": [{
+                    "pid": "wrong_pid",
+                    "files": []
+                },
                 {
-                "pid": "wrong_pid",
-                "files": []
+                    "pid": "20.500.11935/83c7be97-9507-483e-aff3-2388aafa70b3",
+                    "files": []
                 }
-            ],
-            "id": "5aabc238f1d1b50008b90525",
-            "createdAt": "2018-03-16T13:10:16.918Z",
-            "updatedAt": "2018-03-16T13:10:16.918Z"
-            }
+            ]
+        }
     }
 ]

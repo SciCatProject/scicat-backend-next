@@ -23,21 +23,25 @@ module.exports = function (Job) {
             if (!ctx.instance.dateOfLastMessage) {
                 ctx.instance.dateOfLastMessage = now.toISOString();
             }
+            // ensure that all wanted datasets exist already
             var Dataset = app.models.Dataset;
-            // Ensure that each dataset is valid. Could also extend to check data files
-            ctx.instance.datasetList.map(function(entry) {
-                Dataset.findById(entry.pid, function(err, res) {
-                    if (err || !res) {
-                        var e = new Error();
-                        e.statusCode = 400;
-                        e.message = 'Dataset provided either does not exist or provided an error';
-                        next(e);
-                    }
-                });
+            // create array of all pids
+            const idList=ctx.instance.datasetList.map(x => x.pid)
+            // console.log("JOBS:idList",idList)
+            Dataset.find({where: {pid: {inq: idList}}}, function (err, p){
+                //console.log("JOBS:lengths",err,p.length,idList.length,p)
+               if (err || (p.length != idList.length)){
+                   var e = new Error();
+                   e.statusCode = 400;
+                   e.message = 'At least one of the datasets could not be found';
+                   next(e);
+               } else {
+                   next();
+               }
             });
+        } else {
+            next();
         }
-        
-        next();
     });
 
     Job.observe('after save', (ctx, next) => {
