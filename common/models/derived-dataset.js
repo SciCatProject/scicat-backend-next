@@ -31,7 +31,7 @@ module.exports = function (Deriveddataset) {
             if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
-        utils.handleOwnerGroups(ctx, userDetails, next);
+        utils.handleOwnerGroups(ctx, next);
         // const user = userId ? 'user#' + userId : '<anonymous>';
 
     })

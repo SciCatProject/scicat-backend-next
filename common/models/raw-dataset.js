@@ -49,7 +49,7 @@ module.exports = function(Rawdataset) {
     if (!ctx.args.fields)
       ctx.args.fields = {};
     ctx.args.fields.type = 'raw';
-    utils.handleOwnerGroups(ctx, userDetails, next);
+    utils.handleOwnerGroups(ctx,next);
   });
 
   Rawdataset.isValid = function(dataset, next) {
