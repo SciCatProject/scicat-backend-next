@@ -90,12 +90,21 @@ module.exports = function(Dataset) {
     });
 
     Dataset.facet = function(fields, facets = [], cb) {
+        // console.log("Fields, facets:", fields, facets)
         var findFilter = [];
         const userGroups = fields.userGroups;
         delete fields.userGroups;
         var match = fields || {};
         var type = match['type'] || undefined;
+        var textSearch="";
         Object.keys(match).forEach(function(k) {
+            if (k == "$text"){
+                // need to extract this field, because the key needed is $search, not search
+                // get rid of quotes and surrounding blanks
+                // TODO adjust catanie side to avoid the neeed for this step
+                textSearch=match[k].search.replace(/['"]+/g, '')
+                delete match[k]
+            }
             if (match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
                 delete match[k];
             }
@@ -120,18 +129,26 @@ module.exports = function(Dataset) {
         baseFacets.map(function(f) {
             facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
         });
+        // console.log("Fields, facets before facets call:", fields, facets)
         facets.map(function(f) {
             facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
         });
 
-        if (userGroups.length>0) {
-            findFilter.push({
-                $match: {
-                    ownerGroup: {
-                        $in: userGroups
-                    }
-                }
-            });
+        // this match requirment must always be there for normal users to select pgroup related subsets
+        // text search match conditions must be added here as well
+
+        var matchCondition={}
+
+        if (userGroups.length>0 && textSearch !== "") {
+            matchCondition = { $and: [{ownerGroup: { $in: userGroups}},{ $text: { $search: textSearch, $language: "none"}}]}
+        } else if (userGroups.length>0) {
+            matchCondition = { ownerGroup: { $in: userGroups}}
+        } else if (textSearch !== ""){
+            matchCondition = { $text: { $search: textSearch, $language: "none"}}
+        }
+
+        if (matchCondition !== {}) {
+            findFilter.push({ $match: matchCondition })
         }
         findFilter.push({
             $facet: facetObject,
@@ -141,14 +158,14 @@ module.exports = function(Dataset) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
                 function(err, res) {
-                    if (err)
+                    if (err) {
                         console.log("Facet err handling:", err);
+                    } else {
                     // console.log(JSON.stringify(res, null, 4));
-                    if (type !== undefined)
-                        res.push({
-                            'type': type
-                        }); // TODO check array length is 1 (since it is only aggregate and return just that)
-                    // console.log("Aggregate call: Return err,result:",err,JSON.stringify(res, null, 4))
+                        // TODO why is this needed ?
+                        if (type !== undefined) res.push({'type': type}); // TODO check array length is 1 (since it is only aggregate and return just that)
+                        // console.log("Aggregate call: Return err,result:",err,JSON.stringify(res, null, 4))
+                    }
                     cb(err, res);
                 });
         });
