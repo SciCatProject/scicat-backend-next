@@ -10,23 +10,6 @@ services:
       - './mongodb:/bitnami'
 
 
-  rabbit:
-    image: 'bitnami/rabbitmq:latest'
-    labels:
-      kompose.service.type: nodeport
-    ports:
-      - '4369:4369'
-      - '5672:5672'
-      - '25672:25672'
-      - '15672:15672'
-    environment:
-      - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_USERNAME=admin
-    volumes:
-      - './rabbitmq:/bitnami'
-    depends_on: 
-      - mongodb
-
   catamel:
     build: 
       context: .
@@ -36,11 +19,9 @@ services:
       - '3000:3000'
     depends_on: 
       - mongodb
-      - rabbit
     links:
       - mongodb
-      - rabbit
-#      - myshell
+
 #
 #  zookeeper:
 #    image: wurstmeister/zookeeper
@@ -85,6 +66,4 @@ services:
 
 volumes:
   mongodb_data:
-    driver: local
-  rabbitmq_data:
     driver: local
