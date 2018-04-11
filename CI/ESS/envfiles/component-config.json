@@ -1,0 +1,42 @@
+{
+    "loopback-component-explorer": {
+        "mountPath": "/explorer"
+    },
+    "loopback-component-visualizer": {
+        "mountPath": "/visualize"
+    },
+    "loopback-component-model-diagram": {
+        "mountPath": "/modeldiagram"
+    },
+    "../node_modules/loopback-component-mq/lib": {
+        "options": {
+            "restPort": 15672,
+            "acls": [{
+                "accessType": "*",
+                "principalType": "ROLE",
+                "principalId": "$unauthenticated",
+                "permission": "DENY"
+            }]
+        },
+        "topology": {
+            "connection": {
+                "uri": "amqp://admin:admin@local-rabbit-rabbitmq.dev:5672"
+            },
+            "exchanges": [{
+                "name": "jobs.write",
+                "type": "topic",
+                "persistent": true
+            }],
+            "queues": [{
+                "name": "client.jobs.write",
+                "subscribe": true
+            }],
+            "bindings": [{
+                "exchange": "jobs.write",
+                "target": "client.jobs.write",
+                "keys": ["jobqueue"]
+            }]
+        }
+    }
+
+}
