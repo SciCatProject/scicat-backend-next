@@ -3,8 +3,8 @@
     "apiPrefix": "api/v2/",
     "users": {
         "admin": {
-            "username": "USER",
-            "password": "PASS",
+            "username": "ingestor",
+            "password": "aman",
             "login": "User/login"
         },
         "user": {
