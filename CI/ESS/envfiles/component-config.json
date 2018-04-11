@@ -20,7 +20,7 @@
         },
         "topology": {
             "connection": {
-                "uri": "amqp://admin:admin@local-rabbit-rabbitmq.dev:5672"
+                "uri": "amqp://admin:admin@rabbit:5672"
             },
             "exchanges": [{
                 "name": "jobs.write",
