@@ -9,44 +9,16 @@ services:
     volumes:
       - './mongodb:/bitnami'
 
-  local-rabbit-rabbitmq.dev:
-    hostname: local-rabbit-rabbitmq.dev
-    image: 'bitnami/rabbitmq:latest'
-    labels:
-      kompose.service.type: nodeport
+
+  catamel:
+    build: 
+      context: .
+      dockerfile: CI/ESS/Dockerfile.test
+    image: garethcmurphy/catamel
     ports:
-      - '4369:4369'
-      - '5672:5672'
-      - '25672:25672'
-      - '15672:15672'
-    environment:
-      - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_USERNAME=admin
-    volumes:
-      - './rabbitmq:/bitnami'
+      - '3000:3000'
     depends_on: 
       - mongodb
-
-#  catanie:
-#    build: 
-#      context: catanie
-#      dockerfile: Dockerfile.catanie
-#    image: garethcmurphy/catanie
-#    ports:
-#      - '4200:4200'
-#    depends_on: 
-#      - local-rabbit-rabbitmq.dev
-#      - mongodb
-
-#  catamel:
-#    build: 
-#      context: catamel
-#      dockerfile: Dockerfile.catamel
-#    image: garethcmurphy/catamel
-#    ports:
-#      - '3000:3000'
-#    depends_on: 
-#      - mongodb
 #      - local-rabbit-rabbitmq.dev
 #      - myshell
 #    links:
