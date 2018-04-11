@@ -22,6 +22,7 @@ COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
 COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
 COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
 COPY CI/ESS/envfiles/settings.sample.json /usr/src/app/test/config/settings.json
+COPY CI/ESS/wait.sh /usr/src/app/
 
 # Start the app
-CMD ["npx", "mocha"]
+CMD ["./wait.sh"]
