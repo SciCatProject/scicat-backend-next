@@ -11,8 +11,6 @@ COPY package.json /usr/src/app/
 # Install our packages
 RUN npm install
 
-#  patch for loopback-component-passport
-RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
@@ -20,7 +18,7 @@ COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local.js
 COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
 COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
 COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
-#COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
+COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
 COPY CI/ESS/envfiles/settings.sample.json /usr/src/app/test/config/settings.json
 COPY CI/ESS/wait.sh /usr/src/app/
 

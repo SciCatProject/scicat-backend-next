@@ -4,11 +4,11 @@ module.exports = {
     restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
     host: process.env.HOST || '0.0.0.0',
     port: process.env.PORT || 3000,
-    pidPrefix: '<PID>',
+    pidPrefix: '10.17199',
     policyPublicationShiftInYears: 3,
     policyRetentionShiftInYears: 10,
-    site: '<SITE>',
-    facilities: ["<FACILITY>"],
+    site: 'ESS',
+    facilities: ["loki"],
     datasetStatusMessages: {
         datasetCreated: "Dataset created",
         datasetOndisk: "Stored on primary disk and on archive disk",
@@ -32,7 +32,6 @@ module.exports = {
         jobSuccess: "Succesfully finished",
         jobError: "Finished with errors",
         jobCancel: "Cancelled"
-    },
-    queue: "rabbitmq"
+    }
 };
 
