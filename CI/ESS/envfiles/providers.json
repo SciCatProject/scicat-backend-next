@@ -24,9 +24,9 @@
 			"email": "mail"
 		},
 		"server": {
-			"url": "ldaps://openldap:636/",
+			"url": "openldap:636/",
 			"bindDn": "readonly@example.org",
-			"bindCredentials": "admin",
+			"bindCredentials": "readonly",
 			"searchBase": "OU=Example Users,DC=example,DC=org",
 			"searchFilter": "(&(samAccountType=805306368)(sAMAccountName={{username}}))"
 		}
