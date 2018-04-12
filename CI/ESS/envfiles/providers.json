@@ -24,10 +24,10 @@
 			"email": "mail"
 		},
 		"server": {
-			"url": "ldaps://esss.lu.se:636/",
-			"bindDn": "ldapreadonly@esss.lu.se",
-			"bindCredentials": "GeabeejEx1",
-			"searchBase": "OU=ESS Users,DC=esss,DC=lu,DC=se",
+			"url": "ldaps://example.org:636/",
+			"bindDn": "readonly@example.org",
+			"bindCredentials": "admin",
+			"searchBase": "OU=Example Users,DC=example,DC=org",
 			"searchFilter": "(&(samAccountType=805306368)(sAMAccountName={{username}}))"
 		}
 	}
