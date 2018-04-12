@@ -22,6 +22,7 @@ services:
       - mongodb
     links:
       - mongodb
+      - openldap
 
   openldap:
     image: osixia/openldap:1.2.0
