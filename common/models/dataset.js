@@ -95,14 +95,14 @@ module.exports = function(Dataset) {
         const userGroups = fields.userGroups;
         delete fields.userGroups;
         var match = fields || {};
-        var type = match['type'] || undefined;
-        var textSearch="";
+        // TODO obsolete ?:
+        //var type = match['type'] || undefined;
+        let textSearch="";
         Object.keys(match).forEach(function(k) {
             if (k == "$text"){
-                // need to extract this field, because the key needed is $search, not search
-                // get rid of quotes and surrounding blanks
-                // TODO adjust catanie side to avoid the neeed for this step
-                textSearch=match[k].search.replace(/['"]+/g, '')
+                // safe for global match block, but remove for subsequent facet pipelines
+                // TODO decide when quotes are needed
+                textSearch='"'+match[k]+'"'
                 delete match[k]
             }
             if (match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
@@ -146,6 +146,7 @@ module.exports = function(Dataset) {
         } else if (textSearch !== ""){
             matchCondition = { $text: { $search: textSearch, $language: "none"}}
         }
+        // console.log("matchcondition:",matchCondition)
 
         if (matchCondition !== {}) {
             findFilter.push({ $match: matchCondition })
@@ -161,9 +162,9 @@ module.exports = function(Dataset) {
                     if (err) {
                         console.log("Facet err handling:", err);
                     } else {
-                    // console.log(JSON.stringify(res, null, 4));
+                        //console.log("Facet results:",JSON.stringify(res, null, 4));
                         // TODO why is this needed ?
-                        if (type !== undefined) res.push({'type': type}); // TODO check array length is 1 (since it is only aggregate and return just that)
+                        //if (type !== undefined) res.push({'type': type}); // TODO check array length is 1 (since it is only aggregate and return just that)
                         // console.log("Aggregate call: Return err,result:",err,JSON.stringify(res, null, 4))
                     }
                     cb(err, res);
