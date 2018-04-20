@@ -95,8 +95,7 @@ module.exports = function(Dataset) {
         const userGroups = fields.userGroups;
         delete fields.userGroups;
         var match = fields || {};
-        // TODO obsolete ?:
-        //var type = match['type'] || undefined;
+        var type = match['type'] || undefined;
         let textSearch="";
         Object.keys(match).forEach(function(k) {
             if (k == "$text"){
@@ -164,7 +163,7 @@ module.exports = function(Dataset) {
                     } else {
                         //console.log("Facet results:",JSON.stringify(res, null, 4));
                         // TODO why is this needed ?
-                        //if (type !== undefined) res.push({'type': type}); // TODO check array length is 1 (since it is only aggregate and return just that)
+                        if (type !== undefined) res.push({'type': type});
                         // console.log("Aggregate call: Return err,result:",err,JSON.stringify(res, null, 4))
                     }
                     cb(err, res);

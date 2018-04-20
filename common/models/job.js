@@ -26,6 +26,7 @@ module.exports = function (Job) {
             // ensure that all wanted datasets exist already
             var Dataset = app.models.Dataset;
             // create array of all pids
+            // console.log("Verifying datasets:",ctx.options)
             const idList=ctx.instance.datasetList.map(x => x.pid)
             Dataset.find({where: {pid: {inq: idList}}}, ctx.options, function (err, p){
                 console.log("JOBS:lengths",err,p.length,idList.length,p)
@@ -48,40 +49,34 @@ module.exports = function (Job) {
             if ('queue' in config && config.queue === 'rabbitmq') {
                 Job.publishJob(ctx.instance, "jobqueue")
                 console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
-            } else if ('queue' in config && config.queue === 'rabbitmq') {
-                // TODO handle job submission here
             }
-            // if ('smtpSettings' in config && 'smtpMessage' in config)  {
-            //     let transporter = nodemailer.createTransport(config.smtpSettings);
-            //     transporter.verify(function (error, success) {
-            //         if (error) {
-            //             console.log(error);
-            //             next();
-            //         } else {
-            //             console.log('Server is ready to take our messages');
-            //             var message = Object.assign({}, config.smtpMessage);
-            //             message['to'] = ctx.instance.emailJobInitiator;
-            //             message['subject'] += ' Job Submitted Successfully';
-            //             let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.';
-            //             message['text'] = text;
-            //             transporter.sendMail(message, function (err, info) {
-            //                 if (err) {
-            //                     console.log(err);
-            //                 } else {
-            //                     console.log('Email sent');
-            //                 }
-            //                 next();
-            //             });
-            //         }
-            //     });
-            //     console.log('Saved Job %s#%s and published to message broker',
-            //         ctx.Model.modelName, ctx.instance.id);
-            // } else {
-            //     console.log('Updated %s matching %j', ctx.Model.pluralModelName,
-            //         ctx.where);
-            //     next();
-            // }
+            if ('smtpSettings' in config && 'smtpMessage' in config)  {
+                let transporter = nodemailer.createTransport(config.smtpSettings);
+                transporter.verify(function (error, success) {
+                    if (error) {
+                        console.log(error);
+                        next();
+                    } else {
+                        console.log('Server is ready to take our messages');
+                        var message = Object.assign({}, config.smtpMessage);
+                        message['to'] = ctx.instance.emailJobInitiator;
+                        message['subject'] += ' Job Submitted Successfully';
+                        let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n'+JSON.stringify(ctx.instance, null, 4);
+                        message['text'] = text;
+                        transporter.sendMail(message, function (err, info) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log('Email sent');
+                            }
+                            next();
+                        });
+                    }
+                });
+            }
         } else {
+            console.log('Updated %s matching %j', ctx.Model.pluralModelName,
+                ctx.where);
             next();
         }
     });
