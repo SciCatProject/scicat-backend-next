@@ -104,14 +104,14 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-    it('should contain an array of facets with NO type description', function(done) {
+    it('should contain an array of facets', function(done) {
         request(app)
             .post('/api/v2/Datasets/facet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
+                res.body.should.have.property('results').and.be.an('array');
                 if(err)
                     done(err);
                 done();

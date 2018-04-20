@@ -112,17 +112,16 @@ describe('DerivedDatasets', () => {
             });
     });
 
-    it('should contain an array of facets with a type description', function(done) {
+    it('should contain an array of facets', function(done) {
         request(app)
             .post('/api/v2/DerivedDatasets/facet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                if(err) 
+                if(err)
                     done(err);
-                res.body.should.have.property('results').and.be.an('array').and.have.length(2);
-                res.body.results[1].should.have.property('type').and.equal('derived');
+                res.body.should.have.property('results').and.be.an('array');
                 done();
             });
     });
