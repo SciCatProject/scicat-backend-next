@@ -147,6 +147,33 @@ exports.createFacetPipeline = function(name, type, preConditions, query) {
     return pipeline;
 }
 
+//TODO obsolete old createFacetPipeline code
+
+exports.createNewFacetPipeline = function(name, type, query) {
+    const pipeline = [];
+
+    if (type.constructor === Array) {
+        pipeline.push({ $unwind: '$'+name });
+    }
+    // add all conditions from "other" facets, exclude own conditions
+    if (query && Object.keys(query).length > 0) {
+        //console.log("createFacet query:",query);
+        var q = Object.assign({}, query);
+        delete q[name];
+        if(Object.keys(q).length > 0)
+            pipeline.push({$match: q});
+    }
+    let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
+    if (type === 'date') {
+        grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
+    }
+    pipeline.push(grp);
+    const sort = {$sort: {count: -1}};
+    pipeline.push(sort);
+    return pipeline;
+}
+
+
 // dito but for array of instances
 exports.updateAllTimesToUTC = function(dateKeys, instances) {
     dateKeys.map(function(dateKey) {
@@ -162,6 +189,8 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
 }
 
 exports.handleOwnerGroups = function(ctx, next) {
+    if (!ctx.args.fields)
+        ctx.args.fields = {};
     let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
     if (userId === null) {
         userId = ctx.req.args.accessToken;

@@ -3,6 +3,11 @@
 var config = require('../../server/config.local');
 var p = require('../../package.json');
 var utils = require('./utils');
+var dsl = require('./dataset-lifecycle.json');
+var ds = require('./dataset.json');
+var dsr = require('./raw-dataset.json');
+var dsd = require('./derived-dataset.json');
+var own = require('./ownable.json');
 
 module.exports = function(Dataset) {
     var app = require('../../server/server');
@@ -83,25 +88,250 @@ module.exports = function(Dataset) {
     /**
      * Inherited models will not call this before access, so it must be replicated
      */
+
+    // add user Groups information of the logged in user to the fields object
+    // TODO Obsolete the facet call
     Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
-        if (!ctx.args.fields)
-            ctx.args.fields = {};
         utils.handleOwnerGroups(ctx, next);
     });
 
+    Dataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+        utils.handleOwnerGroups(ctx, next);
+    });
+
+    Dataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+        utils.handleOwnerGroups(ctx, next);
+    });
+
+    function searchExpression(key, value) {
+        let type = "string"
+        if (key in ds.properties) {
+            type = ds.properties[key].type
+        } else if (key in dsr.properties) {
+            type = dsr.properties[key].type
+        } else if (key in dsd.properties) {
+            type = dsd.properties[key].type
+        } else if (key in dsl.properties) {
+            type = dsl.properties[key].type
+        } else if (key in own.properties) {
+            type = own.properties[key].type
+        }
+        if (key === "text") {
+            return {
+                $search: value,
+                $language: "none"
+            }
+        } else if (type === "string") {
+            if (value.constructor === Array) {
+                if (value.length == 1) {
+                    return value[0]
+                } else {
+                    return {
+                        $in: value
+                    }
+                }
+            } else {
+                return value
+            }
+        } else if (type === "date") {
+            return {
+                $gte: new Date(value.begin),
+                $lte: new Date(value.end)
+            }
+        } else if (type.constructor === Array) {
+            return {
+                $in: value
+            }
+        }
+    }
+
+    Dataset.fullfacet = function(fields, facets = [], cb) {
+        console.log("Fields, facets:", fields, facets)
+
+        // keep the full aggregation pipeline definition
+        let pipeline = []
+        let match = {}
+        let facetMatch = {}
+        // construct match conditions from fields value, excluding facet material
+        // i.e. fields is essentially split into match and facetMatch conditions
+        Object.keys(fields).map(function(key) {
+            if (facets.indexOf(key) < 0) {
+                if (key === "text") {
+                    match["$text"] = searchExpression(key, fields[key])
+                } else if (key === "userGroups") {
+                    if (fields[key].length > 0)
+                        match["ownerGroup"] = searchExpression(key, fields[key])
+                } else {
+                    match[key] = searchExpression(key, fields[key])
+                }
+            } else {
+                facetMatch[key] = searchExpression(key, fields[key])
+            }
+        })
+        if (match !== {}) {
+            pipeline.push({
+                $match: match
+            })
+        }
+        // TODO if global condition contain field from joined model (e.g. DatasetLifecycle) add lookup constructs
+
+        // append all facet pipelines
+        let facetObject = {};
+        // console.log("Fields, facets before facets call:", fields, facets)
+        facets.forEach(function(facet) {
+            if (facet in ds.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
+            } else if (facet in dsr.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsr.properties[facet].type, facetMatch);
+            } else if (facet in dsd.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsd.properties[facet].type, facetMatch);
+            } else if (facet in own.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, own.properties[facet].type, facetMatch);
+            } else {
+                console.log("Warning: Facet not part of any dataset model:", facet)
+            }
+        });
+
+        pipeline.push({
+            $facet: facetObject,
+        });
+        console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        Dataset.getDataSource().connector.connect(function(err, db) {
+            var collection = db.collection('Dataset');
+            var res = collection.aggregate(pipeline,
+                function(err, res) {
+                    if (err) {
+                        console.log("Facet err handling:", err);
+                    }
+                    cb(err, res);
+                });
+        });
+    };
+
+    // returns filtered set of datasets. Options:
+    // filter condition consists of
+    //   - ownerGroup (automatically applie server side)
+    //   - text search
+    //   - list of fields which are treated as facets (name,type,value triple)
+    // - paging of results
+    // - merging DatasetLifecycle Fields for fields not contained in Dataset
+
+    Dataset.fullquery = function(fields, limits, cb) {
+        // console.log("===== fullquery: fields limits:", fields,limits)
+
+        // keep the full aggregation pipeline definition
+        let pipeline = []
+        let match = {}
+        let matchJoin = {}
+        // construct match conditions from fields value, excluding facet material
+        Object.keys(fields).map(function(key) {
+            if (fields[key] && fields[key] !== 'null') {
+                if (key === "text") {
+                    match["$text"] = searchExpression(key, fields[key])
+                } else if (key === "userGroups") {
+                    if (fields[key].length > 0)
+                        match["ownerGroup"] = searchExpression(key, fields[key])
+                } else {
+                    // check if field is in linked models
+                    if (key in dsl.properties) {
+                        matchJoin["DatasetLifecycle." + key] = searchExpression(key, fields[key])
+                    } else {
+                        match[key] = searchExpression(key, fields[key])
+                    }
+                }
+            }
+        })
+        if (match !== {}) {
+            pipeline.push({
+                $match: match
+            })
+        }
+
+        // "include" DatasetLifecycle data
+        // TODO: make include optional for cases where only dataset fields are requested
+        pipeline.push({
+            $lookup: {
+                from: "DatasetLifecycle",
+                localField: "_id",
+                foreignField: "datasetId",
+                as: "DatasetLifecycle"
+            }
+        })
+        pipeline.push({
+            $unwind: "$DatasetLifecycle"
+        })
+
+        if (Object.keys(matchJoin).length > 0) {
+            pipeline.push({
+                $match: matchJoin
+            })
+
+        }
+        // final paging section ===========================================================
+        if (limits) {
+            if ("order" in limits) {
+                pipeline.push({
+                    $sort: limits.order
+                    // e.g. { $sort : { age : -1, posts: 1 } }
+                })
+            }
+
+            if ("skip" in limits) {
+                pipeline.push({
+                    $skip: Number(limits.skip)
+                })
+            }
+            if ("limit" in limits) {
+                pipeline.push({
+                    $limit: Number(limits.limit)
+                })
+            }
+        }
+        console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        Dataset.getDataSource().connector.connect(function(err, db) {
+            var collection = db.collection('Dataset');
+            var res = collection.aggregate(pipeline,
+                function(err, res) {
+                    if (err) {
+                        console.log("Facet err handling:", err);
+                    }
+                    //console.log("Query result:", res)
+                    cb(err, res);
+                });
+        });
+    };
+
+    Dataset.isValid = function(dataset, next) {
+        var ds = new Dataset(dataset);
+        ds.isValid(function(valid) {
+            if (!valid) {
+                next(null, {
+                    'errors': ds.errors,
+                    'valid': false,
+                });
+            } else {
+                next(null, {
+                    'valid': true,
+                });
+            }
+        });
+    };
+
+
+    // TODO make the following obsolete
     Dataset.facet = function(fields, facets = [], cb) {
         // console.log("Fields, facets:", fields, facets)
         var findFilter = [];
-        const userGroups = fields.userGroups;
+        const userGroups = fields.userGroups; // this field was added before on serverside
         delete fields.userGroups;
         var match = fields || {};
         // var type = match['type'] || undefined;
-        let textSearch="";
+        let textSearch = "";
         Object.keys(match).forEach(function(k) {
-            if (k == "$text"){
+            if (k == "$text") {
                 // safe for global match block, but remove for subsequent facet pipelines
                 // TODO decide when quotes are needed
-                textSearch='"'+match[k]+'"'
+                textSearch = '"' + match[k] + '"'
                 delete match[k]
             }
             if (match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
@@ -136,24 +366,46 @@ module.exports = function(Dataset) {
         // this match requirment must always be there for normal users to select pgroup related subsets
         // text search match conditions must be added here as well
 
-        var matchCondition={}
+        var matchCondition = {}
 
-        if (userGroups.length>0 && textSearch !== "") {
-            matchCondition = { $and: [{ownerGroup: { $in: userGroups}},{ $text: { $search: textSearch, $language: "none"}}]}
-        } else if (userGroups.length>0) {
-            matchCondition = { ownerGroup: { $in: userGroups}}
-        } else if (textSearch !== ""){
-            matchCondition = { $text: { $search: textSearch, $language: "none"}}
+        if (userGroups.length > 0 && textSearch !== "") {
+            matchCondition = {
+                $and: [{
+                    ownerGroup: {
+                        $in: userGroups
+                    }
+                }, {
+                    $text: {
+                        $search: textSearch,
+                        $language: "none"
+                    }
+                }]
+            }
+        } else if (userGroups.length > 0) {
+            matchCondition = {
+                ownerGroup: {
+                    $in: userGroups
+                }
+            }
+        } else if (textSearch !== "") {
+            matchCondition = {
+                $text: {
+                    $search: textSearch,
+                    $language: "none"
+                }
+            }
         }
         // console.log("matchcondition:",matchCondition)
 
         if (matchCondition !== {}) {
-            findFilter.push({ $match: matchCondition })
+            findFilter.push({
+                $match: matchCondition
+            })
         }
         findFilter.push({
             $facet: facetObject,
         });
-        // console.log("Resulting aggregate query:", JSON.stringify(findFilter, null, 4));
+        console.log("Resulting aggregate query:", JSON.stringify(findFilter, null, 4));
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(findFilter,
@@ -168,22 +420,6 @@ module.exports = function(Dataset) {
                     }
                     cb(err, res);
                 });
-        });
-    };
-
-    Dataset.isValid = function(dataset, next) {
-        var ds = new Dataset(dataset);
-        ds.isValid(function(valid) {
-            if (!valid) {
-                next(null, {
-                    'errors': ds.errors,
-                    'valid': false,
-                });
-            } else {
-                next(null, {
-                    'valid': true,
-                });
-            }
         });
     };
 };

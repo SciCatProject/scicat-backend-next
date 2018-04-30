@@ -161,13 +161,13 @@
             "principalType": "ROLE",
             "principalId": "$everyone",
             "permission": "ALLOW",
-            "property": "facet"
+            "property": ["facet","fullquery","fullfacet"]
         },
         {
             "principalType": "ROLE",
             "principalId": "ingestor",
             "permission": "ALLOW",
-            "property": "facet"
+            "property": ["facet","fullquery","fullfacet"]
         },
         {
             "principalType": "ROLE",
@@ -219,6 +219,50 @@
                 "path": "/facet",
                 "verb": "post"
             }
+        },
+        "fullfacet": {
+            "accepts": [{
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
+                },
+                {
+                    "arg": "facets",
+                    "type": "array",
+                    "description": "Defines list of field names, for which facet counts should be calculated"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return facet counts relevant for the given selected subset of datasets. ",
+            "http": {
+                "path": "/fullfacet",
+                "verb": "get"
+            }
+        },
+        "fullquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/fullquery",
+                "verb": "get"
+            }
         }
+
     }
 }

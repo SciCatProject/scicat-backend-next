@@ -52,6 +52,20 @@ module.exports = function(Rawdataset) {
     utils.handleOwnerGroups(ctx,next);
   });
 
+  Rawdataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+      if (!ctx.args.fields)
+          ctx.args.fields = {};
+      ctx.args.fields.type = 'raw';
+      utils.handleOwnerGroups(ctx, next);
+  });
+
+  Rawdataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+      if (!ctx.args.fields)
+          ctx.args.fields = {};
+      ctx.args.fields.type = 'raw';
+      utils.handleOwnerGroups(ctx, next);
+  });
+
   Rawdataset.isValid = function(dataset, next) {
     var ds = new Rawdataset(dataset);
     ds.isValid(function(valid) {
