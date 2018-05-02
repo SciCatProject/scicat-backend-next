@@ -142,6 +142,7 @@ exports.createFacetPipeline = function(name, type, preConditions, query) {
         grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
     }
     pipeline.push(grp);
+    // sort by name in reverse ordered
     const sort = {$sort: {count: -1, _id: -1}};
     pipeline.push(sort);
     return pipeline;
@@ -168,7 +169,7 @@ exports.createNewFacetPipeline = function(name, type, query) {
         grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
     }
     pipeline.push(grp);
-    const sort = {$sort: {count: -1}};
+    const sort = {$sort: {_id: -1}};
     pipeline.push(sort);
     return pipeline;
 }
@@ -192,7 +193,7 @@ exports.handleOwnerGroups = function(ctx, next) {
     if (!ctx.args.fields)
         ctx.args.fields = {};
     let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    if (userId === null) {
+    if (userId === null && ctx.req.args) {
         userId = ctx.req.args.accessToken;
     }
     var UserIdentity = app.models.UserIdentity;

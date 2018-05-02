@@ -218,8 +218,9 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             .end((err, res) => {
                 if (err)
                     return done(err);
+                console.log("=============== Resulst:",res.body)
                 res.body.should.be.an('array').that.is.not.empty;
-                res.body[0]['DatasetLifecycle'].should.have.property('archiveStatusMessage').and.equal("datasetCreated");
+                res.body[0]['datasetlifecycle'].should.have.property('archiveStatusMessage').and.equal("datasetCreated");
                 done();
             });
     });
@@ -229,9 +230,7 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             "ownerGroup": ["p12345", "p10029"]
         }
         var limits = {
-            order: {
-                creationTime: -1
-            },
+            order: "creationTime:desc",
             skip: 0
         }
 

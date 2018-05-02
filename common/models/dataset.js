@@ -191,6 +191,12 @@ module.exports = function(Dataset) {
                 console.log("Warning: Facet not part of any dataset model:", facet)
             }
         });
+        // add pipeline to count all documents
+        facetObject['all'] = [{
+            $match: facetMatch
+        }, {
+            $count: 'totalSets'
+        }]
 
         pipeline.push({
             $facet: facetObject,
@@ -228,13 +234,32 @@ module.exports = function(Dataset) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
                     match["$text"] = searchExpression(key, fields[key])
+                } else if (key === "ownerGroup") {
+                    // ownerGroup is handled in userGroups parts
                 } else if (key === "userGroups") {
-                    if (fields[key].length > 0)
-                        match["ownerGroup"] = searchExpression(key, fields[key])
+                    // merge with ownerGroup condition if existing
+                    if ('ownerGroup' in fields) {
+                        // TODO important: distinguish user which is in no group from ingestor which is in all groups (both userGroups=[] ?)
+                        if (fields[key].length == 0) {
+                            // if no userGroups defined take all ownerGroups
+                            match["ownerGroup"] = searchExpression('ownerGroup', fields['ownerGroup'])
+                        } else {
+                            // otherwise create intersection of userGroups and ownerGroup
+                            const intersect = fields['ownerGroup'].filter(function(n) {
+                                return fields['userGroups'].indexOf(n) !== -1;
+                            });
+                            match["ownerGroup"] = searchExpression('ownerGroup', intersect)
+                        }
+                    } else {
+                        // only userGroups defined
+                        if (fields[key].length > 0) {
+                            match["ownerGroup"] = searchExpression('ownerGroup', fields['userGroups'])
+                        }
+                    }
                 } else {
                     // check if field is in linked models
                     if (key in dsl.properties) {
-                        matchJoin["DatasetLifecycle." + key] = searchExpression(key, fields[key])
+                        matchJoin["datasetlifecycle." + key] = searchExpression(key, fields[key])
                     } else {
                         match[key] = searchExpression(key, fields[key])
                     }
@@ -254,11 +279,11 @@ module.exports = function(Dataset) {
                 from: "DatasetLifecycle",
                 localField: "_id",
                 foreignField: "datasetId",
-                as: "DatasetLifecycle"
+                as: "datasetlifecycle"
             }
         })
         pipeline.push({
-            $unwind: "$DatasetLifecycle"
+            $unwind: "$datasetlifecycle"
         })
 
         if (Object.keys(matchJoin).length > 0) {
@@ -270,9 +295,17 @@ module.exports = function(Dataset) {
         // final paging section ===========================================================
         if (limits) {
             if ("order" in limits) {
+                // input format: "creationTime:desc,creationLocation:asc"
+                const sortExpr = {}
+                const sortFields = limits.order.split(',')
+                sortFields.map(function(sortField) {
+                    const parts = sortField.split(':')
+                    const dir = (parts[1] == 'desc') ? -1 : 1
+                    sortExpr[parts[0]] = dir
+                })
                 pipeline.push({
-                    $sort: limits.order
-                    // e.g. { $sort : { age : -1, posts: 1 } }
+                    $sort: sortExpr
+                    // e.g. { $sort : { creationLocation : -1, creationLoation: 1 } }
                 })
             }
 
@@ -295,7 +328,7 @@ module.exports = function(Dataset) {
                     if (err) {
                         console.log("Facet err handling:", err);
                     }
-                    //console.log("Query result:", res)
+                    console.log("Query result:", res)
                     cb(err, res);
                 });
         });
