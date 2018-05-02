@@ -320,7 +320,7 @@ module.exports = function(Dataset) {
                 })
             }
         }
-        console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
@@ -328,7 +328,12 @@ module.exports = function(Dataset) {
                     if (err) {
                         console.log("Facet err handling:", err);
                     }
-                    console.log("Query result:", res)
+                    // console.log("Query result:", res)
+                    // rename _id to pid
+                    res.map(ds => {
+                        Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
+                        delete ds['_id']
+                    })
                     cb(err, res);
                 });
         });
