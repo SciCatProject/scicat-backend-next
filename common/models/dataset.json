@@ -41,7 +41,7 @@
             "type": "string",
             "required": true,
             "index": true,
-            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data file the string can also be the full path to this single file."
+            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data it contains the path up to, but excluding the filename."
         },
         "size": {
             "type": "number",

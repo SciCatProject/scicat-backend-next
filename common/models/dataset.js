@@ -90,7 +90,7 @@ module.exports = function(Dataset) {
      */
 
     // add user Groups information of the logged in user to the fields object
-    // TODO Obsolete the facet call
+
     Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
@@ -146,14 +146,15 @@ module.exports = function(Dataset) {
     }
 
     Dataset.fullfacet = function(fields, facets = [], cb) {
-        console.log("Fields, facets:", fields, facets)
-
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
         let facetMatch = {}
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
+        // Since a match condition on usergroups is alway prepended at the start
+        // this effectively yields the intersection handling of the two sets (ownerGroup condition and userGroups)
+
         Object.keys(fields).map(function(key) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
@@ -173,11 +174,11 @@ module.exports = function(Dataset) {
                 $match: match
             })
         }
-        // TODO if global condition contain field from joined model (e.g. DatasetLifecycle) add lookup constructs
+        // TODO add support for filter condition on joined collection
+        // currently for facets not supported (detrimental performance impact)
 
         // append all facet pipelines
         let facetObject = {};
-        // console.log("Fields, facets before facets call:", fields, facets)
         facets.forEach(function(facet) {
             if (facet in ds.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
@@ -201,7 +202,7 @@ module.exports = function(Dataset) {
         pipeline.push({
             $facet: facetObject,
         });
-        console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
@@ -223,8 +224,6 @@ module.exports = function(Dataset) {
     // - merging DatasetLifecycle Fields for fields not contained in Dataset
 
     Dataset.fullquery = function(fields, limits, cb) {
-        // console.log("===== fullquery: fields limits:", fields,limits)
-
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
@@ -239,12 +238,13 @@ module.exports = function(Dataset) {
                 } else if (key === "userGroups") {
                     // merge with ownerGroup condition if existing
                     if ('ownerGroup' in fields) {
-                        // TODO important: distinguish user which is in no group from ingestor which is in all groups (both userGroups=[] ?)
                         if (fields[key].length == 0) {
                             // if no userGroups defined take all ownerGroups
                             match["ownerGroup"] = searchExpression('ownerGroup', fields['ownerGroup'])
                         } else {
                             // otherwise create intersection of userGroups and ownerGroup
+                            // this is needed here since no extra match step is done but all
+                            // filter conditions are applied in one match step
                             const intersect = fields['ownerGroup'].filter(function(n) {
                                 return fields['userGroups'].indexOf(n) !== -1;
                             });
@@ -283,7 +283,7 @@ module.exports = function(Dataset) {
             }
         })
         pipeline.push({
-            $unwind: "$datasetlifecycle"
+             $unwind: {path: "$datasetlifecycle", preserveNullAndEmptyArrays: true}
         })
 
         if (Object.keys(matchJoin).length > 0) {
@@ -356,108 +356,4 @@ module.exports = function(Dataset) {
     };
 
 
-    // TODO make the following obsolete
-    Dataset.facet = function(fields, facets = [], cb) {
-        // console.log("Fields, facets:", fields, facets)
-        var findFilter = [];
-        const userGroups = fields.userGroups; // this field was added before on serverside
-        delete fields.userGroups;
-        var match = fields || {};
-        // var type = match['type'] || undefined;
-        let textSearch = "";
-        Object.keys(match).forEach(function(k) {
-            if (k == "$text") {
-                // safe for global match block, but remove for subsequent facet pipelines
-                // TODO decide when quotes are needed
-                textSearch = '"' + match[k] + '"'
-                delete match[k]
-            }
-            if (match[k] === undefined || (Array.isArray(match[k]) && match[k].length === 0)) {
-                delete match[k];
-            }
-            if (k === 'creationTime') {
-                const d = match[k];
-                match[k]['$gte'] = new Date(d['$gte']);
-                match[k]['$lte'] = new Date(d['$lte']);
-            }
-        });
-        let facetObject = {};
-        // TODO avoid need for base facets
-        var baseFacets = [{
-            name: 'creationTime',
-            type: 'date'
-        }, {
-            name: 'ownerGroup',
-            type: 'text'
-        }, {
-            name: 'creationLocation',
-            type: 'text'
-        }];
-        baseFacets.map(function(f) {
-            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
-        });
-        // console.log("Fields, facets before facets call:", fields, facets)
-        facets.map(function(f) {
-            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
-        });
-
-        // this match requirment must always be there for normal users to select pgroup related subsets
-        // text search match conditions must be added here as well
-
-        var matchCondition = {}
-
-        if (userGroups.length > 0 && textSearch !== "") {
-            matchCondition = {
-                $and: [{
-                    ownerGroup: {
-                        $in: userGroups
-                    }
-                }, {
-                    $text: {
-                        $search: textSearch,
-                        $language: "none"
-                    }
-                }]
-            }
-        } else if (userGroups.length > 0) {
-            matchCondition = {
-                ownerGroup: {
-                    $in: userGroups
-                }
-            }
-        } else if (textSearch !== "") {
-            matchCondition = {
-                $text: {
-                    $search: textSearch,
-                    $language: "none"
-                }
-            }
-        }
-        // console.log("matchcondition:",matchCondition)
-
-        if (matchCondition !== {}) {
-            findFilter.push({
-                $match: matchCondition
-            })
-        }
-        findFilter.push({
-            $facet: facetObject,
-        });
-        console.log("Resulting aggregate query:", JSON.stringify(findFilter, null, 4));
-        Dataset.getDataSource().connector.connect(function(err, db) {
-            var collection = db.collection('Dataset');
-            var res = collection.aggregate(findFilter,
-                function(err, res) {
-                    if (err) {
-                        console.log("Facet err handling:", err);
-                    } else {
-                        //console.log("Facet results:",JSON.stringify(res, null, 4));
-                        // TODO why is this needed ?
-                        // if (type !== undefined) res.push({'type': type});
-                        // console.log("Aggregate call: Return err,result:",err,JSON.stringify(res, null, 4))
-                    }
-                    cb(err, res);
-                });
-        });
-    };
 };

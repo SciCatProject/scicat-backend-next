@@ -124,32 +124,6 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
     });
 }
 
-exports.createFacetPipeline = function(name, type, preConditions, query) {
-    const pipeline = [];
-    if (preConditions) {
-        pipeline.push(preConditions);
-    }
-    // add all conditions from "other" facets, exclude own conditions
-    if (query && Object.keys(query).length > 0) {
-        //console.log("createFacet query:",query);
-        var q = Object.assign({}, query);
-        delete q[name];
-        if(Object.keys(q).length > 0)
-            pipeline.push({$match: q});
-    }
-    let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
-    if (type === 'date') {
-        grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
-    }
-    pipeline.push(grp);
-    // sort by name in reverse ordered
-    const sort = {$sort: {count: -1, _id: -1}};
-    pipeline.push(sort);
-    return pipeline;
-}
-
-//TODO obsolete old createFacetPipeline code
-
 exports.createNewFacetPipeline = function(name, type, query) {
     const pipeline = [];
 
