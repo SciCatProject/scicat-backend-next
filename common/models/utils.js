@@ -124,10 +124,11 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
     });
 }
 
-exports.createFacetPipeline = function(name, type, preConditions, query) {
+exports.createNewFacetPipeline = function(name, type, query) {
     const pipeline = [];
-    if (preConditions) {
-        pipeline.push(preConditions);
+
+    if (type.constructor === Array) {
+        pipeline.push({ $unwind: '$'+name });
     }
     // add all conditions from "other" facets, exclude own conditions
     if (query && Object.keys(query).length > 0) {
@@ -142,10 +143,11 @@ exports.createFacetPipeline = function(name, type, preConditions, query) {
         grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
     }
     pipeline.push(grp);
-    const sort = {$sort: {count: -1, _id: -1}};
+    const sort = {$sort: {_id: -1}};
     pipeline.push(sort);
     return pipeline;
 }
+
 
 // dito but for array of instances
 exports.updateAllTimesToUTC = function(dateKeys, instances) {
@@ -162,8 +164,10 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
 }
 
 exports.handleOwnerGroups = function(ctx, next) {
+    if (!ctx.args.fields)
+        ctx.args.fields = {};
     let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    if (userId === null) {
+    if (userId === null && ctx.req.args) {
         userId = ctx.req.args.accessToken;
     }
     var UserIdentity = app.models.UserIdentity;

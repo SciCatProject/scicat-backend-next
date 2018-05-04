@@ -32,9 +32,21 @@ module.exports = function (Deriveddataset) {
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
         utils.handleOwnerGroups(ctx, next);
-        // const user = userId ? 'user#' + userId : '<anonymous>';
-
     })
+    
+    Deriveddataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+            if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = 'derived';
+        utils.handleOwnerGroups(ctx, next);
+    })
+
+    Deriveddataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+        if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = 'derived';
+        utils.handleOwnerGroups(ctx, next);
+    });
 
     Deriveddataset.isValid = function (dataset, next) {
         var ds=new Deriveddataset(dataset)

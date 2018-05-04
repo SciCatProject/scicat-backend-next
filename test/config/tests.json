@@ -75,33 +75,13 @@
         ]
     },
     {
-        "method": "POST",
-        "route": "Datasets/facet",
-        "expect": 200,
-        "authenticate": "user",
-        "body": {
-            "facets": [{
-                "name": "keywords",
-                "type": "text",
-                "preConditions": {
-                    "$unwind": "$keywords"
-                }
-            }]
-        },
-        "response": [
-            "res.body.should.be.instanceof(Object);",
-            "res.body.should.have.property('results').and.be.instanceof(Array);",
-            "res.body['results'][0].should.have.property('keywords');"
-        ]
-    },
-    {
-        "method": "POST",
-        "route": "Datasets/facet",
+        "method": "GET",
+        "route": "Datasets/fullfacet",
         "expect": 200,
         "authenticate": "user",
         "response": [
             "res.body.should.be.instanceof(Object);",
-            "res.body.should.have.property('results').and.be.instanceof(Array);"
+            "res.body.should.be.instanceof(Array);"
         ]
     },
     {
