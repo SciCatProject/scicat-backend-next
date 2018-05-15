@@ -158,7 +158,7 @@ module.exports = function(Dataset) {
         Object.keys(fields).map(function(key) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
-                    match["$text"] = searchExpression(key, fields[key])
+                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
                 } else if (key === "userGroups") {
                     if (fields[key].length > 0)
                         match["ownerGroup"] = searchExpression(key, fields[key])
@@ -232,7 +232,7 @@ module.exports = function(Dataset) {
         Object.keys(fields).map(function(key) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
-                    match["$text"] = searchExpression(key, fields[key])
+                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
                 } else if (key === "ownerGroup") {
                     // ownerGroup is handled in userGroups parts
                 } else if (key === "userGroups") {
