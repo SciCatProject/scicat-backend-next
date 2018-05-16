@@ -218,7 +218,6 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             .end((err, res) => {
                 if (err)
                     return done(err);
-                console.log("=============== Resulst:",res.body)
                 res.body.should.be.an('array').that.is.not.empty;
                 res.body[0]['datasetlifecycle'].should.have.property('archiveStatusMessage').and.equal("datasetCreated");
                 done();
@@ -242,9 +241,7 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             .end((err, res) => {
                 if (err)
                     return done(err);
-                console.log(res.body)
                 res.body.should.be.instanceof(Array);
-
                 done();
             });
     });
@@ -290,7 +287,6 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             .end((err, res) => {
                 if (err)
                     return done(err);
-                console.log("Facet results:",JSON.stringify(res.body,null,4))
                 done();
             });
     });
@@ -340,6 +336,22 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 if (err)
                     return done(err);
                 res.body.archiveStatusMessage.should.be.equal('someDummyMessage');
+                done();
+            });
+    });
+
+    it('Should reset the DatasetLifecycle status and delete Datablocks', function(done) {
+        request(app)
+            .put('/api/v2/DatasetLifecycles/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
+            .send({
+                datasetId: testDatasetLifecycle.id
+            })
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
                 done();
             });
     });

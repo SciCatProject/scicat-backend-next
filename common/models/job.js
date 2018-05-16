@@ -23,7 +23,9 @@ module.exports = function (Job) {
             if (!ctx.instance.dateOfLastMessage) {
                 ctx.instance.dateOfLastMessage = now.toISOString();
             }
-            // ensure that all wanted datasets exist already
+            // make some consistency checks:
+            //    - ensure that all wanted datasets exist already
+            //    -  TODO: for archive jobs all datasetslifecycle should be in an "archiveable" state
             var Dataset = app.models.Dataset;
             // create array of all pids
             // console.log("Verifying datasets:",ctx.options)

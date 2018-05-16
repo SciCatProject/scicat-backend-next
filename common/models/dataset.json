@@ -192,7 +192,7 @@
                 "arg": "result",
                 "type": "string"
             },
-            "description": "Delete datablocks of dataset and reset status message",
+            "description": "Delete datablocks of dataset and reset status message. Warning: to be oboleted, use reset call for DatasetLifecycle instead",
             "http": {
                 "path": "/resetArchiveStatus",
                 "verb": "post"
