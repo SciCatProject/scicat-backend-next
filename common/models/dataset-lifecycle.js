@@ -67,29 +67,24 @@ module.exports = function(Datasetlifecycle) {
     // clean up data connected to a dataset, e.g. if archiving failed
 
     Datasetlifecycle.reset = function(id, options, next) {
-        console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var Dataset = app.models.Dataset;
         Datasetlifecycle.findById(id, options, function(err, l) {
             if (err) {
                 next(err);
             } else {
-                console.log("=========== found l:", l)
                 l.updateAttributes({
                     archiveStatusMessage: 'datasetCreated',
                     retrieveStatusMessage: '',
                     archivable: true,
                     retrievable: false
                 }, options, function(err, dslInstance) {
-                    console.log('Dataset Lifecycle reset:', dslInstance);
                     Datablock.destroyAll({
                         datasetId: id,
                     }, options, function(err, b) {
                         if (err) {
-                            console.log("Error destroying datablocks")
                             next(err);
                         } else {
-                            console.log('Deleted blocks', b);
                             Dataset.findById(id, options, function(err, instance) {
                                 if (err) {
                                     console.log("==== error finding dataset:",err)
@@ -98,7 +93,6 @@ module.exports = function(Datasetlifecycle) {
                                     instance.updateAttributes({
                                         packedSize: 0,
                                     }, options, function(err,inst){
-                                        console.log("====Reset size in Dataset:",err,inst)
                                         next();
                                     });
                                 }

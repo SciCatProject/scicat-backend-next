@@ -150,8 +150,8 @@ var testArchiveId2 = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f49
 
 var testDatasetLifecycle = {
     "id": "", // must be set to the id of the dataset,
-    "isOnDisk": true,
-    "isOnTape": false,
+    "archivable": true,
+    "retrievable": false,
     "archiveStatusMessage": "datasetIsArchived",
     "retrieveStatusMessage": "",
     "isExported": false,
