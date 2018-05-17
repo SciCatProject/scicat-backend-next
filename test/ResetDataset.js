@@ -146,15 +146,20 @@ var testDataBlock = {
     "ownerGroup": "p10029"
 }
 
+var testArchiveId2 = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar"
+
 var testDatasetLifecycle = {
     "id": "", // must be set to the id of the dataset,
-    "isOnDisk": true,
-    "isOnTape": false,
+    "archivable": true,
+    "retrievable": false,
     "archiveStatusMessage": "datasetIsArchived",
     "retrieveStatusMessage": "",
     "isExported": false,
     "ownerGroup": "p10029"
 }
+
+var foundId1 = null;
+var foundId2 = null;
 
 describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
     before((done) => {
@@ -174,6 +179,69 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 done();
             });
     });
+
+    // first get existing datasets with the test archieId to allow to delete them
+
+
+    it('should retrieve existing Datablocks with specific archiveId, if any', function(done) {
+        request(app)
+            .get('/api/v2/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testDataBlock.archiveId) + '%22%7D%7D&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                foundId1 = res.body[0] ? res.body[0].id : null
+                done();
+            });
+    });
+
+    it('should retrieve existing Datablocks with 2nd specific archiveId, if any', function(done) {
+        request(app)
+            .get('/api/v2/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testArchiveId2) + '%22%7D%7D&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                foundId2 = res.body[0] ? res.body[0].id : null
+                done();
+            });
+    });
+
+    if (foundId1) {
+        it('should delete existing Datablocks with specific archiveId', function(done) {
+            request(app)
+                .delete('/api/v2/Datablocks/' + foundId1 + '?access_token=' + accessTokenArchiveManager)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    // console.log("Deleted datablock:", res.body)
+                    done();
+                });
+        });
+    }
+
+    if (foundId2) {
+        it('should delete existing Datablocks with 2nd specific archiveId', function(done) {
+            request(app)
+                .delete('/api/v2/Datablocks/' + foundId2 + '?access_token=' + accessTokenArchiveManager)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                    if (err)
+                        return done(err);
+                    // console.log("Deleted datablock:", res.body)
+                    done();
+                });
+        });
+    }
 
     it('adds a new raw dataset', function(done) {
         request(app)
@@ -217,8 +285,8 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
     });
 
     it('adds a second datablock for same dataset', function(done) {
-        testDataBlock.archiveId = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
-            request(app)
+        testDataBlock.archiveId = testArchiveId2
+        request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testDataBlock)
             .set('Accept', 'application/json')
@@ -283,7 +351,7 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
 
     it('should reset the archive information from the newly created dataset', function(done) {
         request(app)
-            .post('/api/v2/Datasets/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
+            .put('/api/v2/DatasetLifecycles/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
             .send({
                 datasetId: testDataBlock.datasetId
             })

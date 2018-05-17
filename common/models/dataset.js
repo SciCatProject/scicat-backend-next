@@ -47,7 +47,7 @@ module.exports = function(Dataset) {
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
-    // TODO change API to a put/patch or even delete command ? Pass ID in URL
+    // TODO obsolete this code, replaced by code in datasetLifecycle
 
     Dataset.reset = function(id, options, next) {
         // console.log('resetting ' + id);
@@ -60,6 +60,8 @@ module.exports = function(Dataset) {
                 l.updateAttributes({
                     archiveStatusMessage: 'datasetCreated',
                     retrieveStatusMessage: '',
+                    archivable: true,
+                    retrievable: false
                 }, options);
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({

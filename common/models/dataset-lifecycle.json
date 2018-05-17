@@ -33,11 +33,19 @@
     },
     "isOnDisk": {
       "type": "boolean",
-      "description": "Flag which is true, if full dataset is available on disk"
+      "description": "Flag which is true, if full dataset is available on disk. Warning: will be obsoleted in coming versions"
     },
     "isOnTape": {
       "type": "boolean",
-      "description": "Flag which is true, if full dataset has been stored to tape"
+      "description": "Flag which is true, if full dataset has been stored to tape. Warning: will be obsoleted in coming versions"
+    },
+    "archivable": {
+        "type": "boolean",
+        "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet"
+    },
+    "retrievable": {
+        "type": "boolean",
+        "description": "Flag which is true, if dataset is stored on archive system and is ready to be retrieved"
     },
     "archiveStatusMessage": {
       "type": "string",
@@ -115,5 +123,25 @@
       "permission": "ALLOW"
     }
   ],
-  "methods": {}
+  "methods":{
+              "reset": {
+              "accepts": [{
+                      "arg": "datasetId",
+                      "type": "string"
+                  },
+                  {
+                      "arg": "options",
+                      "type": "object",
+                      "http": "optionsFromRequest"
+                  }],
+              "returns": {
+                  "root": true
+              },
+              "description": "Delete datablocks of dataset and reset status message.",
+              "http": {
+                  "path": "/resetArchiveStatus",
+                  "verb": "put"
+            }
+        }
+    }
 }
