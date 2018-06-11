@@ -75,27 +75,38 @@
         ]
     },
     {
-        "method": "POST",
-        "route": "Datasets/facet",
+        "method": "GET",
+        "route": "Datasets/fullfacet",
         "expect": 200,
         "authenticate": "user",
-        "body": {
-            "facets": [{"name": "keywords", "type": "text", "preConditions": {"$unwind": "$keywords"} }]
-        },
         "response": [
             "res.body.should.be.instanceof(Object);",
-            "res.body.should.have.property('results').and.be.instanceof(Array);",
-            "res.body['results'][0].should.have.property('keywords');"
+            "res.body.should.be.instanceof(Array);"
         ]
     },
     {
         "method": "POST",
-        "route": "Datasets/facet",
-        "expect": 200,
+        "route": "Jobs",
+        "expect": 400,
         "authenticate": "user",
-        "response": [
-            "res.body.should.be.instanceof(Object);",
-            "res.body.should.have.property('results').and.be.instanceof(Array);"
-        ]
+        "body": {
+            "emailJobInitiator": "scicatingestor@psi.ch",
+            "type": "archive",
+            "creationTime": "2018-03-16T13:09:52.336Z",
+            "jobParams": {
+                "username": "ingestor",
+                "tapeCopies": "one"
+            },
+            "dateOfLastMessage": "2018-03-16T13:10:16.918Z",
+            "datasetList": [{
+                    "pid": "wrong_pid",
+                    "files": []
+                },
+                {
+                    "pid": "20.500.11935/83c7be97-9507-483e-aff3-2388aafa70b3",
+                    "files": []
+                }
+            ]
+        }
     }
 ]

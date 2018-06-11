@@ -4,6 +4,7 @@ var DataSource = require('loopback-datasource-juggler').DataSource;
 
 var nodemailer = require('nodemailer');
 var config = require('../../server/config.local');
+var app = require('../../server/server');
 
 module.exports = function (Job) {
 
@@ -22,8 +23,27 @@ module.exports = function (Job) {
             if (!ctx.instance.dateOfLastMessage) {
                 ctx.instance.dateOfLastMessage = now.toISOString();
             }
+            // make some consistency checks:
+            //    - ensure that all wanted datasets exist already
+            //    -  TODO: for archive jobs all datasetslifecycle should be in an "archiveable" state
+            var Dataset = app.models.Dataset;
+            // create array of all pids
+            // console.log("Verifying datasets:",ctx.options)
+            const idList=ctx.instance.datasetList.map(x => x.pid)
+            Dataset.find({where: {pid: {inq: idList}}}, ctx.options, function (err, p){
+                console.log("JOBS:lengths",err,p.length,idList.length,p)
+                if (err || (p.length != idList.length)){
+                    var e = new Error();
+                    e.statusCode = 400;
+                    e.message = 'At least one of the datasets could not be found';
+                    next(e);
+                } else {
+                   next();
+                }
+            });
+        } else {
+            next();
         }
-        next();
     });
 
     Job.observe('after save', (ctx, next) => {
@@ -31,8 +51,6 @@ module.exports = function (Job) {
             if ('queue' in config && config.queue === 'rabbitmq') {
                 Job.publishJob(ctx.instance, "jobqueue")
                 console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
-            } else if ('queue' in config && config.queue === 'rabbitmq') {
-                // TODO handle job submission here
             }
             if ('smtpSettings' in config && 'smtpMessage' in config)  {
                 let transporter = nodemailer.createTransport(config.smtpSettings);
@@ -45,7 +63,7 @@ module.exports = function (Job) {
                         var message = Object.assign({}, config.smtpMessage);
                         message['to'] = ctx.instance.emailJobInitiator;
                         message['subject'] += ' Job Submitted Successfully';
-                        let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.';
+                        let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n'+JSON.stringify(ctx.instance, null, 4);
                         message['text'] = text;
                         transporter.sendMail(message, function (err, info) {
                             if (err) {
@@ -57,14 +75,10 @@ module.exports = function (Job) {
                         });
                     }
                 });
-                console.log('Saved Job %s#%s and published to message broker',
-                    ctx.Model.modelName, ctx.instance.id);
-            } else {
-                console.log('Updated %s matching %j', ctx.Model.pluralModelName,
-                    ctx.where);
-                next();
             }
         } else {
+            console.log('Updated %s matching %j', ctx.Model.pluralModelName,
+                ctx.where);
             next();
         }
     });

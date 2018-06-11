@@ -124,25 +124,30 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
     });
 }
 
-exports.createFacetPipeline = function(name, type, preConditions, query) {
+exports.createNewFacetPipeline = function(name, type, query) {
     const pipeline = [];
-    if (preConditions) {
-        pipeline.push(preConditions);
+
+    if (type.constructor === Array) {
+        pipeline.push({ $unwind: '$'+name });
+    }
+    // add all conditions from "other" facets, exclude own conditions
+    if (query && Object.keys(query).length > 0) {
+        //console.log("createFacet query:",query);
+        var q = Object.assign({}, query);
+        delete q[name];
+        if(Object.keys(q).length > 0)
+            pipeline.push({$match: q});
     }
     let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
     if (type === 'date') {
         grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
     }
     pipeline.push(grp);
-    if (query && Object.keys(query).length > 0) {
-        var q = Object.assign({}, query);
-        delete q[name];
-        pipeline.push({$match: q});
-    }
-    const sort = {$sort: {count: -1, _id: -1}};
+    const sort = {$sort: {_id: -1}};
     pipeline.push(sort);
     return pipeline;
 }
+
 
 // dito but for array of instances
 exports.updateAllTimesToUTC = function(dateKeys, instances) {
@@ -158,9 +163,11 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
     });
 }
 
-exports.handleOwnerGroups = function(ctx, userDetails, next) {
+exports.handleOwnerGroups = function(ctx, next) {
+    if (!ctx.args.fields)
+        ctx.args.fields = {};
     let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    if (userId === null) {
+    if (userId === null && ctx.req.args) {
         userId = ctx.req.args.accessToken;
     }
     var UserIdentity = app.models.UserIdentity;
@@ -170,18 +177,13 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
         e.statusCode = 401;
         next(e);
     }
-    // console.log(ctx.req);
-    // TODO add check for functional accounts and ignore below if true
-    const fields = ctx.args.fields || undefined;
-    let groups = [];
-    if (fields && fields['ownerGroup']) {
-        groups = fields.ownerGroup;
-    }
+
     User.findById(userId, function(err, user) {
         if (err) {
             next(err);
         } else if (user['username'].indexOf('.') === -1) {
-            ctx.args.fields.ownerGroup = groups;
+            // system users have no pgroups assigned, no filter on these variables
+            ctx.args.fields.userGroups = [];
             next()
         } else {
             UserIdentity.findOne({
@@ -193,24 +195,13 @@ exports.handleOwnerGroups = function(ctx, userDetails, next) {
                 if (instance && instance.profile) {
                     var foundGroups = instance.profile.accessGroups;
                     // check if a normal user or an internal ROLE
-                    if (typeof foundGroups === 'undefined') {
-                        ctx.args.fields.ownerGroup = [];
-                        next();
-                    }
-                    var a = new Set(groups);
-                    var b = new Set(foundGroups);
-                    var intersection = new Set([...b].filter(x => a.has(x)));
-                    var subgroups = Array.from(intersection);
-                    if (foundGroups.length === 0) {
+                    if (typeof foundGroups === 'undefined' || foundGroups.length === 0) {
                         var e = new Error('User has no group access');
                         e.statusCode = 401;
                         next(e);
-                    } else if (subgroups.length === 0) {
-                        ctx.args.fields.ownerGroup = foundGroups;
-                        next();
                     } else {
-                        ctx.args.fields.ownerGroup = subgroups;
-                        next();
+                        ctx.args.fields.userGroups = foundGroups;
+                        next()
                     }
                 } else {
                     // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html

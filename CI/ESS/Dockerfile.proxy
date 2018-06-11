@@ -10,7 +10,6 @@ EXPOSE 3000
 ENV http_proxy "http://192.168.1.1:8123"
 ENV https_proxy $http_proxy
 ENV no_proxy "localhost, 127.0.0.1"
-RUN apt-get update && apt-get install -y rabbitmq-server mongodb-clients netcat mongodb vim
 
 # Prepare app directory
 WORKDIR /usr/src/app
@@ -27,7 +26,7 @@ RUN npm install
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
-#COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local
+COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local.js
 COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
 #COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
 #COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
@@ -36,4 +35,4 @@ COPY CI/ESS/start.sh /usr/src/app/start.sh
 #COPY CI/ESS/settings.json /usr/src/app/test/config/
 RUN NODE_ENV=dev
 # Start the app
-CMD ["./start.sh"]
+CMD ["node", "."]

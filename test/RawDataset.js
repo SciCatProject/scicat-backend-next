@@ -156,16 +156,15 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should contain an array of facets with a type description', function(done) {
+    it('should contain an array of facets', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets/facet?access_token=' + accessToken)
+            .get('/api/v2/RawDatasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .send({'ownerGroup': ['p11114']})
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.have.property('results').and.be.an('array').and.have.length(1);
-                res.body.results[0].should.have.property('type').and.equal('raw');
+                res.body.should.be.an('array');
                 if(err)
                     done(err);
                 done();

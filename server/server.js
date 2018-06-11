@@ -5,6 +5,9 @@ var path = require('path');
 var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
+var configLocal = require('./config.local');
+
+const uuidv3 = require('uuid/v3');
 
 // Create an instance of PassportConfigurator with the app instance
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
@@ -57,6 +60,11 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     }
     if (!profile.id) {
         profile.id = user['uid'];
+		if (!(uid in user)){
+			const MY_NAMESPACE = '1b671a64-40d5-491e-99b0-da01ff1f3341';
+			const generated_id = uuidv3( user['mail'], MY_NAMESPACE);
+			profile.id = generated_id;
+		}
     }
     if (!profile.emails) {
         var email = [].concat(user['mail'])[0];
@@ -66,9 +74,35 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             }];
         }
     }
+
+    if (configLocal.site === 'ESS') {
+        if (!profile.accessGroups) {
+            profile.accessGroups = ['ess', 'loki', 'odin'];
+        }
+    }
+
     console.log("++++++++++ Profile:", profile)
     return profile;
 };
+
+if ('queue' in configLocal) {
+    var msg = 'Queue configured to be ';
+    switch(configLocal.queue) {
+        case 'rabbitmq':
+            console.log(msg + 'RabbitMQ');
+            break;
+        case 'kafka':
+            console.log(msg + 'Apache Kafka');
+            break;
+        default:
+            console.log('Queuing system not configured.');
+            break;
+    }
+}
+
+if ('smtpSettings' in configLocal) {
+    console.log('Email settings detected');
+}
 
 var bodyParser = require('body-parser');
 var ENV = process.env.NODE_ENV || 'local';

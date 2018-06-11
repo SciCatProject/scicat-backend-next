@@ -1,0 +1,16 @@
+{
+    "baseURL": "http://localhost:3000/",
+    "apiPrefix": "api/v2/",
+    "users": {
+        "admin": {
+            "username": "ingestor",
+            "password": "aman",
+            "login": "User/login"
+        },
+        "user": {
+            "username": "admin",
+            "password": "admin",
+            "login": "auth/msad"
+        }
+    }
+}

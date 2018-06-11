@@ -31,10 +31,22 @@ module.exports = function (Deriveddataset) {
             if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
-        utils.handleOwnerGroups(ctx, userDetails, next);
-        // const user = userId ? 'user#' + userId : '<anonymous>';
-
+        utils.handleOwnerGroups(ctx, next);
     })
+    
+    Deriveddataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+            if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = 'derived';
+        utils.handleOwnerGroups(ctx, next);
+    })
+
+    Deriveddataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+        if (!ctx.args.fields)
+            ctx.args.fields = {};
+        ctx.args.fields.type = 'derived';
+        utils.handleOwnerGroups(ctx, next);
+    });
 
     Deriveddataset.isValid = function (dataset, next) {
         var ds=new Deriveddataset(dataset)

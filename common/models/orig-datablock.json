@@ -31,7 +31,7 @@
                 "Datafile"
             ],
             "required": true,
-            "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. In case the linked dataset has a source *folder* all file paths are relative file paths. In the single file dataset case the path is the fullpath to the dataset file on the source system."
+            "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. All file paths are relative paths with respect to the sourceFolder location of the linked dataset."
         }
     },
     "validations": [],

@@ -1,6 +1,6 @@
 version: "3"
 services:
-  local-mongodb-mongodb.dev:
+  mongodb:
     image: 'bitnami/mongodb:latest'
     labels:
       kompose.service.type: nodeport
@@ -25,7 +25,7 @@ services:
     volumes:
       - './rabbitmq:/bitnami'
     depends_on: 
-      - local-mongodb-mongodb.dev
+      - mongodb
 
 #  catanie:
 #    build: 
@@ -36,7 +36,7 @@ services:
 #      - '4200:4200'
 #    depends_on: 
 #      - local-rabbit-rabbitmq.dev
-#      - local-mongodb-mongodb.dev
+#      - mongodb
 
 #  catamel:
 #    build: 
@@ -46,11 +46,11 @@ services:
 #    ports:
 #      - '3000:3000'
 #    depends_on: 
-#      - local-mongodb-mongodb.dev
+#      - mongodb
 #      - local-rabbit-rabbitmq.dev
 #      - myshell
 #    links:
-#      - local-mongodb-mongodb.dev
+#      - mongodb
 #
 #  zookeeper:
 #    image: wurstmeister/zookeeper
@@ -89,7 +89,7 @@ services:
 #      context: myshell
 #    image: garethcmurphy/myshell
 #    depends_on: 
-#      - local-mongodb-mongodb.dev
+#      - mongodb
 #      - local-rabbit-rabbitmq.dev
     
 

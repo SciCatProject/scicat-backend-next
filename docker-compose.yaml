@@ -1,0 +1,112 @@
+version: "3"
+services:
+  mongodb:
+    image: 'bitnami/mongodb:latest'
+    labels:
+      kompose.service.type: nodeport
+    ports:
+      - "27017:27017"
+    volumes:
+      - './mongodb:/bitnami'
+
+
+  catamel:
+    build: 
+      context: .
+      dockerfile: CI/ESS/Dockerfile.test
+    image: garethcmurphy/catamel
+    ports:
+      - '3000:3000'
+      - '3001:3001'
+    depends_on: 
+      - mongodb
+    links:
+      - mongodb
+      - openldap
+
+  openldap:
+    image: osixia/openldap:1.2.0
+    container_name: openldap
+    environment:
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_BASE_DN: ""
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_PASSWORD: "config"
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: "readonly"
+      LDAP_READONLY_USER_PASSWORD: "readonly"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_BACKEND: "mdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      #LDAP_REPLICATION_CONFIG_SYNCPROV: "binddn="cn=admin,cn=config" bindmethod=simple credentials=$LDAP_CONFIG_PASSWORD searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_DB_SYNCPROV: "binddn="cn=admin,$LDAP_BASE_DN" bindmethod=simple credentials=$LDAP_ADMIN_PASSWORD searchbase="$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_HOSTS: "#PYTHON2BASH:['ldap://ldap.example.org','ldap://ldap2.example.org']"
+      KEEP_EXISTING_CONFIG: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    volumes:
+      - /var/lib/ldap
+      - /etc/ldap/slapd.d
+      - /container/service/slapd/assets/certs/
+    ports:
+      - "389:389"
+      - "636:636"
+    domainname: "example.org" # important: same as hostname
+    hostname: "example.org"
+#
+#  zookeeper:
+#    image: wurstmeister/zookeeper
+#    ports:
+#      - "2181:2181"
+#
+#  kafka:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_ADVERTISED_HOST_NAME: "kafka"
+#      KAFKA_ADVERTISED_PORT: "9092"
+#      KAFKA_CREATE_TOPICS: "test:1:1"
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#  consumer:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - kafka
+#    command: [ "sh", "-c", "sleep 10 && $$KAFKA_HOME/bin/kafka-console-consumer.sh --topic=test --zookeeper=zookeeper:2181" ]
+#  producer:
+#    image: wurstmeister/kafka
+#    depends_on:
+#      - kafka
+#    command: [ "sh", "-c", "sleep 15 && echo 'hello kafka' | $$KAFKA_HOME/bin/kafka-console-producer.sh --topic=test --broker-list=kafka:9092" ]
+#
+#  nodered:
+#    build: nodered
+#    ports:
+#     - "1880:1880"
+# 
+#  myshell:
+#    build:
+#      context: myshell
+#    image: garethcmurphy/myshell
+#    depends_on: 
+#      - mongodb
+#      - local-rabbit-rabbitmq.dev
+    
+
+volumes:
+  mongodb_data:
+    driver: local

@@ -3,25 +3,30 @@
 var config = require('../../server/config.local');
 var p = require('../../package.json');
 var utils = require('./utils');
+var dsl = require('./dataset-lifecycle.json');
+var ds = require('./dataset.json');
+var dsr = require('./raw-dataset.json');
+var dsd = require('./derived-dataset.json');
+var own = require('./ownable.json');
 
-module.exports = function (Dataset) {
+module.exports = function(Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
     // put
-    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
+    Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // patch
-    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
+    Dataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // post
-    Dataset.beforeRemote('create', function (ctx, unused, next) {
+    Dataset.beforeRemote('create', function(ctx, unused, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
@@ -42,29 +47,31 @@ module.exports = function (Dataset) {
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
-    // TODO change API to a put/patch or even delete command ? Pass ID in URL
+    // TODO obsolete this code, replaced by code in datasetLifecycle
 
-    Dataset.reset = function (id, options, next) {
+    Dataset.reset = function(id, options, next) {
         // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findById(id, options, function (err, l) {
+        DatasetLifecycle.findById(id, options, function(err, l) {
             if (err) {
                 next(err);
             } else {
                 l.updateAttributes({
                     archiveStatusMessage: 'datasetCreated',
                     retrieveStatusMessage: '',
+                    archivable: true,
+                    retrievable: false
                 }, options);
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
                     datasetId: id,
-                }, options, function (err, b) {
+                }, options, function(err, b) {
                     if (err) {
                         next(err);
                     } else {
                         // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function (err, instance) {
+                        Dataset.findById(id, options, function(err, instance) {
                             if (err) {
                                 next(err);
                             } else {
@@ -83,102 +90,260 @@ module.exports = function (Dataset) {
     /**
      * Inherited models will not call this before access, so it must be replicated
      */
-    Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
-        if (!ctx.args.fields)
-            ctx.args.fields = {};
-        ctx.args.fields.type = undefined;
-        utils.handleOwnerGroups(ctx, userDetails, next);
+
+    // add user Groups information of the logged in user to the fields object
+
+    Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
+        utils.handleOwnerGroups(ctx, next);
     });
 
-    Dataset.facet = function (fields, facets = [], cb) {
-        var findFilter = [];
-        var match = {};
-        var type;
-        if (fields) {
-            if ('type' in fields)
-                type = fields['type'];
-            var keys = Object.keys(fields);
-            for (var i = 0; i < keys.length; i++) {
-                var modelType = Dataset.getPropertyType(keys[i]);
-                var value = fields[keys[i]];
-                if (modelType !== undefined && value !== undefined && value !== 'null') {
-                    switch (modelType) {
-                        case 'String':
-                            if (Array.isArray(value) && value.length > 0) { // TODO security flaw if somehow an empty array is received (remote hook should prevent this)
-                                match[keys[i]] = {
-                                    '$in': value,
-                                };
-                            } else if (typeof (value) === 'string' && value) {
-                                match[keys[i]] = value;
-                            }
-                            break;
-                        case 'Date':
-                            var reqType = typeof (value);
-                            switch (reqType) {
-                                case 'string':
-                                    match[keys[i]] = new Date(value);
-                                    break;
-                                case 'object':
-                                    if (Object.keys(value).length === 2) {
-                                        if (value['start'] && value['start'] !== 'null' && value['end'] && value['end'] !== 'null') {
-                                            match[keys[i]] = {
-                                                '$gte': new Date(value['start']),
-                                                '$lte': new Date(value['end']),
-                                            };
-                                        } else {
-                                            // TODO change from null in Catanie to undefined
-                                            // cb(new Error('Dates are an invalid format'), null);
-                                        }
-                                    } else if (Object.keys(value).length !== 2) {
-                                        cb(new Error('Only one date specified, need a range'), null);
-                                    }
-                                    break;
-                            }
-                            break;
-                    }
-                } else if (keys[i] === 'text' && value !== 'null') {
-                    match['$text'] = value;
-                    // TODO check in config map for extra strings, i.e. creationTime start and end
+    Dataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+        utils.handleOwnerGroups(ctx, next);
+    });
+
+    Dataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+        utils.handleOwnerGroups(ctx, next);
+    });
+
+    function searchExpression(key, value) {
+        let type = "string"
+        if (key in ds.properties) {
+            type = ds.properties[key].type
+        } else if (key in dsr.properties) {
+            type = dsr.properties[key].type
+        } else if (key in dsd.properties) {
+            type = dsd.properties[key].type
+        } else if (key in dsl.properties) {
+            type = dsl.properties[key].type
+        } else if (key in own.properties) {
+            type = own.properties[key].type
+        }
+        if (key === "text") {
+            return {
+                $search: value,
+                $language: "none"
+            }
+        } else if (type === "string") {
+            if (value.constructor === Array) {
+                if (value.length == 1) {
+                    return value[0]
                 } else {
-                    // ignore
+                    return {
+                        $in: value
+                    }
                 }
+            } else {
+                return value
+            }
+        } else if (type === "date") {
+            return {
+                $gte: new Date(value.begin),
+                $lte: new Date(value.end)
+            }
+        } else if (type.constructor === Array) {
+            return {
+                $in: value
             }
         }
+    }
+
+    Dataset.fullfacet = function(fields, facets = [], cb) {
+        // keep the full aggregation pipeline definition
+        let pipeline = []
+        let match = {}
+        let facetMatch = {}
+        // construct match conditions from fields value, excluding facet material
+        // i.e. fields is essentially split into match and facetMatch conditions
+        // Since a match condition on usergroups is alway prepended at the start
+        // this effectively yields the intersection handling of the two sets (ownerGroup condition and userGroups)
+
+        Object.keys(fields).map(function(key) {
+            if (facets.indexOf(key) < 0) {
+                if (key === "text") {
+                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                } else if (key === "userGroups") {
+                    if (fields[key].length > 0)
+                        match["ownerGroup"] = searchExpression(key, fields[key])
+                } else {
+                    match[key] = searchExpression(key, fields[key])
+                }
+            } else {
+                facetMatch[key] = searchExpression(key, fields[key])
+            }
+        })
+        if (match !== {}) {
+            pipeline.push({
+                $match: match
+            })
+        }
+        // TODO add support for filter condition on joined collection
+        // currently for facets not supported (detrimental performance impact)
+
+        // append all facet pipelines
         let facetObject = {};
-        var baseFacets = [{
-            name: 'creationTime',
-            type: 'date'
-        }, {
-            name: 'ownerGroup',
-            type: 'text'
-        }, {
-            name: 'creationLocation',
-            type: 'text'
-        }];
-        baseFacets.map(function (f) {
-            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
+        facets.forEach(function(facet) {
+            if (facet in ds.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
+            } else if (facet in dsr.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsr.properties[facet].type, facetMatch);
+            } else if (facet in dsd.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsd.properties[facet].type, facetMatch);
+            } else if (facet in own.properties) {
+                facetObject[facet] = utils.createNewFacetPipeline(facet, own.properties[facet].type, facetMatch);
+            } else {
+                console.log("Warning: Facet not part of any dataset model:", facet)
+            }
         });
-        facets.map(function (f) {
-            facetObject[f.name] = utils.createFacetPipeline(f.name, f.type, f.preConditions, match);
-        });
-        findFilter.push({
+        // add pipeline to count all documents
+        facetObject['all'] = [{
+            $match: facetMatch
+        }, {
+            $count: 'totalSets'
+        }]
+
+        pipeline.push({
             $facet: facetObject,
         });
-        Dataset.getDataSource().connector.connect(function (err, db) {
+        // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
-            var res = collection.aggregate(findFilter,
-                function (err, res) {
-                    if (err)
-                        console.log(err);
-                    res[0]['type'] = type; // TODO check array length is 1 (since it is only aggregate and return just that)
+            var res = collection.aggregate(pipeline,
+                function(err, res) {
+                    if (err) {
+                        console.log("Facet err handling:", err);
+                    }
                     cb(err, res);
                 });
         });
     };
 
-    Dataset.isValid = function (dataset, next) {
+    // returns filtered set of datasets. Options:
+    // filter condition consists of
+    //   - ownerGroup (automatically applie server side)
+    //   - text search
+    //   - list of fields which are treated as facets (name,type,value triple)
+    // - paging of results
+    // - merging DatasetLifecycle Fields for fields not contained in Dataset
+
+    Dataset.fullquery = function(fields, limits, cb) {
+        // keep the full aggregation pipeline definition
+        let pipeline = []
+        let match = {}
+        let matchJoin = {}
+        // construct match conditions from fields value, excluding facet material
+        Object.keys(fields).map(function(key) {
+            if (fields[key] && fields[key] !== 'null') {
+                if (key === "text") {
+                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                } else if (key === "ownerGroup") {
+                    // ownerGroup is handled in userGroups parts
+                } else if (key === "userGroups") {
+                    // merge with ownerGroup condition if existing
+                    if ('ownerGroup' in fields) {
+                        if (fields[key].length == 0) {
+                            // if no userGroups defined take all ownerGroups
+                            match["ownerGroup"] = searchExpression('ownerGroup', fields['ownerGroup'])
+                        } else {
+                            // otherwise create intersection of userGroups and ownerGroup
+                            // this is needed here since no extra match step is done but all
+                            // filter conditions are applied in one match step
+                            const intersect = fields['ownerGroup'].filter(function(n) {
+                                return fields['userGroups'].indexOf(n) !== -1;
+                            });
+                            match["ownerGroup"] = searchExpression('ownerGroup', intersect)
+                        }
+                    } else {
+                        // only userGroups defined
+                        if (fields[key].length > 0) {
+                            match["ownerGroup"] = searchExpression('ownerGroup', fields['userGroups'])
+                        }
+                    }
+                } else {
+                    // check if field is in linked models
+                    if (key in dsl.properties) {
+                        matchJoin["datasetlifecycle." + key] = searchExpression(key, fields[key])
+                    } else {
+                        match[key] = searchExpression(key, fields[key])
+                    }
+                }
+            }
+        })
+        if (match !== {}) {
+            pipeline.push({
+                $match: match
+            })
+        }
+
+        // "include" DatasetLifecycle data
+        // TODO: make include optional for cases where only dataset fields are requested
+        pipeline.push({
+            $lookup: {
+                from: "DatasetLifecycle",
+                localField: "_id",
+                foreignField: "datasetId",
+                as: "datasetlifecycle"
+            }
+        })
+        pipeline.push({
+             $unwind: {path: "$datasetlifecycle", preserveNullAndEmptyArrays: true}
+        })
+
+        if (Object.keys(matchJoin).length > 0) {
+            pipeline.push({
+                $match: matchJoin
+            })
+
+        }
+        // final paging section ===========================================================
+        if (limits) {
+            if ("order" in limits) {
+                // input format: "creationTime:desc,creationLocation:asc"
+                const sortExpr = {}
+                const sortFields = limits.order.split(',')
+                sortFields.map(function(sortField) {
+                    const parts = sortField.split(':')
+                    const dir = (parts[1] == 'desc') ? -1 : 1
+                    sortExpr[parts[0]] = dir
+                })
+                pipeline.push({
+                    $sort: sortExpr
+                    // e.g. { $sort : { creationLocation : -1, creationLoation: 1 } }
+                })
+            }
+
+            if ("skip" in limits) {
+                pipeline.push({
+                    $skip: (Number(limits.skip) < 1) ? 0 : Number(limits.skip)
+                })
+            }
+            if ("limit" in limits) {
+                pipeline.push({
+                    $limit: (Number(limits.limit) < 1) ? 1 : Number(limits.limit)
+                })
+            }
+        }
+        // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
+        Dataset.getDataSource().connector.connect(function(err, db) {
+            var collection = db.collection('Dataset');
+            var res = collection.aggregate(pipeline,
+                function(err, res) {
+                    if (err) {
+                        console.log("Facet err handling:", err);
+                    }
+                    // console.log("Query result:", res)
+                    // rename _id to pid
+                    res.map(ds => {
+                        Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
+                        delete ds['_id']
+                    })
+                    cb(err, res);
+                });
+        });
+    };
+
+    Dataset.isValid = function(dataset, next) {
         var ds = new Dataset(dataset);
-        ds.isValid(function (valid) {
+        ds.isValid(function(valid) {
             if (!valid) {
                 next(null, {
                     'errors': ds.errors,
@@ -191,4 +356,6 @@ module.exports = function (Dataset) {
             }
         });
     };
+
+
 };
