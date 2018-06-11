@@ -313,7 +313,7 @@ module.exports = function(Dataset) {
 
             if ("skip" in limits) {
                 pipeline.push({
-                    $skip: (Number(limits.skip) < 1) ? 1 : Number(limits.skip)
+                    $skip: (Number(limits.skip) < 1) ? 0 : Number(limits.skip)
                 })
             }
             if ("limit" in limits) {
