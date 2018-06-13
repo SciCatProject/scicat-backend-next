@@ -160,7 +160,14 @@ module.exports = function(Dataset) {
         Object.keys(fields).map(function(key) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
-                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                    match["$or"] = [{
+                        $text: searchExpression(key, fields[key])
+                    }, {
+                        sourceFolder: {
+                            $regex: fields[key],
+                            $options: 'i'
+                        }
+                    }]
                 } else if (key === "userGroups") {
                     if (fields[key].length > 0)
                         match["ownerGroup"] = searchExpression(key, fields[key])
@@ -208,11 +215,13 @@ module.exports = function(Dataset) {
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, res) {
-                    if (err) {
-                        console.log("Facet err handling:", err);
-                    }
-                    cb(err, res);
+                function(err, cursor) {
+                    cursor.toArray(function(err, res) {
+                        if (err) {
+                            console.log("Facet err handling:", err);
+                        }
+                        cb(err, res);
+                    });
                 });
         });
     };
@@ -234,7 +243,14 @@ module.exports = function(Dataset) {
         Object.keys(fields).map(function(key) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
-                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                    match["$or"] = [{
+                        $text: searchExpression(key, fields[key])
+                    }, {
+                        sourceFolder: {
+                            $regex: fields[key],
+                            $options: 'i'
+                        }
+                    }]
                 } else if (key === "ownerGroup") {
                     // ownerGroup is handled in userGroups parts
                 } else if (key === "userGroups") {
@@ -285,7 +301,10 @@ module.exports = function(Dataset) {
             }
         })
         pipeline.push({
-             $unwind: {path: "$datasetlifecycle", preserveNullAndEmptyArrays: true}
+            $unwind: {
+                path: "$datasetlifecycle",
+                preserveNullAndEmptyArrays: true
+            }
         })
 
         if (Object.keys(matchJoin).length > 0) {
@@ -326,18 +345,21 @@ module.exports = function(Dataset) {
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, res) {
-                    if (err) {
-                        console.log("Facet err handling:", err);
-                    }
-                    // console.log("Query result:", res)
-                    // rename _id to pid
-                    res.map(ds => {
-                        Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
-                        delete ds['_id']
-                    })
-                    cb(err, res);
+                function(err, cursor) {
+                    cursor.toArray(function(err, res) {
+                        if (err) {
+                            console.log("Facet err handling:", err);
+                        }
+                        // console.log("Query result:", res)
+                        // rename _id to pid
+                        res.map(ds => {
+                            Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
+                            delete ds['_id']
+                        })
+                        cb(err, res);
+                    });
                 });
+
         });
     };
 

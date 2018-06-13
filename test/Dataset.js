@@ -111,9 +111,9 @@ describe('Simple Dataset tests', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.be.an('array');
                 if(err)
-                    done(err);
+                    return done(err);
+                res.body.should.be.an('array');
                 done();
             });
     });
