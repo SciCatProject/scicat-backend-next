@@ -9,7 +9,7 @@
     },
     "properties": {
         "manager": {
-            "type": "string",
+            "type": "array",
             "description": "Defines the users that can modify the policy parameters"
         },
         "tapeRedundancy": {
@@ -33,7 +33,7 @@
             "default": false
         },
         "archiveEmailsToBeNotified": {
-            "type": "string",
+            "type": "array",
             "description": "Array of additional email addresses that should be notified up an archive job creation"
         },
         "retrieveEmailNotification": {
@@ -42,7 +42,7 @@
             "default": false
         },
         "retrieveEmailsToBeNotified": {
-            "type": "string",
+            "type": "array",
             "description": "Array of additional email addresses that should be notified up a retrieval job creation"
         }
     },
