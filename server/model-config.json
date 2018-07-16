@@ -55,6 +55,10 @@
     "dataSource": "mongo",
     "public": true
   },
+  "PublishedData": {
+    "dataSource": "mongo",
+    "public": true
+  },
   "Datafile": {
     "dataSource": "transient",
     "public": false

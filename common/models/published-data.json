@@ -47,6 +47,22 @@
             "description": "Title",
             "default": "retrieve"
         },
+        "pidArray": {
+            "type": "string",
+            "required": true,
+            "description": "Array of one or more PIDS which make up the published data",
+            "default": "retrieve"
+        },
+        "doiPostedSuccessfullyTime": {
+            "type": "date",
+            "index": true,
+            "description": "time when doi is successfully posted"
+        },
+        "lastModificationTime": {
+            "type": "date",
+            "index": true,
+            "description": "time when last modified"
+        },
         "creationTime": {
             "type": "date",
             "index": true,
