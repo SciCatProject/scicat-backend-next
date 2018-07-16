@@ -36,10 +36,10 @@
             "default": "retrieve"
         },
         "publicationYear": {
-            "type": "string",
+            "type": "number",
             "required": true,
-            "description": "YEar of publication ",
-            "default": "retrieve"
+            "description": "Year of publication ",
+            "default": "2018"
         },
         "title": {
             "type": "string",
@@ -52,6 +52,12 @@
             "required": true,
             "description": "Array of one or more PIDS which make up the published data",
             "default": ["retrieve"]
+        },
+        "owner": {
+            "type":[ "string"],
+            "required": true,
+            "description": "Array of one or more owners who can publish data",
+            "default": ["owner"]
         },
         "doiPostedSuccessfullyTime": {
             "type": "date",
