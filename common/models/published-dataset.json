@@ -1,0 +1,67 @@
+{
+    "name": "PublishedDataset",
+    "idInjection": false,
+    "base": "PersistedModel",
+    "strict": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "PublishedDataset"
+        }
+    },
+    "description": "Digital Object Identifier (DOI) mandatory fields, URL for making dataset metadata accessible online",
+    "properties": {
+        "doi": {
+            "type": "string",
+            "required": true,
+            "description": "Digitial Object Identifier",
+            "default": "retrieve"
+        },
+        "affiliation": {
+            "type": "string",
+            "required": true,
+            "description": "Creator Affiliation",
+            "default": "retrieve"
+        },
+        "creator": {
+            "type": "string",
+            "required": true,
+            "description": "Creator of dataset/dataset collection",
+            "default": "retrieve"
+        },
+        "publisher": {
+            "type": "string",
+            "required": true,
+            "description": "Dataset publisher",
+            "default": "retrieve"
+        },
+        "publicationYear": {
+            "type": "string",
+            "required": true,
+            "description": "YEar of publication ",
+            "default": "retrieve"
+        },
+        "title": {
+            "type": "string",
+            "required": true,
+            "description": "Title",
+            "default": "retrieve"
+        },
+        "creationTime": {
+            "type": "date",
+            "index": true,
+            "description": "Time when publication is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
+        }
+	},
+    "validations": [],
+    "relations": {
+        "dataset": {
+            "type": "belongsTo",
+            "model": "Dataset",
+            "foreignKey": "",
+            "required": true
+        }
+    },
+    "acls": [],
+    "methods": {}
+}
