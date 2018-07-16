@@ -51,7 +51,7 @@
             "type":[ "string"],
             "required": true,
             "description": "Array of one or more PIDS which make up the published data",
-            "default": "retrieve"
+            "default": ["retrieve"]
         },
         "doiPostedSuccessfullyTime": {
             "type": "date",
