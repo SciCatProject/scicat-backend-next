@@ -9,7 +9,7 @@
             "collection": "PublishedData"
         }
     },
-    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields are included also a full URL and modification times ",
+    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL and modification times are included.",
     "properties": {
         "doi": {
             "type": "string",
