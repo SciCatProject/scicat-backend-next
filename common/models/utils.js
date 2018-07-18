@@ -239,7 +239,7 @@ exports.handleOwnerGroups = function(ctx, next) {
     });
 }
 
-// TODO minimize number of parabers:
+
 exports.createArchiveJob = function(UserIdentity, Policy, Job, ctx) {
     var instance = ctx.instance
     if (!instance) {
