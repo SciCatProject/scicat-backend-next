@@ -57,6 +57,12 @@
             "principalId": "$everyone",
             "permission": "ALLOW",
             "property": "isValid"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW",
+            "property": "create"
         }
     ],
     "methods": {

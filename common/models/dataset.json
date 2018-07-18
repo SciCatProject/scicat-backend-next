@@ -168,12 +168,6 @@
             "principalId": "ingestor",
             "permission": "ALLOW",
             "property": ["facet","fullquery","fullfacet"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW",
-            "property": ["create"]
         }
     ],
     "methods": {

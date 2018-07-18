@@ -8,7 +8,11 @@
         "validateUpsert": true
     },
     "properties": {
-        "availability": {
+        "manager": {
+            "type": "array",
+            "description": "Defines the users that can modify the policy parameters"
+        },
+        "tapeRedundancy": {
             "type": "string",
             "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
             "default": "low"
@@ -22,6 +26,24 @@
             "type": "number",
             "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
             "default": 7
+        },
+        "archiveEmailNotification": {
+            "type": "boolean",
+            "description": "Flag is true when an email notification should be sent to archiveEmailsToBeNotified upon an archive job creation",
+            "default": false
+        },
+        "archiveEmailsToBeNotified": {
+            "type": "array",
+            "description": "Array of additional email addresses that should be notified up an archive job creation"
+        },
+        "retrieveEmailNotification": {
+            "type": "boolean",
+            "description": "Flag is true when an email notification should be sent to retrieveEmailsToBeNotified upon a retrieval job creation",
+            "default": false
+        },
+        "retrieveEmailsToBeNotified": {
+            "type": "array",
+            "description": "Array of additional email addresses that should be notified up a retrieval job creation"
         }
     },
     "validations": [],

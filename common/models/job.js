@@ -26,6 +26,7 @@ module.exports = function (Job) {
             // make some consistency checks:
             //    - ensure that all wanted datasets exist already
             //    -  TODO: for archive jobs all datasetslifecycle should be in an "archiveable" state
+            // TODO ensure that job is created by user who has read access to all datasets in case of retrieve JOBS
             var Dataset = app.models.Dataset;
             // create array of all pids
             // console.log("Verifying datasets:",ctx.options)
