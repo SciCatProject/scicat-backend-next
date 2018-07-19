@@ -128,22 +128,47 @@ exports.createNewFacetPipeline = function(name, type, query) {
     const pipeline = [];
 
     if (type.constructor === Array) {
-        pipeline.push({ $unwind: '$'+name });
+        pipeline.push({
+            $unwind: '$' + name
+        });
     }
     // add all conditions from "other" facets, exclude own conditions
     if (query && Object.keys(query).length > 0) {
         //console.log("createFacet query:",query);
         var q = Object.assign({}, query);
         delete q[name];
-        if(Object.keys(q).length > 0)
-            pipeline.push({$match: q});
+        if (Object.keys(q).length > 0)
+            pipeline.push({
+                $match: q
+            });
     }
-    let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
+    let grp = {
+        $group: {
+            _id: '$' + name,
+            count: {
+                $sum: 1
+            }
+        }
+    };
     if (type === 'date') {
-        grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
+        grp.$group._id = {
+            year: {
+                $year: '$' + name
+            },
+            month: {
+                $month: '$' + name
+            },
+            day: {
+                $dayOfMonth: '$' + name
+            }
+        }
     }
     pipeline.push(grp);
-    const sort = {$sort: {_id: -1}};
+    const sort = {
+        $sort: {
+            _id: -1
+        }
+    };
     pipeline.push(sort);
     return pipeline;
 }
@@ -213,3 +238,78 @@ exports.handleOwnerGroups = function(ctx, next) {
         }
     });
 }
+
+
+exports.createArchiveJob = function(UserIdentity, Policy, Job, ctx) {
+    var instance = ctx.instance
+    if (!instance) {
+        instance = ctx.currentInstance
+    }
+    console.log("Instance:", JSON.stringify(instance))
+
+    const token = ctx.options && ctx.options.accessToken;
+    const userId = token && token.userId;
+
+    console.log("options, userid:", ctx.options, userId)
+    //const user = userId ? 'user#' + userId : '<anonymous>';
+    UserIdentity.findOne({
+        where: {
+            userId: userId
+        }
+    }, function(err, user) {
+        console.log("UserIdentity Instance:", user)
+        // TODO: get it from User models
+        // TODO get proper emails in case of unctional accounts
+        // TODO remove console.log messages
+        // TODO add test cases
+        // TODO add creationTime (should not be needed any more)
+        var email
+        var login
+        if (user && user.profile) {
+            login = user.profile.login
+            email = user.profile.email
+        } else {
+            login = Object.keys(ctx.options.authorizedRoles)[0]
+            email = login
+        }
+        console.log("Email:", email) // check if a normal user or an internal ROLE
+        Policy.findOne({
+            where: {
+                ownerGroup: instance.ownerGroup
+            }
+        }, function(err2, policyInstance) {
+            // get policy values for the instance.ownerGroups
+            if (err2) {
+                console.log("Error when looking for Policy of pgroup ", instance.ownerGroup, err2)
+            } else {
+                var jobParams = {}
+                jobParams.username = login
+                if (policyInstance) {
+                    jobParams.autoArchive = (autoArchive in policyInstance) ? policyInstance.autoArchive : false
+                    jobParams.tapeCopies = (tapeCopies in policyInstance) ? policyInstance.tapeCopies : "one"
+                } else {
+                    console.log("No policy settings found for ownerGroup", instance.ownerGroup)
+                    console.log("Assuming default values")
+                    jobParams.autoArchive = false
+                    jobParams.tapeCopies = "one"
+                }
+                var body = {
+                    emailJobInitiator: email,
+                    type: "archive",
+                    jobParams: jobParams,
+                    datasetList: [{
+                        pid: instance.datasetId,
+                        files: []
+                    }]
+                }
+                console.log("Job body:", body)
+                if (jobParams.autoArchive) {
+                    Job.create(body, function(err, jobmodel) {
+                        console.log("Created Job:", err, jobmodel)
+                    })
+                }
+            }
+
+        })
+    })
+};
