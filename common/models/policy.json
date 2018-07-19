@@ -9,7 +9,7 @@
     },
     "properties": {
         "manager": {
-            "type": "array",
+            "type": ["string"],
             "description": "Defines the users that can modify the policy parameters"
         },
         "tapeRedundancy": {
@@ -33,7 +33,7 @@
             "default": false
         },
         "archiveEmailsToBeNotified": {
-            "type": "array",
+            "type": ["string"],
             "description": "Array of additional email addresses that should be notified up an archive job creation"
         },
         "retrieveEmailNotification": {
@@ -42,12 +42,19 @@
             "default": false
         },
         "retrieveEmailsToBeNotified": {
-            "type": "array",
+            "type": ["string"],
             "description": "Array of additional email addresses that should be notified up a retrieval job creation"
         }
     },
     "validations": [],
     "relations": {},
-    "acls": [],
+    "acls": [
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
+        }
+    ],
     "methods": {}
 }
