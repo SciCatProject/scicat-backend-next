@@ -14,26 +14,22 @@
         "doi": {
             "type": "string",
             "required": true,
-            "description": "Digitial Object Identifier",
-            "default": "retrieve"
+            "description": "Digitial Object Identifier"
         },
         "affiliation": {
             "type": "string",
             "required": true,
-            "description": "Creator Affiliation",
-            "default": "retrieve"
+            "description": "Creator Affiliation"
         },
         "creator": {
             "type": "string",
             "required": true,
-            "description": "Creator of dataset/dataset collection",
-            "default": "retrieve"
+            "description": "Creator of dataset/dataset collection"
         },
         "publisher": {
             "type": "string",
             "required": true,
-            "description": "Dataset publisher",
-            "default": "retrieve"
+            "description": "Dataset publisher"
         },
         "publicationYear": {
             "type": "number",
@@ -44,8 +40,12 @@
         "title": {
             "type": "string",
             "required": true,
-            "description": "Title",
-            "default": "retrieve"
+            "description": "Title"
+        },
+        "url": {
+            "type": "string",
+            "required": true,
+            "description": "Full local URL"
         },
         "pidArray": {
             "type":[ "string"],
@@ -59,7 +59,7 @@
             "description": "Array of one or more owners who can publish data",
             "default": ["owner"]
         },
-        "doiPostedSuccessfullyTime": {
+        "doiRegisteredSuccessfullyTime": {
             "type": "date",
             "index": true,
             "description": "time when doi is successfully posted"
