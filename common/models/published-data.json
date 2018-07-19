@@ -53,7 +53,7 @@
             "description": "Array of one or more PIDS which make up the published data",
             "default": ["retrieve"]
         },
-        "owner": {
+        "author": {
             "type":[ "string"],
             "required": true,
             "description": "Array of one or more owners who can publish data",
