@@ -63,16 +63,6 @@
             "type": "date",
             "index": true,
             "description": "time when doi is successfully posted"
-        },
-        "lastModificationTime": {
-            "type": "date",
-            "index": true,
-            "description": "time when last modified"
-        },
-        "creationTime": {
-            "type": "date",
-            "index": true,
-            "description": "Time when publication is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
         }
 	},
     "validations": [],
