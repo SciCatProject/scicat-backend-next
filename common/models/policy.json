@@ -10,17 +10,16 @@
     "properties": {
         "manager": {
             "type": ["string"],
-            "description": "Defines the users that can modify the policy parameters"
+            "description": "Defines the emails of users that can modify the policy parameters"
         },
         "tapeRedundancy": {
             "type": "string",
             "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
             "default": "low"
         },
-        "tapeRetentionTime": {
-            "type": "number",
-            "description": "Number of years after creation time, where datasets are subject to retention policies, possibly leading to deletion of data on tape.",
-            "default": 10
+        "autoArchive": {
+            "type": "boolean",
+            "description": "automatically archive dataset"
         },
         "autoArchiveDelay": {
             "type": "number",
