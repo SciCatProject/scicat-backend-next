@@ -1,20 +1,20 @@
 'use strict';
-var utils = require('./utils');
+// var utils = require('./utils');
 
 module.exports = function(PublishedData) {
 
-    // put
-    PublishedData.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
-        // convert base64 image
-		
-        next();
-    });
+     // TODO add logic that give authors privileges to modify data
 
-    //patch
-    PublishedData.beforeRemote('patchOrCreate', function(ctx, instance, next) {
-        next();
-    });
+    // // put
+    // PublishedData.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+    //     // convert base64 image
+    //
+    //     next();
+    // });
+    //
+    // //patch
+    // PublishedData.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+    //     next();
+    // });
 
 }
-
-

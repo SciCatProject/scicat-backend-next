@@ -9,7 +9,7 @@
             "collection": "PublishedData"
         }
     },
-    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL and modification times are included.",
+    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
     "properties": {
         "doi": {
             "type": "string",
@@ -34,8 +34,7 @@
         "publicationYear": {
             "type": "number",
             "required": true,
-            "description": "Year of publication ",
-            "default": "2018"
+            "description": "Year of publication "
         },
         "title": {
             "type": "string",
@@ -45,7 +44,7 @@
         "url": {
             "type": "string",
             "required": true,
-            "description": "Full local URL"
+            "description": "Full URL to the landing page for this DOI"
         },
         "pidArray": {
             "type":[ "string"],
@@ -53,27 +52,19 @@
             "description": "Array of one or more PIDS which make up the published data",
             "default": ["retrieve"]
         },
-        "author": {
+        "authors": {
             "type":[ "string"],
             "required": true,
-            "description": "Array of one or more owners who can publish data",
-            "default": ["owner"]
+            "description": "Array of one or more persons who are able to update this entry of published data"
         },
         "doiRegisteredSuccessfullyTime": {
             "type": "date",
             "index": true,
-            "description": "time when doi is successfully posted"
+            "description": "Time when doi is successfully registered"
         }
 	},
     "validations": [],
-    "relations": {
-        "dataset": {
-            "type": "belongsTo",
-            "model": "Dataset",
-            "foreignKey": "",
-            "required": true
-        }
-    },
+    "relations": {},
     "acls": [],
     "methods": {}
 }
