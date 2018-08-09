@@ -1,0 +1,69 @@
+{
+    "name": "PublishedData",
+    "idInjection": false,
+    "base": "PersistedModel",
+    "strict": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "PublishedData"
+        }
+    },
+    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
+    "properties": {
+        "doi": {
+            "type": "string",
+            "required": true,
+            "description": "Digitial Object Identifier"
+        },
+        "affiliation": {
+            "type": "string",
+            "required": true,
+            "description": "Creator Affiliation"
+        },
+        "creator": {
+            "type": "string",
+            "required": true,
+            "description": "Creator of dataset/dataset collection"
+        },
+        "publisher": {
+            "type": "string",
+            "required": true,
+            "description": "Dataset publisher"
+        },
+        "publicationYear": {
+            "type": "number",
+            "required": true,
+            "description": "Year of publication "
+        },
+        "title": {
+            "type": "string",
+            "required": true,
+            "description": "Title"
+        },
+        "url": {
+            "type": "string",
+            "required": true,
+            "description": "Full URL to the landing page for this DOI"
+        },
+        "pidArray": {
+            "type":[ "string"],
+            "required": true,
+            "description": "Array of one or more PIDS which make up the published data"
+        },
+        "authors": {
+            "type":[ "string"],
+            "required": true,
+            "description": "Array of one or more persons who are able to update this entry of published data"
+        },
+        "doiRegisteredSuccessfullyTime": {
+            "type": "date",
+            "index": true,
+            "description": "Time when doi is successfully registered"
+        }
+	},
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
+}
