@@ -49,8 +49,7 @@
         "pidArray": {
             "type":[ "string"],
             "required": true,
-            "description": "Array of one or more PIDS which make up the published data",
-            "default": ["retrieve"]
+            "description": "Array of one or more PIDS which make up the published data"
         },
         "authors": {
             "type":[ "string"],
