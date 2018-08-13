@@ -22,6 +22,11 @@
             "description": "Number of years after creation time, where datasets are subject to retention policies, possibly leading to deletion of data on tape.",
             "default": 10
         },
+        "autoArchive": {
+            "type": "boolean",
+            "description": "Flag to indicate that a dataset should be automatically archived after ingest. If false then archive delay is ignored",
+            "default": true
+        },
         "autoArchiveDelay": {
             "type": "number",
             "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
