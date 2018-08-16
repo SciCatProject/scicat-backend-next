@@ -19,7 +19,7 @@ var testdataset = {
     "stephan.egli@psi.ch"
   ],
   "tapeRedundancy": "low",
-  "tapeRetentionTime": 3,
+  //"tapeRetentionTime": 3,
   "autoArchiveDelay": 7,
   "archiveEmailNotification": false,
   "archiveEmailsToBeNotified": [
