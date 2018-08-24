@@ -68,7 +68,7 @@
         {
             "accessType": "READ",
             "principalType": "ROLE",
-            "principalId": "$unauthenticated",
+            "principalId": "$everyone",
             "permission": "ALLOW"
         }
     ],
