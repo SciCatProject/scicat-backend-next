@@ -7,7 +7,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - './mongodb:/bitnami'
+      - 'mongodb_data:/bitnami'
 
 
   catamel:
