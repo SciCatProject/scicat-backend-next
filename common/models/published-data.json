@@ -13,8 +13,9 @@
     "properties": {
         "doi": {
             "type": "string",
-            "required": true,
-            "description": "Digitial Object Identifier"
+            "id": true,
+            "description": "Digital Object Identifier",
+            "defaultFn": "uuidv4"
         },
         "affiliation": {
             "type": "string",
@@ -64,7 +65,7 @@
         "sizeOfArchive": {
             "type": "number",
             "required": true,
-            "description": "Number of files"
+            "description": "Size of archive"
         },
         "pidArray": {
             "type":[ "string"],
