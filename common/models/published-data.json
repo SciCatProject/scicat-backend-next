@@ -46,6 +46,22 @@
             "required": true,
             "description": "Full URL to the landing page for this DOI"
         },
+        "resourceType": {
+            "type": "string",
+            "required": true,
+            "description": "Type of files, format etc"
+        },
+        "numberOfFiles": {
+            "type": "number",
+            "required": true,
+            "description": "Number of files"
+        },
+        "sizeOfArchive": {
+            "type": "number",
+            "required": true,
+            "description": "Number of files"
+        },
+        "pidArray": {
         "pidArray": {
             "type":[ "string"],
             "required": true,
