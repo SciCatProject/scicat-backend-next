@@ -52,6 +52,11 @@
             "required": true,
             "description": "Abstract text for published datasets"
         },
+        "thumbnail": {
+            "type": "string",
+            "required": true,
+            "description": "Small, less than 16 MB base 64 image preview of dataset"
+        },
         "resourceType": {
             "type": "string",
             "required": true,
