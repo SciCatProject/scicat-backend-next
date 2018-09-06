@@ -99,7 +99,7 @@
         "messageHistory": {
             "type": "embedsMany",
             "model": "Message",
-            "property": "messageHistory",
+            "property": "MessageHistory",
             "options": {
                 "validate": false,
                 "forceId": false,
