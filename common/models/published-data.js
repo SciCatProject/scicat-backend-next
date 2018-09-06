@@ -1,57 +1,50 @@
 'use strict';
 // var utils = require('./utils');
 
-const rp = require('request-promise');
 module.exports = function (PublishedData) {
+
 
 
     PublishedData.get_doi = function (msg, cb) {
 
-        let url = "https://mds.test.datacite.org/metadata"
-        let rawdata = {}
-        let xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<resource xmlns=\"http://datacite.org/schema/kernel-4\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\">  \n" +
-            "  <identifier identifierType=\"DOI\">10.17199/BRIGHTNESS/MG0001</identifier>  \n" +
-            "  <creators> \n" +
-            "    <creator> \n" +
-            "      <creatorName>Richter, Tobias</creatorName>  \n" +
-            "      <givenName>Tobias</givenName>  \n" +
-            "      <familyName>Richter</familyName>  \n" +
-            "      <affiliation>ESS</affiliation> \n" +
-            "    </creator> \n" +
-            "  </creators>  \n" +
-            "  <titles> \n" +
-            "    <title>Sample data from Multigrid testing</title> \n" +
-            "  </titles>  \n" +
-            "  <publisher>European Spallation Source ERIC</publisher>  \n" +
-            "  <publicationYear>2018</publicationYear>  \n" +
-            "  <descriptions> \n" +
-            "    <description xml:lang=\"en-us\" descriptionType=\"TechnicalInfo\">Sample data from Multigrid testing</description>  \n" +
-            "    <description xml:lang=\"en-us\" descriptionType=\"Abstract\">This data was collected as part of BrightnESS, funded by the European Union Framework Programme for Research and Innovation Horizon 2020, under grant agreement 676548. It consists of test data for the Multigrid detector</description> \n" +
-            "  </descriptions>  \n" +
-            "  <resourceType resourceTypeGeneral=\"Text\">Deliverable</resourceType> \n" +
-            "</resource>"
-
-        let doi_options = {
-            url: url,
-            method: 'POST',
-            body: rawdata,
-            rejectUnauthorized: false,
-            requestCert: true
-        };
+        const first_name = "Gareth";
+        const last_name = "Murphy";
+        const affiliation = "ESS";
+        const publisher = "ESS";
+        const publication_year = "2018";
+        const title = "Sample Data";
+        const technical_info = "Sample Data";
+        const abstract = "Sample Data";
+        const doi = "10.117199/BRIGHTNESS.5.1";
+        const resource_type = "NeXus HDF5 Files";
 
 
-        try {
-            const response = rp(doi_options);
-            return Promise.resolve(response);
-        }
-        catch (error) {
-            return Promise.reject(error);
-        }
+        const xml = `<?xml version="1.0" encoding="UTF-8"?> \
+<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">  \
+  <identifier identifierType=\"DOI\">${doi}</identifier>  \
+  <creators> \
+    <creator> \
+      <creatorName>${last_name}, ${first_name}</creatorName>  \
+      <givenName>${first_name}</givenName>  \
+      <familyName>${last_name}</familyName>\  
+      <affiliation>${affiliation}</affiliation> \
+    </creator> \
+  </creators>  \
+  <titles> \
+    <title>${title} </title> \
+  </titles>  \
+  <publisher>${publisher}</publisher>  \
+  <publicationYear>${publication_year}</publicationYear>  \
+  <descriptions>  \
+    <description xml:lang="en-us" descriptionType="TechnicalInfo">${technical_info}</description>  \
+    <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description> \
+  </descriptions>  \
+  <resourceType resourceTypeGeneral="Text">${resource_type}</resourceType> \
+</resource>`;
 
-        console.log(doi_options);
-        cb(null, '10.111.79/TEST/DOI ' + msg);
+        console.log(xml);
+
+        cb(null, '10.111.79/TEST/DOI ' + first_name);
     }
 
     PublishedData.remoteMethod('get_doi', {
