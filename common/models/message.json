@@ -1,0 +1,49 @@
+{
+    "name": "Message",
+    "description": "Embedded information used inside DatasetLifecycle or Job to keep track of history.",
+    "base": "PersistedModel",
+    "idInjection": true,
+    "strict": true,
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {
+        "id": {
+            "type": "string",
+            "id": "true",
+            "required": true,
+            "description": "id currently needed by limitation in embedsmanny"
+        },
+        "shortMessage": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Short description of message, like datasetArchiveSuccesful"
+        },
+        "sender": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "User or role who triggered the message"
+        },
+        "when": {
+            "type": "Date",
+            "index": true,
+            "default": "$now",
+            "description": "Time when message was received. Will be filled automatically by the server, format according to chapter 5.6 internet date/time format in RFC 3339."
+        },
+        "comment": {
+            "type": "Object",
+            "description": "Additional information relevant for this message"
+        }
+    },
+    "validations": [],
+    "relations": {},
+    "acls": [{
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "$everyone",
+        "permission": "ALLOW"
+    }],
+    "methods": {}
+}
