@@ -42,7 +42,20 @@ module.exports = function (PublishedData) {
   <resourceType resourceTypeGeneral="Text">${resource_type}</resourceType> \
 </resource>`;
 
-        console.log(xml);
+        //console.log(xml);
+
+
+        const datacite_doi_uri = "https://mds.datacite.org/doi/10.17199/BRIGHTNESS/NMX0001";
+        const datacite_metadata_uri = "https://mds.datacite.org/metadata/10.17199/BRIGHTNESS/NMX0001";
+        const datacite_test_uri = "https://mds.datacite.org/metadata/";
+        const gmauthentication = {"x":"y"};
+
+        const options = {
+            method: "GET",
+            uri: datacite_metadata_uri,
+            auth: gmauthentication
+        };
+        console.log (options);
 
         cb(null, '10.111.79/TEST/DOI ' + first_name);
     }
