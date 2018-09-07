@@ -5,10 +5,10 @@ const rp = require("request-promise");
 
 module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
-       PublishedData.findOne({ id: id }, function(err, pub) {
+        PublishedData.findOne({ id: id }, function(err, pub) {
             const affiliation = pub["affiliation"];
-            const first_name = "Gareth";
-            const last_name = "Murphy";
+            const first_name = pub["creator"].split(" ")[0];
+            const last_name = pub["creator"].split(" ").splice(-1);
             const publisher = pub["publisher"];
             const publication_year = pub["publicationYear"];
             const title = pub["title"];
@@ -100,7 +100,7 @@ url= ${url}`;
 */
             return doi;
         });
-        cb(null, "doi: "+doi);
+        cb(null, "doi: " + doi);
         return doi;
     };
 
