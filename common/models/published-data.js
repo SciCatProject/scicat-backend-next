@@ -1,13 +1,10 @@
-'use strict';
+"use strict";
 // var utils = require('./utils');
 const datacite_authentication = require("/tmp/generic_config.json");
+const rp=require("request-promise");
 
-module.exports = function (PublishedData) {
-
-
-
-    PublishedData.get_doi = function (msg, cb) {
-
+module.exports = function(PublishedData) {
+    PublishedData.register = function(msg, cb) {
         const first_name = "Gareth";
         const last_name = "Murphy";
         const affiliation = "ESS";
@@ -18,7 +15,7 @@ module.exports = function (PublishedData) {
         const abstract = "Sample Data experiment for ESS";
         const doi = "10.17199/BRIGHTNESS/NMX0001";
         const resource_type = "NeXus HDF5 Files";
-
+        const url = "https://scicat.esss.se/10.1178/BRIGHTNESS";
 
         const xml = `<?xml version="1.0" encoding="UTF-8"?> \
 <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">  \
@@ -43,7 +40,6 @@ module.exports = function (PublishedData) {
   <resourceType resourceTypeGeneral="Text">${resource_type}</resourceType> \
 </resource>`;
 
-
         const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
 doi= ${doi}
 url= ${url}`;
@@ -52,9 +48,8 @@ url= ${url}`;
 
         const datacite_register_metadata =
             "https://mds.datacite.org/metadata" + "/" + doi;
-        const datacite_register_doi = "https://mds.datacite.org/doi" + "/" + doi;
-
-
+        const datacite_register_doi =
+            "https://mds.datacite.org/doi" + "/" + doi;
 
         const options_put = {
             method: "PUT",
@@ -75,7 +70,6 @@ url= ${url}`;
             },
             auth: datacite_authentication
         };
-
 
         rp(options_put)
             .then(function(parsedBody) {
@@ -101,13 +95,16 @@ url= ${url}`;
                 // POST failed...
             });
 
-
-        cb(null, 'doi ' + doi);
+        cb(null, "doi " + doi);
     };
 
-    PublishedData.remoteMethod('get_doi', {
-        accepts: {arg: 'msg', type: 'string'},
-        returns: {arg: 'doi', type: 'string'}
+    PublishedData.remoteMethod("register", {
+        accepts: [
+            { arg: "msg", type: "string" },
+            { arg: "first_name", type: "string" },
+            { arg: "last_name", type: "string" }
+        ],
+        returns: { arg: "doi", type: "string" }
     });
     // TODO add logic that give authors privileges to modify data
 
@@ -122,5 +119,4 @@ url= ${url}`;
     // PublishedData.beforeRemote('patchOrCreate', function(ctx, instance, next) {
     //     next();
     // });
-
-}
+};
