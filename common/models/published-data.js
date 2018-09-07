@@ -1,5 +1,6 @@
 'use strict';
 // var utils = require('./utils');
+const datacite_authentication = require("/tmp/generic_config.json");
 
 module.exports = function (PublishedData) {
 
@@ -12,10 +13,10 @@ module.exports = function (PublishedData) {
         const affiliation = "ESS";
         const publisher = "ESS";
         const publication_year = "2018";
-        const title = "Sample Data";
-        const technical_info = "Sample Data";
-        const abstract = "Sample Data";
-        const doi = "10.117199/BRIGHTNESS.5.1";
+        const title = "Sample Data from NMX";
+        const technical_info = "Sample Data from NMX";
+        const abstract = "Sample Data experiment for ESS";
+        const doi = "10.17199/BRIGHTNESS/NMX0001";
         const resource_type = "NeXus HDF5 Files";
 
 
@@ -42,23 +43,67 @@ module.exports = function (PublishedData) {
   <resourceType resourceTypeGeneral="Text">${resource_type}</resourceType> \
 </resource>`;
 
-        //console.log(xml);
+
+        const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
+doi= ${doi}
+url= ${url}`;
+
+        console.log(xml);
+
+        const datacite_register_metadata =
+            "https://mds.datacite.org/metadata" + "/" + doi;
+        const datacite_register_doi = "https://mds.datacite.org/doi" + "/" + doi;
 
 
-        const datacite_doi_uri = "https://mds.datacite.org/doi/10.17199/BRIGHTNESS/NMX0001";
-        const datacite_metadata_uri = "https://mds.datacite.org/metadata/10.17199/BRIGHTNESS/NMX0001";
-        const datacite_test_uri = "https://mds.datacite.org/metadata/";
-        const gmauthentication = {"x":"y"};
 
-        const options = {
-            method: "GET",
-            uri: datacite_metadata_uri,
-            auth: gmauthentication
+        const options_put = {
+            method: "PUT",
+            body: xml,
+            uri: datacite_register_metadata,
+            headers: {
+                "content-type": "application/xml;charset=UTF-8"
+            },
+            auth: datacite_authentication
         };
-        console.log (options);
+
+        const options_register_put = {
+            method: "PUT",
+            body: register_plain_text,
+            uri: datacite_register_doi,
+            headers: {
+                "content-type": "text/plain;charset=UTF-8"
+            },
+            auth: datacite_authentication
+        };
+
+
+        rp(options_put)
+            .then(function(parsedBody) {
+                console.log("register metadata worked");
+                console.log(parsedBody);
+                // POST succeeded...
+            })
+            .catch(function(err) {
+                console.log("register metadata failed");
+                console.log(err);
+                // POST failed...
+            });
+
+        rp(options_register_put)
+            .then(function(parsedBody) {
+                console.log("register doi worked");
+                console.log(parsedBody);
+                // POST succeeded...
+            })
+            .catch(function(err) {
+                console.log("register doi failed");
+                console.log(err);
+                // POST failed...
+            });
+
 
         cb(null, '10.111.79/TEST/DOI ' + first_name);
-    }
+    };
 
     PublishedData.remoteMethod('get_doi', {
         accepts: {arg: 'msg', type: 'string'},
