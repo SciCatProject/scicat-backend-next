@@ -1,12 +1,12 @@
 "use strict";
 // var utils = require('./utils');
 const datacite_authentication = require("/tmp/generic_config.json");
-const rp=require("request-promise");
+const rp = require("request-promise");
 
 module.exports = function(PublishedData) {
-    PublishedData.register = function(msg, cb) {
-        const first_name = "Gareth";
-        const last_name = "Murphy";
+    PublishedData.register = function(id, msg, first_name, last_name, cb) {
+        //const first_name = "Gareth";
+        //const last_name = "Murphy";
         const affiliation = "ESS";
         const publisher = "ESS";
         const publication_year = "2018";
@@ -100,10 +100,12 @@ url= ${url}`;
 
     PublishedData.remoteMethod("register", {
         accepts: [
+            { arg: "id", number: "string", required: true },
             { arg: "msg", type: "string" },
             { arg: "first_name", type: "string" },
             { arg: "last_name", type: "string" }
         ],
+        http: { path: "/:id/register", verb: "post" },
         returns: { arg: "doi", type: "string" }
     });
     // TODO add logic that give authors privileges to modify data
