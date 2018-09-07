@@ -102,7 +102,7 @@ url= ${url}`;
             });
 
 
-        cb(null, '10.111.79/TEST/DOI ' + first_name);
+        cb(null, 'doi ' + doi);
     };
 
     PublishedData.remoteMethod('get_doi', {
