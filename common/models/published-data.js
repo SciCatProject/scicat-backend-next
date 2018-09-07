@@ -5,7 +5,7 @@ const rp = require("request-promise");
 
 module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
-        PublishedData.findOne({ id: id }, function(err, pub) {
+        const doi= PublishedData.findById( id, function(err, pub) {
             const affiliation = pub["affiliation"];
             const first_name = pub["creator"].split(" ")[0];
             const last_name = pub["creator"].split(" ").splice(-1);
@@ -45,12 +45,13 @@ module.exports = function(PublishedData) {
 doi= ${doi}
 url= ${url}`;
 
-            //console.log(xml);
+            console.log(xml);
 
             const datacite_register_metadata =
                 "https://mds.datacite.org/metadata" + "/" + doi;
             const datacite_register_doi =
                 "https://mds.datacite.org/doi" + "/" + doi;
+
 
             const options_put = {
                 method: "PUT",
