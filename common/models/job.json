@@ -54,22 +54,33 @@
             "type": "string",
             "description": "Defines current status of job lifecycle"
         },
-        "archiveReturnMessage": {
-            "type": "string",
-            "description": "Detailed status or error message returned by archive system at archive job creation time. If One Job request triggers many archive requests, e.g. when archiving multiple datasets in one job, then this message contains the result of the last dataset handled"
-        },
-        "dateOfLastMessage": {
-            "type": "date",
-            "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided"
-        },
         "datasetList": {
             "type": "object",
             "required": true,
             "description": "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected"
+        },
+        "archiveReturnMessage": {
+            "type": "string",
+            "description": "Detailed status or error message returned by archive system at archive job creation time. If One Job request triggers many archive requests, e.g. when archiving multiple datasets in one job, then this message contains the result of the last dataset handled. Warning: to be obsoleted"
+        },
+        "dateOfLastMessage": {
+            "type": "date",
+            "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided. Warning: to be obsoleted."
         }
     },
     "validations": [],
-    "relations": {},
+    "relations": {
+        "messageHistory": {
+            "type": "embedsMany",
+            "model": "Message",
+            "property": "MessageHistory",
+            "options": {
+                "validate": false,
+                "forceId": false,
+                "persistent": true
+            }
+        }
+    },
     "acls": [],
     "methods": {}
 }
