@@ -72,7 +72,6 @@ url= ${url}`;
                 auth: datacite_authentication
             };
 
-            /*
         rp(options_put)
             .then(function(parsedBody) {
                 console.log("register metadata worked");
@@ -97,7 +96,6 @@ url= ${url}`;
                 // POST failed...
             });
 
-*/
             return doi;
         });
         cb(null, "doi: " + doi);
