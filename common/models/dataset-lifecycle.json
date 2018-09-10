@@ -51,6 +51,10 @@
             "type": "date",
             "description": "Day when dataset is supposed to become public according to data policy"
         },
+        "isOnCentralDisk": {
+            "type": "boolean",
+            "description": "Flag which is true, if full dataset is available on central fileserver. If false data needs to be copied from decentral storage place to  a cache server before the ingest. This information needs to be transferred to the archive system at archive time"
+        },
         "isOnDisk": {
             "type": "boolean",
             "description": "Flag which is true, if full dataset is available on disk. Warning: will be obsoleted in coming versions"
