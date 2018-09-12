@@ -27,8 +27,8 @@ module.exports = function(Policy) {
                 }
             }, function(err, instance) {
                 var email = instance.profile.email;
-                //console.log("email:", email);
-                //console.log("manager: ", ctx.currentInstance.manager);
+                console.log("email:", email);
+                console.log("manager: ", ctx.currentInstance.manager);
                 if (!ctx.currentInstance.manager.includes(email)) {
                     var e = new Error('Access Not Allowed - policy manager action');
                     e.statusCode = 401;
