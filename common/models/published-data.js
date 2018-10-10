@@ -5,7 +5,7 @@ const rp = require("request-promise");
 
 module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
-        const doi= PublishedData.findById( id, function(err, pub) {
+        const doi = PublishedData.findById(id, function(err, pub) {
             const affiliation = pub["affiliation"];
             const first_name = pub["creator"].split(" ")[0];
             const last_name = pub["creator"].split(" ").splice(-1);
@@ -48,10 +48,9 @@ url= ${url}`;
             console.log(xml);
 
             const datacite_register_metadata =
-                "https://mds.datacite.org/metadata" + "/" + doi;
+                "https://mds.test.datacite.org/metadata" + "/" + doi;
             const datacite_register_doi =
-                "https://mds.datacite.org/doi" + "/" + doi;
-
+                "https://mds.test.datacite.org/doi" + "/" + doi;
 
             const options_put = {
                 method: "PUT",
@@ -73,29 +72,29 @@ url= ${url}`;
                 auth: datacite_authentication
             };
 
-        rp(options_put)
-            .then(function(parsedBody) {
-                console.log("register metadata worked");
-                console.log(parsedBody);
-                // POST succeeded...
-            })
-            .catch(function(err) {
-                console.log("register metadata failed");
-                console.log(err);
-                // POST failed...
-            });
+            rp(options_put)
+                .then(function(parsedBody) {
+                    console.log("register metadata worked");
+                    console.log(parsedBody);
+                    // POST succeeded...
+                })
+                .catch(function(err) {
+                    console.log("register metadata failed");
+                    console.log(err);
+                    // POST failed...
+                });
 
-        rp(options_register_put)
-            .then(function(parsedBody) {
-                console.log("register doi worked");
-                console.log(parsedBody);
-                // POST succeeded...
-            })
-            .catch(function(err) {
-                console.log("register doi failed");
-                console.log(err);
-                // POST failed...
-            });
+            rp(options_register_put)
+                .then(function(parsedBody) {
+                    console.log("register doi worked");
+                    console.log(parsedBody);
+                    // POST succeeded...
+                })
+                .catch(function(err) {
+                    console.log("register doi failed");
+                    console.log(err);
+                    // POST failed...
+                });
 
             return doi;
         });
