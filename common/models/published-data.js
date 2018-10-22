@@ -14,7 +14,8 @@ module.exports = function(PublishedData) {
             const title = pub["title"];
             const technical_info = pub["title"];
             const abstract = pub["abstract"];
-            const doi = pub["doi"];
+            let doi = pub["doi"];
+            doi= "10.5072/test_2018";
             const resource_type = pub["resourceType"];
             const url = pub["url"];
 
@@ -48,9 +49,9 @@ url= ${url}`;
             console.log(xml);
 
             const datacite_register_metadata =
-                "https://mds.test.datacite.org/metadata" + "/" + doi;
+                "https://mds.datacite.org/metadata" + "/" + doi;
             const datacite_register_doi =
-                "https://mds.test.datacite.org/doi" + "/" + doi;
+                "https://mds.datacite.org/doi" + "/" + doi;
 
             const options_put = {
                 method: "PUT",
