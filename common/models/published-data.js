@@ -1,5 +1,6 @@
 "use strict";
 // var utils = require('./utils');
+var config = require('../../server/config.local');
 const datacite_authentication = require("/tmp/generic_config.json");
 const rp = require("request-promise");
 
@@ -14,8 +15,7 @@ module.exports = function(PublishedData) {
             const title = pub["title"];
             const technical_info = pub["title"];
             const abstract = pub["abstract"];
-            let doi = pub["doi"];
-            doi= "10.5072/test_2018";
+            let doi = config.doiPrefix +pub["doi"].replace(config.pidPrefix,"");
             const resource_type = pub["resourceType"];
             const url = pub["url"];
 
