@@ -39,7 +39,7 @@ module.exports = function(PublishedData) {
     <description xml:lang="en-us" descriptionType="TechnicalInfo">${technical_info}</description>  \
     <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description> \
   </descriptions>  \
-  <resourceType resourceTypeGeneral="Text">${resource_type}</resourceType> \
+  <resourceType resourceTypeGeneral="Dataset">${resource_type}</resourceType> \
 </resource>`;
 
             const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
