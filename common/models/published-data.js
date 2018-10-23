@@ -1,6 +1,6 @@
 "use strict";
 // var utils = require('./utils');
-var config = require('../../server/config.local');
+const config = require('../../server/config.local');
 const datacite_authentication = require("/tmp/generic_config.json");
 const rp = require("request-promise");
 
