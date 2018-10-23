@@ -334,7 +334,7 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('Should fetch the datasetLifefycle belonging to the new dataset', function(done) {
+    it('Should fetch the datasetLifecycle belonging to the new dataset', function(done) {
         request(app)
             .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
