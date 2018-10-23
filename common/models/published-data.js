@@ -12,7 +12,6 @@ module.exports = function(PublishedData) {
                 console.log("publication id is undefined");
             }
             else {
-                console.log("pub is ", pub);
 
             const affiliation = pub["affiliation"];
             const first_name = pub["creator"].split(" ")[0];
@@ -20,7 +19,6 @@ module.exports = function(PublishedData) {
             const publisher = pub["publisher"];
             const publication_year = pub["publicationYear"];
             const title = pub["title"];
-            const technical_info = pub["title"];
             const abstract = pub["abstract"];
             let doi = config.doiPrefix +pub["doi"].replace(config.pidPrefix,"");
             const resource_type = pub["resourceType"];
@@ -43,7 +41,6 @@ module.exports = function(PublishedData) {
   <publisher>${publisher}</publisher>  \
   <publicationYear>${publication_year}</publicationYear>  \
   <descriptions>  \
-    <description xml:lang="en-us" descriptionType="TechnicalInfo">${technical_info}</description>  \
     <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description> \
   </descriptions>  \
   <resourceType resourceTypeGeneral="Dataset">${resource_type}</resourceType> \
