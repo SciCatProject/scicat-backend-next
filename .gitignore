@@ -25,6 +25,7 @@ npm-debug.log
 server/pass
 server/providers.json
 server/datasources.json
+server/datacite.json
 CI/PSI/envfiles/*
 CI/PSI/catamel-psiconfig/
 CI/PSI/catamel-psisecrets/

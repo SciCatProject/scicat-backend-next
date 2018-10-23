@@ -7,6 +7,13 @@ const rp = require("request-promise");
 module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
         const doi = PublishedData.findById(id, function(err, pub) {
+            if (pub == undefined)
+            {
+                console.log("publication id is undefined");
+            }
+            else {
+                console.log("pub is ", pub);
+
             const affiliation = pub["affiliation"];
             const first_name = pub["creator"].split(" ")[0];
             const last_name = pub["creator"].split(" ").splice(-1);
@@ -96,6 +103,7 @@ url= ${url}`;
                     console.log(err);
                     // POST failed...
                 });
+            }
 
             return doi;
         });
