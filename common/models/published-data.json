@@ -52,6 +52,11 @@
             "required": true,
             "description": "Abstract text for published datasets"
         },
+        "dataDescription": {
+            "type": "string",
+            "required": true,
+            "description": "Link to description of how to re-use data"
+        },
         "thumbnail": {
             "type": "string",
             "required": true,
