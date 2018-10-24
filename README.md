@@ -110,6 +110,7 @@ The data model is defined inside the common/models directory according to the ru
 The data model is visualized in form of an
 
 Model UML diagram which can be seen at <catamel_url:port>/modeldiagram or
+![model diagram](https://github.com/SciCatProject/catamel/blob/develop/CI/ESS/scicatmodeldiagram.png)
 
 Model Visualizer which can be seen at <catamel_url:port>/visualize 
 
