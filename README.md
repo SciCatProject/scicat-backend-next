@@ -109,8 +109,10 @@ NOTE: An example of kafka has been set in `Job.js`
 The data model is defined inside the common/models directory according to the rules defined by the Loopback API framework
 The data model is visualized in form of an
 
-[Model UML diagram](http://localhost:3000/modeldiagram) or  
-[Model Visualizer](http://localhost:3000/visualize)
+Model UML diagram which can be seen at <catamel_url:port>/modeldiagram or
+![model diagram](https://github.com/SciCatProject/catamel/blob/develop/CI/ESS/scicatmodeldiagram.png)
+
+Model Visualizer which can be seen at <catamel_url:port>/visualize 
 
 # Data Catalog API
 
