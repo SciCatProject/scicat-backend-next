@@ -17,7 +17,7 @@ The needed database will be created automatically when the API server starts. Fo
 
 ## Get code
 ```
-git clone https://gitlab.psi.ch/MELANIE/catamel.git
+git clone https://github.com/SciCatProject/catamel.git
 cd catamel
 npm install
 ```
