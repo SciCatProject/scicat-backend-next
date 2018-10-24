@@ -13,8 +13,6 @@ module.exports = function (PublishedData) {
             else {
 
                 const affiliation = pub["affiliation"];
-                const first_name = pub["creator"].split(" ")[0];
-                const last_name = pub["creator"].split(" ").splice(-1);
                 const publisher = pub["publisher"];
                 const publication_year = pub["publicationYear"];
                 const title = pub["title"];
@@ -92,32 +90,33 @@ url= ${url}`;
                     auth: datacite_authentication
                 };
 
+                const cb1 = (response) => {
+                    return rp(options_register_put)
+                        .then(function (parsedBody) {
+                            console.log("register doi worked");
+                            console.log(parsedBody);
+                            // PUT succeeded...
+                        })
+                        .catch(function (err) {
+                            console.log("register doi failed");
+                            console.log(err);
+                            // PUT failed...
+                        });
+                };
+
+
                 rp(options_put)
                     .then(function (parsedBody) {
                         console.log("register metadata worked");
                         console.log(parsedBody);
-                        // POST succeeded...
                     })
                     .catch(function (err) {
                         console.log("register metadata failed");
                         console.log(err);
-                        // POST failed...
-                    });
+                    }).then(cb1);
 
 
-                /*
-                rp(options_register_put)
-                    .then(function (parsedBody) {
-                        console.log("register doi worked");
-                        console.log(parsedBody);
-                        // POST succeeded...
-                    })
-                    .catch(function (err) {
-                        console.log("register doi failed");
-                        console.log(err);
-                        // POST failed...
-                    });
-                    */
+                /**/
             }
 
             return doi;
