@@ -4,37 +4,48 @@ const config = require('../../server/config.local');
 const datacite_authentication = require("/tmp/generic_config.json");
 const rp = require("request-promise");
 
-module.exports = function(PublishedData) {
-    PublishedData.register = function(id, cb) {
-        const doi = PublishedData.findById(id, function(err, pub) {
-            if (pub == undefined)
-            {
+module.exports = function (PublishedData) {
+    PublishedData.register = function (id, cb) {
+        const doi = PublishedData.findById(id, function (err, pub) {
+            if (pub == undefined) {
                 console.log("publication id is undefined");
             }
             else {
 
-            const affiliation = pub["affiliation"];
-            const first_name = pub["creator"].split(" ")[0];
-            const last_name = pub["creator"].split(" ").splice(-1);
-            const publisher = pub["publisher"];
-            const publication_year = pub["publicationYear"];
-            const title = pub["title"];
-            const abstract = pub["abstract"];
-            let doi = config.doiPrefix +pub["doi"].replace(config.pidPrefix,"");
-            const resource_type = pub["resourceType"];
-            const url = pub["url"];
+                const affiliation = pub["affiliation"];
+                const first_name = pub["creator"].split(" ")[0];
+                const last_name = pub["creator"].split(" ").splice(-1);
+                const publisher = pub["publisher"];
+                const publication_year = pub["publicationYear"];
+                const title = pub["title"];
+                const abstract = pub["abstract"];
+                let doi = config.doiPrefix + "/" + pub["doi"].replace(config.pidPrefix, "");
+                const resource_type = pub["resourceType"];
+                const url = pub["url"];
+                const authors_list = pub["authors"];
+                const authors = [...new Set(authors_list)];
 
-            const xml = `<?xml version="1.0" encoding="UTF-8"?> \
+
+                const xmlhead = `<?xml version="1.0" encoding="UTF-8"?> \
 <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">  \
   <identifier identifierType=\"DOI\">${doi}</identifier>  \
-  <creators> \
-    <creator> \
+  <creators>`;
+
+                let xmlcreators = "";
+                for (const author of authors) {
+                    const first_name = author.split(" ")[0];
+                    const last_name = author.split(" ").splice(-1);
+                    const xmlcreator = `<creator> \
       <creatorName>${last_name}, ${first_name}</creatorName>  \
       <givenName>${first_name}</givenName>  \
       <familyName>${last_name}</familyName>\  
       <affiliation>${affiliation}</affiliation> \
-    </creator> \
-  </creators>  \
+    </creator>`;
+                    xmlcreators = xmlcreators + xmlcreator;
+                }
+
+
+                const xml_end = `</creators>  \
   <titles> \
     <title>${title} </title> \
   </titles>  \
@@ -46,60 +57,67 @@ module.exports = function(PublishedData) {
   <resourceType resourceTypeGeneral="Dataset">${resource_type}</resourceType> \
 </resource>`;
 
-            const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
+
+                const xml = xmlhead + xmlcreators + xml_end;
+
+
+                const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
 doi= ${doi}
 url= ${url}`;
 
-            console.log(xml);
+                console.log(xml);
 
-            const datacite_register_metadata =
-                "https://mds.datacite.org/metadata" + "/" + doi;
-            const datacite_register_doi =
-                "https://mds.datacite.org/doi" + "/" + doi;
+                const datacite_register_metadata =
+                    "https://mds.datacite.org/metadata" + "/" + doi;
+                const datacite_register_doi =
+                    "https://mds.datacite.org/doi" + "/" + doi;
 
-            const options_put = {
-                method: "PUT",
-                body: xml,
-                uri: datacite_register_metadata,
-                headers: {
-                    "content-type": "application/xml;charset=UTF-8"
-                },
-                auth: datacite_authentication
-            };
+                const options_put = {
+                    method: "PUT",
+                    body: xml,
+                    uri: datacite_register_metadata,
+                    headers: {
+                        "content-type": "application/xml;charset=UTF-8"
+                    },
+                    auth: datacite_authentication
+                };
 
-            const options_register_put = {
-                method: "PUT",
-                body: register_plain_text,
-                uri: datacite_register_doi,
-                headers: {
-                    "content-type": "text/plain;charset=UTF-8"
-                },
-                auth: datacite_authentication
-            };
+                const options_register_put = {
+                    method: "PUT",
+                    body: register_plain_text,
+                    uri: datacite_register_doi,
+                    headers: {
+                        "content-type": "text/plain;charset=UTF-8"
+                    },
+                    auth: datacite_authentication
+                };
 
-            rp(options_put)
-                .then(function(parsedBody) {
-                    console.log("register metadata worked");
-                    console.log(parsedBody);
-                    // POST succeeded...
-                })
-                .catch(function(err) {
-                    console.log("register metadata failed");
-                    console.log(err);
-                    // POST failed...
-                });
+                rp(options_put)
+                    .then(function (parsedBody) {
+                        console.log("register metadata worked");
+                        console.log(parsedBody);
+                        // POST succeeded...
+                    })
+                    .catch(function (err) {
+                        console.log("register metadata failed");
+                        console.log(err);
+                        // POST failed...
+                    });
 
-            rp(options_register_put)
-                .then(function(parsedBody) {
-                    console.log("register doi worked");
-                    console.log(parsedBody);
-                    // POST succeeded...
-                })
-                .catch(function(err) {
-                    console.log("register doi failed");
-                    console.log(err);
-                    // POST failed...
-                });
+
+                /*
+                rp(options_register_put)
+                    .then(function (parsedBody) {
+                        console.log("register doi worked");
+                        console.log(parsedBody);
+                        // POST succeeded...
+                    })
+                    .catch(function (err) {
+                        console.log("register doi failed");
+                        console.log(err);
+                        // POST failed...
+                    });
+                    */
             }
 
             return doi;
@@ -116,8 +134,8 @@ url= ${url}`;
                 required: true
             }
         ],
-        http: { path: "/:id/register", verb: "post" },
-        returns: { arg: "doi", type: "string" }
+        http: {path: "/:id/register", verb: "post"},
+        returns: {arg: "doi", type: "string"}
     });
     // TODO add logic that give authors privileges to modify data
 
