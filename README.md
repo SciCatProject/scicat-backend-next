@@ -28,8 +28,8 @@ cd catamel
 npm install
 ```
 
-## adjust Configuration
-Add a `datasources.json` file inside the `server` directory with connection data to your mongodb instance
+## Configure database source
+Add a `datasources.json` file inside the `server` directory with connection data to your mongodb instance. If using a local mongodb installation, running on port 27017, e.g. you can change the `"host"` property to read `"host":"localhost:27017"`
 
 ```
 server/datasources.json e.g.
