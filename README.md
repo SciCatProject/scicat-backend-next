@@ -29,7 +29,7 @@ npm install
 ```
 
 ## adjust Configuration
-Add a `datasources.json` file inside server directory with connection data to your mongodb instance
+Add a `datasources.json` file inside the `server` directory with connection data to your mongodb instance
 
 ```
 server/datasources.json e.g.
@@ -42,8 +42,28 @@ server/datasources.json e.g.
 }
 
 ```
+
+## Add providers.json
+Add a file `providers.json` inside the `server` directory.
+
+```
+{
+    "local": {
+        "provider": "local",
+        "module": "passport-local",
+        "usernameField": "username",
+        "passwordField": "password",
+        "authPath": "/auth/local",
+        "successRedirect": "/auth/account",
+        "failureRedirect": "/local",
+        "failureFlash": true
+    }
+}
+```
+
+
 ## Add local config file
-Add a file `config.local.js` inside server directory. You can add you own PID prefix (e.g. from Handle.net), site name (e.g. ESS) and facilities ('beamline1', 'beamline2', etc)
+Add a file `config.local.js` inside the `server` directory. You can add your own PID prefix (e.g. from Handle.net), site name (e.g. ESS) and facilities ('beamline1', 'beamline2', etc)
 ```
 var p = require('../package.json');
 var version = p.version.split('.').shift();
