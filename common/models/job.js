@@ -23,8 +23,7 @@ module.exports = function(Job) {
                     if (!ctx.instance.dateOfLastMessage) {
                         ctx.instance.dateOfLastMessage = now.toISOString();
                     }
-
-
+                    console.log("ctx.instance.emailJobInitiator: ", ctx.instance.emailJobInitiator);
 
                     // make some consistency checks:
                     //    - ensure that all wanted datasets exist already
@@ -53,7 +52,6 @@ module.exports = function(Job) {
                         }
                     });
 
-                    console.log("Here!!!!!!!!!!!!!!!");
                     //test for datasets already archived
                     /*var Lifecycle = app.models.DatasetLifecycle;
                     Lifecycle.find({
@@ -75,7 +73,6 @@ module.exports = function(Job) {
                             next();
                         }
                     });*/
-                    console.log("......: ", ctx.instance);
                     //find the relevant lifecycle entries and update their archivable property
                 } else {
                     next();
@@ -90,6 +87,19 @@ module.exports = function(Job) {
 
             Job.observe('after save', (ctx, next) => {
                 if (ctx.instance && ctx.isNewInstance) {
+                  // replace email with that from userIdentity
+                  var initEmail = "";
+                  var UserIdentity = app.models.UserIdentity;
+                  var userId = ctx.options.accessToken.userId;
+                  //PersistedModel Static Method call
+                  UserIdentity.findOne({
+                      //json filter
+                      where: {
+                          userId: userId
+                      }
+                  }, function(err, instance) {
+                      initEmail = instance.profile.email;
+                    });
                     if ('queue' in config && config.queue === 'rabbitmq') {
                         Job.publishJob(ctx.instance, "jobqueue")
                         console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
@@ -103,7 +113,7 @@ module.exports = function(Job) {
                             } else {
                                 console.log('Server is ready to take our messages');
                                 var message = Object.assign({}, config.smtpMessage);
-                                message['to'] = ctx.instance.emailJobInitiator;
+                                message['to'] = initEmail;
                                 message['subject'] += ' Job Submitted Successfully';
                                 let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n' + JSON.stringify(ctx.instance, null, 4);
                                 message['text'] = text;
