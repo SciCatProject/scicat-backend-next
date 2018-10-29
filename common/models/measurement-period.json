@@ -12,7 +12,7 @@
             "type": "string",
             "id": "true",
             "required": true,
-            "description": "id currently needed by limitation in embedsmanny"
+            "description": "id currently needed by limitation in embedsmany"
         },
         "instrument": {
             "type": "string",

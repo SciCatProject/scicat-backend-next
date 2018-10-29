@@ -13,6 +13,8 @@ module.exports = function(Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
+    Dataset.validatesUniquenessOf('pid');
+
     // put
     Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);

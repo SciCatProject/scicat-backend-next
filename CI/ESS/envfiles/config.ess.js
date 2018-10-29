@@ -4,7 +4,7 @@ module.exports = {
     restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
     host: process.env.HOST || '0.0.0.0',
     port: process.env.PORT || 3000,
-    pidPrefix: '10.17199',
+    pidPrefix: '20.500.12269',
     policyPublicationShiftInYears: 3,
     policyRetentionShiftInYears: 10,
     site: 'ESS',

@@ -13,8 +13,9 @@
     "properties": {
         "doi": {
             "type": "string",
-            "required": true,
-            "description": "Digitial Object Identifier"
+            "id": true,
+            "description": "Digital Object Identifier",
+            "defaultFn": "uuidv4"
         },
         "affiliation": {
             "type": "string",
@@ -46,6 +47,36 @@
             "required": true,
             "description": "Full URL to the landing page for this DOI"
         },
+        "abstract": {
+            "type": "string",
+            "required": true,
+            "description": "Abstract text for published datasets"
+        },
+        "dataDescription": {
+            "type": "string",
+            "required": true,
+            "description": "Link to description of how to re-use data"
+        },
+        "thumbnail": {
+            "type": "string",
+            "required": true,
+            "description": "Small, less than 16 MB base 64 image preview of dataset"
+        },
+        "resourceType": {
+            "type": "string",
+            "required": true,
+            "description": "Type of files, format etc"
+        },
+        "numberOfFiles": {
+            "type": "number",
+            "required": true,
+            "description": "Number of files"
+        },
+        "sizeOfArchive": {
+            "type": "number",
+            "required": true,
+            "description": "Size of archive"
+        },
         "pidArray": {
             "type":[ "string"],
             "required": true,
@@ -64,6 +95,13 @@
 	},
     "validations": [],
     "relations": {},
-    "acls": [],
+    "acls": [
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW"
+        }
+    ],
     "methods": {}
 }
