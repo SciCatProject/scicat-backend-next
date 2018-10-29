@@ -48,6 +48,11 @@
         "retrieveEmailsToBeNotified": {
             "type": ["string"],
             "description": "Array of additional email addresses that should be notified up a retrieval job creation"
+        },
+        "embargoPeriod": {
+            "type": "number",
+            "description": "Number of years after dataset creation before the dataset becomes public",
+            "default": 3
         }
     },
     "validations": [],
