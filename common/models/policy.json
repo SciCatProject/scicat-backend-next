@@ -19,10 +19,6 @@
         },
         "autoArchive": {
             "type": "boolean",
-            "description": "automatically archive dataset"
-        },
-        "autoArchive": {
-            "type": "boolean",
             "description": "Flag to indicate that a dataset should be automatically archived after ingest. If false then archive delay is ignored",
             "default": true
         },
