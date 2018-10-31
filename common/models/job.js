@@ -17,6 +17,21 @@ module.exports = function (Job) {
         Job.attachTo(dataSource);
     }
     Job.observe('before save', (ctx, next) => {
+        // replace email with that from userIdentity
+        var UserIdentity = app.models.UserIdentity;
+        var userId = ctx.options.accessToken.userId;
+        //PersistedModel Static Method call
+        UserIdentity.findOne({
+          //json filter
+          where: {
+              userId: userId
+          }
+        }, function(err, instance) {
+          if(!!instance)
+          {
+            ctx.instance.emailJobInitiator = instance.profile.email;
+          }
+        });
         if (ctx.instance) {
             // auto fill dataOfLastMessage
             var now = new Date();
@@ -69,19 +84,6 @@ module.exports = function (Job) {
     });
 
     Job.observe('after save', (ctx, next) => {
-        // replace email with that from userIdentity
-        var initEmail = "";
-        var UserIdentity = app.models.UserIdentity;
-        var userId = ctx.options.accessToken.userId;
-        //PersistedModel Static Method call
-        UserIdentity.findOne({
-          //json filter
-          where: {
-              userId: userId
-          }
-        }, function(err, instance) {
-          initEmail = instance.profile.email;
-        });
         if (ctx.instance && ctx.isNewInstance) {
 
             if ('queue' in config && config.queue === 'rabbitmq') {
@@ -97,7 +99,7 @@ module.exports = function (Job) {
                     } else {
                         console.log('Server is ready to take our messages');
                         var message = Object.assign({}, config.smtpMessage);
-                        message['to'] = initEmail;
+                        message['to'] = ctx.instance.emailJobInitiator;
                         message['subject'] += ' Job Submitted Successfully';
                         let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n'+JSON.stringify(ctx.instance, null, 4);
                         message['text'] = text;
@@ -124,7 +126,7 @@ module.exports = function (Job) {
                     } else {
                         console.log('Server is ready to take our messages');
                         var message = Object.assign({}, config.smtpMessage);
-                        message['to'] = initEmail;
+                        message['to'] = ctx.instance.emailJobInitiator;
                         message['subject'] += ' Job Finished with status '+ ctx.instance.jobStatusMessage;
                         let text = 'Hello, \n\n Your Job with id is now finished. \n\n The resulting job description is.\n\n'+JSON.stringify(ctx.instance, null, 4);
                         message['text'] = text;
