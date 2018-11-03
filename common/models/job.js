@@ -100,7 +100,7 @@ module.exports = function (Job) {
                         console.log('Server is ready to take our messages');
                         var message = Object.assign({}, config.smtpMessage);
                         message['to'] = ctx.instance.emailJobInitiator;
-                        message['subject'] += ' Job Submitted Successfully';
+                        message['subject'] += ' ' + ctx.instance.type + ' job submitted successfully';
                         let text = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n'+JSON.stringify(ctx.instance, null, 4);
                         message['text'] = text;
                         transporter.sendMail(message, function (err, info) {
@@ -117,29 +117,33 @@ module.exports = function (Job) {
                 next()
             }
         } else {
-            if ('smtpSettings' in config && 'smtpMessage' in config)  {
-                let transporter = nodemailer.createTransport(config.smtpSettings);
-                transporter.verify(function (error, success) {
-                    if (error) {
-                        console.log(error);
-                        next();
-                    } else {
-                        console.log('Server is ready to take our messages');
-                        var message = Object.assign({}, config.smtpMessage);
-                        message['to'] = ctx.instance.emailJobInitiator;
-                        message['subject'] += ' Job Finished with status '+ ctx.instance.jobStatusMessage;
-                        let text = 'Hello, \n\n Your Job with id is now finished. \n\n The resulting job description is.\n\n'+JSON.stringify(ctx.instance, null, 4);
-                        message['text'] = text;
-                        transporter.sendMail(message, function (err, info) {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                console.log('Email sent');
-                            }
+            if ('smtpSettings' in config && 'smtpMessage' in config) {
+                if (ctx.instance.jobStatusMessage.startsWith("finish")) {
+                    let transporter = nodemailer.createTransport(config.smtpSettings);
+                    transporter.verify(function(error, success) {
+                        if (error) {
+                            console.log(error);
                             next();
-                        });
-                    }
-                });
+                        } else {
+                            console.log('Server is ready to send message to ', ctx.instance.emailJobInitiator);
+                            var message = Object.assign({}, config.smtpMessage);
+                            message['to'] = ctx.instance.emailJobInitiator;
+                            message['subject'] += ' '+ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
+                            let text = 'Hello, \n\n Your Job from ' + ctx.instance.creationTime + ' is now finished. \n\n The resulting job description is.\n\n' + JSON.stringify(ctx.instance, null, 4);
+                            message['text'] = text;
+                            transporter.sendMail(message, function(err, info) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log('Email sent');
+                                }
+                                next();
+                            });
+                        }
+                    });
+                } else {
+                    next()
+                }
             } else {
                 next()
             }
