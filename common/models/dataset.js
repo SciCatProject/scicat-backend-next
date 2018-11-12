@@ -385,6 +385,5 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.getPolicies = function(ctx, cb) {}
 
 };
