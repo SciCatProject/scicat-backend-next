@@ -200,14 +200,17 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             },
             (tokenVal) => {
                 accessTokenIngestor = tokenVal;
-            });
-        utils.getToken(app, {
-                'username': 'archiveManager',
-                'password': 'aman'
-            },
-            (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        console.log("============ Both accessToken received")
+                        console.log("Tokens:", accessTokenIngestor, accessTokenArchiveManager)
+                        done();
+                    });
+
             });
     });
 
@@ -246,6 +249,42 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                 res.body.should.have.property('id').and.be.string;
                 idOrigDatablock = encodeURIComponent(res.body['id']);
                 done();
+            });
+    });
+
+    // the following two function definition prepare for
+    // multi-delete actions to finish
+    async function deleteDatablock(item) {
+        await request(app)
+            .delete('/api/v2/Datablocks/' + item.id + '?access_token=' + accessTokenArchiveManager)
+            .set('Accept', 'application/json')
+            .expect(200)
+    }
+
+    async function processArray(array) {
+        for (const item of array) {
+            await deleteDatablock(item)
+        }
+        // console.log("==== Finishing all deletes")
+    }
+
+    it('remove potentially existing datablocks to guarantee uniqueness', function(done) {
+        let filter = '{"where": {"archiveId": {"inq": ["someOtherId", "' + testdataBlock.archiveId + '"]}}}'
+        // console.log("Filter expression before encoding:",filter)
+        let url = '/api/v2/Datablocks?filter=' + encodeURIComponent(filter) + '&access_token=' + accessTokenArchiveManager
+        // console.log("============= url of query: ", url)
+        request(app)
+            .get(url)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                // console.log(" ==================== Found existing datablocks:", res.body)
+                // now remove all these entries
+                processArray(res.body)
+                done()
             });
     });
 
@@ -295,7 +334,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     });
 
     it('adds a second datablock for same dataset', function(done) {
-        testdataBlock.archiveId = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar",
+        testdataBlock.archiveId = "someOtherId",
             request(app)
             .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
