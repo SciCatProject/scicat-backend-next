@@ -1,14 +1,14 @@
 var utils = require('./common_utils');
 var fs = require('fs');
 
-module.exports = function(app,cb) {
+module.exports = function(app, cb) {
 
     // define roles
     //  note: role names are all lowercase , corresponding accounts camelcase
     //
 
 
-    createRole = function(account,cb) {
+    createRole = function(account, cb) {
 
         var User = app.models.User;
 
@@ -21,8 +21,8 @@ module.exports = function(app,cb) {
                 return cb(err);
             } else if (users.length === 0) {
                 // check for password file for this role
-                path='server/'+account;
-                console.log("creating account "+account);
+                path = 'server/' + account;
+                console.log("creating account " + account);
                 if (fs.existsSync(path)) {
                     var data = fs.readFileSync(path, 'utf8').split('\n')[0].split(" ");
                     User.create({
@@ -33,7 +33,7 @@ module.exports = function(app,cb) {
                         emailVerified: true
                     }, function(err, user) {
                         if (err) {
-                            console.log("User create:"+err+" "+user)
+                            console.log("User create:" + err + " " + user)
                             return cb(err)
                         } else {
                             utils.connectRole(app, account.toLowerCase(), user, cb);
@@ -48,7 +48,7 @@ module.exports = function(app,cb) {
                         emailVerified: true
                     }, function(err, user) {
                         if (err) {
-                            console.log("User create:"+err+" "+user)
+                            console.log("User create:" + err + " " + user)
                             return cb(err)
                         } else {
                             utils.connectRole(app, account.toLowerCase(), user, cb);
@@ -63,9 +63,13 @@ module.exports = function(app,cb) {
         });
     };
 
-    createRole('admin',cb);
-    createRole('archiveManager',cb);
-    createRole('ingestor',cb);
-    createRole('proposalIngestor',cb);
-    createRole('userGroupIngestor',cb)
-};
+    createRole('admin', function() {
+        createRole('archiveManager', function() {
+            createRole('ingestor', function() {
+                createRole('proposalIngestor', function() {
+                    createRole('userGroupIngestor', cb)
+                })
+            })
+        })
+    })
+}
