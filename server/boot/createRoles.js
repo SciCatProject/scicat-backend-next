@@ -56,7 +56,7 @@ module.exports = function(app, cb) {
                     });
                 }
             } else {
-                console.log('Found ' + account + ' user:', users[0].username);
+                console.log('Found ' + account + ' user:', users[0].username, new Date());
                 //create the role if not yet there
                 utils.connectRole(app, account.toLowerCase(), users[0], cb);
             }
@@ -67,7 +67,10 @@ module.exports = function(app, cb) {
         createRole('archiveManager', function() {
             createRole('ingestor', function() {
                 createRole('proposalIngestor', function() {
-                    createRole('userGroupIngestor', cb)
+                    createRole('userGroupIngestor', function(){
+                        console.log("Last role mapped, now wait a bit ",new Date())
+                        setTimeout(cb,20000)
+                    })
                 })
             })
         })

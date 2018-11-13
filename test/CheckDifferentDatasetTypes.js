@@ -7,7 +7,7 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
+
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -145,6 +145,14 @@ var derivedCountDataset = 0;
 var pid = null;
 var pidraw = null;
 var pidderived = null;
+var app;
+
+// Make sure thet the boot code, which is executed via the require statement
+// is finished before any test is run
+
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Check different dataset types and their inheritance', () => {
     before((done) => {
@@ -154,6 +162,7 @@ describe('Check different dataset types and their inheritance', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
+                // app(done)
                 done();
             });
     });

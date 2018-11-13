@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -160,6 +159,11 @@ var testDatasetLifecycle = {
 
 var foundId1 = null;
 var foundId2 = null;
+
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
     before((done) => {

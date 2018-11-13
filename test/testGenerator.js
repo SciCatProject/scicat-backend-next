@@ -4,6 +4,8 @@
 var supertest = require('supertest');
 var async = require('async');
 
+// Code to generate  simple mocha tests via configuration files
+
 module.exports = {
     run: function (conf, app, settings, callback) {
         var server;
@@ -15,6 +17,7 @@ module.exports = {
 
         if (app) {
             before(function (done) {
+                console.log("Starting local webserver:",new Date())
                 server = app.listen(done);
             });
 
@@ -41,7 +44,7 @@ module.exports = {
                 const withData = c.body || false;
                 const isWithAuthentication = c.authenticate || false;
 
-                
+
 
                 var authenticationDescription = (isWithAuthentication) ? 'authenticated' : 'unauthenticated';
 

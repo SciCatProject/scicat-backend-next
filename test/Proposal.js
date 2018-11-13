@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -22,6 +21,11 @@ var testproposal = {
     "ownerGroup": "20170251-group"
 
 }
+
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Simple Proposal tests', () => {
     before((done) => {

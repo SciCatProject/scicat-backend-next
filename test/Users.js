@@ -7,11 +7,15 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var utils = require('./LoginUtils');
 var should = chai.should();
 
 var accessToken = null;
+
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Login with functional accounts', () => {
 
@@ -28,7 +32,7 @@ describe('Login with functional accounts', () => {
             .end((err, res) => {
                 res.body.should.have.property('error');
                 done();
-            }); 
+            });
 
     });
 
