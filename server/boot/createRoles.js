@@ -1,12 +1,14 @@
 var utils = require('./common_utils');
 var fs = require('fs');
 
-module.exports = function(app) {
+module.exports = function(app,cb) {
 
     // define roles
     //  note: role names are all lowercase , corresponding accounts camelcase
     //
-    createRole = function(account) {
+
+
+    createRole = function(account,cb) {
 
         var User = app.models.User;
 
@@ -16,7 +18,7 @@ module.exports = function(app) {
             }
         }, function(err, users) {
             if (err) {
-                throw err;
+                return cb(err);
             } else if (users.length === 0) {
                 // check for password file for this role
                 path='server/'+account;
@@ -32,8 +34,9 @@ module.exports = function(app) {
                     }, function(err, user) {
                         if (err) {
                             console.log("User create:"+err+" "+user)
+                            return cb(err)
                         } else {
-                            utils.connectRole(app, account.toLowerCase(), user);
+                            utils.connectRole(app, account.toLowerCase(), user, cb);
                         }
                     });
                 } else {
@@ -46,22 +49,23 @@ module.exports = function(app) {
                     }, function(err, user) {
                         if (err) {
                             console.log("User create:"+err+" "+user)
+                            return cb(err)
                         } else {
-                            utils.connectRole(app, account.toLowerCase(), user);
+                            utils.connectRole(app, account.toLowerCase(), user, cb);
                         }
                     });
                 }
             } else {
                 console.log('Found ' + account + ' user:', users[0].username);
                 //create the role if not yet there
-                utils.connectRole(app, account.toLowerCase(), users[0]);
+                utils.connectRole(app, account.toLowerCase(), users[0], cb);
             }
         });
     };
 
-    createRole('admin');
-    createRole('archiveManager');
-    createRole('ingestor');
-    createRole('proposalIngestor');
-    createRole('userGroupIngestor')
+    createRole('admin',cb);
+    createRole('archiveManager',cb);
+    createRole('ingestor',cb);
+    createRole('proposalIngestor',cb);
+    createRole('userGroupIngestor',cb)
 };
