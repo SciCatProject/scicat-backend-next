@@ -17,16 +17,17 @@ exports.connectRole = function(app, roleName, user, cb) {
                 name: roleName
             }, function(err, role) {
                 if (err) return cb(err);
-                console.log('Created role:', role);
-                mapRole(RoleMapping, role, user,cb);
+                mapRole(RoleMapping, role, user, cb);
             });
         }else if (role.length === 1) {
             mapRole(RoleMapping, role[0], user,cb);
+        } else {
+            return cb(err)
         }
     });
 };
 
-function mapRole(RoleMapping, role, user, cb) {
+function mapRole(RoleMapping, role, user,cb) {
     //check mapping exists first, maybe also look at user id?
     RoleMapping.find({
         where: {
@@ -43,6 +44,8 @@ function mapRole(RoleMapping, role, user, cb) {
                 console.log('Assigned user %s to role %s', user.username, role.name);
                 cb(null)
             });
+        } else {
+            cb(null)
         }
     });
 }
