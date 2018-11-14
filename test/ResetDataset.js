@@ -161,7 +161,7 @@ var foundId1 = null;
 var foundId2 = null;
 
 var app
-before( function(){
+before(function() {
     app = require('../server/server')
 });
 
@@ -208,6 +208,7 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
+                console.log("Result of looking for first id:", res.body)
                 if (err)
                     return done(err);
                 foundId2 = res.body[0] ? res.body[0].id : null
@@ -215,8 +216,8 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    if (foundId1) {
-        it('should delete existing Datablocks with specific archiveId', function(done) {
+    it('should delete existing Datablocks with specific archiveId', function(done) {
+        if (foundId1) {
             request(app)
                 .delete('/api/v2/Datablocks/' + foundId1 + '?access_token=' + accessTokenArchiveManager)
                 .set('Accept', 'application/json')
@@ -225,14 +226,17 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 .end((err, res) => {
                     if (err)
                         return done(err);
-                    // console.log("Deleted datablock:", res.body)
+                    console.log("Deleted datablock:", res.body)
                     done();
                 });
-        });
-    }
+        } else {
+            done()
+        }
+    });
 
-    if (foundId2) {
-        it('should delete existing Datablocks with 2nd specific archiveId', function(done) {
+
+    it('should delete existing Datablocks with 2nd specific archiveId', function(done) {
+        if (foundId2) {
             request(app)
                 .delete('/api/v2/Datablocks/' + foundId2 + '?access_token=' + accessTokenArchiveManager)
                 .set('Accept', 'application/json')
@@ -241,11 +245,14 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 .end((err, res) => {
                     if (err)
                         return done(err);
-                    // console.log("Deleted datablock:", res.body)
+                    console.log("Deleted datablock:", res.body)
                     done();
                 });
-        });
-    }
+        } else {
+            done()
+        }
+    });
+
 
     it('adds a new raw dataset', function(done) {
         request(app)

@@ -12,6 +12,7 @@ var should = chai.should();
 var utils = require('./LoginUtils');
 
 var accessToken = null;
+var boot = require('loopback-boot');
 
 // TODO
 // add tests for normal users (non functional accounts)
@@ -149,10 +150,14 @@ var app;
 
 // Make sure thet the boot code, which is executed via the require statement
 // is finished before any test is run
+// since there is no callback or this available I simply have to wait here
+// This wait should be added to the first test running
 
-before( function(){
-    app = require('../server/server')
-});
+before(function(done) {
+     app = require('../server/server');
+     console.log("Waiting for 15 seconds for boot tasks to finish: ",new Date())
+     setTimeout(done,15000)
+ });
 
 describe('Check different dataset types and their inheritance', () => {
     before((done) => {

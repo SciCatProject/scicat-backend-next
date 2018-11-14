@@ -1,7 +1,7 @@
 var utils = require('./common_utils');
 var fs = require('fs');
 
-module.exports = function(app, cb) {
+module.exports = function(app, cb2) {
 
     // define roles
     //  note: role names are all lowercase , corresponding accounts camelcase
@@ -68,8 +68,8 @@ module.exports = function(app, cb) {
             createRole('ingestor', function() {
                 createRole('proposalIngestor', function() {
                     createRole('userGroupIngestor', function(){
-                        console.log("Last role mapped, now wait a bit ",new Date())
-                        setTimeout(cb,20000)
+                        console.log("Last role mapped, finished booting ",new Date())
+                        cb2(null)
                     })
                 })
             })
