@@ -33,8 +33,7 @@ module.exports = function(Policy) {
                     var e = new Error('Access Not Allowed - policy manager action');
                     e.statusCode = 401;
                     next(e);
-                }
-                else next();
+                } else next();
             });
         } else {
             //is an full update/insert/delete
@@ -42,4 +41,22 @@ module.exports = function(Policy) {
             next();
         }
     });
+
+    Policy.addDefault = function(ownerGroup, ownerEmail) {
+        // TODO: move the deault definition somewhere more sensible 
+        var defaultPolicy = Object();
+        defaultPolicy.ownerGroup = ownerGroup; //mandatory
+        defaultPolicy.manager = ownerEmail.split(","); //mandatory
+        defaultPolicy.tapeRedundancy = "low";
+        defaultPolicy.autoArchive = false;
+        defaultPolicy.autoArchiveDelay = 7;
+        defaultPolicy.archiveEmailNotification = true;
+        defaultPolicy.retrieveEmailNotification = true;
+        defaultPolicy.tapeRedundancy = "low";
+        defaultPolicy.embargoPeriod = 3;
+        //filter must be an object
+        var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
+        console.log("default policy: " + JSON.stringify(defaultPolicy));
+        Policy.findOrCreate(filter, defaultPolicy);
+    };
 };
