@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-sleep 20
-npm test
+sleep 120
+npm run test
