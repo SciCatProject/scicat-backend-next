@@ -2,6 +2,7 @@
 var utils = require('./utils');
 
 module.exports = function(Rawdataset) {
+  Rawdataset.validatesUniquenessOf('pid');
 
   // filter on dataset type (raw, derived etc)
   Rawdataset.observe('access', function(ctx, next) {

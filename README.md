@@ -13,20 +13,26 @@ You need to setup a MongoDB server. E.g. on a Redhat Linux System the following 
 yum install mongodb-org-server
 ```
 
+On MacOS 
+```
+brew install mongodb
+```
+
+
 The needed database will be created automatically when the API server starts. Follow this [description](https://docs.mongodb.com/manual/tutorial/enable-authentication/) to enable authenticated access to the Mongo DB.
 
 ## Get code
 ```
-git clone https://gitlab.psi.ch/MELANIE/catamel.git
+git clone https://github.com/SciCatProject/catamel.git
 cd catamel
 npm install
 ```
 
-## adjust Configuration
-Add a datasources.local.json file inside server directory with connection data to your mongodb instance
+## Configure database source
+Add a `datasources.json` file inside the `server` directory with connection data to your mongodb instance. If using a local mongodb installation, running on port 27017, e.g. you can change the `"host"` property to read `"host":"localhost:27017"`
 
 ```
-server/datasources.local.json e.g.
+server/datasources.json e.g.
 {
   "mongo": {
     "host": "mongodbprod.my.site",
@@ -35,6 +41,66 @@ server/datasources.local.json e.g.
   }
 }
 
+```
+
+## Add providers.json
+Add a file `providers.json` inside the `server` directory.
+
+```
+{
+    "local": {
+        "provider": "local",
+        "module": "passport-local",
+        "usernameField": "username",
+        "passwordField": "password",
+        "authPath": "/auth/local",
+        "successRedirect": "/auth/account",
+        "failureRedirect": "/local",
+        "failureFlash": true
+    }
+}
+```
+
+
+## Add local config file
+Add a file `config.local.js` inside the `server` directory. You can add your own PID prefix (e.g. from Handle.net), site name (e.g. ESS) and facilities ('beamline1', 'beamline2', etc)
+```
+var p = require('../package.json');
+var version = p.version.split('.').shift();
+module.exports = {
+    restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
+    host: process.env.HOST || '0.0.0.0',
+    port: process.env.PORT || 3000,
+    pidPrefix: '<PID>',
+    policyPublicationShiftInYears: 3,
+    policyRetentionShiftInYears: 10,
+    site: '<MYSITE>',
+    facilities: [<MYFACILITY1>],
+    datasetStatusMessages: {
+        datasetCreated: "Dataset created",
+        datasetOndisk: "Stored on primary disk and on archive disk",
+        datasetOnDiskAndTape: "Stored on primary disk and on tape",
+        datasetOnTape: "Stored only in archive",
+        datasetRetrieved: "Retrieved to target disk",
+        datasetDeleted: "Deleted from archive and disk"
+    },
+    datasetTransitionMessages: {
+        scheduleArchive: "Scheduled for archiving",
+        schedulePurgeFromDisk: "Scheduled for purging from primary disk",
+        scheduleRetrieve: "Scheduled for retrieval",
+        scheduleDelete: "Scheduled for removal from archive"
+    },
+    jobMessages: {
+        jobSubmitted: "Submitted for immediate execution",
+        jobSubmittedDelayed: "Submitted for delayed execution",
+        jobForwarded: "Forwarded to archive system",
+        jobStarted: "Execution started",
+        jobInProgress: "Finished by %i percent",
+        jobSuccess: "Succesfully finished",
+        jobError: "Finished with errors",
+        jobCancel: "Cancelled"
+    }
+};
 ```
 
 ## Email Notifications

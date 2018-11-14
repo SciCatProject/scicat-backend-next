@@ -13,6 +13,8 @@ module.exports = function(Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
+    Dataset.validatesUniquenessOf('pid');
+
     // put
     Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
@@ -31,7 +33,7 @@ module.exports = function(Dataset) {
         next();
     });
 
-    // auto add pid
+    // auto add pid, add a policy record
     Dataset.observe('before save', (ctx, next) => {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
@@ -42,6 +44,10 @@ module.exports = function(Dataset) {
             }
             ctx.instance.version = p.version;
             ctx.instance.type = 'base';
+
+            // add a policy record now (A Groups). Check that one doesnt already exist
+            var Policy = app.models.Policy;
+            Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail);
         }
         next();
     });

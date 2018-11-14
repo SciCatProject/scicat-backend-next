@@ -3,6 +3,8 @@
 module.exports = function (Deriveddataset) {
     var utils = require('./utils');
 
+    Deriveddataset.validatesUniquenessOf('pid');
+
     // filter on dataset type (raw, derived etc)
     Deriveddataset.observe('access', function (ctx, next) {
         var typeCondition = {

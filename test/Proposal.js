@@ -14,7 +14,7 @@ var utils = require('./LoginUtils');
 var accessToken = null,
     proposalId = null;
 
-var testdataset = {
+var testproposal = {
     "proposalId": "20170266",
     "email": "proposer%40uni.edu",
     "title": "A test proposal",
@@ -35,10 +35,46 @@ describe('Simple Proposal tests', () => {
             });
     });
 
+    // the following two function definition prepare for
+    // multi-delete actions to finish
+    async function deleteProposal(item) {
+        await request(app)
+            .delete('/api/v2/Proposals/' + item.proposalId + '?access_token=' + accessToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+    }
+
+    async function processArray(array) {
+        for (const item of array) {
+            await deleteProposal(item)
+        }
+        // console.log("==== Finishing all deletes")
+    }
+
+    it('remove potentially existing proposals to guarantee uniqueness', function(done) {
+        let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}'
+        // console.log("Filter expression before encoding:",filter)
+        let url = '/api/v2/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
+        // console.log("============= url of query: ", url)
+        request(app)
+            .get(url)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                //console.log(" ==================== Found existing proposals:", res.body)
+                // now remove all these entries
+                processArray(res.body)
+                done()
+            });
+    });
+
     it('adds a new proposal', function(done) {
         request(app)
             .post('/api/v2/Proposals?access_token=' + accessToken)
-            .send(testdataset)
+            .send(testproposal)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

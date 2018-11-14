@@ -19,7 +19,8 @@
         },
         "autoArchive": {
             "type": "boolean",
-            "description": "automatically archive dataset"
+            "description": "Flag to indicate that a dataset should be automatically archived after ingest. If false then archive delay is ignored",
+            "default": true
         },
         "autoArchiveDelay": {
             "type": "number",
@@ -43,6 +44,11 @@
         "retrieveEmailsToBeNotified": {
             "type": ["string"],
             "description": "Array of additional email addresses that should be notified up a retrieval job creation"
+        },
+        "embargoPeriod": {
+            "type": "number",
+            "description": "Number of years after dataset creation before the dataset becomes public",
+            "default": 3
         }
     },
     "validations": [],
