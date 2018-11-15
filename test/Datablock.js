@@ -211,8 +211,6 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                     },
                     (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
-                        console.log("============ Both accessToken received")
-                        console.log("Tokens:", accessTokenIngestor, accessTokenArchiveManager)
                         done();
                     });
 
