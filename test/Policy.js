@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -35,7 +34,10 @@ var testdataset = {
   ]
 }
 
-
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Simple Policy tests', () => {
     before((done) => {

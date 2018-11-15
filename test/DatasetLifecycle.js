@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -101,6 +100,10 @@ var testDatasetLifecycle = {
     "isExported": false
 }
 
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Test DatasetLifecycle and the relation to Datasets', () => {
     before((done) => {

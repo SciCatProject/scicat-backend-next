@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-
-sleep 20
-npm test
+# wait for mongo container to come up
+sleep 15
+npm run test

@@ -33,7 +33,7 @@ module.exports = function (Job) {
           }
         });
         if (ctx.instance) {
-            // auto fill dataOfLastMessage
+            // auto fill dateOfLastMessage
             var now = new Date();
             if (!ctx.instance.dateOfLastMessage) {
                 ctx.instance.dateOfLastMessage = now.toISOString();
@@ -47,7 +47,7 @@ module.exports = function (Job) {
             // console.log("Verifying datasets:",ctx.options)
             const idList=ctx.instance.datasetList.map(x => x.pid)
             Dataset.find({where: {pid: {inq: idList}}}, ctx.options, function (err, p){
-                console.log("JOBS:lengths",err,p.length,idList.length,p)
+                //console.log("JOBS:lengths",err,p.length,idList.length,p)
                 if (err || (p.length != idList.length)){
                     var e = new Error();
                     e.statusCode = 400;
