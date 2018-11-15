@@ -155,8 +155,8 @@ var app;
 
 before(function(done) {
      app = require('../server/server');
-     console.log("Waiting for 15 seconds for boot tasks to finish: ",new Date())
-     setTimeout(done,15000)
+     console.log("Waiting for 5 seconds for boot tasks to finish: ",new Date())
+     setTimeout(done,5000)
  });
 
 describe('Check different dataset types and their inheritance', () => {
