@@ -116,14 +116,9 @@ var testjob = {
     "type": "retrieve",
     "jobStatusMessage": "jobForwarded",
     "datasetList": [{
-            "pid": "20.500.11935/93128a6e-6c0c-48aa-bd3d-34b8fafc29ff",
+            "pid": "dummy",
             "files": []
-        },
-        {
-            "pid": "20.500.11935/c26ab160-3725-459c-a4fd-a8c88d0ff170",
-            "files": []
-        },
-    ],
+        }],
     "archiveReturnMessage": "will move to messageList",
     "MessageHistory": []
 }
@@ -177,8 +172,10 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 // store link to this dataset in datablocks
-                testDatasetLifecycle.id = res.body['pid']
-                testDatasetLifecycle.datasetId = res.body['pid']
+                var pidtest=res.body['pid']
+                testDatasetLifecycle.id = pidtest
+                testDatasetLifecycle.datasetId = pidtest
+                testjob.datasetList[0].pid= pidtest
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
