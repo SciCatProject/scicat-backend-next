@@ -1,89 +1,90 @@
 "use strict";
-// var utils = require('./utils');
+
 const config = require('../../server/config.local');
-const datacite_authentication = require("/tmp/generic_config.json");
-const rp = require("request-promise");
+const requestPromise = require("request-promise");
+
+// const datacite_authentication = require("/tmp/generic_config.json");
+
+
+function formRegistrationXML(publishedData) {
+    const {
+        affiliation,
+        publisher,
+        publicationYear,
+        title,
+        abstract,
+        resourceType,
+    } = publishedData;
+    
+    const doi = config.doiPrefix + "/" + publishedData["doi"].replace(config.pidPrefix, "");
+    const authors_list = publishedData["authors"];
+    const authors = [...new Set(authors_list)];
+
+    const creatorElements = authors.map(author => {
+        const names = author.split(" ");
+        const firstName = names[0];
+        const lastName = names.slice(1).join(" ");
+        return `
+            <creator>
+                <creatorName>${lastName}, ${firstName}</creatorName>
+                <givenName>${firstName}</givenName>
+                <familyName>${lastName}</familyName>
+                <affiliation>${affiliation}</affiliation>
+            </creator>
+        `;
+    });
+
+    return `
+        <?xml version="1.0" encoding="UTF-8"?>
+        <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+            <identifier identifierType=\"DOI\">${doi}</identifier>
+            <creators>
+                ${creatorElements.join("\n")}
+            </creators>
+            <titles>
+                <title>${title}</title>
+            </titles>
+            <publisher>${publisher}</publisher>
+            <publicationYear>${publicationYear}</publicationYear>
+            <descriptions>
+                <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description>
+            </descriptions>
+            <resourceType resourceTypeGeneral="Dataset">${resourceType}</resourceType>
+        </resource>
+    `;
+}
+
 
 module.exports = function (PublishedData) {
     PublishedData.register = function (id, cb) {
-        const doi = PublishedData.findById(id, function (err, pub) {
+        PublishedData.findById(id, function (err, pub) {
             if (pub == undefined) {
-                console.log("publication id is undefined");
-            }
-            else {
-
-                const affiliation = pub["affiliation"];
-                const publisher = pub["publisher"];
-                const publication_year = pub["publicationYear"];
-                const title = pub["title"];
-                const abstract = pub["abstract"];
-                let doi = config.doiPrefix + "/" + pub["doi"].replace(config.pidPrefix, "");
-                const resource_type = pub["resourceType"];
-                const url = pub["url"];
-                const authors_list = pub["authors"];
-                const authors = [...new Set(authors_list)];
-
-
-                const xmlhead = `<?xml version="1.0" encoding="UTF-8"?> \
-<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">  \
-  <identifier identifierType=\"DOI\">${doi}</identifier>  \
-  <creators>`;
-
-                let xmlcreators = "";
-                for (const author of authors) {
-                    const first_name = author.split(" ")[0];
-                    const last_name = author.split(" ").splice(-1);
-                    const xmlcreator = `<creator> \
-      <creatorName>${last_name}, ${first_name}</creatorName>  \
-      <givenName>${first_name}</givenName>  \
-      <familyName>${last_name}</familyName>\  
-      <affiliation>${affiliation}</affiliation> \
-    </creator>`;
-                    xmlcreators = xmlcreators + xmlcreator;
-                }
-
-
-                const xml_end = `</creators>  \
-  <titles> \
-    <title>${title} </title> \
-  </titles>  \
-  <publisher>${publisher}</publisher>  \
-  <publicationYear>${publication_year}</publicationYear>  \
-  <descriptions>  \
-    <description xml:lang="en-us" descriptionType="Abstract">${abstract}</description> \
-  </descriptions>  \
-  <resourceType resourceTypeGeneral="Dataset">${resource_type}</resourceType> \
-</resource>`;
-
-
-                const xml = xmlhead + xmlcreators + xml_end;
-
-
-                const register_plain_text = `#Content-Type:text/plain;charset=UTF-8
-doi= ${doi}
-url= ${url}`;
-
+                return cb(new Error("publication id is undefined"));
+            } else {
+                const xml = formRegistrationXML(pub);
                 console.log(xml);
 
-                const datacite_register_metadata =
-                    "https://mds.datacite.org/metadata" + "/" + doi;
-                const datacite_register_doi =
-                    "https://mds.datacite.org/doi" + "/" + doi;
+                return;
 
-                const options_put = {
+                const registerMetadataUri = `https://mds.datacite.org/metadata/${doi}`;
+                const registerDoiUri = `https://mds.datacite.org/doi/${doi}`;
+
+                const registerMetadataOptions = {
                     method: "PUT",
                     body: xml,
-                    uri: datacite_register_metadata,
+                    uri: registerMetadataUri,
                     headers: {
                         "content-type": "application/xml;charset=UTF-8"
                     },
                     auth: datacite_authentication
                 };
 
-                const options_register_put = {
+                const registerDoiOptions = {
                     method: "PUT",
-                    body: register_plain_text,
-                    uri: datacite_register_doi,
+                    body: `#Content-Type:text/plain;charset=UTF-8
+                    doi= ${doi}
+                    url= ${url}`,
+                    uri: registerDoiUri,
                     headers: {
                         "content-type": "text/plain;charset=UTF-8"
                     },
@@ -105,24 +106,12 @@ url= ${url}`;
                 };
 
 
-                rp(options_put)
-                    .then(function (parsedBody) {
-                        console.log("register metadata worked");
-                        console.log(parsedBody);
-                    })
-                    .catch(function (err) {
-                        console.log("register metadata failed");
-                        console.log(err);
-                    }).then(cb1);
-
-
-                /**/
+                requestPromise(registerMetadataOptions)
+                    .then(() => requestPromise(registerDoiOptions))
+                    .then(() => cb(null, "asdasd"))
+                    .catch(() => cb());
             }
-
-            return doi;
         });
-        cb(null, "doi: " + doi);
-        return doi;
     };
 
     PublishedData.remoteMethod("register", {
