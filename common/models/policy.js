@@ -45,8 +45,15 @@ module.exports = function(Policy) {
     Policy.addDefault = function(ownerGroup, ownerEmail) {
         // TODO: move the deault definition somewhere more sensible 
         var defaultPolicy = Object();
-        defaultPolicy.ownerGroup = ownerGroup; //mandatory
-        defaultPolicy.manager = ownerEmail.split(","); //mandatory
+        defaultPolicy.ownerGroup = ownerGroup;
+        if (config && !ownerEmail)
+        {
+            defaultPolicy.ownerEmail = config.defaultManager;
+        }
+        else
+        {
+            defaultPolicy.manager = ownerEmail.split(",");
+        }
         defaultPolicy.tapeRedundancy = "low";
         defaultPolicy.autoArchive = false;
         defaultPolicy.autoArchiveDelay = 7;
