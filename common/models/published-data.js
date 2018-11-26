@@ -54,6 +54,8 @@ function formRegistrationXML(publishedData) {
 }
 
 module.exports = function(PublishedData) {
+    const app = require("../../server/server");
+
     PublishedData.observe('after save', function(ctx, next) {
         console.log('After save:');
         console.log(ctx.instance);
@@ -63,6 +65,18 @@ module.exports = function(PublishedData) {
             ctx.instance.doiRegisteredSuccessfullyTime = new Date();
             next(null);
         });
+    });
+
+    PublishedData.observe("before save", function(ctx, next) {
+        const token = ctx.options.accessToken;
+        if (token == null) {
+            return next(new Error());
+        }
+
+        app.models.User.findById(token.userId).then(user => {
+            console.log(user);
+            next();
+        }).catch(err => next(err));
     });
 
     PublishedData.register = function(id, cb) {
