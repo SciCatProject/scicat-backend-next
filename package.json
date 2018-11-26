@@ -22,7 +22,6 @@
         "loopback-component-mq": "^2.2.5",
         "loopback-component-passport": "^3.10.0",
         "loopback-component-visualizer": "^1.2.1",
-        "loopback-connector-kafka": "^0.2.1",
         "loopback-connector-mongodb": "^3.9.2",
         "loopback-ds-timestamp-mixin": "^3.4.1",
         "moment": "^2.20.1",
@@ -34,6 +33,9 @@
         "serve-favicon": "2.5.0",
         "strong-error-handler": "3.2.0",
         "uuid": "^3.3.2"
+    },
+    "optionalDependencies": {
+        "loopback-connector-kafka": "^0.2.1"
     },
     "devDependencies": {
         "@mean-expert/loopback-sdk-builder": "^2.1.0",
