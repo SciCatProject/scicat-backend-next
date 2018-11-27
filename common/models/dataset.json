@@ -102,6 +102,18 @@
         "isPublished": {
             "type": "boolean",
             "description": "Flag is true when data are made publically available"
+        },
+        "archivable":{
+            "type": "boolean",
+            "description": "Copy of archivable flag from DatasetLifecycle"
+        },
+        "retrievable":{
+            "type": "boolean",
+            "description": "Copy of retrievable flag from DatasetLifecycle"
+        },
+        "publishable":{
+            "type": "boolean",
+            "description": "Copy of publishable flag from DatasetLifecycle"
         }
     },
     "validations": [],
