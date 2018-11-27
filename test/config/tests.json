@@ -34,6 +34,7 @@
                 "Cryo", "Calibration"
             ],
             "description": "None",
+            "type": "raw",
             "license": "CC BY-SA 4.0",
             "doi": "not yet defined",
             "isPublished": false,
@@ -42,7 +43,7 @@
         },
         "response": [
             "res.body.should.have.property('version').and.be.string;",
-            "res.body.should.have.property('type').and.equal('base');",
+            "res.body.should.have.property('type').and.equal('raw');",
             "res.body.should.have.property('pid').and.be.string;"
         ]
     },
@@ -62,6 +63,7 @@
                 "Cryo", "Calibration"
             ],
             "description": "None",
+            "type": "raw",
             "license": "CC BY-SA 4.0",
             "doi": "not yet defined",
             "isPublished": false,
@@ -70,7 +72,7 @@
         },
         "response": [
             "res.body.should.have.property('version').and.be.string;",
-            "res.body.should.have.property('type').and.equal('base');",
+            "res.body.should.have.property('type').and.equal('raw');",
             "res.body.should.have.property('pid').and.be.string;"
         ]
     },

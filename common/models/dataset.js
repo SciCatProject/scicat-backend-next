@@ -43,7 +43,6 @@ module.exports = function(Dataset) {
                 console.log('  unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
-            ctx.instance.type = 'base';
 
             // add a policy record now (A Groups). Check that one doesnt already exist
             var Policy = app.models.Policy;
