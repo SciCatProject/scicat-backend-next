@@ -386,7 +386,7 @@ module.exports = function(Dataset) {
 
     Dataset.thumbnail = function( id, cb) {
         console.log("get thumbnail");
-        const base64string ="data:image/gif;base64,R0lGODlhAQABAAAAACw=";
+        const base64string ="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
         cb(null, base64string);
         return base64string; 
     }
