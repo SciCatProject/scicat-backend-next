@@ -42,28 +42,29 @@ module.exports = function(Policy) {
         }
     });
 
-    Policy.addDefault = function(ownerGroup, ownerEmail) {
+    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy) {
         // TODO: move the deault definition somewhere more sensible 
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
-        if (config && !ownerEmail)
-        {
+        if (config && !ownerEmail) {
             defaultPolicy.ownerEmail = config.defaultManager;
-        }
-        else
-        {
+        } else {
             defaultPolicy.manager = ownerEmail.split(",");
         }
-        defaultPolicy.tapeRedundancy = "low";
+        if (tapeRedundancy) {
+            defaultPolicy.tapeRedundancy = tapeRedundancy; 
+        } else {
+            defaultPolicy.tapeRedundancy = "low"; // AV default low
+        }
         defaultPolicy.autoArchive = false;
         defaultPolicy.autoArchiveDelay = 7;
         defaultPolicy.archiveEmailNotification = true;
         defaultPolicy.retrieveEmailNotification = true;
-        defaultPolicy.tapeRedundancy = "low";
+        defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
+        defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.embargoPeriod = 3;
         //filter must be an object
         var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
-        console.log("default policy: " + JSON.stringify(defaultPolicy));
         Policy.findOrCreate(filter, defaultPolicy);
     };
 };

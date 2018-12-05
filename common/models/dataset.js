@@ -33,7 +33,7 @@ module.exports = function(Dataset) {
         next();
     });
 
-    // auto add pid, add a policy record
+    // auto add pid
     Dataset.observe('before save', (ctx, next) => {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
@@ -43,12 +43,64 @@ module.exports = function(Dataset) {
                 console.log('  unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
-
-            // add a policy record now (A Groups). Check that one doesnt already exist
-            var Policy = app.models.Policy;
-            Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail);
         }
-        next();
+
+        // auto fill classification
+        if (ctx.instance) {
+            if (!ctx.instance.ownerGroup) {
+                next("No owner group defined");
+            }
+            var Policy = app.models.Policy;
+            if (!ctx.instance.classification) {
+                // classification undefined
+                Policy.findOne({
+                        where: {
+                            ownerGroup: ctx.instance.ownerGroup
+                        }
+                    },
+                    function(err, policyInstance) {
+                        if (err) {
+                            console.log("Error when looking for Policy of pgroup ", ctx.instance.ownerGroup, err);
+                            next(err);
+                        } else if (policyInstance) {
+                            var classification = "";
+                            switch (policyInstance.tapeRedundancy) {
+                                case "low":
+                                    classification = "IN=medium,AV=low,CO=low";
+                                    break;
+                                case "medium":
+                                    classification = "IN=medium,AV=medium,CO=low";
+                                    break;
+                                case "high":
+                                    classification = "IN=medium,AV=high,CO=low";
+                                    break;
+                                default:
+                                    classification = "IN=medium,AV=low,CO=low";
+                            }
+                            ctx.instance.classification = classification;
+                            next();
+                        } else {
+                            // neither a policy or a classification exist
+                            ctx.instance.classification = "N=medium,AV=low,CO=low";
+                            Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, "");
+                            next();
+                        }
+                    });
+            } else {
+                // create policy from classification
+                var classification = ctx.instance.classification;
+                var tapeRedundancy = "";
+                if (classification.includes("AV=low")) {
+                    tapeRedundancy = "low";
+                } else if (classification.includes("AV=medium")) {
+                    tapeRedundancy = "medium";
+                } else if (classification.includes("AV=high")) {
+                    tapeRedundancy = "high";
+                }
+                Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy);
+                next();
+            }
+        }
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
@@ -383,6 +435,5 @@ module.exports = function(Dataset) {
             }
         });
     };
-
 
 };

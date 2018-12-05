@@ -45,47 +45,34 @@ module.exports = function(Datasetlifecycle) {
             }
         }
         // add ownerGroup field from linked Datasets
-        utils.addOwnerGroup(ctx, next)
+        utils.addOwnerGroup(ctx, next);
     })
 
-    // transfer status flags to linked dataset
     Datasetlifecycle.observe('after save', (ctx, next) => {
-        var Dataset = app.models.Dataset
-        var instance = ctx.instance
-        if (!instance) {
-            instance = ctx.currentInstance
-        }
-        if (instance && (instance.datasetId !== undefined)) {
-            const datasetId = decodeURIComponent(instance.datasetId)
-            Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
-                if (datasetInstance) {
-                    // important to pass options here, otherwise context gets lost
-                    datasetInstance.updateAttributes({
-                            archivable: instance.archivable,
-                            retrievable: instance.retrievable,
-                            publishable: instance.publishable
-                        }, ctx.options,
-                        function(err, datasetInstance) {
-                            if (err) {
-                                var error = new Error();
-                                error.statusCode = 403;
-                                error.message = err;
-                                next(error)
-                            } else {
-                                next()
-                            }
-                        })
-                } else {
-                    var error = new Error();
-                    error.statusCode = 404;
-                    error.message = "DatasetLifecycle after save: No dataset found with pid " + datasetId
-                    next(error)
+    // TODO add here a hook to check the relevant policy record for "autoArchive"
+    // if this is "true" then create a new job instance to archive the dataset.  
+    // do NOT override the CLI parameter for autoArchive...
+
+    // if ingest CLI already auto archive return
+     /*   var Policy = app.models.Policy;
+        Policy.findOne({
+                    where: {
+                        ownerGroup: ctx.instance.ownerGroup
+                    }
+                },
+                function(err, policyInstance) {
+                if (!policyInstance || err) {
+                    console.log("Error when looking for Policy of pgroup ", ctx.instance.ownerGroup, err)
+                } 
+                else {
+                    if (policyInstance && policyInstance.autoArchive  ) {
+                        // create auto archive job
+                        
+                        utils.createArchiveJob(policyInstance, ctx);
+                    }
                 }
-            })
-        } else {
-            next()
-        }
-    })
+        });*/
+    });
 
     Datasetlifecycle.isValid = function(instance, next) {
         var ds = new Datasetlifecycle(instance)
@@ -126,12 +113,12 @@ module.exports = function(Datasetlifecycle) {
                         } else {
                             Dataset.findById(id, options, function(err, instance) {
                                 if (err) {
-                                    console.log("==== error finding dataset:", err)
+                                    console.log("==== error finding dataset:",err)
                                     next(err);
                                 } else {
                                     instance.updateAttributes({
                                         packedSize: 0,
-                                    }, options, function(err, inst) {
+                                    }, options, function(err,inst){
                                         next();
                                     });
                                 }
