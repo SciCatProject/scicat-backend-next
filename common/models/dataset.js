@@ -384,5 +384,25 @@ module.exports = function(Dataset) {
         });
     };
 
+    Dataset.thumbnail = function( id, cb) {
+        console.log("get thumbnail");
+        const base64string ="data:image/gif;base64,R0lGODlhAQABAAAAACw=";
+        cb(null, base64string);
+        return base64string; 
+    }
+
+    Dataset.remoteMethod("thumbnail", {
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            }
+        ],
+        http: {path: "/:id/thumbnail", verb: "get"},
+        returns: {arg: "base64string", type: "string"}
+    });
+
+
 
 };
