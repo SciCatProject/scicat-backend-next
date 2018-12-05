@@ -67,4 +67,6 @@ module.exports = function(Policy) {
         var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
         Policy.findOrCreate(filter, defaultPolicy);
     };
+
+    Policy.validatesUniquenessOf('ownerGroup');
 };
