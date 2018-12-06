@@ -13,7 +13,6 @@ module.exports = function(Policy) {
     // for policy interactions
     // check logged in user email is a member of policy.manager
     Policy.observe('before save', (ctx, next) => {
-
         if (ctx.currentInstance) {
             //is a partial update currentInstance rather than instance
             var UserIdentity = app.models.UserIdentity;
@@ -48,11 +47,13 @@ module.exports = function(Policy) {
         defaultPolicy.ownerGroup = ownerGroup;
         if (config && !ownerEmail) {
             defaultPolicy.ownerEmail = config.defaultManager;
-        } else {
+        } else if (ownerEmail) {
             defaultPolicy.manager = ownerEmail.split(",");
+        } else {
+            defaultPolicy.manager = "";
         }
         if (tapeRedundancy) {
-            defaultPolicy.tapeRedundancy = tapeRedundancy; 
+            defaultPolicy.tapeRedundancy = tapeRedundancy;
         } else {
             defaultPolicy.tapeRedundancy = "low"; // AV default low
         }

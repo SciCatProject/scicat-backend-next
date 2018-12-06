@@ -43,12 +43,11 @@ module.exports = function(Dataset) {
                 console.log('  unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
-        }
 
-        // auto fill classification
-        if (ctx.instance) {
+
+            // auto fill classification
             if (!ctx.instance.ownerGroup) {
-                next("No owner group defined");
+                return next("No owner group defined");
             }
             var Policy = app.models.Policy;
             if (!ctx.instance.classification) {
@@ -60,8 +59,9 @@ module.exports = function(Dataset) {
                     },
                     function(err, policyInstance) {
                         if (err) {
-                            console.log("Error when looking for Policy of pgroup ", ctx.instance.ownerGroup, err);
-                            next(err);
+                            var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
+                            console.log(msg);
+                            return next(msg);
                         } else if (policyInstance) {
                             var classification = "";
                             switch (policyInstance.tapeRedundancy) {
@@ -78,12 +78,10 @@ module.exports = function(Dataset) {
                                     classification = "IN=medium,AV=low,CO=low";
                             }
                             ctx.instance.classification = classification;
-                            next();
                         } else {
                             // neither a policy or a classification exist
                             ctx.instance.classification = "N=medium,AV=low,CO=low";
                             Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, "");
-                            next();
                         }
                     });
             } else {
@@ -98,9 +96,9 @@ module.exports = function(Dataset) {
                     tapeRedundancy = "high";
                 }
                 Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy);
-                next();
             }
         }
+        return next();
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
