@@ -44,6 +44,7 @@ module.exports = function(Dataset) {
             }
             ctx.instance.version = p.version;
 
+            
             // auto fill classification
             if (!ctx.instance.ownerGroup) {
                 return next("No owner group defined");
