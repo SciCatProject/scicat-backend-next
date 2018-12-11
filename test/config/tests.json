@@ -80,7 +80,7 @@
         "method": "GET",
         "route": "Datasets/fullfacet",
         "expect": 200,
-        "authenticate": "user",
+        "authenticate": "admin",
         "response": [
             "res.body.should.be.instanceof(Object);",
             "res.body.should.be.instanceof(Array);"
