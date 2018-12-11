@@ -400,7 +400,7 @@ module.exports = function(Dataset) {
             }
         ],
         http: {path: "/:id/thumbnail", verb: "get"},
-        returns: {arg: "base64string", type: "string"}
+        returns: {type: "string", root: true}
     });
 
 
