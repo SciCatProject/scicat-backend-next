@@ -51,7 +51,7 @@
         "method": "POST",
         "route": "Datasets",
         "expect": 200,
-        "authenticate": "user",
+        "authenticate": "admin",
         "body": {
             "owner": "Bertram Astor",
             "ownerEmail": "bertram.astor@grumble.com",
@@ -90,7 +90,7 @@
         "method": "POST",
         "route": "Jobs",
         "expect": 400,
-        "authenticate": "user",
+        "authenticate": "admin",
         "body": {
             "emailJobInitiator": "scicatingestor@psi.ch",
             "type": "archive",
