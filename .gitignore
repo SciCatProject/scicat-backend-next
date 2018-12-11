@@ -23,6 +23,7 @@ coverage
 node_modules
 npm-debug.log
 server/pass
+server/ingestor
 server/providers.json
 server/datasources.json
 CI/PSI/envfiles/*
