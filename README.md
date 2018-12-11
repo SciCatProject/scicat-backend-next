@@ -207,3 +207,4 @@ Users are authenticated by loopback built in user accounts and by accounts, whic
 
 ## Policy Configuration for Archiving and Retrieving
 ![policy_table](https://github.com/SciCatProject/catamel/blob/develop/CI/ESS/images/policy1.png)
+![policy_edit](https://github.com/SciCatProject/catamel/blob/develop/CI/ESS/images/policy2.png)
