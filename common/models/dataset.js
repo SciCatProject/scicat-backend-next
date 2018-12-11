@@ -434,7 +434,7 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.thumbnail = function( id, cb) {
+    Dataset.thumbnail = function( id, options, cb) {
         // console.log("get thumbnail");
         const base64string= Dataset.findById(id, options, function (err, da) {
             const attach = da.datasetattachments;
