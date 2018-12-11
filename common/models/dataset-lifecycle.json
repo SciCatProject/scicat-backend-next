@@ -33,11 +33,15 @@
         },
         "archivable": {
             "type": "boolean",
-            "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet"
+            "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet. Will be copied to Dataset for now and may become obsolete here eventually."
         },
         "retrievable": {
             "type": "boolean",
-            "description": "Flag which is true, if dataset is stored on archive system and is ready to be retrieved"
+            "description": "Flag which is true, if dataset is stored on archive system and is ready to be retrieved. Will be copied to Dataset for now and may become obsolete here eventually."
+        },
+        "publishable": {
+            "type": "boolean",
+            "description": "Flag which is true, if dataset can be published. Usually requires a longterm storage option on tape or similar. Will be copied to Dataset for now and may become obsolete here eventually."
         },
         "dateOfDiskPurging": {
             "type": "date",

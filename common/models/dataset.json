@@ -78,6 +78,10 @@
             "type": "string",
             "description": "Free text explanation of contents of dataset"
         },
+        "datasetName": {
+            "type": "string",
+            "description": "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid"            
+        },
         "userTargetLocation": {
             "type": "string",
             "description": "User choosable absolute virtual path where datasets are stored. Mainly used as a help for the enduser at dataset retrieval time to find the proper dataset. Will be prepended by p-group"
@@ -102,6 +106,18 @@
         "isPublished": {
             "type": "boolean",
             "description": "Flag is true when data are made publically available"
+        },
+        "archivable":{
+            "type": "boolean",
+            "description": "Copy of archivable flag from DatasetLifecycle"
+        },
+        "retrievable":{
+            "type": "boolean",
+            "description": "Copy of retrievable flag from DatasetLifecycle"
+        },
+        "publishable":{
+            "type": "boolean",
+            "description": "Copy of publishable flag from DatasetLifecycle"
         }
     },
     "validations": [],

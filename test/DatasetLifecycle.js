@@ -97,7 +97,10 @@ var testDatasetLifecycle = {
     "isOnTape": false,
     "archiveStatusMessage": "datasetCreated",
     "retrieveStatusMessage": "",
-    "isExported": false
+    "isExported": false,
+    "archivable":true,
+    "retrievable":true,
+    "publishable":false
 }
 
 var app
@@ -156,7 +159,19 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 if (err)
                     return done(err);
                 idDatasetLifecycle = encodeURIComponent(res.body['id']);
-                done();
+                request(app)
+                    .get('/api/v2/Datasets/'+pid + '?access_token=' + accessTokenIngestor)
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .expect('Content-Type', /json/)
+                    .end((err, res) => {
+                        if (err)
+                            return done(err);
+                        res.body.should.have.property('archivable').and.equal(true);
+                        res.body.should.have.property('retrievable').and.equal(true);
+                        res.body.should.have.property('publishable').and.equal(false);
+                        done();
+                    });
             });
     });
 

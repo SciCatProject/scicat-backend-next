@@ -24,6 +24,7 @@ var testdataset = {
         "Cryo", "Calibration"
     ],
     "description": "None",
+    "type": "raw",
     "license": "CC BY-SA 4.0",
     "doi": "not yet defined",
     "isPublished": false,
@@ -59,7 +60,7 @@ describe('Simple Dataset tests', () => {
                 if (err)
                     return done(err);
                 res.body.should.have.property('version').and.be.string;
-                res.body.should.have.property('type').and.equal('base');
+                res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 pid = encodeURIComponent(res.body['pid']);
                 done();
