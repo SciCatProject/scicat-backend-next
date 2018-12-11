@@ -9,7 +9,7 @@
         "lint": "eslint common/models",
         "start": "node .",
         "posttests": "npm run lint && nsp check",
-        "test": "./node_modules/mocha/bin/mocha --timeout=300000 --reporter spec --exit 2>/dev/null"
+        "test": "./node_modules/mocha/bin/mocha --timeout=30000 --reporter spec --exit 2>/dev/null"
     },
     "dependencies": {
         "compression": "^1.7.3",
