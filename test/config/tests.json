@@ -8,7 +8,7 @@
         "method": "GET",
         "route": "Datasets?filter=%7B%22limit%22%3A10%7D",
         "expect": 200,
-        "authenticate": "user",
+        "authenticate": "admin",
         "response": [
             "res.body.should.be.instanceof(Array);"
         ]
@@ -51,7 +51,7 @@
         "method": "POST",
         "route": "Datasets",
         "expect": 200,
-        "authenticate": "user",
+        "authenticate": "admin",
         "body": {
             "owner": "Bertram Astor",
             "ownerEmail": "bertram.astor@grumble.com",
@@ -80,7 +80,7 @@
         "method": "GET",
         "route": "Datasets/fullfacet",
         "expect": 200,
-        "authenticate": "user",
+        "authenticate": "admin",
         "response": [
             "res.body.should.be.instanceof(Object);",
             "res.body.should.be.instanceof(Array);"
@@ -90,7 +90,7 @@
         "method": "POST",
         "route": "Jobs",
         "expect": 400,
-        "authenticate": "user",
+        "authenticate": "admin",
         "body": {
             "emailJobInitiator": "scicatingestor@psi.ch",
             "type": "archive",

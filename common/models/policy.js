@@ -13,7 +13,6 @@ module.exports = function(Policy) {
     // for policy interactions
     // check logged in user email is a member of policy.manager
     Policy.observe('before save', (ctx, next) => {
-
         if (ctx.currentInstance) {
             //is a partial update currentInstance rather than instance
             var UserIdentity = app.models.UserIdentity;
@@ -42,28 +41,33 @@ module.exports = function(Policy) {
         }
     });
 
-    Policy.addDefault = function(ownerGroup, ownerEmail) {
+    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy) {
         // TODO: move the deault definition somewhere more sensible 
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
-        if (config && !ownerEmail)
-        {
+        if (config && !ownerEmail) {
             defaultPolicy.ownerEmail = config.defaultManager;
-        }
-        else
-        {
+        } else if (ownerEmail) {
             defaultPolicy.manager = ownerEmail.split(",");
+        } else {
+            defaultPolicy.manager = "scicatingestor@psi.ch";
         }
-        defaultPolicy.tapeRedundancy = "low";
+        if (tapeRedundancy) {
+            defaultPolicy.tapeRedundancy = tapeRedundancy;
+        } else {
+            defaultPolicy.tapeRedundancy = "low"; // AV default low
+        }
         defaultPolicy.autoArchive = false;
         defaultPolicy.autoArchiveDelay = 7;
         defaultPolicy.archiveEmailNotification = true;
         defaultPolicy.retrieveEmailNotification = true;
-        defaultPolicy.tapeRedundancy = "low";
+        defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
+        defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.embargoPeriod = 3;
         //filter must be an object
         var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
-        console.log("default policy: " + JSON.stringify(defaultPolicy));
         Policy.findOrCreate(filter, defaultPolicy);
     };
+
+    Policy.validatesUniquenessOf('ownerGroup');
 };
