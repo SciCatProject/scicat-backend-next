@@ -435,8 +435,16 @@ module.exports = function(Dataset) {
     };
 
     Dataset.thumbnail = function( id, cb) {
-        console.log("get thumbnail");
-        const base64string ="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+        // console.log("get thumbnail");
+        const base64string= Dataset.findById(id, options, function (err, da) {
+            const attach = da.datasetattachments;
+            let base64string ="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+            if (attach === undefined) {
+            } else {
+                base64string = attach[0].thumbnail;
+            }
+            return base64string;
+         });
         cb(null, base64string);
         return base64string; 
     }
