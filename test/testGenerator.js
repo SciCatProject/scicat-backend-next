@@ -42,7 +42,7 @@ module.exports = {
                 const expect = c.expect;
                 const url = settings.apiPrefix + route;
                 const withData = c.body || false;
-                const isWithAuthentication = false;
+                const isWithAuthentication = true;
 
 
 
