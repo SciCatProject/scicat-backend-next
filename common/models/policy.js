@@ -50,7 +50,7 @@ module.exports = function(Policy) {
         } else if (ownerEmail) {
             defaultPolicy.manager = ownerEmail.split(",");
         } else {
-            defaultPolicy.manager = "";
+            defaultPolicy.manager = "scicatingestor@psi.ch";
         }
         if (tapeRedundancy) {
             defaultPolicy.tapeRedundancy = tapeRedundancy;
