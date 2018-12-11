@@ -80,7 +80,7 @@ module.exports = function(Dataset) {
                             ctx.instance.classification = classification;
                         } else {
                             // neither a policy or a classification exist
-                            ctx.instance.classification = "N=medium,AV=low,CO=low";
+                            ctx.instance.classification = "IN=medium,AV=low,CO=low";
                             Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, "");
                         }
                     });
