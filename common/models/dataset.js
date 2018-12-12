@@ -437,13 +437,8 @@ module.exports = function (Dataset) {
     Dataset.thumbnail = async function(id) {
         console.log("Entering thumbnail endpoint");
         var DatasetAttachment = app.models.DatasetAttachment;
-        let base64string = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
         const filter = { where: { datasetId: id } };
-        DatasetAttachment.findOne(filter, function (err, instance) {
-            if (err) {
-                console.log("Error finding dataset attachment", err);
-                return callback(err)
-            };
+        return DatasetAttachment.findOne(filter).then( instance => {
 
             let base64string2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
             if (instance && instance.__data) {
@@ -459,7 +454,6 @@ module.exports = function (Dataset) {
             }
             return base64string2;
         });
-        return base64string;
     }
 
     Dataset.remoteMethod("thumbnail", {
