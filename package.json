@@ -44,6 +44,7 @@
         "eslint": "^5.10.0",
         "eslint-config-loopback": "^12.1.0",
         "mocha": "^5.2.0",
+        "nodemon": "^1.18.8",
         "supertest": "^3.3.0"
     },
     "repository": {
