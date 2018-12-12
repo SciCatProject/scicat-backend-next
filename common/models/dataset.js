@@ -9,26 +9,26 @@ var dsr = require('./raw-dataset.json');
 var dsd = require('./derived-dataset.json');
 var own = require('./ownable.json');
 
-module.exports = function(Dataset) {
+module.exports = function (Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
     Dataset.validatesUniquenessOf('pid');
 
     // put
-    Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // patch
-    Dataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // post
-    Dataset.beforeRemote('create', function(ctx, unused, next) {
+    Dataset.beforeRemote('create', function (ctx, unused, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
@@ -44,7 +44,7 @@ module.exports = function(Dataset) {
             }
             ctx.instance.version = p.version;
 
-            
+
             // auto fill classification
             if (!ctx.instance.ownerGroup) {
                 return next("No owner group defined");
@@ -53,11 +53,11 @@ module.exports = function(Dataset) {
             if (!ctx.instance.classification) {
                 // classification undefined
                 Policy.findOne({
-                        where: {
-                            ownerGroup: ctx.instance.ownerGroup
-                        }
-                    },
-                    function(err, policyInstance) {
+                    where: {
+                        ownerGroup: ctx.instance.ownerGroup
+                    }
+                },
+                    function (err, policyInstance) {
                         if (err) {
                             var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
                             console.log(msg);
@@ -104,11 +104,11 @@ module.exports = function(Dataset) {
     // clean up data connected to a dataset, e.g. if archiving failed
     // TODO obsolete this code, replaced by code in datasetLifecycle
 
-    Dataset.reset = function(id, options, next) {
+    Dataset.reset = function (id, options, next) {
         // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findById(id, options, function(err, l) {
+        DatasetLifecycle.findById(id, options, function (err, l) {
             if (err) {
                 next(err);
             } else {
@@ -121,12 +121,12 @@ module.exports = function(Dataset) {
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
                     datasetId: id,
-                }, options, function(err, b) {
+                }, options, function (err, b) {
                     if (err) {
                         next(err);
                     } else {
                         // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function(err, instance) {
+                        Dataset.findById(id, options, function (err, instance) {
                             if (err) {
                                 next(err);
                             } else {
@@ -148,15 +148,15 @@ module.exports = function(Dataset) {
 
     // add user Groups information of the logged in user to the fields object
 
-    Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
-    Dataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('fullfacet', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
-    Dataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('fullquery', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
@@ -202,7 +202,7 @@ module.exports = function(Dataset) {
         }
     }
 
-    Dataset.fullfacet = function(fields, facets = [], cb) {
+    Dataset.fullfacet = function (fields, facets = [], cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
@@ -212,7 +212,7 @@ module.exports = function(Dataset) {
         // Since a match condition on usergroups is alway prepended at the start
         // this effectively yields the intersection handling of the two sets (ownerGroup condition and userGroups)
 
-        Object.keys(fields).map(function(key) {
+        Object.keys(fields).map(function (key) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
                     match["$or"] = [{
@@ -243,7 +243,7 @@ module.exports = function(Dataset) {
 
         // append all facet pipelines
         let facetObject = {};
-        facets.forEach(function(facet) {
+        facets.forEach(function (facet) {
             if (facet in ds.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
             } else if (facet in dsr.properties) {
@@ -267,11 +267,11 @@ module.exports = function(Dataset) {
             $facet: facetObject,
         });
         // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
-        Dataset.getDataSource().connector.connect(function(err, db) {
+        Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, cursor) {
-                    cursor.toArray(function(err, res) {
+                function (err, cursor) {
+                    cursor.toArray(function (err, res) {
                         if (err) {
                             console.log("Facet err handling:", err);
                         }
@@ -289,13 +289,13 @@ module.exports = function(Dataset) {
     // - paging of results
     // - merging DatasetLifecycle Fields for fields not contained in Dataset
 
-    Dataset.fullquery = function(fields, limits, cb) {
+    Dataset.fullquery = function (fields, limits, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
         let matchJoin = {}
         // construct match conditions from fields value, excluding facet material
-        Object.keys(fields).map(function(key) {
+        Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
                     match["$or"] = [{
@@ -318,7 +318,7 @@ module.exports = function(Dataset) {
                             // otherwise create intersection of userGroups and ownerGroup
                             // this is needed here since no extra match step is done but all
                             // filter conditions are applied in one match step
-                            const intersect = fields['ownerGroup'].filter(function(n) {
+                            const intersect = fields['ownerGroup'].filter(function (n) {
                                 return fields['userGroups'].indexOf(n) !== -1;
                             });
                             match["ownerGroup"] = searchExpression('ownerGroup', intersect)
@@ -374,7 +374,7 @@ module.exports = function(Dataset) {
                 // input format: "creationTime:desc,creationLocation:asc"
                 const sortExpr = {}
                 const sortFields = limits.order.split(',')
-                sortFields.map(function(sortField) {
+                sortFields.map(function (sortField) {
                     const parts = sortField.split(':')
                     const dir = (parts[1] == 'desc') ? -1 : 1
                     sortExpr[parts[0]] = dir
@@ -397,11 +397,11 @@ module.exports = function(Dataset) {
             }
         }
         // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
-        Dataset.getDataSource().connector.connect(function(err, db) {
+        Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, cursor) {
-                    cursor.toArray(function(err, res) {
+                function (err, cursor) {
+                    cursor.toArray(function (err, res) {
                         if (err) {
                             console.log("Facet err handling:", err);
                         }
@@ -418,9 +418,9 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.isValid = function(dataset, next) {
+    Dataset.isValid = function (dataset, next) {
         var ds = new Dataset(dataset);
-        ds.isValid(function(valid) {
+        ds.isValid(function (valid) {
             if (!valid) {
                 next(null, {
                     'errors': ds.errors,
@@ -434,19 +434,34 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.thumbnail = function( id, options, cb) {
-        // console.log("get thumbnail");
-        const base64string= Dataset.findById(id, options, function (err, da) {
-            const attach = da.datasetattachments;
-            let base64string ="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
-            if (attach === undefined) {
+    Dataset.thumbnail = function (id, callback) {
+        console.log("Entering thumbnail endpoint");
+        var DatasetAttachment = app.models.DatasetAttachment;
+        let base64string = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+        const filter = { where: { datasetId: id } };
+        DatasetAttachment.findOne(filter, function (err, instance) {
+            if (err) {
+                console.log("Error finding dataset attachment", err);
+                return callback(err)
+            };
+
+            let base64string2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+            if (instance && instance.__data) {
+                console.log("gm thumbnail found for", instance.__data.datasetId);
+                if (instance.__data.thumbnail === undefined) {
+                    console.log("undefined gm, ", instance.__data.id);
+                } else {
+                    console.log("thumbnail found for ", instance.__data.id);
+                    base64string2 = instance.__data.thumbnail;
+                }
             } else {
-                base64string = attach[0].thumbnail;
+                console.log("no thumbnail found");
             }
-            return base64string;
-         });
-        cb(null, base64string);
-        return base64string; 
+
+            return base64string2;
+        });
+        callback(null, base64string);
+        return base64string;
     }
 
     Dataset.remoteMethod("thumbnail", {
@@ -457,8 +472,8 @@ module.exports = function(Dataset) {
                 required: true
             }
         ],
-        http: {path: "/:id/thumbnail", verb: "get"},
-        returns: {type: "string", root: true}
+        http: { path: "/:id/thumbnail", verb: "get" },
+        returns: { type: "string", root: true }
     });
 
 
