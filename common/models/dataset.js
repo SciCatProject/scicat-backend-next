@@ -434,23 +434,20 @@ module.exports = function (Dataset) {
         });
     };
 
-    Dataset.thumbnail = async function(id) {
-        console.log("Entering thumbnail endpoint");
+    Dataset.thumbnail = async function (id) {
         var DatasetAttachment = app.models.DatasetAttachment;
         const filter = { where: { datasetId: id } };
-        return DatasetAttachment.findOne(filter).then( instance => {
+        return DatasetAttachment.findOne(filter).then(instance => {
 
-            let base64string2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+            const base64string_example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
+            let base64string2 = ""
             if (instance && instance.__data) {
-                console.log("gm thumbnail found for", instance.__data.datasetId);
                 if (instance.__data.thumbnail === undefined) {
-                    console.log("undefined gm, ", instance.__data.id);
                 } else {
-                    console.log("thumbnail found for ", instance.__data.id);
                     base64string2 = instance.__data.thumbnail;
                 }
             } else {
-                console.log("no thumbnail found");
+                base64string2 = base64string_example;
             }
             return base64string2;
         });
