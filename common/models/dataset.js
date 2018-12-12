@@ -434,7 +434,7 @@ module.exports = function (Dataset) {
         });
     };
 
-    Dataset.thumbnail = function (id, callback) {
+    Dataset.thumbnail = async function(id) {
         console.log("Entering thumbnail endpoint");
         var DatasetAttachment = app.models.DatasetAttachment;
         let base64string = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFklEQVR42mP8v0DxPwMRgHFUIX0VAgD6BxuBmjKJqgAAAABJRU5ErkJggg==";
@@ -457,10 +457,8 @@ module.exports = function (Dataset) {
             } else {
                 console.log("no thumbnail found");
             }
-
             return base64string2;
         });
-        callback(null, base64string);
         return base64string;
     }
 
