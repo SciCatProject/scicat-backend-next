@@ -46,11 +46,11 @@ module.exports = function(Policy) {
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
         if (config && !ownerEmail) {
-            defaultPolicy.ownerEmail = config.defaultManager;
+            defaultPolicy.manager = config.defaultManager;
         } else if (ownerEmail) {
             defaultPolicy.manager = ownerEmail.split(",");
         } else {
-            defaultPolicy.manager = "scicatingestor@psi.ch";
+            defaultPolicy.manager = "";
         }
         if (tapeRedundancy) {
             defaultPolicy.tapeRedundancy = tapeRedundancy;
