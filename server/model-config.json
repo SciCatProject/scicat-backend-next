@@ -17,7 +17,13 @@
         ]
     },
     "User": {
-        "dataSource": "mongo"
+        "dataSource": "mongo",
+        "acls": [{
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW",
+            "property": "jwt"
+          }]
     },
     "AccessToken": {
         "dataSource": "mongo",
