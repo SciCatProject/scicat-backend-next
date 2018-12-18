@@ -1,14 +1,12 @@
 module.exports = function(app) {
   const jwt  = require('jsonwebtoken');
-  var dotenv = require("dotenv");
-  dotenv.config();
-
+  const config = require('../../server/config.json');
   const signAndVerifyOptions = {
-    expiresIn:  process.env.expiresIn,
+    expiresIn: config.jwtExpiresIn,
   };
 
   const User = app.models.User;
-  const secret = process.env.secret;
+  const secret = config.jwtSecret;
 
   User.jwt = function(ctx, cb) {
     const token = ctx.options && ctx.options.accessToken;
