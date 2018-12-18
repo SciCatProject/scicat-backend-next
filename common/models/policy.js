@@ -25,7 +25,12 @@ module.exports = function(Policy) {
                     userId: userId
                 }
             }, function(err, instance) {
-                var email = instance.profile.email;
+                // need to handle functional user case
+                var email = "";
+                if (!instance && Object.keys(ctx.options.authorizedRoles)[0]) {
+                    return next();
+                }
+
                 //console.log("email:", email);
                 //console.log("manager: ", ctx.currentInstance.manager);
                 if (!ctx.currentInstance.manager.includes(email)) {
@@ -68,6 +73,31 @@ module.exports = function(Policy) {
         var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
         Policy.findOrCreate(filter, defaultPolicy);
     };
+
+    Policy.updatewhere = async function(where, data) {
+        // where should look like {"or": [{"id":"5c0fe54ed8cc493d4b259989"},{"id": "5c110c90f1e2772bdb1dd868"}]}
+        return Policy.update(where, data);
+    }
+
+    Policy.remoteMethod("updatewhere", {
+        accepts: [{
+            arg: "where",
+            type: "object",
+            required: true
+        }, {
+            arg: "data",
+            type: "object",
+            required: true
+        }],
+        http: {
+            path: "/updatewhere",
+            verb: "post"
+        },
+        returns: {
+            type: "string",
+            root: true
+        }
+    });
 
     Policy.validatesUniquenessOf('ownerGroup');
 };
