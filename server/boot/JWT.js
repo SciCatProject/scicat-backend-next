@@ -4,11 +4,7 @@ module.exports = function(app) {
   dotenv.config();
 
   const signAndVerifyOptions = {
-    issuer:  process.env.issuer,
-    subject:  process.env.subject,
-    audience:  process.env.audience,
     expiresIn:  process.env.expiresIn,
-    algorithm:  process.env.algorithm
   };
 
   const User = app.models.User;
@@ -33,7 +29,6 @@ module.exports = function(app) {
         groups: groups,
       }
       const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
-      console.log("JWT verification result: " + JSON.stringify(jwt.verify(jwtString, secret, signAndVerifyOptions)));
       cb(null, jwtString);
     })
   };
