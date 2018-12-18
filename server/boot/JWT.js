@@ -6,9 +6,15 @@ module.exports = function(app) {
   };
 
   const User = app.models.User;
-  const secret = config.jwtSecret;
 
   User.jwt = function(ctx, cb) {
+    const secret = config.jwtSecret;
+    if (!secret){
+      var error = new Error("jwt secret has not been configured");
+      error.statusCode = 500;
+      cb(error);
+      return;
+    }
     const token = ctx.options && ctx.options.accessToken;
     const userId = token && token.userId;
 
