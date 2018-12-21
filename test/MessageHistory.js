@@ -116,9 +116,9 @@ var testjob = {
     "type": "retrieve",
     "jobStatusMessage": "jobForwarded",
     "datasetList": [{
-            "pid": "dummy",
-            "files": []
-        }],
+        "pid": "dummy",
+        "files": []
+    }],
     "archiveReturnMessage": "will move to messageList",
     "MessageHistory": []
 }
@@ -135,11 +135,11 @@ var newMessage = {
 }
 
 var app
-before( function(){
+before(function() {
     app = require('../server/server')
 });
 
-describe('Test DatasetLifecycle and the relation to Datasets', () => {
+describe('Test MessageHistory in jobs', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -147,14 +147,14 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             },
             (tokenVal) => {
                 accessTokenIngestor = tokenVal;
-            });
-        utils.getToken(app, {
-                'username': 'archiveManager',
-                'password': 'aman'
-            },
-            (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
             });
     });
 
@@ -172,10 +172,10 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 // store link to this dataset in datablocks
-                var pidtest=res.body['pid']
+                var pidtest = res.body['pid']
                 testDatasetLifecycle.id = pidtest
                 testDatasetLifecycle.datasetId = pidtest
-                testjob.datasetList[0].pid= pidtest
+                testjob.datasetList[0].pid = pidtest
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
@@ -237,7 +237,7 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                     return done(err);
                 res.body.should.have.property('type').and.be.string;
                 idJob = res.body['id']
-                console.log("Jobid:",idJob)
+                console.log("Jobid:", idJob)
                 done();
             });
     });
@@ -252,24 +252,24 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                    console.log(res.body)
+                console.log(res.body)
                 done();
             });
     });
 
 
-it('should delete the Job', function(done) {
-    request(app)
-        .delete('/api/v2/Jobs/' + idJob+ '?access_token=' + accessTokenIngestor)
-        .set('Accept', 'application/json')
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end((err, res) => {
-            if (err)
-                return done(err);
-            done();
-        });
-});
+    it('should delete the Job', function(done) {
+        request(app)
+            .delete('/api/v2/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
 
     it('should delete the DatasetLifecycle', function(done) {
         request(app)

@@ -173,16 +173,17 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             },
             (tokenVal) => {
                 accessTokenIngestor = tokenVal;
-            });
-        utils.getToken(app, {
-                'username': 'archiveManager',
-                'password': 'aman'
-            },
-            (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
             });
     });
+
 
     // first get existing datasets with the test archieId to allow to delete them
 

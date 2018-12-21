@@ -116,16 +116,17 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             },
             (tokenVal) => {
                 accessTokenIngestor = tokenVal;
-            });
-        utils.getToken(app, {
-                'username': 'archiveManager',
-                'password': 'aman'
-            },
-            (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
             });
     });
+
 
     it('adds a new raw dataset', function(done) {
         request(app)
