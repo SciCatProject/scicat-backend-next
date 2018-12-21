@@ -62,6 +62,7 @@ describe('Simple Dataset tests', () => {
                 res.body.should.have.property('version').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
+                res.body.should.have.property('datasetName').and.be.string;
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });

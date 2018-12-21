@@ -44,6 +44,20 @@ module.exports = function (Dataset) {
             }
             ctx.instance.version = p.version;
 
+            // sourceFolder handling
+            if(ctx.instance.sourceFolder){
+                // remove trailing slashes
+                ctx.instance.sourceFolder = ctx.instance.sourceFolder.replace(/\/$/, "");
+                // autofill datasetName
+                if (!ctx.instance.datasetName){
+                    var arr=ctx.instance.sourceFolder.split("/")
+                    if(arr.length == 1){
+                        ctx.instance.datasetName=arr[0]
+                    } else {
+                        ctx.instance.datasetName=arr[arr.length-2]+"/"+arr[arr.length-1]
+                    }
+                }
+            }
 
             // auto fill classification
             if (!ctx.instance.ownerGroup) {
