@@ -46,8 +46,8 @@ module.exports = function(Policy) {
         }
     });
 
-    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy) {
-        // TODO: move the deault definition somewhere more sensible 
+    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy, next) {
+        // TODO: move the default definition somewhere more sensible 
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
         if (config && !ownerEmail) {
@@ -69,11 +69,10 @@ module.exports = function(Policy) {
         defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.embargoPeriod = 3;
-        //filter must be an object
-        var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
-        Policy.findOrCreate(filter, defaultPolicy);
+        Policy.findOrCreate(defaultPolicy, next);
     };
 
+    // TODO: understand the following method
     Policy.updatewhere = async function(where, data) {
         // where should look like {"or": [{"id":"5c0fe54ed8cc493d4b259989"},{"id": "5c110c90f1e2772bdb1dd868"}]}
         return Policy.update(where, data);
