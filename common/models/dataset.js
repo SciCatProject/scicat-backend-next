@@ -45,38 +45,34 @@ module.exports = function (Dataset) {
             ctx.instance.version = p.version;
 
             // sourceFolder handling
-            if(ctx.instance.sourceFolder){
+            if (ctx.instance.sourceFolder) {
                 // remove trailing slashes
                 ctx.instance.sourceFolder = ctx.instance.sourceFolder.replace(/\/$/, "");
                 // autofill datasetName
-                if (!ctx.instance.datasetName){
-                    var arr=ctx.instance.sourceFolder.split("/")
-                    if(arr.length == 1){
-                        ctx.instance.datasetName=arr[0]
+                if (!ctx.instance.datasetName) {
+                    var arr = ctx.instance.sourceFolder.split("/")
+                    if (arr.length == 1) {
+                        ctx.instance.datasetName = arr[0]
                     } else {
-                        ctx.instance.datasetName=arr[arr.length-2]+"/"+arr[arr.length-1]
+                        ctx.instance.datasetName = arr[arr.length - 2] + "/" + arr[arr.length - 1]
                     }
                 }
             }
-
-            // auto fill classification
             if (!ctx.instance.ownerGroup) {
-                return next("No owner group defined");
+                next("No owner group defined");
             }
+
+            // auto fill classification and add policy if missing
+
             var Policy = app.models.Policy;
-            if (!ctx.instance.classification) {
-                // classification undefined
-                Policy.findOne({
-                    where: {
-                        ownerGroup: ctx.instance.ownerGroup
-                    }
-                },
-                    function (err, policyInstance) {
-                        if (err) {
-                            var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
-                            console.log(msg);
-                            return next(msg);
-                        } else if (policyInstance) {
+            Policy.findOne(function (err, policyInstance) {
+                    if (err) {
+                        var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
+                        console.log(msg);
+                        next(msg);
+                    } else if (policyInstance) {
+                        if (!ctx.instance.classification) {
+                            // Case 1: classification undefined but policy defined:, define classification via policy
                             var classification = "";
                             switch (policyInstance.tapeRedundancy) {
                                 case "low":
@@ -92,27 +88,33 @@ module.exports = function (Dataset) {
                                     classification = "IN=medium,AV=low,CO=low";
                             }
                             ctx.instance.classification = classification;
-                        } else {
-                            // neither a policy or a classification exist
-                            ctx.instance.classification = "IN=medium,AV=low,CO=low";
-                            Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, "");
                         }
-                    });
-            } else {
-                // create policy from classification
-                var classification = ctx.instance.classification;
-                var tapeRedundancy = "";
-                if (classification.includes("AV=low")) {
-                    tapeRedundancy = "low";
-                } else if (classification.includes("AV=medium")) {
-                    tapeRedundancy = "medium";
-                } else if (classification.includes("AV=high")) {
-                    tapeRedundancy = "high";
+                        // case 2: classification defined and policy defined: do nothing
+                        return next()
+                    } else {
+                        let tapeRedundancy = "low"
+                        if (!ctx.instance.classification) {
+                            // case 3: neither a policy nor a classification exist: define default classification and create default policy
+                            ctx.instance.classification = "IN=medium,AV=low,CO=low";
+                        } else {
+                            // case 4: classification exists but no policy: create policy from classification
+                            var classification = ctx.instance.classification;
+                            if (classification.includes("AV=low")) {
+                                tapeRedundancy = "low";
+                            } else if (classification.includes("AV=medium")) {
+                                tapeRedundancy = "medium";
+                            } else if (classification.includes("AV=high")) {
+                                tapeRedundancy = "high";
+                            }
+                        }
+                        Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, next);
+                    }
                 }
-                Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy);
-            }
+            );
+        } else {
+            // no instance, continue
+            return next()
         }
-        return next();
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed

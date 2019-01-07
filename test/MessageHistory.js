@@ -101,17 +101,32 @@ var testDatasetLifecycle = {
     "retrieveStatusMessage": "",
     "isExported": false,
     "archivable": true,
-    "retrievable": false,
+    "retrievable": true,
     "MessageHistory": [{
         "shortMessage": "datasetCreated",
-        "sender": "stephan.egli@psi.ch",
+        "sender": "scicatarchivemanager@psi.ch",
         "payload": {
             "text": "Nothing special to report"
         }
     }]
 }
 
-var testjob = {
+//TODO test to retrieve datasets where you are NOT the owner
+
+var testArchiveJob = {
+    "emailJobInitiator": "scicatarchivemanger@psi.ch",
+    "type": "archive",
+    "jobStatusMessage": "jobForwarded",
+    "datasetList": [{
+        "pid": "dummy",
+        "files": []
+    }],
+    "archiveReturnMessage": "will move to messageList",
+    "MessageHistory": []
+}
+
+
+var testRetrieveJob = {
     "emailJobInitiator": "scicatarchivemanger@psi.ch",
     "type": "retrieve",
     "jobStatusMessage": "jobForwarded",
@@ -123,12 +138,9 @@ var testjob = {
     "MessageHistory": []
 }
 
-
-
-// TODO do I need to pass id explicitly ?
 var newMessage = {
     "shortMessage": "JustAnExample",
-    "sender": "stephan.egli@psi.ch",
+    "sender": "ingestor",
     "payload": {
         "text": "whatever"
     }
@@ -175,7 +187,8 @@ describe('Test MessageHistory in jobs', () => {
                 var pidtest = res.body['pid']
                 testDatasetLifecycle.id = pidtest
                 testDatasetLifecycle.datasetId = pidtest
-                testjob.datasetList[0].pid = pidtest
+                testArchiveJob.datasetList[0].pid = pidtest
+                testRetrieveJob.datasetList[0].pid = pidtest
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
@@ -225,10 +238,10 @@ describe('Test MessageHistory in jobs', () => {
     });
 
 
-    it('Adds a new job request', function(done) {
+    it('Adds a new archive job request', function(done) {
         request(app)
             .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
-            .send(testjob)
+            .send(testArchiveJob)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -237,7 +250,24 @@ describe('Test MessageHistory in jobs', () => {
                     return done(err);
                 res.body.should.have.property('type').and.be.string;
                 idJob = res.body['id']
-                console.log("Jobid:", idJob)
+                //console.log("Jobid:", idJob)
+                done();
+            });
+    });
+
+    it('Adds a new retrieve job request', function(done) {
+        request(app)
+            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .send(testRetrieveJob)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('type').and.be.string;
+                idJob = res.body['id']
+                //console.log("Jobid:", idJob)
                 done();
             });
     });
@@ -252,7 +282,7 @@ describe('Test MessageHistory in jobs', () => {
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                console.log(res.body)
+                //console.log(res.body)
                 done();
             });
     });
