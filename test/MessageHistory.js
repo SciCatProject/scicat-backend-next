@@ -255,19 +255,28 @@ describe('Test MessageHistory in jobs', () => {
             });
     });
 
-    it('Adds a new retrieve job request', function(done) {
+    it('Adds a new archive job request for same data which should fail', function(done) {
+        request(app)
+            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .send(testArchiveJob)
+            .set('Accept', 'application/json')
+            .expect(409)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
+                done();
+            });
+    });
+
+    it('Adds a new retrieve job request on same dataset, which should fail as well because not yet retrievable', function(done) {
         request(app)
             .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
             .send(testRetrieveJob)
             .set('Accept', 'application/json')
-            .expect(200)
+            .expect(409)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                res.body.should.have.property('type').and.be.string;
-                idJob = res.body['id']
-                //console.log("Jobid:", idJob)
+            .end((err, res) => {
+                res.body.should.have.property('error');
                 done();
             });
     });
