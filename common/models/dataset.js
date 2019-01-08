@@ -38,9 +38,9 @@ module.exports = function (Dataset) {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
-                console.log(' new pid:', ctx.instance.pid);
+                console.log('New pid:', ctx.instance.pid);
             } else {
-                console.log('  unmodified pid:', ctx.instance.pid);
+                console.log('Unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
 
