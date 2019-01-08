@@ -48,7 +48,7 @@ function publishJob(job, ctx, next) {
 }
 
 function MarkDatasetsAsScheduled(job, ctx, idList, next) {
-    //console.log('Searching for datasetlifecycle with ids:', idList)
+
     let DatasetLifecycle = app.models.DatasetLifecycle;
     DatasetLifecycle.updateAll(
         {
@@ -62,14 +62,35 @@ function MarkDatasetsAsScheduled(job, ctx, idList, next) {
             archiveStatusMessage: "scheduledForArchiving"
         }
         , ctx.options, function (err, p) {
-            // console.log("============= DatasetLifecycle Result:", JSON.stringify(p))
             if (err) {
                 var e = new Error();
-                e.statusCode = 400;
+                e.statusCode = 404;
                 e.message = 'Can not find all needed DatasetLifecycle entries - no archive job sent:\n' + JSON.stringify(err)
                 next(e);
             } else {
-                publishJob(job, ctx, next)
+                // since updateAll does not send context and therefore the DatasetLifecycle updates are not copied over 
+                // to Dataset one has to do the update here on Dataset in addition
+                let Dataset = app.models.Dataset;
+                Dataset.updateAll(
+                    {
+                        pid: {
+                            inq: idList
+                        }
+                    },
+                    {
+                        archivable: false,
+                        retrievable: false
+                    }
+                    , ctx.options, function (err, p) {
+                        if (err) {
+                            var e = new Error();
+                            e.statusCode = 404;
+                            e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
+                            next(e);
+                        } else {
+                            publishJob(job, ctx, next)
+                        }
+                    });
             }
         });
 }
@@ -84,14 +105,14 @@ function TestArchiveJobs(job, ctx, idList, next) {
             }
         }
     }, ctx.options, function (err, p) {
-        //console.log("============= Archive Result:", JSON.stringify(p))
         if (p.length > 0) {
             var e = new Error();
-            e.statusCode = 400;
+            e.statusCode = 409;
             e.message = 'The following datasets are not in archivable state - no archive job sent:\n' + JSON.stringify(p)
             next(e);
         } else {
             // mark all Datasets as in state scheduledForArchiving, archivable=false
+            // console.log("mark  datasets as to be archived: ctx.options,idlist",ctx.options,idList)
             MarkDatasetsAsScheduled(job, ctx, idList, next)
         }
     });
@@ -127,7 +148,7 @@ function TestRetrieveJobs(job, ctx, idList, next) {
                     return next(err2)
                 } else {
                     var e = new Error();
-                    e.statusCode = 400;
+                    e.statusCode = 409;
                     e.message = 'The following datasets are not in retrievable state - no retrieve job sent:\n' + JSON.stringify(pmiss)
                     return next(e);
                 }
@@ -139,7 +160,6 @@ function TestRetrieveJobs(job, ctx, idList, next) {
 }
 
 function TestAllDatasets(job, ctx, idList, next) {
-    //console.log(" ====== find datasets with id", idList)
     let Dataset = app.models.Dataset;
     Dataset.find({
         where: {
@@ -151,7 +171,7 @@ function TestAllDatasets(job, ctx, idList, next) {
         let to = ctx.instance.emailJobInitiator
         if (err || (p.length != idList.length)) {
             var e = new Error();
-            e.statusCode = 400;
+            e.statusCode = 404;
             e.message = 'At least one of the datasets could not be found - no Job sent';
             // TODO should I send an email here ? Only if triggered by autoarchive option ?
             // subjectText =
@@ -184,7 +204,6 @@ module.exports = function (Job) {
 
     Job.observe('before save', (ctx, next) => {
         if (ctx.instance) {
-
             // replace email with that from userIdentity
             var UserIdentity = app.models.UserIdentity;
             var userId = ctx.options.accessToken.userId;

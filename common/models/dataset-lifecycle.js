@@ -48,7 +48,8 @@ module.exports = function(Datasetlifecycle) {
         utils.addOwnerGroup(ctx, next)
     })
 
-    // transfer status flags to linked dataset
+    // transfer status flags to linked dataset.
+    // Warning: when using the updateAll API endpoint the context is missing !
     Datasetlifecycle.observe('after save', (ctx, next) => {
         var Dataset = app.models.Dataset
         var instance = ctx.instance

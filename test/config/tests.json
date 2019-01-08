@@ -89,7 +89,7 @@
     {
         "method": "POST",
         "route": "Jobs",
-        "expect": 400,
+        "expect": 404,
         "authenticate": "admin",
         "body": {
             "emailJobInitiator": "scicatingestor@psi.ch",
