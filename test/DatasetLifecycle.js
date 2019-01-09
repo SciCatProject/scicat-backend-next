@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -98,9 +97,16 @@ var testDatasetLifecycle = {
     "isOnTape": false,
     "archiveStatusMessage": "datasetCreated",
     "retrieveStatusMessage": "",
-    "isExported": false
+    "isExported": false,
+    "archivable":true,
+    "retrievable":true,
+    "publishable":false
 }
 
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Test DatasetLifecycle and the relation to Datasets', () => {
     before((done) => {
@@ -110,16 +116,17 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
             },
             (tokenVal) => {
                 accessTokenIngestor = tokenVal;
-            });
-        utils.getToken(app, {
-                'username': 'archiveManager',
-                'password': 'aman'
-            },
-            (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
             });
     });
+
 
     it('adds a new raw dataset', function(done) {
         request(app)
@@ -153,7 +160,19 @@ describe('Test DatasetLifecycle and the relation to Datasets', () => {
                 if (err)
                     return done(err);
                 idDatasetLifecycle = encodeURIComponent(res.body['id']);
-                done();
+                request(app)
+                    .get('/api/v2/Datasets/'+pid + '?access_token=' + accessTokenIngestor)
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .expect('Content-Type', /json/)
+                    .end((err, res) => {
+                        if (err)
+                            return done(err);
+                        res.body.should.have.property('archivable').and.equal(true);
+                        res.body.should.have.property('retrievable').and.equal(true);
+                        res.body.should.have.property('publishable').and.equal(false);
+                        done();
+                    });
             });
     });
 

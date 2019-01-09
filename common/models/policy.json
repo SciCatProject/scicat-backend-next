@@ -8,24 +8,58 @@
         "validateUpsert": true
     },
     "properties": {
-        "availability": {
+        "manager": {
+            "type": ["string"],
+            "description": "Defines the emails of users that can modify the policy parameters"
+        },
+        "tapeRedundancy": {
             "type": "string",
             "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
             "default": "low"
         },
-        "tapeRetentionTime": {
-            "type": "number",
-            "description": "Number of years after creation time, where datasets are subject to retention policies, possibly leading to deletion of data on tape.",
-            "default": 10
+        "autoArchive": {
+            "type": "boolean",
+            "description": "Flag to indicate that a dataset should be automatically archived after ingest. If false then archive delay is ignored",
+            "default": true
         },
         "autoArchiveDelay": {
             "type": "number",
             "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
             "default": 7
+        },
+        "archiveEmailNotification": {
+            "type": "boolean",
+            "description": "Flag is true when an email notification should be sent to archiveEmailsToBeNotified upon an archive job creation",
+            "default": false
+        },
+        "archiveEmailsToBeNotified": {
+            "type": ["string"],
+            "description": "Array of additional email addresses that should be notified up an archive job creation"
+        },
+        "retrieveEmailNotification": {
+            "type": "boolean",
+            "description": "Flag is true when an email notification should be sent to retrieveEmailsToBeNotified upon a retrieval job creation",
+            "default": false
+        },
+        "retrieveEmailsToBeNotified": {
+            "type": ["string"],
+            "description": "Array of additional email addresses that should be notified up a retrieval job creation"
+        },
+        "embargoPeriod": {
+            "type": "number",
+            "description": "Number of years after dataset creation before the dataset becomes public",
+            "default": 3
         }
     },
     "validations": [],
     "relations": {},
-    "acls": [],
+    "acls": [
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
+        }
+    ],
     "methods": {}
 }

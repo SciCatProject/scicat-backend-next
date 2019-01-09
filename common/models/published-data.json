@@ -1,0 +1,107 @@
+{
+    "name": "PublishedData",
+    "idInjection": false,
+    "base": "PersistedModel",
+    "strict": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "PublishedData"
+        }
+    },
+    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
+    "properties": {
+        "doi": {
+            "type": "string",
+            "id": true,
+            "description": "Digital Object Identifier",
+            "defaultFn": "uuidv4"
+        },
+        "affiliation": {
+            "type": "string",
+            "required": true,
+            "description": "Creator Affiliation"
+        },
+        "creator": {
+            "type": "string",
+            "required": true,
+            "description": "Creator of dataset/dataset collection"
+        },
+        "publisher": {
+            "type": "string",
+            "required": true,
+            "description": "Dataset publisher"
+        },
+        "publicationYear": {
+            "type": "number",
+            "required": true,
+            "description": "Year of publication "
+        },
+        "title": {
+            "type": "string",
+            "required": true,
+            "description": "Title"
+        },
+        "url": {
+            "type": "string",
+            "required": true,
+            "description": "Full URL to the landing page for this DOI"
+        },
+        "abstract": {
+            "type": "string",
+            "required": true,
+            "description": "Abstract text for published datasets"
+        },
+        "dataDescription": {
+            "type": "string",
+            "required": true,
+            "description": "Link to description of how to re-use data"
+        },
+        "thumbnail": {
+            "type": "string",
+            "required": true,
+            "description": "Small, less than 16 MB base 64 image preview of dataset"
+        },
+        "resourceType": {
+            "type": "string",
+            "required": true,
+            "description": "Type of files, format etc"
+        },
+        "numberOfFiles": {
+            "type": "number",
+            "required": true,
+            "description": "Number of files"
+        },
+        "sizeOfArchive": {
+            "type": "number",
+            "required": true,
+            "description": "Size of archive"
+        },
+        "pidArray": {
+            "type":[ "string"],
+            "required": true,
+            "description": "Array of one or more PIDS which make up the published data"
+        },
+        "authors": {
+            "type":[ "string"],
+            "required": true,
+            "description": "Array of one or more persons who are able to update this entry of published data"
+        },
+        "doiRegisteredSuccessfullyTime": {
+            "type": "date",
+            "index": true,
+            "description": "Time when doi is successfully registered"
+        }
+	},
+    "validations": [],
+    "relations": {},
+    "acls": [
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW"
+        }
+    ],
+    "methods": {}
+}

@@ -35,8 +35,8 @@ module.exports = function(Origdatablock) {
     // transfer size info to dataset
     Origdatablock.observe('after save', (ctx, next) => {
         var OrigDatablock = app.models.OrigDatablock
+        // not yet ready utils.createArchiveJob(app.models.UserIdentity, app.models.Policy, app.models.Job, ctx)
         utils.transferSizeToDataset(OrigDatablock, 'size', ctx, next)
-
     })
 
     Origdatablock.isValid = function(instance, next) {
@@ -54,4 +54,4 @@ module.exports = function(Origdatablock) {
             }
         });
     }
-};
+}

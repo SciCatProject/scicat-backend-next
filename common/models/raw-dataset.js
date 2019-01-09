@@ -2,6 +2,9 @@
 var utils = require('./utils');
 
 module.exports = function(Rawdataset) {
+  var app = require('../../server/server');
+
+  Rawdataset.validatesUniquenessOf('pid');
 
   // filter on dataset type (raw, derived etc)
   Rawdataset.observe('access', function(ctx, next) {
@@ -24,7 +27,20 @@ module.exports = function(Rawdataset) {
     if (ctx.instance) {
       ctx.instance.type = 'raw';
     }
-    next();
+    // check if proposal is linked, if not try to add one
+    if(!ctx.instance.proposalId){
+      var Proposal = app.models.Proposal
+      const filter = { where: { ownerGroup: ctx.instance.ownerGroup } };
+      Proposal.findOne(filter,ctx.options).then(instance => {
+        if(instance){
+          console.log("Appended Proposal "+instance.proposalId+" to rawdataset "+ctx.instance.pid)
+          ctx.instance.proposalId=instance.proposalId
+        } 
+        return next()
+      })
+    } else {
+      return next()
+    }
   });
 
   // put

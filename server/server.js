@@ -60,7 +60,7 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     }
     if (!profile.id) {
         profile.id = user['uid'];
-		if (!(uid in user)){
+		if (!('uid' in user)){
 			const MY_NAMESPACE = '1b671a64-40d5-491e-99b0-da01ff1f3341';
 			const generated_id = uuidv3( user['mail'], MY_NAMESPACE);
 			profile.id = generated_id;

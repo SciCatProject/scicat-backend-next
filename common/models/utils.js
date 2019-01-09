@@ -12,7 +12,7 @@ var exports = module.exports = {};
 // Note: Depending on the request PUT/POST etc either ctx.instance or ctx.currentInstance is set
 
 
-exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
+exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
     var instance = ctx.instance
     if (!instance) {
         instance = ctx.currentInstance
@@ -31,7 +31,7 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                 }
             }
             obj.find(filter, ctx.options).then(instances => {
-                var total = instances.reduce(function(sum, value) {
+                var total = instances.reduce(function (sum, value) {
                     return sum + value[sizeField]
                 }, 0);
 
@@ -40,9 +40,9 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
                     if (instance) {
                         // important to pass options here, otherwise context gets lost
                         instance.updateAttributes({
-                                [sizeField]: total
-                            }, ctx.options,
-                            function(err, instance) {
+                            [sizeField]: total
+                        }, ctx.options,
+                            function (err, instance) {
                                 if (err) {
                                     var error = new Error();
                                     error.statusCode = 403;
@@ -73,7 +73,7 @@ exports.transferSizeToDataset = function(obj, sizeField, ctx, next) {
 }
 
 // add ownerGroup field from linked Datasets
-exports.addOwnerGroup = function(ctx, next) {
+exports.addOwnerGroup = function (ctx, next) {
     var instance = ctx.instance
     if (!instance) {
         instance = ctx.currentInstance
@@ -114,8 +114,8 @@ exports.addOwnerGroup = function(ctx, next) {
 // transform date strings in all fields with key dateKeys to updateTimesToUTC
 // do nothing if input values are already UTC
 
-exports.updateTimesToUTC = function(dateKeys, instance) {
-    dateKeys.map(function(dateKey) {
+exports.updateTimesToUTC = function (dateKeys, instance) {
+    dateKeys.map(function (dateKey) {
         if (instance[dateKey]) {
             // console.log("Updating old ", dateKey, instance[dateKey])
             instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format();
@@ -124,36 +124,61 @@ exports.updateTimesToUTC = function(dateKeys, instance) {
     });
 }
 
-exports.createNewFacetPipeline = function(name, type, query) {
+exports.createNewFacetPipeline = function (name, type, query) {
     const pipeline = [];
 
     if (type.constructor === Array) {
-        pipeline.push({ $unwind: '$'+name });
+        pipeline.push({
+            $unwind: '$' + name
+        });
     }
     // add all conditions from "other" facets, exclude own conditions
     if (query && Object.keys(query).length > 0) {
         //console.log("createFacet query:",query);
         var q = Object.assign({}, query);
         delete q[name];
-        if(Object.keys(q).length > 0)
-            pipeline.push({$match: q});
+        if (Object.keys(q).length > 0)
+            pipeline.push({
+                $match: q
+            });
     }
-    let grp = {$group: {_id: '$' + name, count: {$sum: 1}}};
+    let grp = {
+        $group: {
+            _id: '$' + name,
+            count: {
+                $sum: 1
+            }
+        }
+    };
     if (type === 'date') {
-        grp.$group._id = {year: {$year: '$' + name}, month: {$month: '$' + name}, day: {$dayOfMonth: '$' + name}}
+        grp.$group._id = {
+            year: {
+                $year: '$' + name
+            },
+            month: {
+                $month: '$' + name
+            },
+            day: {
+                $dayOfMonth: '$' + name
+            }
+        }
     }
     pipeline.push(grp);
-    const sort = {$sort: {_id: -1}};
+    const sort = {
+        $sort: {
+            _id: -1
+        }
+    };
     pipeline.push(sort);
     return pipeline;
 }
 
 
 // dito but for array of instances
-exports.updateAllTimesToUTC = function(dateKeys, instances) {
-    dateKeys.map(function(dateKey) {
+exports.updateAllTimesToUTC = function (dateKeys, instances) {
+    dateKeys.map(function (dateKey) {
         // console.log("Updating all time field %s to UTC for %s instances:", dateKey, instances.length)
-        instances.map(function(instance) {
+        instances.map(function (instance) {
             if (instance[dateKey]) {
                 // console.log("Updating old ",dateKey,instance[dateKey])
                 instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format()
@@ -163,7 +188,7 @@ exports.updateAllTimesToUTC = function(dateKeys, instances) {
     });
 }
 
-exports.handleOwnerGroups = function(ctx, next) {
+exports.handleOwnerGroups = function (ctx, next) {
     if (!ctx.args.fields)
         ctx.args.fields = {};
     let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
@@ -178,7 +203,7 @@ exports.handleOwnerGroups = function(ctx, next) {
         next(e);
     }
 
-    User.findById(userId, function(err, user) {
+    User.findById(userId, function (err, user) {
         if (err) {
             next(err);
         } else if (user['username'].indexOf('.') === -1) {
@@ -190,7 +215,7 @@ exports.handleOwnerGroups = function(ctx, next) {
                 where: {
                     userId: userId
                 }
-            }, function(err, instance) {
+            }, function (err, instance) {
                 console.log("UserIdentity Instance:", instance)
                 if (instance && instance.profile) {
                     var foundGroups = instance.profile.accessGroups;

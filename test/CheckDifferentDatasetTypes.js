@@ -7,11 +7,12 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
+
 var should = chai.should();
 var utils = require('./LoginUtils');
 
 var accessToken = null;
+var boot = require('loopback-boot');
 
 // TODO
 // add tests for normal users (non functional accounts)
@@ -145,6 +146,18 @@ var derivedCountDataset = 0;
 var pid = null;
 var pidraw = null;
 var pidderived = null;
+var app;
+
+// Make sure thet the boot code, which is executed via the require statement
+// is finished before any test is run
+// since there is no callback or this available I simply have to wait here
+// This wait should be added to the first test running
+
+before(function(done) {
+     app = require('../server/server');
+     console.log("Waiting for 5 seconds for boot tasks to finish: ",new Date())
+     setTimeout(done,5000)
+ });
 
 describe('Check different dataset types and their inheritance', () => {
     before((done) => {
@@ -154,6 +167,7 @@ describe('Check different dataset types and their inheritance', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
+                // app(done)
                 done();
             });
     });

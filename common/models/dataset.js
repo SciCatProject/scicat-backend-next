@@ -9,24 +9,26 @@ var dsr = require('./raw-dataset.json');
 var dsd = require('./derived-dataset.json');
 var own = require('./ownable.json');
 
-module.exports = function(Dataset) {
+module.exports = function (Dataset) {
     var app = require('../../server/server');
     // make sure that all times are UTC
 
+    Dataset.validatesUniquenessOf('pid');
+
     // put
-    Dataset.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // patch
-    Dataset.beforeRemote('patchOrCreate', function(ctx, instance, next) {
+    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
 
     // post
-    Dataset.beforeRemote('create', function(ctx, unused, next) {
+    Dataset.beforeRemote('create', function (ctx, unused, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
         next();
     });
@@ -36,24 +38,93 @@ module.exports = function(Dataset) {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
-                console.log(' new pid:', ctx.instance.pid);
+                console.log('New pid:', ctx.instance.pid);
             } else {
-                console.log('  unmodified pid:', ctx.instance.pid);
+                console.log('Unmodified pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
-            ctx.instance.type = 'base';
+
+            // sourceFolder handling
+            if (ctx.instance.sourceFolder) {
+                // remove trailing slashes
+                ctx.instance.sourceFolder = ctx.instance.sourceFolder.replace(/\/$/, "");
+                // autofill datasetName
+                if (!ctx.instance.datasetName) {
+                    var arr = ctx.instance.sourceFolder.split("/")
+                    if (arr.length == 1) {
+                        ctx.instance.datasetName = arr[0]
+                    } else {
+                        ctx.instance.datasetName = arr[arr.length - 2] + "/" + arr[arr.length - 1]
+                    }
+                }
+            }
+            if (!ctx.instance.ownerGroup) {
+                next("No owner group defined");
+            }
+
+            // auto fill classification and add policy if missing
+
+            var Policy = app.models.Policy;
+            Policy.findOne(function (err, policyInstance) {
+                    if (err) {
+                        var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
+                        console.log(msg);
+                        next(msg);
+                    } else if (policyInstance) {
+                        if (!ctx.instance.classification) {
+                            // Case 1: classification undefined but policy defined:, define classification via policy
+                            var classification = "";
+                            switch (policyInstance.tapeRedundancy) {
+                                case "low":
+                                    classification = "IN=medium,AV=low,CO=low";
+                                    break;
+                                case "medium":
+                                    classification = "IN=medium,AV=medium,CO=low";
+                                    break;
+                                case "high":
+                                    classification = "IN=medium,AV=high,CO=low";
+                                    break;
+                                default:
+                                    classification = "IN=medium,AV=low,CO=low";
+                            }
+                            ctx.instance.classification = classification;
+                        }
+                        // case 2: classification defined and policy defined: do nothing
+                        return next()
+                    } else {
+                        let tapeRedundancy = "low"
+                        if (!ctx.instance.classification) {
+                            // case 3: neither a policy nor a classification exist: define default classification and create default policy
+                            ctx.instance.classification = "IN=medium,AV=low,CO=low";
+                        } else {
+                            // case 4: classification exists but no policy: create policy from classification
+                            var classification = ctx.instance.classification;
+                            if (classification.includes("AV=low")) {
+                                tapeRedundancy = "low";
+                            } else if (classification.includes("AV=medium")) {
+                                tapeRedundancy = "medium";
+                            } else if (classification.includes("AV=high")) {
+                                tapeRedundancy = "high";
+                            }
+                        }
+                        Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, next);
+                    }
+                }
+            );
+        } else {
+            // no instance, continue
+            return next()
         }
-        next();
     });
 
     // clean up data connected to a dataset, e.g. if archiving failed
     // TODO obsolete this code, replaced by code in datasetLifecycle
 
-    Dataset.reset = function(id, options, next) {
+    Dataset.reset = function (id, options, next) {
         // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         var DatasetLifecycle = app.models.DatasetLifecycle;
-        DatasetLifecycle.findById(id, options, function(err, l) {
+        DatasetLifecycle.findById(id, options, function (err, l) {
             if (err) {
                 next(err);
             } else {
@@ -66,12 +137,12 @@ module.exports = function(Dataset) {
                 // console.log('Dataset Lifecycle reset');
                 Datablock.destroyAll({
                     datasetId: id,
-                }, options, function(err, b) {
+                }, options, function (err, b) {
                     if (err) {
                         next(err);
                     } else {
                         // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function(err, instance) {
+                        Dataset.findById(id, options, function (err, instance) {
                             if (err) {
                                 next(err);
                             } else {
@@ -93,15 +164,15 @@ module.exports = function(Dataset) {
 
     // add user Groups information of the logged in user to the fields object
 
-    Dataset.beforeRemote('facet', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('facet', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
-    Dataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('fullfacet', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
-    Dataset.beforeRemote('fullquery', function(ctx, userDetails, next) {
+    Dataset.beforeRemote('fullquery', function (ctx, userDetails, next) {
         utils.handleOwnerGroups(ctx, next);
     });
 
@@ -147,7 +218,7 @@ module.exports = function(Dataset) {
         }
     }
 
-    Dataset.fullfacet = function(fields, facets = [], cb) {
+    Dataset.fullfacet = function (fields, facets = [], cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
@@ -157,10 +228,17 @@ module.exports = function(Dataset) {
         // Since a match condition on usergroups is alway prepended at the start
         // this effectively yields the intersection handling of the two sets (ownerGroup condition and userGroups)
 
-        Object.keys(fields).map(function(key) {
+        Object.keys(fields).map(function (key) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
-                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                    match["$or"] = [{
+                        $text: searchExpression(key, fields[key])
+                    }, {
+                        sourceFolder: {
+                            $regex: fields[key],
+                            $options: 'i'
+                        }
+                    }]
                 } else if (key === "userGroups") {
                     if (fields[key].length > 0)
                         match["ownerGroup"] = searchExpression(key, fields[key])
@@ -181,7 +259,7 @@ module.exports = function(Dataset) {
 
         // append all facet pipelines
         let facetObject = {};
-        facets.forEach(function(facet) {
+        facets.forEach(function (facet) {
             if (facet in ds.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
             } else if (facet in dsr.properties) {
@@ -205,14 +283,16 @@ module.exports = function(Dataset) {
             $facet: facetObject,
         });
         // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
-        Dataset.getDataSource().connector.connect(function(err, db) {
+        Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, res) {
-                    if (err) {
-                        console.log("Facet err handling:", err);
-                    }
-                    cb(err, res);
+                function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Facet err handling:", err);
+                        }
+                        cb(err, res);
+                    });
                 });
         });
     };
@@ -225,16 +305,23 @@ module.exports = function(Dataset) {
     // - paging of results
     // - merging DatasetLifecycle Fields for fields not contained in Dataset
 
-    Dataset.fullquery = function(fields, limits, cb) {
+    Dataset.fullquery = function (fields, limits, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
         let match = {}
         let matchJoin = {}
         // construct match conditions from fields value, excluding facet material
-        Object.keys(fields).map(function(key) {
+        Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
-                    match["$or"] = [{$text: searchExpression(key, fields[key])},{sourceFolder: {$regex: fields[key], $options:'i'}}]
+                    match["$or"] = [{
+                        $text: searchExpression(key, fields[key])
+                    }, {
+                        sourceFolder: {
+                            $regex: fields[key],
+                            $options: 'i'
+                        }
+                    }]
                 } else if (key === "ownerGroup") {
                     // ownerGroup is handled in userGroups parts
                 } else if (key === "userGroups") {
@@ -247,7 +334,7 @@ module.exports = function(Dataset) {
                             // otherwise create intersection of userGroups and ownerGroup
                             // this is needed here since no extra match step is done but all
                             // filter conditions are applied in one match step
-                            const intersect = fields['ownerGroup'].filter(function(n) {
+                            const intersect = fields['ownerGroup'].filter(function (n) {
                                 return fields['userGroups'].indexOf(n) !== -1;
                             });
                             match["ownerGroup"] = searchExpression('ownerGroup', intersect)
@@ -285,7 +372,10 @@ module.exports = function(Dataset) {
             }
         })
         pipeline.push({
-             $unwind: {path: "$datasetlifecycle", preserveNullAndEmptyArrays: true}
+            $unwind: {
+                path: "$datasetlifecycle",
+                preserveNullAndEmptyArrays: true
+            }
         })
 
         if (Object.keys(matchJoin).length > 0) {
@@ -300,7 +390,7 @@ module.exports = function(Dataset) {
                 // input format: "creationTime:desc,creationLocation:asc"
                 const sortExpr = {}
                 const sortFields = limits.order.split(',')
-                sortFields.map(function(sortField) {
+                sortFields.map(function (sortField) {
                     const parts = sortField.split(':')
                     const dir = (parts[1] == 'desc') ? -1 : 1
                     sortExpr[parts[0]] = dir
@@ -323,27 +413,30 @@ module.exports = function(Dataset) {
             }
         }
         // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
-        Dataset.getDataSource().connector.connect(function(err, db) {
+        Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
-                function(err, res) {
-                    if (err) {
-                        console.log("Facet err handling:", err);
-                    }
-                    // console.log("Query result:", res)
-                    // rename _id to pid
-                    res.map(ds => {
-                        Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
-                        delete ds['_id']
-                    })
-                    cb(err, res);
+                function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Facet err handling:", err);
+                        }
+                        // console.log("Query result:", res)
+                        // rename _id to pid
+                        res.map(ds => {
+                            Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
+                            delete ds['_id']
+                        })
+                        cb(err, res);
+                    });
                 });
+
         });
     };
 
-    Dataset.isValid = function(dataset, next) {
+    Dataset.isValid = function (dataset, next) {
         var ds = new Dataset(dataset);
-        ds.isValid(function(valid) {
+        ds.isValid(function (valid) {
             if (!valid) {
                 next(null, {
                     'errors': ds.errors,
@@ -356,6 +449,38 @@ module.exports = function(Dataset) {
             }
         });
     };
+
+    Dataset.thumbnail = async function (id) {
+        var DatasetAttachment = app.models.DatasetAttachment;
+        const filter = { where: { datasetId: id } };
+        return DatasetAttachment.findOne(filter).then(instance => {
+
+            const base64string_example = "data:image/png;base64,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";
+            let base64string2 = ""
+            if (instance && instance.__data) {
+                if (instance.__data.thumbnail === undefined) {
+                } else {
+                    base64string2 = instance.__data.thumbnail;
+                }
+            } else {
+                base64string2 = base64string_example;
+            }
+            return base64string2;
+        });
+    }
+
+    Dataset.remoteMethod("thumbnail", {
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            }
+        ],
+        http: { path: "/:id/thumbnail", verb: "get" },
+        returns: { type: "string", root: true }
+    });
+
 
 
 };

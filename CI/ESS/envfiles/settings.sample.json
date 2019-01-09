@@ -5,11 +5,11 @@
         "admin": {
             "username": "ingestor",
             "password": "aman",
-            "login": "User/login"
+            "login": "api/v2/Users/login"
         },
         "user": {
-            "username": "admin",
-            "password": "admin",
+            "username": "zach",
+            "password": "pass",
             "login": "auth/msad"
         }
     }

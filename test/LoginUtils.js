@@ -16,3 +16,17 @@ exports.getToken = function (app, user, cb) {
             }
         });
 };
+
+exports.getTokenAD = function (app, user, cb) {
+    request(app)
+        .post('/auth/msad')
+        .send(user)
+        .set('Accept', 'application/json')
+        .end((err, res) => {
+            if (err) {
+                cb(err)
+            } else {
+                cb(res.body.access_token);
+            }
+        });
+};
