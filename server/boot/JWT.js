@@ -26,7 +26,7 @@ module.exports = function(app) {
     }, function(err, instance) {
       var groups = instance && instance.profile && instance.profile.accessGroups;
         if (!groups) {
-            groups = []
+            groups = [];
         }
       const payload = {
         username: userId,

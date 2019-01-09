@@ -19,5 +19,5 @@
     "queue": "rabbit"
   },
   "jwtExpiresIn": "1h",
-  "jwtSecret": ""
+  "jwtSecret": "n^dC^y49hRz6%=pm$KBK"
 }
