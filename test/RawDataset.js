@@ -10,8 +10,17 @@ var request = require('supertest');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
-var accessToken = null,
-    pid = null;
+var accessToken = null;
+var pid = null;
+var accessProposalToken = null;
+
+var testproposal = {
+    "proposalId": "someprefix/20170266",
+    "email": "proposer%40uni.edu",
+    "title": "A test proposal",
+    "abstract": "Abstract of test proposal",
+    "ownerGroup": "p10029"
+}
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -80,12 +89,13 @@ var testraw = {
     "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
-    "accessGroups": [],
-    "proposalId": "10.540.16635/20110123"
+    "accessGroups": []
 }
 
 var app
-before( function(){
+var proposalId = null;
+
+before(function () {
     app = require('../server/server')
 });
 
@@ -97,17 +107,42 @@ describe('RawDatasets', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
+                utils.getToken(app, {
+                        'username': 'proposalIngestor',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessProposalToken = tokenVal;
+                        done();
+                    });
+            });
+    });
+
+    it('adds a new proposal', function (done) {
+        request(app)
+            .post('/api/v2/Proposals?access_token=' + accessProposalToken)
+            .send(testproposal)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('ownerGroup').and.be.string;
+                res.body.should.have.property('proposalId').and.be.string;
+                proposalId = encodeURIComponent(res.body['proposalId']);
                 done();
             });
     });
-    it('adds a new raw dataset', function(done) {
+
+    it('adds a new raw dataset', function (done) {
         request(app)
             .post('/api/v2/RawDatasets?access_token=' + accessToken)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('owner').and.be.string;
@@ -119,7 +154,7 @@ describe('RawDatasets', () => {
     });
 
 
-    it('should fetch several raw datasets', function(done) {
+    it('should fetch several raw datasets', function (done) {
         request(app)
             .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -133,7 +168,7 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should fetch this raw dataset', function(done) {
+    it('should fetch this raw dataset', function (done) {
         request(app)
             .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -146,7 +181,7 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should delete this raw dataset', function(done) {
+    it('should delete this raw dataset', function (done) {
         request(app)
             .delete('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -159,20 +194,35 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should contain an array of facets', function(done) {
+
+    it('should contain an array of facets', function (done) {
         request(app)
             .get('/api/v2/RawDatasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
-            .send({'ownerGroup': ['p11114']})
+            .send({
+                'ownerGroup': ['p11114']
+            })
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 res.body.should.be.an('array');
-                if(err)
+                if (err)
                     done(err);
                 done();
             });
     });
 
+    it('should delete this proposal', function(done) {
+        request(app)
+            .delete('/api/v2/Proposals/' + proposalId + '?access_token=' + accessProposalToken)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
 
 });

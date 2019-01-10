@@ -38,6 +38,10 @@
         "jobLogData": {
             "type": "string",
             "description": "The output job logfile. Keep the size of this log data well below 15 MB "
+        },
+        "scientificMetadata": {
+            "type": "object",
+            "description": "JSON object containing the scientific meta data"
         }
     },
     "validations": [],

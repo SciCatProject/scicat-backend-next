@@ -13,7 +13,6 @@ module.exports = function(Policy) {
     // for policy interactions
     // check logged in user email is a member of policy.manager
     Policy.observe('before save', (ctx, next) => {
-
         if (ctx.currentInstance) {
             //is a partial update currentInstance rather than instance
             var UserIdentity = app.models.UserIdentity;
@@ -26,7 +25,12 @@ module.exports = function(Policy) {
                     userId: userId
                 }
             }, function(err, instance) {
-                var email = instance.profile.email;
+                // need to handle functional user case
+                var email = "";
+                if (!instance && Object.keys(ctx.options.authorizedRoles)[0]) {
+                    return next();
+                }
+
                 //console.log("email:", email);
                 //console.log("manager: ", ctx.currentInstance.manager);
                 if (!ctx.currentInstance.manager.includes(email)) {
@@ -42,28 +46,57 @@ module.exports = function(Policy) {
         }
     });
 
-    Policy.addDefault = function(ownerGroup, ownerEmail) {
-        // TODO: move the deault definition somewhere more sensible 
+    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy, next) {
+        // TODO: move the default definition somewhere more sensible 
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
-        if (config && !ownerEmail)
-        {
-            defaultPolicy.ownerEmail = config.defaultManager;
-        }
-        else
-        {
+        if (config && !ownerEmail) {
+            defaultPolicy.manager = config.defaultManager;
+        } else if (ownerEmail) {
             defaultPolicy.manager = ownerEmail.split(",");
+        } else {
+            defaultPolicy.manager = "";
         }
-        defaultPolicy.tapeRedundancy = "low";
+        if (tapeRedundancy) {
+            defaultPolicy.tapeRedundancy = tapeRedundancy;
+        } else {
+            defaultPolicy.tapeRedundancy = "low"; // AV default low
+        }
         defaultPolicy.autoArchive = false;
         defaultPolicy.autoArchiveDelay = 7;
         defaultPolicy.archiveEmailNotification = true;
         defaultPolicy.retrieveEmailNotification = true;
-        defaultPolicy.tapeRedundancy = "low";
+        defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
+        defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.embargoPeriod = 3;
-        //filter must be an object
-        var filter = JSON.parse('{"where": {"ownerGroup":"' + ownerGroup + '"}}');
-        console.log("default policy: " + JSON.stringify(defaultPolicy));
-        Policy.findOrCreate(filter, defaultPolicy);
+        Policy.findOrCreate(defaultPolicy, next);
     };
+
+    // TODO: understand the following method
+    Policy.updatewhere = async function(where, data) {
+        // where should look like {"or": [{"id":"5c0fe54ed8cc493d4b259989"},{"id": "5c110c90f1e2772bdb1dd868"}]}
+        return Policy.update(where, data);
+    }
+
+    Policy.remoteMethod("updatewhere", {
+        accepts: [{
+            arg: "where",
+            type: "object",
+            required: true
+        }, {
+            arg: "data",
+            type: "object",
+            required: true
+        }],
+        http: {
+            path: "/updatewhere",
+            verb: "post"
+        },
+        returns: {
+            type: "string",
+            root: true
+        }
+    });
+
+    Policy.validatesUniquenessOf('ownerGroup');
 };
