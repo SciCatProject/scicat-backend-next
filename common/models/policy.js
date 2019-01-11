@@ -7,7 +7,7 @@ var p = require('../../package.json');
 var utils = require('./utils');
 var own = require('./ownable.json');
 
-module.exports = function(Policy) {
+module.exports = function (Policy) {
     var app = require('../../server/server');
 
     // for policy interactions
@@ -24,7 +24,7 @@ module.exports = function(Policy) {
                 where: {
                     userId: userId
                 }
-            }, function(err, instance) {
+            }, function (err, instance) {
                 // need to handle functional user case
                 var email = "";
                 if (!instance && Object.keys(ctx.options.authorizedRoles)[0]) {
@@ -46,7 +46,7 @@ module.exports = function(Policy) {
         }
     });
 
-    Policy.addDefault = function(ownerGroup, ownerEmail, tapeRedundancy, next) {
+    Policy.addDefault = function (ownerGroup, ownerEmail, tapeRedundancy, options, next) {
         // TODO: move the default definition somewhere more sensible 
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
@@ -69,11 +69,18 @@ module.exports = function(Policy) {
         defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
         defaultPolicy.embargoPeriod = 3;
-        Policy.findOrCreate(defaultPolicy, next);
+        console.log("Adding new default policy:", defaultPolicy)
+        Policy.create(defaultPolicy, options, function (err, instance) {
+            if (err) {
+                console.log("Error when creating default policy:", err)
+                return next(err)
+            }
+            return next()
+        });
     };
 
     // TODO: understand the following method
-    Policy.updatewhere = async function(where, data) {
+    Policy.updatewhere = async function (where, data) {
         // where should look like {"or": [{"id":"5c0fe54ed8cc493d4b259989"},{"id": "5c110c90f1e2772bdb1dd868"}]}
         return Policy.update(where, data);
     }

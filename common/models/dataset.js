@@ -65,7 +65,8 @@ module.exports = function (Dataset) {
             // auto fill classification and add policy if missing
 
             var Policy = app.models.Policy;
-            Policy.findOne(function (err, policyInstance) {
+            const filter = { where: { ownerGroup: ctx.instance.ownerGroup } };
+            Policy.findOne(filter, ctx.options, function (err, policyInstance) {
                     if (err) {
                         var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
                         console.log(msg);
@@ -107,7 +108,7 @@ module.exports = function (Dataset) {
                                 tapeRedundancy = "high";
                             }
                         }
-                        Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, next);
+                        Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, ctx.options, next);
                     }
                 }
             );
