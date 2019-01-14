@@ -1,14 +1,14 @@
 var utils = require('./common_utils');
 var fs = require('fs');
 
-module.exports = function(app, cb2) {
+module.exports = function (app, cb2) {
 
     // define roles
     //  note: role names are all lowercase , corresponding accounts camelcase
     //
 
 
-    createRole = function(account, cb) {
+    createRole = function (account, cb) {
 
         var User = app.models.User;
 
@@ -16,7 +16,7 @@ module.exports = function(app, cb2) {
             where: {
                 username: account
             }
-        }, function(err, users) {
+        }, function (err, users) {
             if (err) {
                 return cb(err);
             } else if (users.length === 0) {
@@ -25,13 +25,14 @@ module.exports = function(app, cb2) {
                 console.log("creating account " + account);
                 if (fs.existsSync(path)) {
                     var data = fs.readFileSync(path, 'utf8').split('\n')[0].split(" ");
+                    console.log("gm", data);
                     User.create({
                         realm: 'localhost:3001',
                         username: account,
                         password: data[0],
                         email: data[1],
                         emailVerified: true
-                    }, function(err, user) {
+                    }, function (err, user) {
                         if (err) {
                             console.log("User create:" + err + " " + user)
                             return cb(err)
@@ -46,7 +47,7 @@ module.exports = function(app, cb2) {
                         password: 'aman',
                         email: account + '@change.com',
                         emailVerified: true
-                    }, function(err, user) {
+                    }, function (err, user) {
                         if (err) {
                             console.log("User create:" + err + " " + user)
                             return cb(err)
@@ -63,12 +64,12 @@ module.exports = function(app, cb2) {
         });
     };
 
-    createRole('admin', function() {
-        createRole('archiveManager', function() {
-            createRole('ingestor', function() {
-                createRole('proposalIngestor', function() {
-                    createRole('userGroupIngestor', function(){
-                        console.log("Last role mapped, finished booting ",new Date())
+    createRole('admin', function () {
+        createRole('archiveManager', function () {
+            createRole('ingestor', function () {
+                createRole('proposalIngestor', function () {
+                    createRole('userGroupIngestor', function () {
+                        console.log("Last role mapped, finished booting ", new Date())
                         cb2(null)
                     })
                 })

@@ -10,6 +10,7 @@ node('docker') {
       echo "Git image id : ${IMAGE_ID}"
       sh "docker push dacat/catamel:${IMAGE_ID}dev"
       sh "docker push dacat/catamel:latest"
+      sh "docker rmi dacat/catamel:${IMAGE_ID}dev"
     }
   }
   stage('SuperTest Catamel ') {

@@ -9,12 +9,17 @@
             "collection": "DatasetAttachment"
         }
     },
-    "description": "Small less than 16 MB attchments for datasets, envisaged for png/jpeg previews",
+    "description": "Small less than 16 MB attachments for datasets, envisaged for png/jpeg previews",
     "properties": {
         "thumbnail": {
             "type": "string",
             "required": true,
             "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset",
+            "default": "retrieve"
+        },
+        "caption": {
+            "type": "string",
+            "description": "Dataset attachment caption to show in catanie",
             "default": "retrieve"
         },
         "creationTime": {
@@ -32,6 +37,19 @@
             "required": true
         }
     },
-    "acls": [],
+    "acls": [
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY"
+        }
+    ],
     "methods": {}
 }
