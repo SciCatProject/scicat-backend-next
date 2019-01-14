@@ -2,7 +2,7 @@ module.exports = function(app) {
   const jwt  = require('jsonwebtoken');
   const config = require('../../server/config.json');
   const signAndVerifyOptions = {
-    expiresIn: config.jwtExpiresIn,
+    expiresIn: config.jwtExpiresIn || "1h",
   };
 
   const User = app.models.User;
