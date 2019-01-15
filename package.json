@@ -15,6 +15,7 @@
         "compression": "^1.7.3",
         "cors": "^2.8.5",
         "helmet": "^3.15.0",
+        "jsonwebtoken": "^8.4.0",
         "loopback": "^3.24.0",
         "loopback-boot": "^2.6.5",
         "loopback-component-explorer": "^6.3.1",

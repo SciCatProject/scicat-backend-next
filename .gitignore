@@ -38,3 +38,4 @@ client/api/python
 test/config/settings.json
 mongodb/
 rabbitmq/
+.env
