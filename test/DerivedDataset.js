@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -41,6 +40,10 @@ var testderived = {
     "ownerGroup": "p34123"
 }
 
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('DerivedDatasets', () => {
     before((done) => {

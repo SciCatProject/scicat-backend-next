@@ -4,10 +4,9 @@
 
 // process.env.NODE_ENV = 'test';
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var app = require("../server/server");
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var request = require('supertest');
 var should = chai.should();
 var utils = require("./LoginUtils");
 
@@ -164,30 +163,30 @@ var testDatasetLifecycle = {
 var foundId1 = null;
 var foundId2 = null;
 
-describe("Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status", () => {
-    before(done => {
-        utils.getToken(
-            app,
-            {
-                username: "ingestor",
-                password: "aman"
+var app
+before(function() {
+    app = require('../server/server')
+});
+
+describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
+    before((done) => {
+        utils.getToken(app, {
+                'username': 'ingestor',
+                'password': 'aman'
             },
             tokenVal => {
                 accessTokenIngestor = tokenVal;
-            }
-        );
-        utils.getToken(
-            app,
-            {
-                username: "archiveManager",
-                password: "aman"
-            },
-            tokenVal => {
-                accessTokenArchiveManager = tokenVal;
-                done();
-            }
-        );
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+            });
     });
+
 
     // first get existing datasets with the test archieId to allow to delete them
 
@@ -221,14 +220,16 @@ describe("Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             .expect(200)
             .expect("Content-Type", /json/)
             .end((err, res) => {
-                if (err) return done(err);
-                foundId2 = res.body[0] ? res.body[0].id : null;
+                console.log("Result of looking for first id:", res.body)
+                if (err)
+                    return done(err);
+                foundId2 = res.body[0] ? res.body[0].id : null
                 done();
             });
     });
 
-    if (foundId1) {
-        it("should delete existing Datablocks with specific archiveId", function(done) {
+    it('should delete existing Datablocks with specific archiveId', function(done) {
+        if (foundId1) {
             request(app)
                 .delete(
                     "/api/v2/Datablocks/" +
@@ -240,15 +241,19 @@ describe("Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 .expect(200)
                 .expect("Content-Type", /json/)
                 .end((err, res) => {
-                    if (err) return done(err);
-                    // console.log("Deleted datablock:", res.body)
+                    if (err)
+                        return done(err);
+                    console.log("Deleted datablock:", res.body)
                     done();
                 });
-        });
-    }
+        } else {
+            done()
+        }
+    });
 
-    if (foundId2) {
-        it("should delete existing Datablocks with 2nd specific archiveId", function(done) {
+
+    it('should delete existing Datablocks with 2nd specific archiveId', function(done) {
+        if (foundId2) {
             request(app)
                 .delete(
                     "/api/v2/Datablocks/" +
@@ -260,12 +265,16 @@ describe("Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 .expect(200)
                 .expect("Content-Type", /json/)
                 .end((err, res) => {
-                    if (err) return done(err);
-                    // console.log("Deleted datablock:", res.body)
+                    if (err)
+                        return done(err);
+                    console.log("Deleted datablock:", res.body)
                     done();
                 });
-        });
-    }
+        } else {
+            done()
+        }
+    });
+
 
     it("adds a new raw dataset", function(done) {
         request(app)

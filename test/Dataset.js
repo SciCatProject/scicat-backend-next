@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -25,12 +24,18 @@ var testdataset = {
         "Cryo", "Calibration"
     ],
     "description": "None",
+    "type": "raw",
     "license": "CC BY-SA 4.0",
     "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": []
 }
+
+var app
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Simple Dataset tests', () => {
     before((done) => {
@@ -55,8 +60,9 @@ describe('Simple Dataset tests', () => {
                 if (err)
                     return done(err);
                 res.body.should.have.property('version').and.be.string;
-                res.body.should.have.property('type').and.equal('base');
+                res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
+                res.body.should.have.property('datasetName').and.be.string;
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });

@@ -7,7 +7,6 @@
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var request = require('supertest');
-var app = require('../server/server');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
@@ -19,6 +18,7 @@ var pid = null;
 var idDatablock = null;
 var idOrigDatablock = null;
 var idDatablock2 = null;
+
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -191,6 +191,11 @@ var testorigDataBlock = {
     ]
 }
 
+var app
+
+before( function(){
+    app = require('../server/server')
+});
 
 describe('Test Datablocks and OrigDatablocks and their relation to Datasets', () => {
     before((done) => {
@@ -206,8 +211,6 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                     },
                     (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
-                        console.log("============ Both accessToken received")
-                        console.log("Tokens:", accessTokenIngestor, accessTokenArchiveManager)
                         done();
                     });
 

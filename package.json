@@ -1,6 +1,6 @@
 {
     "name": "dacat-api",
-    "version": "2.8.1",
+    "version": "2.9.1",
     "main": "server/server.js",
     "engines": {
         "node": ">=4"
@@ -9,25 +9,26 @@
         "lint": "eslint common/models",
         "start": "node .",
         "posttests": "npm run lint && nsp check",
-        "test": "./node_modules/mocha/bin/mocha --timeout=10000 --reporter spec --exit 2>/dev/null"
+        "test": "./node_modules/mocha/bin/mocha --timeout=30000 --reporter spec --exit 2>/dev/null"
     },
     "dependencies": {
         "compression": "^1.7.3",
-        "cors": "^2.5.2",
-        "helmet": "^3.14.0",
-        "loopback": "^3.23.1",
+        "cors": "^2.8.5",
+        "helmet": "^3.15.0",
+        "jsonwebtoken": "^8.4.0",
+        "loopback": "^3.24.2",
         "loopback-boot": "^2.6.5",
         "loopback-component-explorer": "^6.3.1",
         "loopback-component-model-diagram": "^0.4.2",
         "loopback-component-mq": "^2.2.5",
         "loopback-component-passport": "^3.10.0",
         "loopback-component-visualizer": "^1.2.1",
-        "loopback-connector-mongodb": "^3.9.0",
+        "loopback-connector-mongodb": "^3.9.2",
         "loopback-ds-timestamp-mixin": "^3.4.1",
-        "moment": "^2.20.1",
-        "moment-timezone": "^0.5.21",
-        "nodemailer": "^4.6.8",
-        "passport-ldapauth": "^2.1.0",
+        "moment": "^2.23.0",
+        "moment-timezone": "^0.5.23",
+        "nodemailer": "^5.0.0",
+        "passport-ldapauth": "^2.1.1",
         "passport-local": "^1.0.0",
         "passport-openidconnect": "^0.0.2",
         "request-promise": "^4.2.2",
@@ -35,14 +36,17 @@
         "strong-error-handler": "3.2.0",
         "uuid": "^3.3.2"
     },
+    "optionalDependencies": {
+        "loopback-connector-kafka": "^0.2.1"
+    },
     "devDependencies": {
         "@mean-expert/loopback-sdk-builder": "^2.1.0",
         "chai": "^4.2.0",
-        "chai-http": "^4.2.0",
-        "eslint": "^5.7.0",
-        "eslint-config-loopback": "^12.0.0",
+        "chai-http": "^4.2.1",
+        "eslint": "^5.12.0",
+        "eslint-config-loopback": "^13.0.0",
         "mocha": "^5.2.0",
-        "prettier": "^1.14.3",
+        "nodemon": "^1.18.8",
         "supertest": "^3.3.0"
     },
     "repository": {

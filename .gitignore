@@ -23,6 +23,11 @@ coverage
 node_modules
 npm-debug.log
 server/pass
+server/admin
+server/ingestor
+server/archiveManager
+server/proposalIngestor
+server/userGroupIngestor
 server/providers.json
 server/datasources.json
 server/datacite.json
@@ -34,3 +39,4 @@ client/api/python
 test/config/settings.json
 mongodb/
 rabbitmq/
+.env

@@ -4,10 +4,9 @@
 
 // process.env.NODE_ENV = 'test';
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var app = require("../server/server");
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var request = require('supertest');
 var should = chai.should();
 var utils = require("./LoginUtils");
 
@@ -93,40 +92,43 @@ var testraw = {
 };
 
 var testDatasetLifecycle = {
-    id: "", // must be set to the id of the dataset,
-    isOnDisk: true,
-    isOnTape: false,
-    archiveStatusMessage: "datasetCreated",
-    retrieveStatusMessage: "",
-    isExported: false
-};
+    "id": "", // must be set to the id of the dataset,
+    "isOnDisk": true,
+    "isOnTape": false,
+    "archiveStatusMessage": "datasetCreated",
+    "retrieveStatusMessage": "",
+    "isExported": false,
+    "archivable":true,
+    "retrievable":true,
+    "publishable":false
+}
 
-describe("Test DatasetLifecycle and the relation to Datasets", () => {
-    before(done => {
-        utils.getToken(
-            app,
-            {
-                username: "ingestor",
-                password: "aman"
+var app
+before( function(){
+    app = require('../server/server')
+});
+
+describe('Test DatasetLifecycle and the relation to Datasets', () => {
+    before((done) => {
+        utils.getToken(app, {
+                'username': 'ingestor',
+                'password': 'aman'
             },
             tokenVal => {
                 accessTokenIngestor = tokenVal;
-            }
-        );
-        utils.getToken(
-            app,
-            {
-                username: "archiveManager",
-                password: "aman"
-            },
-            tokenVal => {
-                accessTokenArchiveManager = tokenVal;
-                done();
-            }
-        );
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+            });
     });
 
-    it("adds a new raw dataset", function(done) {
+
+    it('adds a new raw dataset', function(done) {
         request(app)
             .post("/api/v2/RawDatasets?access_token=" + accessTokenIngestor)
             .send(testraw)
@@ -156,9 +158,22 @@ describe("Test DatasetLifecycle and the relation to Datasets", () => {
             .expect(200)
             .expect("Content-Type", /json/)
             .end(function(err, res) {
-                if (err) return done(err);
-                idDatasetLifecycle = encodeURIComponent(res.body["id"]);
-                done();
+                if (err)
+                    return done(err);
+                idDatasetLifecycle = encodeURIComponent(res.body['id']);
+                request(app)
+                    .get('/api/v2/Datasets/'+pid + '?access_token=' + accessTokenIngestor)
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .expect('Content-Type', /json/)
+                    .end((err, res) => {
+                        if (err)
+                            return done(err);
+                        res.body.should.have.property('archivable').and.equal(true);
+                        res.body.should.have.property('retrievable').and.equal(true);
+                        res.body.should.have.property('publishable').and.equal(false);
+                        done();
+                    });
             });
     });
 

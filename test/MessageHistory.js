@@ -4,10 +4,9 @@
 
 // process.env.NODE_ENV = 'test';
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var app = require("../server/server");
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var request = require('supertest');
 var should = chai.should();
 var utils = require("./LoginUtils");
 
@@ -96,74 +95,79 @@ var testraw = {
 var testDatasetLifecycle = {
     id: "", // must be set to the id of the dataset,
     // the following 4 fields become obsolete in future
-    isOnDisk: true,
-    isOnTape: false,
-    archiveStatusMessage: "datasetCreated",
-    retrieveStatusMessage: "",
-    isExported: false,
-    archivable: true,
-    retrievable: false,
-    MessageHistory: [
-        {
-            shortMessage: "datasetCreated",
-            sender: "stephan.egli@psi.ch",
-            payload: {
-                text: "Nothing special to report"
-            }
+    "isOnDisk": true,
+    "isOnTape": false,
+    "archiveStatusMessage": "datasetCreated",
+    "retrieveStatusMessage": "",
+    "isExported": false,
+    "archivable": true,
+    "retrievable": true,
+    "MessageHistory": [{
+        "shortMessage": "datasetCreated",
+        "sender": "scicatarchivemanager@psi.ch",
+        "payload": {
+            "text": "Nothing special to report"
         }
-    ]
+    }]
 };
 
-var testjob = {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "retrieve",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-        {
-            pid: "20.500.11935/93128a6e-6c0c-48aa-bd3d-34b8fafc29ff",
-            files: []
-        },
-        {
-            pid: "20.500.11935/c26ab160-3725-459c-a4fd-a8c88d0ff170",
-            files: []
-        }
-    ],
-    archiveReturnMessage: "will move to messageList",
-    MessageHistory: []
-};
+//TODO test to retrieve datasets where you are NOT the owner
 
-// TODO do I need to pass id explicitly ?
+var testArchiveJob = {
+    "emailJobInitiator": "scicatarchivemanger@psi.ch",
+    "type": "archive",
+    "jobStatusMessage": "jobForwarded",
+    "datasetList": [{
+        "pid": "dummy",
+        "files": []
+    }],
+    "archiveReturnMessage": "will move to messageList",
+    "MessageHistory": []
+}
+
+
+var testRetrieveJob = {
+    "emailJobInitiator": "scicatarchivemanger@psi.ch",
+    "type": "retrieve",
+    "jobStatusMessage": "jobForwarded",
+    "datasetList": [{
+        "pid": "dummy",
+        "files": []
+    }],
+    "archiveReturnMessage": "will move to messageList",
+    "MessageHistory": []
+}
+
 var newMessage = {
-    shortMessage: "JustAnExample",
-    sender: "stephan.egli@psi.ch",
-    payload: {
-        text: "whatever"
+    "shortMessage": "JustAnExample",
+    "sender": "ingestor",
+    "payload": {
+        "text": "whatever"
     }
 };
 
-describe("Test DatasetLifecycle and the relation to Datasets", () => {
-    before(done => {
-        utils.getToken(
-            app,
-            {
-                username: "ingestor",
-                password: "aman"
+var app
+before(function() {
+    app = require('../server/server')
+});
+
+describe('Test MessageHistory in jobs', () => {
+    before((done) => {
+        utils.getToken(app, {
+                'username': 'ingestor',
+                'password': 'aman'
             },
             tokenVal => {
                 accessTokenIngestor = tokenVal;
-            }
-        );
-        utils.getToken(
-            app,
-            {
-                username: "archiveManager",
-                password: "aman"
-            },
-            tokenVal => {
-                accessTokenArchiveManager = tokenVal;
-                done();
-            }
-        );
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+            });
     });
 
     it("adds a new raw dataset", function(done) {
@@ -179,9 +183,12 @@ describe("Test DatasetLifecycle and the relation to Datasets", () => {
                 res.body.should.have.property("type").and.equal("raw");
                 res.body.should.have.property("pid").and.be.string;
                 // store link to this dataset in datablocks
-                testDatasetLifecycle.id = res.body["pid"];
-                testDatasetLifecycle.datasetId = res.body["pid"];
-                pid = encodeURIComponent(res.body["pid"]);
+                var pidtest = res.body['pid']
+                testDatasetLifecycle.id = pidtest
+                testDatasetLifecycle.datasetId = pidtest
+                testArchiveJob.datasetList[0].pid = pidtest
+                testRetrieveJob.datasetList[0].pid = pidtest
+                pid = encodeURIComponent(res.body['pid']);
                 done();
             });
     });
@@ -238,18 +245,46 @@ describe("Test DatasetLifecycle and the relation to Datasets", () => {
             });
     });
 
-    it("Adds a new job request", function(done) {
+
+    it('Adds a new archive job request', function(done) {
         request(app)
-            .post("/api/v2/Jobs?access_token=" + accessTokenIngestor)
-            .send(testjob)
-            .set("Accept", "application/json")
+            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .send(testArchiveJob)
+            .set('Accept', 'application/json')
             .expect(200)
             .expect("Content-Type", /json/)
             .end(function(err, res) {
-                if (err) return done(err);
-                res.body.should.have.property("type").and.be.string;
-                idJob = res.body["id"];
-                console.log("Jobid:", idJob);
+                if (err)
+                    return done(err);
+                res.body.should.have.property('type').and.be.string;
+                idJob = res.body['id']
+                //console.log("Jobid:", idJob)
+                done();
+            });
+    });
+
+    it('Adds a new archive job request for same data which should fail', function(done) {
+        request(app)
+            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .send(testArchiveJob)
+            .set('Accept', 'application/json')
+            .expect(409)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
+                done();
+            });
+    });
+
+    it('Adds a new retrieve job request on same dataset, which should fail as well because not yet retrievable', function(done) {
+        request(app)
+            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .send(testRetrieveJob)
+            .set('Accept', 'application/json')
+            .expect(409)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
                 done();
             });
     });
@@ -267,13 +302,28 @@ describe("Test DatasetLifecycle and the relation to Datasets", () => {
             .expect(200)
             .expect("Content-Type", /json/)
             .end(function(err, res) {
-                if (err) return done(err);
-                console.log(res.body);
+                if (err)
+                    return done(err);
+                //console.log(res.body)
                 done();
             });
     });
 
-    it("should delete the Job", function(done) {
+
+    it('should delete the Job', function(done) {
+        request(app)
+            .delete('/api/v2/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('should delete the DatasetLifecycle', function(done) {
         request(app)
             .delete(
                 "/api/v2/Jobs/" + idJob + "?access_token=" + accessTokenIngestor
