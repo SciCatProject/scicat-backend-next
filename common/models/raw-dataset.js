@@ -33,7 +33,7 @@ module.exports = function(Rawdataset) {
       const filter = { where: { ownerGroup: ctx.instance.ownerGroup } };
       Proposal.findOne(filter,ctx.options).then(instance => {
         if(instance){
-          console.log("Appended Proposal "+instance.proposalId+" to rawdataset "+ctx.instance.pid)
+          // console.log("Appended Proposal "+instance.proposalId+" to rawdataset "+ctx.instance.pid)
           ctx.instance.proposalId=instance.proposalId
         } 
         return next()
@@ -59,13 +59,6 @@ module.exports = function(Rawdataset) {
   Rawdataset.beforeRemote('create', function(ctx, unused, next) {
     utils.updateTimesToUTC(['endTime'], ctx.args.data);
     next();
-  });
-
-  Rawdataset.beforeRemote('facet', function(ctx, userDetails, next) {
-    if (!ctx.args.fields)
-      ctx.args.fields = {};
-    ctx.args.fields.type = 'raw';
-    utils.handleOwnerGroups(ctx,next);
   });
 
   Rawdataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {

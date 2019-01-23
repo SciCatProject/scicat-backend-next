@@ -84,7 +84,6 @@ var testraw = {
     "size": 0,
     "creationTime": "2011-09-14T06:08:25.000Z",
     "description": "None",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
     "accessGroups": [],
@@ -219,7 +218,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new raw dataset', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
+            .post('/api/v3/RawDatasets?access_token=' + accessTokenIngestor)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
@@ -240,7 +239,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new origDatablock', function(done) {
         request(app)
-            .post('/api/v2/OrigDatablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/OrigDatablocks?access_token=' + accessTokenArchiveManager)
             .send(testorigDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
@@ -259,7 +258,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     // multi-delete actions to finish
     async function deleteDatablock(item) {
         await request(app)
-            .delete('/api/v2/Datablocks/' + item.id + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + item.id + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
     }
@@ -274,7 +273,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     it('remove potentially existing datablocks to guarantee uniqueness', function(done) {
         let filter = '{"where": {"archiveId": {"inq": ["someOtherId", "' + testdataBlock.archiveId + '"]}}}'
         // console.log("Filter expression before encoding:",filter)
-        let url = '/api/v2/Datablocks?filter=' + encodeURIComponent(filter) + '&access_token=' + accessTokenArchiveManager
+        let url = '/api/v3/Datablocks?filter=' + encodeURIComponent(filter) + '&access_token=' + accessTokenArchiveManager
         // console.log("============= url of query: ", url)
         request(app)
             .get(url)
@@ -293,7 +292,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new datablock', function(done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(200)
@@ -310,7 +309,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new datablock again which should fail because it is already stored', function(done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(401)
@@ -324,7 +323,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new datablock which should fail because wrong functional account', function(done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenIngestor)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenIngestor)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(401)
@@ -339,7 +338,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     it('adds a second datablock for same dataset', function(done) {
         testdataBlock.archiveId = "someOtherId",
             request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(200)
@@ -357,7 +356,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('Should fetch all datablocks belonging to the new dataset', function(done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -371,7 +370,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('The size fields in the dataset should be correctly updated', function(done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -386,7 +385,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('should delete a datablock', function(done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -399,7 +398,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('should delete a OrigDatablock', function(done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -412,7 +411,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('should delete the 2nd datablock', function(done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -425,7 +424,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('should delete the newly created dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

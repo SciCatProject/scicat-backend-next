@@ -29,13 +29,6 @@ module.exports = function (Deriveddataset) {
         next();
     });
 
-    Deriveddataset.beforeRemote('facet', function(ctx, userDetails, next) {
-            if (!ctx.args.fields)
-            ctx.args.fields = {};
-        ctx.args.fields.type = 'derived';
-        utils.handleOwnerGroups(ctx, next);
-    })
-    
     Deriveddataset.beforeRemote('fullfacet', function(ctx, userDetails, next) {
             if (!ctx.args.fields)
             ctx.args.fields = {};

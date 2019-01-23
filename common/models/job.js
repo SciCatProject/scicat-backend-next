@@ -49,50 +49,27 @@ function publishJob(job, ctx, next) {
 
 function MarkDatasetsAsScheduled(job, ctx, idList, next) {
 
-    let DatasetLifecycle = app.models.DatasetLifecycle;
-    DatasetLifecycle.updateAll(
-        {
-            datasetId: {
-                inq: idList
-            }
-        },
-        {
+    let Dataset = app.models.Dataset;
+    Dataset.updateAll({
+        pid: {
+            inq: idList
+        }
+    }, {
+        datasetlifecycle: {
             archivable: false,
             retrievable: false,
             archiveStatusMessage: "scheduledForArchiving"
         }
-        , ctx.options, function (err, p) {
-            if (err) {
-                var e = new Error();
-                e.statusCode = 404;
-                e.message = 'Can not find all needed DatasetLifecycle entries - no archive job sent:\n' + JSON.stringify(err)
-                next(e);
-            } else {
-                // since updateAll does not send context and therefore the DatasetLifecycle updates are not copied over 
-                // to Dataset one has to do the update here on Dataset in addition
-                let Dataset = app.models.Dataset;
-                Dataset.updateAll(
-                    {
-                        pid: {
-                            inq: idList
-                        }
-                    },
-                    {
-                        archivable: false,
-                        retrievable: false
-                    }
-                    , ctx.options, function (err, p) {
-                        if (err) {
-                            var e = new Error();
-                            e.statusCode = 404;
-                            e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
-                            next(e);
-                        } else {
-                            publishJob(job, ctx, next)
-                        }
-                    });
-            }
-        });
+    }, ctx.options, function (err, p) {
+        if (err) {
+            var e = new Error();
+            e.statusCode = 404;
+            e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
+            next(e);
+        } else {
+            publishJob(job, ctx, next)
+        }
+    });
 }
 // for archive jobs all datasets must be in state archivable
 function TestArchiveJobs(job, ctx, idList, next) {
@@ -112,7 +89,7 @@ function TestArchiveJobs(job, ctx, idList, next) {
             next(e);
         } else {
             // mark all Datasets as in state scheduledForArchiving, archivable=false
-            // console.log("mark  datasets as to be archived: ctx.options,idlist",ctx.options,idList)
+            console.log("mark  datasets as to be archived: ctx.options,idlist",ctx.options,idList)
             MarkDatasetsAsScheduled(job, ctx, idList, next)
         }
     });

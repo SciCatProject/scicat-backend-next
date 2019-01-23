@@ -53,7 +53,7 @@ describe('Simple Policy tests', () => {
 
     it('adds a new policy', function(done) {
         request(app)
-            .post('/api/v2/Policies?access_token=' + accessToken)
+            .post('/api/v3/Policies?access_token=' + accessToken)
             .send(testdataset)
             .set('Accept', 'application/json')
             .expect(200)
@@ -70,7 +70,7 @@ describe('Simple Policy tests', () => {
 
     it('should fetch this new policy', function(done) {
         request(app)
-            .get('/api/v2/Policies/' + id + '?access_token=' + accessToken)
+            .get('/api/v3/Policies/' + id + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -83,7 +83,7 @@ describe('Simple Policy tests', () => {
 
     it('should delete this policy', function(done) {
         request(app)
-            .delete('/api/v2/Policies/' + id + '?access_token=' + accessToken)
+            .delete('/api/v3/Policies/' + id + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

@@ -35,9 +35,6 @@
             ],
             "description": "None",
             "type": "raw",
-            "license": "CC BY-SA 4.0",
-            "doi": "not yet defined",
-            "isPublished": false,
             "ownerGroup": "p13388",
             "accessGroups": []
         },
@@ -65,7 +62,6 @@
             "description": "None",
             "type": "raw",
             "license": "CC BY-SA 4.0",
-            "doi": "not yet defined",
             "isPublished": false,
             "ownerGroup": "p12345",
             "accessGroups": []

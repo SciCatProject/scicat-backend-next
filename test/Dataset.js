@@ -26,7 +26,6 @@ var testdataset = {
     "description": "None",
     "type": "raw",
     "license": "CC BY-SA 4.0",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": []
@@ -51,7 +50,7 @@ describe('Simple Dataset tests', () => {
 
     it('adds a new dataset', function(done) {
         request(app)
-            .post('/api/v2/Datasets?access_token=' + accessToken)
+            .post('/api/v3/Datasets?access_token=' + accessToken)
             .send(testdataset)
             .set('Accept', 'application/json')
             .expect(200)
@@ -70,7 +69,7 @@ describe('Simple Dataset tests', () => {
 
     it('should fetch this new dataset', function(done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -84,7 +83,7 @@ describe('Simple Dataset tests', () => {
 
     it('should delete this dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -98,7 +97,7 @@ describe('Simple Dataset tests', () => {
 
     it('fetches array of Datasets', function(done) {
         request(app)
-            .get('/api/v2/Datasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
+            .get('/api/v3/Datasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -112,7 +111,7 @@ describe('Simple Dataset tests', () => {
 
     it('should contain an array of facets', function(done) {
         request(app)
-            .get('/api/v2/Datasets/fullfacet?access_token=' + accessToken)
+            .get('/api/v3/Datasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

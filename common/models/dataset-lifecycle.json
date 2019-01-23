@@ -1,47 +1,26 @@
 {
     "name": "DatasetLifecycle",
-    "description": "For each dataset there exists exactly one dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
-    "base": "Ownable",
-    "idInjection": false,
-    "strict": true,
-    "indexes": {
-        "datasetId_index": {
-            "keys": {
-                "datasetId": 1
-            }
-        }
-    },
+    "description": "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
+    "base": "Model",
+    "idInjection": true,
     "options": {
         "validateUpsert": true
     },
-    "replaceOnPUT": false,
-    "mixins": {
-        "TimeStamp": {
-            "createdAt": "createdAt",
-            "updatedAt": "updatedAt",
-            "required": false,
-            "validateUpsert": true,
-            "silenceWarnings": false
-        }
-    },
     "properties": {
-        "id": {
-            "type": "string",
-            "id": true,
-            "required": true,
-            "description": "ID of status information. This must be the ID of the associated dataset"
-        },
         "archivable": {
             "type": "boolean",
-            "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet. Will be copied to Dataset for now and may become obsolete here eventually."
+            "default": false,
+            "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet."
         },
         "retrievable": {
             "type": "boolean",
-            "description": "Flag which is true, if dataset is stored on archive system and is ready to be retrieved. Will be copied to Dataset for now and may become obsolete here eventually."
+            "default": false,
+            "description": "Flag which is true, if dataset is stored on archive system and is ready to be retrieved."
         },
         "publishable": {
             "type": "boolean",
-            "description": "Flag which is true, if dataset can be published. Usually requires a longterm storage option on tape or similar. Will be copied to Dataset for now and may become obsolete here eventually."
+            "default": false,
+            "description": "Flag which is true, if dataset can be published. Usually requires a longterm storage option on tape or similar."
         },
         "dateOfDiskPurging": {
             "type": "date",
@@ -57,109 +36,40 @@
         },
         "isOnCentralDisk": {
             "type": "boolean",
+            "default": true,
             "description": "Flag which is true, if full dataset is available on central fileserver. If false data needs to be copied from decentral storage place to  a cache server before the ingest. This information needs to be transferred to the archive system at archive time"
-        },
-        "isOnDisk": {
-            "type": "boolean",
-            "description": "Flag which is true, if full dataset is available on disk. Warning: will be obsoleted in coming versions"
-        },
-        "isOnTape": {
-            "type": "boolean",
-            "description": "Flag which is true, if full dataset has been stored to tape. Warning: will be obsoleted in coming versions"
         },
         "archiveStatusMessage": {
             "type": "string",
-            "description": "Current status of Dataset with respect to storage on disk/tape. Warning: will be obsoleted in coming versions"
+            "default": "datasetCreated",
+            "description": "Short string defining current status of Dataset with respect to storage on disk/tape."
         },
         "retrieveStatusMessage": {
             "type": "string",
-            "description": "Latest message for this dataset concerning retrieve from archive system. Warning: will be obsoleted in coming versions"
-        },
-        "lastUpdateMessage": {
-            "type": "string",
-            "description": "Latest status update / transition message for this dataset. Warning: will be obsoleted in coming versions"
+            "default": "",
+            "description": "Latest message for this dataset concerning retrieve from archive system."
         },
         "archiveReturnMessage": {
-            "type": "string",
-            "description": "Detailed status or error message returned by archive system when treating this dataset. Warning: will be obsoleted in coming versions"
+            "type": "object",
+            "description": "Detailed status or error message returned by archive system when archiving this dataset."
         },
-        "dateOfLastMessage": {
-            "type": "date",
-            "description": "Time when last status message was sent. Format according to chapter 5.6 internet date/time format in RFC 3339. This will be filled automatically if not provided. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. Warning: will be obsoleted in coming versions"
-        },
-        "isExported": {
-            "type": "boolean",
-            "description": "Flag is true if data was exported to another location. Warning: will be obsoleted in coming versions"
+        "retrieveReturnMessage": {
+            "type": "object",
+            "description": "Detailed status or error message returned by archive system when retrieving this dataset."
         },
         "exportedTo": {
             "type": "string",
-            "description": "Location of the export destination. Warning: will be obsoleted in coming versions"
+            "description": "Location of the last export destination."
+        },
+        "retrieveIntegrityCheck" :{
+            "type": "boolean",
+            "default": false,
+            "description": "Set to true when checksum tests after retrieve of datasets were succesful"
         }
     },
     "validations": [],
-    "relations": {
-        "dataset": {
-            "type": "belongsTo",
-            "model": "Dataset",
-            "foreignKey": "",
-            "required": true
-        },
-        "messageHistory": {
-            "type": "embedsMany",
-            "model": "Message",
-            "property": "MessageHistory",
-            "options": {
-                "validate": false,
-                "forceId": false,
-                "persistent": true
-            }
-        }
-    },
-    "acls": [{
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "admin",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "ALLOW"
-        }
-    ],
-    "methods": {
-        "reset": {
-            "accepts": [{
-                    "arg": "datasetId",
-                    "type": "string"
-                },
-                {
-                    "arg": "options",
-                    "type": "object",
-                    "http": "optionsFromRequest"
-                }
-            ],
-            "returns": {
-                "root": true
-            },
-            "description": "Delete datablocks of dataset and reset status message.",
-            "http": {
-                "path": "/resetArchiveStatus",
-                "verb": "put"
-            }
-        }
-    }
+    "relations": {},
+    "acls": [],
+    "methods": {}
+
 }

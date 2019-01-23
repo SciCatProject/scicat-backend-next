@@ -43,7 +43,7 @@ describe('Simple Proposal tests', () => {
     // multi-delete actions to finish
     async function deleteProposal(item) {
         await request(app)
-            .delete('/api/v2/Proposals/' + item.proposalId + '?access_token=' + accessToken)
+            .delete('/api/v3/Proposals/' + item.proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
     }
@@ -58,7 +58,7 @@ describe('Simple Proposal tests', () => {
     it('remove potentially existing proposals to guarantee uniqueness', function(done) {
         let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}'
         // console.log("Filter expression before encoding:",filter)
-        let url = '/api/v2/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
+        let url = '/api/v3/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
         // console.log("============= url of query: ", url)
         request(app)
             .get(url)
@@ -77,7 +77,7 @@ describe('Simple Proposal tests', () => {
 
     it('adds a new proposal', function(done) {
         request(app)
-            .post('/api/v2/Proposals?access_token=' + accessToken)
+            .post('/api/v3/Proposals?access_token=' + accessToken)
             .send(testproposal)
             .set('Accept', 'application/json')
             .expect(200)
@@ -94,7 +94,7 @@ describe('Simple Proposal tests', () => {
 
     it('should fetch this new proposal', function(done) {
         request(app)
-            .get('/api/v2/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .get('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -107,7 +107,7 @@ describe('Simple Proposal tests', () => {
 
     it('should delete this proposal', function(done) {
         request(app)
-            .delete('/api/v2/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .delete('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

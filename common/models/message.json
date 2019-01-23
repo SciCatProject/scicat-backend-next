@@ -1,6 +1,6 @@
 {
     "name": "Message",
-    "description": "Embedded information used inside DatasetLifecycle or Job to keep track of history.",
+    "description": "To get auto-created history information.",
     "base": "Model",
     "idInjection": true,
     "strict": true,

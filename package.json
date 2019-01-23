@@ -1,6 +1,6 @@
 {
     "name": "dacat-api",
-    "version": "2.9.1",
+    "version": "3.0.1",
     "main": "server/server.js",
     "engines": {
         "node": ">=4"
