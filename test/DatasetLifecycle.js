@@ -155,6 +155,21 @@ describe('Test facet and filter queries', () => {
             });
     });
 
+    it('Updating the datasetLifecycle information', function (done) {
+        request(app)
+            .put('/api/v3/Datasets/'+pid+'/datasetLifecycle?access_token=' + accessTokenIngestor)
+            .send({"archivable": true})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('archivable').and.equal(true);
+                return done();
+            });
+    });
+
     // TODO add test for raw and derived dataset queries as well
 
     it('Should return datasets with complex join query fulfilled', function (done) {
@@ -212,7 +227,7 @@ describe('Test facet and filter queries', () => {
             "datasetlifecycle.archiveStatusMessage": "datasetCreated"
         }
         var limits = {
-            skip: 10
+            skip: 50
         }
 
         request(app)

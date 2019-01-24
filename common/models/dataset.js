@@ -22,19 +22,19 @@ module.exports = function (Dataset) {
     // put
     Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        next();
+        utils.keepHistory(ctx, next)
     });
 
     // patch
     Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        next();
+        utils.keepHistory(ctx, next)
     });
 
     // post
     Dataset.beforeRemote('create', function (ctx, unused, next) {
         utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        next();
+        utils.keepHistory(ctx, next)
     });
 
     // auto add pid
@@ -63,10 +63,20 @@ module.exports = function (Dataset) {
                     }
                 }
             }
-            if (!ctx.instance.ownerGroup) {
-                next("No owner group defined");
-            }
 
+            if (ctx.instance.datasetlifecycle) {
+                // auto fill retention and publishing time
+                var now = new Date();
+                if (!ctx.instance.datasetlifecycle.archiveRetentionTime) {
+                    var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
+                    ctx.instance.datasetlifecycle.archiveRetentionTime = retention.toISOString().substring(0, 10);
+                }
+                if (!ctx.instance.datasetlifecycle.dateOfPublishing) {
+                    now = new Date(); // now was modified above
+                    var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
+                    ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
+                }
+            }
             // auto fill classification and add policy if missing
 
             var Policy = app.models.Policy;
@@ -130,41 +140,36 @@ module.exports = function (Dataset) {
     // TODO can the additional findbyId calls be avoided ?
 
     Dataset.reset = function (id, options, next) {
-        // console.log('resetting ' + id);
         var Datablock = app.models.Datablock;
         Dataset.findById(id, options, function (err, l) {
             if (err) {
                 next(err);
             } else {
                 l.updateAttributes({
-                    archiveStatusMessage: 'datasetCreated',
-                    retrieveStatusMessage: '',
-                    archivable: true,
-                    retrievable: false
-                }, options);
-                // console.log('Dataset Lifecycle reset');
-                Datablock.destroyAll({
-                    datasetId: id,
-                }, options, function (err, b) {
-                    if (err) {
-                        next(err);
-                    } else {
-                        // console.log('Deleted blocks', b);
-                        Dataset.findById(id, options, function (err, instance) {
-                            if (err) {
-                                next(err);
-                            } else {
-                                instance.updateAttributes({
-                                    packedSize: 0,
-                                }, options);
-                                next();
-                            }
-                        });
-                    }
+                    datasetlifecycle: {
+                        archivable: true,
+                        retrievable: false,
+                        publishable: false,
+                        archiveStatusMessage: 'datasetCreated',
+                        retrieveStatusMessage: '',
+                        retrieveIntegrityCheck: false
+                    },
+                    packedSize: 0
+                }, options, function (err, dsInstance) {
+                    Datablock.destroyAll({
+                        datasetId: id,
+                    }, options, function (err, b) {
+                        if (err) {
+                            next(err);
+                        } else {
+                            next()
+                        }
+                    });
                 });
             }
         });
     };
+
 
     /**
      * Inherited models will not call this before access, so it must be replicated
@@ -349,7 +354,7 @@ module.exports = function (Dataset) {
                 } else {
                     // check if field is in linked models
                     if (key in dsl.properties) {
-                        matchJoin["_datasetLifecycle." + key] = searchExpression(key, fields[key])
+                        matchJoin["datasetlifecycle." + key] = searchExpression(key, fields[key])
                     } else {
                         match[key] = searchExpression(key, fields[key])
                     }
@@ -474,36 +479,4 @@ module.exports = function (Dataset) {
     });
 
 
-    // clean up data connected to a dataset, e.g. if archiving failed
-
-    Dataset.reset = function (id, options, next) {
-        var Datablock = app.models.Datablock;
-        Dataset.findById(id, options, function (err, l) {
-            if (err) {
-                next(err);
-            } else {
-                l.updateAttributes({
-                    datasetlifecycle: {
-                        archivable: true,
-                        retrievable: false,
-                        publishable: false,
-                        archiveStatusMessage: 'datasetCreated',
-                        retrieveStatusMessage: '',
-                        retrieveIntegrityCheck: false
-                    },
-                    packedSize: 0
-                }, options, function (err, dsInstance) {
-                    Datablock.destroyAll({
-                        datasetId: id,
-                    }, options, function (err, b) {
-                        if (err) {
-                            next(err);
-                        } else {
-                            next()
-                        }
-                    });
-                });
-            }
-        });
-    };
 };

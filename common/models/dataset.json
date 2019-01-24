@@ -98,6 +98,10 @@
         "isPublished": {
             "type": "boolean",
             "description": "Flag is true when data are made publically available"
+        },
+        "history": {
+            "type": ["object"],
+            "description": "auto generated array of messages keeping track of change"
         }
     },
     "validations": [],

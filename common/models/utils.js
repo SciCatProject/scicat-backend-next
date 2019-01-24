@@ -40,8 +40,8 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
                     if (instance) {
                         // important to pass options here, otherwise context gets lost
                         instance.updateAttributes({
-                            [sizeField]: total
-                        }, ctx.options,
+                                [sizeField]: total
+                            }, ctx.options,
                             function (err, instance) {
                                 if (err) {
                                     var error = new Error();
@@ -237,4 +237,54 @@ exports.handleOwnerGroups = function (ctx, next) {
             })
         }
     });
+}
+
+exports.updateTimesToUTC = function (dateKeys, instance) {
+    dateKeys.map(function (dateKey) {
+        if (instance[dateKey]) {
+            // console.log("Updating old ", dateKey, instance[dateKey])
+            instance[dateKey] = moment.tz(instance[dateKey], moment.tz.guess()).format();
+            // console.log("New time:", instance[dateKey])
+        }
+    });
+}
+
+// returns error object, usually null
+
+exports.keepHistory = function (ctx, next) {
+    // create new message
+    var instance = ctx.args.data
+
+    let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
+    if (userId === null && ctx.req.args) {
+        userId = ctx.req.args.accessToken;
+    }
+    var User = app.models.User;
+    if (!userId) {
+        var e = new Error('Cannot find access token');
+        e.statusCode = 401;
+        return next(e);
+    } else {
+        User.findById(userId, function (err, user) {
+            if (err) {
+                return next(err);
+            }
+
+            var message = {
+                sender: user["username"],
+                when: new Date(),
+                payload: {} // TODO add stuff here but avoid cyclic problem ctx.args.data
+            }
+
+            if (!instance.history) {
+                console.log("Adding history array")
+                instance.history = []
+            }
+            // append it to history array
+            instance.history.push(message)
+            console.log("==== Current history:", instance.history)
+            return next()
+        })
+
+    }
 }
