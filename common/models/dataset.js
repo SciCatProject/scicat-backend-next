@@ -19,23 +19,63 @@ module.exports = function (Dataset) {
 
     Dataset.validatesUniquenessOf('pid');
 
-    // put
-    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
-        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        utils.keepHistory(ctx, next)
-    });
+    // // put
+    // Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
+    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+    //     utils.keepHistory(ctx, next)
+    // });
 
-    // patch
-    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
-        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        utils.keepHistory(ctx, next)
-    });
+    // // patch
+    // Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
+    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+    //     utils.keepHistory(ctx, next)
+    // });
 
-    // post
-    Dataset.beforeRemote('create', function (ctx, unused, next) {
-        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-        utils.keepHistory(ctx, next)
-    });
+    // // post
+    // Dataset.beforeRemote('create', function (ctx, unused, next) {
+    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+    //     utils.keepHistory(ctx, next)
+    // });
+
+    // // TODO replace the *.* by the real name needed
+    // // remove history field from remote output  as discussed here: https://loopback.io/doc/en/lb3/Remote-hooks.html#overview ?
+    // // update attributes
+    // Dataset.beforeRemote('*.*', function (ctx, unused, next) {
+    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+    //     utils.keepHistory(ctx, next)
+    // });
+
+    function addDefaultPolicy(ownerGroup, ownerEmail, tapeRedundancy, ctx, next) {
+        var Policy = app.models.Policy;
+        var defaultPolicy = Object();
+        defaultPolicy.ownerGroup = ownerGroup;
+        if (config && !ownerEmail) {
+            defaultPolicy.manager = config.defaultManager;
+        } else if (ownerEmail) {
+            defaultPolicy.manager = ownerEmail.split(",");
+        } else {
+            defaultPolicy.manager = "";
+        }
+        if (tapeRedundancy) {
+            defaultPolicy.tapeRedundancy = tapeRedundancy;
+        } else {
+            defaultPolicy.tapeRedundancy = "low"; // AV default low
+        }
+        defaultPolicy.autoArchive = false;
+        defaultPolicy.autoArchiveDelay = 7;
+        defaultPolicy.archiveEmailNotification = true;
+        defaultPolicy.retrieveEmailNotification = true;
+        defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
+        defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
+        defaultPolicy.embargoPeriod = 3;
+        Policy.create(defaultPolicy, ctx.options, function (err, instance) {
+            if (err) {
+                console.log("Error when creating default policy:", err)
+                return next(err)
+            }
+            utils.keepHistory(ctx,next)
+        });
+    };
 
     // auto add pid
     Dataset.observe('before save', (ctx, next) => {
@@ -110,7 +150,7 @@ module.exports = function (Dataset) {
                         ctx.instance.classification = classification;
                     }
                     // case 2: classification defined and policy defined: do nothing
-                    return next()
+                    utils.keepHistory(ctx,next)
                 } else {
                     let tapeRedundancy = "low"
                     if (!ctx.instance.classification) {
@@ -127,14 +167,15 @@ module.exports = function (Dataset) {
                             tapeRedundancy = "high";
                         }
                     }
-                    Policy.addDefault(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, ctx.options, next);
+                    addDefaultPolicy(ctx.instance.ownerGroup, ctx.instance.ownerEmail, tapeRedundancy, ctx, next);
                 }
             });
         } else {
-            // no instance, continue
-            return next()
+            // update case
+            utils.keepHistory(ctx,next)
         }
     });
+
 
     // clean up data connected to a dataset, e.g. if archiving failed
     // TODO can the additional findbyId calls be avoided ?

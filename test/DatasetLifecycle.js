@@ -155,20 +155,7 @@ describe('Test facet and filter queries', () => {
             });
     });
 
-    it('Updating the datasetLifecycle information', function (done) {
-        request(app)
-            .put('/api/v3/Datasets/'+pid+'/datasetLifecycle?access_token=' + accessTokenIngestor)
-            .send({"archivable": true})
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function (err, res) {
-                if (err)
-                    return done(err);
-                res.body.should.have.property('archivable').and.equal(true);
-                return done();
-            });
-    });
+
 
     // TODO add test for raw and derived dataset queries as well
 
@@ -265,6 +252,8 @@ describe('Test facet and filter queries', () => {
             });
     });
 
+    // TODO test with RawDatasets API endpoint
+
     // Note: make the tests with PUT instead of patch as long as replaceOnPut false
     it('Should update archive status message from archiveManager account', function (done) {
         request(app)
@@ -282,6 +271,21 @@ describe('Test facet and filter queries', () => {
                 done();
             });
 
+    });
+
+    it('Should update the datasetLifecycle information directly via embedded model API', function (done) {
+        request(app)
+            .put('/api/v3/Datasets/'+pid+'/datasetLifecycle?access_token=' + accessTokenIngestor)
+            .send({"archivable": true})
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('archivable').and.equal(true);
+                return done();
+            });
     });
 
     it('Should reset the embedded DatasetLifecycle status and delete Datablocks', function (done) {

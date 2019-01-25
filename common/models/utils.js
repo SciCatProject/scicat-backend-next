@@ -249,42 +249,43 @@ exports.updateTimesToUTC = function (dateKeys, instance) {
     });
 }
 
-// returns error object, usually null
-
+// TODO take into account situation where many datasets are updated, i.e. updateAll situation
+// this should then update the history in all affected documents
 exports.keepHistory = function (ctx, next) {
     // create new message
-    var instance = ctx.args.data
-
-    let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    if (userId === null && ctx.req.args) {
-        userId = ctx.req.args.accessToken;
+    if (ctx.instance) {
+        // console.log("Keephistory: Instance is defined")
     }
-    var User = app.models.User;
-    if (!userId) {
-        var e = new Error('Cannot find access token');
-        e.statusCode = 401;
-        return next(e);
-    } else {
-        User.findById(userId, function (err, user) {
-            if (err) {
-                return next(err);
-            }
+    if (ctx.data) {
+        // console.log("Keephistory: ctx.data is defined:", ctx.data)
 
-            var message = {
-                sender: user["username"],
-                when: new Date(),
-                payload: {} // TODO add stuff here but avoid cyclic problem ctx.args.data
-            }
-
-            if (!instance.history) {
-                console.log("Adding history array")
-                instance.history = []
-            }
-            // append it to history array
-            instance.history.push(message)
-            console.log("==== Current history:", instance.history)
-            return next()
-        })
-
+        // add history to ctx.data
+        var message = {
+            sender: ctx.options.currentUserEmail,
+            when: new Date(),
+            payload: JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
+        }
+        // Note: for embedded model this creates an embedded history since currentInstance its just the embedded portion
+        if(ctx.currentInstance && ctx.currentInstance.history){
+         //   console.log("==============Taking history from currentInstance",JSON.stringify(ctx.currentInstance.history))
+            ctx.data.history=ctx.currentInstance.history
+        } else {
+            ctx.data.history=[]
+        }
+        ctx.data.history.push(message)
+        //console.log("============= Resulting history:",JSON.stringify(ctx.data.history,null,4))
     }
+    if (ctx.where){
+       // console.log(" Multiinstance update, where condition:",ctx.where)
+    }
+    if (ctx.isNewInstance) {
+       //  console.log("Keephistory: newInstance is defined")
+    }
+    if (ctx.options) {
+        // console.log("Keephistory: ctx.options is defined:")
+    }
+    if (ctx.currentInstance) {
+       // console.log("Keephistory: current Instance (readonly):",ctx.currentInstance)
+    }
+    next()
 }
