@@ -56,15 +56,40 @@ module.exports = function (app) {
             //console.log("============ Phase: args,options",ctx.args,ctx.options)
             if (!ctx.args.options || !ctx.args.options.accessToken) return next();
             const User = app.models.User;
+            const UserIdentity = app.models.UserIdentity
+            // first check if email in User
             User.findById(ctx.args.options.accessToken.userId, function (err, user) {
                 if (err) return next(err);
                 // console.log("Found user:",user)
                 ctx.args.options.currentUser = user.username;
                 // TODO get email from UserIdentity and only this email for functional accounts
                 ctx.args.options.currentUserEmail = user.email;
-                // console.log("Resulting options:",ctx.args.options)
-                next();
+                // override email field for normal user accounts
+                UserIdentity.findOne({
+                    //json filter
+                    where: {
+                        userId: ctx.args.options.accessToken.userId
+                    }
+                }, function (err, u) {
+                    // add user email and groups
+                    if (!!u) {
+                        var groups = []
+                        if (u.profile) {
+                            console.log("Profile:",u.profile)
+                            // if user account update where query to append group groupCondition
+                            ctx.args.options.currentUser = u.profile.username
+                            ctx.args.options.currentUserEmail  = u.profile.email;
+                            groups = u.profile.accessGroups
+                            // check if a normal user or an internal ROLE
+                            if (typeof groups === 'undefined') {
+                                groups = []
+                            }
+                        }
+                        ctx.args.options.currentGroups=groups
+                    }
+                    //console.log("Resulting options:",ctx.args.options)
+                    return next()
+                })
             });
         });
-
 };

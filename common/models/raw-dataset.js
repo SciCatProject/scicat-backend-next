@@ -47,23 +47,23 @@ module.exports = function (Rawdataset) {
         }
     });
 
-    // // put
-    // Rawdataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
-    //     utils.updateTimesToUTC(['endTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // put
+    Rawdataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['endTime'], ctx.args.data);
+        next()
+    });
 
-    // // patch
-    // Rawdataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
-    //     utils.updateTimesToUTC(['endTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // patch
+    Rawdataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['endTime'], ctx.args.data);
+        next()
+    });
 
-    // // post
-    // Rawdataset.beforeRemote('create', function (ctx, unused, next) {
-    //     utils.updateTimesToUTC(['endTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // post
+    Rawdataset.beforeRemote('create', function (ctx, unused, next) {
+        utils.updateTimesToUTC(['endTime'], ctx.args.data);
+        next()
+    });
 
     Rawdataset.beforeRemote('fullfacet', function (ctx, userDetails, next) {
         if (!ctx.args.fields)

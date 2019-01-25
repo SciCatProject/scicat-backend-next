@@ -9,8 +9,6 @@ var dsr = require('./raw-dataset.json');
 var dsd = require('./derived-dataset.json');
 var own = require('./ownable.json');
 
-// TODO Auto-create history for remote calls
-
 // TODO Add delete functionality for dataset, which removes Dataset and all linked data: OrigDatablock and Datablock and DatasetAttachments
 
 module.exports = function (Dataset) {
@@ -19,31 +17,23 @@ module.exports = function (Dataset) {
 
     Dataset.validatesUniquenessOf('pid');
 
-    // // put
-    // Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
-    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // put
+    Dataset.beforeRemote('replaceOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+        next()
+    });
 
-    // // patch
-    // Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
-    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // patch
+    Dataset.beforeRemote('patchOrCreate', function (ctx, instance, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+        next()
+    });
 
-    // // post
-    // Dataset.beforeRemote('create', function (ctx, unused, next) {
-    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
-
-    // // TODO replace the *.* by the real name needed
-    // // remove history field from remote output  as discussed here: https://loopback.io/doc/en/lb3/Remote-hooks.html#overview ?
-    // // update attributes
-    // Dataset.beforeRemote('*.*', function (ctx, unused, next) {
-    //     utils.updateTimesToUTC(['creationTime'], ctx.args.data);
-    //     utils.keepHistory(ctx, next)
-    // });
+    // post
+    Dataset.beforeRemote('create', function (ctx, unused, next) {
+        utils.updateTimesToUTC(['creationTime'], ctx.args.data);
+        next()
+    });
 
     function addDefaultPolicy(ownerGroup, ownerEmail, tapeRedundancy, ctx, next) {
         var Policy = app.models.Policy;

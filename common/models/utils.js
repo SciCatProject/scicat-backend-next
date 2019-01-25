@@ -84,7 +84,6 @@ exports.addOwnerGroup = function (ctx, next) {
             const datasetId = decodeURIComponent(instance.datasetId)
             // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
             if (instance.ownerGroup == undefined) {
-                // TODO get group from dataset
                 var Dataset = app.models.Dataset
                 // console.log("Looking for dataset with id:", datasetId)
                 Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
@@ -249,7 +248,7 @@ exports.updateTimesToUTC = function (dateKeys, instance) {
     });
 }
 
-// TODO take into account situation where many datasets are updated, i.e. updateAll situation
+// TODO important  take into account situation where many datasets are updated, i.e. updateAll situation
 // this should then update the history in all affected documents
 exports.keepHistory = function (ctx, next) {
     // create new message
