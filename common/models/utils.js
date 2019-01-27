@@ -253,7 +253,7 @@ exports.updateTimesToUTC = function (dateKeys, instance) {
 exports.keepHistory = function (ctx, next) {
     // create new message
     if (ctx.instance) {
-        // console.log("Keephistory: Instance is defined")
+       // console.log("Keephistory: Instance is defined")
     }
     if (ctx.data) {
         // console.log("Keephistory: ctx.data is defined:", ctx.data)
@@ -264,27 +264,27 @@ exports.keepHistory = function (ctx, next) {
             when: new Date(),
             payload: JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
         }
-        // Note: for embedded model this creates an embedded history since currentInstance its just the embedded portion
+        // Note: for embedded model this creates an embedded history since currentInstance is just the embedded portion
         if(ctx.currentInstance && ctx.currentInstance.history){
-         //   console.log("==============Taking history from currentInstance",JSON.stringify(ctx.currentInstance.history))
+         //console.log("==============Taking history from currentInstance",JSON.stringify(ctx.currentInstance.history))
             ctx.data.history=ctx.currentInstance.history
         } else {
             ctx.data.history=[]
         }
         ctx.data.history.push(message)
-        //console.log("============= Resulting history:",JSON.stringify(ctx.data.history,null,4))
+        // console.log("============= Resulting history after update for pid:",JSON.stringify(ctx.data.history,null,4))
     }
     if (ctx.where){
-       // console.log(" Multiinstance update, where condition:",ctx.where)
+       // console.log(" Multiinstance update, where condition:",JSON.stringify(ctx.where,null,4))
     }
     if (ctx.isNewInstance) {
-       //  console.log("Keephistory: newInstance is defined")
+       // console.log("Keephistory: newInstance is defined")
     }
     if (ctx.options) {
         // console.log("Keephistory: ctx.options is defined:")
     }
     if (ctx.currentInstance) {
-       // console.log("Keephistory: current Instance (readonly):",ctx.currentInstance)
+       //console.log("Keephistory: current Instance (readonly):",ctx.currentInstance)
     }
     next()
 }

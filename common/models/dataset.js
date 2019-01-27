@@ -9,7 +9,7 @@ var dsr = require('./raw-dataset.json');
 var dsd = require('./derived-dataset.json');
 var own = require('./ownable.json');
 
-// TODO Add delete functionality for dataset, which removes Dataset and all linked data: OrigDatablock and Datablock and DatasetAttachments
+// TODO Feature  Add delete functionality for dataset, which removes Dataset and all linked data: OrigDatablock and Datablock and DatasetAttachments
 
 module.exports = function (Dataset) {
     var app = require('../../server/server');
@@ -162,10 +162,10 @@ module.exports = function (Dataset) {
             });
         } else {
             // update case
+            console.log("Inside dataset, update case")
             utils.keepHistory(ctx,next)
         }
     });
-
 
     // clean up data connected to a dataset, e.g. if archiving failed
     // TODO can the additional findbyId calls be avoided ?

@@ -26,22 +26,24 @@ module.exports = function (Rawdataset) {
     Rawdataset.observe('before save', function (ctx, next) {
         if (ctx.instance) {
             ctx.instance.type = 'raw';
-        }
-        // check if proposal is linked, if not try to add one
-        if (!ctx.instance.proposalId) {
-            var Proposal = app.models.Proposal
-            const filter = {
-                where: {
-                    ownerGroup: ctx.instance.ownerGroup
-                }
-            };
-            Proposal.findOne(filter, ctx.options).then(instance => {
-                if (instance) {
-                    // console.log("Appended Proposal "+instance.proposalId+" to rawdataset "+ctx.instance.pid)
-                    ctx.instance.proposalId = instance.proposalId
-                }
+            // check if proposal is linked, if not try to add one
+            if (!ctx.instance.proposalId) {
+                var Proposal = app.models.Proposal
+                const filter = {
+                    where: {
+                        ownerGroup: ctx.instance.ownerGroup
+                    }
+                };
+                Proposal.findOne(filter, ctx.options).then(instance => {
+                    if (instance) {
+                        console.log("Appended Proposal "+instance.proposalId+" to rawdataset "+ctx.instance.pid)
+                        ctx.instance.proposalId = instance.proposalId
+                    }
+                    return next()
+                })
+            } else {
                 return next()
-            })
+            }
         } else {
             return next()
         }

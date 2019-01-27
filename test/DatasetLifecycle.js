@@ -17,6 +17,7 @@ var accessTokenUser = null;
 var pid = null;
 var pidraw = null;
 var pid2 = null;
+var pidraw2 = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -150,6 +151,7 @@ describe('Test facet and filter queries', () => {
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 // store link to this dataset in datablocks
+                pidraw2 = res.body['pid']
                 pid2 = encodeURIComponent(res.body['pid']);
                 done();
             });
@@ -157,7 +159,7 @@ describe('Test facet and filter queries', () => {
 
 
 
-    // TODO add test for raw and derived dataset queries as well
+    // TODO add test for derived dataset queries as well
 
     it('Should return datasets with complex join query fulfilled', function (done) {
         var fields = {
@@ -172,7 +174,7 @@ describe('Test facet and filter queries', () => {
         }
 
         request(app)
-            .get('/api/v3/Datasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&access_token=' + accessTokenIngestor)
+            .get('/api/v3/RawDatasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -195,7 +197,7 @@ describe('Test facet and filter queries', () => {
         }
 
         request(app)
-            .get('/api/v3/Datasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&limits=' + encodeURIComponent(JSON.stringify(limits)) + '&access_token=' + accessTokenIngestor)
+            .get('/api/v3/RawDatasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&limits=' + encodeURIComponent(JSON.stringify(limits)) + '&access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -218,7 +220,7 @@ describe('Test facet and filter queries', () => {
         }
 
         request(app)
-            .get('/api/v3/Datasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&limits=' + encodeURIComponent(JSON.stringify(limits)) + '&access_token=' + accessTokenIngestor)
+            .get('/api/v3/RawDatasets/fullquery?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&limits=' + encodeURIComponent(JSON.stringify(limits)) + '&access_token=' + accessTokenIngestor)
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
@@ -241,7 +243,7 @@ describe('Test facet and filter queries', () => {
         }
         var facets = ["type", "creationTime", "creationLocation", "ownerGroup", "keywords"]
         request(app)
-            .get('/api/v3/Datasets/fullfacet?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&facets=' + encodeURIComponent(JSON.stringify(facets)) + '&access_token=' + accessTokenIngestor)
+            .get('/api/v3/RawDatasets/fullfacet?fields=' + encodeURIComponent(JSON.stringify(fields)) + '&facets=' + encodeURIComponent(JSON.stringify(facets)) + '&access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -252,12 +254,10 @@ describe('Test facet and filter queries', () => {
             });
     });
 
-    // TODO test with RawDatasets API endpoint
-
     // Note: make the tests with PUT instead of patch as long as replaceOnPut false
     it('Should update archive status message from archiveManager account', function (done) {
         request(app)
-            .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
+            .put('/api/v3/RawDatasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .send({
                 "datasetlifecycle": {
                     "archiveStatusMessage": "dataArchivedOnTape"
@@ -273,10 +273,65 @@ describe('Test facet and filter queries', () => {
 
     });
 
+    it('Should update the datasetLifecycle information for multiple datasets', function (done) {
+        var filter = {
+            pid: {
+                inq: [pidraw, pidraw2]
+            }
+        }
+        request(app)
+            .post('/api/v3/RawDatasets/update?where=' + JSON.stringify(filter) + '&access_token=' + accessTokenIngestor)
+            .send({
+                "datasetlifecycle": {
+                    "archiveStatusMessage": "justAnotherTestMessage"
+                }
+            })
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.property('count').and.equal(2);
+                return done();
+            });
+    });
+
+    it('The history status should now include the last change for the first raw dataset', function (done) {
+        request(app)
+            .get('/api/v3/RawDatasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                //console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[0].payload.datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+
+                done();
+            });
+
+    });
+
+    it('The history status should now include the last change for second raw dataset', function (done) {
+        request(app)
+            .get('/api/v3/RawDatasets/' + pid2 + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                // console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[0].payload.datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                done();
+            });
+
+    });
+
     it('Should update the datasetLifecycle information directly via embedded model API', function (done) {
         request(app)
-            .put('/api/v3/Datasets/'+pid+'/datasetLifecycle?access_token=' + accessTokenIngestor)
-            .send({"archivable": true})
+            .put('/api/v3/RawDatasets/' + pid + '/datasetLifecycle?access_token=' + accessTokenIngestor)
+            .send({
+                "archivable": true
+            })
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -287,6 +342,9 @@ describe('Test facet and filter queries', () => {
                 return done();
             });
     });
+
+
+
 
     it('Should reset the embedded DatasetLifecycle status and delete Datablocks', function (done) {
         request(app)
