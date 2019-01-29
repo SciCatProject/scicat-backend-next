@@ -102,9 +102,6 @@
     },
     "validations": [],
     "relations": {
-
-    },
-    "relations": {
         "historyList": {
             "type": "embedsMany",
             "model": "Message",

@@ -249,25 +249,47 @@ exports.updateTimesToUTC = function (dateKeys, instance) {
 }
 
 // recursive function needed to call asynch calls inside a loop
-function updateDatasets(index, datasetInstances, message, cb) {
+function updateDatasets(ctx, datasetInstances, index, next) {
     if (index < 0) {
-        cb()
+        return next()
     } else {
         // do the real action
-        datasetInstances[index].historyList.build(message)
-        // save the result
-        datasetInstances[index].updateAttributes({
-            history: datasetInstances[index].history
+        var InitialDataset = app.models.InitialDataset
+        InitialDataset.findById(datasetInstances[index].pid, ctx.options, function (err, initialDatasetInstance) {
+            if (err) {
+                console.log("Error when searching for initial dataset:", err)
+                return next()
+            }
+            if (!initialDatasetInstance) {
+                InitialDataset.create(datasetInstances[index], function (err, instance) {
+                    console.log("Created a dataset copy for pid:", datasetInstances[index].pid)
+                    updateHistory(ctx, datasetInstances, index, next)
+                })
+            } else {
+                updateHistory(ctx, datasetInstances, index, next)
+            }
+        })
+    }
+}
+
+function updateHistory(ctx, datasetInstances, index, next) {
+    var Dataset = app.models.Dataset
+    Dataset.findById(datasetInstances[index].pid, ctx.options, function (err, datasetInstance) {
+        // function add does not work here, why ?
+        // deep copy needed to avoid circular links
+        datasetInstance.historyList.build(JSON.parse(JSON.stringify(ctx.data)))
+        datasetInstance.updateAttributes({
+            history: datasetInstance.history
         }, function (err, instance) {
-            // console.log("++++ Inside loop on datasetInstance after update history:", JSON.stringify(instance, null, 3))
+            //console.log("++++ History update for pid:", instance.pid, JSON.stringify(instance.history, null, 3))
             // prepare next step
             index--
             // and recurse
-            updateDatasets(index, datasetInstances, message, cb)
-        });
-
-    }
+            updateDatasets(ctx, datasetInstances, index, next)
+        })
+    })
 }
+
 
 // this should then update the history in all affected documents
 exports.keepHistory = function (ctx, next) {
@@ -291,33 +313,37 @@ exports.keepHistory = function (ctx, next) {
             where: ctx.where
         }, ctx.options, function (err, datasetInstances) {
             // console.log("++++++ Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
-            var message = JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
             // solve asynch call inside for loop by recursion
             index = datasetInstances.length - 1
-            updateDatasets(index, datasetInstances, message, next)
+            updateDatasets(ctx, datasetInstances, index, next)
         })
     }
 
     // single dataset, update
+    // TODO this seems never to happen, no need to impment ?
     if (!ctx.where && ctx.data) {
-        // console.log("Update of single dataset:", ctx.data)
-        // add history to ctx.data
-        var message = JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
-        if (ctx.currentInstance) {
-            Dataset.findById(ctx.currentInstance.pid, ctx.options, function (err, datasetInstance) {
-                // function add does not work here, why ?
-                datasetInstance.historyList.build(message)
-                datasetInstance.updateAttributes({
-                    history: datasetInstance.history
-                }, function (err, instance) {
-                    // console.log("++++  single datasetInstance after update history:", JSON.stringify(instance, null, 3))
-                    return next(err, instance);
-                });
-            })
-        } else {
-            console.log("+++++++++++++++++++ this should not happen: single ctx.data and no ctx.currentInstance")
-            return next()
-        }
+        console.log(" ===== Warning: single dataset update case without where condition is currently not treated:", ctx.data)
+        // if (ctx.currentInstance) {
+        //     // check for copy of original Dataset, if not create one
+        //     var InitialDataset = app.models.InitialDataset
+        //     InitialDataset.findById(ctx.currentInstance.pid, ctx.options, function (err, initialDatasetInstance) {
+        //         if (err) {
+        //             console.log("Error when searching for initial dataset:", err)
+        //             return next()
+        //         }
+        //         if (!initialDatasetInstance) {
+        //             InitialDataset.create(ctx.currentInstance, function (err, instance) {
+        //                 console.log("Created a dataset copy:", JSON.stringify(instance, null, 3))
+        //                 updateHistory(ctx, next)
+        //             })
+        //         } else {
+        //             updateHistory(ctx, next)
+        //         }
+        //     })
+        // } else {
+        //     console.log("+++++++++++++++++++ this should not happen: single ctx.data and no ctx.currentInstance")
+        //     return next()
+        // }
     }
 
     // single dataset, update

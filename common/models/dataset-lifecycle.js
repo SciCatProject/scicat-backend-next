@@ -7,6 +7,7 @@ module.exports = function(DatasetLifecycle) {
     // the history is kept then within the embedded model
     
     // we need to treat only the single dataset case here
+    // note: in this case no copy of the initial state of the parent Dataset is triggered
 
     DatasetLifecycle.observe('before save', (ctx, next) => {
         if (ctx.data) {

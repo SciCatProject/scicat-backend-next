@@ -124,5 +124,9 @@
     "Message": {
         "dataSource": "transient",
         "public": false
+    },
+    "InitialDataset": {
+        "dataSource": "mongo",
+        "public": false
     }
 }
