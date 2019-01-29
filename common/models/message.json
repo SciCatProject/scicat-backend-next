@@ -3,7 +3,7 @@
     "description": "To get auto-created history information.",
     "base": "Model",
     "idInjection": true,
-    "strict": true,
+    "strict": false,
     "options": {
         "validateUpsert": true
     },
@@ -13,25 +13,6 @@
             "id": "true",
             "defaultFn": "uuid",
             "description": "id currently needed by limitation in embedsmany"
-        },
-        "shortMessage": {
-            "type": "string",
-            "required": true,
-            "description": "Short description of message, like datasetArchiveSuccesful"
-        },
-        "sender": {
-            "type": "string",
-            "required": true,
-            "description": "Email of user or role who triggered the message"
-        },
-        "when": {
-            "type": "Date",
-            "default": "$now",
-            "description": "Time when message was received. Will be filled automatically by the server, format according to chapter 5.6 internet date/time format in RFC 3339."
-        },
-        "payload": {
-            "type": "Object",
-            "description": "Additional information relevant for this message. Please note this is an object"
         }
     },
     "validations": [],

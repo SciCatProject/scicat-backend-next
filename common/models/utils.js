@@ -248,43 +248,86 @@ exports.updateTimesToUTC = function (dateKeys, instance) {
     });
 }
 
-// TODO important  take into account situation where many datasets are updated, i.e. updateAll situation
+// recursive function needed to call asynch calls inside a loop
+function updateDatasets(index, datasetInstances, message, cb) {
+    if (index < 0) {
+        cb()
+    } else {
+        // do the real action
+        datasetInstances[index].historyList.build(message)
+        // save the result
+        datasetInstances[index].updateAttributes({
+            history: datasetInstances[index].history
+        }, function (err, instance) {
+            // console.log("++++ Inside loop on datasetInstance after update history:", JSON.stringify(instance, null, 3))
+            // prepare next step
+            index--
+            // and recurse
+            updateDatasets(index, datasetInstances, message, cb)
+        });
+
+    }
+}
+
 // this should then update the history in all affected documents
 exports.keepHistory = function (ctx, next) {
     // create new message
-    if (ctx.instance) {
-       // console.log("Keephistory: Instance is defined")
-    }
-    if (ctx.data) {
-        // console.log("Keephistory: ctx.data is defined:", ctx.data)
+    var Dataset = app.models.Dataset
 
+    // if (ctx.instance) {
+    //     console.log("Keephistory: Instance is defined:", JSON.stringify(ctx.instance.pid, null, 3))
+    // }
+    // if (ctx.isNewInstance) {
+    //     console.log("Keephistory: newInstance is defined")
+    // }
+    // if (ctx.options) {
+    //     console.log("Keephistory: ctx.options is defined:")
+    // }
+
+    // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
+    if (ctx.where && ctx.data) {
+        // console.log(" Multiinstance update, where condition:", JSON.stringify(ctx.where, null, 4))
+        Dataset.find({
+            where: ctx.where
+        }, ctx.options, function (err, datasetInstances) {
+            // console.log("++++++ Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
+            var message = JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
+            // solve asynch call inside for loop by recursion
+            index = datasetInstances.length - 1
+            updateDatasets(index, datasetInstances, message, next)
+        })
+    }
+
+    // single dataset, update
+    if (!ctx.where && ctx.data) {
+        // console.log("Update of single dataset:", ctx.data)
         // add history to ctx.data
-        var message = {
-            sender: ctx.options.currentUserEmail,
-            when: new Date(),
-            payload: JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
-        }
-        // Note: for embedded model this creates an embedded history since currentInstance is just the embedded portion
-        if(ctx.currentInstance && ctx.currentInstance.history){
-         //console.log("==============Taking history from currentInstance",JSON.stringify(ctx.currentInstance.history))
-            ctx.data.history=ctx.currentInstance.history
+        var message = JSON.parse(JSON.stringify(ctx.data)) // deep copy needed to avoid circular links
+        if (ctx.currentInstance) {
+            Dataset.findById(ctx.currentInstance.pid, ctx.options, function (err, datasetInstance) {
+                // function add does not work here, why ?
+                datasetInstance.historyList.build(message)
+                datasetInstance.updateAttributes({
+                    history: datasetInstance.history
+                }, function (err, instance) {
+                    // console.log("++++  single datasetInstance after update history:", JSON.stringify(instance, null, 3))
+                    return next(err, instance);
+                });
+            })
         } else {
-            ctx.data.history=[]
+            console.log("+++++++++++++++++++ this should not happen: single ctx.data and no ctx.currentInstance")
+            return next()
         }
-        ctx.data.history.push(message)
-        // console.log("============= Resulting history after update for pid:",JSON.stringify(ctx.data.history,null,4))
     }
-    if (ctx.where){
-       // console.log(" Multiinstance update, where condition:",JSON.stringify(ctx.where,null,4))
+
+    // single dataset, update
+    if (!ctx.where && !ctx.data) {
+        // console.log("single datasets and no update - should only happen if new document is created or if embedded object is updated")
+        return next()
     }
-    if (ctx.isNewInstance) {
-       // console.log("Keephistory: newInstance is defined")
+    // single dataset, update
+    if (ctx.where && !ctx.data) {
+        // console.log("multiple datasets and no update")
+        return next()
     }
-    if (ctx.options) {
-        // console.log("Keephistory: ctx.options is defined:")
-    }
-    if (ctx.currentInstance) {
-       //console.log("Keephistory: current Instance (readonly):",ctx.currentInstance)
-    }
-    next()
 }

@@ -98,22 +98,31 @@
         "isPublished": {
             "type": "boolean",
             "description": "Flag is true when data are made publically available"
-        },
-        "history": {
-            "type": ["object"],
-            "description": "auto generated array of messages keeping track of change"
         }
     },
     "validations": [],
     "relations": {
+
+    },
+    "relations": {
+        "historyList": {
+            "type": "embedsMany",
+            "model": "Message",
+            "property": "history",
+            "options": {
+                "validate": false,
+                "forceId": false,
+                "persistent": true
+            }
+        },
         "datasetLifecycle": {
             "type": "embedsOne",
             "model": "DatasetLifecycle",
             "property": "datasetlifecycle",
-            "default":{},
+            "default": {},
             "options": {
-              "validate": true,
-              "forceId": false
+                "validate": true,
+                "forceId": false
             }
         },
         "datablocks": {
@@ -166,13 +175,13 @@
             "principalType": "ROLE",
             "principalId": "$everyone",
             "permission": "ALLOW",
-            "property": ["facet","fullquery","fullfacet"]
+            "property": ["facet", "fullquery", "fullfacet"]
         },
         {
             "principalType": "ROLE",
             "principalId": "ingestor",
             "permission": "ALLOW",
-            "property": ["facet","fullquery","fullfacet"]
+            "property": ["facet", "fullquery", "fullfacet"]
         }
     ],
     "methods": {
@@ -218,8 +227,7 @@
             }
         },
         "fullquery": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."

@@ -304,8 +304,8 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                //console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[0].payload.datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                // console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
 
                 done();
             });
@@ -319,8 +319,8 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                // console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[0].payload.datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                //console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
                 done();
             });
 
@@ -363,6 +363,7 @@ describe('Test facet and filter queries', () => {
     });
 
     it('should delete the newly created dataset', function (done) {
+        // console.log("Deleting first dataset:",pid)
         request(app)
             .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
@@ -376,6 +377,8 @@ describe('Test facet and filter queries', () => {
     });
 
     it('should delete the newly created dataset', function (done) {
+        // todo turn into rawdataset api call
+        // console.log("Deleting second dataset:",pid2)
         request(app)
             .delete('/api/v3/Datasets/' + pid2 + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')

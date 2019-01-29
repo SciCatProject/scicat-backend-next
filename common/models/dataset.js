@@ -162,7 +162,6 @@ module.exports = function (Dataset) {
             });
         } else {
             // update case
-            console.log("Inside dataset, update case")
             utils.keepHistory(ctx,next)
         }
     });

@@ -86,6 +86,8 @@ module.exports = function(PublishedData) {
 
             return;
 
+            // TODO understand what the following lines after the return mean 
+            
             const registerMetadataUri = `https://mds.datacite.org/metadata/${doi}`;
             const registerDoiUri = `https://mds.datacite.org/doi/${doi}`;
 
