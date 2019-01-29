@@ -95,7 +95,6 @@
                 "username": "ingestor",
                 "tapeCopies": "one"
             },
-            "dateOfLastMessage": "2018-03-16T13:10:16.918Z",
             "datasetList": [{
                     "pid": "wrong_pid",
                     "files": []

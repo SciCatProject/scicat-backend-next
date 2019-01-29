@@ -262,7 +262,7 @@ function updateDatasets(ctx, datasetInstances, index, next) {
             }
             if (!initialDatasetInstance) {
                 InitialDataset.create(datasetInstances[index], function (err, instance) {
-                    console.log("Created a dataset copy for pid:", datasetInstances[index].pid)
+                    console.log("      Created a dataset copy for pid:", datasetInstances[index].pid)
                     updateHistory(ctx, datasetInstances, index, next)
                 })
             } else {

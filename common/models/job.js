@@ -194,11 +194,6 @@ module.exports = function (Job) {
                 if (!!u) {
                     ctx.instance.emailJobInitiator = u.profile.email;
                 }
-                // auto fill dateOfLastMessage
-                var now = new Date();
-                if (!ctx.instance.dateOfLastMessage) {
-                    ctx.instance.dateOfLastMessage = now.toISOString();
-                }
                 next()
             })
         } else {
