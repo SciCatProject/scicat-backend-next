@@ -9,7 +9,7 @@
     "properties": {
         "archivable": {
             "type": "boolean",
-            "default": false,
+            "default": true,
             "description": "Flag which is true, if dataset is available to be archived and no archive job for this dataset exists yet."
         },
         "retrievable": {

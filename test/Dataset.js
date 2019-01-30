@@ -28,7 +28,9 @@ var testdataset = {
     "license": "CC BY-SA 4.0",
     "isPublished": false,
     "ownerGroup": "p13388",
-    "accessGroups": []
+    "accessGroups": [],
+    "history": ["this should be deleted"],
+    "createdBy": "this should be deleted as well"
 }
 
 var app
@@ -58,10 +60,12 @@ describe('Simple Dataset tests', () => {
             .end(function(err, res) {
                 if (err)
                     return done(err);
+                    console.log("Create datset:",res.body)
                 res.body.should.have.property('version').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 res.body.should.have.property('datasetName').and.be.string;
+                //res.body.should.not.have.property('history')
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });

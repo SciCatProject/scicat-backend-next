@@ -15,7 +15,7 @@ function sendMail(to, subjectText, mailText, next) {
                 console.log(error);
                 next();
             } else {
-                console.log('Server is ready to send message to ', to);
+                console.log('      Server is ready to send message to ', to);
                 var message = Object.assign({}, config.smtpMessage);
                 message['to'] = to;
                 message['subject'] += subjectText
@@ -24,7 +24,7 @@ function sendMail(to, subjectText, mailText, next) {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log('Email sent');
+                        console.log('      Email sent');
                     }
                     next();
                 });
@@ -38,7 +38,7 @@ function sendMail(to, subjectText, mailText, next) {
 function publishJob(job, ctx, next) {
     if ('queue' in config && config.queue === 'rabbitmq') {
         job.publishJob(ctx.instance, "jobqueue")
-        console.log('Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
+        console.log('      Saved Job %s#%s and published to message broker', ctx.Model.modelName, ctx.instance.id);
     }
 
     let subjectText = ' ' + ctx.instance.type + ' job submitted successfully';
@@ -76,7 +76,7 @@ function TestArchiveJobs(job, ctx, idList, next) {
     let Dataset = app.models.Dataset;
     Dataset.find({
         where: {
-            archivable: false,
+            'datasetlifecycle.archivable': false,
             pid: {
                 inq: idList
             }
@@ -89,11 +89,10 @@ function TestArchiveJobs(job, ctx, idList, next) {
             next(e);
         } else {
             // mark all Datasets as in state scheduledForArchiving, archivable=false
-            console.log("mark  datasets as to be archived: ctx.options,idlist",ctx.options,idList)
+            //console.log("mark  datasets as to be archived:",idList)
             MarkDatasetsAsScheduled(job, ctx, idList, next)
         }
     });
-
 }
 
 // for retrieve jobs all datasets must be in state retrievable 
@@ -103,19 +102,18 @@ function TestRetrieveJobs(job, ctx, idList, next) {
     let Dataset = app.models.Dataset;
     Dataset.find({
         where: {
-            retrievable: true,
+            'datasetlifecycle.retrievable': true,
             pid: {
                 inq: idList
             }
         }
     }, ctx.options, function (err, p) {
-        // console.log("============= Retrieve Result:",JSON.stringify(p))
         if (err) {
             return next(err)
         } else if (p.length != idList.length) {
             Dataset.find({
                 where: {
-                    retrievable: false,
+                    'datasetlifecycle.retrievable': false,
                     pid: {
                         inq: idList
                     }
