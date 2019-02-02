@@ -36,6 +36,24 @@ module.exports = function (app) {
     });
 
     dataSource.connector.connect(function (err, db) {
+        // add index to embedded fields, dont wait for result
+
+        var embedFields = ['datasetlifecycle.archivable', 'datasetlifecycle.retrievable', 'datasetlifecycle.publishable',
+            'datasetlifecycle.archiveStatusMessage', 'datasetlifecycle.retrieveStatusMessage'
+        ]
+
+        embedFields.forEach(function (field) {
+            db.collection('Dataset').createIndex({
+                field : 1
+            }, function (err) {
+                if (!err) {
+                    console.log("Index on field " + field + " created succesfully")
+                } else {
+                    console.log(err);
+                }
+            })
+        });
+
         db.collection('Dataset').createIndex({
             "$**": "text"
         }, function (err) {
@@ -75,17 +93,17 @@ module.exports = function (app) {
                     if (!!u) {
                         var groups = []
                         if (u.profile) {
-                            console.log("Profile:",u.profile)
+                            console.log("Profile:", u.profile)
                             // if user account update where query to append group groupCondition
                             ctx.args.options.currentUser = u.profile.username
-                            ctx.args.options.currentUserEmail  = u.profile.email;
+                            ctx.args.options.currentUserEmail = u.profile.email;
                             groups = u.profile.accessGroups
                             // check if a normal user or an internal ROLE
                             if (typeof groups === 'undefined') {
                                 groups = []
                             }
                         }
-                        ctx.args.options.currentGroups=groups
+                        ctx.args.options.currentGroups = groups
                     }
                     //console.log("Resulting options:",ctx.args.options)
                     return next()
