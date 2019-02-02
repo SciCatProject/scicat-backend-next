@@ -323,7 +323,7 @@ module.exports = function (Dataset) {
         pipeline.push({
             $facet: facetObject,
         });
-        // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 4));
+        // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
             var res = collection.aggregate(pipeline,
@@ -435,7 +435,7 @@ module.exports = function (Dataset) {
                 })
             }
         }
-        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 4));
+        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
 
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');

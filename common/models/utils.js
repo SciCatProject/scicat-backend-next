@@ -285,7 +285,7 @@ exports.keepHistory = function (ctx, next) {
     }
 
     // single dataset, update
-    // TODO this seems never to happen, no need to impment ?
+    // TODO this seems never to happen, no need to implement ?
     if (!ctx.where && ctx.data) {
         console.log(" ===== Warning: single dataset update case without where condition is currently not treated:", ctx.data)
         // if (ctx.currentInstance) {

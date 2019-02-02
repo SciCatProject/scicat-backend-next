@@ -377,7 +377,6 @@ describe('Test facet and filter queries', () => {
     });
 
     it('should delete the newly created dataset', function (done) {
-        // todo turn into rawdataset api call
         // console.log("Deleting second dataset:",pid2)
         request(app)
             .delete('/api/v3/Datasets/' + pid2 + '?access_token=' + accessTokenIngestor)
