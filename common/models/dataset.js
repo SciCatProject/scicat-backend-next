@@ -67,6 +67,7 @@ module.exports = function (Dataset) {
                 console.log("Error when creating default policy:", err)
                 return next(err)
             }
+            console.log("Inside addDefaultPolicy, call keepHistory")
             utils.keepHistory(ctx, next)
         });
     };
@@ -144,6 +145,7 @@ module.exports = function (Dataset) {
                         ctx.instance.classification = classification;
                     }
                     // case 2: classification defined and policy defined: do nothing
+                    console.log("Inside before save,case2, do nothing")
                     utils.keepHistory(ctx, next)
                 } else {
                     let tapeRedundancy = "low"
@@ -166,6 +168,7 @@ module.exports = function (Dataset) {
             });
         } else {
             // update case
+            console.log("Inside before save, update case")
             utils.keepHistory(ctx, next)
         }
     });

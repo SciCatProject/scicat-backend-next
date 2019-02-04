@@ -30,7 +30,12 @@ db.Dataset.aggregate([{
         "datasetlifecycle.updatedBy": 0,
         "datasetlifecycle.ownerGroup": 0,
         "datasetlifecycle.dateOfLastMessage": 0,
-        "MessageHistory": 0
+        "MessageHistory": 0,
+        "doi":0,
+        "userTargetLocation":0,
+        "archivable":0,
+        "retrievable":0,
+        "publishable":0
     }
 },
 {
