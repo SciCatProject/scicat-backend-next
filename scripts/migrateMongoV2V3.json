@@ -1,0 +1,69 @@
+db.Dataset.aggregate([{
+    "$match": {}
+},
+{
+    "$lookup": {
+        "from": "DatasetLifecycle",
+        "localField": "_id",
+        "foreignField": "datasetId",
+        "as": "datasetlifecycle"
+    }
+},
+{
+    "$unwind": {
+        "path": "$datasetlifecycle",
+        "preserveNullAndEmptyArrays": true
+    }
+},
+{
+    "$project": {
+        "datasetlifecycle._id": 0,
+        "datasetlifecycle.isOnDisk": 0,
+        "datasetlifecycle.isOnTape": 0,
+        "datasetlifecycle.isExported": 0,
+        "datasetlifecycle.datasetId": 0,
+        "datasetlifecycle.rawDatasetId": 0,
+        "datasetlifecycle.derivedDatasetId": 0,
+        "datasetlifecycle.createdAt": 0,
+        "datasetlifecycle.updatedAt": 0,
+        "datasetlifecycle.createdBy": 0,
+        "datasetlifecycle.updatedBy": 0,
+        "datasetlifecycle.ownerGroup": 0,
+        "datasetlifecycle.dateOfLastMessage": 0,
+        "MessageHistory": 0
+    }
+},
+{
+    "$addFields": {
+        "datasetlifecycle.archivable": {
+            "$ifNull": ["$datasetlifecycle.archivable", true]
+        },
+        "datasetlifecycle.retrievable": {
+            "$ifNull": ["$datasetlifecycle.retrievable", false]
+        },
+        "datasetlifecycle.publishable": {
+            "$ifNull": ["$datasetlifecycle.publishable", false]
+        },
+        "datasetlifecycle.isOnCentralDisk": {
+            "$ifNull": ["$datasetlifecycle.isOnCentralDisk", true]
+        },
+        "datasetlifecycle.archiveStatusMessage": {
+            "$ifNull": ["$datasetlifecycle.archiveStatusMessage", "datasetCreated"]
+        },
+        "datasetlifecycle.retrieveStatusMessage": {
+            "$ifNull": ["$datasetlifecycle.retrieveStatusMessage", ""]
+        },
+        "datasetlifecycle.retrieveIntegrityCheck": {
+            "$ifNull": ["$datasetlifecycle.retrieveIntegrityCheck", false]
+        }
+    }
+},
+{
+    "$out": "Datasetnew"
+}
+])
+
+# then switch to new Dataset collection
+db.Dataset.renameCollection("Datasetold")
+db.Datasetnew.renameCollection("Dataset")
+db.DatasetLifecycle.renameCollection("DatasetLifecycleOld")
