@@ -56,6 +56,7 @@ function formRegistrationXML(publishedData) {
 module.exports = function(PublishedData) {
     const app = require("../../server/server");
 
+/*
     PublishedData.observe('after save', function(ctx, next) {
         console.log('After save:');
         console.log(ctx.instance);
@@ -66,6 +67,7 @@ module.exports = function(PublishedData) {
             next(null);
         });
     });
+	*/
 
     PublishedData.observe("before save", function(ctx, next) {
         const token = ctx.options.accessToken;
