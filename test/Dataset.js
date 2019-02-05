@@ -60,7 +60,6 @@ describe('Simple Dataset tests', () => {
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                    console.log("Create datset:",res.body)
                 res.body.should.have.property('version').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;

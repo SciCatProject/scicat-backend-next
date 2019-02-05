@@ -244,20 +244,13 @@ function updateHistory(ctx, datasetInstances, index, next) {
     Dataset.findById(datasetInstances[index].pid, ctx.options, function (err, datasetInstance) {
         // drop any history , e.g. from outside or from previous loop
         delete ctx.data.history
-        var oldhistory = []
-        if (datasetInstance.history) {
-           // console.log("Copying existing history:", datasetInstance.history)
-            oldhistory = JSON.parse(JSON.stringify(datasetInstance.history))
-        } else {
-            console.log("this should never happen+++++++++++")
+        // ignore packedsize and size updates for history
+        if (!ctx.data.size && !ctx.data.packedSize) {
+            // the following triggers a before save hook . endless recursion must be prevented there
+            // console.log("Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctx.data)))
+            // console.log("After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
         }
-        oldhistory.push(JSON.parse(JSON.stringify(ctx.data)))
-        //console.log("After Adding new history:",JSON.stringify(oldhistory,null,3))
-        ctx.data.history = oldhistory
-        //TODO ignore packedsize etc changes for history
-        // the following triggers a before save hook which results in endless recursion
-        //datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctx.data.history)))
-        // console.log("After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
         index--
         updateDatasets(ctx, datasetInstances, index, next)
     })

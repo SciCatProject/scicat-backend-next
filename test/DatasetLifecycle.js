@@ -297,35 +297,34 @@ describe('Test facet and filter queries', () => {
             });
     });
 
-    // Currently commented until multi dataset auto history update works
-    // it('The history status should now include the last change for the first raw dataset', function (done) {
-    //     request(app)
-    //         .get('/api/v3/RawDatasets/' + pid + '?access_token=' + accessTokenIngestor)
-    //         .set('Accept', 'application/json')
-    //         .expect(200)
-    //         .expect('Content-Type', /json/)
-    //         .end((err, res) => {
-    //             console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
-    //             res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+    it('The history status should now include the last change for the first raw dataset', function (done) {
+        request(app)
+            .get('/api/v3/RawDatasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
 
-    //             done();
-    //         });
+                done();
+            });
 
-    // });
+    });
 
-    // it('The history status should now include the last change for second raw dataset', function (done) {
-    //     request(app)
-    //         .get('/api/v3/RawDatasets/' + pid2 + '?access_token=' + accessTokenIngestor)
-    //         .set('Accept', 'application/json')
-    //         .expect(200)
-    //         .expect('Content-Type', /json/)
-    //         .end((err, res) => {
-    //             console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
-    //             res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
-    //             done();
-    //         });
+    it('The history status should now include the last change for second raw dataset', function (done) {
+        request(app)
+            .get('/api/v3/RawDatasets/' + pid2 + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                done();
+            });
 
-    // });
+    });
 
     it('Should update the datasetLifecycle information directly via embedded model API', function (done) {
         request(app)

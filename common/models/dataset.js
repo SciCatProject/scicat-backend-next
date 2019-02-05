@@ -74,6 +74,13 @@ module.exports = function (Dataset) {
 
     // auto add pid
     Dataset.observe('before save', (ctx, next) => {
+        // console.log("Inside before save, ctx.data",JSON.stringify(ctx.data,null,3))
+        // prevent recursion on auto history creation
+        if(ctx.data && ctx.data.history){
+            delete ctx.data.updatedAt
+            delete ctx.data.updatedBy
+            return next()
+        }
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
@@ -145,7 +152,6 @@ module.exports = function (Dataset) {
                         ctx.instance.classification = classification;
                     }
                     // case 2: classification defined and policy defined: do nothing
-                    console.log("Inside before save,case2, do nothing")
                     utils.keepHistory(ctx, next)
                 } else {
                     let tapeRedundancy = "low"
@@ -168,7 +174,6 @@ module.exports = function (Dataset) {
             });
         } else {
             // update case
-            console.log("Inside before save, update case")
             utils.keepHistory(ctx, next)
         }
     });
