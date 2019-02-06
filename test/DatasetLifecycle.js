@@ -304,7 +304,7 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                // console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
                 res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
 
                 done();
@@ -319,7 +319,7 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
+                // console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
                 res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
                 done();
             });
@@ -330,7 +330,7 @@ describe('Test facet and filter queries', () => {
         request(app)
             .put('/api/v3/RawDatasets/' + pid + '/datasetLifecycle?access_token=' + accessTokenIngestor)
             .send({
-                "archivable": true
+                "archiveStatusMessage": "Testing embedded case"
             })
             .set('Accept', 'application/json')
             .expect(200)
@@ -338,13 +338,10 @@ describe('Test facet and filter queries', () => {
             .end(function (err, res) {
                 if (err)
                     return done(err);
-                res.body.should.have.property('archivable').and.equal(true);
+                res.body.should.have.property('archiveStatusMessage').and.equal("Testing embedded case");
                 return done();
             });
     });
-
-
-
 
     it('Should reset the embedded DatasetLifecycle status and delete Datablocks', function (done) {
         request(app)

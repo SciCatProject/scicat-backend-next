@@ -116,7 +116,6 @@
             "type": "embedsOne",
             "model": "DatasetLifecycle",
             "property": "datasetlifecycle",
-            "default": {},
             "options": {
                 "validate": true,
                 "forceId": false

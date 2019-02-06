@@ -214,11 +214,19 @@ exports.handleOwnerGroups = function (ctx, next) {
 }
 
 // recursive function needed to call asynch calls inside a loop
-function updateDatasets(ctx, datasetInstances, index, next) {
-    // console.log("Inside updateDatasets, index,id:", index)
+function updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next) {
+    // console.log("Inside updateDatasets, index,id:", index,datasetInstances[index])
     if (index < 0) {
         return next()
     } else {
+        // modify ctx.data to keep embedded data
+        ctx.data=JSON.parse(JSON.stringify(ctxdatacopy))
+        if(ctx.data && ctx.data.datasetlifecycle){
+            changes=JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
+            ctx.data.datasetlifecycle=JSON.parse(JSON.stringify(datasetInstances[index].datasetlifecycle))
+            // apply changes
+            for(var k in changes) ctx.data.datasetlifecycle[k]=changes[k];
+        }
         // do the real action
         var InitialDataset = app.models.InitialDataset
         InitialDataset.findById(datasetInstances[index].pid, ctx.options, function (err, initialDatasetInstance) {
@@ -229,17 +237,17 @@ function updateDatasets(ctx, datasetInstances, index, next) {
             if (!initialDatasetInstance) {
                 InitialDataset.create(datasetInstances[index], function (err, instance) {
                     console.log("      Created a dataset copy for pid:", datasetInstances[index].pid)
-                    updateHistory(ctx, datasetInstances, index, next)
+                    updateHistory(ctx, datasetInstances, ctxdatacopy, index, next)
                 })
             } else {
                 //console.log("Inside updatedatasets, copy of initial state exists already")
-                updateHistory(ctx, datasetInstances, index, next)
+                updateHistory(ctx, datasetInstances, ctxdatacopy, index, next)
             }
         })
     }
 }
 
-function updateHistory(ctx, datasetInstances, index, next) {
+function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
     var Dataset = app.models.Dataset
     Dataset.findById(datasetInstances[index].pid, ctx.options, function (err, datasetInstance) {
         // drop any history , e.g. from outside or from previous loop
@@ -248,11 +256,11 @@ function updateHistory(ctx, datasetInstances, index, next) {
         if (!ctx.data.size && !ctx.data.packedSize) {
             // the following triggers a before save hook . endless recursion must be prevented there
             // console.log("Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctx.data)))
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)))
             // console.log("After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
         }
         index--
-        updateDatasets(ctx, datasetInstances, index, next)
+        updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
     })
 }
 
@@ -281,7 +289,8 @@ exports.keepHistory = function (ctx, next) {
             // console.log("++++++ Inside keephistory: Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
             // solve asynch call inside for loop by recursion
             index = datasetInstances.length - 1
-            updateDatasets(ctx, datasetInstances, index, next)
+            ctxdatacopy=JSON.parse(JSON.stringify(ctx.data))
+            updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
         })
     }
 

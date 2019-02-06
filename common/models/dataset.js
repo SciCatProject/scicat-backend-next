@@ -67,7 +67,7 @@ module.exports = function (Dataset) {
                 console.log("Error when creating default policy:", err)
                 return next(err)
             }
-            console.log("Inside addDefaultPolicy, call keepHistory")
+            // TODO needed ?
             utils.keepHistory(ctx, next)
         });
     };
@@ -75,8 +75,10 @@ module.exports = function (Dataset) {
     // auto add pid
     Dataset.observe('before save', (ctx, next) => {
         // console.log("Inside before save, ctx.data",JSON.stringify(ctx.data,null,3))
+        // console.log("Inside before save, ctx.instance",JSON.stringify(ctx.instance,null,3))
+        // console.log("Inside before save, ctx.currentinstance",JSON.stringify(ctx.currentInstance,null,3))
         // prevent recursion on auto history creation
-        if(ctx.data && ctx.data.history){
+        if (ctx.data && ctx.data.history) {
             delete ctx.data.updatedAt
             delete ctx.data.updatedBy
             return next()
@@ -85,7 +87,29 @@ module.exports = function (Dataset) {
             if (ctx.isNewInstance) {
                 ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
                 console.log('      New pid:', ctx.instance.pid);
-                // fill d
+                // fill default datasetlifecycle
+                if (!ctx.instance.datasetlifecycle) {
+                    ctx.instance.datasetlifecycle = {}
+                }
+                if (!ctx.instance.datasetlifecycle.archivable) ctx.instance.datasetlifecycle.archivable = true
+                if (!ctx.instance.datasetlifecycle.retrievable) ctx.instance.datasetlifecycle.retrievable = false
+                if (!ctx.instance.datasetlifecycle.publishable) ctx.instance.datasetlifecycle.publishable = false
+                if (!ctx.instance.datasetlifecycle.isOnCentralDisk) ctx.instance.datasetlifecycle.isOnCentralDisk = true
+                if (!ctx.instance.datasetlifecycle.archiveStatusMessage) ctx.instance.datasetlifecycle.archiveStatusMessage = "datasetCreated"
+                if (!ctx.instance.datasetlifecycle.archivable) ctx.instance.datasetlifecycle.archivable = true
+                if (!ctx.instance.datasetlifecycle.retrieveStatusMessage) ctx.instance.datasetlifecycle.retrieveStatusMessage = ""
+                if (!ctx.instance.datasetlifecycle.retrieveIntegrityCheck) ctx.instance.datasetlifecycle.retrieveIntegrityCheck = false
+                // auto fill retention and publishing time
+                var now = new Date();
+                if (!ctx.instance.datasetlifecycle.archiveRetentionTime) {
+                    var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
+                    ctx.instance.datasetlifecycle.archiveRetentionTime = retention.toISOString().substring(0, 10);
+                }
+                if (!ctx.instance.datasetlifecycle.dateOfPublishing) {
+                    now = new Date(); // now was modified above
+                    var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
+                    ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
+                }
             } else {
                 console.log('      Unmodified pid:', ctx.instance.pid);
             }
@@ -106,19 +130,6 @@ module.exports = function (Dataset) {
                 }
             }
 
-            if (ctx.instance.datasetlifecycle) {
-                // auto fill retention and publishing time
-                var now = new Date();
-                if (!ctx.instance.datasetlifecycle.archiveRetentionTime) {
-                    var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
-                    ctx.instance.datasetlifecycle.archiveRetentionTime = retention.toISOString().substring(0, 10);
-                }
-                if (!ctx.instance.datasetlifecycle.dateOfPublishing) {
-                    now = new Date(); // now was modified above
-                    var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
-                    ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
-                }
-            }
             // auto fill classification and add policy if missing
 
             var Policy = app.models.Policy;
@@ -152,6 +163,7 @@ module.exports = function (Dataset) {
                         ctx.instance.classification = classification;
                     }
                     // case 2: classification defined and policy defined: do nothing
+                    // TODO: is keepHistory needed in this case ?
                     utils.keepHistory(ctx, next)
                 } else {
                     let tapeRedundancy = "low"

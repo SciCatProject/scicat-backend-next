@@ -91,8 +91,7 @@ var testraw = {
         "archivable": true,
         "retrievable": false,
         "archiveStatusMessage": "datasetIsArchived",
-        "retrieveStatusMessage": "",
-        "isExported": false
+        "retrieveStatusMessage": ""
     }
 }
 
