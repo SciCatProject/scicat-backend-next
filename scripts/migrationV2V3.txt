@@ -1,0 +1,117 @@
+				━━━━━━━
+				 TODOS
+				━━━━━━━
+
+
+Table of Contents
+─────────────────
+
+1 API changes:
+.. 1.1 Introduction
+.. 1.2 General remarks
+.. 1.3 How to get dataset infos togther with datasetlifecycle:
+.. 1.4 How to Send  status updates to Dataset instead of DatasetLifecycle
+.. 1.5 Dataset creation
+.. 1.6 Sending results to job collection
+.. 1.7 Reset datasets (remove Datablocks in case of archive system problems)
+
+
+1 API changes:
+══════════════
+
+1.1 Introduction
+────────────────
+
+  The following describes the changes in the API when switching from V2
+  to V3. The change was triggered by the decision to embed the
+  DatasetLifecycle information inside Dataset. Since this breaks the API
+  we decided to go for a new master version 3
+
+
+1.2 General remarks
+───────────────────
+
+  • all API calls which used DatasetLifecycle need to be changed
+  • *all* API endpoints need to start with api/v3 instead of api/v2
+  • remove any code dealing with MessageHistory field (if any)
+
+
+1.3 How to get dataset infos togther with datasetlifecycle:
+───────────────────────────────────────────────────────────
+
+  • just get Dataset infos, Datasetlifeycle is automatically embedded
+    inside the "datasetlifecycle" field as before when the
+    DatasetLifecycle was included (no include statement needed any more)
+
+
+1.4 How to Send  status updates to Dataset instead of DatasetLifecycle
+──────────────────────────────────────────────────────────────────────
+
+  Here are examples from the test cases describing how to do this in
+  future
+
+  • for a single dataset
+  ┌────
+  │ it('Should update archive status message from archiveManager account', function (done) {
+  │     request(app)
+  │         .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
+  │         .send({
+  │             "datasetlifecycle": {
+  │                 "archiveStatusMessage": "whatever..."
+  │                 "archiveReturnMessage": { "key":"value", .... }
+  │             }
+  │         })
+  └────
+  • for several datasets in one go
+  ┌────
+  │ it('Should update the embedded datasetLifecycle information for multiple datasets', function (done) {
+  │     var filter = {
+  │         pid: {
+  │             inq: [pidraw, pidraw2]
+  │         }
+  │     }
+  │     request(app)
+  │         .post('/api/v3/Datasets/update?where=' + JSON.stringify(filter) + '&access_token=' + accessTokenIngestor)
+  │         .send({
+  │             "datasetlifecycle": {
+  │                 "archiveStatusMessage": "justAnotherTestMessage"
+  │             }
+  │         })
+  └────
+
+
+1.5 Dataset creation
+────────────────────
+
+  The following fields are no longer there and may not be set
+  • no DOI field anymore
+  • no userTargetLocation anymore
+  • no archivable, retrievable, publishable fields anymore (only in
+    embedded datasetlifecycle)
+
+
+1.6 Sending results to job collection
+─────────────────────────────────────
+
+  The following fields do no longer exist:
+  • "archiveReturnMessage": use jobResultObject instead
+  • "dateOfLastMessage" (not needed, the field updatedAt is generated
+    automatically)
+  ┌────
+  │ it('Adds a new message to Jobs result object', function(done) {
+  │     request(app)
+  │         .put('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
+  │         .send( 
+  │               { "jobStatusMessage": "finishedUnsuccessful",
+  │                 "jobResultObject": {"status":"bad","message":"You can put any json object here"}
+  │          })
+  └────
+
+
+1.7 Reset datasets (remove Datablocks in case of archive system problems)
+─────────────────────────────────────────────────────────────────────────
+
+  • this should be applied to Datasets, not DatasetLifecycle any more:
+  ┌────
+  │ .put('/api/v3/Datasets/resetArchiveStatus?access_token=' + accessTokenArchiveManager).send({ datasetId: pidraw })
+  └────
