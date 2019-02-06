@@ -87,26 +87,31 @@ module.exports = function (Dataset) {
             if (ctx.isNewInstance) {
                 ctx.instance.pid = config.pidPrefix + '/' + ctx.instance.pid;
                 console.log('      New pid:', ctx.instance.pid);
-                // fill default datasetlifecycle
-                // TODO check way of key existence consistently
-                if (!ctx.instance.datasetlifecycle) {
+                /* fill default datasetlifecycle
+                    warning: need to transfer datasetlifecycle to a normal object first,
+                    otherwise key tests give wrong results due to some "wrapping" of 
+                    the objects behind functions in loopback magic
+                */
+                var subblock = {}
+                if (ctx.instance.datasetlifecycle) {
+                    subblock = JSON.parse(JSON.stringify(ctx.instance.datasetlifecycle))
+                } else {
                     ctx.instance.datasetlifecycle = {}
                 }
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("archivable"))) ctx.instance.datasetlifecycle.archivable = true
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("retrievable"))) ctx.instance.datasetlifecycle.retrievable = false
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("publishable"))) ctx.instance.datasetlifecycle.publishable = false
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("isOnCentralDisk"))) ctx.instance.datasetlifecycle.isOnCentralDisk = true
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("archiveStatusMessage"))) ctx.instance.datasetlifecycle.archiveStatusMessage = "datasetCreated"
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("retrieveStatusMessage"))) ctx.instance.datasetlifecycle.retrieveStatusMessage = ""
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("retrieveIntegrityCheck"))) ctx.instance.datasetlifecycle.retrieveIntegrityCheck = false
+                if (!('archivable' in subblock)) ctx.instance.datasetlifecycle.archivable = true
+                if (!('retrievable' in subblock)) ctx.instance.datasetlifecycle.retrievable = false
+                if (!('publishable' in subblock)) ctx.instance.datasetlifecycle.publishable = false
+                if (!('isOnCentralDisk' in subblock)) ctx.instance.datasetlifecycle.isOnCentralDisk = true
+                if (!('archiveStatusMessage' in subblock)) ctx.instance.datasetlifecycle.archiveStatusMessage = "datasetCreated"
+                if (!('retrieveStatusMessage' in subblock)) ctx.instance.datasetlifecycle.retrieveStatusMessage = ""
+                if (!('retrieveIntegrityCheck' in subblock)) ctx.instance.datasetlifecycle.retrieveIntegrityCheck = false
                 // auto fill retention and publishing time
-
                 var now = new Date();
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("archiveRetentionTime"))) {
+                if (!(ctx.instance.datasetlifecycle.archiveRetentionTime)) {
                     var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
                     ctx.instance.datasetlifecycle.archiveRetentionTime = retention.toISOString().substring(0, 10);
                 }
-                if (!(ctx.instance.datasetlifecycle.hasOwnProperty("dateOfPublishing"))) {
+                if (!(ctx.instance.datasetlifecycle.dateOfPublishing)) {
                     now = new Date(); // now was modified above
                     var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
                     ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
