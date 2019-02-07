@@ -86,7 +86,6 @@ var testraw = {
     "size": 0,
     "creationTime": "2011-09-14T06:08:25.000Z",
     "description": "None",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
     "accessGroups": []
@@ -120,7 +119,7 @@ describe('RawDatasets', () => {
 
     it('adds a new proposal', function (done) {
         request(app)
-            .post('/api/v2/Proposals?access_token=' + accessProposalToken)
+            .post('/api/v3/Proposals?access_token=' + accessProposalToken)
             .send(testproposal)
             .set('Accept', 'application/json')
             .expect(200)
@@ -137,7 +136,7 @@ describe('RawDatasets', () => {
 
     it('adds a new raw dataset', function (done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessToken)
+            .post('/api/v3/RawDatasets?access_token=' + accessToken)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
@@ -156,7 +155,7 @@ describe('RawDatasets', () => {
 
     it('should fetch several raw datasets', function (done) {
         request(app)
-            .get('/api/v2/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+            .get('/api/v3/RawDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -170,7 +169,7 @@ describe('RawDatasets', () => {
 
     it('should fetch this raw dataset', function (done) {
         request(app)
-            .get('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -183,7 +182,7 @@ describe('RawDatasets', () => {
 
     it('should delete this raw dataset', function (done) {
         request(app)
-            .delete('/api/v2/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/RawDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -197,7 +196,7 @@ describe('RawDatasets', () => {
 
     it('should contain an array of facets', function (done) {
         request(app)
-            .get('/api/v2/RawDatasets/fullfacet?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .send({
                 'ownerGroup': ['p11114']
@@ -214,7 +213,7 @@ describe('RawDatasets', () => {
 
     it('should delete this proposal', function(done) {
         request(app)
-            .delete('/api/v2/Proposals/' + proposalId + '?access_token=' + accessProposalToken)
+            .delete('/api/v3/Proposals/' + proposalId + '?access_token=' + accessProposalToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

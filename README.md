@@ -137,7 +137,7 @@ node .
 Insert in the following curl commands the respective usernames like admin , archiveManager and ingestor and set their passwords. These are local accounts defined within the loopback application database
 
 ```
-curl -X POST --header 'Content-Type: application/json' --header 'Accept:application/json' -d'{"realm":"my.site","username":"...","password":"...!","email":"valid.email@my.site","emailVerified":true}' 'http://localhost:3000/api/v2/Users'
+curl -X POST --header 'Content-Type: application/json' --header 'Accept:application/json' -d'{"realm":"my.site","username":"...","password":"...!","email":"valid.email@my.site","emailVerified":true}' 'http://localhost:3000/api/v3/Users'
 
 ```
 

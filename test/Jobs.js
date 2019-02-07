@@ -84,7 +84,6 @@ var testraw = {
     "size": 0,
     "creationTime": "2011-09-14T06:08:25.000Z",
     "description": "The ultimate test",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
     "accessGroups": [],
@@ -92,26 +91,6 @@ var testraw = {
     "keywords": ["sls", "protein"]
 }
 
-var testDatasetLifecycle = {
-    "id": "", // must be set to the id of the dataset,
-    // the following 4 fields become obsolete in future
-    "isOnDisk": true,
-    "isOnTape": false,
-    "archiveStatusMessage": "datasetCreated",
-    "retrieveStatusMessage": "",
-    "isExported": false,
-    "archivable": true,
-    "retrievable": true,
-    "MessageHistory": [{
-        "shortMessage": "datasetCreated",
-        "sender": "scicatarchivemanager@psi.ch",
-        "payload": {
-            "text": "Nothing special to report"
-        }
-    }]
-}
-
-//TODO test to retrieve datasets where you are NOT the owner
 
 var testArchiveJob = {
     "emailJobInitiator": "scicatarchivemanger@psi.ch",
@@ -121,8 +100,7 @@ var testArchiveJob = {
         "pid": "dummy",
         "files": []
     }],
-    "archiveReturnMessage": "will move to messageList",
-    "MessageHistory": []
+    "jobResultObject": {"status":"okay","message":"All systems okay"}
 }
 
 
@@ -134,16 +112,11 @@ var testRetrieveJob = {
         "pid": "dummy",
         "files": []
     }],
-    "archiveReturnMessage": "will move to messageList",
-    "MessageHistory": []
+    "jobResultObject": {"status":"okay","message":"All systems okay"}
 }
 
 var newMessage = {
-    "shortMessage": "JustAnExample",
-    "sender": "ingestor",
-    "payload": {
-        "text": "whatever"
-    }
+    "jobResultObject": {"status":"bad","message":"System A failed"}
 }
 
 var app
@@ -151,7 +124,7 @@ before(function() {
     app = require('../server/server')
 });
 
-describe('Test MessageHistory in jobs', () => {
+describe('Test New Job Model', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -172,7 +145,7 @@ describe('Test MessageHistory in jobs', () => {
 
     it('adds a new raw dataset', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
+            .post('/api/v3/RawDatasets?access_token=' + accessTokenIngestor)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
@@ -185,8 +158,6 @@ describe('Test MessageHistory in jobs', () => {
                 res.body.should.have.property('pid').and.be.string;
                 // store link to this dataset in datablocks
                 var pidtest = res.body['pid']
-                testDatasetLifecycle.id = pidtest
-                testDatasetLifecycle.datasetId = pidtest
                 testArchiveJob.datasetList[0].pid = pidtest
                 testRetrieveJob.datasetList[0].pid = pidtest
                 pid = encodeURIComponent(res.body['pid']);
@@ -194,53 +165,9 @@ describe('Test MessageHistory in jobs', () => {
             });
     });
 
-    it('adds a new DatasetLifecycle including messageHistory', function(done) {
-        request(app)
-            .post('/api/v2/DatasetLifecycles?access_token=' + accessTokenIngestor)
-            .send(testDatasetLifecycle)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                idDatasetLifecycle = encodeURIComponent(res.body['id']);
-                done();
-            });
-    });
-
-    it('Adds a new message to Datasetlifecycle MessageHistory', function(done) {
-        request(app)
-            .post('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '/messageHistory?access_token=' + accessTokenIngestor)
-            .send(newMessage)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                done();
-            });
-    });
-
-    it('Check if message was added', function(done) {
-        request(app)
-            .get('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '?access_token=' + accessTokenIngestor)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                // console.log("Lifecycle with new message:", res.body)
-                done();
-            });
-    });
-
-
     it('Adds a new archive job request', function(done) {
         request(app)
-            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
             .send(testArchiveJob)
             .set('Accept', 'application/json')
             .expect(200)
@@ -257,7 +184,7 @@ describe('Test MessageHistory in jobs', () => {
 
     it('Adds a new archive job request for same data which should fail', function(done) {
         request(app)
-            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
             .send(testArchiveJob)
             .set('Accept', 'application/json')
             .expect(409)
@@ -270,7 +197,7 @@ describe('Test MessageHistory in jobs', () => {
 
     it('Adds a new retrieve job request on same dataset, which should fail as well because not yet retrievable', function(done) {
         request(app)
-            .post('/api/v2/Jobs?access_token=' + accessTokenIngestor)
+            .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
             .send(testRetrieveJob)
             .set('Accept', 'application/json')
             .expect(409)
@@ -281,9 +208,9 @@ describe('Test MessageHistory in jobs', () => {
             });
     });
 
-    it('Adds a new message to Jobs MessageHistory', function(done) {
+    it('Adds a new message to Jobs result object', function(done) {
         request(app)
-            .post('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '/messageHistory?access_token=' + accessTokenIngestor)
+            .put('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
             .send(newMessage)
             .set('Accept', 'application/json')
             .expect(200)
@@ -291,7 +218,6 @@ describe('Test MessageHistory in jobs', () => {
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                //console.log(res.body)
                 done();
             });
     });
@@ -299,7 +225,7 @@ describe('Test MessageHistory in jobs', () => {
 
     it('should delete the Job', function(done) {
         request(app)
-            .delete('/api/v2/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -309,24 +235,10 @@ describe('Test MessageHistory in jobs', () => {
                 done();
             });
     });
-
-    it('should delete the DatasetLifecycle', function(done) {
-        request(app)
-            .delete('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '?access_token=' + accessTokenIngestor)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                done();
-            });
-    });
-
 
     it('should delete the newly created dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

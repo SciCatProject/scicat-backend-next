@@ -46,38 +46,6 @@ module.exports = function (Policy) {
         }
     });
 
-    Policy.addDefault = function (ownerGroup, ownerEmail, tapeRedundancy, options, next) {
-        // TODO: move the default definition somewhere more sensible 
-        var defaultPolicy = Object();
-        defaultPolicy.ownerGroup = ownerGroup;
-        if (config && !ownerEmail) {
-            defaultPolicy.manager = config.defaultManager;
-        } else if (ownerEmail) {
-            defaultPolicy.manager = ownerEmail.split(",");
-        } else {
-            defaultPolicy.manager = "";
-        }
-        if (tapeRedundancy) {
-            defaultPolicy.tapeRedundancy = tapeRedundancy;
-        } else {
-            defaultPolicy.tapeRedundancy = "low"; // AV default low
-        }
-        defaultPolicy.autoArchive = false;
-        defaultPolicy.autoArchiveDelay = 7;
-        defaultPolicy.archiveEmailNotification = true;
-        defaultPolicy.retrieveEmailNotification = true;
-        defaultPolicy.archiveEmailsToBeNotified = defaultPolicy.manager;
-        defaultPolicy.retrieveEmailsToBeNotified = defaultPolicy.manager;
-        defaultPolicy.embargoPeriod = 3;
-        console.log("Adding new default policy:", defaultPolicy)
-        Policy.create(defaultPolicy, options, function (err, instance) {
-            if (err) {
-                console.log("Error when creating default policy:", err)
-                return next(err)
-            }
-            return next()
-        });
-    };
 
     // TODO: understand the following method
     Policy.updatewhere = async function (where, data) {

@@ -1,0 +1,17 @@
+{
+    "name": "InitialDataset",
+    "description": "Stores a copy of the initial Dataset status if Dtaset is updated.",
+    "base": "PersistedModel",
+    "idInjection": false,
+    "strict": false,
+    "properties": { 
+        "pid": {
+            "type": "string",
+            "id": true
+        }
+    },
+    "validations": [],
+    "relations": { },
+    "acls": [ ],
+    "methods": { }
+}

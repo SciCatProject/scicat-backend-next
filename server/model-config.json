@@ -70,8 +70,8 @@
         "public": false
     },
     "DatasetLifecycle": {
-        "dataSource": "mongo",
-        "public": true
+        "dataSource": "transient",
+        "public": false
     },
     "Datablock": {
         "dataSource": "mongo",
@@ -123,6 +123,10 @@
     },
     "Message": {
         "dataSource": "transient",
+        "public": false
+    },
+    "InitialDataset": {
+        "dataSource": "mongo",
         "public": false
     }
 }

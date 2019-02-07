@@ -35,7 +35,6 @@ var testderived = {
         "Test", "Derived", "Science", "Math"
     ],
     "description": "Some fancy description",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p34123"
 }
@@ -58,7 +57,7 @@ describe('DerivedDatasets', () => {
     });
     it('adds a new derived dataset', function(done) {
         request(app)
-            .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+            .post('/api/v3/DerivedDatasets?access_token=' + accessToken)
             .send(testderived)
             .set('Accept', 'application/json')
             .expect(200)
@@ -75,7 +74,7 @@ describe('DerivedDatasets', () => {
 
     it('should fetch one derived dataset', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -89,7 +88,7 @@ describe('DerivedDatasets', () => {
 
     it('should delete a derived dataset', function(done) {
         request(app)
-            .delete('/api/v2/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/DerivedDatasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -103,7 +102,7 @@ describe('DerivedDatasets', () => {
 
     it('should fetch all derived datasets', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -117,7 +116,7 @@ describe('DerivedDatasets', () => {
 
     it('should contain an array of facets', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/fullfacet?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
