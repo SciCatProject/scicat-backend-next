@@ -314,6 +314,12 @@ module.exports = function (Dataset) {
         // construct match conditions from fields value, excluding facet material
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== 'null') {
+                // mode is not a field in dataset, just an object for containing a match claus
+                if (key === "mode") {
+                     pipeline.push({
+                         $match: fields[key]
+                     })              
+                 }
                 if (key === "text") {
                     match["$or"] = [{
                         $text: searchExpression(key, fields[key])
@@ -351,7 +357,8 @@ module.exports = function (Dataset) {
                     if (key in dsl.properties) {
                         matchJoin["datasetlifecycle." + key] = searchExpression(key, fields[key])
                     } else {
-                        match[key] = searchExpression(key, fields[key])
+                        //DOESNT WORK WITH ARBITRARY INPUT
+                        //match[key] = searchExpression(key, fields[key])
                     }
                 }
             }
@@ -361,6 +368,7 @@ module.exports = function (Dataset) {
                 $match: match
             })
         }
+
 
         // "include" DatasetLifecycle data
         // TODO: make include optional for cases where only dataset fields are requested
@@ -416,9 +424,12 @@ module.exports = function (Dataset) {
         // console.log("Resulting aggregate query:", JSON.stringify(pipeline, null, 4));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
+            console.log("_________pipeline_______", pipeline)
+             var jim = collection.aggregate(pipeline);
             var res = collection.aggregate(pipeline,
                 function (err, cursor) {
                     cursor.toArray(function (err, res) {
+                        //console.log("_______res_____: ", res)
                         if (err) {
                             console.log("Facet err handling:", err);
                         }
