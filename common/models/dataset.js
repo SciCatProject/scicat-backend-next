@@ -362,7 +362,6 @@ module.exports = function (Dataset) {
         // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
-            //console.log("____________facet pipeline: ", JSON.stringify(pipeline, null, 3))
             var res = collection.aggregate(pipeline,
                 function (err, cursor) {
                     cursor.toArray(function (err, res) {
@@ -487,16 +486,13 @@ module.exports = function (Dataset) {
 
         Dataset.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection('Dataset');
-            console.log("_________pipeline_______", JSON.stringify(pipeline, null, 3))
-             var jim = collection.aggregate(pipeline);
+            var jim = collection.aggregate(pipeline);
             var res = collection.aggregate(pipeline,
                 function (err, cursor) {
                     cursor.toArray(function (err, res) {
-                        //console.log("_______res_____: ", res)
                         if (err) {
                             console.log("Facet err handling:", err);
                         }
-                        // console.log("Query result:", res)
                         // rename _id to pid
                         res.map(ds => {
                             Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
