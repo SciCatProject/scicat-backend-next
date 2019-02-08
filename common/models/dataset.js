@@ -492,7 +492,7 @@ module.exports = function(Dataset) {
 
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection('Dataset');
-            var jim = collection.aggregate(pipeline);
+            //var jim = collection.aggregate(pipeline);
             var res = collection.aggregate(pipeline,
                 function(err, cursor) {
                     cursor.toArray(function(err, res) {
