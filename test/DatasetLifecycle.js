@@ -216,7 +216,7 @@ describe('Test facet and filter queries', () => {
             "datasetlifecycle.archiveStatusMessage": "datasetCreated"
         }
         var limits = {
-            skip: 50
+            skip: 1000
         }
 
         request(app)

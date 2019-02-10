@@ -290,44 +290,73 @@ module.exports = function (Dataset) {
     Dataset.fullfacet = function (fields, facets = [], cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
-        let match = {}
         let facetMatch = {}
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
         // Since a match condition on usergroups is always prepended at the start
         // this effectively yields the intersection handling of the two sets (ownerGroup condition and userGroups)
 
+        // first construct match conditions being applied before facet calculations
+
+        // the fields array contains all the conditions which must be fulfilled
+
+        // however all such conditions, which are treated as facets will be applied 
+        // only later within the different facet pipelines, 
+        // and therefore will be removed from the initial match conditions
+
+        // the following fields must be part of the match clause
+        // usergroup: limit to what the logged in user is allowed to see
+        // text: fulltext search
+        // mode: additional query expression
+
+
         Object.keys(fields).map(function (key) {
+            // split in facet and non-facet conditions
             if (facets.indexOf(key) < 0) {
+
                 if (key === "text") {
-                    match["$or"] = [{
-                        $text: searchExpression(key, fields[key])
-                    }, {
-                        sourceFolder: {
-                            $regex: fields[key],
-                            $options: 'i'
+                    // unshift because text must be at start of array
+                    pipeline.unshift({
+                        $match: {
+                            $or: [{
+                                $text: searchExpression(key, fields[key])
+                            }, {
+                                sourceFolder: {
+                                    $regex: fields[key],
+                                    $options: 'i'
+                                }
+                            }]
                         }
-                    }]
+                    });
+                }
+                // mode is not a field in dataset, just an object for containing a match clause
+                else if (key === "mode") {
+                    pipeline.push({
+                        $match: fields[key]
+                    })
                 } else if (key === "userGroups") {
                     if (fields['userGroups'].length > 0) {
-                        match["$or"] = [{
-                            ownerGroup: searchExpression('ownerGroup', fields["userGroups"])
-                        }, {
-                            accessGroups: searchExpression('accessGroups', fields["userGroups"])
-                        }]
+                        pipeline.push({
+                            $match: {
+                                "$or": [{
+                                    ownerGroup: searchExpression('ownerGroup', fields['userGroups'])
+                                }, {
+                                    accessGroups: searchExpression('accessGroups', fields['userGroups'])
+                                }]
+                            }
+                        })
                     }
                 } else {
+                    let match = {}
                     match[key] = searchExpression(key, fields[key])
+                    pipeline.push({
+                        $match: match
+                    })
                 }
             } else {
                 facetMatch[key] = searchExpression(key, fields[key])
             }
         })
-        if (match !== {}) {
-            pipeline.push({
-                $match: match
-            })
-        }
 
         // append all facet pipelines
         let facetObject = {};
@@ -340,6 +369,11 @@ module.exports = function (Dataset) {
                 facetObject[facet] = utils.createNewFacetPipeline(facet, dsd.properties[facet].type, facetMatch);
             } else if (facet in own.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(facet, own.properties[facet].type, facetMatch);
+            } else if (facet.startsWith("datasetlifecycle.")) {
+                let lifcycleFacet = facet.split(".")[1];
+                if (lifcycleFacet in dsl.properties) {
+                    facetObject[lifcycleFacet] = utils.createNewFacetPipeline(lifcycleFacet, dsl.properties[lifcycleFacet].type, facetMatch);
+                }
             } else {
                 console.log("Warning: Facet not part of any dataset model:", facet)
             }
@@ -373,75 +407,66 @@ module.exports = function (Dataset) {
        filter condition consists of
        - ownerGroup (automatically applied on server side)
        - text search
+       - mode search: arbitrary additional condition (e.g. for and/or combinations, adding scientific metadata)
        - list of fields which are treated as filter condition (name,type,value triple)
      - paging of results
     */
     Dataset.fullquery = function (fields, limits, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
-        let match = {}
-        let matchJoin = {}
-        // construct match conditions from fields value, excluding facet material
+
+        // let matchJoin = {}
+        // construct match conditions from fields value
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== 'null') {
                 if (key === "text") {
-                    match["$or"] = [{
-                        $text: searchExpression(key, fields[key])
-                    }, {
-                        sourceFolder: {
-                            $regex: fields[key],
-                            $options: 'i'
-                        }
-                    }]
-                } else if (key === "ownerGroup") {
-                    // ownerGroup is handled in userGroups parts
-                } else if (key === "userGroups") {
-                    // merge with ownerGroup condition if existing
-                    if ('ownerGroup' in fields) {
-                        if (fields[key].length == 0) {
-                            // if no userGroups defined take all ownerGroups
-                            match["ownerGroup"] = searchExpression('ownerGroup', fields['ownerGroup'])
-                        } else {
-                            // otherwise create intersection of userGroups and ownerGroup
-                            // this is needed here since no extra match step is done but all
-                            // filter conditions are applied in one match step
-                            const intersect = fields['ownerGroup'].filter(function (n) {
-                                return fields['userGroups'].indexOf(n) !== -1;
-                            });
-                            match["ownerGroup"] = searchExpression('ownerGroup', intersect)
-                        }
-                    } else {
-                        // only userGroups defined
-                        if (fields['userGroups'].length > 0) {
-                            match["$or"] = [{
-                                ownerGroup: searchExpression('ownerGroup', fields['userGroups'])
+                    // unshift because text must be at start of array
+                    pipeline.unshift({
+                        $match: {
+                            $or: [{
+                                $text: searchExpression(key, fields[key])
                             }, {
-                                accessGroups: searchExpression('accessGroups', fields['userGroups'])
+                                sourceFolder: {
+                                    $regex: fields[key],
+                                    $options: 'i'
+                                }
                             }]
                         }
+                    });
+                }
+                // mode is not a field in dataset, just an object for containing a match clause
+                else if (key === "mode") {
+                    pipeline.push({
+                        $match: fields[key]
+                    })
+                } else if (key === "userGroups") {
+                    if (fields['userGroups'].length > 0) {
+                        pipeline.push({
+                            $match: {
+                                "$or": [{
+                                    ownerGroup: searchExpression('ownerGroup', fields['userGroups'])
+                                }, {
+                                    accessGroups: searchExpression('accessGroups', fields['userGroups'])
+                                }]
+                            }
+                        })
                     }
                 } else {
-                    // check if field is in linked models
-                    if (key in dsl.properties) {
-                        matchJoin["datasetlifecycle." + key] = searchExpression(key, fields[key])
-                    } else {
-                        match[key] = searchExpression(key, fields[key])
-                    }
+                    let match = {}
+                    match[key] = searchExpression(key, fields[key])
+                    pipeline.push({
+                        $match: match
+                    })
                 }
             }
         })
-        if (match !== {}) {
-            pipeline.push({
-                $match: match
-            })
-        }
 
-        if (Object.keys(matchJoin).length > 0) {
-            pipeline.push({
-                $match: matchJoin
-            })
+        // if (Object.keys(matchJoin).length > 0) {
+        //     pipeline.push({
+        //         $match: matchJoin
+        //     })
 
-        }
+        // }
         // final paging section ===========================================================
         if (limits) {
             if ("order" in limits) {
@@ -480,7 +505,6 @@ module.exports = function (Dataset) {
                         if (err) {
                             console.log("Facet err handling:", err);
                         }
-                        // console.log("Query result:", res)
                         // rename _id to pid
                         res.map(ds => {
                             Object.defineProperty(ds, 'pid', Object.getOwnPropertyDescriptor(ds, '_id'));
