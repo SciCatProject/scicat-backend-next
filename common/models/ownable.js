@@ -27,9 +27,17 @@ module.exports = function(Ownable) {
                 }
                 // console.log("Found groups:", groups);
                 var groupCondition = {
-                    ownerGroup: {
-                        inq: groups
-                    }
+                    or: [{
+                            ownerGroup: {
+                                inq: groups
+                            }
+                        },
+                        {
+                            accessGroups: {
+                                inq: groups
+                            }
+                        }
+                    ]
                 };
                 if (!ctx.query.where) {
                     ctx.query.where = groupCondition
