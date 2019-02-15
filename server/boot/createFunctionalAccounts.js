@@ -110,17 +110,17 @@ module.exports = function (app, next) {
             "role": "admin"
         }, {
             "account": "ingestor",
-            "password": "123vdqwwfqww",
+            "password": "aman",
             "email": "scicatingestor@your.site",
             "role": "ingestor"
         }, {
             "account": "archiveManager",
-            "password": "4d65aHFSD88",
+            "password": "aman",
             "email": "scicatarchivemanager@your.site",
             "role": "archivemanager"
         }, {
             "account": "proposalIngestor",
-            "password": "5D73MDS9T5",
+            "password": "aman",
             "email": "scicatproposalingestor@your.site",
             "role": "proposalingestor"
         }]
