@@ -280,7 +280,7 @@ describe('Test facet and filter queries', () => {
             }
         }
         request(app)
-            .post('/api/v3/RawDatasets/update?where=' + JSON.stringify(filter) + '&access_token=' + accessTokenIngestor)
+            .post('/api/v3/RawDatasets/update?where=' + JSON.stringify(filter) + '&access_token=' + accessTokenArchiveManager)
             .send({
                 "datasetlifecycle": {
                     "archiveStatusMessage": "justAnotherTestMessage"
@@ -304,7 +304,7 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                // console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                //console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
                 res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
 
                 done();

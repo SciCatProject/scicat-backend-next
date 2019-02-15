@@ -67,7 +67,6 @@ module.exports = function (Dataset) {
                 console.log("Error when creating default policy:", err)
                 return next(err)
             }
-            // TODO needed ?
             utils.keepHistory(ctx, next)
         });
     };
@@ -169,7 +168,6 @@ module.exports = function (Dataset) {
                         ctx.instance.classification = classification;
                     }
                     // case 2: classification defined and policy defined: do nothing
-                    // TODO: is keepHistory needed in this case ?
                     utils.keepHistory(ctx, next)
                 } else {
                     let tapeRedundancy = "low"

@@ -152,12 +152,6 @@
         {
             "accessType": "READ",
             "principalType": "ROLE",
-            "principalId": "usergroupingestor",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
             "principalId": "proposalingestor",
             "permission": "DENY"
         },
@@ -174,10 +168,11 @@
             "property": ["facet", "fullquery", "fullfacet"]
         },
         {
+            "accessType": "*",
+            "property": ["patchAttributes","updateAll"],
             "principalType": "ROLE",
             "principalId": "ingestor",
-            "permission": "ALLOW",
-            "property": ["facet", "fullquery", "fullfacet"]
+            "permission": "DENY"
         }
     ],
     "methods": {

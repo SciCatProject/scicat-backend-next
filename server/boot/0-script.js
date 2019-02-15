@@ -44,7 +44,7 @@ module.exports = function (app) {
 
         embedFields.forEach(function (field) {
             db.collection('Dataset').createIndex({
-                field : 1
+                field: 1
             }, function (err) {
                 if (!err) {
                     console.log("Index on field " + field + " created succesfully")
@@ -67,22 +67,22 @@ module.exports = function (app) {
 
     // add further information to options parameter
     // see https://loopback.io/doc/en/lb3/Using-current-context.html#use-a-custom-strong-remoting-phase
+    // TODO why is this face not executed for remote methods like fullfacet ?
 
     app.remotes().phases
         .addBefore('invoke', 'options-from-request')
         .use(function (ctx, next) {
-            //console.log("============ Phase: args,options",ctx.args,ctx.options)
+            //console.log("============ Phase: args,options", ctx.args, ctx.options)
             if (!ctx.args.options || !ctx.args.options.accessToken) return next();
             const User = app.models.User;
             const UserIdentity = app.models.UserIdentity
             // first check if email in User
             User.findById(ctx.args.options.accessToken.userId, function (err, user) {
                 if (err) return next(err);
-                // console.log("Found user:",user)
+                // console.log("Found user:", user)
                 ctx.args.options.currentUser = user.username;
-                // TODO get email from UserIdentity and only this email for functional accounts
+                // get email from User for functional accounts and from UserIdentity for normal users
                 ctx.args.options.currentUserEmail = user.email;
-                // override email field for normal user accounts
                 UserIdentity.findOne({
                     //json filter
                     where: {
@@ -90,10 +90,10 @@ module.exports = function (app) {
                     }
                 }, function (err, u) {
                     // add user email and groups
+                    var groups = []
                     if (!!u) {
-                        var groups = []
                         if (u.profile) {
-                            console.log("Profile:", u.profile)
+                            // console.log("Profile:", u.profile)
                             // if user account update where query to append group groupCondition
                             ctx.args.options.currentUser = u.profile.username
                             ctx.args.options.currentUserEmail = u.profile.email;
@@ -103,9 +103,13 @@ module.exports = function (app) {
                                 groups = []
                             }
                         }
-                        ctx.args.options.currentGroups = groups
+                    } else {
+                        // functional accounts are added except the global accounts
+                        if (['ingestor', 'archiveManager', 'proposalIngestor'].indexOf(ctx.args.options.currentUser) < 0) {
+                            groups.push('func-' + ctx.args.options.currentUser)
+                        }
                     }
-                    //console.log("Resulting options:",ctx.args.options)
+                    ctx.args.options.currentGroups = groups
                     return next()
                 })
             });
