@@ -27,7 +27,6 @@ server/admin
 server/ingestor
 server/archiveManager
 server/proposalIngestor
-server/userGroupIngestor
 server/providers.json
 server/datasources.json
 server/datacite.json

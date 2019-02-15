@@ -177,7 +177,6 @@ exports.handleOwnerGroups = function (ctx, next) {
         next(e);
     }
     User.findById(userId, function (err, user) {
-        console.log("Inside handleOwnerGroup for user:", user)
         if (err) {
             next(err);
         } else if (user['username'].indexOf('.') === -1) {
@@ -187,7 +186,7 @@ exports.handleOwnerGroups = function (ctx, next) {
             } else {
                 ctx.args.fields.userGroups = []
             }
-            console.log("Defined usergroups for functional account as:", ctx.args.fields.userGroups)
+            // console.log("Defined usergroups for functional account as:", ctx.args.fields.userGroups)
             next()
         } else {
             UserIdentity.findOne({
@@ -195,7 +194,7 @@ exports.handleOwnerGroups = function (ctx, next) {
                     userId: userId
                 }
             }, function (err, instance) {
-                console.log("UserIdentity Instance:", instance)
+                //console.log("UserIdentity Instance:", instance)
                 if (instance && instance.profile) {
                     var foundGroups = instance.profile.accessGroups;
                     // check if a normal user or an internal ROLE
@@ -205,7 +204,7 @@ exports.handleOwnerGroups = function (ctx, next) {
                         next(e);
                     } else {
                         ctx.args.fields.userGroups = foundGroups;
-                        console.log("Defined usergroups for normal users as:", ctx.args.fields.userGroups)
+                        //console.log("Defined usergroups for normal users as:", ctx.args.fields.userGroups)
                         next()
                     }
                 } else {
@@ -267,7 +266,7 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
                 if(err){
                     console.log("Saving auto history failed:",err)
                 }
-                console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
+                //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
                 index--
                 updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
             })

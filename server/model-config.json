@@ -81,14 +81,6 @@
         "dataSource": "transient",
         "public": false
     },
-    "AccessUser": {
-        "dataSource": "mongo",
-        "public": true
-    },
-    "AccessGroup": {
-        "dataSource": "mongo",
-        "public": true
-    },
     "UserCredential": {
         "dataSource": "mongo",
         "public": true
