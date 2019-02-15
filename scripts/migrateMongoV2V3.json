@@ -30,6 +30,7 @@ db.Dataset.aggregate([{
         "datasetlifecycle.updatedBy": 0,
         "datasetlifecycle.ownerGroup": 0,
         "datasetlifecycle.dateOfLastMessage": 0,
+        "datasetlifecycle.lastUpdateMessage": 0,
         "MessageHistory": 0,
         "doi":0,
         "userTargetLocation":0,
@@ -60,6 +61,9 @@ db.Dataset.aggregate([{
         },
         "datasetlifecycle.retrieveIntegrityCheck": {
             "$ifNull": ["$datasetlifecycle.retrieveIntegrityCheck", false]
+        },
+        "datasetlifecycle.archiveReturnMessage": {
+            "$ifNull": [{"output":"$datasetlifecycle.archiveReturnMessage"}, {}]
         }
     }
 },

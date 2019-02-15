@@ -176,13 +176,18 @@ exports.handleOwnerGroups = function (ctx, next) {
         e.statusCode = 401;
         next(e);
     }
-
     User.findById(userId, function (err, user) {
+        console.log("Inside handleOwnerGroup for user:", user)
         if (err) {
             next(err);
         } else if (user['username'].indexOf('.') === -1) {
             // system users have no pgroups assigned, no filter on these variables
-            ctx.args.fields.userGroups = [];
+            if (['ingestor', 'archiveManager', 'proposalIngestor'].indexOf(user['username']) < 0) {
+                ctx.args.fields.userGroups = ['func-' + user['username']];
+            } else {
+                ctx.args.fields.userGroups = []
+            }
+            console.log("Defined usergroups for functional account as:", ctx.args.fields.userGroups)
             next()
         } else {
             UserIdentity.findOne({
@@ -200,6 +205,7 @@ exports.handleOwnerGroups = function (ctx, next) {
                         next(e);
                     } else {
                         ctx.args.fields.userGroups = foundGroups;
+                        console.log("Defined usergroups for normal users as:", ctx.args.fields.userGroups)
                         next()
                     }
                 } else {
@@ -220,12 +226,12 @@ function updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next) {
         return next()
     } else {
         // modify ctx.data to keep embedded data
-        ctx.data=JSON.parse(JSON.stringify(ctxdatacopy))
-        if(ctx.data && ctx.data.datasetlifecycle){
-            changes=JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
-            ctx.data.datasetlifecycle=JSON.parse(JSON.stringify(datasetInstances[index].datasetlifecycle))
+        ctx.data = JSON.parse(JSON.stringify(ctxdatacopy))
+        if (ctx.data && ctx.data.datasetlifecycle) {
+            changes = JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
+            ctx.data.datasetlifecycle = JSON.parse(JSON.stringify(datasetInstances[index].datasetlifecycle))
             // apply changes
-            for(var k in changes) ctx.data.datasetlifecycle[k]=changes[k];
+            for (var k in changes) ctx.data.datasetlifecycle[k] = changes[k];
         }
         // do the real action
         var InitialDataset = app.models.InitialDataset
@@ -252,15 +258,23 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
     Dataset.findById(datasetInstances[index].pid, ctx.options, function (err, datasetInstance) {
         // drop any history , e.g. from outside or from previous loop
         delete ctx.data.history
-        // ignore packedsize and size updates for history
+        // ignore packedsize and size updates for history.
+        // TODO: this ignores any update which contains these fields among other chanegs
         if (!ctx.data.size && !ctx.data.packedSize) {
             // the following triggers a before save hook . endless recursion must be prevented there
             // console.log("Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)))
-            // console.log("After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)), function (err, instance) {
+                if(err){
+                    console.log("Saving auto history failed:",err)
+                }
+                console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
+                index--
+                updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
+            })
+        } else {
+            index--
+            updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
         }
-        index--
-        updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
     })
 }
 
@@ -289,36 +303,14 @@ exports.keepHistory = function (ctx, next) {
             // console.log("++++++ Inside keephistory: Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
             // solve asynch call inside for loop by recursion
             index = datasetInstances.length - 1
-            ctxdatacopy=JSON.parse(JSON.stringify(ctx.data))
+            ctxdatacopy = JSON.parse(JSON.stringify(ctx.data))
             updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
         })
     }
 
     // single dataset, update
-    // TODO this seems never to happen, no need to implement ?
     if (!ctx.where && ctx.data) {
         console.log(" ===== Warning: single dataset update case without where condition is currently not treated:", ctx.data)
-        // if (ctx.currentInstance) {
-        //     // check for copy of original Dataset, if not create one
-        //     var InitialDataset = app.models.InitialDataset
-        //     InitialDataset.findById(ctx.currentInstance.pid, ctx.options, function (err, initialDatasetInstance) {
-        //         if (err) {
-        //             console.log("Error when searching for initial dataset:", err)
-        //             return next()
-        //         }
-        //         if (!initialDatasetInstance) {
-        //             InitialDataset.create(ctx.currentInstance, function (err, instance) {
-        //                 console.log("Created a dataset copy:", JSON.stringify(instance, null, 3))
-        //                 updateHistory(ctx, next)
-        //             })
-        //         } else {
-        //             updateHistory(ctx, next)
-        //         }
-        //     })
-        // } else {
-        //     console.log("+++++++++++++++++++ this should not happen: single ctx.data and no ctx.currentInstance")
-        //     return next()
-        // }
     }
 
     // single dataset, update
