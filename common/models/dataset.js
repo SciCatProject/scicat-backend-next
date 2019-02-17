@@ -275,6 +275,9 @@ module.exports = function (Dataset) {
         let pipeline = []
         let facetMatch = {}
         // add userGroups condition
+        if(fields === undefined){
+            fields={}
+        }
         fields.userGroups=options.currentGroups
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
@@ -401,6 +404,9 @@ module.exports = function (Dataset) {
     Dataset.fullquery = function (fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
+        if(fields === undefined){
+            fields={}
+        }
         // console.log("Inside fullquery:options",options)
         fields.userGroups=options.currentGroups
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
