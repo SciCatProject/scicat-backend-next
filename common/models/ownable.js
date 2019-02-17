@@ -7,7 +7,8 @@ module.exports = function (Ownable) {
     Ownable.observe('access', function (ctx, next) {
         // console.log("+++++ Access ctx.options:",ctx.options)
         const groups = ctx.options && ctx.options.currentGroups;
-        if (groups && groups.length > 0) {
+        // append group based conditions unless functional accounts with global access role
+        if (groups && groups.length > 0 && groups.indexOf("globalaccess")<0) {
             var groupCondition = {
                 or: [{
                         ownerGroup: {
@@ -29,8 +30,6 @@ module.exports = function (Ownable) {
                 }
             }
         }
-        // const scope = ctx.query.where ? JSON.stringify(ctx.query.where) : '<all records>';
-        // console.log('%s: %s accessed %s:%s', new Date(), instance.profile.login, ctx.Model.modelName, scope);
         next()
     });
 

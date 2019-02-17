@@ -178,25 +178,12 @@ module.exports = function (Job) {
     }
 
     Job.observe('before save', (ctx, next) => {
+        // email job initiator should always be the person running the job request
+        // therefore override this field both for users and functional accounts
         if (ctx.instance) {
-            // replace email with that from userIdentity
-            var UserIdentity = app.models.UserIdentity;
-            var userId = ctx.options.accessToken.userId;
-            //PersistedModel Static Method call
-            UserIdentity.findOne({
-                //json filter
-                where: {
-                    userId: userId
-                }
-            }, function (err, u) {
-                if (!!u) {
-                    ctx.instance.emailJobInitiator = u.profile.email;
-                }
-                next()
-            })
-        } else {
-            next()
+            ctx.instance.emailJobInitiator = ctx.options.currentUserEmail;
         }
+        next()
     });
 
     Job.observe('after save', (ctx, next) => {

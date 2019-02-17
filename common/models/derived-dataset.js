@@ -48,14 +48,14 @@ module.exports = function (Deriveddataset) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
-        utils.handleOwnerGroups(ctx, next);
+        return next()
     })
 
     Deriveddataset.beforeRemote('fullquery', function (ctx, userDetails, next) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'derived';
-        utils.handleOwnerGroups(ctx, next);
+        return next()
     });
 
     Deriveddataset.isValid = function (dataset, next) {

@@ -85,9 +85,64 @@ module.exports = function (app, next) {
                                 } else {
                                     console.log("Rolemapping already exists:", user, role)
                                 }
-                                // now treat the next user
-                                index--
-                                addAccounts(accounts, index, next)
+                                if (accounts[index].global == true) {
+                                    // and create role
+                                    role = "globalaccess"
+                                    var datarole = {
+                                        name: role
+                                    }
+                                    var filterrole = {
+                                        where: {
+                                            name: role
+                                        }
+                                    }
+                                    // add global role and mapping
+                                    Role.findOrCreate(filterrole, datarole, function (err, roleinstance, created) {
+                                        if (err) {
+                                            console.log("Error when creating role:" + err + " " + role)
+                                            return next(err)
+                                        } else {
+                                            if (created) {
+                                                console.log("New role created:", role)
+                                            } else {
+                                                console.log("Role already exists:", role)
+                                            }
+                                            // and mapping
+                                            //check mapping exists first, maybe also look at user id?
+
+                                            var filtermapping = {
+                                                where: {
+                                                    roleId: roleinstance.id,
+                                                    principalId: userinstance.id
+                                                }
+                                            }
+                                            var datamapping = {
+                                                principalType: RoleMapping.USER,
+                                                principalId: userinstance.id,
+                                                roleId: roleinstance.id
+                                            }
+                                            RoleMapping.findOrCreate(filtermapping, datamapping, function (err, mapinstance, created) {
+                                                if (err) {
+                                                    console.log("Error when finding Rolemapping:" + err + " " + roleinstance.id, userinstance.id)
+                                                    return next(err)
+                                                }
+                                                if (created) {
+                                                    console.log("New rolemapping created:", user, role)
+                                                } else {
+                                                    console.log("Rolemapping already exists:", user, role)
+                                                }
+                                                // now treat the next user
+                                                index--
+                                                addAccounts(accounts, index, next)
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    // now treat the next user
+                                    index--
+                                    addAccounts(accounts, index, next)
+                                }
+
                             });
                         }
                     })
@@ -107,22 +162,26 @@ module.exports = function (app, next) {
             "account": "admin",
             "password": "2jf70TPNZsS",
             "email": "scicatadmin@your.site",
-            "role": "admin"
+            "role": "admin",
+            "global": true
         }, {
             "account": "ingestor",
             "password": "aman",
             "email": "scicatingestor@your.site",
-            "role": "ingestor"
+            "role": "ingestor",
+            "global": true
         }, {
             "account": "archiveManager",
             "password": "aman",
             "email": "scicatarchivemanager@your.site",
-            "role": "archivemanager"
+            "role": "archivemanager",
+            "global": true
         }, {
             "account": "proposalIngestor",
             "password": "aman",
             "email": "scicatproposalingestor@your.site",
-            "role": "proposalingestor"
+            "role": "proposalingestor",
+            "global": true
         }]
     }
     var index = accounts.length - 1
