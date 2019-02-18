@@ -116,7 +116,7 @@ module.exports = function (Dataset) {
                     ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
                 }
             } else {
-                console.log('      Unmodified pid:', ctx.instance.pid);
+                console.log('      Existing pid:', ctx.instance.pid);
             }
             ctx.instance.version = p.version;
 
@@ -228,21 +228,6 @@ module.exports = function (Dataset) {
         });
     };
 
-
-    /**
-     * Inherited models will not call this before access, so it must be replicated
-     */
-
-    // add user Groups information of the logged in user to the fields object
-
-    Dataset.beforeRemote('fullfacet', function (ctx, userDetails, next) {
-        utils.handleOwnerGroups(ctx, next);
-    });
-
-    Dataset.beforeRemote('fullquery', function (ctx, userDetails, next) {
-        utils.handleOwnerGroups(ctx, next);
-    });
-
     function searchExpression(key, value) {
         let type = "string"
         if (key in ds.properties) {
@@ -285,10 +270,16 @@ module.exports = function (Dataset) {
         }
     }
 
-    Dataset.fullfacet = function (fields, facets = [], cb) {
+    Dataset.fullfacet = function (fields, facets = [], options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
         let facetMatch = {}
+        // add userGroups condition
+        if(fields === undefined){
+            fields={}
+        }
+        fields.userGroups=options.currentGroups
+        // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
         // Since a match condition on usergroups is always prepended at the start
@@ -333,7 +324,8 @@ module.exports = function (Dataset) {
                         $match: fields[key]
                     })
                 } else if (key === "userGroups") {
-                    if (fields['userGroups'].length > 0) {
+                    // no group conditions if global access role
+                    if (fields['userGroups'].indexOf("globalaccess")<0) {
                         pipeline.push({
                             $match: {
                                 "$or": [{
@@ -409,10 +401,15 @@ module.exports = function (Dataset) {
        - list of fields which are treated as filter condition (name,type,value triple)
      - paging of results
     */
-    Dataset.fullquery = function (fields, limits, cb) {
+    Dataset.fullquery = function (fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
-
+        if(fields === undefined){
+            fields={}
+        }
+        // console.log("Inside fullquery:options",options)
+        fields.userGroups=options.currentGroups
+        // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
         Object.keys(fields).map(function (key) {
@@ -438,7 +435,7 @@ module.exports = function (Dataset) {
                         $match: fields[key]
                     })
                 } else if (key === "userGroups") {
-                    if (fields['userGroups'].length > 0) {
+                    if (fields['userGroups'].indexOf("globalaccess")<0) {
                         pipeline.push({
                             $match: {
                                 "$or": [{
@@ -458,11 +455,6 @@ module.exports = function (Dataset) {
                 }
             }
         })
-
-        // if (Object.keys(matchJoin).length > 0) {
-        //     pipeline.push({
-        //         $match: matchJoin
-        //     })
 
         // }
         // final paging section ===========================================================

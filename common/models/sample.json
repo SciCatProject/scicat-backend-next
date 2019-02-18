@@ -47,12 +47,6 @@
         {
             "accessType": "READ",
             "principalType": "ROLE",
-            "principalId": "usergroupingestor",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
             "principalId": "archivemanager",
             "permission": "DENY"
         },

@@ -160,65 +160,6 @@ exports.createNewFacetPipeline = function (name, type, query) {
     return pipeline;
 }
 
-
-
-exports.handleOwnerGroups = function (ctx, next) {
-    if (!ctx.args.fields)
-        ctx.args.fields = {};
-    let userId = ctx.req.accessToken && ctx.req.accessToken.userId;
-    if (userId === null && ctx.req.args) {
-        userId = ctx.req.args.accessToken;
-    }
-    var UserIdentity = app.models.UserIdentity;
-    var User = app.models.User;
-    if (!userId) {
-        var e = new Error('Cannot find access token');
-        e.statusCode = 401;
-        next(e);
-    }
-    User.findById(userId, function (err, user) {
-        console.log("Inside handleOwnerGroup for user:", user)
-        if (err) {
-            next(err);
-        } else if (user['username'].indexOf('.') === -1) {
-            // system users have no pgroups assigned, no filter on these variables
-            if (['ingestor', 'archiveManager', 'proposalIngestor'].indexOf(user['username']) < 0) {
-                ctx.args.fields.userGroups = ['func-' + user['username']];
-            } else {
-                ctx.args.fields.userGroups = []
-            }
-            console.log("Defined usergroups for functional account as:", ctx.args.fields.userGroups)
-            next()
-        } else {
-            UserIdentity.findOne({
-                where: {
-                    userId: userId
-                }
-            }, function (err, instance) {
-                console.log("UserIdentity Instance:", instance)
-                if (instance && instance.profile) {
-                    var foundGroups = instance.profile.accessGroups;
-                    // check if a normal user or an internal ROLE
-                    if (typeof foundGroups === 'undefined' || foundGroups.length === 0) {
-                        var e = new Error('User has no group access');
-                        e.statusCode = 401;
-                        next(e);
-                    } else {
-                        ctx.args.fields.userGroups = foundGroups;
-                        console.log("Defined usergroups for normal users as:", ctx.args.fields.userGroups)
-                        next()
-                    }
-                } else {
-                    // According to: https://loopback.io/doc/en/lb3/Operation-hooks.html
-                    var e = new Error('Access Not Allowed');
-                    e.statusCode = 401;
-                    next(e);
-                }
-            })
-        }
-    });
-}
-
 // recursive function needed to call asynch calls inside a loop
 function updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next) {
     // console.log("Inside updateDatasets, index,id:", index,datasetInstances[index])
@@ -267,7 +208,7 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
                 if(err){
                     console.log("Saving auto history failed:",err)
                 }
-                console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
+                //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
                 index--
                 updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
             })

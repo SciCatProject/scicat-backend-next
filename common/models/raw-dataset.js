@@ -71,14 +71,14 @@ module.exports = function (Rawdataset) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'raw';
-        utils.handleOwnerGroups(ctx, next);
+        return next();
     });
 
     Rawdataset.beforeRemote('fullquery', function (ctx, userDetails, next) {
         if (!ctx.args.fields)
             ctx.args.fields = {};
         ctx.args.fields.type = 'raw';
-        utils.handleOwnerGroups(ctx, next);
+        return next();
     });
 
     Rawdataset.isValid = function (dataset, next) {

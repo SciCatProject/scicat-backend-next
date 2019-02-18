@@ -67,7 +67,6 @@ module.exports = function (app) {
 
     // add further information to options parameter
     // see https://loopback.io/doc/en/lb3/Using-current-context.html#use-a-custom-strong-remoting-phase
-    // TODO why is this face not executed for remote methods like fullfacet ?
 
     app.remotes().phases
         .addBefore('invoke', 'options-from-request')
@@ -76,6 +75,8 @@ module.exports = function (app) {
             if (!ctx.args.options || !ctx.args.options.accessToken) return next();
             const User = app.models.User;
             const UserIdentity = app.models.UserIdentity
+            const RoleMapping = app.models.RoleMapping
+            const Role = app.models.Role
             // first check if email in User
             User.findById(ctx.args.options.accessToken.userId, function (err, user) {
                 if (err) return next(err);
@@ -90,8 +91,8 @@ module.exports = function (app) {
                     }
                 }, function (err, u) {
                     // add user email and groups
-                    var groups = []
                     if (!!u) {
+                        var groups = []
                         if (u.profile) {
                             // console.log("Profile:", u.profile)
                             // if user account update where query to append group groupCondition
@@ -103,14 +104,35 @@ module.exports = function (app) {
                                 groups = []
                             }
                         }
+                        ctx.args.options.currentGroups = groups
+                        return next()
                     } else {
-                        // functional accounts are added except the global accounts
-                        if (['ingestor', 'archiveManager', 'proposalIngestor'].indexOf(ctx.args.options.currentUser) < 0) {
-                            groups.push('func-' + ctx.args.options.currentUser)
-                        }
+                        // authorizedRoles can not be used for this, since roles depend on the ACLs used in a collection, 
+                        // fetch roles via Rolemapping table instead
+                        RoleMapping.find({
+                            where: {
+                                principalId: ctx.args.options.accessToken.userId
+                            }
+                        }, ctx.args.options, function (err, instances) {
+                            // mape roleid to name
+                            const roleIdList = instances.map(instance => instance.roleId);
+                            Role.find({
+                                where: {
+                                    id: {
+                                        inq: roleIdList
+                                    }
+                                }
+                            }, function (err, result) {
+                                if(err) return next(err)
+                                const roleNameList = result.map(instance => instance.name);
+                                ctx.args.options.currentGroups = roleNameList
+                                return next()
+                            })
+
+                        })
+
                     }
-                    ctx.args.options.currentGroups = groups
-                    return next()
+
                 })
             });
         });

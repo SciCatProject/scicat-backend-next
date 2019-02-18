@@ -85,9 +85,6 @@ spec:
         - name: secret-volume
           mountPath: /usr/src/app/server/proposalIngestor
           subPath: proposalIngestor
-        - name: secret-volume
-          mountPath: /usr/src/app/server/userGroupIngestor
-          subPath: userGroupIngestor
       volumes:
         - name: config-volume
           configMap:

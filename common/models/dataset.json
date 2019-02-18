@@ -206,6 +206,11 @@
                     "arg": "facets",
                     "type": "array",
                     "description": "Defines list of field names, for which facet counts should be calculated"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
                 }
             ],
             "returns": {
@@ -227,6 +232,11 @@
                     "arg": "limits",
                     "type": "object",
                     "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
                 }
             ],
             "returns": {
