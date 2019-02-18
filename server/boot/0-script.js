@@ -125,7 +125,10 @@ module.exports = function (app) {
                             }, function (err, result) {
                                 if(err) return next(err)
                                 const roleNameList = result.map(instance => instance.name);
+                                // add beamline specific account name as an additional role for beamline specific data
+                                roleNameList.push(user.username)
                                 ctx.args.options.currentGroups = roleNameList
+                                // console.log("Current groups:",  ctx.args.options.currentGroups)
                                 return next()
                             })
 
