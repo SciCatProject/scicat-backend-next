@@ -20,7 +20,7 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
     if (instance) {
         // get all current objects connected to the same dataset
         if (instance.datasetId !== undefined) {
-            const datasetId = decodeURIComponent(instance.datasetId)
+            const datasetId = instance.datasetId
             // get all current datablocks connected to the same dataset
             var filter = {
                 where: {
@@ -36,7 +36,7 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
                 }, 0);
 
                 var Dataset = app.models.Dataset
-                Dataset.findById(datasetId, null, ctx.options).then(instance => {
+                Dataset.findById(datasetId, ctx.options).then(instance => {
                     if (instance) {
                         // important to pass options here, otherwise context gets lost
                         instance.updateAttributes({
@@ -80,14 +80,14 @@ exports.addOwnerGroup = function (ctx, next) {
         instance = ctx.currentInstance
     }
     if (instance) {
+        console.log("add ownergroup logic for instance:",instance)
         // get all current objects connected to the same dataset
         if (instance.datasetId !== undefined) {
-            const datasetId = decodeURIComponent(instance.datasetId)
+            const datasetId = instance.datasetId
             // check if ownerGroup is not yet defined, add it in this policyPublicationShiftInYears
             if (instance.ownerGroup == undefined) {
                 var Dataset = app.models.Dataset
-                // console.log("Looking for dataset with id:", datasetId)
-                Dataset.findById(datasetId, null, ctx.options).then(datasetInstance => {
+                Dataset.findById(datasetId, ctx.options).then(datasetInstance => {
                     console.log("      adding ownerGroup:", datasetInstance.ownerGroup)
                     instance.ownerGroup = datasetInstance.ownerGroup
                     // for partial updates the ownergroup must be added to ctx.data in order to be persisted
