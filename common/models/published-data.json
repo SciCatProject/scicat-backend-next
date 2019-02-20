@@ -74,7 +74,6 @@
         },
         "sizeOfArchive": {
             "type": "number",
-            "required": true,
             "description": "Size of archive"
         },
         "pidArray": {
