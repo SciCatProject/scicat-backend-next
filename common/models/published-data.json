@@ -69,7 +69,6 @@
         },
         "numberOfFiles": {
             "type": "number",
-            "required": true,
             "description": "Number of files"
         },
         "sizeOfArchive": {
