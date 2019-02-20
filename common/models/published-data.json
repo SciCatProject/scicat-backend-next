@@ -44,7 +44,6 @@
         },
         "url": {
             "type": "string",
-            "required": true,
             "description": "Full URL to the landing page for this DOI"
         },
         "abstract": {
@@ -59,7 +58,6 @@
         },
         "thumbnail": {
             "type": "string",
-            "required": true,
             "description": "Small, less than 16 MB base 64 image preview of dataset"
         },
         "resourceType": {
