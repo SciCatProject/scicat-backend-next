@@ -34,7 +34,6 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
                 var total = instances.reduce(function (sum, value) {
                     return sum + value[sizeField]
                 }, 0);
-
                 var Dataset = app.models.Dataset
                 Dataset.findById(datasetId, ctx.options).then(instance => {
                     if (instance) {
@@ -80,7 +79,7 @@ exports.addOwnerGroup = function (ctx, next) {
         instance = ctx.currentInstance
     }
     if (instance) {
-        console.log("add ownergroup logic for instance:",instance)
+        //console.log("add ownergroup/accessgroup for instance:",instance)
         // get all current objects connected to the same dataset
         if (instance.datasetId !== undefined) {
             const datasetId = instance.datasetId
@@ -88,11 +87,14 @@ exports.addOwnerGroup = function (ctx, next) {
             if (instance.ownerGroup == undefined) {
                 var Dataset = app.models.Dataset
                 Dataset.findById(datasetId, ctx.options).then(datasetInstance => {
-                    console.log("      adding ownerGroup:", datasetInstance.ownerGroup)
+                    // console.log("      adding ownerGroup:", datasetInstance.ownerGroup)
+                    // console.log("      adding accessGroups:", datasetInstance.accessGroups)
                     instance.ownerGroup = datasetInstance.ownerGroup
+                    instance.accessGroups = datasetInstance.accessGroups
                     // for partial updates the ownergroup must be added to ctx.data in order to be persisted
                     if (ctx.data) {
                         ctx.data.ownerGroup = datasetInstance.ownerGroup
+                        ctx.data.accessGroups = datasetInstance.accessGroups
                     }
                     next()
                 })

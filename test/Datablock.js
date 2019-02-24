@@ -23,7 +23,7 @@ var idDatablock2 = null;
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
     "endTime": "2011-09-14T06:31:25.000Z",
-    "creationLocation": "/SU/XQX/RAMJET",
+    "creationLocation": "/PSI/SLS/MX",
     "dataFormat": "Upchuck pre 2017",
     "scientificMetadata": {
         "beamlineParameters": {
@@ -86,7 +86,7 @@ var testraw = {
     "description": "None",
     "isPublished": false,
     "ownerGroup": "p10029",
-    "accessGroups": [],
+    "accessGroups": ["slsmx"],
     "proposalId": "10.540.16635/20110123"
 }
 
@@ -141,8 +141,7 @@ var testdataBlock = {
             "gid": "p16738",
             "perm": "-rw-rw-r--"
         }
-    ],
-    "ownerGroup": "p10029"
+    ]
 }
 
 var testorigDataBlock = {
@@ -239,7 +238,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     it('adds a new origDatablock', function(done) {
         request(app)
-            .post('/api/v3/OrigDatablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/OrigDatablocks?access_token=' + accessTokenIngestor)
             .send(testorigDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
