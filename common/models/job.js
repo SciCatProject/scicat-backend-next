@@ -166,6 +166,45 @@ function TestAllDatasets(job, ctx, idList, next) {
     });
 }
 
+function SendFinishJobEmail(Job, ctx, idList, next) {
+    let Dataset = app.models.Dataset;
+    let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
+    let mailText = 'Hello, \n\nYour Job from ' + ctx.instance.creationTime + ' is now finished.\n';
+    if (ctx.instance.jobResultObject) {
+        mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3)+'\n\n'
+    }
+    let to = ctx.instance.emailJobInitiator
+
+    //test if all datasets are in retrievable state
+    if (ctx.instance.type == "archive" || ctx.instance.type == "retrieve") {
+        Dataset.find({
+            where: {
+                'datasetlifecycle.retrievable': false,
+                pid: {
+                    inq: idList
+                }
+            }
+        }, ctx.options, function (err, p) {
+            const nonRetrievableList = p.map(x => ({
+                pid: x.pid,
+                sourceFolder: x.sourceFolder,
+                size: x.size,
+                archiveReturnMessage: x.datasetlifecycle.archiveReturnMessage,
+                retrieveReturnMessage: x.datasetlifecycle.retrieveReturnMessage
+            }))
+            if (p.length > 0) {
+                mailText += "The following datasets are not in a retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+            } else {
+                mailText += "All datasets have been archived succesfully:\n\n" + JSON.stringify(idList, null, 3)
+            }
+            sendMail(to, subjectText, mailText, next)
+        })
+    } else {
+        sendMail(to, subjectText, mailText, next)
+    }
+}
+
+
 module.exports = function (Job) {
 
     // Attach job submission to Kafka
@@ -187,22 +226,22 @@ module.exports = function (Job) {
     });
 
     Job.observe('after save', (ctx, next) => {
-        if (ctx.instance && ctx.isNewInstance) {
+        if (ctx.instance) {
             // first create array of all pids
             const idList = ctx.instance.datasetList.map(x => x.pid)
-            // this is a new job, make some consistency checks concerning the datasets
-            TestAllDatasets(Job, ctx, idList, next)
-        } else {
-            // An existing job got some updates - check if you want to send an email
-            if (ctx.instance.jobStatusMessage.startsWith("finish")) {
-                // TODO add infos about which Datasets failed if this info is not yet in historyMessages of the Job
-                let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
-                let mailText = 'Hello, \n\n Your Job from ' + ctx.instance.creationTime + ' is now finished. \n\n The resulting job description is.\n\n' + JSON.stringify(ctx.instance, null, 4);
-                let to = ctx.instance.emailJobInitiator
-                sendMail(to, subjectText, mailText, next)
+            if (ctx.isNewInstance) {
+                // this is a new job, make some consistency checks concerning the datasets
+                TestAllDatasets(Job, ctx, idList, next)
             } else {
-                next()
+                // An existing job got some updates - check if you want to send an email
+                if (ctx.instance.jobStatusMessage.startsWith("finish")) {
+                    SendFinishJobEmail(Job, ctx, idList, next)
+                } else {
+                    return next()
+                }
             }
+        } else {
+            return next()
         }
     });
 };
