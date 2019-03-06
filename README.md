@@ -7,10 +7,17 @@ The data catalog backend is based on [NoSQL database MongoDB](https://www.mongod
 # Getting started
 
 ## Prerequisites
-You need to setup a MongoDB server. E.g. on a Redhat Linux System the following command will suffice
+
+First you need to have node/npm installed
 
 ```
-yum install mongodb-org-server
+npm version 6 or higher
+node version 8 or higher
+```
+You also need to setup a MongoDB server. E.g. on a Redhat Linux System the following command will suffice
+
+```
+yum install mongodb-server
 ```
 
 On MacOS 
@@ -25,120 +32,26 @@ The needed database will be created automatically when the API server starts. Fo
 ```
 git clone https://github.com/SciCatProject/catamel.git
 cd catamel
+git checkout master # (or develop)
 npm install
 ```
 
-## Configure database source
-Add a `datasources.json` file inside the `server` directory with connection data to your mongodb instance. If using a local mongodb installation, running on port 27017, e.g. you can change the `"host"` property to read `"host":"localhost:27017"`
+## Setup configuration
+You can start with the sample files:
 
 ```
-server/datasources.json e.g.
-{
-  "mongo": {
-    "host": "mongodbprod.my.site",
-    "user": "dacatDBAdmin",
-    "password": "myverysecretPW"
-  }
-}
+cd server
+cp datasources.json-sample datasources.json
+cp providers.json-sample providers.json
+cp config.local.js-sample config.local.js
+
+Then edit these files and adjust the variables to meaningful values for your site/domain
 
 ```
-
-## Add providers.json
-Add a file `providers.json` inside the `server` directory.
-
-```
-{
-    "local": {
-        "provider": "local",
-        "module": "passport-local",
-        "usernameField": "username",
-        "passwordField": "password",
-        "authPath": "/auth/local",
-        "successRedirect": "/auth/account",
-        "failureRedirect": "/local",
-        "failureFlash": true
-    }
-}
-```
-
-
-## Add local config file
-Add a file `config.local.js` inside the `server` directory. You can add your own PID prefix (e.g. from Handle.net), site name (e.g. ESS) and facilities ('beamline1', 'beamline2', etc)
-```
-var p = require('../package.json');
-var version = p.version.split('.').shift();
-module.exports = {
-    restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
-    host: process.env.HOST || '0.0.0.0',
-    port: process.env.PORT || 3000,
-    pidPrefix: '<PID>',
-    policyPublicationShiftInYears: 3,
-    policyRetentionShiftInYears: 10,
-    site: '<MYSITE>',
-    facilities: [<MYFACILITY1>],
-    datasetStatusMessages: {
-        datasetCreated: "Dataset created",
-        datasetOndisk: "Stored on primary disk and on archive disk",
-        datasetOnDiskAndTape: "Stored on primary disk and on tape",
-        datasetOnTape: "Stored only in archive",
-        datasetRetrieved: "Retrieved to target disk",
-        datasetDeleted: "Deleted from archive and disk"
-    },
-    datasetTransitionMessages: {
-        scheduleArchive: "Scheduled for archiving",
-        schedulePurgeFromDisk: "Scheduled for purging from primary disk",
-        scheduleRetrieve: "Scheduled for retrieval",
-        scheduleDelete: "Scheduled for removal from archive"
-    },
-    jobMessages: {
-        jobSubmitted: "Submitted for immediate execution",
-        jobSubmittedDelayed: "Submitted for delayed execution",
-        jobForwarded: "Forwarded to archive system",
-        jobStarted: "Execution started",
-        jobInProgress: "Finished by %i percent",
-        jobSuccess: "Succesfully finished",
-        jobError: "Finished with errors",
-        jobCancel: "Cancelled"
-    }
-};
-```
-
-## Email Notifications
-
-Inside your `config.local.js`, you can add the following blocks to enable email notification on submission of a Job. In the future, other notification types will be supported.
-
-```
-    smtpSettings: {
-      host: 'mail.ethz.ch',
-      port: 587,
-      secure: false,
-      auth: {user: 'psich\\USER', pass: 'PWD'}
-    },
-    smtpMessage: {
-      from: 'USER@psi.ch',
-      to: undefined,
-      subject: '[SciCat]',
-      text: undefined // can also set html key and this will override this
-    }
-```
-
-The Job model checks for the existence of these blocks and sends an email from the User specified. You can override the object with the `html` key and send much more prettified content.
-
-
-
 
 ## Start API server
 ```
 node .
-```
-
-## initialize admin , archiveManager and ingestor accounts
-
-Insert in the following curl commands the respective usernames like admin , archiveManager and ingestor and set their passwords. These are local accounts defined within the loopback application database
-
-```
-curl -X POST --header 'Content-Type: application/json' --header 'Accept:application/json' -d'{"realm":"my.site","username":"...","password":"...!","email":"valid.email@my.site","emailVerified":true}' 'http://localhost:3000/api/v3/Users'
-
 ```
 
 ## Queuing Options
@@ -203,5 +116,7 @@ The library is generated by the following command
 ```
 
 ## Authentication
-Users are authenticated by loopback built in user accounts and by accounts, which are connected via any of the passport supported strategies, in particular OpenID connected and a direct AD connection
+Users are authenticated by loopback built in user accounts and by accounts, which are connected via any of the passport supported strategies,e.g. OpenID connected and a direct AD connection. The providers for this must be defined in the providers.json file above.
+
+In addition the so called functional accounts,like the ingestor are automatically created at boot time with a default password "aman". You can get an API access token via the Users login API endpoint.
 
