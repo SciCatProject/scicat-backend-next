@@ -1,0 +1,109 @@
+{
+    "name": "Logbook",
+    "description": "Logs notes and measuring data for proposals",
+    "base": "PersistedModel",
+    "idInjection": true,
+    "strict": true,
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {
+        "logbookId": {
+            "type": "string",
+            "id": true,
+            "required": true
+        }
+    },
+    "validations": [],
+    "relations": {
+      "proposals": {
+        "type": "belongsTo",
+        "model": "proposal",
+        "property": "",
+        "options": {}
+      }
+    },
+    "acls": [],
+    "methods": {
+        "createRoom": {
+            "accepts": [
+                {
+                    "arg": "visibility",
+                    "type": "string"
+                },
+                {
+                    "arg": "room_alias_name",
+                    "type": "string"
+                },
+                {
+                    "arg": "name",
+                    "type": "string"
+                },
+                {
+                    "arg": "topic",
+                    "type": "string"
+                },
+                {
+                    "arg": "creation_content",
+                    "type": "object"
+                }
+            ],
+            "returns": {
+                "arg": "createRoom",
+                "type": "object"
+            },
+            "description": "Create a new room",
+            "http": {
+                "path": "/createRoom",
+                "verb": "post"
+            }
+        },
+        "findAllRooms": {
+            "returns": {
+                "arg": "findAllRooms",
+                "type": "object"
+            },
+            "description": "Find all public rooms on the server",
+            "http": {
+                "path": "/publicRooms",
+                "verb": "get"
+            }
+        },
+        "login": {
+            "accepts": [
+                {
+                    "arg": "type",
+                    "type": "string"
+                },
+                {
+                    "arg": "identifier",
+                    "type": "object"
+                },
+                {
+                    "arg": "password",
+                    "type": "string"
+                }
+            ],
+            "returns": {
+                "arg": "login",
+                "type": "object"
+            },
+            "description": "Login to the chat server",
+            "http": {
+                "path": "/login",
+                "verb": "post"
+            }
+        },
+        "sync": {
+            "returns": {
+                "arg": "sync",
+                "type": "object"
+            },
+            "description": "Sync the client with the server",
+            "http": {
+                "path": "/sync",
+                "verb": "get"
+            }
+        }
+    }
+}

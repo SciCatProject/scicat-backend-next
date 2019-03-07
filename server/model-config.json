@@ -18,12 +18,14 @@
     },
     "User": {
         "dataSource": "mongo",
-        "acls": [{
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW",
-            "property": "jwt"
-          }]
+        "acls": [
+            {
+                "principalType": "ROLE",
+                "principalId": "$authenticated",
+                "permission": "ALLOW",
+                "property": "jwt"
+            }
+        ]
     },
     "AccessToken": {
         "dataSource": "mongo",
@@ -120,5 +122,9 @@
     "InitialDataset": {
         "dataSource": "mongo",
         "public": false
+    },
+    "Logbook": {
+        "dataSource": "mongo",
+        "public": true
     }
 }
