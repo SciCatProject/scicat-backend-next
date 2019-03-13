@@ -40,7 +40,7 @@
         "creationTime": {
             "type": "date",
             "index": true,
-            "defaultFn" : "now",
+            "defaultFn": "now",
             "description": "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
         },
         "executionTime": {
@@ -68,5 +68,34 @@
     "validations": [],
     "relations": {},
     "acls": [],
-    "methods": {}
+    "methods": {
+        "datasetDetails": {
+            "accepts": [{
+                    "arg": "jobId",
+                    "type": "string"
+                },
+                {
+                    "arg": "datasetFields",
+                    "type": "object"
+                },
+                {
+                    "arg": "include",
+                    "type": "object"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Returns for all linked datasets the details as defined in the fields array. Useful to avoid URL size limititations for large dataset queries",
+            "http": {
+                "path": "/datasetDetails",
+                "verb": "get"
+            }
+        }
+    }
 }

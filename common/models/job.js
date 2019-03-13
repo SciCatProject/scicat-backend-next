@@ -75,6 +75,7 @@ function MarkDatasetsAsScheduled(job, ctx, idList, next) {
 function TestArchiveJobs(job, ctx, idList, next) {
     let Dataset = app.models.Dataset;
     Dataset.find({
+        fields: {"pid":true},
         where: {
             'datasetlifecycle.archivable': false,
             pid: {
@@ -89,8 +90,7 @@ function TestArchiveJobs(job, ctx, idList, next) {
             next(e);
         } else {
             // mark all Datasets as in state scheduledForArchiving, archivable=false
-            //console.log("mark  datasets as to be archived:",idList)
-            MarkDatasetsAsScheduled(job, ctx, idList, next)
+            MarkDatasetsAsScheduled(job, ctx, idList, next)           
         }
     });
 }
@@ -101,6 +101,7 @@ function TestArchiveJobs(job, ctx, idList, next) {
 function TestRetrieveJobs(job, ctx, idList, next) {
     let Dataset = app.models.Dataset;
     Dataset.find({
+        fields: {"pid":true},
         where: {
             'datasetlifecycle.retrievable': true,
             pid: {
@@ -112,6 +113,7 @@ function TestRetrieveJobs(job, ctx, idList, next) {
             return next(err)
         } else if (p.length != idList.length) {
             Dataset.find({
+                fields: {"pid":true},
                 where: {
                     'datasetlifecycle.retrievable': false,
                     pid: {
@@ -135,15 +137,16 @@ function TestRetrieveJobs(job, ctx, idList, next) {
 }
 
 function TestAllDatasets(job, ctx, idList, next) {
+    
     let Dataset = app.models.Dataset;
     Dataset.find({
+        fields:{"pid":true},
         where: {
             pid: {
                 inq: idList
             }
         }
     }, ctx.options, function (err, p) {
-        let to = ctx.instance.emailJobInitiator
         if (err || (p.length != idList.length)) {
             var e = new Error();
             e.statusCode = 404;
@@ -151,6 +154,7 @@ function TestAllDatasets(job, ctx, idList, next) {
             // TODO should I send an email here ? Only if triggered by autoarchive option ?
             // subjectText =
             // mailText=
+            // let to = ctx.instance.emailJobInitiator
             // sendMail(to, subjectText, mailText, next)
             return next(e)
         } else {
@@ -171,13 +175,14 @@ function SendFinishJobEmail(Job, ctx, idList, next) {
     let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
     let mailText = 'Hello, \n\nYour Job from ' + ctx.instance.creationTime + ' is now finished.\n';
     if (ctx.instance.jobResultObject) {
-        mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3)+'\n\n'
+        mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3) + '\n\n'
     }
     let to = ctx.instance.emailJobInitiator
 
     //test if all datasets are in retrievable state
     if (ctx.instance.type == "archive" || ctx.instance.type == "retrieve") {
         Dataset.find({
+            fields: {"pid":true,"sourceFolder":true,"size":true,"datasetlifecycle":true},
             where: {
                 'datasetlifecycle.retrievable': false,
                 pid: {
@@ -244,4 +249,38 @@ module.exports = function (Job) {
             return next()
         }
     });
+
+    Job.datasetDetails = function (jobId, datasetFields = {}, include = {}, options, next) {
+        const Dataset = app.models.Dataset;
+        Job.findById(jobId, options, function (err, job) {
+            if (err) {
+                next(err);
+            } else {
+                if (job) {
+                    // console.log("Job found:", JSON.stringify(job, null, 3))
+                    const datasetIdList = job.datasetList.map(x => x.pid)
+                    const filter = {
+                        fields: datasetFields,
+                        include: include,
+                        where: {
+                            pid: {
+                                inq: datasetIdList
+                            }
+                        }
+                    }
+                    //console.log("filter:", JSON.stringify(filter, null, 3))
+                    Dataset.find(filter, options, function (err, result) {
+                        if (err) {
+                            return next(err)
+                        }
+                        //console.log("Returned result:", JSON.stringify(result, null, 3))
+                        return next(null, result)
+                    });
+                } else {
+                    return next(null,[])
+                }
+            }
+        });
+    };
+
 };
