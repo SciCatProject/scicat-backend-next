@@ -58,6 +58,9 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     if (!profile.username) {
         profile.username = [].concat(user['cn'])[0];
     }
+    if (!profile.thumbnailPhoto) {
+        profile.thumbnailPhoto = user['thumbnailPhoto'];
+    }
     if (!profile.id) {
         profile.id = user['uid'];
 		if (!('uid' in user)){
