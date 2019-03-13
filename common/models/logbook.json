@@ -1,36 +1,56 @@
 {
-  "name": "Logbook",
-  "description": "Logbook for proposals",
-  "base": "PersistedModel",
-  "idInjection": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "name": {
-      "type": "string",
-      "required": true
+    "name": "Logbook",
+    "description": "Logbook for proposals",
+    "base": "PersistedModel",
+    "idInjection": true,
+    "options": {
+        "validateUpsert": true
     },
-    "members": {
-      "type": [
-        "string"
-      ],
-      "required": true
-    }
-  },
-  "validations": [],
-  "relations": {
-    "proposal": {
-      "type": "belongsTo",
-      "model": "Proposal",
-      "foreignKey": ""
+    "properties": {
+        "name": {
+            "type": "string",
+            "required": true
+        },
+        "members": {
+            "type": ["string"],
+            "required": true
+        },
+        "userMessages": {
+            "type": ["object"],
+            "required": false
+        },
+        "botMessages": {
+            "type": ["object"]
+        },
+        "images": {
+            "type": ["object"]
+        }
     },
-    "users": {
-      "type": "hasMany",
-      "model": "User",
-      "foreignKey": ""
+    "validations": [],
+    "relations": {
+        "proposal": {
+            "type": "belongsTo",
+            "model": "Proposal",
+            "foreignKey": ""
+        },
+        "users": {
+            "type": "hasMany",
+            "model": "User",
+            "foreignKey": ""
+        }
+    },
+    "acls": [],
+    "methods": {
+        "getUserMessages": {
+            "returns": {
+                "arg": "getUserMessages",
+                "type": ["object"]
+            },
+            "description": "Gets all text messages sent by users",
+            "http": {
+                "path": "/getUserMessages",
+                "verb": "get"
+            }
+        }
     }
-  },
-  "acls": [],
-  "methods": {}
 }
