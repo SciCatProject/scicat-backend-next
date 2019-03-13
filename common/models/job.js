@@ -259,7 +259,6 @@ module.exports = function (Job) {
                 if (job) {
                     // console.log("Job found:", JSON.stringify(job, null, 3))
                     const datasetIdList = job.datasetList.map(x => x.pid)
-                    // TODO add ownerGroup condition
                     const filter = {
                         fields: datasetFields,
                         include: include,
