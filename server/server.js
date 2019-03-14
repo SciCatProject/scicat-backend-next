@@ -65,11 +65,11 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
         profile.username = [].concat(user['cn'])[0];
     }
     if (!profile.thumbnailPhoto2) {
-        var img = user._raw.thumbnailPhoto;
-        if (!_raw in user) {
-            profile.thumbnailPhoto = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-        } else {
+        if (user.hasOwnProperty('_raw') ) {
+            var img = user._raw.thumbnailPhoto;
             profile.thumbnailPhoto = img.toString("base64");
+        } else {
+            profile.thumbnailPhoto = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
         }
     }
     if (!profile.id) {
