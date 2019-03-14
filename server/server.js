@@ -3,6 +3,10 @@
 var loopback = require('loopback');
 var path = require('path');
 var boot = require('loopback-boot');
+var base64js = require('base64-js');
+var fs = require('fs');
+
+
 
 var app = module.exports = loopback();
 var configLocal = require('./config.local');
@@ -25,9 +29,21 @@ var passportConfigurator = new PassportConfigurator(app);
 
 passportConfigurator.buildUserLdapProfile = function(user, options) {
     var profile = {};
-    // console.log("User:", user)
+    console.log("User:", user);
+    //console.log("User:", user._raw);
+    console.log("User:", user._raw.thumbnailPhoto);
+    console.log("options:", options);
+
     for (var profileAttributeName in options.profileAttributesFromLDAP) {
+	console.log('test gm',profileAttributeName);
         var profileAttributeValue = options.profileAttributesFromLDAP[profileAttributeName];
+
+		if (profileAttributeName === 'thumbnailPhoto' ){
+		        profile[profileAttributeName] = user[profileAttributeName];
+				console.log(profileAttributeName);
+				console.log(user[profileAttributeName]);
+		}
+
         if (profileAttributeValue.constructor === Array) {
             var regex = new RegExp(profileAttributeValue[1], 'g')
             // transform array elements to simple group names
@@ -58,8 +74,18 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     if (!profile.username) {
         profile.username = [].concat(user['cn'])[0];
     }
-    if (!profile.thumbnailPhoto) {
-        profile.thumbnailPhoto = user['thumbnailPhoto'];
+    if (!profile.thumbnailPhoto2) {
+        var img = user._raw.thumbnailPhoto;
+        profile.thumbnailPhoto = img.toString("base64");
+        console.log("gm base64" + profile.thumbnailPhoto);
+		fs.writeFile("Thumb.jpg", img,"binary", function(err) {
+if(err) {
+console.log("errror writing thumbnail: "+err);
+} else {
+console.log("thumbnail was saved!");
+}
+});
+        // profile.thumbnailPhoto = base64js.fromByteArray(user['thumbnailPhoto2']);
     }
     if (!profile.id) {
         profile.id = user['uid'];
