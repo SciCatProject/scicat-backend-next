@@ -16,8 +16,7 @@
             "required": true
         },
         "userMessages": {
-            "type": ["object"],
-            "required": false
+            "type": ["object"]
         },
         "botMessages": {
             "type": ["object"]
@@ -41,14 +40,51 @@
     },
     "acls": [],
     "methods": {
-        "getUserMessages": {
+        "findAllUserMessages": {
+            "accepts": {
+                "arg": "name",
+                "type": "string",
+                "description": "The name of the logbook"
+            },
             "returns": {
-                "arg": "getUserMessages",
+                "arg": "findAllUserMessages",
                 "type": ["object"]
             },
             "description": "Gets all text messages sent by users",
             "http": {
-                "path": "/getUserMessages",
+                "path": "/findAllUserMessages",
+                "verb": "get"
+            }
+        },
+        "findAllBotMessages": {
+            "accepts": {
+                "arg": "name",
+                "type": "string",
+                "description": "The name of the logbook"
+            },
+            "returns": {
+                "arg": "findAllBotMessages",
+                "type": ["object"]
+            },
+            "description": "Gets all text messages sent by the bot",
+            "http": {
+                "path": "/findAllBotMessages",
+                "verb": "get"
+            }
+        },
+        "findAllImages": {
+            "accepts": {
+                "arg": "name",
+                "type": "string",
+                "description": "The name of the logbook"
+            },
+            "returns": {
+                "arg": "findAllImages",
+                "type": ["object"]
+            },
+            "description": "Gets all images from logbook",
+            "http": {
+                "path": "/findAllImages",
                 "verb": "get"
             }
         }
