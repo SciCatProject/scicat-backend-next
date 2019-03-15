@@ -8,19 +8,15 @@ module.exports = function(Logbook) {
     };
 
     Logbook.addUserMessage = function(id, newMessage, cb) {
-        Logbook.findById(id, function(err, l) {
-            console.log("Update Logbook: " + JSON.stringify(l));
-            console.log("Message added: " + JSON.stringify(newMessage));
-            let allUserMessages = l.userMessages;
+        Logbook.findById(id, function(err, logbook) {
+            let allUserMessages = logbook.userMessages;
             allUserMessages.push(newMessage);
-            l.updateAttributes({ userMessages: [allUserMessages] }, function(
-                err,
-                instance
-            ) {
-                console.log("newMessage: " + JSON.stringify(newMessage));
-                console.log("instance: " + instance);
-                cb();
-            });
+            logbook.updateAttributes(
+                { userMessages: allUserMessages },
+                function(err, instance) {
+                    cb();
+                }
+            );
         });
     };
 
@@ -30,12 +26,16 @@ module.exports = function(Logbook) {
         });
     };
 
-    Logbook.addBotMessage = function(newMessage, cb) {
-        Logbook.updateAttribute(botMessages, newMessage, function(
-            err,
-            message
-        ) {
-            cb(null, message);
+    Logbook.addBotMessage = function(id, newMessage, cb) {
+        Logbook.findById(id, function(err, logbook) {
+            let allBotMessages = logbook.botMessages;
+            allBotMessages.push(newMessage);
+            logbook.updateAttributes({ botMessages: allBotMessages }, function(
+                err,
+                instance
+            ) {
+                cb();
+            });
         });
     };
 
@@ -45,9 +45,16 @@ module.exports = function(Logbook) {
         });
     };
 
-    Logbook.addImage = function(newImage, cb) {
-        Logbook.updateAttribute(images, newImage, function(err, image) {
-            cb(null, image);
+    Logbook.addImage = function(id, newImage, cb) {
+        Logbook.findById(id, function(err, logbook) {
+            let allImages = logbook.images;
+            allImages.push(newImage);
+            logbook.updateAttributes({ images: allImages }, function(
+                err,
+                instance
+            ) {
+                cb();
+            });
         });
     };
 
