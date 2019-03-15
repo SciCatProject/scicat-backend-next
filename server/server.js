@@ -3,8 +3,6 @@
 var loopback = require('loopback');
 var path = require('path');
 var boot = require('loopback-boot');
-var base64js = require('base64-js');
-var fs = require('fs');
 
 
 
@@ -69,7 +67,7 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             var img = user._raw.thumbnailPhoto;
             profile.thumbnailPhoto ="data:image/jpeg;base64," + img.toString("base64");
         } else {
-            profile.thumbnailPhoto = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+            profile.thumbnailPhoto = "error: no photo found";
         }
     }
     if (!profile.id) {
