@@ -7,6 +7,11 @@
         "validateUpsert": true
     },
     "properties": {
+        "logbookId": {
+            "type": "string",
+            "id": true,
+            "required": true
+        },
         "name": {
             "type": "string",
             "required": true
@@ -40,51 +45,111 @@
     },
     "acls": [],
     "methods": {
-        "findAllUserMessages": {
-            "accepts": {
-                "arg": "name",
-                "type": "string",
-                "description": "The name of the logbook"
+        "addUserMessage": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "returns": {
+                "arg": "addUserMessage",
+                "type": "object"
             },
+            "description": "Adds new user message to logbook",
+            "http": {
+                "path": "/{id}/addUserMessage",
+                "verb": "post"
+            }
+        },
+        "findAllUserMessages": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
             "returns": {
                 "arg": "findAllUserMessages",
                 "type": ["object"]
             },
             "description": "Gets all text messages sent by users",
             "http": {
-                "path": "/findAllUserMessages",
+                "path": "/{id}/findAllUserMessages",
                 "verb": "get"
             }
         },
-        "findAllBotMessages": {
-            "accepts": {
-                "arg": "name",
-                "type": "string",
-                "description": "The name of the logbook"
+        "addBotMessage": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "returns": {
+                "arg": "addBotMessage",
+                "type": "object"
             },
+            "description": "Adds new bot message to logbook",
+            "http": {
+                "path": "/{id}/addBotMessage",
+                "verb": "post"
+            }
+        },
+        "findAllBotMessages": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
             "returns": {
                 "arg": "findAllBotMessages",
                 "type": ["object"]
             },
             "description": "Gets all text messages sent by the bot",
             "http": {
-                "path": "/findAllBotMessages",
+                "path": "/{id}/findAllBotMessages",
                 "verb": "get"
             }
         },
-        "findAllImages": {
-            "accepts": {
-                "arg": "name",
-                "type": "string",
-                "description": "The name of the logbook"
+        "addImage": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "returns": {
+                "arg": "addImage",
+                "type": "object"
             },
+            "description": "Adds new image to logbook",
+            "http": {
+                "path": "/{id}/addImage",
+                "verb": "post"
+            }
+        },
+        "findAllImages": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
             "returns": {
                 "arg": "findAllImages",
                 "type": ["object"]
             },
             "description": "Gets all images from logbook",
             "http": {
-                "path": "/findAllImages",
+                "path": "/{id}/findAllImages",
                 "verb": "get"
             }
         }
