@@ -23,7 +23,14 @@
             "principalId": "$authenticated",
             "permission": "ALLOW",
             "property": "jwt"
-          }]
+          },
+          {
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW",
+            "property": "userInfos"
+          }
+        ]
     },
     "AccessToken": {
         "dataSource": "mongo",
