@@ -123,7 +123,7 @@ module.exports = function (app) {
                                     }
                                 }
                             }, function (err, result) {
-                                if(err) return next(err)
+                                if (err) return next(err)
                                 const roleNameList = result.map(instance => instance.name);
                                 // add beamline specific account name as an additional role for beamline specific data
                                 roleNameList.push(user.username)
@@ -139,4 +139,35 @@ module.exports = function (app) {
                 })
             });
         });
+
+    // extend built in User model
+
+    const User = app.models.User;
+
+    User.userInfos = function (options, cb) {
+        delete options.prohibitHiddenPropertiesInQuery
+        delete options.maxDepthOfQuery
+        delete options.maxDepthOfData
+        cb(null, options);
+    };
+
+    User.remoteMethod(
+        'userInfos', {
+            accepts: [{
+                arg: 'options',
+                type: 'object',
+                http: 'optionsFromRequest'
+            }],
+            returns: {
+                root: true
+            },
+            description: "Returns username, email , group membership etc for the user linked with the provided accessToken.",
+            http: {
+                path: "/userInfos",
+                verb: "get"
+            }
+        }
+    );
+
+
 };
