@@ -12,8 +12,7 @@
             "required": true
         },
         "members": {
-            "type": ["string"],
-            "required": true
+            "type": ["object"]
         },
         "userMessages": {
             "type": ["object"]
@@ -62,6 +61,42 @@
             "description": "Returns the logbook matching the name in the query",
             "http": {
                 "path": "/findByName",
+                "verb": "get"
+            }
+        },
+        "syncMembers": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "returns": {
+                "arg": "syncMembers",
+                "type": ["object"]
+            },
+            "description": "Syncs Logbook members with chat room members",
+            "http": {
+                "path": "/:id/syncMembers",
+                "verb": "post"
+            }
+        },
+        "findAllMembers": {
+            "accepts": [
+                {
+                    "arg": "id",
+                    "type": "string",
+                    "required": true
+                }
+            ],
+            "returns": {
+                "arg": "findAllMembers",
+                "type": ["object"]
+            },
+            "description": "Gets all members of a logbook",
+            "http": {
+                "path": "/:id/findAllMembers",
                 "verb": "get"
             }
         },

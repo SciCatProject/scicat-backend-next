@@ -1,9 +1,43 @@
 "use strict";
 
+const MatrixRestClient = require("./matrix-rest-client");
+const client = new MatrixRestClient();
+
 module.exports = function(Logbook) {
     Logbook.findByName = function(name, cb) {
         Logbook.findOne({ where: { name: name } }, function(err, logbook) {
             cb(null, logbook);
+        });
+    };
+
+    Logbook.syncMembers = function(id, cb) {
+        Logbook.findById(id, function(err, logbook) {
+            client.findRoomMembers(logbook.name).then(syncedMembers => {
+                let allMembers = [];
+                let member;
+                syncedMembers.forEach(syncedMember => {
+                    console.log(syncedMember);
+                    member = {
+                        userId: syncedMember.user_id,
+                        displayName: syncedMember.content.displayname
+                    };
+                    allMembers.push(member);
+                });
+                console.log(allMembers);
+                logbook.updateAttributes({ members: allMembers }, function(
+                    err,
+                    instance
+                ) {
+                    cb();
+                });
+            });
+        });
+    };
+
+    Logbook.findAllMembers = function(id, cb) {
+        Logbook.findById(id, function(err, logbook) {
+            console.log(logbook.members);
+            cb(null, logbook.members);
         });
     };
 
