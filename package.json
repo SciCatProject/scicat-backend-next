@@ -1,4 +1,4 @@
-{    
+{
     "name": "dacat-api",
     "version": "3.0.1",
     "main": "server/server.js",
@@ -35,9 +35,6 @@
         "serve-favicon": "2.5.0",
         "strong-error-handler": "3.2.0",
         "uuid": "^3.3.2"
-    },
-    "optionalDependencies": {
-        "loopback-connector-kafka": "^0.2.1"
     },
     "devDependencies": {
         "@mean-expert/loopback-sdk-builder": "^2.1.0",
