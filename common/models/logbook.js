@@ -16,14 +16,12 @@ module.exports = function(Logbook) {
                 let allMembers = [];
                 let member;
                 syncedMembers.forEach(syncedMember => {
-                    console.log(syncedMember);
                     member = {
                         userId: syncedMember.user_id,
                         displayName: syncedMember.content.displayname
                     };
                     allMembers.push(member);
                 });
-                console.log(allMembers);
                 logbook.updateAttributes({ members: allMembers }, function(
                     err,
                     instance
@@ -36,8 +34,20 @@ module.exports = function(Logbook) {
 
     Logbook.findAllMembers = function(id, cb) {
         Logbook.findById(id, function(err, logbook) {
-            console.log(logbook.members);
             cb(null, logbook.members);
+        });
+    };
+
+    Logbook.syncMessages = function(id, cb) {
+        Logbook.findById(id, function(err, logbook) {
+            client.findMessagesByRoom(logbook.name).then(syncedMessages => {
+                logbook.updateAttributes(
+                    { userMessages: syncedMessages },
+                    function(err, instance) {
+                        cb();
+                    }
+                );
+            });
         });
     };
 
