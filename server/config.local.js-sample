@@ -1,0 +1,23 @@
+var p = require('../package.json');
+var version = p.version.split('.').shift();
+module.exports = {
+    restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
+    host: process.env.HOST || '0.0.0.0',
+    port: process.env.PORT || 3000,
+    pidPrefix: 'PutYourPIDPrefixHere',
+    policyPublicationShiftInYears: 3,
+    policyRetentionShiftInYears: 10,
+    site: 'YOUR-SITE',
+    facilities: ["Facility1", "Facility2"],
+    smtpSettings: {
+      host: 'SMTP.YOUR.DOMAIN',
+      port: 25,
+      secure: false    },
+    smtpMessage: {
+      from: 'scicatarchivemanager@YOUR.DOMAIN',
+      to: undefined,
+      subject: '[SciCat '+process.env.NODE_ENV+']',
+      text: undefined // can also set html key and this will override this
+    },
+    queue: 'rabbitmq'
+};

@@ -1,4 +1,4 @@
-*.local.js*
+*.local.js
 *.development.js*
 *.staging.js*
 *.production.js*

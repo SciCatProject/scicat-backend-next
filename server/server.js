@@ -4,6 +4,8 @@ var loopback = require('loopback');
 var path = require('path');
 var boot = require('loopback-boot');
 
+
+
 var app = module.exports = loopback();
 var configLocal = require('./config.local');
 
@@ -25,9 +27,11 @@ var passportConfigurator = new PassportConfigurator(app);
 
 passportConfigurator.buildUserLdapProfile = function(user, options) {
     var profile = {};
-    // console.log("User:", user)
+
     for (var profileAttributeName in options.profileAttributesFromLDAP) {
         var profileAttributeValue = options.profileAttributesFromLDAP[profileAttributeName];
+
+
         if (profileAttributeValue.constructor === Array) {
             var regex = new RegExp(profileAttributeValue[1], 'g')
             // transform array elements to simple group names
@@ -57,6 +61,14 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     // If missing, add profile attributes required by UserIdentity Model
     if (!profile.username) {
         profile.username = [].concat(user['cn'])[0];
+    }
+    if (!profile.thumbnailPhoto2) {
+        if (user.hasOwnProperty('_raw') ) {
+            var img = user._raw.thumbnailPhoto;
+            profile.thumbnailPhoto ="data:image/jpeg;base64," + img.toString("base64");
+        } else {
+            profile.thumbnailPhoto = "error: no photo found";
+        }
     }
     if (!profile.id) {
         profile.id = user['uid'];
