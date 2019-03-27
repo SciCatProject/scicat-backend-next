@@ -99,27 +99,28 @@ function MarkDatasetsAsScheduled(job, ctx, idList, next) {
 
     let Dataset = app.models.Dataset;
     Dataset.updateAll({
-        pid: {
-            inq: idList
-        }
-    }, {
-        datasetlifecycle: {
-            archivable: false,
-            retrievable: false,
-            archiveStatusMessage: "scheduledForArchiving"
-        }
-    }, ctx.options, function (err, p) {
-        if (err) {
-            var e = new Error();
-            e.statusCode = 404;
-            e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
-            next(e);
-        } else {
-            sendStartJobEmail(job, ctx, function () {
-                publishJob(job, ctx, next)
-            })
-        }
-    });
+            pid: {
+                inq: idList
+            }
+        }, {
+            "$set": {
+                "datasetlifecycle.archivable": false,
+                "datasetlifecycle.retrievable": false,
+                "datasetlifecycle.archiveStatusMessage": "scheduledForArchiving"
+            }
+        }, ctx.options,
+        function (err, p) {
+            if (err) {
+                var e = new Error();
+                e.statusCode = 404;
+                e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
+                next(e);
+            } else {
+                sendStartJobEmail(job, ctx, function () {
+                    publishJob(job, ctx, next)
+                })
+            }
+        });
 }
 // for archive jobs all datasets must be in state archivable
 function TestArchiveJobs(job, ctx, idList, next) {
