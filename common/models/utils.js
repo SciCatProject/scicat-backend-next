@@ -205,21 +205,15 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         // TODO: this ignores any update which contains these fields among other chanegs
         if (!ctx.data.size && !ctx.data.packedSize) {
             // the following triggers a before save hook . endless recursion must be prevented there
-            console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            // if (ctx.data.$set) {
-            //     console.log("++++++++++++++++ No history for $set settings")
-            //     index--
-            //     updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
-            // } else {
-                datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)), function (err, instance) {
-                    if (err) {
-                        console.log("Saving auto history failed:", err)
-                    }
-                    //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
-                    index--
-                    updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
-                })
-           // }
+            //console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)), function (err, instance) {
+                if (err) {
+                    console.log("Saving auto history failed:", err)
+                }
+                //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
+                index--
+                updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
+            })
         } else {
             index--
             updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
@@ -233,22 +227,11 @@ exports.keepHistory = function (ctx, next) {
     // create new message
     var Dataset = app.models.Dataset
 
-    // if (ctx.instance) {
-    //     console.log("Keephistory: Instance is defined:", JSON.stringify(ctx.instance.pid, null, 3))
-    // }
-    // if (ctx.isNewInstance) {
-    //     console.log("Keephistory: newInstance is defined")
-    // }
-    // if (ctx.options) {
-    //     console.log("Keephistory: ctx.options is defined:")
-    // }
-
     // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
     if (ctx.where && ctx.data) {
         // console.log(" Multiinstance update, where condition and data:", JSON.stringify(ctx.where, null, 4),JSON.stringify(ctx.data, null, 4))
         // do not keep history for status updates from jobs, because this can take much too long for large jobs
         if (ctx.data.$set) {
-                console.log("--------------- ignore------------------")
             return next()
         }
         Dataset.find({
