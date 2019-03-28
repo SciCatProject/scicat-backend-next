@@ -2,6 +2,7 @@
 
 const config = require('../../server/config.local');
 const requestPromise = require("request-promise");
+var Dataset = require('./dataset.json');
 
 const { doiProviderCredentials } = config;
 
@@ -81,6 +82,38 @@ module.exports = function(PublishedData) {
         }).catch(err => next(err));
     });
 
+    PublishedData.formPopulate = function (id, cb){
+        var Dataset = app.models.Dataset;
+        var Proposal = app.models.Proposal;
+        
+        Dataset.findById(id, function(err, ds) {
+            const proposalId = ds.proposalId;
+            Proposal.findById(proposalId, function(err, prop){
+                let formData = {title: prop.title, abstract: prop.abstract};
+
+                return prop;
+            });
+        });
+    };
+
+
+    PublishedData.remoteMethod("formPopulate", {
+        accepts: [{
+            arg: "pid",
+            type: "object",
+            required: true
+        }],
+        http: {
+            path: "/formPopulate",
+            verb: "get"
+        },
+        returns: {
+            type: "Object",
+            root: true
+        }
+    });
+ 
+    //Proposal.findById(ds.pid, function(err, prop) 
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
             const xml = formRegistrationXML(pub);
