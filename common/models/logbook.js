@@ -1,9 +1,12 @@
 "use strict";
 
 module.exports = function(Logbook) {
-    Logbook.findByName = function(name, cb) {
-        Logbook.findOne({ where: { name: name } }, function(err, logbook) {
-            cb(null, logbook);
-        });
+    /**
+     * Find Logbook model instance by name
+     * @param {string} name The name of the Logbook
+     */
+
+    Logbook.findByName = function(name) {
+        return Logbook.find({ where: { name: name } });
     };
 };

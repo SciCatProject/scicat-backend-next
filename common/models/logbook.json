@@ -1,71 +1,81 @@
 {
-    "name": "Logbook",
-    "description": "Logbook for proposals",
-    "base": "PersistedModel",
-    "idInjection": true,
-    "options": {
-        "validateUpsert": true
+  "name": "Logbook",
+  "description": "Logbook for proposals",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
     },
-    "properties": {
-        "name": {
-            "type": "string",
-            "required": true
-        },
-        "members": {
-            "type": ["object"]
-        },
-        "userMessages": {
-            "type": ["object"]
-        },
-        "botMessages": {
-            "type": ["object"]
-        },
-        "images": {
-            "type": ["object"]
-        }
+    "members": {
+      "type": [
+        "object"
+      ]
     },
-    "validations": [],
-    "relations": {
-        "proposal": {
-            "type": "belongsTo",
-            "model": "Proposal",
-            "foreignKey": ""
-        }
+    "userMessages": {
+      "type": [
+        "object"
+      ]
     },
-    "acls": [
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
-        }
-    ],
-    "methods": {
-        "findByName": {
-            "accepts": [
-                {
-                    "arg": "name",
-                    "type": "string",
-                    "required": true,
-                    "description": "The name of the Logbook",
-                    "http": {
-                        "source": "path"
-                    }
-                }
-            ],
-            "returns": [
-                {
-                    "arg": "findByName",
-                    "type": "object",
-                    "root": true,
-                    "description": "Logbook model instance"
-                }
-            ],
-            "description": "Find Logbook model instance by name",
-            "http": {
-                "path": "/:name",
-                "verb": "get"
-            }
-        }
+    "botMessages": {
+      "type": [
+        "object"
+      ]
+    },
+    "images": {
+      "type": [
+        "object"
+      ]
     }
+  },
+  "validations": [],
+  "relations": {
+    "proposal": {
+      "type": "belongsTo",
+      "model": "Proposal",
+      "foreignKey": ""
+    }
+  },
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {
+    "findByName": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "findByName",
+          "type": "object",
+          "root": true,
+          "description": "Logbook model instance"
+        }
+      ],
+      "description": "Find Logbook model instance by name",
+      "http": [
+        {
+          "path": "/:name",
+          "verb": "get"
+        }
+      ]
+    }
+  }
 }
