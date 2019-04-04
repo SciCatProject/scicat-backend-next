@@ -30,11 +30,6 @@
             "type": "belongsTo",
             "model": "Proposal",
             "foreignKey": ""
-        },
-        "users": {
-            "type": "hasMany",
-            "model": "User",
-            "foreignKey": ""
         }
     },
     "acls": [
@@ -51,193 +46,24 @@
                 {
                     "arg": "name",
                     "type": "string",
-                    "required": true
+                    "required": true,
+                    "description": "The name of the Logbook",
+                    "http": {
+                        "source": "path"
+                    }
                 }
             ],
-            "returns": {
-                "arg": "findByName",
-                "type": "object"
-            },
-            "description": "Returns the logbook matching the name in the query",
-            "http": {
-                "path": "/findByName",
-                "verb": "get"
-            }
-        },
-        "syncMembers": {
-            "accepts": [
+            "returns": [
                 {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "syncMembers",
-                "type": ["object"]
-            },
-            "description": "Syncs Logbook members with chat room members",
-            "http": {
-                "path": "/:id/syncMembers",
-                "verb": "post"
-            }
-        },
-        "findAllMembers": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "findAllMembers",
-                "type": ["object"]
-            },
-            "description": "Gets all members of a logbook",
-            "http": {
-                "path": "/:id/findAllMembers",
-                "verb": "get"
-            }
-        },
-        "syncMessages": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "syncMessages",
-                "type": ["object"]
-            },
-            "description": "Syncs Logbook messages with chat messages",
-            "http": {
-                "path": "/:id/syncMessages",
-                "verb": "post"
-            }
-        },
-        "addUserMessage": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                },
-                {
-                    "arg": "message",
+                    "arg": "findByName",
                     "type": "object",
-                    "required": true
+                    "root": true,
+                    "description": "Logbook model instance"
                 }
             ],
-            "returns": {
-                "arg": "addUserMessage",
-                "type": "object"
-            },
-            "description": "Adds new user message to logbook",
+            "description": "Find Logbook model instance by name",
             "http": {
-                "path": "/:id/addUserMessage",
-                "verb": "post"
-            }
-        },
-        "findAllUserMessages": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "findAllUserMessages",
-                "type": ["object"]
-            },
-            "description": "Gets all text messages sent by users",
-            "http": {
-                "path": "/:id/findAllUserMessages",
-                "verb": "get"
-            }
-        },
-        "addBotMessage": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                },
-                {
-                    "arg": "message",
-                    "type": "object",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "addBotMessage",
-                "type": "object"
-            },
-            "description": "Adds new bot message to logbook",
-            "http": {
-                "path": "/:id/addBotMessage",
-                "verb": "post"
-            }
-        },
-        "findAllBotMessages": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "findAllBotMessages",
-                "type": ["object"]
-            },
-            "description": "Gets all text messages sent by the bot",
-            "http": {
-                "path": "/:id/findAllBotMessages",
-                "verb": "get"
-            }
-        },
-        "addImage": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                },
-                {
-                    "arg": "image",
-                    "type": "object",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "addImage",
-                "type": "object"
-            },
-            "description": "Adds new image to logbook",
-            "http": {
-                "path": "/:id/addImage",
-                "verb": "post"
-            }
-        },
-        "findAllImages": {
-            "accepts": [
-                {
-                    "arg": "id",
-                    "type": "string",
-                    "required": true
-                }
-            ],
-            "returns": {
-                "arg": "findAllImages",
-                "type": ["object"]
-            },
-            "description": "Gets all images from logbook",
-            "http": {
-                "path": "/:id/findAllImages",
+                "path": "/:name",
                 "verb": "get"
             }
         }
