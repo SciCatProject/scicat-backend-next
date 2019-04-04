@@ -130,7 +130,7 @@
     "public": false
   },
   "Logbook": {
-    "dataSource": "mongo",
+    "dataSource": null,
     "public": true
   }
 }

@@ -1,53 +1,23 @@
 {
   "name": "Logbook",
-  "description": "Logbook for proposals",
-  "base": "PersistedModel",
+  "base": "Model",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
     "name": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
-    "members": {
-      "type": [
-        "object"
-      ]
-    },
-    "userMessages": {
-      "type": [
-        "object"
-      ]
-    },
-    "botMessages": {
-      "type": [
-        "object"
-      ]
-    },
-    "images": {
+    "messages": {
       "type": [
         "object"
       ]
     }
   },
   "validations": [],
-  "relations": {
-    "proposal": {
-      "type": "belongsTo",
-      "model": "Proposal",
-      "foreignKey": ""
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    }
-  ],
+  "relations": {},
+  "acls": [],
   "methods": {
     "findByName": {
       "accepts": [
@@ -55,7 +25,7 @@
           "arg": "name",
           "type": "string",
           "required": true,
-          "description": "The name of the Logbook",
+          "description": "Name of the Logbook",
           "http": {
             "source": "path"
           }
@@ -69,7 +39,7 @@
           "description": "Logbook model instance"
         }
       ],
-      "description": "Find Logbook model instance by name",
+      "description": "Find Logbook model instance",
       "http": [
         {
           "path": "/:name",
