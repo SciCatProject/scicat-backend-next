@@ -14,9 +14,7 @@ module.exports = function(Logbook) {
         return superagent
             .get(scichatBaseUrl + `/logbooks/${name}`)
             .then(response => {
-                return new Promise((resolve, reject) => {
-                    resolve(response.body);
-                });
+                return Promise.resolve(response.body);
             })
             .catch(err => {
                 console.error(err);
