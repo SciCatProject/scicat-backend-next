@@ -82,16 +82,27 @@ module.exports = function(PublishedData) {
         }).catch(err => next(err));
     });
 
-    PublishedData.formPopulate = function (id, cb){
+    PublishedData.formPopulate = function (pid, next){
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
         
-        Dataset.findById(id, function(err, ds) {
+        Dataset.findById(pid, function(err, ds) {
+            if(err) {
+                return next(err);
+            }
+            const formData = {};
             const proposalId = ds.proposalId;
+            if (!proposalId)
+                return next("No proposalId found");
+                console.log("proposalId", proposalId)
             Proposal.findById(proposalId, function(err, prop){
-                let formData = {title: prop.title, abstract: prop.abstract};
-
-                return prop;
+                if(err)
+                    return next(err); 
+                if (!prop)
+                    return next("No proposal found");
+                    console.log("prop", prop.title)
+                formData.push({title: prop.title, abstract: prop.abstract});
+                return next(null, formData);
             });
         });
     };
@@ -100,7 +111,7 @@ module.exports = function(PublishedData) {
     PublishedData.remoteMethod("formPopulate", {
         accepts: [{
             arg: "pid",
-            type: "object",
+            type: "string",
             required: true
         }],
         http: {
