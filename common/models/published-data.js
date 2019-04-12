@@ -85,8 +85,16 @@ module.exports = function(PublishedData) {
     PublishedData.formPopulate = function (pid, next){
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
+        var RawDataset = app.models.RawDataset;
         var self = this;
-        self.formData = {};      
+        self.formData = {};
+        Dataset.thumbnail(pid, function(err, thumb){
+            if(err) {
+                return next(err);
+            }
+            self.formData.thumbnail = thumb.thumbnail;
+            return next(null, self.formData);
+        });    
         Dataset.findById(pid, function(err, ds) {
             if(err) {
                 return next(err);
@@ -94,11 +102,15 @@ module.exports = function(PublishedData) {
             const proposalId = ds.proposalId;
             if (!proposalId)
                 return next("No proposalId found");
-            self.formData.authors= ds.owner;
+            self.formData.resourceType = ds.dataFormat;
+            self.formData.description = ds.description;
+            self.formData.thumbnail = ds.thumbnail;
+            //publicationYear;
+            //url;
             Proposal.findById(proposalId, function(err, prop){
                 if(err)
                     return next(err); 
-                if (!prop)
+                if(!prop)
                     return next("No proposal found");
                 self.formData.title = prop.title;
                 self.formData.abstract = prop.abstract;
