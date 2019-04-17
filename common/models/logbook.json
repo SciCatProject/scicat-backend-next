@@ -46,6 +46,24 @@
           "verb": "get"
         }
       ]
+    },
+    "findAll": {
+      "accepts": [],
+      "returns": [
+        {
+          "arg": "findAll",
+          "type": "array",
+          "root": true,
+          "description": "Array of Logbook model instances"
+        }
+      ],
+      "description": "Find all Logbook model instances",
+      "http": [
+        {
+          "path": "/",
+          "verb": "get"
+        }
+      ]
     }
   }
 }
