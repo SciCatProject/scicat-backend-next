@@ -64,6 +64,43 @@
           "verb": "get"
         }
       ]
+    },
+    "findEntries": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "query",
+          "type": "string",
+          "required": true,
+          "description": "Query of content in Logbook entry",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "findEntries",
+          "type": "object",
+          "root": true,
+          "description": "Filtered Logbook model instance"
+        }
+      ],
+      "description": "Find all Logbook entries matching the query",
+      "http": [
+        {
+          "path": "/:name/:query",
+          "verb": "get"
+        }
+      ]
     }
   }
 }
