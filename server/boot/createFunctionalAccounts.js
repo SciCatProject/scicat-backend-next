@@ -67,7 +67,7 @@ module.exports = function (app, next) {
                             var filtermapping = {
                                 where: {
                                     roleId: roleinstance.id,
-                                    principalId: userinstance.id
+                                    principalId: String(userinstance.id)
                                 }
                             }
                             var datamapping = {
@@ -113,7 +113,7 @@ module.exports = function (app, next) {
                                             var filtermapping = {
                                                 where: {
                                                     roleId: roleinstance.id,
-                                                    principalId: userinstance.id
+                                                    principalId: String(userinstance.id)
                                                 }
                                             }
                                             var datamapping = {

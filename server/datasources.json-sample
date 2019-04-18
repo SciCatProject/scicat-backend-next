@@ -5,7 +5,9 @@
     "url": "",
     "database": "dacat",
     "name": "mongo",
-    "connector": "mongodb"
+    "connector": "mongodb",
+    "useNewUrlParser": true,
+    "allowExtendedOperators":true
   },
   "transient": {
     "name": "transient",
