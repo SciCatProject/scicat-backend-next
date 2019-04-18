@@ -44,11 +44,30 @@ module.exports = function(Logbook) {
      * Find all Logbook entries matching the query
      * @param {string} name The name of the Logbook
      * @param {string} query Query of content in Logbook entry
+     * @returns {object} Logbook model instance matching query
      */
 
     Logbook.findEntries = function(name, query) {
         return superagent
             .get(scichatBaseUrl + `/Logbooks/${name}/${query}`)
+            .then(response => {
+                return Promise.resolve(response.body);
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    };
+
+    /**
+     * Filter Logbook entries matching query
+     * @param {string} name The name of the logbook
+     * @param {string} query Query used to filter Logbook entries
+     * @returns {object} Filtered Logbook model instance
+     */
+
+    Logbook.filterEntries = function(name, query) {
+        return superagent
+            .get(scichatBaseUrl + `/Logbooks/${name}/filter/${query}`)
             .then(response => {
                 return Promise.resolve(response.body);
             })

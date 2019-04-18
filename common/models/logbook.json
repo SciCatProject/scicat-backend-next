@@ -101,6 +101,43 @@
           "verb": "get"
         }
       ]
+    },
+    "filterEntries": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "query",
+          "type": "string",
+          "required": true,
+          "description": "Query used to filter Logbook entries",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "filterEntries",
+          "type": "object",
+          "root": true,
+          "description": "Filtered Logbook model instance"
+        }
+      ],
+      "description": "Filter Logbook entries matching query",
+      "http": [
+        {
+          "path": "/:name/filter/:query",
+          "verb": "get"
+        }
+      ]
     }
   }
 }
