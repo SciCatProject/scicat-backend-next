@@ -58,6 +58,9 @@ function SendFinishJobEmail(Job, ctx, idList, next) {
     let Dataset = app.models.Dataset;
     let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
     let mailText = 'Hello, \n\nYour Job from ' + ctx.instance.creationTime + ' is now finished.\n';
+    if (ctx.instance.jobStatusMessage) {
+        mailText += '\nThe returned job status is: *** ' + ctx.instance.jobStatusMessage + ' ***\n\n'
+    }
     if (ctx.instance.jobResultObject) {
         mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3) + '\n\n'
     }
@@ -91,9 +94,11 @@ function SendFinishJobEmail(Job, ctx, idList, next) {
             var cc=""
             if (p.length > 0) {
                 if (ctx.instance.type == "archive" ){
-                   mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+                   mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n\n" + 
+                   JSON.stringify(nonRetrievableList, null, 3)
                 } else {
-                    mailText += "The following datasets were scheduled for retrieval but are not in retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+                    mailText += "The following datasets were scheduled for retrieval but are not in retrievable state:\n\n" + 
+                    JSON.stringify(nonRetrievableList, null, 3)
                 }
                 // add cc message in case of failure to scicat archivemanager
                 if ('smtpMessage' in config && 'from' in config.smtpMessage) {
@@ -101,11 +106,13 @@ function SendFinishJobEmail(Job, ctx, idList, next) {
                 }
             } else {
                 if (ctx.instance.type == "archive" ){
-                    mailText += "All datasets have been archived succesfully:\n\n" + JSON.stringify(idList, null, 3)
+                    mailText += "All datasets to be archived are now in state retrievable:\n\n" + JSON.stringify(idList, null, 3)
                 } else {
-                    mailText += "All datasets have been retrieved succesfully:\n\n" + JSON.stringify(idList, null, 3)
-                    mailText += "Please now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
+                    mailText += "All datasets to be retrieved are (still) in retrievable state:\n\n" + JSON.stringify(idList, null, 3)
                 }
+            }
+            if (ctx.instance.type == "retrieve" ){
+                mailText += "\n\nIf the job was succesful you can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
             }
             sendMail(to, cc, subjectText, mailText, next)
         })
