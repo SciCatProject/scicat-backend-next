@@ -10,7 +10,7 @@ module.exports = function(Logbook) {
     /**
      * Find Logbook model instance
      * @param {string} name Name of the Logbook
-     * @returns {object} Logbook model instance
+     * @returns {Logbook} Logbook model instance
      */
 
     Logbook.findByName = function(name) {
@@ -26,7 +26,7 @@ module.exports = function(Logbook) {
 
     /**
      * Find all Logbook model instances
-     * @returns {array} Array of Logbook model instances
+     * @returns {Logbook[]} Array of Logbook model instances
      */
 
     Logbook.findAll = function() {
@@ -41,33 +41,15 @@ module.exports = function(Logbook) {
     };
 
     /**
-     * Find all Logbook entries matching the query
-     * @param {string} name The name of the Logbook
-     * @param {string} query Query of content in Logbook entry
-     * @returns {object} Logbook model instance matching query
-     */
-
-    Logbook.findEntries = function(name, query) {
-        return superagent
-            .get(scichatBaseUrl + `/Logbooks/${name}/${query}`)
-            .then(response => {
-                return Promise.resolve(response.body);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-    };
-
-    /**
      * Filter Logbook entries matching query
-     * @param {string} name The name of the logbook
-     * @param {string} query Query used to filter Logbook entries
-     * @returns {object} Filtered Logbook model instance
+     * @param {string} name The name of the Logbook
+     * @param {string} filter Filter JSON object, keys: textSearch, showBotMessages, showUserMessages, showImages
+     * @returns {Logbook} Filtered Logbook model instance
      */
 
-    Logbook.filterEntries = function(name, query) {
+    Logbook.filter = function(name, filter) {
         return superagent
-            .get(scichatBaseUrl + `/Logbooks/${name}/filter/${query}`)
+            .get(scichatBaseUrl + `/Logbooks/${name}/${filter}`)
             .then(response => {
                 return Promise.resolve(response.body);
             })
