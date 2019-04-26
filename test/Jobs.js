@@ -174,6 +174,27 @@ describe('Test New Job Model', () => {
             });
     });
 
+    it('Send an update status to the dataset', function (done) {
+        request(app)
+            .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
+            .send({
+                "datasetlifecycle": {
+                    "retrievable": true,
+                    "archiveStatusMessage":"datasetOnArchiveDisk"
+                },
+            })
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                    res.body.should.have.nested.property('datasetlifecycle.retrievable').and.equal(true) ;
+                    res.body.should.have.nested.property('datasetlifecycle.publishable').and.equal(false);
+                    done();
+            });
+    });
+
     it('Adds a new archive job request', function (done) {
         request(app)
             .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
@@ -186,7 +207,21 @@ describe('Test New Job Model', () => {
                     return done(err);
                 res.body.should.have.property('type').and.be.string;
                 idJob = res.body['id']
-                //console.log("Jobid:", idJob)
+                done();
+            });
+    });
+
+    it('Check if dataset was updated by job request', function(done) {
+        request(app)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                res.body.should.have.nested.property('datasetlifecycle.archiveStatusMessage').and.equal('scheduledForArchiving');
+                res.body.should.have.nested.property('datasetlifecycle.publishable').and.equal(false);
                 done();
             });
     });
@@ -264,25 +299,6 @@ describe('Test New Job Model', () => {
             });
     });
 
-    it('Send an update status to the dataset', function (done) {
-        request(app)
-            .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
-            .send({
-                "datasetlifecycle": {
-                    "retrievable": true,
-                    "archiveStatusMessage":"datasetOnArchiveDisk"
-                },
-            })
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function (err, res) {
-                if (err)
-                    return done(err);
-                res.body.should.have.nested.property('datasetlifecycle.retrievable');
-                done();
-            });
-    });
 
 
     it('Send an update status message to the Job', function (done) {

@@ -34,7 +34,7 @@ var testdataset = {
 }
 
 var app
-before( function(){
+before(function () {
     app = require('../server/server')
 });
 
@@ -50,14 +50,14 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-    it('adds a new dataset', function(done) {
+    it('adds a new dataset', function (done) {
         request(app)
             .post('/api/v3/Datasets?access_token=' + accessToken)
             .send(testdataset)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('version').and.be.string;
@@ -70,7 +70,7 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-    it('should fetch this new dataset', function(done) {
+    it('should fetch this new dataset', function (done) {
         request(app)
             .get('/api/v3/Datasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -83,8 +83,7 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-
-    it('should delete this dataset', function(done) {
+    it('should delete this dataset', function (done) {
         request(app)
             .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -98,7 +97,7 @@ describe('Simple Dataset tests', () => {
     });
 
 
-    it('fetches array of Datasets', function(done) {
+    it('fetches array of Datasets', function (done) {
         request(app)
             .get('/api/v3/Datasets?filter=%7B%22limit%22%3A10%7D&access_token=' + accessToken)
             .set('Accept', 'application/json')
@@ -112,14 +111,14 @@ describe('Simple Dataset tests', () => {
             });
     });
 
-    it('should contain an array of facets', function(done) {
+    it('should contain an array of facets', function (done) {
         request(app)
             .get('/api/v3/Datasets/fullfacet?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                if(err)
+                if (err)
                     return done(err);
                 res.body.should.be.an('array');
                 done();
