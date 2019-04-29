@@ -56,7 +56,7 @@ services:
     build:
       context: .
       dockerfile: CI/ESS/Dockerfile.test
-    image: dacat/scichat-loopback
+    image: dacat/scichat-loopback:latest
     ports:
     - "3030:3030"
     depends_on:
