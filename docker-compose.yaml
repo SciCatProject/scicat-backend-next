@@ -53,9 +53,6 @@ services:
       depends_on:
       - openldap
   scichat-loopback:
-    build:
-      context: .
-      dockerfile: CI/ESS/Dockerfile.test
     image: dacat/scichat-loopback:latest
     ports:
     - "3030:3030"
