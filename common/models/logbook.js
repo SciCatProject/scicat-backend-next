@@ -1,10 +1,10 @@
 "use strict";
 
 const superagent = require("superagent");
+const essConfig = require("../../CI/ESS/envfiles/config.ess");
 
-const scichatHost = "localhost";
-const scichatPort = "3030";
-const scichatBaseUrl = `http://${scichatHost}:${scichatPort}/api`;
+const scichatBaseUrl = essConfig.scichatURL;
+const logbookEnabled = essConfig.logbookEnabled;
 
 module.exports = function(Logbook) {
     /**
@@ -14,14 +14,18 @@ module.exports = function(Logbook) {
      */
 
     Logbook.findByName = function(name) {
-        return superagent
-            .get(scichatBaseUrl + `/Logbooks/${name}`)
-            .then(response => {
-                return Promise.resolve(response.body);
-            })
-            .catch(err => {
-                console.error(err);
-            });
+        if (logbookEnabled) {
+            return superagent
+                .get(scichatBaseUrl + `/Logbooks/${name}`)
+                .then(response => {
+                    return Promise.resolve(response.body);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        } else {
+            return Promise.resolve([]);
+        }
     };
 
     /**
@@ -30,14 +34,18 @@ module.exports = function(Logbook) {
      */
 
     Logbook.findAll = function() {
-        return superagent
-            .get(scichatBaseUrl + "/Logbooks")
-            .then(response => {
-                return Promise.resolve(response.body);
-            })
-            .catch(err => {
-                console.error(err);
-            });
+        if (logbookEnabled) {
+            return superagent
+                .get(scichatBaseUrl + "/Logbooks")
+                .then(response => {
+                    return Promise.resolve(response.body);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        } else {
+            return Promise.resolve([]);
+        }
     };
 
     /**
@@ -48,13 +56,17 @@ module.exports = function(Logbook) {
      */
 
     Logbook.filter = function(name, filter) {
-        return superagent
-            .get(scichatBaseUrl + `/Logbooks/${name}/${filter}`)
-            .then(response => {
-                return Promise.resolve(response.body);
-            })
-            .catch(err => {
-                console.error(err);
-            });
+        if (logbookEnabled) {
+            return superagent
+                .get(scichatBaseUrl + `/Logbooks/${name}/${filter}`)
+                .then(response => {
+                    return Promise.resolve(response.body);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        } else {
+            return Promise.resolve([]);
+        }
     };
 };
