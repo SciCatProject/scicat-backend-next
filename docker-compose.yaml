@@ -52,6 +52,17 @@ services:
       - "openldap:openldap"
       depends_on:
       - openldap
+  scichat-loopback:
+    build:
+      context: .
+      dockerfile: CI/ESS/Dockerfile.test
+    image: dacat/scichat-loopback
+    ports:
+    - "3030:3030"
+    depends_on:
+    - mongodb
+    links:
+    - mongodb
 volumes:
     mongodb_data:
         driver: local
