@@ -10,28 +10,23 @@ const request = require("supertest");
 const should = chai.should();
 const utils = require("./LoginUtils");
 
-let accessToken = null,
-    pid = null;
+let accessToken = null;
 
 let app;
-
-before(() => {
+before(function() {
     app = require("../server/server");
 });
 
-describe("Simple Logbook test", () => {
+describe("Simple Logbook test", function() {
     before(done => {
-        utils.getToken(
-            app,
-            {
-                username: "ingestor",
-                password: "aman"
+        utils.getToken(app, {
+                "username": "ingestor",
+                "password": "aman"
             },
             tokenVal => {
                 accessToken = tokenVal;
                 done();
-            }
-        );
+            });
     });
 
     it("should fetch a Logbook", function(done) {
