@@ -8,6 +8,7 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 const request = require("supertest");
 const should = chai.should();
+const rison = require("rison");
 const superagent = require("superagent");
 const utils = require("./LoginUtils");
 const config = require("../server/config.local");
@@ -50,7 +51,7 @@ describe("Simple Logbook test", function() {
     });
 
     it("should fetch a Logbook", function(done) {
-        let name = "ERIC";
+        let name = "string";
         request(app)
             .get(`/api/v3/Logbooks/${name}?access_token=${accessToken}`)
             .set("Accept", "application/json")
@@ -83,13 +84,13 @@ describe("Simple Logbook test", function() {
     });
 
     it("should fetch a filtered Logbook", function(done) {
-        let name = "ERIC";
-        let filter = {
-            textSearch: "Hello",
+        let name = "string";
+        let filter = rison.encode({
+            textSearch: "Test message",
             showBotMessages: true,
             showUserMessages: true,
             showImages: true
-        };
+        });
         request(app)
             .get(`/api/v3/Logbooks/${name}/${filter}?access_token=${accessToken}`)
             .set("Accept", "application/json")
