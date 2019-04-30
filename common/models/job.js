@@ -7,7 +7,7 @@ var config = require('../../server/config.local');
 var app = require('../../server/server');
 
 
-function sendMail(to, subjectText, mailText, next) {
+function sendMail(to, cc, subjectText, mailText, next) {
     if ('smtpSettings' in config && 'smtpMessage' in config) {
         let transporter = nodemailer.createTransport(config.smtpSettings);
         transporter.verify(function (error, success) {
@@ -18,6 +18,9 @@ function sendMail(to, subjectText, mailText, next) {
                 console.log('      Server is ready to send message to ', to);
                 var message = Object.assign({}, config.smtpMessage);
                 message['to'] = to;
+                if (cc != "") {
+                    message['cc']=cc
+                }
                 message['subject'] += subjectText
                 message['text'] = mailText
                 transporter.sendMail(message, function (err, info) {
@@ -48,7 +51,7 @@ function sendStartJobEmail(job, ctx, next) {
     let subjectText = ' ' + ctx.instance.type + ' job submitted successfully';
     let mailText = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n' + JSON.stringify(ctx.instance, null, 4);
     let to = ctx.instance.emailJobInitiator
-    sendMail(to, subjectText, mailText, next)
+    sendMail(to, "", subjectText, mailText, next)
 }
 
 function SendFinishJobEmail(Job, ctx, idList, next) {
@@ -80,18 +83,34 @@ function SendFinishJobEmail(Job, ctx, idList, next) {
                 pid: x.pid,
                 sourceFolder: x.sourceFolder,
                 size: x.size,
+                archiveStatusMessage: x.datasetlifecycle.archiveStatusMessage,
+                retrieveStatusMessage: x.datasetlifecycle.retrieveStatusMessage,
                 archiveReturnMessage: x.datasetlifecycle.archiveReturnMessage,
                 retrieveReturnMessage: x.datasetlifecycle.retrieveReturnMessage
             }))
+            var cc=""
             if (p.length > 0) {
-                mailText += "The following datasets are not in a retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+                if (ctx.instance.type == "archive" ){
+                   mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+                } else {
+                    mailText += "The following datasets were scheduled for retrieval but are not in retrievable state:\n\n" + JSON.stringify(nonRetrievableList, null, 3)
+                }
+                // add cc message in case of failure to scicat archivemanager
+                if ('smtpMessage' in config && 'from' in config.smtpMessage) {
+                    cc=config.smtpMessage.from
+                }
             } else {
-                mailText += "All datasets have been archived succesfully:\n\n" + JSON.stringify(idList, null, 3)
+                if (ctx.instance.type == "archive" ){
+                    mailText += "All datasets have been archived succesfully:\n\n" + JSON.stringify(idList, null, 3)
+                } else {
+                    mailText += "All datasets have been retrieved succesfully:\n\n" + JSON.stringify(idList, null, 3)
+                    mailText += "Please now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
+                }
             }
-            sendMail(to, subjectText, mailText, next)
+            sendMail(to, cc, subjectText, mailText, next)
         })
     } else {
-        sendMail(to, subjectText, mailText, next)
+        sendMail(to, "", subjectText, mailText, next)
     }
 }
 
@@ -99,27 +118,28 @@ function MarkDatasetsAsScheduled(job, ctx, idList, next) {
 
     let Dataset = app.models.Dataset;
     Dataset.updateAll({
-        pid: {
-            inq: idList
-        }
-    }, {
-        datasetlifecycle: {
-            archivable: false,
-            retrievable: false,
-            archiveStatusMessage: "scheduledForArchiving"
-        }
-    }, ctx.options, function (err, p) {
-        if (err) {
-            var e = new Error();
-            e.statusCode = 404;
-            e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
-            next(e);
-        } else {
-            sendStartJobEmail(job, ctx, function () {
-                publishJob(job, ctx, next)
-            })
-        }
-    });
+            pid: {
+                inq: idList
+            }
+        }, {
+            "$set": {
+                "datasetlifecycle.archivable": false,
+                "datasetlifecycle.retrievable": false,
+                "datasetlifecycle.archiveStatusMessage": "scheduledForArchiving"
+            }
+        }, ctx.options,
+        function (err, p) {
+            if (err) {
+                var e = new Error();
+                e.statusCode = 404;
+                e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
+                next(e);
+            } else {
+                sendStartJobEmail(job, ctx, function () {
+                    publishJob(job, ctx, next)
+                })
+            }
+        });
 }
 // for archive jobs all datasets must be in state archivable
 function TestArchiveJobs(job, ctx, idList, next) {
@@ -215,7 +235,7 @@ function TestAllDatasets(job, ctx, idList, next) {
             // subjectText =
             // mailText=
             // let to = ctx.instance.emailJobInitiator
-            // sendMail(to, subjectText, mailText, next)
+            // sendMail(to, "", subjectText, mailText, next)
             return next(e)
         } else {
             //test if all datasets are in archivable state

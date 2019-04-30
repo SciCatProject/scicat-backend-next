@@ -71,7 +71,7 @@ module.exports = function (app) {
     app.remotes().phases
         .addBefore('invoke', 'options-from-request')
         .use(function (ctx, next) {
-            //console.log("============ Phase: args,options", ctx.args, ctx.options)
+            // console.log("============ Phase: args,options", ctx.args, ctx.options)
             if (!ctx.args.options || !ctx.args.options.accessToken) return next();
             const User = app.models.User;
             const UserIdentity = app.models.UserIdentity
@@ -111,7 +111,7 @@ module.exports = function (app) {
                         // fetch roles via Rolemapping table instead
                         RoleMapping.find({
                             where: {
-                                principalId: ctx.args.options.accessToken.userId
+                                principalId: String(ctx.args.options.accessToken.userId)
                             }
                         }, ctx.args.options, function (err, instances) {
                             // mape roleid to name
