@@ -3,8 +3,10 @@
 const superagent = require("superagent");
 const config = require("../../server/config.local");
 
-const scichatBaseUrl = config.scichatURL;
-const logbookEnabled = configHaslogbookEnabled();
+let scichatBaseUrl;
+let logbookEnabled;
+
+checkConfigProperties();
 
 module.exports = function(Logbook) {
     /**
@@ -71,10 +73,16 @@ module.exports = function(Logbook) {
     };
 };
 
-function configHaslogbookEnabled() {
-    if (config.hasOwnProperty(logbookEnabled)) {
-        return config.logbookEnabled;
+function checkConfigProperties() {
+    if (config.hasOwnProperty("logbookEnabled")) {
+        logbookEnabled = config.logbookEnabled;
     } else {
-        return false;
+        logbookEnabled = false;
+    }
+
+    if (config.hasOwnProperty("scichatURL")) {
+        scichatBaseUrl = config.scichatURL;
+    } else {
+        scichatBaseUrl = "Url not available";
     }
 }
