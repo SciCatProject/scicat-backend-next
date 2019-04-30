@@ -1,10 +1,10 @@
 "use strict";
 
 const superagent = require("superagent");
-const essConfig = require("../../CI/ESS/envfiles/config.ess");
+const config = require("../../server/config.local");
 
-const scichatBaseUrl = essConfig.scichatURL;
-const logbookEnabled = essConfig.logbookEnabled;
+const scichatBaseUrl = config.scichatURL;
+const logbookEnabled = config.logbookEnabled;
 
 module.exports = function(Logbook) {
     /**

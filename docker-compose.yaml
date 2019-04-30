@@ -16,10 +16,12 @@ services:
     depends_on:
       - mongodb
       - openldap-seed
+      - scichat-loopback
     links:
       - mongodb
       - openldap
       - openldap-seed
+      - scichat-loopback
   openldap:
       image: osixia/openldap
       container_name: openldap
