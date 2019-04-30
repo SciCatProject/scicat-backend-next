@@ -8,25 +8,45 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 const request = require("supertest");
 const should = chai.should();
+const superagent = require("superagent");
 const utils = require("./LoginUtils");
+const config = require("../server/config.local");
+
+const scichatBaseUrl = config.scichatUrl;
 
 let accessToken = null;
 
 let app;
+let testRoomId;
 before(function() {
     app = require("../server/server");
+
+    postTestRoom().then(roomResponse => {
+        testRoomId = roomResponse.id;
+
+        return postTestMessage(roomResponse.id);
+    });
+});
+
+after(function() {
+    deleteTestMessage(testRoomId).then(() => {
+        return deleteTestRoom(testRoomId);
+    });
 });
 
 describe("Simple Logbook test", function() {
     before(done => {
-        utils.getToken(app, {
-                "username": "ingestor",
-                "password": "aman"
+        utils.getToken(
+            app,
+            {
+                username: "ingestor",
+                password: "aman"
             },
             tokenVal => {
                 accessToken = tokenVal;
                 done();
-            });
+            }
+        );
     });
 
     it("should fetch a Logbook", function(done) {
@@ -86,3 +106,71 @@ describe("Simple Logbook test", function() {
             });
     });
 });
+
+function postTestRoom() {
+    let testRoom = {
+        canonicalAlias: "#string:server.name",
+        name: "string",
+        worldReadable: false,
+        topic: "Testing",
+        numberOfJoinedMembers: 0,
+        federate: false,
+        roomId: "!hash:server.name",
+        guestCanJoin: false,
+        aliases: ["#string:server.name"]
+    };
+
+    return superagent
+        .post(scichatBaseUrl + `/Rooms`)
+        .then(res => {
+            return Promise.resolve(res.body);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+function postTestMessage(id) {
+    let testMessage = {
+        timestamp: new Date(),
+        sender: "@user:server.name",
+        eventId: "$hash",
+        unsigned: {},
+        content: {
+            body: "Test message",
+            msgtype: "m.text"
+        },
+        type: "m.room.message"
+    };
+
+    return superagent
+        .post(scichatBaseUrl + `/Rooms/${id}/messages`)
+        .then(res => {
+            return Promise.resolve(res.body);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+function deleteTestRoom(id) {
+    return superagent
+        .delete(scichatBaseUrl + `/Rooms/${id}`)
+        .then(res => {
+            return Promise.resolve(res);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+function deleteTestMessage(roomId) {
+    return superagent
+        .delete(scichatBaseUrl + `/Rooms/${roomId}/messages`)
+        .then(res => {
+            return Promise.resolve(res.body);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}

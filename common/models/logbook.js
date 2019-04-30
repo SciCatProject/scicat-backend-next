@@ -4,7 +4,7 @@ const superagent = require("superagent");
 const config = require("../../server/config.local");
 
 const scichatBaseUrl = config.scichatURL;
-const logbookEnabled = config.logbookEnabled;
+const logbookEnabled = configHaslogbookEnabled();
 
 module.exports = function(Logbook) {
     /**
@@ -70,3 +70,11 @@ module.exports = function(Logbook) {
         }
     };
 };
+
+function configHaslogbookEnabled() {
+    if (config.hasOwnProperty(logbookEnabled)) {
+        return config.logbookEnabled;
+    } else {
+        return false;
+    }
+}
