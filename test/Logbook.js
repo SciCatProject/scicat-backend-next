@@ -122,6 +122,7 @@ function postTestRoom() {
 
     return superagent
         .post(scichatBaseUrl + `/Rooms`)
+        .send(testRoom)
         .then(res => {
             return Promise.resolve(res.body);
         })
@@ -145,6 +146,7 @@ function postTestMessage(id) {
 
     return superagent
         .post(scichatBaseUrl + `/Rooms/${id}/messages`)
+        .send(testMessage)
         .then(res => {
             return Promise.resolve(res.body);
         })
