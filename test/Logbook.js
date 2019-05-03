@@ -84,38 +84,6 @@ describe("Simple Logbook test", function() {
                 done();
             });
     });
-    
-    /**
-     * Test below is not working due to some URL encoding error, skipping.
-     */
-
-    // it("should fetch a filtered Logbook", function(done) {
-    //     let name = "string";
-    //     let filter = rison.encode_object({
-    //         textSearch: "Test",
-    //         showBotMessages: true,
-    //         showUserMessages: true,
-    //         showImages: true
-    //     });
-    //     request(app)
-    //         .get(
-    //             `/api/v3/Logbooks/${name}/${filter}?access_token=${accessToken}`
-    //         )
-    //         .set("Accept", "application/json")
-    //         .expect(200)
-    //         .expect("Content-Type", /json/)
-    //         .end(function(err, res) {
-    //             if (err) {
-    //                 return done(err);
-    //             }
-    //             res.body.should.have.property("id").and.be.string;
-    //             res.body.should.have.property("name").and.equal(name);
-    //             res.body.should.have
-    //                 .property("messages")
-    //                 .and.be.instanceof(Array);
-    //             done();
-    //         });
-    // });
 });
 
 function postTestRoom() {
