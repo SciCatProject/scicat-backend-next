@@ -2,6 +2,7 @@
 
 const config = require('../../server/config.local');
 const requestPromise = require("request-promise");
+var Dataset = require('./dataset.json');
 
 const { doiProviderCredentials } = config;
 
@@ -81,6 +82,61 @@ module.exports = function(PublishedData) {
         }).catch(err => next(err));
     });
 
+    PublishedData.formPopulate = function (pid, next){
+        var Dataset = app.models.Dataset;
+        var Proposal = app.models.Proposal;
+        var RawDataset = app.models.RawDataset;
+        var self = this;
+        self.formData = {};
+        Dataset.thumbnail(pid, function(err, thumb){
+            if(err) {
+                return next(err);
+            }
+            self.formData.thumbnail = thumb.thumbnail;
+            return next(null, self.formData);
+        });    
+        Dataset.findById(pid, function(err, ds) {
+            if(err) {
+                return next(err);
+            }
+            const proposalId = ds.proposalId;
+            if (!proposalId)
+                return next("No proposalId found");
+            self.formData.resourceType = ds.dataFormat;
+            self.formData.description = ds.description;
+            self.formData.thumbnail = ds.thumbnail;
+            //publicationYear;
+            //url;
+            Proposal.findById(proposalId, function(err, prop){
+                if(err)
+                    return next(err); 
+                if(!prop)
+                    return next("No proposal found");
+                self.formData.title = prop.title;
+                self.formData.abstract = prop.abstract;
+                return next(null, self.formData);
+            });
+        });
+    };
+
+
+    PublishedData.remoteMethod("formPopulate", {
+        accepts: [{
+            arg: "pid",
+            type: "string",
+            required: true
+        }],
+        http: {
+            path: "/formPopulate",
+            verb: "get"
+        },
+        returns: {
+            type: "Object",
+            root: true
+        }
+    });
+ 
+    //Proposal.findById(ds.pid, function(err, prop) 
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
             const xml = formRegistrationXML(pub);

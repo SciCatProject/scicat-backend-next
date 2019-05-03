@@ -303,32 +303,30 @@ module.exports = function (Job) {
         const Dataset = app.models.Dataset;
         Job.findById(jobId, options, function (err, job) {
             if (err) {
-                next(err);
-            } else {
-                if (job) {
-                    // console.log("Job found:", JSON.stringify(job, null, 3))
-                    const datasetIdList = job.datasetList.map(x => x.pid)
-                    const filter = {
-                        fields: datasetFields,
-                        include: include,
-                        where: {
-                            pid: {
-                                inq: datasetIdList
-                            }
-                        }
+                return next(err);
+            }
+            if (!job) {
+                return next(null, [])
+            }
+            // console.log("Job found:", JSON.stringify(job, null, 3))
+            const datasetIdList = job.datasetList.map(x => x.pid)
+            const filter = {
+                fields: datasetFields,
+                include: include,
+                where: {
+                    pid: {
+                        inq: datasetIdList
                     }
-                    //console.log("filter:", JSON.stringify(filter, null, 3))
-                    Dataset.find(filter, options, function (err, result) {
-                        if (err) {
-                            return next(err)
-                        }
-                        //console.log("Returned result:", JSON.stringify(result, null, 3))
-                        return next(null, result)
-                    });
-                } else {
-                    return next(null, [])
                 }
             }
+            //console.log("filter:", JSON.stringify(filter, null, 3))
+            Dataset.find(filter, options, function (err, result) {
+                if (err) {
+                    return next(err)
+                }
+                //console.log("Returned result:", JSON.stringify(result, null, 3))
+                return next(null, result)
+            });
         });
     };
 
