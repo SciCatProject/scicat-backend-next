@@ -18,46 +18,11 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
         instance = ctx.currentInstance
     }
     if (instance) {
-        // get all current objects connected to the same dataset
         if (instance.datasetId !== undefined) {
             const datasetId = instance.datasetId
-            // get all current datablocks connected to the same dataset
-            var filter = {
-                where: {
-                    datasetId: datasetId
-                },
-                fields: {
-                    [sizeField]: true
-                }
-            }
-            obj.find(filter, ctx.options).then(instances => {
-                var total = instances.reduce(function (sum, value) {
-                    return sum + value[sizeField]
-                }, 0);
-                var Dataset = app.models.Dataset
-                Dataset.findById(datasetId, ctx.options).then(instance => {
-                    if (instance) {
-                        // important to pass options here, otherwise context gets lost
-                        instance.updateAttributes({
-                                [sizeField]: total
-                            }, ctx.options,
-                            function (err, instance) {
-                                if (err) {
-                                    var error = new Error();
-                                    error.statusCode = 403;
-                                    error.message = err;
-                                    next(error)
-                                } else {
-                                    next()
-                                }
-                            })
-                    } else {
-                        var error = new Error();
-                        error.statusCode = 404;
-                        error.message = "No dataset found with pid " + datasetId
-                        next(error)
-                    }
-                })
+            var Dataset = app.models.Dataset
+            Dataset.findById(datasetId, ctx.options, function(err,datasetInstance) {
+                datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], next)
             })
         } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);

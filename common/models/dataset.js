@@ -14,7 +14,26 @@ var own = require('./ownable.json');
 
 module.exports = function (Dataset) {
     var app = require('../../server/server');
-    // make sure that all times are UTC
+
+
+    Dataset.prototype.updateSize = function (id, sizeField, size, next) {
+        // console.log("Updating size field:", id, sizeField, size)
+        Dataset.findById(id, function (err, instance) {
+            if (err) {
+                return next(err);
+            } else {
+                // console.log("Before addition:",sizeField,instance[sizeField])
+                var oldsize=0
+                if (instance[sizeField]){
+                    oldsize=instance[sizeField]
+                } 
+                instance[sizeField] = size+oldsize
+                // console.log("new size:",instance[sizeField])
+                instance.save()
+                return next()
+            }
+        })
+    }
 
     Dataset.validatesUniquenessOf('pid');
 
@@ -275,10 +294,10 @@ module.exports = function (Dataset) {
         let pipeline = []
         let facetMatch = {}
         // add userGroups condition
-        if(fields === undefined){
-            fields={}
+        if (fields === undefined) {
+            fields = {}
         }
-        fields.userGroups=options.currentGroups
+        fields.userGroups = options.currentGroups
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -325,7 +344,7 @@ module.exports = function (Dataset) {
                     })
                 } else if (key === "userGroups") {
                     // no group conditions if global access role
-                    if (fields['userGroups'].indexOf("globalaccess")<0) {
+                    if (fields['userGroups'].indexOf("globalaccess") < 0) {
                         pipeline.push({
                             $match: {
                                 "$or": [{
@@ -404,11 +423,11 @@ module.exports = function (Dataset) {
     Dataset.fullquery = function (fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = []
-        if(fields === undefined){
-            fields={}
+        if (fields === undefined) {
+            fields = {}
         }
         // console.log("Inside fullquery:options",options)
-        fields.userGroups=options.currentGroups
+        fields.userGroups = options.currentGroups
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -435,7 +454,7 @@ module.exports = function (Dataset) {
                         $match: fields[key]
                     })
                 } else if (key === "userGroups") {
-                    if (fields['userGroups'].indexOf("globalaccess")<0) {
+                    if (fields['userGroups'].indexOf("globalaccess") < 0) {
                         pipeline.push({
                             $match: {
                                 "$or": [{
