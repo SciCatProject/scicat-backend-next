@@ -47,7 +47,7 @@ module.exports = function (app) {
                 field: 1
             }, function (err) {
                 if (!err) {
-                    console.log("Index on field " + field + " created succesfully")
+                    console.log("Index on field " + field + " created successfully")
                 } else {
                     console.log(err);
                 }
@@ -58,7 +58,7 @@ module.exports = function (app) {
             "$**": "text"
         }, function (err) {
             if (!err) {
-                console.log("Text Index on dataset created succesfully")
+                console.log("Text Index on dataset created successfully")
             } else {
                 console.log(err);
             }
