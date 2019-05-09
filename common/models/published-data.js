@@ -2,7 +2,6 @@
 
 const config = require('../../server/config.local');
 const requestPromise = require("request-promise");
-var Dataset = require('./dataset.json');
 
 const { doiProviderCredentials } = config;
 
@@ -16,7 +15,6 @@ function formRegistrationXML(publishedData) {
         resourceType,
         authors
     } = publishedData;
-    
     const doi = config.doiPrefix + "/" + publishedData["doi"].replace(config.pidPrefix, "");
     const uniqueAuthors = authors.filter((author, i) => authors.indexOf(author) === i);
 
@@ -57,19 +55,6 @@ function formRegistrationXML(publishedData) {
 module.exports = function(PublishedData) {
     const app = require("../../server/server");
 
-/*
-    PublishedData.observe('after save', function(ctx, next) {
-        console.log('After save:');
-        console.log(ctx.instance);
-
-        PublishedData.register(ctx.instance.id, function(err, doi) {
-            ctx.instance.doi = doi; /// ?????
-            ctx.instance.doiRegisteredSuccessfullyTime = new Date();
-            next(null);
-        });
-    });
-	*/
-
     PublishedData.observe("before save", function(ctx, next) {
         const token = ctx.options.accessToken;
         if (token == null) {
@@ -77,7 +62,6 @@ module.exports = function(PublishedData) {
         }
 
         app.models.User.findById(token.userId).then(user => {
-            console.log(user);
             next();
         }).catch(err => next(err));
     });
@@ -140,16 +124,15 @@ module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
             const xml = formRegistrationXML(pub);
-            console.log(xml);
 
-            return;
+            if (!config) {
+                return cb("No config.local");
+            }
 
-            // TODO understand what the following lines after the return mean 
-            
-            const registerMetadataUri = `https://mds.datacite.org/metadata/${doi}`;
-            const registerDoiUri = `https://mds.datacite.org/doi/${doi}`;
-
-            const registerMetadataOptions = {
+            const registerMetadataUri = `https://mds.datacite.org/metadata/${xml.doi}`;
+            const registerDoiUri = `https://mds.datacite.org/doi/${xml.doi}`;
+            const OAIServerUri = config.oaiProviderRoute;
+            const registerDataciteMetadataOptions = {
                 method: "PUT",
                 body: xml,
                 uri: registerMetadataUri,
@@ -159,12 +142,12 @@ module.exports = function(PublishedData) {
                 auth: doiProviderCredentials
             };
 
-            const registerDoiOptions = {
+            const registerDataciteDoiOptions = {
                 method: "PUT",
                 body: [
                     "#Content-Type:text/plain;charset=UTF-8",
-                    `doi= ${doi}`,
-                    `url= ${url}` // Same as registerDoiUri?
+                    `doi= ${xml.doi}`,
+                    `url= ${xml.url}` // Same as registerDoiUri?
                 ].join('\n'),
                 uri: registerDoiUri,
                 headers: {
@@ -173,11 +156,31 @@ module.exports = function(PublishedData) {
                 auth: doiProviderCredentials
             };
 
-            requestPromise(registerMetadataOptions)
-                .then(() => requestPromise(registerDoiOptions))
+            const syncOAIPublication = {
+                method: "PUT",
+                body:  pub ,
+                json: true,
+                uri: OAIServerUri,
+                headers: {
+                    "content-type": "application/json;charset=UTF-8"
+                },
+                auth: doiProviderCredentials
+            };
+            if(config.site !== "PSI") {
+                requestPromise(registerDataciteMetadataOptions)
+                .then(() => requestPromise(registerDataciteDoiOptions))
                 .then(() => cb(null, "asdasd"))
                 .catch(() => cb());
-        })
+            }
+            else if(!config.oaiProviderRoute) {
+                return cb("oaiProviderRoute route specified in config.local");
+            }
+            else{
+                requestPromise(syncOAIPublication)
+                .then(() => cb(null, "asdasd"))
+                .catch(() => cb());
+            }
+        });
     };
 
     PublishedData.remoteMethod("register", {
