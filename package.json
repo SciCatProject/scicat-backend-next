@@ -9,7 +9,7 @@
         "lint": "eslint common/models",
         "start": "node .",
         "posttests": "npm run lint && nsp check",
-        "test": "./node_modules/mocha/bin/mocha --timeout=30000 --reporter spec --exit 2>/dev/null"
+        "test": "./node_modules/mocha/bin/mocha --timeout=30000 --reporter spec --exit"
     },
     "dependencies": {
         "compression": "^1.7.4",
@@ -47,6 +47,7 @@
         "eslint-config-loopback": "^13.1.0",
         "mocha": "^6.1.3",
         "nodemon": "^1.18.11",
+        "rison": "github:nanonid/rison",
         "supertest": "^4.0.2"
     },
     "repository": {
