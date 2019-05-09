@@ -19,79 +19,35 @@ var idDatablock = null;
 var idOrigDatablock = null;
 var idDatablock2 = null;
 
-
-var testraw = {
-    "principalInvestigator": "bertram.astor@grumble.com",
-    "endTime": "2011-09-14T06:31:25.000Z",
-    "creationLocation": "/PSI/SLS/MX",
-    "dataFormat": "Upchuck pre 2017",
-    "scientificMetadata": {
-        "beamlineParameters": {
-            "Monostripe": "Ru/C",
-            "Ring current": {
-                "v": 0.402246,
-                "u": "A"
-            },
-            "Beam energy": {
-                "v": 22595,
-                "u": "eV"
-            }
-        },
-        "detectorParameters": {
-            "Objective": 20,
-            "Scintillator": "LAG 20um",
-            "Exposure time": {
-                "v": 0.4,
-                "u": "s"
-            }
-        },
-        "scanParameters": {
-            "Number of projections": 1801,
-            "Rot Y min position": {
-                "v": 0,
-                "u": "deg"
-            },
-            "Inner scan flag": 0,
-            "File Prefix": "817b_B2_",
-            "Sample In": {
-                "v": 0,
-                "u": "m"
-            },
-            "Sample folder": "/ramjet/817b_B2_",
-            "Number of darks": 10,
-            "Rot Y max position": {
-                "v": 180,
-                "u": "deg"
-            },
-            "Angular step": {
-                "v": 0.1,
-                "u": "deg"
-            },
-            "Number of flats": 120,
-            "Sample Out": {
-                "v": -0.005,
-                "u": "m"
-            },
-            "Flat frequency": 0,
-            "Number of inter-flats": 0
-        }
+var testderived = {
+    "investigator": "egon.meier@web.de",
+    "inputDatasets": [
+        "/data/input/file1.dat"
+    ],
+    "usedSoftware": [
+        "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c"
+    ],
+    "jobParameters": {
+        "nscans": 10
     },
-    "owner": "Bertram Astor",
-    "ownerEmail": "bertram.astor@grumble.com",
-    "orcidOfOwner": "unknown",
-    "contactEmail": "bertram.astor@grumble.com",
-    "sourceFolder": "/iramjet/tif/",
-    "size": 0,
-    "creationTime": "2011-09-14T06:08:25.000Z",
-    "description": "None",
+    "jobLogData": "Output of log file...",
+
+    "owner": "Egon Meier",
+    "ownerEmail": "egon.meier@web.de",
+    "contactEmail": "egon.meier@web.de",
+    "sourceFolder": "/data/example/2017",
+    "creationTime": "2017-01-31T09:20:19.562Z",
+    "keywords": [
+        "Test", "Derived", "Science", "Math"
+    ],
+    "description": "Some fancy description",
     "isPublished": false,
-    "ownerGroup": "p10029",
-    "accessGroups": ["slsmx"],
-    "proposalId": "10.540.16635/20110123"
+    "ownerGroup": "p34123"
 }
 
+
 var testdataBlock = {
-    "archiveId": "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    "archiveId": "oneCopyBig/p10029/derived/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
     "chkAlg": "sha1",
@@ -195,7 +151,7 @@ before( function(){
     app = require('../server/server')
 });
 
-describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets', () => {
+describe('Test Datablocks and OrigDatablocks and their relation to Derived Datasets', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -215,10 +171,10 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
             });
     });
 
-    it('adds a new raw dataset', function(done) {
+    it('adds a new derived dataset', function(done) {
         request(app)
-            .post('/api/v3/RawDatasets?access_token=' + accessTokenIngestor)
-            .send(testraw)
+            .post('/api/v3/DerivedDatasets?access_token=' + accessTokenIngestor)
+            .send(testderived)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -226,7 +182,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
                 if (err)
                     return done(err);
                 res.body.should.have.property('owner').and.be.string;
-                res.body.should.have.property('type').and.equal('raw');
+                res.body.should.have.property('type').and.equal('derived');
                 res.body.should.have.property('pid').and.be.string;
                 // store link to this dataset in datablocks
                 testdataBlock.datasetId = res.body['pid']
