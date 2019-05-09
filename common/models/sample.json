@@ -1,61 +1,62 @@
 {
-    "name": "Sample",
-    "description": "Models describing the characteristics of the samples to be investigated. Raw datasets should be linked to such sample definitions.",
-    "base": "Ownable",
-    "idInjection": true,
-    "strict": true,
-    "options": {
-        "validateUpsert": true
+  "name": "Sample",
+  "description": "Models describing the characteristics of the samples to be investigated. Raw datasets should be linked to such sample definitions.",
+  "base": "Ownable",
+  "strict": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "samplelId": {
+      "type": "string",
+      "id": true
     },
-    "properties": {
-        "samplelId": {
-            "type": "string",
-            "id": true
-        },
-        "owner": {
-            "type": "string"
-        },
-        "description": {
-            "type": "string"
-        },
-        "createdAt": {
-            "type": "date"
-        },
-        "sampleCharacteristics": {
-            "type": "object"
-        },
-        "attachments": {
-            "type": [
-                "string"
-            ]
-        }
+    "owner": {
+      "type": "string"
     },
-    "validations": [],
-    "relations": {},
-    "acls": [{
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "proposalingestor",
-            "permission": "DENY"
-        }
-    ],
-    "methods": {}
+    "description": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "sampleCharacteristics": {
+      "type": "object"
+    },
+    "attachments": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "proposalingestor",
+      "permission": "DENY"
+    }
+  ],
+  "methods": {}
 }

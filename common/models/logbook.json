@@ -1,0 +1,106 @@
+{
+  "name": "Logbook",
+  "base": "Model",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "messages": {
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {
+    "findByName": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "findByName",
+          "type": "Logbook",
+          "root": true,
+          "description": "Logbook model instance"
+        }
+      ],
+      "description": "Find Logbook model instance",
+      "http": [
+        {
+          "path": "/:name",
+          "verb": "get"
+        }
+      ]
+    },
+    "findAll": {
+      "accepts": [],
+      "returns": [
+        {
+          "arg": "findAll",
+          "type": "[Logbook]",
+          "root": true,
+          "description": "Array of Logbook model instances"
+        }
+      ],
+      "description": "Find all Logbook model instances",
+      "http": [
+        {
+          "path": "/",
+          "verb": "get"
+        }
+      ]
+    },
+    "filter": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "filter",
+          "type": "string",
+          "required": true,
+          "description": "Filter JSON object, keys: textSearch, showBotMessages, showUserMessages, showImages",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "filteredLogbook",
+          "type": "Logbook",
+          "root": true,
+          "description": "Filtered Logbook model instance"
+        }
+      ],
+      "description": "Filter Logbook entries matching query",
+      "http": [
+        {
+          "path": "/:name/:filter",
+          "verb": "get"
+        }
+      ]
+    }
+  }
+}
