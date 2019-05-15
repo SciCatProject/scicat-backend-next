@@ -54,12 +54,13 @@ function sendStartJobEmail(job, ctx, policy, next) {
     let mailText = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n' + JSON.stringify(ctx.instance, null, 4);
 
     if (ctx.instance.type == 'archive' && policy.archiveEmailNotification) {
-        to += "," + policy.archiveEmailsToBeNotified.join()
+        // needs more checking
+        // to += "," + policy.archiveEmailsToBeNotified.join()
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
     if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
-        to += "," + policy.retrieveEmailsToBeNotified.join()
+        // to += "," + policy.retrieveEmailsToBeNotified.join()
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
@@ -129,12 +130,13 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
             }
             // failures are always reported
             if (ctx.instance.type == 'archive' && (policy.archiveEmailNotification || failure)) {
-                to += "," + policy.archiveEmailsToBeNotified.join()
+                // needs more checking
+                // to += "," + policy.archiveEmailsToBeNotified.join()
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
             if (ctx.instance.type == 'retrieve' && (policy.retrieveEmailNotification || failure)) {
-                to += "," + policy.retrieveEmailsToBeNotified.join()
+                // to += "," + policy.retrieveEmailsToBeNotified.join()
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
