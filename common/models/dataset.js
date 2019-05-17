@@ -694,7 +694,7 @@ module.exports = function(Dataset) {
     Dataset.reduce = function(dataset) {
         let options = {
             url:
-                "https://192.168.10.122/api/v1/namespaces/guest/actions/reduce-test?blocking=true",
+                "https://localhost/api/v1/namespaces/guest/actions/reduce-test?blocking=true",
             body: {
                 dataset: dataset
             },
