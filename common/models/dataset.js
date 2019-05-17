@@ -691,7 +691,7 @@ module.exports = function(Dataset) {
      * @returns {Object} The response from the OpenWhisk reduce action
      */
 
-    Dataset.reduce = function(dataset) {
+    Dataset.reduceDataset = function(dataset) {
         let options = {
             url:
                 "https://localhost/api/v1/namespaces/guest/actions/reduce-test?blocking=true",
@@ -718,7 +718,7 @@ module.exports = function(Dataset) {
             });
     };
 
-    Dataset.remoteMethod("reduce", {
+    Dataset.remoteMethod("reduceDataset", {
         accepts: [
             {
                 arg: "dataset",
@@ -732,7 +732,7 @@ module.exports = function(Dataset) {
         ],
         returns: [
             {
-                arg: "reduce",
+                arg: "reduceDataset",
                 type: "object",
                 root: true,
                 description: "The response from the OpenWhisk reduce action"
