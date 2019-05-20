@@ -6,6 +6,8 @@ module.exports = {
     port: process.env.PORT || 3000,
     pidPrefix: '20.500.12269',
     doiPrefix: '10.5072',
+    logbookEnabled: true,
+    scichatURL: 'scichat-loopback:3030/api',
     policyPublicationShiftInYears: 3,
     policyRetentionShiftInYears: 10,
     site: 'ESS',

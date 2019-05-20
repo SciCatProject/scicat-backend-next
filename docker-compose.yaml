@@ -16,10 +16,12 @@ services:
     depends_on:
       - mongodb
       - openldap-seed
+      - scichat-loopback
     links:
       - mongodb
       - openldap
       - openldap-seed
+      - scichat-loopback
   openldap:
       image: osixia/openldap
       container_name: openldap
@@ -52,6 +54,14 @@ services:
       - "openldap:openldap"
       depends_on:
       - openldap
+  scichat-loopback:
+    image: dacat/scichat-loopback:latest
+    ports:
+    - "3030:3030"
+    depends_on:
+    - mongodb
+    links:
+    - mongodb
 volumes:
     mongodb_data:
         driver: local
