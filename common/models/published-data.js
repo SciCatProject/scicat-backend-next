@@ -1,9 +1,10 @@
 "use strict";
 
-const config = require('../../server/config.local');
+const config = require("../../server/config.local");
 const requestPromise = require("request-promise");
+const fs = require("fs");
 
-const { doiProviderCredentials } = config;
+const path = "./server/doiconfig.local.json";
 
 function formRegistrationXML(publishedData) {
     const {
@@ -15,8 +16,13 @@ function formRegistrationXML(publishedData) {
         resourceType,
         authors
     } = publishedData;
-    const doi = config.doiPrefix + "/" + publishedData["doi"].replace(config.pidPrefix, "");
-    const uniqueAuthors = authors.filter((author, i) => authors.indexOf(author) === i);
+    const doi =
+        config.doiPrefix +
+        "/" +
+        publishedData["doi"].replace(config.pidPrefix, "");
+    const uniqueAuthors = authors.filter(
+        (author, i) => authors.indexOf(author) === i
+    );
 
     const creatorElements = uniqueAuthors.map(author => {
         const names = author.split(" ");
@@ -61,41 +67,40 @@ module.exports = function(PublishedData) {
             return next(new Error());
         }
 
-        app.models.User.findById(token.userId).then(user => {
-            next();
-        }).catch(err => next(err));
+        app.models.User.findById(token.userId)
+            .then(user => {
+                next();
+            })
+            .catch(err => next(err));
     });
 
-    PublishedData.formPopulate = function (pid, next){
+    PublishedData.formPopulate = function(pid, next) {
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
         var RawDataset = app.models.RawDataset;
         var self = this;
         self.formData = {};
-        Dataset.thumbnail(pid, function(err, thumb){
-            if(err) {
+        Dataset.thumbnail(pid, function(err, thumb) {
+            if (err) {
                 return next(err);
             }
             self.formData.thumbnail = thumb.thumbnail;
             return next(null, self.formData);
-        });    
+        });
         Dataset.findById(pid, function(err, ds) {
-            if(err) {
+            if (err) {
                 return next(err);
             }
             const proposalId = ds.proposalId;
-            if (!proposalId)
-                return next("No proposalId found");
+            if (!proposalId) return next("No proposalId found");
             self.formData.resourceType = ds.dataFormat;
             self.formData.description = ds.description;
             self.formData.thumbnail = ds.thumbnail;
             //publicationYear;
             //url;
-            Proposal.findById(proposalId, function(err, prop){
-                if(err)
-                    return next(err); 
-                if(!prop)
-                    return next("No proposal found");
+            Proposal.findById(proposalId, function(err, prop) {
+                if (err) return next(err);
+                if (!prop) return next("No proposal found");
                 self.formData.title = prop.title;
                 self.formData.abstract = prop.abstract;
                 return next(null, self.formData);
@@ -103,13 +108,14 @@ module.exports = function(PublishedData) {
         });
     };
 
-
     PublishedData.remoteMethod("formPopulate", {
-        accepts: [{
-            arg: "pid",
-            type: "string",
-            required: true
-        }],
+        accepts: [
+            {
+                arg: "pid",
+                type: "string",
+                required: true
+            }
+        ],
         http: {
             path: "/formPopulate",
             verb: "get"
@@ -119,8 +125,8 @@ module.exports = function(PublishedData) {
             root: true
         }
     });
- 
-    //Proposal.findById(ds.pid, function(err, prop) 
+
+    //Proposal.findById(ds.pid, function(err, prop)
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
             const xml = formRegistrationXML(pub);
@@ -129,9 +135,24 @@ module.exports = function(PublishedData) {
                 return cb("No config.local");
             }
 
-            const registerMetadataUri = `https://mds.datacite.org/metadata/${xml.doi}`;
+            const registerMetadataUri = `https://mds.datacite.org/metadata/${
+                xml.doi
+            }`;
             const registerDoiUri = `https://mds.datacite.org/doi/${xml.doi}`;
             const OAIServerUri = config.oaiProviderRoute;
+
+            let doiProviderCredentials = {
+                username: "removed",
+                password: "removed"
+            };
+            if (fs.existsSync(path)) {
+                doiProviderCredentials = JSON.parse(fs.readFileSync(path));
+            } else {
+                doiProviderCredentials = {
+                    username: "removed",
+                    password: "removed"
+                };
+            }
             const registerDataciteMetadataOptions = {
                 method: "PUT",
                 body: xml,
@@ -148,7 +169,7 @@ module.exports = function(PublishedData) {
                     "#Content-Type:text/plain;charset=UTF-8",
                     `doi= ${xml.doi}`,
                     `url= ${xml.url}` // Same as registerDoiUri?
-                ].join('\n'),
+                ].join("\n"),
                 uri: registerDoiUri,
                 headers: {
                     "content-type": "text/plain;charset=UTF-8"
@@ -158,7 +179,7 @@ module.exports = function(PublishedData) {
 
             const syncOAIPublication = {
                 method: "PUT",
-                body:  pub ,
+                body: pub,
                 json: true,
                 uri: OAIServerUri,
                 headers: {
@@ -166,19 +187,20 @@ module.exports = function(PublishedData) {
                 },
                 auth: doiProviderCredentials
             };
-            if(config.site !== "PSI") {
+            console.log("before posting to datacite");
+            if (config.site !== "PSI") {
+                console.log("posting to datacite");
+                console.log(registerDataciteMetadataOptions);
                 requestPromise(registerDataciteMetadataOptions)
-                .then(() => requestPromise(registerDataciteDoiOptions))
-                .then(() => cb(null, "asdasd"))
-                .catch(() => cb());
-            }
-            else if(!config.oaiProviderRoute) {
+                    .then(() => requestPromise(registerDataciteDoiOptions))
+                    .then(() => cb(null, "asdasd"))
+                    .catch(() => cb());
+            } else if (!config.oaiProviderRoute) {
                 return cb("oaiProviderRoute route specified in config.local");
-            }
-            else{
+            } else {
                 requestPromise(syncOAIPublication)
-                .then(() => cb(null, "asdasd"))
-                .catch(() => cb());
+                    .then(() => cb(null, "asdasd"))
+                    .catch(() => cb());
             }
         });
     };
@@ -191,8 +213,8 @@ module.exports = function(PublishedData) {
                 required: true
             }
         ],
-        http: {path: "/:id/register", verb: "post"},
-        returns: {arg: "doi", type: "string"}
+        http: { path: "/:id/register", verb: "post" },
+        returns: { arg: "doi", type: "string" }
     });
     // TODO add logic that give authors privileges to modify data
 
