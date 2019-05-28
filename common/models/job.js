@@ -55,12 +55,12 @@ function sendStartJobEmail(job, ctx, policy, next) {
 
     if (ctx.instance.type == 'archive' && policy.archiveEmailNotification) {
         // needs more checking
-        // to += "," + policy.archiveEmailsToBeNotified.join()
+        to += "," + policy.archiveEmailsToBeNotified.join()
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
     if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
-        // to += "," + policy.retrieveEmailsToBeNotified.join()
+        to += "," + policy.retrieveEmailsToBeNotified.join()
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
@@ -131,12 +131,12 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
             // failures are always reported
             if (ctx.instance.type == 'archive' && (policy.archiveEmailNotification || failure)) {
                 // needs more checking
-                // to += "," + policy.archiveEmailsToBeNotified.join()
+                to += "," + policy.archiveEmailsToBeNotified.join()
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
             if (ctx.instance.type == 'retrieve' && (policy.retrieveEmailNotification || failure)) {
-                // to += "," + policy.retrieveEmailsToBeNotified.join()
+                to += "," + policy.retrieveEmailsToBeNotified.join()
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
@@ -178,6 +178,7 @@ function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
 }
 // for archive jobs all datasets must be in state archivable
 function TestArchiveJobs(job, ctx, idList, policy, next) {
+
     let Dataset = app.models.Dataset;
     Dataset.find({
         fields: {
@@ -250,7 +251,6 @@ function TestRetrieveJobs(job, ctx, idList, policy, next) {
 }
 
 function TestAllDatasets(job, ctx, idList, policy, next) {
-
     let Dataset = app.models.Dataset;
     Dataset.find({
         fields: {
@@ -290,7 +290,6 @@ function TestAllDatasets(job, ctx, idList, policy, next) {
 }
 
 function getPolicy(id, options, next) {
-
     let Dataset = app.models.Dataset;
     Dataset.findById(id, options, function (err, instance) {
         if (err || !instance) {
@@ -302,13 +301,25 @@ function getPolicy(id, options, next) {
                     ownerGroup: instance.ownerGroup
                 }
             };
+            // console.log("In jobs:filter condition on Policy:",filter)
             Policy.findOne(filter, options,function (err, policyInstance) {
+                // console.log("Inside Jobs, look for policy:err,policyInstance:",err,policyInstance)
                 if (err) {
                     var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
                     console.log(msg);
                     return next(msg);
                 } else if (policyInstance) {
                     return next(null, policyInstance)
+                } else {
+                    // this should not happen anymore, but kept as additional safety belt
+                    console.log("No policy found for instance:",instance)
+                    console.log("Return default policy instead.")
+                    var po={}
+                    po.archiveEmailNotification=true
+                    po.retrieveEmailNotification=true
+                    po.archiveEmailsToBeNotified=[]
+                    po.retrieveEmailsToBeNotified=[]
+                    return next(null,po)
                 }
             })
         }
