@@ -34,7 +34,8 @@
         "request-promise": "^4.2.4",
         "serve-favicon": "2.5.0",
         "strong-error-handler": "3.2.0",
-        "uuid": "^3.3.2"
+        "uuid": "^3.3.2",
+        "superagent": "^3.8.3"
     },
     "optionalDependencies": {
         "loopback-connector-kafka": "^0.2.1"

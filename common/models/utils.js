@@ -21,8 +21,16 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
         if (instance.datasetId !== undefined) {
             const datasetId = instance.datasetId
             var Dataset = app.models.Dataset
-            Dataset.findById(datasetId, ctx.options, function(err,datasetInstance) {
-                datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], next)
+            Dataset.findById(datasetId, ctx.options, function (err, datasetInstance) {
+                if (err || !datasetInstance) {
+                    console.log('%s: Update size error: Instance %j can not be found. Could be access problem.', new Date(), instance.pid);
+                    var error = new Error();
+                    error.statusCode = 403;
+                    error.message = 'DatasetId not found. Could be access rule problem - test accessGroups for id: '+instance.pid;
+                    next(error)
+                } else {
+                    datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], next)
+                }
             })
         } else {
             console.log('%s: Error: Instance %j has no datasetId defined', new Date(), instance);
