@@ -1,4 +1,4 @@
 #!/bin/sh
-cd ../..
-./node_modules/.bin/lb-sdk server/server.js  ../catanie/src/app/shared/sdk
+cd ../../..
+./catamel/node_modules/.bin/lb-sdk catamel/server/server.js  ../catanie/catanie/src/app/shared/sdk
 cd -
