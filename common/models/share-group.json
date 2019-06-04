@@ -1,7 +1,7 @@
 {
   "name": "ShareGroup",
-  "description": "Definition of policy parameters relevant for the storgae lifecycle management of the datasets",
-  "plural": "Policies",
+  "description": "Definition of groups to share datasets between scicat users",
+  "plural": "ShareGroups",
   "base": "Ownable",
   "idInjection": true,
   "options": {
@@ -12,22 +12,7 @@
       "type": [
         "string"
       ],
-      "description": "Defines the emails of users that can modify the policy parameters"
-    },
-    "tapeRedundancy": {
-      "type": "string",
-      "description": "Defines the level of redundancy in storage to minimize loss of data. Allowed values are low, medium, high. Low could e.g. mean one tape copy only, medium could mean two tape copies and high two geo-redundant tape copies",
-      "default": "low"
-    },
-    "autoArchive": {
-      "type": "boolean",
-      "description": "Flag to indicate that a dataset should be automatically archived after ingest. If false then archive delay is ignored",
-      "default": true
-    },
-    "autoArchiveDelay": {
-      "type": "number",
-      "description": "Number of days after dataset creation that (remaining) datasets are archived automatically",
-      "default": 7
+      "description": "Defines the emails of users that data is shared to"
     },
     "archiveEmailNotification": {
       "type": "boolean",
