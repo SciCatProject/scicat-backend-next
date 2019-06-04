@@ -39,7 +39,13 @@ module.exports = function (Policy) {
                 userId: userId
             }
         }, function (err, identity) {
-            if (err || !identity) {
+            if (err) {
+                err.statusCode = '404';
+                return next(err);
+            }
+            
+            if (!identity) {
+                err = new Error("No user identity found");
                 err.statusCode = '404';
                 return next(err);
             }
