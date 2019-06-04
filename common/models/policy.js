@@ -10,65 +10,81 @@ var own = require('./ownable.json');
 module.exports = function (Policy) {
     var app = require('../../server/server');
 
-    // for policy interactions
-    // check logged in user email is a member of policy.manager
-    Policy.observe('before save', (ctx, next) => {
-        if (ctx.currentInstance) {
-            //is a partial update currentInstance rather than instance
-            var UserIdentity = app.models.UserIdentity;
-            var userId = ctx.options.accessToken.userId;
+    // check that the user has authority to change a record
+    // input ownerGroup of the record being changed
+    Policy.validatePermission = function (ownerGroup, userEmail, next) {
+        Policy.findOne({
+            where: { ownerGroup }
+        }, function (err, policy) {
+            if(err){
+                next(new Error("No policy found for group", ownerGroup));
+            }
+            if (policy.manager.includes(userEmail)) {
+                next();
+            } else {
+                next(new Error("User not authorised for action based on policy"));
+            }
+        });
+    };
 
-            //PersistedModel Static Method call
-            UserIdentity.findOne({
-                //json filter
-                where: {
-                    userId: userId
-                }
-            }, function (err, instance) {
-                // need to handle functional user case
-                var email = "";
-                if (!instance && Object.keys(ctx.options.authorizedRoles)[0]) {
-                    return next();
-                }
-
-                //console.log("email:", email);
-                //console.log("manager: ", ctx.currentInstance.manager);
-                if (!ctx.currentInstance.manager.includes(email)) {
-                    var e = new Error('Access Not Allowed - policy manager action');
-                    e.statusCode = 401;
-                    next(e);
-                } else next();
+    // mass update of policy records
+    Policy.updatewhere = function (where, data, ctx, next) {
+        // with manager validation
+        // where should look like {{"or":[{"ownerGroup":"p17079"}]}}
+        var UserIdentity = app.models.UserIdentity;
+        // WARNING: ctx changes based on the position in the callback
+        const userId = ctx.req.accessToken.userId;
+        UserIdentity.findOne({
+            where: {
+                userId: userId
+            }
+        }, function (err, identity) {
+            if (err || !identity) {
+                err.statusCode = '404';
+                return next(err);
+            }
+            where.or.forEach(function (object) {
+                Policy.validatePermission(object.ownerGroup, identity.profile.email, function (err) {
+                    if (err) {
+                        err.statusCode = '404';
+                        return next(err);
+                    } else {
+                        Policy.update(where, data, function (err){
+                            if (err){
+                                return next(err);
+                            }
+                            return next(err, "successful policy update");
+                        });
+                    }
+                });
             });
-        } else {
-            //is an full update/insert/delete
-            //should only be proposalingestor
-            next();
-        }
-    });
-
-
-    // TODO: understand the following method
-    Policy.updatewhere = async function (where, data) {
-        // where should look like {"or": [{"id":"5c0fe54ed8cc493d4b259989"},{"id": "5c110c90f1e2772bdb1dd868"}]}
-        return Policy.update(where, data);
-    }
+        });
+    };
 
     Policy.remoteMethod("updatewhere", {
         accepts: [{
-            arg: "where",
-            type: "object",
-            required: true
-        }, {
-            arg: "data",
-            type: "object",
-            required: true
-        }],
+                arg: "where",
+                type: "object",
+                required: true
+            }, {
+                arg: "data",
+                type: "object",
+                required: true
+            },
+            {
+                arg: 'options',
+                type: 'object',
+                http: {
+                    source: 'context'
+                }
+            }
+        ],
         http: {
             path: "/updatewhere",
             verb: "post"
         },
         returns: {
-            type: "string",
+            type: "Object",
             root: true
         }
     });
