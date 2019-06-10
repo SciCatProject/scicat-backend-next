@@ -21,17 +21,11 @@ var testdataset = {
   //"tapeRetentionTime": 3,
   "autoArchiveDelay": 7,
   "archiveEmailNotification": false,
-  "archiveEmailsToBeNotified": [
-    "none"
-  ],
+  "archiveEmailsToBeNotified": [],
   "retrieveEmailNotification": false,
-  "retrieveEmailsToBeNotified": [
-    "none"
-  ],
+  "retrieveEmailsToBeNotified": [],
   "ownerGroup": "p10021",
-  "accessGroups": [
-    "none"
-  ]
+  "accessGroups": []
 }
 
 var app
