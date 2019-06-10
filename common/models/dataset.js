@@ -694,9 +694,9 @@ module.exports = function(Dataset) {
     Dataset.reduceDataset = function(dataset) {
         let options = {
             url:
-                "https://localhost/api/v1/namespaces/guest/actions/reduce-dataset?blocking=true",
+                "https://localhost/api/v1/namespaces/guest/actions/mantid-reduce-dataset?blocking=true",
             body: {
-                dataset: dataset
+                datasetPid: dataset.pid
             },
             headers: { "Content-Type": "application/json" },
             rejectUnauthorized: false,
