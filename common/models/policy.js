@@ -17,13 +17,12 @@ module.exports = function (Policy) {
             where: { ownerGroup }
         }, function (err, policy) {
             if(err){
-                next(new Error("No policy found for group", ownerGroup));
+                return next(new Error("No policy found for group", ownerGroup));
             }
             if (policy.manager.includes(userEmail)) {
-                next();
-            } else {
-                next(new Error("User not authorised for action based on policy"));
+                return next();
             }
+            return next(new Error("User not authorised for action based on policy"));
         });
     };
 
@@ -59,11 +58,11 @@ module.exports = function (Policy) {
                             if (err){
                                 return next(err);
                             }
-                            return next(err, "successful policy update");
                         });
                     }
                 });
             });
+            return next(err, "successful policy update");
         });
     };
 
