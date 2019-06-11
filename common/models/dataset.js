@@ -1,6 +1,6 @@
 "use strict";
 
-const request = require("request-promise");
+const kafka = require("kafka-node");
 
 var config = require("../../server/config.local");
 var p = require("../../package.json");
@@ -60,11 +60,11 @@ module.exports = function(Dataset) {
     });
 
     function addDefaultPolicy(ownerGroup, accessGroups, ownerEmail, tapeRedundancy, ctx, next) {
-        console.log("Adding default policy")
+        console.log("Adding default policy");
         var Policy = app.models.Policy;
         var defaultPolicy = Object();
         defaultPolicy.ownerGroup = ownerGroup;
-        defaultPolicy.accessGroups = accessGroups
+        defaultPolicy.accessGroups = accessGroups;
         if (config && !ownerEmail) {
             defaultPolicy.manager = config.defaultManager;
         } else if (ownerEmail) {
@@ -115,51 +115,27 @@ module.exports = function(Dataset) {
                 */
                 var subblock = {};
                 if (ctx.instance.datasetlifecycle) {
-                    subblock = JSON.parse(
-                        JSON.stringify(ctx.instance.datasetlifecycle)
-                    );
+                    subblock = JSON.parse(JSON.stringify(ctx.instance.datasetlifecycle));
                 } else {
                     ctx.instance.datasetlifecycle = {};
                 }
-                if (!("archivable" in subblock))
-                    ctx.instance.datasetlifecycle.archivable = true;
-                if (!("retrievable" in subblock))
-                    ctx.instance.datasetlifecycle.retrievable = false;
-                if (!("publishable" in subblock))
-                    ctx.instance.datasetlifecycle.publishable = false;
-                if (!("isOnCentralDisk" in subblock))
-                    ctx.instance.datasetlifecycle.isOnCentralDisk = true;
-                if (!("archiveStatusMessage" in subblock))
-                    ctx.instance.datasetlifecycle.archiveStatusMessage =
-                        "datasetCreated";
-                if (!("retrieveStatusMessage" in subblock))
-                    ctx.instance.datasetlifecycle.retrieveStatusMessage = "";
-                if (!("retrieveIntegrityCheck" in subblock))
-                    ctx.instance.datasetlifecycle.retrieveIntegrityCheck = false;
+                if (!("archivable" in subblock)) ctx.instance.datasetlifecycle.archivable = true;
+                if (!("retrievable" in subblock)) ctx.instance.datasetlifecycle.retrievable = false;
+                if (!("publishable" in subblock)) ctx.instance.datasetlifecycle.publishable = false;
+                if (!("isOnCentralDisk" in subblock)) ctx.instance.datasetlifecycle.isOnCentralDisk = true;
+                if (!("archiveStatusMessage" in subblock)) ctx.instance.datasetlifecycle.archiveStatusMessage = "datasetCreated";
+                if (!("retrieveStatusMessage" in subblock)) ctx.instance.datasetlifecycle.retrieveStatusMessage = "";
+                if (!("retrieveIntegrityCheck" in subblock)) ctx.instance.datasetlifecycle.retrieveIntegrityCheck = false;
                 // auto fill retention and publishing time
                 var now = new Date();
                 if (!ctx.instance.datasetlifecycle.archiveRetentionTime) {
-                    var retention = new Date(
-                        now.setFullYear(
-                            now.getFullYear() +
-                                config.policyRetentionShiftInYears
-                        )
-                    );
-                    ctx.instance.datasetlifecycle.archiveRetentionTime = retention
-                        .toISOString()
-                        .substring(0, 10);
+                    var retention = new Date(now.setFullYear(now.getFullYear() + config.policyRetentionShiftInYears));
+                    ctx.instance.datasetlifecycle.archiveRetentionTime = retention.toISOString().substring(0, 10);
                 }
                 if (!ctx.instance.datasetlifecycle.dateOfPublishing) {
                     now = new Date(); // now was modified above
-                    var pubDate = new Date(
-                        now.setFullYear(
-                            now.getFullYear() +
-                                config.policyPublicationShiftInYears
-                        )
-                    );
-                    ctx.instance.datasetlifecycle.dateOfPublishing = pubDate
-                        .toISOString()
-                        .substring(0, 10);
+                    var pubDate = new Date(now.setFullYear(now.getFullYear() + config.policyPublicationShiftInYears));
+                    ctx.instance.datasetlifecycle.dateOfPublishing = pubDate.toISOString().substring(0, 10);
                 }
             } else {
                 console.log("      Existing pid:", ctx.instance.pid);
@@ -169,18 +145,14 @@ module.exports = function(Dataset) {
             // sourceFolder handling
             if (ctx.instance.sourceFolder) {
                 // remove trailing slashes
-                ctx.instance.sourceFolder = ctx.instance.sourceFolder.replace(
-                    /\/$/,
-                    ""
-                );
+                ctx.instance.sourceFolder = ctx.instance.sourceFolder.replace(/\/$/, "");
                 // autofill datasetName
                 if (!ctx.instance.datasetName) {
                     var arr = ctx.instance.sourceFolder.split("/");
                     if (arr.length == 1) {
                         ctx.instance.datasetName = arr[0];
                     } else {
-                        ctx.instance.datasetName =
-                            arr[arr.length - 2] + "/" + arr[arr.length - 1];
+                        ctx.instance.datasetName = arr[arr.length - 2] + "/" + arr[arr.length - 1];
                     }
                 }
             }
@@ -193,13 +165,9 @@ module.exports = function(Dataset) {
                     ownerGroup: ctx.instance.ownerGroup
                 }
             };
-             Policy.findOne(filter, ctx.options, function (err, policyInstance) {
+            Policy.findOne(filter, ctx.options, function(err, policyInstance) {
                 if (err) {
-                    var msg =
-                        "Error when looking for Policy of pgroup " +
-                        ctx.instance.ownerGroup +
-                        " " +
-                        err;
+                    var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
                     console.log(msg);
                     next(msg);
                 } else if (policyInstance) {
@@ -239,7 +207,14 @@ module.exports = function(Dataset) {
                             tapeRedundancy = "high";
                         }
                     }
-                    addDefaultPolicy(ctx.instance.ownerGroup, ctx.instance.accessGroups, ctx.instance.ownerEmail, tapeRedundancy, ctx, next);
+                    addDefaultPolicy(
+                        ctx.instance.ownerGroup,
+                        ctx.instance.accessGroups,
+                        ctx.instance.ownerEmail,
+                        tapeRedundancy,
+                        ctx,
+                        next
+                    );
                 }
             });
         } else {
@@ -393,16 +368,10 @@ module.exports = function(Dataset) {
                             $match: {
                                 $or: [
                                     {
-                                        ownerGroup: searchExpression(
-                                            "ownerGroup",
-                                            fields["userGroups"]
-                                        )
+                                        ownerGroup: searchExpression("ownerGroup", fields["userGroups"])
                                     },
                                     {
-                                        accessGroups: searchExpression(
-                                            "accessGroups",
-                                            fields["userGroups"]
-                                        )
+                                        accessGroups: searchExpression("accessGroups", fields["userGroups"])
                                     }
                                 ]
                             }
@@ -424,29 +393,13 @@ module.exports = function(Dataset) {
         let facetObject = {};
         facets.forEach(function(facet) {
             if (facet in ds.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    ds.properties[facet].type,
-                    facetMatch
-                );
+                facetObject[facet] = utils.createNewFacetPipeline(facet, ds.properties[facet].type, facetMatch);
             } else if (facet in dsr.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    dsr.properties[facet].type,
-                    facetMatch
-                );
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsr.properties[facet].type, facetMatch);
             } else if (facet in dsd.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    dsd.properties[facet].type,
-                    facetMatch
-                );
+                facetObject[facet] = utils.createNewFacetPipeline(facet, dsd.properties[facet].type, facetMatch);
             } else if (facet in own.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    own.properties[facet].type,
-                    facetMatch
-                );
+                facetObject[facet] = utils.createNewFacetPipeline(facet, own.properties[facet].type, facetMatch);
             } else if (facet.startsWith("datasetlifecycle.")) {
                 let lifcycleFacet = facet.split(".")[1];
                 if (lifcycleFacet in dsl.properties) {
@@ -457,10 +410,7 @@ module.exports = function(Dataset) {
                     );
                 }
             } else {
-                console.log(
-                    "Warning: Facet not part of any dataset model:",
-                    facet
-                );
+                console.log("Warning: Facet not part of any dataset model:", facet);
             }
         });
         // add pipeline to count all documents
@@ -540,16 +490,10 @@ module.exports = function(Dataset) {
                             $match: {
                                 $or: [
                                     {
-                                        ownerGroup: searchExpression(
-                                            "ownerGroup",
-                                            fields["userGroups"]
-                                        )
+                                        ownerGroup: searchExpression("ownerGroup", fields["userGroups"])
                                     },
                                     {
-                                        accessGroups: searchExpression(
-                                            "accessGroups",
-                                            fields["userGroups"]
-                                        )
+                                        accessGroups: searchExpression("accessGroups", fields["userGroups"])
                                     }
                                 ]
                             }
@@ -605,11 +549,7 @@ module.exports = function(Dataset) {
                     }
                     // rename _id to pid
                     res.map(ds => {
-                        Object.defineProperty(
-                            ds,
-                            "pid",
-                            Object.getOwnPropertyDescriptor(ds, "_id")
-                        );
+                        Object.defineProperty(ds, "pid", Object.getOwnPropertyDescriptor(ds, "_id"));
                         delete ds["_id"];
                     });
                     cb(err, res);
@@ -682,30 +622,34 @@ module.exports = function(Dataset) {
      */
 
     Dataset.reduceDataset = function(dataset) {
-        let options = {
-            url:
-                "https://localhost/api/v1/namespaces/guest/actions/mantid-reduce-dataset?blocking=true",
-            body: {
-                datasetPid: dataset.pid
-            },
-            headers: { "Content-Type": "application/json" },
-            rejectUnauthorized: false,
-            json: true
-        };
+        const Producer = kafka.Producer;
+        const Consumer = kafka.Consumer;
 
-        return request
-            .post(options)
-            .auth(
-                "23bc46b1-71f6-4ed5-8c54-816aa4f8c502",
-                "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
-            )
-            .then(res => {
-                console.log(res.response.result);
-                return Promise.resolve(res.response.result);
-            })
-            .error(err => {
-                console.error(err);
+        const client = new kafka.KafkaClient({ kafkaHost: "localhost:9093" });
+        const producer = new Producer(client);
+        const consumer = new Consumer(client, [{ topic: "reduce_output", partition: 0 }]);
+
+        const payloads = [
+            {
+                topic: "reduce_input",
+                messages: JSON.stringify({
+                    datasetPid: dataset.pid
+                }),
+                partition: 0
+            }
+        ];
+
+        return new Promise((resolve, reject) => {
+            producer.on("ready", () => {
+                producer.send(payloads, (err, data) => {
+                    console.log(data);
+                });
             });
+
+            consumer.on("message", async message => {
+                return resolve(JSON.parse(message.value));
+            });
+        });
     };
 
     Dataset.remoteMethod("reduceDataset", {
