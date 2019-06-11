@@ -616,7 +616,7 @@ module.exports = function(Dataset) {
     });
 
     /**
-     * Sends a post request for Dataset reduction to OpenWhisk
+     * Produces a Kafka message for Dataset reduction to OpenWhisk, then consumes the response
      * @param {Dataset} dataset The Dataset to send for reduction
      * @returns {Object} The response from the OpenWhisk reduce action
      */
