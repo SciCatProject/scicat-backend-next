@@ -646,7 +646,7 @@ module.exports = function(Dataset) {
                 });
             });
 
-            consumer.on("message", async message => {
+            consumer.on("message", message => {
                 return resolve(JSON.parse(message.value));
             });
         });
