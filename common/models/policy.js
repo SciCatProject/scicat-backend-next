@@ -14,9 +14,11 @@ module.exports = function (Policy) {
     // input ownerGroup of the record being changed
     Policy.validatePermission = function (ownerGroup, userEmail, next) {
         Policy.findOne({
-            where: { ownerGroup }
+            where: {
+                ownerGroup
+            }
         }, function (err, policy) {
-            if(err){
+            if (err) {
                 return next(new Error("No policy found for group", ownerGroup));
             }
             if (policy.manager.includes(userEmail)) {
@@ -42,25 +44,29 @@ module.exports = function (Policy) {
                 err.statusCode = '404';
                 return next(err);
             }
-            
-            if (!identity) {
-                err = new Error("No user identity found");
-                err.statusCode = '404';
-                return next(err);
-            }
+
             where.or.forEach(function (object) {
-                Policy.validatePermission(object.ownerGroup, identity.profile.email, function (err) {
-                    if (err) {
-                        err.statusCode = '404';
-                        return next(err);
-                    } else {
-                        Policy.update(where, data, function (err){
-                            if (err){
-                                return next(err);
-                            }
-                        });
-                    }
-                });
+                if (!identity) {
+                    // allow all functional users
+                    Policy.update(where, data, function (err) {
+                        if (err) {
+                            return next(err);
+                        }
+                    });
+                } else {
+                    Policy.validatePermission(object.ownerGroup, identity.profile.email, function (err) {
+                        if (err) {
+                            err.statusCode = '404';
+                            return next(err);
+                        } else {
+                            Policy.update(where, data, function (err) {
+                                if (err) {
+                                    return next(err);
+                                }
+                            });
+                        }
+                    });
+                }
             });
             return next(err, "successful policy update");
         });
