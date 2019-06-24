@@ -66,6 +66,11 @@ module.exports = function (Policy) {
                         if (err) {
                             return next(err);
                         }
+                        itemsProcessed++;
+                        // required to avoid callback already called
+                        if(!err && itemsProcessed === array.length) {
+                            return next(null, "successful policy update");
+                        }
                     });
                 } else {
                     Policy.validatePermission(object, identity.profile.email, function (err) {
