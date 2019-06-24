@@ -47,7 +47,7 @@
               }
             ],
             "returns": {
-              "arg": "findByInstrumentAndDate",
+              "arg": "getGroups",
               "type": "Object"
             },
             "description": "Find proposal that took data at specified instrument and time",
