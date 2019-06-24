@@ -109,6 +109,13 @@ module.exports = function (app) {
                                     members: u.profile.email
                                 }
                             })
+                            if (sharegroups.hasOwnProperty("getGroups")) {
+                                if (sharegroups["getGroups"].length > 0) {
+                                    for (const group in sharegroups["getGroups"]) {
+                                        groups.push(group);
+                                    }
+                                }
+                            }
                         }
                         ctx.args.options.currentGroups = groups
                         return next()
