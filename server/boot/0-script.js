@@ -77,6 +77,7 @@ module.exports = function (app) {
             const UserIdentity = app.models.UserIdentity
             const RoleMapping = app.models.RoleMapping
             const Role = app.models.Role
+            const Sharegroups = app.models.Sharegroups
             // first check if email in User
             User.findById(ctx.args.options.accessToken.userId, function (err, user) {
                 if (err) return next(err);
@@ -103,6 +104,11 @@ module.exports = function (app) {
                             if (typeof groups === 'undefined') {
                                 groups = []
                             }
+                            const sharegroups = Sharegroups.find({
+                                where: {
+                                    members: u.profile.email
+                                }
+                            })
                         }
                         ctx.args.options.currentGroups = groups
                         return next()
