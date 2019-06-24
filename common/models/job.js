@@ -55,12 +55,16 @@ function sendStartJobEmail(job, ctx, policy, next) {
 
     if (ctx.instance.type == 'archive' && policy.archiveEmailNotification) {
         // needs more checking
-        to += "," + policy.archiveEmailsToBeNotified.join()
+        if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
+            to += "," + policy.archiveEmailsToBeNotified.join()
+        }
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
     if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
-        to += "," + policy.retrieveEmailsToBeNotified.join()
+        if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
+            to += "," + policy.retrieveEmailsToBeNotified.join()
+        }
         sendMail(to, "", subjectText, mailText, null, next)
         return
     }
@@ -131,12 +135,16 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
             // failures are always reported
             if (ctx.instance.type == 'archive' && (policy.archiveEmailNotification || failure)) {
                 // needs more checking
-                to += "," + policy.archiveEmailsToBeNotified.join()
+                if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
+                    to += "," + policy.archiveEmailsToBeNotified.join()
+                }
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
             if (ctx.instance.type == 'retrieve' && (policy.retrieveEmailNotification || failure)) {
-                to += "," + policy.retrieveEmailsToBeNotified.join()
+                if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
+                    to += "," + policy.retrieveEmailsToBeNotified.join()
+                }
                 sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
@@ -302,7 +310,7 @@ function getPolicy(id, options, next) {
                 }
             };
             // console.log("In jobs:filter condition on Policy:",filter)
-            Policy.findOne(filter, options,function (err, policyInstance) {
+            Policy.findOne(filter, options, function (err, policyInstance) {
                 // console.log("Inside Jobs, look for policy:err,policyInstance:",err,policyInstance)
                 if (err) {
                     var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
@@ -312,14 +320,14 @@ function getPolicy(id, options, next) {
                     return next(null, policyInstance)
                 } else {
                     // this should not happen anymore, but kept as additional safety belt
-                    console.log("No policy found for instance:",instance)
+                    console.log("No policy found for instance:", instance)
                     console.log("Return default policy instead.")
-                    var po={}
-                    po.archiveEmailNotification=true
-                    po.retrieveEmailNotification=true
-                    po.archiveEmailsToBeNotified=[]
-                    po.retrieveEmailsToBeNotified=[]
-                    return next(null,po)
+                    var po = {}
+                    po.archiveEmailNotification = true
+                    po.retrieveEmailNotification = true
+                    po.archiveEmailsToBeNotified = []
+                    po.retrieveEmailsToBeNotified = []
+                    return next(null, po)
                 }
             })
         }
@@ -355,7 +363,7 @@ module.exports = function (Job) {
             const idList = ctx.instance.datasetList.map(x => x.pid)
             // get policy parameters for pgroup/proposal of first dataset
             getPolicy(idList[0], ctx.options, function (err, policy) {
-                if(err){
+                if (err) {
                     return next(err)
                 }
                 if (ctx.isNewInstance) {
