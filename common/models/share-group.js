@@ -5,13 +5,8 @@ module.exports = function(Sharegroup) {
         Sharegroup.find(
             {
                 where: {
-                    members: {
-                        elemMatch: {
-                            instrument: user
-                        }
-                    }
-                }
-            },
+                        members:  user
+            }},
             options,
             function(err, model) {
                 cb(null, model);

@@ -33,5 +33,28 @@
             "permission": "ALLOW"
         }
     ],
-    "methods": {}
+    "methods": {
+        "getGroups": {
+            "accepts": [
+              {
+                "arg": "user",
+                "type": "string"
+              },
+              {
+                "arg": "options",
+                "type": "object",
+                "http": "optionsFromRequest"
+              }
+            ],
+            "returns": {
+              "arg": "findByInstrumentAndDate",
+              "type": "Object"
+            },
+            "description": "Find proposal that took data at specified instrument and time",
+            "http": {
+              "path": "/getGroups",
+              "verb": "get"
+            }
+          }
+    }
 }
