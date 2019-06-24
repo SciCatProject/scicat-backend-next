@@ -40,3 +40,9 @@ test/config/settings.json
 mongodb/
 rabbitmq/
 .env
+cmd.sh
+Thumb.jpg
+stop.sh
+mongo.sh
+mongo.js
+doiconfig.local.json
