@@ -37,7 +37,7 @@ module.exports = function (Policy) {
         if (!ownerGroupList) {
             return next("Invalid ownerGroupList parameter");
         }
-        var ownerGroups = ownerGroupList.split(",").map(item => item.trim().replace('"',''));
+        var ownerGroups = ownerGroupList.split(",").map(item => item.trim().replace(new RegExp('"', 'g'), ''));
         if (!ownerGroups) {
             return next("Invalid ownerGroupList parameter");
         }
