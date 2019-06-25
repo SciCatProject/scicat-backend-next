@@ -15,7 +15,7 @@ var accessToken = null,
 
 var testdataset = {
   "manager": [
-    "stephan.egli@psi.ch"
+    "ingestor"
   ],
   "tapeRedundancy": "low",
   //"tapeRetentionTime": 3,
@@ -69,6 +69,20 @@ describe('Simple Policy tests', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+    it('updates this existing policy', function(done) {
+        request(app)
+            .post('/api/v3/Policies/updateWhere?access_token=' + accessToken)
+            .send('ownerGroupList="p10021"&data={"autoArchive":true}')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
                 if (err)
                     return done(err);
                 done();
