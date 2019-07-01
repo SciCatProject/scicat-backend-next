@@ -32,7 +32,7 @@ module.exports = {
         jobForwarded: "Forwarded to archive system",
         jobStarted: "Execution started",
         jobInProgress: "Finished by %i percent",
-        jobSuccess: "Succesfully finished",
+        jobSuccess: "Successfully finished",
         jobError: "Finished with errors",
         jobCancel: "Cancelled"
     }
