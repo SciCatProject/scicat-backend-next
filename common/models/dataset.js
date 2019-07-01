@@ -622,34 +622,52 @@ module.exports = function(Dataset) {
      */
 
     Dataset.reduceDataset = function(dataset) {
-        const Producer = kafka.Producer;
-        const Consumer = kafka.Consumer;
+        if (config.datasetReductionEnabled) {
+            const Producer = kafka.Producer;
+            const Consumer = kafka.Consumer;
 
-        const client = new kafka.KafkaClient({ kafkaHost: "localhost:9093" });
-        const producer = new Producer(client);
-        const consumer = new Consumer(client, [{ topic: "reduce_output", partition: 0 }]);
+            const client = new kafka.KafkaClient({ kafkaHost: config.reductionKafkaBroker });
+            const producer = new Producer(client);
+            const consumer = new Consumer(client, [{ topic: config.reductionKafkaOutputTopic, partition: 0 }]);
 
-        const payloads = [
-            {
-                topic: "reduce_input",
-                messages: JSON.stringify({
-                    datasetPid: dataset.pid
-                }),
-                partition: 0
-            }
-        ];
+            const payloads = [
+                {
+                    topic: config.reductionKafkaInputTopic,
+                    messages: JSON.stringify({
+                        datasetPid: dataset.pid
+                    }),
+                    partition: 0
+                }
+            ];
 
-        return new Promise((resolve, reject) => {
-            producer.on("ready", () => {
-                producer.send(payloads, (err, data) => {
-                    console.log(data);
-                });
+            return new Promise((resolve, reject) => {
+                producer
+                    .on("ready", () => {
+                        producer.send(payloads, (err, data) => {
+                            if (!err) {
+                                console.log("Produce to Kafka `{ topic: { partition: offset } }`: ", data);
+                            } else {
+                                console.error(err);
+                                return resolve(err);
+                            }
+                        });
+                    })
+                    .on("error", err => {
+                        console.error(err);
+                    });
+
+                consumer
+                    .on("message", message => {
+                        return resolve(JSON.parse(message.value));
+                    })
+                    .on("error", err => {
+                        console.error(err);
+                        return resolve(err);
+                    });
+            }).catch(err => {
+                console.error(err);
             });
-
-            consumer.on("message", message => {
-                return resolve(JSON.parse(message.value));
-            });
-        });
+        }
     };
 
     Dataset.remoteMethod("reduceDataset", {
