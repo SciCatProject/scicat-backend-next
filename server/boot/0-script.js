@@ -104,6 +104,7 @@ module.exports = function (app) {
                             if (typeof groups === 'undefined') {
                                 groups = []
                             }
+                            console.log("gm: do sharegroups groups")
                             const sharegroups = Sharegroups.find({
                                 where: {
                                     members: u.profile.email
