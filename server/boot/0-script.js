@@ -92,31 +92,32 @@ module.exports = function (app) {
                     }
                 }, function (err, u) {
                     // add user email and groups
-                    if (!!u) {
-                        var groups = []
-                        if (u.profile) {
-                            // console.log("Profile:", u.profile)
-                            // if user account update where query to append group groupCondition
-                            ctx.args.options.currentUser = u.profile.username
-                            ctx.args.options.currentUserEmail = u.profile.email;
-                            groups = u.profile.accessGroups
-                            // check if a normal user or an internal ROLE
-                            if (typeof groups === 'undefined') {
-                                groups = []
-                            }
-                            console.log("gm: do sharegroups groups")
-                            const sharegroups = Sharegroups.find({
-                                where: {
-                                    members: u.profile.email
+                        if (!!u) {
+                            var groups = []
+                            if (u.profile) {
+                                // console.log("Profile:", u.profile)
+                                // if user account update where query to append group groupCondition
+                                ctx.args.options.currentUser = u.profile.username
+                                ctx.args.options.currentUserEmail = u.profile.email;
+                                groups = u.profile.accessGroups
+                                // check if a normal user or an internal ROLE
+                                if (typeof groups === 'undefined') {
+                                    groups = []
                                 }
-                            })
-                            if (sharegroups.hasOwnProperty("getGroups")) {
-                                if (sharegroups["getGroups"].length > 0) {
-                                    for (const group in sharegroups["getGroups"]) {
+                                console.log("gm: do sharegroups groups")
+                                Sharegroups.find({
+                                    where: {
+                                        members: u.profile.email
+                                    }
+                                }).then(res => {
+                                    if(res.hasOwnProperty("getGroups")) {
+                                        if (res["getGroups"].length > 0) {
+                                    for (const group in res["getGroups"]) {
                                         groups.push(group);
                                     }
                                 }
                             }
+                        });
                         }
                         ctx.args.options.currentGroups = groups
                         return next()
