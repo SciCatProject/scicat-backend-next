@@ -174,27 +174,6 @@ describe('Test New Job Model', () => {
             });
     });
 
-    it('Send an update status to the dataset', function (done) {
-        request(app)
-            .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
-            .send({
-                "datasetlifecycle": {
-                    "retrievable": true,
-                    "archiveStatusMessage":"datasetOnArchiveDisk"
-                },
-            })
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function (err, res) {
-                if (err)
-                    return done(err);
-                    res.body.should.have.nested.property('datasetlifecycle.retrievable').and.equal(true) ;
-                    res.body.should.have.nested.property('datasetlifecycle.publishable').and.equal(false);
-                    done();
-            });
-    });
-
     it('Adds a new archive job request', function (done) {
         request(app)
             .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
@@ -211,7 +190,7 @@ describe('Test New Job Model', () => {
             });
     });
 
-    it('Check if dataset was updated by job request', function(done) {
+    it('Check if dataset was updated by job request', function (done) {
         request(app)
             .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
@@ -226,6 +205,86 @@ describe('Test New Job Model', () => {
             });
     });
 
+
+    it('Create retrieve job request on same dataset, which should fail as well because not yet retrievable', function (done) {
+        request(app)
+            .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
+            .send(testRetrieveJob)
+            .set('Accept', 'application/json')
+            .expect(409)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                res.body.should.have.property('error');
+                done();
+            });
+    });
+
+    it('Send an update status to the dataset, simulating the archive system response', function (done) {
+        request(app)
+            .put('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
+            .send({
+                "datasetlifecycle": {
+                    "retrievable": true,
+                    "archiveStatusMessage": "datasetOnArchiveDisk"
+                },
+            })
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                res.body.should.have.nested.property('datasetlifecycle.retrievable').and.equal(true);
+                res.body.should.have.nested.property('datasetlifecycle.publishable').and.equal(false);
+                done();
+            });
+    });
+    // change policy to suppress emails
+
+    it('Disable notification bt email', function (done) {
+        request(app)
+            .post('/api/v3/Policies/updatewhere?access_token=' + accessTokenIngestor)
+            .send({
+                ownerGroupList: 'p10029',
+                data: {
+                    archiveEmailNotification: false
+                }
+            })
+            .set('Accept', 'application/json')
+            .set('Content-Type', 'application/x-www-form-urlencoded')
+            .expect(200)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                console.log("Result policy update:",res.body)
+                done();
+            });
+    });
+
+
+
+
+    it('Send an update status to the archive job request, signal successful archiving', function (done) {
+        request(app)
+            .put('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenArchiveManager)
+            .send({
+                "jobStatusMessage": "finishedSuccessful",
+                "jobResultObject": {
+                    "status": "okay",
+                    "message": "Archive job was finished successfully"
+                }
+            })
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function (err, res) {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
+
     it('Adds a new archive job request for same data which should fail', function (done) {
         request(app)
             .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
@@ -239,15 +298,15 @@ describe('Test New Job Model', () => {
             });
     });
 
-    it('Adds a new retrieve job request on same dataset, which should fail as well because not yet retrievable', function (done) {
+    it('Adds a new retrieve job request on same dataset, which should  succeed now', function (done) {
         request(app)
             .post('/api/v3/Jobs?access_token=' + accessTokenIngestor)
             .send(testRetrieveJob)
             .set('Accept', 'application/json')
-            .expect(409)
+            .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                res.body.should.have.property('error');
+                res.body.should.have.property('id');
                 done();
             });
     });
@@ -281,7 +340,7 @@ describe('Test New Job Model', () => {
         request(app)
             .put('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
             .send({
-                "jobStatusMessage": "finishedUnsuccesful",
+                "jobStatusMessage": "finishedUnsuccessful",
                 "jobResultObject": {
                     "status": "bad",
                     "message": "System A failed"
@@ -305,7 +364,7 @@ describe('Test New Job Model', () => {
         request(app)
             .put('/api/v3/Jobs/' + idJob + '?access_token=' + accessTokenIngestor)
             .send({
-                "jobStatusMessage": "finishedSuccesful",
+                "jobStatusMessage": "finishedSuccessful",
                 "jobResultObject": {
                     "status": "okay",
                     "message": "Job archiving worked"

@@ -12,26 +12,36 @@ module.exports = function (Policy) {
 
     // check that the user has authority to change a record
     // input ownerGroup of the record being changed
-    Policy.validatePermission = function (ownerGroup, userEmail, next) {
+    Policy.validatePermission = function (ownerGroup, userEmail, cb) {
         Policy.findOne({
             where: {
                 ownerGroup
             }
         }, function (err, policy) {
-            if (err) {
-                return next(new Error("No policy found for group", ownerGroup));
+            if (!policy || err) {
+                err = new Error("User not authorised for action based on policy");
+                err.statusCode = '404';
+                return cb(err);
             }
             if (policy.manager.includes(userEmail)) {
-                return next();
+                return cb();
             }
-            return next(new Error("User not authorised for action based on policy"));
+            return cb(new Error("User not authorised for action based on policy"));
         });
+        return cb;
     };
 
     // mass update of policy records
-    Policy.updatewhere = function (where, data, ctx, next) {
+    Policy.updatewhere = function (ownerGroupList, data, ctx, next) {
         // with manager validation
-        // where should look like {{"or":[{"ownerGroup":"p17079"}]}}
+        if (!ownerGroupList) {
+            return next("Invalid ownerGroupList parameter");
+        }
+        var ownerGroups = ownerGroupList.split(",").map(item => item.trim().replace(new RegExp('"', 'g'), ''));
+        if (!ownerGroups) {
+            return next("Invalid ownerGroupList parameter");
+        }
+
         var UserIdentity = app.models.UserIdentity;
         // WARNING: ctx changes based on the position in the callback
         const userId = ctx.req.accessToken.userId;
@@ -44,39 +54,52 @@ module.exports = function (Policy) {
                 err.statusCode = '404';
                 return next(err);
             }
-
-            where.or.forEach(function (object) {
+            // necessary since forEach does not provide whenAllDone() callback 
+            var itemsProcessed = 0;
+            ownerGroups.forEach(function (object, index, array) {
+                const where = {
+                    ownerGroup: object
+                };
                 if (!identity) {
                     // allow all functional users
                     Policy.update(where, data, function (err) {
                         if (err) {
                             return next(err);
                         }
+                        itemsProcessed++;
+                        // required to avoid callback already called
+                        if(!err && itemsProcessed === array.length) {
+                            return next(null, "successful policy update");
+                        }
                     });
                 } else {
-                    Policy.validatePermission(object.ownerGroup, identity.profile.email, function (err) {
+                    Policy.validatePermission(object, identity.profile.email, function (err) {
                         if (err) {
-                            err.statusCode = '404';
                             return next(err);
                         } else {
                             Policy.update(where, data, function (err) {
                                 if (err) {
                                     return next(err);
                                 }
+                                itemsProcessed++;
+                                // required to avoid callback already called
+                                if(!err && itemsProcessed === array.length) {
+                                    return next(null, "successful policy update");
+                                }
                             });
                         }
                     });
                 }
             });
-            return next(err, "successful policy update");
         });
     };
 
     Policy.remoteMethod("updatewhere", {
         accepts: [{
-                arg: "where",
-                type: "object",
-                required: true
+                arg: "ownerGroupList",
+                type: "string",
+                required: true,
+                description: "comma seperated string of owner groups to update e.g. \"p14159, p24959\""
             }, {
                 arg: "data",
                 type: "object",
@@ -97,7 +120,8 @@ module.exports = function (Policy) {
         returns: {
             type: "Object",
             root: true
-        }
+        },
+        description: "responsible for updating multiple records on the Policy model simultaneously and uses ownerGroup to identify those records"
     });
 
     Policy.validatesUniquenessOf('ownerGroup');
