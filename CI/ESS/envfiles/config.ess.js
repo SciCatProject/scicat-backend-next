@@ -8,10 +8,6 @@ module.exports = {
     doiPrefix: '10.5072',
     logbookEnabled: true,
     scichatURL: 'scichat-loopback:3030/api',
-    datasetReductionEnabled: false,
-    reductionKafkaBroker: "kafka:9092",
-    reductionKafkaInputTopic: "reduce_input",
-    reductionKafkaOutputTopic: "reduce_output",
     policyPublicationShiftInYears: 3,
     policyRetentionShiftInYears: 10,
     site: 'ESS',
@@ -36,7 +32,7 @@ module.exports = {
         jobForwarded: "Forwarded to archive system",
         jobStarted: "Execution started",
         jobInProgress: "Finished by %i percent",
-        jobSuccess: "Successfully finished",
+        jobSuccess: "Succesfully finished",
         jobError: "Finished with errors",
         jobCancel: "Cancelled"
     }
