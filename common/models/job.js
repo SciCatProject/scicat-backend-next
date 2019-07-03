@@ -82,7 +82,8 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
         mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3) + '\n\n'
     }
     let to = ctx.instance.emailJobInitiator
-    let failure = ctx.instance.jobStatusMessage.indexOf('finish') !== -1 && ctx.instance.jobStatusMessage.indexOf('finishedSuccesful') == -1
+    let failure = ctx.instance.jobStatusMessage.indexOf('finish') !== -1 && ctx.instance.jobStatusMessage.indexOf('finishedSuccessful') == -1
+    // console.log("jobstatusmessage, failure:",ctx.instance.jobStatusMessage, failure)
     //test if all datasets are in retrievable state
     if (ctx.instance.type == "archive" || ctx.instance.type == "retrieve") {
         Dataset.find({
@@ -110,6 +111,7 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
             }))
             var cc = ""
             if (p.length > 0) {
+                // console.log("Setting failure to true, list of pids, length:",JSON.stringify(p,null,3),p.length);
                 failure = true
                 if (ctx.instance.type == "archive") {
                     mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n\n" +
@@ -130,7 +132,7 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
                 }
             }
             if (ctx.instance.type == "retrieve") {
-                mailText += "\n\nIf the job was succesful you can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
+                mailText += "\n\nIf the job was successful you can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
             }
             // failures are always reported
             if (ctx.instance.type == 'archive' && (policy.archiveEmailNotification || failure)) {
