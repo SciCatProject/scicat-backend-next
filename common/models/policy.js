@@ -6,7 +6,6 @@ var config = require('../../server/config.local');
 var p = require('../../package.json');
 var utils = require('./utils');
 var own = require('./ownable.json');
-var ds = require('./dataset');
 
 module.exports = function (Policy) {
     var app = require('../../server/server');
@@ -44,11 +43,8 @@ module.exports = function (Policy) {
         }
 
         var UserIdentity = app.models.UserIdentity;
-        var User = app.models.User;
-
         // WARNING: ctx changes based on the position in the callback
         const userId = ctx.req.accessToken.userId;
-
         UserIdentity.findOne({
             where: {
                 userId: userId
@@ -58,69 +54,42 @@ module.exports = function (Policy) {
                 err.statusCode = '404';
                 return next(err);
             }
-            User.findOne({
-                where: {
-                    _id: userId
-                }
-            }, function (err, userInstance) {
-                if (err) {
-                    err.statusCode = '404';
-                    return next(err);
-                }
-
-                // necessary since forEach does not provide whenAllDone() callback 
-                var itemsProcessed = 0;
-                ownerGroups.forEach(function (object, index, array) {
-                    const where = {
-                        ownerGroup: object
-                    };
-
-                    var email = null;
-                    if (identity) {
-                        // msad user email
-                        email = identity.profile.email;
-                    }
-                    else {
-                        // functional user email
-                        email = userInstance.email;
-                    }
-                    // only adds if needed
-                    ds.addDefaultPolicy(where.ownerGroup, null, email, "low", ctx, function (err) {
+            // necessary since forEach does not provide whenAllDone() callback 
+            var itemsProcessed = 0;
+            ownerGroups.forEach(function (object, index, array) {
+                const where = {
+                    ownerGroup: object
+                };
+                if (!identity) {
+                    // allow all functional users
+                    Policy.update(where, data, function (err) {
                         if (err) {
                             return next(err);
                         }
-                        if (!identity) {
-                            // allow all functional users
+                        itemsProcessed++;
+                        // required to avoid callback already called
+                        if(!err && itemsProcessed === array.length) {
+                            return next(null, "successful policy update");
+                        }
+                    });
+                } else {
+                    Policy.validatePermission(object, identity.profile.email, function (err) {
+                        if (err) {
+                            return next(err);
+                        } else {
                             Policy.update(where, data, function (err) {
                                 if (err) {
                                     return next(err);
                                 }
                                 itemsProcessed++;
                                 // required to avoid callback already called
-                                if (!err && itemsProcessed === array.length) {
+                                if(!err && itemsProcessed === array.length) {
                                     return next(null, "successful policy update");
-                                }
-                            });
-                        } else {
-                            Policy.validatePermission(object, identity.profile.email, function (err) {
-                                if (err) {
-                                    return next(err);
-                                } else {
-                                    Policy.update(where, data, function (err) {
-                                        if (err) {
-                                            return next(err);
-                                        }
-                                        itemsProcessed++;
-                                        // required to avoid callback already called
-                                        if (!err && itemsProcessed === array.length) {
-                                            return next(null, "successful policy update");
-                                        }
-                                    });
                                 }
                             });
                         }
                     });
-                });
+                }
             });
         });
     };
