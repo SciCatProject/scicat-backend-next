@@ -59,7 +59,7 @@
     },
     "retrieveIntegrityCheck": {
       "type": "boolean",
-      "description": "Set to true when checksum tests after retrieve of datasets were successful"
+      "description": "Set to true when checksum tests after retrieve of datasets were succesful"
     }
   },
   "validations": [],
