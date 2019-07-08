@@ -71,7 +71,9 @@ module.exports = function(Dataset) {
             if (err) {
                 return next(err);
             }
-            if (!policyInstance) {
+            if (policyInstance) {
+                return next();
+            } else {
                 console.log("Adding default policy")
                 const Policy = app.models.Policy;
                 var defaultPolicy = Object();
@@ -104,8 +106,9 @@ module.exports = function(Dataset) {
                     utils.keepHistory(ctx, next)
                 });
             }
+            
         });
-        return next();
+        
     }
 
     // required so that we can reference this function from other modules (policy)
