@@ -60,38 +60,59 @@ module.exports = function(Dataset) {
     });
 
     function addDefaultPolicy(ownerGroup, accessGroups, ownerEmail, tapeRedundancy, ctx, next) {
-        console.log("Adding default policy");
-        var Policy = app.models.Policy;
-        var defaultPolicy = Object();
-        defaultPolicy.ownerGroup = ownerGroup;
-        defaultPolicy.accessGroups = accessGroups;
-        if (config && !ownerEmail) {
-            defaultPolicy.manager = config.defaultManager;
-        } else if (ownerEmail) {
-            defaultPolicy.manager = ownerEmail.split(",");
-        } else {
-            defaultPolicy.manager = "";
-        }
-        if (tapeRedundancy) {
-            defaultPolicy.tapeRedundancy = tapeRedundancy;
-        } else {
-            defaultPolicy.tapeRedundancy = "low"; // AV default low
-        }
-        defaultPolicy.autoArchive = false;
-        defaultPolicy.autoArchiveDelay = 7;
-        defaultPolicy.archiveEmailNotification = true;
-        defaultPolicy.retrieveEmailNotification = true;
-        defaultPolicy.archiveEmailsToBeNotified = [];
-        defaultPolicy.retrieveEmailsToBeNotified = [];
-        defaultPolicy.embargoPeriod = 3;
-        Policy.create(defaultPolicy, ctx.options, function(err, instance) {
+        const Policy = app.models.Policy;
+        
+        Policy.findOne({
+            where: {
+                ownerGroup: ownerGroup
+            }
+        }, function (err, policyInstance) {
+            
             if (err) {
-                console.log("Error when creating default policy:", err);
                 return next(err);
             }
-            utils.keepHistory(ctx, next);
+            if (policyInstance) {
+                return next();
+            } else {
+                console.log("Adding default policy")
+                const Policy = app.models.Policy;
+                var defaultPolicy = Object();
+                defaultPolicy.ownerGroup = ownerGroup;
+                defaultPolicy.accessGroups = accessGroups;
+                if (config && !ownerEmail) {
+                    defaultPolicy.manager = config.defaultManager;
+                } else if (ownerEmail) {
+                    defaultPolicy.manager = ownerEmail.split(",");
+                } else {
+                    defaultPolicy.manager = "";
+                }
+                if (tapeRedundancy) {
+                    defaultPolicy.tapeRedundancy = tapeRedundancy;
+                } else {
+                    defaultPolicy.tapeRedundancy = "low"; // AV default low
+                }
+                defaultPolicy.autoArchive = false;
+                defaultPolicy.autoArchiveDelay = 7;
+                defaultPolicy.archiveEmailNotification = true;
+                defaultPolicy.retrieveEmailNotification = true;
+                defaultPolicy.archiveEmailsToBeNotified = [];
+                defaultPolicy.retrieveEmailsToBeNotified = [];
+                defaultPolicy.embargoPeriod = 3;
+                Policy.create(defaultPolicy, ctx.options, function (err, instance) {
+                    if (err) {
+                        console.log("Error when creating default policy:", err);
+                        return next(err);
+                    }
+                    utils.keepHistory(ctx, next)
+                });
+            }
+            
         });
+        
     }
+
+    // required so that we can reference this function from other modules (policy)
+    module.exports.addDefaultPolicy = addDefaultPolicy;
 
     // auto add pid
     Dataset.observe("before save", (ctx, next) => {
