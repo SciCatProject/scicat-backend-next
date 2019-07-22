@@ -9,6 +9,9 @@
     "name": {
       "type": "string"
     },
+    "roomId": {
+      "type": "string"
+    },
     "messages": {
       "type": [
         "object"
