@@ -15,6 +15,7 @@ module.exports = function(ShareGroup) {
             }
         );
         */
+        return (id);
     };
 
     ShareGroup.remoteMethod("getGroups", {

@@ -95,7 +95,6 @@ module.exports = function(app) {
             const RoleMapping = app.models.RoleMapping;
             const Role = app.models.Role;
             const ShareGroup = app.models.ShareGroup;
-                console.log("Sharegroup undefined", ShareGroup);
             // first check if email in User
             User.findById(ctx.args.options.accessToken.userId, function(
                 err,
@@ -129,22 +128,10 @@ module.exports = function(app) {
                                 if (typeof groups === "undefined") {
                                     groups = [];
                                 }
-                                console.log("gm: do ShareGroups groups");
-                                console.log("gm:", ShareGroup);
                                 if (ShareGroup ) {
-                                    ShareGroup.getGroups({
-                                        user: u.profile.email
-                                    }).then(res => {
-                                        if (res.hasOwnProperty("getGroups")) {
-                                            if (res["getGroups"].length > 0) {
-                                                for (const group in res[
-                                                    "getGroups"
-                                                ]) {
-                                                    groups.push(group);
-                                                }
-                                            }
-                                        }
-                                    });
+                                    ShareGroup.getGroups(
+                                        u.profile.email
+                                    );
                                 }
                             }
                             ctx.args.options.currentGroups = groups;

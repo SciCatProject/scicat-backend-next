@@ -130,7 +130,7 @@ module.exports = function (Policy) {
                 arg: "ownerGroupList",
                 type: "string",
                 required: true,
-                description: "comma seperated string of owner groups to update e.g. \"p14159, p24959\""
+                description: "Comma-separated string of owner groups to update e.g. \"p14159, p24959\""
             }, {
                 arg: "data",
                 type: "object",
