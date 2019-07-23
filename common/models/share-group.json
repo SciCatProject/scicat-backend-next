@@ -8,6 +8,10 @@
         "validateUpsert": true
     },
     "properties": {
+        "groupID": {
+            "type": "string",
+            "description": "group short name id"
+        },
         "members": {
             "type": ["string"],
             "description": "Defines the emails of users that data is shared to"
