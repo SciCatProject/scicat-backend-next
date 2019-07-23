@@ -129,9 +129,11 @@ module.exports = function(app) {
                                     groups = [];
                                 }
                                 if (ShareGroup ) {
-                                    ShareGroup.getGroups(
+                                    const res= ShareGroup.getGroups(
                                         u.profile.email
-                                    );
+                                    )
+                                    console.log(res);
+                                    groups.push(...res.groups)
                                 }
                             }
                             ctx.args.options.currentGroups = groups;

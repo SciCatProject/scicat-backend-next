@@ -1,8 +1,9 @@
 "use strict";
 
 module.exports = function(ShareGroup) {
-    ShareGroup.getGroups = function(id,  cb) {
+    ShareGroup.getGroups = function(id, cb) {
         console.log("getgroups");
+        console.log("id",id);
         /*
         ShareGroup.find(
             {
@@ -15,7 +16,8 @@ module.exports = function(ShareGroup) {
             }
         );
         */
-        return (id);
+        let groups = { groups: ["JKFDFJ", "JFKDFD"] };
+        return groups;
     };
 
     ShareGroup.remoteMethod("getGroups", {
@@ -27,6 +29,6 @@ module.exports = function(ShareGroup) {
             }
         ],
         http: { path: "/:id/register", verb: "post" },
-        returns: { arg: "doi", type: "string" }
+        returns: { arg: "groups", type: "Object" }
     });
 };
