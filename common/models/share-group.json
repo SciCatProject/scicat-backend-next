@@ -50,7 +50,7 @@
               "arg": "getGroups",
               "type": "Object"
             },
-            "description": "Find proposal that took data at specified instrument and time",
+            "description": "get groups",
             "http": {
               "path": "/getGroups",
               "verb": "get"

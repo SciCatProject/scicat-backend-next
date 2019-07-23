@@ -1,8 +1,9 @@
 "use strict";
 
-module.exports = function(Sharegroup) {
-    Sharegroup.getGroups = function(user, options, cb) {
-        Sharegroup.find(
+module.exports = function(ShareGroup) {
+    ShareGroup.getGroups = function(user, options, cb) {
+        console.log("getgroups");
+        ShareGroup.find(
             {
                 where: {
                         members:  user
