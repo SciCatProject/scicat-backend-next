@@ -1,8 +1,9 @@
 "use strict";
 
 module.exports = function(ShareGroup) {
-    ShareGroup.getGroups = function(user, options, cb) {
+    ShareGroup.getGroups = function(id,  cb) {
         console.log("getgroups");
+        /*
         ShareGroup.find(
             {
                 where: {
@@ -13,5 +14,18 @@ module.exports = function(ShareGroup) {
                 cb(null, model);
             }
         );
+        */
     };
+
+    ShareGroup.remoteMethod("getGroups", {
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            }
+        ],
+        http: { path: "/:id/register", verb: "post" },
+        returns: { arg: "doi", type: "string" }
+    });
 };

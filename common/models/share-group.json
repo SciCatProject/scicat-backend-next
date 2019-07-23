@@ -33,28 +33,5 @@
             "permission": "ALLOW"
         }
     ],
-    "methods": {
-        "getGroups": {
-            "accepts": [
-              {
-                "arg": "user",
-                "type": "string"
-              },
-              {
-                "arg": "options",
-                "type": "object",
-                "http": "optionsFromRequest"
-              }
-            ],
-            "returns": {
-              "arg": "getGroups",
-              "type": "Object"
-            },
-            "description": "get groups",
-            "http": {
-              "path": "/getGroups",
-              "verb": "get"
-            }
-          }
-    }
+    "methods": {}
 }
