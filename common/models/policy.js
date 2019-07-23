@@ -152,7 +152,7 @@ module.exports = function (Policy) {
             type: "Object",
             root: true
         },
-        description: "responsible for updating multiple records on the Policy model simultaneously and uses ownerGroup to identify those records"
+        description: "updates multiple records on the Policy model and uses ownerGroup to identify those records"
     });
 
     Policy.validatesUniquenessOf('ownerGroup');
