@@ -587,6 +587,7 @@ module.exports = function(Dataset) {
         }
         // console.log("Inside fullquery:options",options)
         fields.userGroups = options.currentGroups;
+        //fields.isPublished = true;
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value

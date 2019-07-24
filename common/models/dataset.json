@@ -164,6 +164,16 @@
     },
     {
       "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY",
+      "property": [
+        "facet",
+        "fullquery",
+        "fullfacet"
+      ]
+    },
+    {
+      "principalType": "ROLE",
       "principalId": "$authenticated",
       "permission": "ALLOW",
       "property": [
@@ -290,7 +300,7 @@
       },
       "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
       "http": {
-        "path": "/fullquery",
+        "path": "/anonymousquery",
         "verb": "get"
       }
     }
