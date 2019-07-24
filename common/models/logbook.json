@@ -20,7 +20,52 @@
   },
   "validations": [],
   "relations": {},
-  "acls": [],
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "proposalingestor",
+      "permission": "DENY"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "ALLOW",
+      "property": "reset"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": [
+        "facet",
+        "fullquery",
+        "fullfacet"
+      ]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "DENY",
+      "property": [
+        "patchAttributes",
+        "updateAll"
+      ]
+    }
+  ],
   "methods": {
     "findByName": {
       "accepts": [
