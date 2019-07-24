@@ -321,6 +321,10 @@ module.exports = function(Dataset) {
                 $gte: new Date(value.begin),
                 $lte: new Date(value.end)
             };
+        } else if (type === "boolean") {
+            return {
+                $eq: value
+            };
         } else if (type.constructor === Array) {
             return {
                 $in: value
