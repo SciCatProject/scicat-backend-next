@@ -258,6 +258,33 @@
         "path": "/fullquery",
         "verb": "get"
       }
+    },
+    "anonymousquery": {
+      "accepts": [
+        {
+          "arg": "fields",
+          "type": "object",
+          "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+        },
+        {
+          "arg": "limits",
+          "type": "object",
+          "description": "Define further query parameters like skip, limit, order"
+        },
+        {
+          "arg": "options",
+          "type": "object",
+          "http": "optionsFromRequest"
+        }
+      ],
+      "returns": {
+        "root": true
+      },
+      "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+      "http": {
+        "path": "/fullquery",
+        "verb": "get"
+      }
     }
   }
 }
