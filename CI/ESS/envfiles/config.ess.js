@@ -8,6 +8,8 @@ module.exports = {
     doiPrefix: '10.5072',
     logbookEnabled: true,
     scichatURL: 'scichat-loopback:3030/api',
+    scichatUser: "logbookReader",
+    scichatPass: "logrdr",
     datasetReductionEnabled: false,
     reductionKafkaBroker: "kafka:9092",
     reductionKafkaInputTopic: "reduce_input",

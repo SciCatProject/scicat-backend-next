@@ -3,8 +3,7 @@
 const superagent = require("superagent");
 const config = require("../../server/config.local");
 
-let scichatBaseUrl;
-let logbookEnabled;
+let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
@@ -15,18 +14,17 @@ module.exports = function(Logbook) {
      * @returns {Logbook} Logbook model instance
      */
 
-    Logbook.findByName = function(name) {
+    Logbook.findByName = async function(name) {
         if (logbookEnabled) {
-            return superagent
-                .get(scichatBaseUrl + `/Logbooks/${name}`)
-                .then(response => {
-                    return Promise.resolve(response.body);
-                })
-                .catch(err => {
-                    console.error(err);
-                });
+            try {
+                const accessToken = await scichatLogin(scichatUser, scichatPass);
+                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks/${name}?access_token=${accessToken}`);
+                return fetchResponse.body;
+            } catch (err) {
+                console.error(err);
+            }
         } else {
-            return Promise.resolve([]);
+            return [];
         }
     };
 
@@ -35,18 +33,17 @@ module.exports = function(Logbook) {
      * @returns {Logbook[]} Array of Logbook model instances
      */
 
-    Logbook.findAll = function() {
+    Logbook.findAll = async function() {
         if (logbookEnabled) {
-            return superagent
-                .get(scichatBaseUrl + "/Logbooks")
-                .then(response => {
-                    return Promise.resolve(response.body);
-                })
-                .catch(err => {
-                    console.error(err);
-                });
+            try {
+                const accessToken = await scichatLogin(scichatUser, scichatPass);
+                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks?access_token=${accessToken}`);
+                return fetchResponse.body;
+            } catch (err) {
+                console.error(err);
+            }
         } else {
-            return Promise.resolve([]);
+            return [];
         }
     };
 
@@ -57,21 +54,40 @@ module.exports = function(Logbook) {
      * @returns {Logbook} Filtered Logbook model instance
      */
 
-    Logbook.filter = function(name, filter) {
+    Logbook.filter = async function(name, filter) {
         if (logbookEnabled) {
-            return superagent
-                .get(scichatBaseUrl + `/Logbooks/${name}/${filter}`)
-                .then(response => {
-                    return Promise.resolve(response.body);
-                })
-                .catch(err => {
-                    console.error(err);
-                });
+            try {
+                const accessToken = await scichatLogin(scichatUser, scichatPass);
+                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks/${name}/${filter}?access_token=${accessToken}`);
+                return fetchResponse.body;
+            } catch (err) {
+                console.error(err);
+            }
         } else {
-            return Promise.resolve([]);
+            return [];
         }
     };
 };
+
+/**
+ * Sign in to Scichat
+ * @param {string} username Username of Scichat user
+ * @param {string} password Password of Scichat user
+ * @returns {string} Scichat access token
+ */
+
+async function scichatLogin(username, password) {
+    const userData = {
+        username: username,
+        password: password
+    };
+    try {
+        const loginResponse = await superagent.post(scichatBaseUrl + "/Users/login").send(userData);
+        return loginResponse.body.id;
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 function checkConfigProperties() {
     if (config.hasOwnProperty("logbookEnabled")) {
@@ -84,5 +100,17 @@ function checkConfigProperties() {
         scichatBaseUrl = config.scichatURL;
     } else {
         scichatBaseUrl = "Url not available";
+    }
+
+    if (config.hasOwnProperty("scichatUser")) {
+        scichatUser = config.scichatUser;
+    } else {
+        scichatUser = "scichatUser";
+    }
+
+    if (config.hasOwnProperty("scichatPass")) {
+        scichatPass = config.scichatPass;
+    } else {
+        scichatPass = "scichatPass";
     }
 }
