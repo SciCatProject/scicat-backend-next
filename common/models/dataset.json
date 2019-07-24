@@ -164,12 +164,20 @@
     },
     {
       "principalType": "ROLE",
-      "principalId": "$everyone",
+      "principalId": "$authenticated",
       "permission": "ALLOW",
       "property": [
         "facet",
         "fullquery",
         "fullfacet"
+      ]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": [
+        "anonymousquery"
       ]
     },
     {

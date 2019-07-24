@@ -469,7 +469,7 @@ module.exports = function(Dataset) {
        - list of fields which are treated as filter condition (name,type,value triple)
      - paging of results
     */
-    Dataset.anonymousquery = function(fields, limits, options, cb) {
+    Dataset.fullquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         if (fields === undefined) {
@@ -560,7 +560,26 @@ module.exports = function(Dataset) {
             }
         }
         // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
-    Dataset.fullquery = function(fields, limits, options, cb) {
+
+        Dataset.getDataSource().connector.connect(function(err, db) {
+            var collection = db.collection("Dataset");
+            var res = collection.aggregate(pipeline, function(err, cursor) {
+                cursor.toArray(function(err, res) {
+                    if (err) {
+                        console.log("Facet err handling:", err);
+                    }
+                    // rename _id to pid
+                    res.map(ds => {
+                        Object.defineProperty(ds, "pid", Object.getOwnPropertyDescriptor(ds, "_id"));
+                        delete ds["_id"];
+                    });
+                    cb(err, res);
+                });
+            });
+        });
+    };
+
+    Dataset.anonymousquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         if (fields === undefined) {
