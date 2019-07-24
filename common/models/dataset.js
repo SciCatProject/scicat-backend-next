@@ -469,6 +469,97 @@ module.exports = function(Dataset) {
        - list of fields which are treated as filter condition (name,type,value triple)
      - paging of results
     */
+    Dataset.anonymousquery = function(fields, limits, options, cb) {
+        // keep the full aggregation pipeline definition
+        let pipeline = [];
+        if (fields === undefined) {
+            fields = {};
+        }
+        // console.log("Inside fullquery:options",options)
+        fields.userGroups = options.currentGroups;
+        // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
+        // let matchJoin = {}
+        // construct match conditions from fields value
+        Object.keys(fields).map(function(key) {
+            if (fields[key] && fields[key] !== "null") {
+                if (key === "text") {
+                    // unshift because text must be at start of array
+                    pipeline.unshift({
+                        $match: {
+                            $or: [
+                                {
+                                    $text: searchExpression(key, fields[key])
+                                },
+                                {
+                                    sourceFolder: {
+                                        $regex: fields[key],
+                                        $options: "i"
+                                    }
+                                }
+                            ]
+                        }
+                    });
+                }
+                // mode is not a field in dataset, just an object for containing a match clause
+                else if (key === "mode") {
+                    pipeline.push({
+                        $match: fields[key]
+                    });
+                } else if (key === "userGroups") {
+                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
+                        pipeline.push({
+                            $match: {
+                                $or: [
+                                    {
+                                        ownerGroup: searchExpression("ownerGroup", fields["userGroups"])
+                                    },
+                                    {
+                                        accessGroups: searchExpression("accessGroups", fields["userGroups"])
+                                    }
+                                ]
+                            }
+                        });
+                    }
+                } else {
+                    let match = {};
+                    match[key] = searchExpression(key, fields[key]);
+                    pipeline.push({
+                        $match: match
+                    });
+                }
+            }
+        });
+
+        // }
+        // final paging section ===========================================================
+        if (limits) {
+            if ("order" in limits) {
+                // input format: "creationTime:desc,creationLocation:asc"
+                const sortExpr = {};
+                const sortFields = limits.order.split(",");
+                sortFields.map(function(sortField) {
+                    const parts = sortField.split(":");
+                    const dir = parts[1] == "desc" ? -1 : 1;
+                    sortExpr[parts[0]] = dir;
+                });
+                pipeline.push({
+                    $sort: sortExpr
+                    // e.g. { $sort : { creationLocation : -1, creationLoation: 1 } }
+                });
+            }
+
+            if ("skip" in limits) {
+                pipeline.push({
+                    $skip: Number(limits.skip) < 1 ? 0 : Number(limits.skip)
+                });
+            }
+            if ("limit" in limits) {
+                pipeline.push({
+                    $limit: Number(limits.limit) < 1 ? 1 : Number(limits.limit)
+                });
+            }
+        }
+        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
     Dataset.fullquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
