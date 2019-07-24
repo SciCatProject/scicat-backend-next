@@ -50,19 +50,9 @@
       "principalId": "$everyone",
       "permission": "ALLOW",
       "property": [
-        "facet",
-        "fullquery",
-        "fullfacet"
-      ]
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "DENY",
-      "property": [
-        "patchAttributes",
-        "updateAll"
+        "findByName",
+        "findAll",
+        "filter"
       ]
     }
   ],
