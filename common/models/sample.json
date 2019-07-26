@@ -8,7 +8,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "samplelId": {
+    "sampleId": {
       "type": "string",
       "id": true
     },
