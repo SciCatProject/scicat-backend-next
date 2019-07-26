@@ -1,4 +1,4 @@
-# SciCat Data Catalog Backend
+# SciCat Metadata Server
 [![Build Status](https://travis-ci.org/SciCatProject/catamel.svg?branch=develop)](https://travis-ci.org/SciCatProject/catamel)
 [![Greenkeeper badge](https://badges.greenkeeper.io/SciCatProject/catamel.svg)](https://greenkeeper.io/)
 
@@ -12,7 +12,7 @@ First you need to have node/npm installed
 
 ```
 npm version 6 or higher
-node version 8 or higher
+Nnode version 8 or higher
 ```
 You also need to setup a MongoDB server. E.g. on a Redhat Linux System the following command will suffice
 
@@ -49,16 +49,16 @@ Then edit these files and adjust the variables to meaningful values for your sit
 
 ```
 
-## Start API server
+## Start metadata server
 ```
 node .
 ```
 
 ## Queuing Options
 
-Jobs in Catamel are published to a queue when they are received. It is your responsibility to configure that queue and there is NO default in place.
+Jobs in Catamel are published to a queue when they are received. There is no default in place.
 
-Without setting this up, none of your job submissions will NOT go anywhere.
+Without setting this up, none of your job submissions will not go anywhere.
 
 The two supported options are:
 1. RabbitMQ (loopback-component-mq)
