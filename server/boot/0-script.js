@@ -128,16 +128,21 @@ module.exports = function(app) {
                                 if (typeof groups === "undefined") {
                                     groups = [];
                                 }
-                                if (ShareGroup ) {
-                                    const res= ShareGroup.getGroups(
-                                        u.profile.email
-                                    )
-                                    console.log(res);
-                                    groups.push(...res.groups)
-                                }
+                                const regex = "/" + u.profile.email + "/i";
+                                ShareGroup.find( {where: {members: {regexp: regex }}}, function(err, share) {
+                                    if (err) return next(err);
+                                    groups = [...groups, ...(share.map(({ id }) => { return String(id)}))];
+                                    ctx.args.options.currentGroups = groups;
+                                    console.log("============ Phase:", ctx.args.options.currentGroups)
+                                    return next();
+                                });
                             }
-                            ctx.args.options.currentGroups = groups;
-                            return next();
+                            else {
+                                ctx.args.options.currentGroups = [];
+                                return next();
+                            }
+                            
+                            
                         } else {
                             // authorizedRoles can not be used for this, since roles depend on the ACLs used in a collection,
                             // fetch roles via Rolemapping table instead
@@ -151,7 +156,7 @@ module.exports = function(app) {
                                 },
                                 ctx.args.options,
                                 function(err, instances) {
-                                    // mape roleid to name
+                                    // map roleid to name
                                     const roleIdList = instances.map(
                                         instance => instance.roleId
                                     );
