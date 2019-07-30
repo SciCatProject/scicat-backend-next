@@ -1,5 +1,5 @@
 'use strict';
-
+const util = require('util')
 module.exports = function (Ownable) {
     // to get access to other models
     var app = require('../../server/server');
@@ -29,6 +29,7 @@ module.exports = function (Ownable) {
                     and: [ctx.query.where, groupCondition]
                 }
             }
+            console.log("000000000 ctx.query.where", util.inspect(ctx.query, {showHidden: false, depth: null}))
         }
         next()
     });

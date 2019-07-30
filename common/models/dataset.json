@@ -138,6 +138,7 @@
     }
   },
   "acls": [
+
     {
       "accessType": "*",
       "principalType": "ROLE",
@@ -199,7 +200,13 @@
         "patchAttributes",
         "updateAll"
       ]
-    }
+    },
+    {
+      "accessType": "EXECUTE",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+      }
   ],
   "methods": {
     "reset": {
