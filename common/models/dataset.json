@@ -200,13 +200,7 @@
         "patchAttributes",
         "updateAll"
       ]
-    },
-    {
-      "accessType": "EXECUTE",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW"
-      }
+    }
   ],
   "methods": {
     "reset": {
