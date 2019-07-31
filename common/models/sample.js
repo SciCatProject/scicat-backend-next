@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 var ds = require("./sample.json");
 var own = require("./ownable.json");
 module.exports = function(Sample) {
@@ -42,7 +42,7 @@ module.exports = function(Sample) {
         }
     }
 
-    Sample.fullquery = function (fields, limits, options, cb) {
+    Sample.fullquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         if (fields === undefined) {
@@ -51,7 +51,7 @@ module.exports = function(Sample) {
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
-        Object.keys(fields).map(function (key) {
+        Object.keys(fields).map(function(key) {
             if (fields[key] && fields[key] !== "null") {
                 if (key === "text") {
                     // unshift because text must be at start of array
@@ -76,10 +76,16 @@ module.exports = function(Sample) {
                             $match: {
                                 $or: [
                                     {
-                                        ownerGroup: searchExpression("ownerGroup", fields["userGroups"])
+                                        ownerGroup: searchExpression(
+                                            "ownerGroup",
+                                            fields["userGroups"]
+                                        )
                                     },
                                     {
-                                        accessGroups: searchExpression("accessGroups", fields["userGroups"])
+                                        accessGroups: searchExpression(
+                                            "accessGroups",
+                                            fields["userGroups"]
+                                        )
                                     }
                                 ]
                             }
@@ -102,7 +108,7 @@ module.exports = function(Sample) {
                 // input format: "creationTime:desc,creationLocation:asc"
                 const sortExpr = {};
                 const sortFields = limits.order.split(",");
-                sortFields.map(function (sortField) {
+                sortFields.map(function(sortField) {
                     const parts = sortField.split(":");
                     const dir = parts[1] == "desc" ? -1 : 1;
                     sortExpr[parts[0]] = dir;
@@ -124,8 +130,8 @@ module.exports = function(Sample) {
                 });
             }
         }
-         //console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
-         Sample.getDataSource().connector.connect(function(err, db) {
+        //console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
+        Sample.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection("Sample");
             var res = collection.aggregate(pipeline, function(err, cursor) {
                 cursor.toArray(function(err, res) {
@@ -134,7 +140,11 @@ module.exports = function(Sample) {
                     }
                     // rename _id to pid
                     res.map(ds => {
-                        Object.defineProperty(ds, "sampleId", Object.getOwnPropertyDescriptor(ds, "_id"));
+                        Object.defineProperty(
+                            ds,
+                            "sampleId",
+                            Object.getOwnPropertyDescriptor(ds, "_id")
+                        );
                         delete ds["_id"];
                     });
                     cb(err, res);
@@ -142,5 +152,4 @@ module.exports = function(Sample) {
             });
         });
     };
-    
 };
