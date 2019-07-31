@@ -67,7 +67,7 @@ module.exports = function (app) {
             "$**": "text"
         }, function (err) {
             if (!err) {
-                console.log("Text Index on dataset created successfully")
+                console.log("Text Index on sample created successfully")
             } else {
                 console.log(err);
             }
@@ -76,7 +76,7 @@ module.exports = function (app) {
             "$**": "text"
         }, function (err) {
             if (!err) {
-                console.log("Text Index on dataset created successfully")
+                console.log("Text Index on proposal created successfully")
             } else {
                 console.log(err);
             }
