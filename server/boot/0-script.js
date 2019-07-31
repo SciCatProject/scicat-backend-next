@@ -63,6 +63,24 @@ module.exports = function (app) {
                 console.log(err);
             }
         });
+        db.collection('Sample').createIndex({
+            "$**": "text"
+        }, function (err) {
+            if (!err) {
+                console.log("Text Index on dataset created successfully")
+            } else {
+                console.log(err);
+            }
+        });
+        db.collection('Proposal').createIndex({
+            "$**": "text"
+        }, function (err) {
+            if (!err) {
+                console.log("Text Index on dataset created successfully")
+            } else {
+                console.log(err);
+            }
+        });
     });
 
     // add further information to options parameter
