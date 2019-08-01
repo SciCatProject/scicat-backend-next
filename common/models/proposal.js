@@ -213,7 +213,7 @@ module.exports = function(Proposal) {
         }
         //console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         Proposal.getDataSource().connector.connect(function(err, db) {
-            var collection = db.collection("Sample");
+            var collection = db.collection("Proposal");
             var res = collection.aggregate(pipeline, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
