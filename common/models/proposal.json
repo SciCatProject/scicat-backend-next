@@ -1,147 +1,172 @@
 {
-  "name": "Proposal",
-  "description": "Defines the purpose of an experiment and links an experiment to principal investigator and main proposer",
-  "base": "Ownable",
-  "strict": true,
-  "idInjection": false,
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "proposalId": {
-      "type": "string",
-      "id": true,
-      "required": true,
-      "description": "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended"
+    "name": "Proposal",
+    "description": "Defines the purpose of an experiment and links an experiment to principal investigator and main proposer",
+    "base": "Ownable",
+    "strict": true,
+    "idInjection": false,
+    "options": {
+        "validateUpsert": true
     },
-    "pi_email": {
-      "type": "string",
-      "index": true,
-      "description": "Email of principal investigator"
+    "properties": {
+        "proposalId": {
+            "type": "string",
+            "id": true,
+            "required": true,
+            "description": "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended"
+        },
+        "pi_email": {
+            "type": "string",
+            "index": true,
+            "description": "Email of principal investigator"
+        },
+        "pi_firstname": {
+            "type": "string",
+            "description": "First name of principal investigator"
+        },
+        "pi_lastname": {
+            "type": "string",
+            "description": "Last name of principal investigator"
+        },
+        "email": {
+            "type": "string",
+            "required": true,
+            "description": "Email of main proposer"
+        },
+        "firstname": {
+            "type": "string",
+            "description": "First name of main proposer"
+        },
+        "lastname": {
+            "type": "string",
+            "description": "Last name of main proposer"
+        },
+        "title": {
+            "type": "string"
+        },
+        "abstract": {
+            "type": "string"
+        },
+        "attachments": {
+            "type": ["string"],
+            "description": "Array of URLs pointing to attached documents"
+        }
     },
-    "pi_firstname": {
-      "type": "string",
-      "description": "First name of principal investigator"
+    "validations": [],
+    "relations": {
+        "measurementPeriods": {
+            "type": "embedsMany",
+            "model": "MeasurementPeriod",
+            "property": "MeasurementPeriodList",
+            "options": {
+                "validate": false,
+                "forceId": false,
+                "persistent": true
+            }
+        }
     },
-    "pi_lastname": {
-      "type": "string",
-      "description": "Last name of principal investigator"
-    },
-    "email": {
-      "type": "string",
-      "required": true,
-      "description": "Email of main proposer"
-    },
-    "firstname": {
-      "type": "string",
-      "description": "First name of main proposer"
-    },
-    "lastname": {
-      "type": "string",
-      "description": "Last name of main proposer"
-    },
-    "title": {
-      "type": "string"
-    },
-    "abstract": {
-      "type": "string"
-    },
-    "attachments": {
-      "type": [
-        "string"
-      ],
-      "description": "Array of URLs pointing to attached documents"
-    }
-  },
-  "validations": [],
-  "relations": {
-    "measurementPeriods": {
-      "type": "embedsMany",
-      "model": "MeasurementPeriod",
-      "property": "MeasurementPeriodList",
-      "options": {
-        "validate": false,
-        "forceId": false,
-        "persistent": true
-      }
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "proposalingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "DENY"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY",
-      "property": "findByInstrumentAndDate"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW",
-      "property": "findByInstrumentAndDate"
-    }
-  ],
-  "methods": {
-    "findByInstrumentAndDate": {
-      "accepts": [
+    "acls": [
         {
-          "arg": "instrument",
-          "type": "string"
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "proposalingestor",
+            "permission": "ALLOW"
         },
         {
-          "arg": "measureTime",
-          "type": "date"
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
         },
         {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
-        }
-      ],
-      "returns": {
-        "arg": "findByInstrumentAndDate",
-        "type": "Object"
-      },
-      "description": "Find proposal that took data at specified instrument and time",
-      "http": {
-        "path": "/findByInstrumentAndDate",
-        "verb": "get"
-      }
-    },
-    "searchText": {
-      "accepts": [
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "DENY"
+        },
         {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY",
+            "property": "findByInstrumentAndDate"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW",
+            "property": "findByInstrumentAndDate"
         }
-      ],
-      "returns": {
-        "arg": "searchText",
-        "type": "Object"
-      },
-      "description": "Search text inside proposal",
-      "http": {
-        "path": "/searchText",
-        "verb": "get"
-      }
+    ],
+    "methods": {
+        "findByInstrumentAndDate": {
+            "accepts": [
+                {
+                    "arg": "instrument",
+                    "type": "string"
+                },
+                {
+                    "arg": "measureTime",
+                    "type": "date"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "arg": "findByInstrumentAndDate",
+                "type": "Object"
+            },
+            "description": "Find proposal that took data at specified instrument and time",
+            "http": {
+                "path": "/findByInstrumentAndDate",
+                "verb": "get"
+            }
+        },
+        "searchText": {
+            "accepts": [
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "arg": "searchText",
+                "type": "Object"
+            },
+            "description": "Search text inside proposal",
+            "http": {
+                "path": "/searchText",
+                "verb": "get"
+            }
+        },
+        "fullquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the proposal. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return proposals fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/fullquery",
+                "verb": "get"
+            }
+        }
     }
-  }
 }
