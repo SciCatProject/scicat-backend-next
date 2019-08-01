@@ -1,7 +1,7 @@
 "use strict";
-var ds = require("./proposal.json");
-var own = require("./ownable.json");
-var utils = require("./utils");
+const ds = require("./proposal.json");
+const own = require("./ownable.json");
+const utils = require("./utils");
 
 module.exports = function(Proposal) {
     // put
@@ -68,7 +68,7 @@ module.exports = function(Proposal) {
     };
 
     Proposal.isValid = function(instance, next) {
-        var ds = new Proposal(instance);
+        const ds = new Proposal(instance);
         ds.isValid(function(valid) {
             if (!valid) {
                 next(null, {
