@@ -1,7 +1,7 @@
 {
   "name": "Logbook",
   "base": "Model",
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },
@@ -10,7 +10,8 @@
       "type": "string"
     },
     "roomId": {
-      "type": "string"
+      "type": "string",
+      "id": true
     },
     "messages": {
       "type": [
