@@ -214,7 +214,7 @@ module.exports = function(Proposal) {
         //console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         Proposal.getDataSource().connector.connect(function(err, db) {
             const collection = db.collection("Proposal");
-            let res = collection.aggregate(pipeline, function(err, cursor) {
+            collection.aggregate(pipeline, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
                         console.log("Facet err handling:", err);
