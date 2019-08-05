@@ -8,7 +8,8 @@
     "validateUpsert": true,
     "mongodb": {
       "collection": "Dataset",
-      "allowDiskUse": true
+      "allowDiskUse": true,
+      "allowExtendedOperators": true
     }
   },
   "replaceOnPUT": false,
@@ -139,6 +140,7 @@
     }
   },
   "acls": [
+
     {
       "accessType": "*",
       "principalType": "ROLE",

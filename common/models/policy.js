@@ -130,7 +130,7 @@ module.exports = function (Policy) {
                 arg: "ownerGroupList",
                 type: "string",
                 required: true,
-                description: "comma seperated string of owner groups to update e.g. \"p14159, p24959\""
+                description: "Comma-separated string of owner groups to update e.g. \"p14159, p24959\""
             }, {
                 arg: "data",
                 type: "object",
@@ -152,7 +152,7 @@ module.exports = function (Policy) {
             type: "Object",
             root: true
         },
-        description: "responsible for updating multiple records on the Policy model simultaneously and uses ownerGroup to identify those records"
+        description: "updates multiple records on the Policy model and uses ownerGroup to identify those records"
     });
 
     Policy.validatesUniquenessOf('ownerGroup');
