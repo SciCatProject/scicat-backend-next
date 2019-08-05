@@ -178,8 +178,8 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         // TODO: this ignores any update which contains these fields among other chanegs
         if (!ctx.data.size && !ctx.data.packedSize) {
             // the following triggers a before save hook . endless recursion must be prevented there
-            //console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy)), function (err, instance) {
+            // console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy).replace(/\$/g, "")), function (err, instance) {
                 if (err) {
                     console.log("Saving auto history failed:", err)
                 }
