@@ -129,6 +129,7 @@ module.exports = function(app) {
                                     groups = [];
                                 }
                                 const regex = "/" + u.profile.email + "/i";
+                                // get users share groups and add to the current groups context
                                 ShareGroup.find( {where: {members: {regexp: regex }}}, function(err, share) {
                                     if (err) return next(err);
                                     groups = [...groups, ...(share.map(({ id }) => { return String(id)}))];
