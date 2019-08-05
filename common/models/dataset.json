@@ -7,7 +7,8 @@
   "options": {
     "validateUpsert": true,
     "mongodb": {
-      "collection": "Dataset"
+      "collection": "Dataset",
+      "allowExtendedOperators": true
     }
   },
   "replaceOnPUT": false,
@@ -138,6 +139,7 @@
     }
   },
   "acls": [
+
     {
       "accessType": "*",
       "principalType": "ROLE",
