@@ -135,8 +135,9 @@ module.exports = function(PublishedData) {
                 return cb("No config.local");
             }
 
-            const registerMetadataUri = `https://mds.datacite.org/metadata/${pub.doi}`;
-            const registerDoiUri = `https://mds.datacite.org/doi/${pub.doi}`;
+            const fullDoi = config.doiPrefix +"/" + pub.doi;
+            const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
+            const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
             const OAIServerUri = config.oaiProviderRoute;
 
             let doiProviderCredentials = {
@@ -160,13 +161,13 @@ module.exports = function(PublishedData) {
                 },
                 auth: doiProviderCredentials
             };
-
+            const encodeDoi = encodeURIComponent(fullDoi);
             const registerDataciteDoiOptions = {
                 method: "PUT",
                 body: [
                     "#Content-Type:text/plain;charset=UTF-8",
-                    `doi= ${config.doiPrefix}/${pub.doi}`,
-                    `url= ${config.publicURLprefix}${config.doiPrefix}%2F${pub.doi}` // Same as registerDoiUri?
+                    `doi= ${fullDoi}`,
+                    `url= ${config.publicURLprefix}${encodeDoi}` // Same as registerDoiUri?
                 ].join("\n"),
                 uri: registerDoiUri,
                 headers: {
