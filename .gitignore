@@ -46,3 +46,4 @@ stop.sh
 mongo.sh
 mongo.js
 doiconfig.local.json
+server/config.local.json
