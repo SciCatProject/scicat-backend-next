@@ -41,7 +41,7 @@ function formRegistrationXML(publishedData) {
 
     return `<?xml version="1.0" encoding="UTF-8"?>
         <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
-            <identifier identifierType="DOI">${doi}</identifier>
+            <identifier identifierType="doi">${doi}</identifier>
             <creators>
                 ${creatorElements.join("\n")}
             </creators>
@@ -135,10 +135,9 @@ module.exports = function(PublishedData) {
                 return cb("No config.local");
             }
 
-            const registerMetadataUri = `https://mds.datacite.org/metadata/${
-                xml.doi
-            }`;
-            const registerDoiUri = `https://mds.datacite.org/doi/${xml.doi}`;
+            const fullDoi = config.doiPrefix +"/" + pub.doi;
+            const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
+            const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
             const OAIServerUri = config.oaiProviderRoute;
 
             let doiProviderCredentials = {
@@ -162,13 +161,13 @@ module.exports = function(PublishedData) {
                 },
                 auth: doiProviderCredentials
             };
-
+            const encodeDoi = encodeURIComponent(fullDoi);
             const registerDataciteDoiOptions = {
                 method: "PUT",
                 body: [
                     "#Content-Type:text/plain;charset=UTF-8",
-                    `doi= ${xml.doi}`,
-                    `url= ${xml.url}` // Same as registerDoiUri?
+                    `doi= ${fullDoi}`,
+                    `url= ${config.publicURLprefix}${encodeDoi}` // Same as registerDoiUri?
                 ].join("\n"),
                 uri: registerDoiUri,
                 headers: {
@@ -191,6 +190,7 @@ module.exports = function(PublishedData) {
             if (config.site !== "PSI") {
                 console.log("posting to datacite");
                 console.log(registerDataciteMetadataOptions);
+                console.log(registerDataciteDoiOptions);
                 requestPromise(registerDataciteMetadataOptions)
                     .then(() => requestPromise(registerDataciteDoiOptions))
                     .then(() => cb(null, "asdasd"))
