@@ -91,6 +91,10 @@
       "type": "date",
       "index": true,
       "description": "Time when doi is successfully registered"
+    },
+    "status": {
+      "type": "string",
+      "description": "Indication of position in publication workflow e.g. doiRegistered"
     }
   },
   "validations": [],
