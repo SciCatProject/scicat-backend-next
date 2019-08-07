@@ -67,6 +67,14 @@ module.exports = function(PublishedData) {
             return next(new Error());
         }
 
+        if (ctx.instance) {
+            if (ctx.isNewInstance) {
+                ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
+                console.log("      New pid:", ctx.instance.doi);
+
+            }
+        }
+
         app.models.User.findById(token.userId)
             .then(user => {
                 next();
@@ -77,7 +85,6 @@ module.exports = function(PublishedData) {
     PublishedData.formPopulate = function(pid, next) {
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
-        var RawDataset = app.models.RawDataset;
         var self = this;
         self.formData = {};
         Dataset.thumbnail(pid, function(err, thumb) {
@@ -135,7 +142,7 @@ module.exports = function(PublishedData) {
                 return cb("No config.local");
             }
 
-            const fullDoi = config.doiPrefix +"/" + pub.doi;
+            const fullDoi = pub.doi;
             const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
             const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
             const OAIServerUri = config.oaiProviderRoute;
