@@ -128,9 +128,9 @@
       "model": "Datablock",
       "foreignKey": ""
     },
-    "datasetattachments": {
+    "datasetAttachments": {
       "type": "hasMany",
-      "model": "DatasetAttachment",
+      "model": "Attachment",
       "foreignKey": ""
     },
     "origdatablocks": {

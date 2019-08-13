@@ -31,7 +31,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "sampleAttachments": {
+      "type": "hasMany",
+      "model": "Attachment",
+      "foreignKey": ""
+    }
+  },
   "acls": [
     {
       "accessType": "*",

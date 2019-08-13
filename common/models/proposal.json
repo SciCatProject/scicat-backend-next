@@ -62,6 +62,11 @@
                 "forceId": false,
                 "persistent": true
             }
+        },
+        "proposalAttachments": {
+          "type": "hasMany",
+          "model": "Attachment",
+          "foreignKey": ""
         }
     },
     "acls": [

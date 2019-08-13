@@ -1,0 +1,59 @@
+{
+  "name": "Attachment",
+  "description": "Small less than 16 MB attachments, envisaged for png/jpeg previews",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "thumbnail": {
+      "type": "string",
+      "required": true,
+      "default": "retrieve",
+      "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset"
+    },
+    "caption": {
+      "type": "string",
+      "default": "",
+      "description": "Attachment caption to show in catanie"
+    },
+    "creationTime": {
+      "type": "date",
+      "description": "Time when attachment is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "dataset": {
+      "type": "belongsTo",
+      "model": "Dataset",
+      "foreignKey": ""
+    },
+    "sample": {
+      "type": "belongsTo",
+      "model": "Sample",
+      "foreignKey": ""
+    },
+    "proposal": {
+      "type": "belongsTo",
+      "model": "Proposal",
+      "foreignKey": ""
+    }
+  },
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY"
+    }
+  ],
+  "methods": {}
+}
