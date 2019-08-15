@@ -37,7 +37,7 @@ before( function(){
 describe('Simple Sample tests', () => {
     before((done) => {
         utils.getToken(app, {
-                'username': 'proposalIngestor',
+                'username': 'ingestor',
                 'password': 'aman'
             },
             (tokenVal) => {
