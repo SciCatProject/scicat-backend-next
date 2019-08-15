@@ -117,10 +117,6 @@
     "dataSource": "mongo",
     "public": true
   },
-  "DatasetAttachment": {
-    "dataSource": "mongo",
-    "public": true
-  },
   "OrigDatablock": {
     "dataSource": "mongo",
     "public": true
@@ -135,6 +131,10 @@
   },
   "Logbook": {
     "dataSource": null,
+    "public": true
+  },
+  "Attachment": {
+    "dataSource": "mongo",
     "public": true
   }
 }

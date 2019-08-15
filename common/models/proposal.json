@@ -45,10 +45,6 @@
         },
         "abstract": {
             "type": "string"
-        },
-        "attachments": {
-            "type": ["string"],
-            "description": "Array of URLs pointing to attached documents"
         }
     },
     "validations": [],
@@ -62,6 +58,11 @@
                 "forceId": false,
                 "persistent": true
             }
+        },
+        "attachments": {
+            "type": "hasMany",
+            "model": "Attachment",
+            "foreignKey": ""
         }
     },
     "acls": [

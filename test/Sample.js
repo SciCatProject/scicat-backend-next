@@ -11,28 +11,33 @@ const should = chai.should();
 const utils = require('./LoginUtils');
 
 let accessToken = null,
-    defaultProposalId = null,
-    proposalId = null,
+    defaultSampleId = null,
+    sampleId = null,
     attachmentId= null;
 
-const testproposal = {
-    "proposalId": "20170266",
-    "email": "proposer%40uni.edu",
-    "title": "A test proposal",
-    "abstract": "Abstract of test proposal",
-    "ownerGroup": "20170251-group"
-
-}
+const testSample = {
+    "owner": "string",
+    "description": "string",
+    "createdAt": new Date(),
+    "sampleCharacteristics": {},
+    "ownerGroup": "string",
+    "accessGroups": [
+      "string"
+    ],
+    "createdBy": "string",
+    "updatedBy": "string",
+    "updatedAt": new Date()
+  }
 
 var app
 before( function(){
     app = require('../server/server')
 });
 
-describe('Simple Proposal tests', () => {
+describe('Simple Sample tests', () => {
     before((done) => {
         utils.getToken(app, {
-                'username': 'proposalIngestor',
+                'username': 'ingestor',
                 'password': 'aman'
             },
             (tokenVal) => {
@@ -41,63 +46,27 @@ describe('Simple Proposal tests', () => {
             });
     });
 
-    // the following two function definition prepare for
-    // multi-delete actions to finish
-    async function deleteProposal(item) {
-        await request(app)
-            .delete('/api/v3/Proposals/' + item.proposalId + '?access_token=' + accessToken)
-            .set('Accept', 'application/json')
-            .expect(200)
-    }
-
-    async function processArray(array) {
-        for (const item of array) {
-            await deleteProposal(item)
-        }
-        // console.log("==== Finishing all deletes")
-    }
-
-    it('remove potentially existing proposals to guarantee uniqueness', function(done) {
-        let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}'
-        // console.log("Filter expression before encoding:",filter)
-        let url = '/api/v3/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
-        // console.log("============= url of query: ", url)
+    it('adds a new sample', function(done) {
         request(app)
-            .get(url)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                //console.log(" ==================== Found existing proposals:", res.body)
-                // now remove all these entries
-                processArray(res.body)
-                done()
-            });
-    });
-
-    it('adds a new proposal', function(done) {
-        request(app)
-            .post('/api/v3/Proposals?access_token=' + accessToken)
-            .send(testproposal)
+            .post('/api/v3/Samples?access_token=' + accessToken)
+            .send(testSample)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end(function(err, res) {
                 if (err)
                     return done(err);
-                res.body.should.have.property('ownerGroup').and.be.string;
-                res.body.should.have.property('proposalId').and.be.string;
-                defaultProposalId = res.body['proposalId'];
-                proposalId = encodeURIComponent(res.body['proposalId']);
+                res.body.should.have.property('owner').and.be.string;
+                res.body.should.have.property('sampleId').and.be.string;
+                defaultSampleId = res.body['sampleId'];
+                sampleId = encodeURIComponent(res.body['sampleId']);
                 done();
             });
     });
 
-    it('should fetch this new proposal', function(done) {
+    it('should fetch this new sample', function(done) {
         request(app)
-            .get('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .get('/api/v3/Samples/' + sampleId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -108,17 +77,17 @@ describe('Simple Proposal tests', () => {
             });
     });
 
-    it("should add a new attachment to this proposal", function(done) {
+    it("should add a new attachment to this sample", function(done) {
         const testAttachment = {
             "thumbnail": "data/abc123",
             "caption": "Some caption",
             "creationTime": new Date(),
-            "proposalId": defaultProposalId
+            "sampleId": defaultSampleId
         };
         request(app)
             .post(
-                "/api/v3/Proposals/" +
-                    proposalId +
+                "/api/v3/Samples/" +
+                    sampleId +
                     "/attachments?access_token=" +
                     accessToken
             )
@@ -132,17 +101,17 @@ describe('Simple Proposal tests', () => {
                 res.body.should.have.property("caption").and.equal(testAttachment.caption);
                 res.body.should.have.property("creationTime");
                 res.body.should.have.property("id").and.be.string;
-                res.body.should.have.property("proposalId").and.equal(testAttachment.proposalId);
+                res.body.should.have.property("sampleId").and.equal(testAttachment.sampleId);
                 attachmentId = encodeURIComponent(res.body["id"]);
                 done();
             });
     });
 
-    it("should fetch this proposal attachment", function(done) {
+    it("should fetch this sample attachment", function(done) {
         request(app)
             .get(
-                "/api/v3/Proposals/" +
-                    proposalId +
+                "/api/v3/Samples/" +
+                    sampleId +
                     "/attachments/" +
                     attachmentId +
                     "?access_token=" +
@@ -157,11 +126,11 @@ describe('Simple Proposal tests', () => {
             });
     });
 
-    it("should delete this proposal attachment", function(done) {
+    it("should delete this sample attachment", function(done) {
         request(app)
             .delete(
-                "/api/v3/Proposals/" +
-                    proposalId +
+                "/api/v3/Samples/" +
+                    sampleId +
                     "/attachments/" +
                     attachmentId +
                     "?access_token=" +
@@ -175,9 +144,9 @@ describe('Simple Proposal tests', () => {
             });
     });
 
-    it('should delete this proposal', function(done) {
+    it('should delete this sample', function(done) {
         request(app)
-            .delete('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .delete('/api/v3/Samples/' + sampleId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
