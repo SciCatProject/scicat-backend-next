@@ -107,7 +107,7 @@ describe("Simple Dataset tests", () => {
                 if (err) return done(err);
                 res.body.should.have.property("thumbnail").and.be.string;
                 res.body.should.have.property("caption").and.be.string;
-                res.body.should.have.property("creationTime").and.be.date;
+                res.body.should.have.property("creationTime");
                 res.body.should.have.property("id").and.be.string;
                 res.body.should.have.property("datasetId").and.be.string;
                 attachmentId = encodeURIComponent(res.body["id"]);
