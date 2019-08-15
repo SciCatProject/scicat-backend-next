@@ -3,5 +3,10 @@
     "search.exclude": {
         "**/node_modules": false,
         "**/bower_components": true
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#0F313F",
+        "titleBar.activeBackground": "#154558",
+        "titleBar.activeForeground": "#F8FCFD"
     }
 }
