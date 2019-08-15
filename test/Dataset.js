@@ -88,7 +88,7 @@ describe("Simple Dataset tests", () => {
             thumbnail: "data/abc123",
             caption: "Some caption",
             creationTime: new Date(),
-            datsetId: pid
+            datasetId: pid
         };
         request(app)
             .post(
