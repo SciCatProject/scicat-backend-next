@@ -11,25 +11,26 @@ const should = chai.should();
 const utils = require("./LoginUtils");
 
 let accessToken = null,
+    defaultPid = null,
     pid = null,
     attachmentId = null;
 
 const testdataset = {
-    owner: "Bertram Astor",
-    ownerEmail: "bertram.astor@grumble.com",
-    orcidOfOwner: "unknown",
-    contactEmail: "bertram.astor@grumble.com",
-    sourceFolder: "/iramjet/tif/",
-    creationTime: "2011-09-14T06:08:25.000Z",
-    keywords: ["Cryo", "Calibration"],
-    description: "None",
-    type: "raw",
-    license: "CC BY-SA 4.0",
-    isPublished: false,
-    ownerGroup: "p13388",
-    accessGroups: [],
-    history: ["this should be deleted"],
-    createdBy: "this should be deleted as well"
+    "owner": "Bertram Astor",
+    "ownerEmail": "bertram.astor@grumble.com",
+    "orcidOfOwner": "unknown",
+    "contactEmail": "bertram.astor@grumble.com",
+    "sourceFolder": "/iramjet/tif/",
+    "creationTime": "2011-09-14T06:08:25.000Z",
+    "keywords": ["Cryo", "Calibration"],
+    "description": "None",
+    "type": "raw",
+    "license": "CC BY-SA 4.0",
+    "isPublished": false,
+    "ownerGroup": "p13388",
+    "accessGroups": [],
+    "history": ["this should be deleted"],
+    "createdBy": "this should be deleted as well"
 };
 
 let app;
@@ -66,6 +67,7 @@ describe("Simple Dataset tests", () => {
                 res.body.should.have.property("pid").and.be.string;
                 res.body.should.have.property("datasetName").and.be.string;
                 //res.body.should.not.have.property('history')
+                defaultPid = res.body["pid"];
                 pid = encodeURIComponent(res.body["pid"]);
                 done();
             });
@@ -85,10 +87,10 @@ describe("Simple Dataset tests", () => {
 
     it("should add a new attachment to this dataset", function(done) {
         const testAttachment = {
-            thumbnail: "data/abc123",
-            caption: "Some caption",
-            creationTime: new Date(),
-            datasetId: pid
+            "thumbnail": "data/abc123",
+            "caption": "Some caption",
+            "creationTime": new Date(),
+            "datasetId": defaultPid
         };
         request(app)
             .post(
