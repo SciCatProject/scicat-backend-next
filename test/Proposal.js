@@ -4,16 +4,18 @@
 
 // process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var chaiHttp = require('chai-http');
-var request = require('supertest');
-var should = chai.should();
-var utils = require('./LoginUtils');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const request = require('supertest');
+const should = chai.should();
+const utils = require('./LoginUtils');
 
-var accessToken = null,
-    proposalId = null;
+let accessToken = null,
+    defaultProposalId = null,
+    proposalId = null,
+    attachmentId= null;
 
-var testproposal = {
+const testproposal = {
     "proposalId": "20170266",
     "email": "proposer%40uni.edu",
     "title": "A test proposal",
@@ -87,6 +89,7 @@ describe('Simple Proposal tests', () => {
                     return done(err);
                 res.body.should.have.property('ownerGroup').and.be.string;
                 res.body.should.have.property('proposalId').and.be.string;
+                defaultProposalId = res.body['proposalId'];
                 proposalId = encodeURIComponent(res.body['proposalId']);
                 done();
             });
@@ -101,6 +104,73 @@ describe('Simple Proposal tests', () => {
             .end((err, res) => {
                 if (err)
                     return done(err);
+                done();
+            });
+    });
+
+    it("should add a new attachment to this proposal", function(done) {
+        const testAttachment = {
+            "thumbnail": "data/abc123",
+            "caption": "Some caption",
+            "creationTime": new Date(),
+            "proposalId": defaultProposalId
+        };
+        request(app)
+            .post(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments?access_token=" +
+                    accessToken
+            )
+            .send(testAttachment)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.have.property("thumbnail").and.equal(testAttachment.thumbnail);
+                res.body.should.have.property("caption").and.equal(testAttachment.caption);
+                res.body.should.have.property("creationTime").and.equal(testAttachment.creationTime);
+                res.body.should.have.property("id").and.be.string;
+                res.body.should.have.property("proposalId").and.equal(testAttachment.proposalId);
+                attachmentId = encodeURIComponent(res.body["id"]);
+                done();
+            });
+    });
+
+    it("should fetch this proposal attachment", function(done) {
+        request(app)
+            .get(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments/" +
+                    attachmentId +
+                    "?access_token=" +
+                    accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+    it("should delete this proposal attachment", function(done) {
+        request(app)
+            .delete(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments/" +
+                    attachmentId +
+                    "?access_token=" +
+                    accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(204)
+            .end((err, res) => {
+                if (err) return done(err);
                 done();
             });
     });
