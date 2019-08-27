@@ -68,10 +68,12 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
             var userRaw = user._raw;
             if (userRaw.hasOwnProperty("THUMBNAILPHOTO")) {
                 img = user._raw.THUMBNAILPHOTO;
-            } else {
+            } else if (userRaw.hasOwnProperty("thumbnailPhoto") ) {
                 img = user._raw.thumbnailPhoto;
             }
-            profile.thumbnailPhoto ="data:image/jpeg;base64," + img.toString("base64");
+            if ( typeof img !== "undefined" ) {
+                profile.thumbnailPhoto = "data:image/jpeg;base64," + img.toString("base64");
+            }
         } else {
             profile.thumbnailPhoto = "error: no photo found";
         }
