@@ -7,6 +7,11 @@ let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
+logbookEnabled = true;
+scichatBaseUrl = "localhost:3030/api";
+scichatUser = "logbookReader";
+scichatPass = "logrdr";
+
 module.exports = function(Logbook) {
     /**
      * Find Logbook model instance
@@ -17,8 +22,14 @@ module.exports = function(Logbook) {
     Logbook.findByName = async function(name) {
         if (logbookEnabled) {
             try {
-                const accessToken = await scichatLogin(scichatUser, scichatPass);
-                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks/${name}?access_token=${accessToken}`);
+                const accessToken = await scichatLogin(
+                    scichatUser,
+                    scichatPass
+                );
+                const fetchResponse = await superagent.get(
+                    scichatBaseUrl +
+                        `/Logbooks/${name}?access_token=${accessToken}`
+                );
                 return fetchResponse.body;
             } catch (err) {
                 console.error(err);
@@ -36,8 +47,13 @@ module.exports = function(Logbook) {
     Logbook.findAll = async function() {
         if (logbookEnabled) {
             try {
-                const accessToken = await scichatLogin(scichatUser, scichatPass);
-                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks?access_token=${accessToken}`);
+                const accessToken = await scichatLogin(
+                    scichatUser,
+                    scichatPass
+                );
+                const fetchResponse = await superagent.get(
+                    scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
+                );
                 return fetchResponse.body;
             } catch (err) {
                 console.error(err);
@@ -57,8 +73,14 @@ module.exports = function(Logbook) {
     Logbook.filter = async function(name, filter) {
         if (logbookEnabled) {
             try {
-                const accessToken = await scichatLogin(scichatUser, scichatPass);
-                const fetchResponse = await superagent.get(scichatBaseUrl + `/Logbooks/${name}/${filter}?access_token=${accessToken}`);
+                const accessToken = await scichatLogin(
+                    scichatUser,
+                    scichatPass
+                );
+                const fetchResponse = await superagent.get(
+                    scichatBaseUrl +
+                        `/Logbooks/${name}/${filter}?access_token=${accessToken}`
+                );
                 return fetchResponse.body;
             } catch (err) {
                 console.error(err);
@@ -82,7 +104,9 @@ async function scichatLogin(username, password) {
         password: password
     };
     try {
-        const loginResponse = await superagent.post(scichatBaseUrl + "/Users/login").send(userData);
+        const loginResponse = await superagent
+            .post(scichatBaseUrl + "/Users/login")
+            .send(userData);
         return loginResponse.body.id;
     } catch (err) {
         console.error(err);
