@@ -83,7 +83,7 @@ module.exports = function(Proposal) {
         });
     };
 
-    Proposal.fullquery = function(fields, limits, options, cb) {
+    Proposal.fullquery = function(fields, limits, options) {
         if (fields === undefined) {
             fields = {};
         }
