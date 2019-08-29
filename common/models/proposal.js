@@ -129,10 +129,12 @@ module.exports = function(Proposal) {
             fields = {};
         }
 
-        let queryFilter = {};
-        queryFilter.where = {
-            and: []
+        let queryFilter = {
+            where: {
+                and: []
+            }
         };
+
         fields.userGroups = options.currentGroups;
 
         Object.keys(fields).map(key => {
@@ -165,14 +167,20 @@ module.exports = function(Proposal) {
         });
 
         if (limits) {
-            if (limits.hasOwnProperty("limit")) {
+            if ("limit" in limits) {
                 queryFilter.limit =
                     Number(limits.limit) < 1 ? 0 : Number(limits.limit);
             }
-            if (limits.hasOwnProperty("order")) {
-                queryFilter.order = limits.order;
+            if ("order" in limits) {
+                const sortFields = limits.order.split(",");
+                let orders = [];
+                sortFields.forEach(field => {
+                    const parts = field.split(" ");
+                    orders.push(parts[0] + " " + parts[1].toUpperCase());
+                });
+                queryFilter.order = orders;
             }
-            if (limits.hasOwnProperty("skip")) {
+            if ("skip" in limits) {
                 queryFilter.skip =
                     Number(limits.skip) < 1 ? 0 : Number(limits.skip);
             }
