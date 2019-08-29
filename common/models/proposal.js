@@ -176,7 +176,11 @@ module.exports = function(Proposal) {
                 let orders = [];
                 sortFields.forEach(field => {
                     const parts = field.split(" ");
-                    orders.push(parts[0] + " " + parts[1].toUpperCase());
+                    if (parts.length > 1) {
+                        orders.push(parts[0] + " " + parts[1].toUpperCase());
+                    } else {
+                        orders.push(parts[0]);
+                    }
                 });
                 queryFilter.order = orders;
             }
@@ -186,13 +190,19 @@ module.exports = function(Proposal) {
             }
         }
 
-        console.log("queryFilter", queryFilter);
+        console.log("queryFilter1", queryFilter);
+
         queryFilter.where.and.forEach(item => {
             console.log(
                 `queryfilter.where.and[${queryFilter.where.and.indexOf(item)}]`,
                 item
             );
         });
+        if (queryFilter.where.and.length === 0) {
+            delete queryFilter.where;
+        }
+
+        console.log("queryFilter2", queryFilter);
         return Proposal.find(queryFilter);
         // } else {
         //     // keep the full aggregation pipeline definition
