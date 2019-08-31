@@ -12,7 +12,7 @@ First you need to have node/npm installed
 
 ```
 npm version 6 or higher
-Nnode version 8 or higher
+Node version 8 or higher
 ```
 You also need to setup a MongoDB server. E.g. on a Redhat Linux System the following command will suffice
 
@@ -44,10 +44,10 @@ cd server
 cp datasources.json-sample datasources.json
 cp providers.json-sample providers.json
 cp config.local.js-sample config.local.js
+```
 
 Then edit these files and adjust the variables to meaningful values for your site/domain
 
-```
 
 ## Start metadata server
 ```
