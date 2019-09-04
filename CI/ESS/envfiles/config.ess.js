@@ -7,7 +7,7 @@ module.exports = {
     pidPrefix: '20.500.12269',
     doiPrefix: '10.5072',
     logbookEnabled: true,
-    scichatURL: 'scichat-loopback:3030/api',
+    scichatURL: 'scichat-loopback/api',
     scichatUser: "logbookReader",
     scichatPass: "logrdr",
     datasetReductionEnabled: false,
