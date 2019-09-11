@@ -593,6 +593,7 @@ module.exports = function(Dataset) {
      - paging of results
     */
     Dataset.fullquery = function(fields, limits, options, cb) {
+        console.log("fields1", fields);
         // keep the full aggregation pipeline definition
         let pipeline = [];
         if (fields === undefined) {
@@ -600,6 +601,16 @@ module.exports = function(Dataset) {
         }
         // console.log("Inside fullquery:options",options)
         fields.userGroups = options.currentGroups;
+        if (fields.isPublished === false) {
+            let modifiedFields = {};
+            Object.keys(fields).forEach(key => {
+                if (key !== "isPublished") {
+                    modifiedFields[key] = fields[key];
+                }
+            });
+            fields = modifiedFields;
+        }
+        console.log("fields2", fields);
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -629,25 +640,27 @@ module.exports = function(Dataset) {
                         $match: fields[key]
                     });
                 } else if (key === "userGroups") {
-                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
-                        pipeline.push({
-                            $match: {
-                                $or: [
-                                    {
-                                        ownerGroup: searchExpression(
-                                            "ownerGroup",
-                                            fields["userGroups"]
-                                        )
-                                    },
-                                    {
-                                        accessGroups: searchExpression(
-                                            "accessGroups",
-                                            fields["userGroups"]
-                                        )
-                                    }
-                                ]
-                            }
-                        });
+                    if (!fields["isPublished"]) {
+                        if (fields["userGroups"].indexOf("globalaccess") < 0) {
+                            pipeline.push({
+                                $match: {
+                                    $or: [
+                                        {
+                                            ownerGroup: searchExpression(
+                                                "ownerGroup",
+                                                fields["userGroups"]
+                                            )
+                                        },
+                                        {
+                                            accessGroups: searchExpression(
+                                                "accessGroups",
+                                                fields["userGroups"]
+                                            )
+                                        }
+                                    ]
+                                }
+                            });
+                        }
                     }
                 } else {
                     let match = {};
