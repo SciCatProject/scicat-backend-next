@@ -6,7 +6,13 @@ module.exports = function(Ownable) {
 
     Ownable.observe("access", function(ctx, next) {
         // console.log("+++++ Access ctx.options:",ctx.options)
-        if (ctx.Model.modelName === "Dataset" && "where" in ctx.query && !("isPublished" in ctx.query.where)) {
+        if (
+            ctx.Model.modelName === "Dataset" &&
+            ctx.query.where &&
+            ctx.query.where.isPublished
+        ) {
+            next();
+        } else {
             const groups = ctx.options && ctx.options.currentGroups;
             // append group based conditions unless functional accounts with global access role
             if (
@@ -45,8 +51,8 @@ module.exports = function(Ownable) {
                 }
                 // console.log("000000000 ctx.query.where", util.inspect(ctx.query, {showHidden: false, depth: null}))
             }
+            next();
         }
-        next();
     });
 
     Ownable.isValid = function(instance, next) {
