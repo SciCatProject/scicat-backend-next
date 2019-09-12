@@ -6,7 +6,7 @@ module.exports = function(Ownable) {
 
     Ownable.observe("access", function(ctx, next) {
         // console.log("+++++ Access ctx.options:",ctx.options)
-        if (ctx.Model.modelName === "Dataset" && !ctx.query.where.isPublished) {
+        if (ctx.Model.modelName === "Dataset" && "where" in ctx.query && !("isPublished") in ctx.query.where) {
             const groups = ctx.options && ctx.options.currentGroups;
             // append group based conditions unless functional accounts with global access role
             if (
