@@ -593,7 +593,6 @@ module.exports = function(Dataset) {
      - paging of results
     */
     Dataset.fullquery = function(fields, limits, options, cb) {
-        console.log("fields1", fields);
         // keep the full aggregation pipeline definition
         let pipeline = [];
         if (fields === undefined) {
@@ -610,7 +609,6 @@ module.exports = function(Dataset) {
             });
             fields = modifiedFields;
         }
-        console.log("fields2", fields);
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
