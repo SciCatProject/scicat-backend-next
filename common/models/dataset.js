@@ -600,6 +600,15 @@ module.exports = function(Dataset) {
         }
         // console.log("Inside fullquery:options",options)
         fields.userGroups = options.currentGroups;
+        if (fields.isPublished === false) {
+            let modifiedFields = {};
+            Object.keys(fields).forEach(key => {
+                if (key !== "isPublished") {
+                    modifiedFields[key] = fields[key];
+                }
+            });
+            fields = modifiedFields;
+        }
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -629,7 +638,10 @@ module.exports = function(Dataset) {
                         $match: fields[key]
                     });
                 } else if (key === "userGroups") {
-                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
+                    if (
+                        fields["userGroups"].indexOf("globalaccess") < 0 &&
+                        !fields["isPublished"]
+                    ) {
                         pipeline.push({
                             $match: {
                                 $or: [
