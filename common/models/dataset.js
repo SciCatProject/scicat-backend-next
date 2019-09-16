@@ -426,15 +426,28 @@ module.exports = function(Dataset) {
         }
     }
 
+    function setFields(fields, options) {
+        if (fields === undefined) {
+            return {};
+        }
+        if (fields.isPublished === false) {
+            let modifiedFields = {};
+            Object.keys(fields).forEach(key => {
+                if (key !== "isPublished") {
+                    modifiedFields[key] = fields[key];
+                }
+            });
+            modifiedFields.userGroups = options.currentGroups;
+            return modifiedFields;
+        }
+        return fields;
+    }
+
     Dataset.fullfacet = function(fields, facets = [], options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         let facetMatch = {};
-        // add userGroups condition
-        if (fields === undefined) {
-            fields = {};
-        }
-        fields.userGroups = options.currentGroups;
+        fields = setFields(fields, options);
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -595,20 +608,8 @@ module.exports = function(Dataset) {
     Dataset.fullquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
-        if (fields === undefined) {
-            fields = {};
-        }
+        fields = setFields(fields, options);
         // console.log("Inside fullquery:options",options)
-        fields.userGroups = options.currentGroups;
-        if (fields.isPublished === false) {
-            let modifiedFields = {};
-            Object.keys(fields).forEach(key => {
-                if (key !== "isPublished") {
-                    modifiedFields[key] = fields[key];
-                }
-            });
-            fields = modifiedFields;
-        }
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -638,10 +639,7 @@ module.exports = function(Dataset) {
                         $match: fields[key]
                     });
                 } else if (key === "userGroups") {
-                    if (
-                        fields["userGroups"].indexOf("globalaccess") < 0 &&
-                        !fields["isPublished"]
-                    ) {
+                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
                         pipeline.push({
                             $match: {
                                 $or: [
