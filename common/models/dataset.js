@@ -434,7 +434,16 @@ module.exports = function(Dataset) {
         if (fields === undefined) {
             fields = {};
         }
-        fields.userGroups = options.currentGroups;
+        if (fields.isPublished === false) {
+            let modifiedFields = {};
+            Object.keys(fields).forEach(key => {
+                if (key !== "isPublished") {
+                    modifiedFields[key] = fields[key];
+                }
+            });
+            fields = modifiedFields;
+            fields.userGroups = options.currentGroups;
+        }
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -599,7 +608,6 @@ module.exports = function(Dataset) {
             fields = {};
         }
         // console.log("Inside fullquery:options",options)
-        fields.userGroups = options.currentGroups;
         if (fields.isPublished === false) {
             let modifiedFields = {};
             Object.keys(fields).forEach(key => {
@@ -608,6 +616,7 @@ module.exports = function(Dataset) {
                 }
             });
             fields = modifiedFields;
+            fields.userGroups = options.currentGroups;
         }
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
@@ -638,10 +647,7 @@ module.exports = function(Dataset) {
                         $match: fields[key]
                     });
                 } else if (key === "userGroups") {
-                    if (
-                        fields["userGroups"].indexOf("globalaccess") < 0 &&
-                        !fields["isPublished"]
-                    ) {
+                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
                         pipeline.push({
                             $match: {
                                 $or: [
