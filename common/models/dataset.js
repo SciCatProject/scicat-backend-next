@@ -426,13 +426,9 @@ module.exports = function(Dataset) {
         }
     }
 
-    Dataset.fullfacet = function(fields, facets = [], options, cb) {
-        // keep the full aggregation pipeline definition
-        let pipeline = [];
-        let facetMatch = {};
-        // add userGroups condition
+    function setFields(fields, options) {
         if (fields === undefined) {
-            fields = {};
+            return {};
         }
         if (fields.isPublished === false) {
             let modifiedFields = {};
@@ -441,9 +437,17 @@ module.exports = function(Dataset) {
                     modifiedFields[key] = fields[key];
                 }
             });
-            fields = modifiedFields;
-            fields.userGroups = options.currentGroups;
+            modifiedFields.userGroups = options.currentGroups;
+            return modifiedFields;
         }
+        return fields;
+    }
+
+    Dataset.fullfacet = function(fields, facets = [], options, cb) {
+        // keep the full aggregation pipeline definition
+        let pipeline = [];
+        let facetMatch = {};
+        fields = setFields(fields, options);
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -604,20 +608,8 @@ module.exports = function(Dataset) {
     Dataset.fullquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
-        if (fields === undefined) {
-            fields = {};
-        }
+        fields = setFields(fields, options);
         // console.log("Inside fullquery:options",options)
-        if (fields.isPublished === false) {
-            let modifiedFields = {};
-            Object.keys(fields).forEach(key => {
-                if (key !== "isPublished") {
-                    modifiedFields[key] = fields[key];
-                }
-            });
-            fields = modifiedFields;
-            fields.userGroups = options.currentGroups;
-        }
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
