@@ -136,6 +136,7 @@ module.exports = function(PublishedData) {
     //Proposal.findById(ds.pid, function(err, prop)
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
+            pub.doiRegisteredSuccessfullyTime = new Date();
             const xml = formRegistrationXML(pub);
 
             if (!config) {
@@ -203,7 +204,7 @@ module.exports = function(PublishedData) {
                     .then(() => cb(null, "asdasd"))
                     .catch(() => cb());
             } else if (!config.oaiProviderRoute) {
-                return cb("oaiProviderRoute route specified in config.local");
+                return cb("oaiProviderRoute route not specified in config.local");
             } else {
                 requestPromise(syncOAIPublication)
                     .then(() => cb(null, "asdasd"))
