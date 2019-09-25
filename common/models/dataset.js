@@ -472,21 +472,23 @@ module.exports = function(Dataset) {
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
                     // unshift because text must be at start of array
-                    pipeline.unshift({
-                        $match: {
-                            $or: [
-                                {
-                                    $text: searchExpression(key, fields[key])
-                                },
-                                {
-                                    sourceFolder: {
-                                        $regex: fields[key],
-                                        $options: "i"
+                    if (typeof fields[key] === "string") {
+                        pipeline.unshift({
+                            $match: {
+                                $or: [
+                                    {
+                                        $text: searchExpression(key, fields[key])
+                                    },
+                                    {
+                                        sourceFolder: {
+                                            $regex: fields[key],
+                                            $options: "i"
+                                        }
                                     }
-                                }
-                            ]
-                        }
-                    });
+                                ]
+                            }
+                        });
+                    }
                 }
                 // mode is not a field in dataset, just an object for containing a match clause
                 else if (key === "mode") {
@@ -665,11 +667,13 @@ module.exports = function(Dataset) {
                         });
                     }
                 } else {
-                    let match = {};
-                    match[key] = searchExpression(key, fields[key]);
-                    pipeline.push({
-                        $match: match
-                    });
+                    if (typeof fields[key] === "string") {
+                        let match = {};
+                        match[key] = searchExpression(key, fields[key]);
+                        pipeline.push({
+                            $match: match
+                        });
+                    }
                 }
             }
         });
