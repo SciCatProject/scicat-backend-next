@@ -34,7 +34,7 @@
         "passport-openidconnect": "^0.0.2",
         "request-promise": "^4.2.4",
         "serve-favicon": "2.5.0",
-        "strong-error-handler": "3.2.0",
+        "strong-error-handler": "3.3.0",
         "superagent": "^5.0.6",
         "uuid": "^3.3.2"
     },
