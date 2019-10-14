@@ -35,9 +35,9 @@ COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
 #COPY CI/ESS/settings.json /usr/src/app/test/config/
 RUN NODE_ENV=dev
 # Start the app
-ENV http_proxy "http://10.0.0.160:8123"
-ENV https_proxy $http_proxy
-ENV no_proxy "localhost, 127.0.0.1"
-RUN npm config set proxy  $http_proxy
-RUN npm config set https-proxy  $http_proxy
+# ENV http_proxy "http://10.0.0.160:8123"
+# ENV https_proxy $http_proxy
+# ENV no_proxy "localhost, 127.0.0.1"
+# RUN npm config set proxy  $http_proxy
+# RUN npm config set https-proxy  $http_proxy
 CMD ["node", "."]
