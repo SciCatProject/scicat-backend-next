@@ -140,7 +140,7 @@ module.exports = function(Proposal) {
                 const sortFields = limits.order.split(",");
                 let orders = [];
                 sortFields.forEach(field => {
-                    const parts = field.split(" ");
+                    const parts = field.split(":");
                     if (parts.length > 1) {
                         orders.push(parts[0] + " " + parts[1].toUpperCase());
                     } else {
