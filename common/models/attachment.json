@@ -10,13 +10,13 @@
     "thumbnail": {
       "type": "string",
       "required": true,
-      "default": "retrieve",
-      "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset"
+      "description": "Contains a thumbnail preview in base64 encoded png format for a given dataset",
+      "default": "retrieve"
     },
     "caption": {
       "type": "string",
-      "default": "",
-      "description": "Attachment caption to show in catanie"
+      "description": "Attachment caption to show in catanie",
+      "default": ""
     },
     "creationTime": {
       "type": "date",

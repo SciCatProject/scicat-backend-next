@@ -1,0 +1,29 @@
+{
+  "name": "UserSetting",
+  "description": "User settings such as job count and dataset count",
+  "base": "Ownable",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "columns": {
+      "type": "object"
+    },
+    "email": {
+      "type": "string"
+    },
+    "datasetCount": {
+      "type": "number",
+      "default": 25
+    },
+    "jobCount": {
+      "type": "number",
+      "default": 25
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

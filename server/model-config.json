@@ -136,5 +136,9 @@
   "Attachment": {
     "dataSource": "mongo",
     "public": true
+  },
+  "UserSetting": {
+    "dataSource": "mongo",
+    "public": true
   }
 }
