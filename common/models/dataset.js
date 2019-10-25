@@ -477,7 +477,10 @@ module.exports = function(Dataset) {
                             $match: {
                                 $or: [
                                     {
-                                        $text: searchExpression(key, fields[key])
+                                        $text: searchExpression(
+                                            key,
+                                            fields[key]
+                                        )
                                     },
                                     {
                                         sourceFolder: {
@@ -667,7 +670,7 @@ module.exports = function(Dataset) {
                         });
                     }
                 } else {
-                    if (typeof fields[key] === "string") {
+                    if (typeof fields[key].constructor !== Object) {
                         let match = {};
                         match[key] = searchExpression(key, fields[key]);
                         pipeline.push({
