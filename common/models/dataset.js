@@ -1009,46 +1009,4 @@ module.exports = function(Dataset) {
             }
         ]
     });
-
-    Dataset.updateScientificMetadata = async function(dataset) {
-        await Dataset.updateAll(
-            { pid: dataset.pid },
-            { scientificMetadata: dataset.scientificMetadata }
-        );
-
-        const filter = {
-            include: ["datablocks", "origdatablocks", "attachments"]
-        };
-        return Dataset.findById(dataset.pid, filter);
-    };
-
-    Dataset.remoteMethod("updateScientificMetadata", {
-        accepts: [
-            {
-                arg: "dataset",
-                type: "Dataset",
-                required: true,
-                description:
-                    "The dataset for which to update scientificMetadata",
-                http: {
-                    source: "body"
-                }
-            }
-        ],
-        returns: [
-            {
-                arg: "updateAttributeById",
-                type: "Dataset",
-                root: true,
-                description: "The updated Dataset"
-            }
-        ],
-        description: "Update a single attribute of a dataset",
-        http: [
-            {
-                path: "/updateScientificMetadata",
-                verb: "put"
-            }
-        ]
-    });
 };
