@@ -151,7 +151,7 @@ module.exports = function(app) {
                                     if (err) return next(err);
                                     groups = [...groups, ...(share.map(({ id }) => { return String(id)}))];
                                     ctx.args.options.currentGroups = groups;
-                                    console.log("============ Phase:", ctx.args.options.currentGroups)
+                                    // console.log("============ Phase:", ctx.args.options.currentGroups)
                                     return next();
                                 });
                             }
