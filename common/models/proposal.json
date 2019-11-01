@@ -45,6 +45,12 @@
         },
         "abstract": {
             "type": "string"
+        },
+        "startTime": {
+            "type": "Date"
+        },
+        "endTime": {
+            "type": "Date"
         }
     },
     "validations": [],
