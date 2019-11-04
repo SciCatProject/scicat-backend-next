@@ -1,6 +1,5 @@
 "use strict";
 const ds = require("./proposal.json");
-const own = require("./ownable.json");
 const utils = require("./utils");
 
 module.exports = function(Proposal) {
@@ -121,6 +120,33 @@ module.exports = function(Proposal) {
                         });
                         queryFilter.where.and.push({ or: groups });
                     }
+                } else if (key === "dateRange") {
+                    let startRange = [];
+                    let endRange = [];
+                    let dateRanges = [];
+                    const proposalProperties = Object.keys(ds.properties);
+                    proposalProperties.forEach(property => {
+                        if (ds.properties[property].type === "Date") {
+                            if (property === "startTime") {
+                                startRange.push({
+                                    [property]: { gte: fields[key].begin }
+                                });
+                                startRange.push({
+                                    [property]: { lte: fields[key].end }
+                                });
+                            } else if (property === "endTime") {
+                                endRange.push({
+                                    [property]: { gte: fields[key].begin }
+                                });
+                                endRange.push({
+                                    [property]: { lte: fields[key].end }
+                                });
+                            }
+                        }
+                    });
+                    dateRanges.push({ and: startRange });
+                    dateRanges.push({ and: endRange });
+                    queryFilter.where.and.push({ or: dateRanges });
                 }
             }
         });
