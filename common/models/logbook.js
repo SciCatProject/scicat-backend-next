@@ -7,11 +7,6 @@ let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
-logbookEnabled = true;
-scichatBaseUrl = "localhost:3030/api";
-scichatUser = "logbookReader";
-scichatPass = "logrdr";
-
 module.exports = function(Logbook) {
     /**
      * Find Logbook model instance
