@@ -101,7 +101,7 @@
       "type": "string",
       "description": "Indication of position in publication workflow e.g. doiRegistered"
     },
-    "creationUser": {
+    "scicatUser": {
       "type": "string",
       "description": "The username of the user that clicks the publish button in the client"
     }
