@@ -1,91 +1,91 @@
 {
-  "name": "Sample",
-  "description": "Models describing the characteristics of the samples to be investigated. Raw datasets should be linked to such sample definitions.",
-  "base": "Ownable",
-  "strict": true,
-  "idInjection": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "sampleId": {
-      "type": "string",
-      "id": true
+    "name": "Sample",
+    "description": "Models describing the characteristics of the samples to be investigated. Raw datasets should be linked to such sample definitions.",
+    "base": "Ownable",
+    "strict": true,
+    "idInjection": true,
+    "options": {
+        "validateUpsert": true
     },
-    "owner": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "createdAt": {
-      "type": "date"
-    },
-    "sampleCharacteristics": {
-      "type": "object"
-    }
-  },
-  "validations": [],
-  "relations": {
-    "attachments": {
-      "type": "hasMany",
-      "model": "Attachment",
-      "foreignKey": ""
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "proposalingestor",
-      "permission": "DENY"
-    }
-  ],
-  "methods": {
-    "fullquery": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample. Skip and limit parameters allow for paging."
+    "properties": {
+        "sampleId": {
+            "type": "string",
+            "id": true
         },
-        {
-          "arg": "limits",
-          "type": "object",
-          "description": "Define further query parameters like skip, limit, order"
+        "owner": {
+            "type": "string"
         },
-        {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
+        "description": {
+            "type": "string"
+        },
+        "createdAt": {
+            "type": "date"
+        },
+        "sampleCharacteristics": {
+            "type": "object"
         }
-      ],
-      "returns": {
-        "root": true
-      },
-      "description": "Return samples fulfilling complex filter conditions, including from fields of joined models.",
-      "http": {
-        "path": "/fullquery",
-        "verb": "get"
-      }
+    },
+    "validations": [],
+    "relations": {
+        "attachments": {
+            "type": "hasMany",
+            "model": "Attachment",
+            "foreignKey": ""
+        }
+    },
+    "acls": [
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "DENY"
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "proposalingestor",
+            "permission": "DENY"
+        }
+    ],
+    "methods": {
+        "fullquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return samples fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/fullquery",
+                "verb": "get"
+            }
+        }
     }
-  }
 }
