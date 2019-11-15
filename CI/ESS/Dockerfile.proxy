@@ -28,8 +28,8 @@ RUN npm install --no-optional --only=production
 COPY . /usr/src/app
 COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local.js
 COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/
-#COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
-#COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
+COPY CI/ESS/envfiles/providers.json /usr/src/app/server/
+COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/
 #COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
 #COPY CI/ESS/start.sh /usr/src/app/start.sh
 #COPY CI/ESS/settings.json /usr/src/app/test/config/
