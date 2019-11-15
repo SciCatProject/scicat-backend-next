@@ -27,7 +27,7 @@ RUN npm install --no-optional --only=production
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
 COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local.js
-COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/middleware.json
+#COPY CI/ESS/envfiles/middleware.json /usr/src/app/server/middleware.json
 COPY CI/ESS/envfiles/providers.json /usr/src/app/server/providers.json
 COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/datasources.json
 #COPY CI/ESS/envfiles/component-config.json /usr/src/app/server/
