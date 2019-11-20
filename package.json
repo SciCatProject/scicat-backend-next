@@ -48,7 +48,7 @@
     "eslint": "^6.2.0",
     "eslint-config-loopback": "^13.1.0",
     "mocha": "^6.1.4",
-    "nodemon": "^1.19.1",
+    "nodemon": "^2.0.0",
     "rison": "github:nanonid/rison",
     "supertest": "^4.0.2"
   },
