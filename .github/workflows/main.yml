@@ -6,11 +6,14 @@ on:
     branches:    
       - develop
 jobs:
-   curl:
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: curl
-        uses: wei/curl@v1
-        with:
-          args: -X POST -F token=${{secrets.TOKEN}} "https://gitlab.esss.lu.se/api/v4/projects/1805/trigger/pipeline"
-
+    - name: trigger Job
+      uses: appleboy/gitlab-ci-action@master
+      with:
+        url: "https://gitlab.esss.lu.se/api/v4/projects/1903/ref/master/trigger/pipeline"
+        token: ${{ secrets.TOKEN }}
+        project_id: 1903
+        debug: true
