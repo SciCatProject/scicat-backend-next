@@ -6,12 +6,9 @@ on:
     branches:    
       - develop
 jobs:
-  build:
-
+   curl:
     runs-on: ubuntu-latest
-
     steps:
-      steps:
       - name: curl
         uses: wei/curl@v1
         with:
