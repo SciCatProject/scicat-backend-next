@@ -13,6 +13,7 @@ var utils = require('./LoginUtils');
 var accessToken = null;
 var pid = null;
 var accessProposalToken = null;
+var accessTokenArchiveManager = null;
 
 var testproposal = {
     "proposalId": "someprefix/20170266",
@@ -112,7 +113,14 @@ describe('RawDatasets', () => {
                     },
                     (tokenVal) => {
                         accessProposalToken = tokenVal;
-                        done();
+                        utils.getToken(app, {
+                                'username': 'archiveManager',
+                                'password': 'aman'
+                            },
+                            (tokenVal) => {
+                                accessTokenArchiveManager = tokenVal;
+                                done();
+                            });
                     });
             });
     });
@@ -182,7 +190,7 @@ describe('RawDatasets', () => {
 
     it('should delete this raw dataset', function (done) {
         request(app)
-            .delete('/api/v3/RawDatasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/RawDatasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -211,7 +219,7 @@ describe('RawDatasets', () => {
             });
     });
 
-    it('should delete this proposal', function(done) {
+    it('should delete this proposal', function (done) {
         request(app)
             .delete('/api/v3/Proposals/' + proposalId + '?access_token=' + accessProposalToken)
             .set('Accept', 'application/json')

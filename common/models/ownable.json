@@ -63,7 +63,7 @@
       "principalType": "ROLE",
       "principalId": "$authenticated",
       "permission": "ALLOW",
-      "property": "create"
+      "property": ["create","patchOrCreate","patchAttributes", "updateAll"]
     }
   ],
   "methods": {

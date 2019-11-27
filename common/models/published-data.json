@@ -122,12 +122,6 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    },
-    {
       "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "$everyone",

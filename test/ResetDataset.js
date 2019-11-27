@@ -384,7 +384,7 @@ describe('Create Dataset and its Datablocks, then reset Datablocks and embedded 
 
     it('should delete the newly created dataset', function (done) {
         request(app)
-            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
