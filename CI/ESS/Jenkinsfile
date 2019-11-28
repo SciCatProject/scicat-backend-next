@@ -13,11 +13,11 @@ node('docker') {
   stage('Production Build'){
       if (env.BRANCH_NAME == 'develop'){
             def IMAGE_ID = sh ( script: 'git rev-parse HEAD',returnStdout: true).trim()
-      sh "docker build --file CI/ESS/Dockerfile.proxy . --tag dacat/catamel:latest -t dacat/catamel:${IMAGE_ID}dev" 
-      echo "Git image id : ${IMAGE_ID}"
-      sh "docker push dacat/catamel:${IMAGE_ID}dev"
-      sh "docker push dacat/catamel:latest"
-      sh "docker rmi dacat/catamel:${IMAGE_ID}dev"    
+      //  sh "docker build --file CI/ESS/Dockerfile.proxy . --tag dacat/catamel:latest -t dacat/catamel:${IMAGE_ID}dev" 
+      // echo "Git image id : ${IMAGE_ID}"
+      // sh "docker push dacat/catamel:${IMAGE_ID}dev"
+      // sh "docker push dacat/catamel:latest"
+      // sh "docker rmi dacat/catamel:${IMAGE_ID}dev"    
       }
   }
 }
