@@ -95,20 +95,16 @@ module.exports = function (PublishedData) {
             const proposalId = ds.proposalId;
             self.formData.resourceType = ds.type;
             self.formData.description = ds.description;
-            self.formData.thumbnail = ds.thumbnail;
             if (!proposalId) return next(null, self.formData);
 
-            console.log("before prop")
             Proposal.findById(proposalId, function (err, prop) {
                 if (err) return next(err);
                 if (!prop) return next(null, self.formData);
                 self.formData.title = prop.title;
                 self.formData.abstract = prop.abstract;
 
-                console.log("before thumb")
                 Dataset.thumbnail(pid)
                     .then((thumb) => {
-                        console.log("in thumb")
                         self.formData.thumbnail = thumb;
                         return next(null, self.formData);
                     });
