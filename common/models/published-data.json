@@ -19,11 +19,13 @@
     },
     "affiliation": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "Creator Affiliation"
     },
     "creator": {
-      "type": "string",
+      "type": [
+        "string"
+      ],
       "required": true,
       "description": "Creator of dataset/dataset collection"
     },
@@ -84,8 +86,8 @@
       "type": [
         "string"
       ],
-      "required": true,
-      "description": "Array of one or more persons who are able to update this entry of published data"
+      "required": false,
+      "description": "Not yet defined"
     },
     "doiRegisteredSuccessfullyTime": {
       "type": "date",

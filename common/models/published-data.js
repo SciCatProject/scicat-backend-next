@@ -14,17 +14,17 @@ function formRegistrationXML(publishedData) {
         title,
         abstract,
         resourceType,
-        authors
+        creator
     } = publishedData;
     const doi =
         config.doiPrefix +
         "/" +
         publishedData["doi"].replace(config.pidPrefix, "");
-    const uniqueAuthors = authors.filter(
-        (author, i) => authors.indexOf(author) === i
+    const uniqueCreator = creator.filter(
+        (author, i) => creator.indexOf(author) === i
     );
 
-    const creatorElements = uniqueAuthors.map(author => {
+    const creatorElements = uniqueCreator.map(author => {
         const names = author.split(" ");
         const firstName = names[0];
         const lastName = names.slice(1).join(" ");
@@ -58,10 +58,10 @@ function formRegistrationXML(publishedData) {
     `;
 }
 
-module.exports = function(PublishedData) {
+module.exports = function (PublishedData) {
     const app = require("../../server/server");
 
-    PublishedData.observe("before save", function(ctx, next) {
+    PublishedData.observe("before save", function (ctx, next) {
         const token = ctx.options.accessToken;
         if (token == null) {
             return next(new Error());
@@ -82,47 +82,42 @@ module.exports = function(PublishedData) {
             .catch(err => next(err));
     });
 
-    PublishedData.formPopulate = function(pid, next) {
+    PublishedData.formPopulate = function (pid, next) {
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
         var self = this;
         self.formData = {};
-        Dataset.thumbnail(pid, function(err, thumb) {
-            if (err) {
-                return next(err);
-            }
-            self.formData.thumbnail = thumb.thumbnail;
-            return next(null, self.formData);
-        });
-        Dataset.findById(pid, function(err, ds) {
+
+        Dataset.findById(pid, function (err, ds) {
             if (err) {
                 return next(err);
             }
             const proposalId = ds.proposalId;
-            if (!proposalId) return next("No proposalId found");
-            self.formData.resourceType = ds.dataFormat;
+            self.formData.resourceType = ds.type;
             self.formData.description = ds.description;
-            self.formData.thumbnail = ds.thumbnail;
-            //publicationYear;
-            //url;
-            Proposal.findById(proposalId, function(err, prop) {
+            if (!proposalId) return next(null, self.formData);
+
+            Proposal.findById(proposalId, function (err, prop) {
                 if (err) return next(err);
-                if (!prop) return next("No proposal found");
+                if (!prop) return next(null, self.formData);
                 self.formData.title = prop.title;
                 self.formData.abstract = prop.abstract;
-                return next(null, self.formData);
+
+                Dataset.thumbnail(pid)
+                    .then((thumb) => {
+                        self.formData.thumbnail = thumb;
+                        return next(null, self.formData);
+                    });
             });
         });
     };
 
     PublishedData.remoteMethod("formPopulate", {
-        accepts: [
-            {
-                arg: "pid",
-                type: "string",
-                required: true
-            }
-        ],
+        accepts: [{
+            arg: "pid",
+            type: "string",
+            required: true
+        }],
         http: {
             path: "/formPopulate",
             verb: "get"
@@ -134,8 +129,8 @@ module.exports = function(PublishedData) {
     });
 
     //Proposal.findById(ds.pid, function(err, prop)
-    PublishedData.register = function(id, cb) {
-        PublishedData.findById(id, function(err, pub) {
+    PublishedData.register = function (id, cb) {
+        PublishedData.findById(id, function (err, pub) {
             pub.doiRegisteredSuccessfullyTime = new Date();
             const xml = formRegistrationXML(pub);
 
@@ -214,15 +209,19 @@ module.exports = function(PublishedData) {
     };
 
     PublishedData.remoteMethod("register", {
-        accepts: [
-            {
-                arg: "id",
-                type: "string",
-                required: true
-            }
-        ],
-        http: { path: "/:id/register", verb: "post" },
-        returns: { arg: "doi", type: "string" }
+        accepts: [{
+            arg: "id",
+            type: "string",
+            required: true
+        }],
+        http: {
+            path: "/:id/register",
+            verb: "post"
+        },
+        returns: {
+            arg: "doi",
+            type: "string"
+        }
     });
     // TODO add logic that give authors privileges to modify data
 
