@@ -10,6 +10,7 @@ var request = require('supertest');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
+var accessTokenArchiveManager = null
 var accessToken = null,
     id = null;
 
@@ -41,7 +42,15 @@ describe('Simple Policy tests', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
             });
     });
 
@@ -91,7 +100,7 @@ describe('Simple Policy tests', () => {
 
     it('should delete this policy', function(done) {
         request(app)
-            .delete('/api/v3/Policies/' + id + '?access_token=' + accessToken)
+            .delete('/api/v3/Policies/' + id + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

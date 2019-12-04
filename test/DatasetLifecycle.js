@@ -362,7 +362,7 @@ describe('Test facet and filter queries', () => {
     it('should delete the newly created dataset', function (done) {
         // console.log("Deleting first dataset:",pid)
         request(app)
-            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -376,7 +376,7 @@ describe('Test facet and filter queries', () => {
     it('should delete the newly created dataset', function (done) {
         // console.log("Deleting second dataset:",pid2)
         request(app)
-            .delete('/api/v3/Datasets/' + pid2 + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid2 + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

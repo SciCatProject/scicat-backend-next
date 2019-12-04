@@ -44,7 +44,13 @@
             "type": "string",
             "required": true,
             "index": true,
-            "description": "Absolute file path on file server containing the files of this dataset, optionally including protocol and file server hostname, e.g. nfs://fileserver1.example.com/some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
+            "description": "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
+        },
+        "sourceFolderHost": {
+            "type": "string",
+            "required": false,
+            "index": true,
+            "description": "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
         },
         "size": {
             "type": "number",
@@ -137,8 +143,7 @@
             "foreignKey": ""
         }
     },
-    "acls": [
-        {
+    "acls": [{
             "accessType": "*",
             "principalType": "ROLE",
             "principalId": "ingestor",
@@ -151,6 +156,13 @@
             "permission": "ALLOW"
         },
         {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "DENY",
+            "property": ["reset", "destroyById", "deleteById"]
+        },
+        {
             "accessType": "READ",
             "principalType": "ROLE",
             "principalId": "proposalingestor",
@@ -160,7 +172,7 @@
             "principalType": "ROLE",
             "principalId": "archivemanager",
             "permission": "ALLOW",
-            "property": "reset"
+            "property": ["reset", "destroyById", "deleteById"]
         },
         {
             "principalType": "ROLE",
@@ -190,8 +202,7 @@
     ],
     "methods": {
         "reset": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "datasetId",
                     "type": "string"
                 },
@@ -211,8 +222,7 @@
             }
         },
         "fullfacet": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
@@ -238,8 +248,7 @@
             }
         },
         "fullquery": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
@@ -265,8 +274,7 @@
             }
         },
         "anonymousquery": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."

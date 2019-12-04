@@ -12,6 +12,7 @@ var should = chai.should();
 var utils = require('./LoginUtils');
 
 var accessToken = null;
+var accessTokenArchiveManager = null;
 var boot = require('loopback-boot');
 
 // TODO
@@ -163,8 +164,15 @@ describe('Check different dataset types and their inheritance', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
-                // app(done)
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
             });
     });
 
@@ -451,7 +459,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new dataset', function(done) {
         request(app)
-            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -464,7 +472,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new raw dataset', function(done) {
         request(app)
-            .delete('/api/v3/Datasets/' + pidraw + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pidraw + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -477,7 +485,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new derived dataset', function(done) {
         request(app)
-            .delete('/api/v3/Datasets/' + pidderived + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pidderived + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

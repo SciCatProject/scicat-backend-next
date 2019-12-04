@@ -84,6 +84,10 @@
           "type": "object"
         },
         {
+          "arg": "includeFields",
+          "type": "object"
+        },
+        {
           "arg": "options",
           "type": "object",
           "http": "optionsFromRequest"

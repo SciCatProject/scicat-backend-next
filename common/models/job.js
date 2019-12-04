@@ -6,6 +6,14 @@ var nodemailer = require('nodemailer');
 var config = require('../../server/config.local');
 var app = require('../../server/server');
 
+function isEmptyObject(obj) {
+    for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            return false;
+        }
+    }
+    return true;
+}
 
 function sendMail(to, cc, subjectText, mailText, e, next) {
     if ('smtpSettings' in config && 'smtpMessage' in config) {
@@ -47,92 +55,182 @@ function publishJob(job, ctx, next) {
     return next()
 }
 
-function sendStartJobEmail(job, ctx, policy, next) {
-    // check policy settings if mail should be sent
+function sendStartJobEmail(job, ctx, idList, policy, next) {
+    // // check policy settings if mail should be sent
     let to = ctx.instance.emailJobInitiator
     let subjectText = ' ' + ctx.instance.type + ' job submitted successfully';
     let mailText = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets. Your job was received and will be completed as soon as possible. \n\n Many Thanks.\n\n' + JSON.stringify(ctx.instance, null, 4);
 
-    if (ctx.instance.type == 'archive' && policy.archiveEmailNotification) {
-        // needs more checking
-        if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
-            to += "," + policy.archiveEmailsToBeNotified.join()
-        }
-        sendMail(to, "", subjectText, mailText, null, next)
-        return
-    }
-    if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
-        if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
-            to += "," + policy.retrieveEmailsToBeNotified.join()
-        }
-        sendMail(to, "", subjectText, mailText, null, next)
-        return
-    }
-    next()
-}
-
-function SendFinishJobEmail(Job, ctx, idList, policy, next) {
+    // add some more infos about datasets to be treted
     let Dataset = app.models.Dataset;
-    let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
-    let mailText = 'Hello, \n\nYour Job from ' + ctx.instance.creationTime + ' is now finished.\n';
-    if (ctx.instance.jobStatusMessage) {
-        mailText += '\nThe returned job status is: *** ' + ctx.instance.jobStatusMessage + ' ***\n\n'
-    }
-    if (ctx.instance.jobResultObject) {
-        mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3) + '\n\n'
-    }
-    let to = ctx.instance.emailJobInitiator
-    let failure = ctx.instance.jobStatusMessage.indexOf('finish') !== -1 && ctx.instance.jobStatusMessage.indexOf('finishedSuccessful') == -1
-    // console.log("jobstatusmessage, failure:",ctx.instance.jobStatusMessage, failure)
-    //test if all datasets are in retrievable state
     if (ctx.instance.type == "archive" || ctx.instance.type == "retrieve") {
         Dataset.find({
             fields: {
                 "pid": true,
                 "sourceFolder": true,
                 "size": true,
-                "datasetlifecycle": true
+                "datasetlifecycle": true,
+                "ownerGroup": true
             },
             where: {
-                'datasetlifecycle.retrievable': false,
                 pid: {
                     inq: idList
                 }
             }
         }, ctx.options, function (err, p) {
-            const nonRetrievableList = p.map(x => ({
+            const datasetResultList = p.map(x => ({
                 pid: x.pid,
+                ownerGroup: x.ownerGroup,
+                sourceFolder: x.sourceFolder,
+                size: x.size,
+                archivable: x.datasetlifecycle.archivable,
+                retrievable: x.datasetlifecycle.retrievable
+            }))
+
+            mailText += "\n\nList of datasets:\n"
+            mailText += "=================\n\n"
+            mailText += JSON.stringify(datasetResultList, null, 3)
+
+            if (ctx.instance.type == 'archive' && policy.archiveEmailNotification) {
+                // needs more checking
+                if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
+                    to += "," + policy.archiveEmailsToBeNotified.join()
+                }
+                sendMail(to, "", subjectText, mailText, null, next)
+                return
+            }
+            if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
+                if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
+                    to += "," + policy.retrieveEmailsToBeNotified.join()
+                }
+                sendMail(to, "", subjectText, mailText, null, next)
+                return
+            }
+            return next()
+        })
+    } else {
+        // other jobs like reset jobs
+        sendMail(to, "", subjectText, mailText, null, next)
+        return
+    }
+}
+
+function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
+
+    let Dataset = app.models.Dataset;
+    Dataset.updateAll({
+            pid: {
+                inq: idList
+            }
+        }, {
+            "$set": {
+                "datasetlifecycle.archivable": false,
+                "datasetlifecycle.retrievable": false,
+                "datasetlifecycle.archiveStatusMessage": "scheduledForArchiving"
+            }
+        }, ctx.options,
+        function (err, p) {
+            if (err) {
+                var e = new Error();
+                e.statusCode = 404;
+                e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
+                next(e);
+            } else {
+                sendStartJobEmail(job, ctx, idList, policy, function () {
+                    publishJob(job, ctx, next)
+                })
+            }
+        });
+}
+
+function SendFinishJobEmail(Job, ctx, idList, policy, next) {
+    let Dataset = app.models.Dataset;
+    let subjectText = ' ' + ctx.instance.type + ' job from ' + ctx.instance.creationTime.toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' (UTC) finished with status ' + ctx.instance.jobStatusMessage;
+    let mailText = 'Hello, \n\nYour Job from ' + ctx.instance.creationTime + ' is now finished.\n';
+    let failure = ctx.instance.jobStatusMessage.indexOf('finish') !== -1 && ctx.instance.jobStatusMessage.indexOf('finishedSuccessful') == -1
+    if (ctx.instance.jobStatusMessage) {
+        mailText += '\nThe returned job status is: *** ' + ctx.instance.jobStatusMessage + ' ***\n\n'
+        if (failure) {
+            mailText += '==========================================================================\n'
+            mailText += 'The job resulted in an error message !!! Please look at the details below.\n'
+            mailText += '==========================================================================\n'
+
+        }
+    }
+    if (ctx.instance.jobResultObject) {
+        mailText += 'The returned Job results details are:' + JSON.stringify(ctx.instance.jobResultObject, null, 3) + '\n\n'
+    }
+    let to = ctx.instance.emailJobInitiator
+    // console.log("jobstatusmessage, failure:",ctx.instance.jobStatusMessage, failure)
+    // test if all datasets are in retrievable state
+    // for this get all datasets and check their status flags
+    if (ctx.instance.type == "archive" || ctx.instance.type == "retrieve") {
+        Dataset.find({
+            fields: {
+                "pid": true,
+                "sourceFolder": true,
+                "size": true,
+                "datasetlifecycle": true,
+                "ownerGroup": true
+            },
+            where: {
+                pid: {
+                    inq: idList
+                }
+            }
+        }, ctx.options, function (err, p) {
+            const datasetResultList = p.map(x => ({
+                pid: x.pid,
+                ownerGroup: x.ownerGroup,
                 sourceFolder: x.sourceFolder,
                 size: x.size,
                 archiveStatusMessage: x.datasetlifecycle.archiveStatusMessage,
                 retrieveStatusMessage: x.datasetlifecycle.retrieveStatusMessage,
                 archiveReturnMessage: x.datasetlifecycle.archiveReturnMessage,
-                retrieveReturnMessage: x.datasetlifecycle.retrieveReturnMessage
+                retrieveReturnMessage: x.datasetlifecycle.retrieveReturnMessage,
+                retrievable: x.datasetlifecycle.retrievable
             }))
             var cc = ""
-            if (p.length > 0) {
+            // split result into good and bad
+            const good = datasetResultList.filter(function (x) {
+                return x.retrievable;
+            });
+            const bad = datasetResultList.filter(function (x) {
+                return !x.retrievable;
+            });
+            // print warning and the details in tabular form
+            // print good cases
+            if (bad.length > 0) {
                 // console.log("Setting failure to true, list of pids, length:",JSON.stringify(p,null,3),p.length);
                 failure = true
                 if (ctx.instance.type == "archive") {
-                    mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n\n" +
-                        JSON.stringify(nonRetrievableList, null, 3)
+                    mailText += "The following datasets were scheduled for archiving but are not in a retrievable state:\n"
+                    mailText += "=======================================================================================\n\n"
+                    mailText += JSON.stringify(bad, null, 3)
                 } else {
-                    mailText += "The following datasets were scheduled for retrieval but are not in retrievable state:\n\n" +
-                        JSON.stringify(nonRetrievableList, null, 3)
+                    mailText += "The following datasets were scheduled for retrieval but are not in retrievable state:\n"
+                    mailText += "=====================================================================================\n\n"
+                    mailText += JSON.stringify(bad, null, 3)
                 }
                 // add cc message in case of failure to scicat archivemanager
                 if ('smtpMessage' in config && 'from' in config.smtpMessage) {
                     cc = config.smtpMessage.from
                 }
-            } else {
-                if (ctx.instance.type == "archive") {
-                    mailText += "All datasets to be archived are now in state retrievable:\n\n" + JSON.stringify(idList, null, 3)
-                } else {
-                    mailText += "All datasets to be retrieved are (still) in retrievable state:\n\n" + JSON.stringify(idList, null, 3)
-                }
             }
+
+            // succesfull datasets
+            if (ctx.instance.type == "archive") {
+                mailText += "The following datasets were succesfully archived:\n"
+                mailText += "=================================================\n\n"
+                mailText += JSON.stringify(good, null, 3)
+            }
+
             if (ctx.instance.type == "retrieve") {
-                mailText += "\n\nIf the job was successful you can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
+                mailText += "The following datasets are ready to be retrieved:\n"
+                mailText += "=================================================\n\n"
+                mailText += JSON.stringify(good, null, 3)
+                mailText += "=================================================\n\n"
+                mailText += "\nYou can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination"
             }
             // failures are always reported
             if (ctx.instance.type == 'archive' && (policy.archiveEmailNotification || failure)) {
@@ -180,7 +278,7 @@ function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
                 e.message = 'Can not find all needed Dataset entries - no archive job sent:\n' + JSON.stringify(err)
                 next(e);
             } else {
-                sendStartJobEmail(job, ctx, policy, function () {
+                sendStartJobEmail(job, ctx, idList, policy, function () {
                     publishJob(job, ctx, next)
                 })
             }
@@ -253,7 +351,7 @@ function TestRetrieveJobs(job, ctx, idList, policy, next) {
                 }
             })
         } else {
-            sendStartJobEmail(job, ctx, policy, function () {
+            sendStartJobEmail(job, ctx, idList, policy, function () {
                 publishJob(job, ctx, next)
             })
         }
@@ -277,10 +375,10 @@ function TestAllDatasets(job, ctx, idList, policy, next) {
             e.statusCode = 404;
             e.message = 'At least one of the datasets could not be found - no Job sent';
             let subjectText = ' ' + ctx.instance.type + ' job not submitted due to missing datasets';
-            let mailText = 'Hello, \n\n You created a job to ' + ctx.instance.type + ' datasets.'
-            mailText += ' However at least one of the datasets could not be found , therefor no Job was sent.\n\n'
-            mailText += 'Requested dataset ids:\n' + JSON.stringify(idList, null, 3);
-            mailText += 'Found dataset ids:\n' + JSON.stringify(p, null, 3);
+            let mailText = 'Hello, \n\nYou created a job to ' + ctx.instance.type + ' datasets.'
+            mailText += ' However at least one of the datasets could not be found , therefore no job was sent.\n\n'
+            mailText += 'Requested dataset ids:\n======================\n' + JSON.stringify(idList, null, 3);
+            mailText += '\n\nFound dataset ids:\n======================\n' + JSON.stringify(p, null, 3);
             let to = ctx.instance.emailJobInitiator
             sendMail(to, "", subjectText, mailText, e, next)
         } else {
@@ -291,7 +389,7 @@ function TestAllDatasets(job, ctx, idList, policy, next) {
                 TestRetrieveJobs(job, ctx, idList, policy, next)
             } else {
                 // all other type of jobs, like reset jobs
-                sendStartJobEmail(job, ctx, policy, function () {
+                sendStartJobEmail(job, ctx, idList, policy, function () {
                     publishJob(job, ctx, next)
                 })
             }
@@ -387,8 +485,10 @@ module.exports = function (Job) {
         }
     });
 
-    Job.datasetDetails = function (jobId, datasetFields = {}, include = {}, options, next) {
+    Job.datasetDetails = function (jobId, datasetFields = {}, include = {}, includeFields = {}, options, next) {
         const Dataset = app.models.Dataset;
+        const Datablock = app.models.Datablock;
+
         Job.findById(jobId, options, function (err, job) {
             if (err) {
                 return next(err);
@@ -400,7 +500,7 @@ module.exports = function (Job) {
             const datasetIdList = job.datasetList.map(x => x.pid)
             const filter = {
                 fields: datasetFields,
-                include: include,
+                // include: include,
                 where: {
                     pid: {
                         inq: datasetIdList
@@ -412,10 +512,44 @@ module.exports = function (Job) {
                 if (err) {
                     return next(err)
                 }
-                //console.log("Returned result:", JSON.stringify(result, null, 3))
-                return next(null, result)
+                // if include wanted make a second API request on included collection, 
+                // taking into account its own field constraints
+
+                if (!isEmptyObject(include)) {
+                    if (("relation" in include) && (include.relation == "datablocks")) {
+                        // {"fields":{"id":1,"archiveId":1,"size":1},"where":{"datasetId":{"in":["20.500.11935/ac19baf2-a825-4a26-ad79-18039b67438f"]}}}
+                        const filterDB = {
+                            fields: includeFields,
+                            where: {
+                                datasetId: {
+                                    inq: datasetIdList
+                                }
+                            }
+                        }
+                        // console.log("filterDB:", JSON.stringify(filterDB, null, 3))
+                        // first create a copy of the object, since we need to modify it:
+                        var newResult = JSON.parse(JSON.stringify(result))
+                        Datablock.find(filterDB, options, function (err, resultDB) {
+                            // now merge datablock results to dataset results
+                            newResult.map(function (ds) {
+                                // add datablocks array
+                                const tmpds = resultDB.filter(function (db) {
+                                    console.log("Comparing IDS:", db.datasetId, ds.pid)
+                                    return db.datasetId == ds.pid
+                                })
+                                console.log("Subset of datablocks for current dataset:", JSON.stringify(tmpds, null, 3))
+                                ds.datablocks = tmpds
+                            })
+                            console.log("Result after adding datablocks:", JSON.stringify(newResult, null, 3))
+                            return next(null, newResult)
+                        })
+                    } else {
+                        return next(null, result)
+                    }
+                } else {
+                    return next(null, result)
+                }
             });
         });
     };
-
 };

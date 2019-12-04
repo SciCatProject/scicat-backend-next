@@ -10,6 +10,7 @@ const request = require("supertest");
 const should = chai.should();
 const utils = require("./LoginUtils");
 
+var accessTokenArchiveManager = null;
 let accessToken = null,
     defaultPid = null,
     pid = null,
@@ -39,18 +40,23 @@ before(function() {
 });
 
 describe("Simple Dataset tests", () => {
-    before(done => {
-        utils.getToken(
-            app,
-            {
-                username: "ingestor",
-                password: "aman"
+    before((done) => {
+        utils.getToken(app, {
+                'username': 'ingestor',
+                'password': 'aman'
             },
-            tokenVal => {
+            (tokenVal) => {
                 accessToken = tokenVal;
-                done();
-            }
-        );
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
+            });
     });
 
     it("adds a new dataset", function(done) {
@@ -142,7 +148,7 @@ describe("Simple Dataset tests", () => {
                     "/attachments/" +
                     attachmentId +
                     "?access_token=" +
-                    accessToken
+                    accessTokenArchiveManager
             )
             .set("Accept", "application/json")
             .expect(204)
@@ -154,7 +160,7 @@ describe("Simple Dataset tests", () => {
 
     it("should delete this dataset", function(done) {
         request(app)
-            .delete("/api/v3/Datasets/" + pid + "?access_token=" + accessToken)
+            .delete("/api/v3/Datasets/" + pid + "?access_token=" + accessTokenArchiveManager)
             .set("Accept", "application/json")
             .expect(200)
             .expect("Content-Type", /json/)

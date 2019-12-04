@@ -10,8 +10,9 @@ var request = require('supertest');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
-var accessToken = null,
-    pid = null;
+var accessToken = null
+var accessTokenArchiveManager = null
+var pid = null;
 
 var testderived = {
     "investigator": "egon.meier@web.de",
@@ -52,7 +53,15 @@ describe('DerivedDatasets', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
             });
     });
     it('adds a new derived dataset', function(done) {
@@ -88,7 +97,7 @@ describe('DerivedDatasets', () => {
 
     it('should delete a derived dataset', function(done) {
         request(app)
-            .delete('/api/v3/DerivedDatasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/DerivedDatasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
