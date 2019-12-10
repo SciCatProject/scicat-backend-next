@@ -95,7 +95,6 @@ module.exports = function (PublishedData) {
             const proposalId = ds.proposalId;
             self.formData.resourceType = ds.type;
             self.formData.description = ds.description;
-            if (!proposalId) return next(null, self.formData);
 
             Proposal.findById(proposalId, function (err, prop) {
                 if (prop) {
