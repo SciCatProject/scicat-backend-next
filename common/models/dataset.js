@@ -861,7 +861,7 @@ module.exports = function(Dataset) {
 
     Dataset.metadataKeys = async function(fields, limits, options) {
         const whitelist = [];
-        const blacklist = [];
+        const blacklist = [new RegExp(".*_date")];
 
         try {
             const datasets = await new Promise((resolve, reject) => {
@@ -870,10 +870,12 @@ module.exports = function(Dataset) {
                 });
             });
 
-            const metadata = datasets.map(entry =>
-                Object.keys(entry.scientificMetadata)
+            const metadata = datasets.map(dataset =>
+                Object.keys(dataset.scientificMetadata)
             );
 
+            // Flatten array, ensure uniqueness of and filter out
+            // blacklisted metadata keys before returning data
             return [].concat
                 .apply([], metadata)
                 .reduce((accumulator, currentValue) => {
@@ -881,7 +883,8 @@ module.exports = function(Dataset) {
                         accumulator.push(currentValue);
                     }
                     return accumulator;
-                }, []);
+                }, [])
+                .filter(key => !blacklist.some(regex => regex.test(key)));
         } catch (err) {
             console.error("Error in Dataset.metadataKeys", err);
         }
@@ -893,7 +896,7 @@ module.exports = function(Dataset) {
                 arg: "fields",
                 type: "object",
                 description:
-                    "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+                    "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset."
             },
             {
                 arg: "limits",
@@ -911,7 +914,7 @@ module.exports = function(Dataset) {
             root: true
         },
         description:
-            "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+            "Return array of metadata keys from datasets corresponding to the current filters.",
         http: {
             path: "/metadataKeys",
             verb: "get"
