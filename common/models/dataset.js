@@ -859,6 +859,65 @@ module.exports = function(Dataset) {
         });
     };
 
+    Dataset.metadataKeys = async function(fields, limits, options) {
+        const whitelist = [];
+        const blacklist = [];
+
+        try {
+            const datasets = await new Promise((resolve, reject) => {
+                Dataset.fullquery(fields, limits, options, (err, res) => {
+                    resolve(res);
+                });
+            });
+
+            const metadata = datasets.map(entry =>
+                Object.keys(entry.scientificMetadata)
+            );
+
+            return [].concat
+                .apply([], metadata)
+                .reduce((accumulator, currentValue) => {
+                    if (accumulator.indexOf(currentValue) === -1) {
+                        accumulator.push(currentValue);
+                    }
+                    return accumulator;
+                }, []);
+        } catch (err) {
+            console.error("Error in Dataset.metadataKeys", err);
+        }
+    };
+
+    Dataset.remoteMethod("metadataKeys", {
+        accepts: [
+            {
+                arg: "fields",
+                type: "object",
+                description:
+                    "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+            },
+            {
+                arg: "limits",
+                type: "object",
+                description:
+                    "Define further query parameters like skip, limit, order"
+            },
+            {
+                arg: "options",
+                type: "object",
+                http: "optionsFromRequest"
+            }
+        ],
+        returns: {
+            root: true
+        },
+        description:
+            "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+        http: {
+            path: "/metadataKeys",
+            verb: "get"
+        }
+    });
+
     Dataset.isValid = function(dataset, next) {
         var ds = new Dataset(dataset);
         ds.isValid(function(valid) {
