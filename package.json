@@ -42,7 +42,7 @@
     "loopback-connector-kafka": "^0.2.1"
   },
   "devDependencies": {
-    "@mean-expert/loopback-sdk-builder": "^2.1.0",
+    "@mean-expert/loopback-sdk-builder": "^2.3.1",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "eslint": "^6.2.0",
