@@ -430,15 +430,13 @@ module.exports = function(Dataset) {
         if (fields === undefined) {
             return {};
         }
+        if (fields.metadataKey) {
+            const { metadataKey, ...theRest } = fields;
+            fields = { ...theRest };
+        }
         if (fields.isPublished === false) {
-            let modifiedFields = {};
-            Object.keys(fields).forEach(key => {
-                if (key !== "isPublished") {
-                    modifiedFields[key] = fields[key];
-                }
-            });
-            modifiedFields.userGroups = options.currentGroups;
-            return modifiedFields;
+            const { isPublished, ...theRest } = fields;
+            return { ...theRest, userGroups: options.currentGroups };
         }
         return fields;
     }
@@ -860,8 +858,8 @@ module.exports = function(Dataset) {
     };
 
     Dataset.metadataKeys = async function(fields, limits, options) {
-        const whitelist = [];
         const blacklist = [new RegExp(".*_date")];
+        const { metadataKey } = fields;
 
         try {
             const datasets = await new Promise((resolve, reject) => {
@@ -874,9 +872,9 @@ module.exports = function(Dataset) {
                 Object.keys(dataset.scientificMetadata)
             );
 
-            // Flatten array, ensure uniqueness of and filter out
-            // blacklisted metadata keys before returning data
-            return [].concat
+            // Flatten array, ensure uniqueness of keys and filter out
+            // blacklisted keys
+            const metadataKeys = [].concat
                 .apply([], metadata)
                 .reduce((accumulator, currentValue) => {
                     if (accumulator.indexOf(currentValue) === -1) {
@@ -885,6 +883,13 @@ module.exports = function(Dataset) {
                     return accumulator;
                 }, [])
                 .filter(key => !blacklist.some(regex => regex.test(key)));
+
+            if (metadataKey && metadataKey.length > 0) {
+                const pattern = new RegExp(".*" + metadataKey + ".*", "i");
+                return metadataKeys.filter(key => key.match(pattern));
+            } else {
+                return metadataKeys;
+            }
         } catch (err) {
             console.error("Error in Dataset.metadataKeys", err);
         }
