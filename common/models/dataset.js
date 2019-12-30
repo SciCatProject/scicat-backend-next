@@ -667,6 +667,30 @@ module.exports = function(Dataset) {
                             }
                         });
                     }
+                } else if (key === "scientific") {
+                    let match = {
+                        $and: []
+                    };
+                    fields[key].forEach(condition => {
+                        const { lhs, relation, rhs } = condition;
+                        const matchKey = `scientificMetadata.${lhs}.value`;
+                        switch (relation) {
+                            case "EQUAL_TO_NUMERIC":
+                            case "EQUAL_TO_STRING": {
+                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                break;
+                            }
+                            case "GREATER_THAN": {
+                                match.$and.push({ [matchKey]: { $gt: rhs } });
+                                break;
+                            }
+                            case "LESS_THAN": {
+                                match.$and.push({ [matchKey]: { $lt: rhs } });
+                                break;
+                            }
+                        }
+                        pipeline.push({ $match: match });
+                    });
                 } else {
                     if (typeof fields[key].constructor !== Object) {
                         let match = {};
