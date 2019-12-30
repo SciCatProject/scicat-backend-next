@@ -671,8 +671,7 @@ module.exports = function(Dataset) {
                     let match = {
                         $and: []
                     };
-                    fields[key].forEach(condition => {
-                        const { lhs, relation, rhs } = condition;
+                    fields[key].forEach(({ lhs, relation, rhs }) => {
                         const matchKey = `scientificMetadata.${lhs}.value`;
                         switch (relation) {
                             case "EQUAL_TO_NUMERIC":
