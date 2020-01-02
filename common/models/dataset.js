@@ -882,6 +882,7 @@ module.exports = function(Dataset) {
 
     Dataset.metadataKeys = async function(fields, limits, options) {
         const blacklist = [new RegExp(".*_date")];
+        const returnLimit = 50;
         const { metadataKey } = fields;
 
         try {
@@ -909,11 +910,11 @@ module.exports = function(Dataset) {
 
             if (metadataKey && metadataKey.length > 0) {
                 const filterKey = metadataKey.toLowerCase();
-                return metadataKeys.filter(key =>
-                    key.toLowerCase().includes(filterKey)
-                );
+                return metadataKeys
+                    .filter(key => key.toLowerCase().includes(filterKey))
+                    .slice(0, returnLimit);
             } else {
-                return metadataKeys;
+                return metadataKeys.slice(0, returnLimit);
             }
         } catch (err) {
             console.error("Error in Dataset.metadataKeys", err);
