@@ -908,8 +908,10 @@ module.exports = function(Dataset) {
                 .filter(key => !blacklist.some(regex => regex.test(key)));
 
             if (metadataKey && metadataKey.length > 0) {
-                const pattern = new RegExp(".*" + metadataKey + ".*", "i");
-                return metadataKeys.filter(key => key.match(pattern));
+                const filterKey = metadataKey.toLowerCase();
+                return metadataKeys.filter(key =>
+                    key.toLowerCase().includes(filterKey)
+                );
             } else {
                 return metadataKeys;
             }
