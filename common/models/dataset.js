@@ -430,15 +430,13 @@ module.exports = function(Dataset) {
         if (fields === undefined) {
             return {};
         }
+        if (fields.metadataKey) {
+            const { metadataKey, ...theRest } = fields;
+            fields = { ...theRest };
+        }
         if (fields.isPublished === false) {
-            let modifiedFields = {};
-            Object.keys(fields).forEach(key => {
-                if (key !== "isPublished") {
-                    modifiedFields[key] = fields[key];
-                }
-            });
-            modifiedFields.userGroups = options.currentGroups;
-            return modifiedFields;
+            const { isPublished, ...theRest } = fields;
+            return { ...theRest, userGroups: options.currentGroups };
         }
         return fields;
     }
@@ -669,6 +667,29 @@ module.exports = function(Dataset) {
                             }
                         });
                     }
+                } else if (key === "scientific") {
+                    let match = {
+                        $and: []
+                    };
+                    fields[key].forEach(({ lhs, relation, rhs }) => {
+                        const matchKey = `scientificMetadata.${lhs}.value`;
+                        switch (relation) {
+                            case "EQUAL_TO_NUMERIC":
+                            case "EQUAL_TO_STRING": {
+                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                break;
+                            }
+                            case "GREATER_THAN": {
+                                match.$and.push({ [matchKey]: { $gt: rhs } });
+                                break;
+                            }
+                            case "LESS_THAN": {
+                                match.$and.push({ [matchKey]: { $lt: rhs } });
+                                break;
+                            }
+                        }
+                        pipeline.push({ $match: match });
+                    });
                 } else {
                     if (typeof fields[key].constructor !== Object) {
                         let match = {};
@@ -858,6 +879,78 @@ module.exports = function(Dataset) {
             });
         });
     };
+
+    Dataset.metadataKeys = async function(fields, limits, options) {
+        const blacklist = [new RegExp(".*_date")];
+        const returnLimit = 50;
+        const { metadataKey } = fields;
+
+        try {
+            const datasets = await new Promise((resolve, reject) => {
+                Dataset.fullquery(fields, limits, options, (err, res) => {
+                    resolve(res);
+                });
+            });
+
+            const metadata = datasets.map(dataset =>
+                Object.keys(dataset.scientificMetadata)
+            );
+
+            // Flatten array, ensure uniqueness of keys and filter out
+            // blacklisted keys
+            const metadataKeys = [].concat
+                .apply([], metadata)
+                .reduce((accumulator, currentValue) => {
+                    if (accumulator.indexOf(currentValue) === -1) {
+                        accumulator.push(currentValue);
+                    }
+                    return accumulator;
+                }, [])
+                .filter(key => !blacklist.some(regex => regex.test(key)));
+
+            if (metadataKey && metadataKey.length > 0) {
+                const filterKey = metadataKey.toLowerCase();
+                return metadataKeys
+                    .filter(key => key.toLowerCase().includes(filterKey))
+                    .slice(0, returnLimit);
+            } else {
+                return metadataKeys.slice(0, returnLimit);
+            }
+        } catch (err) {
+            console.error("Error in Dataset.metadataKeys", err);
+        }
+    };
+
+    Dataset.remoteMethod("metadataKeys", {
+        accepts: [
+            {
+                arg: "fields",
+                type: "object",
+                description:
+                    "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset."
+            },
+            {
+                arg: "limits",
+                type: "object",
+                description:
+                    "Define further query parameters like skip, limit, order"
+            },
+            {
+                arg: "options",
+                type: "object",
+                http: "optionsFromRequest"
+            }
+        ],
+        returns: {
+            root: true
+        },
+        description:
+            "Return array of metadata keys from datasets corresponding to the current filters.",
+        http: {
+            path: "/metadataKeys",
+            verb: "get"
+        }
+    });
 
     Dataset.isValid = function(dataset, next) {
         var ds = new Dataset(dataset);
