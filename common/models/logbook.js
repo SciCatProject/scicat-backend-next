@@ -1,6 +1,7 @@
 "use strict";
 
 const superagent = require("superagent");
+const rison = require("rison");
 const config = require("../../server/config.local");
 
 let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
@@ -49,7 +50,20 @@ module.exports = function(Logbook) {
                 const fetchResponse = await superagent.get(
                     scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
                 );
-                return fetchResponse.body;
+                const nonEmptyLogbooks = fetchResponse.body.filter(
+                    logbook => logbook.messages.length !== 0
+                );
+                const emptyLogbooks = fetchResponse.body.filter(
+                    logbook => logbook.messages.length === 0
+                );
+                nonEmptyLogbooks
+                    .sort(
+                        (a, b) =>
+                            a.messages[a.messages.length - 1].origin_server_ts -
+                            b.messages[b.messages.length - 1].origin_server_ts
+                    )
+                    .reverse();
+                return nonEmptyLogbooks.concat(emptyLogbooks);
             } catch (err) {
                 console.error(err);
             }
@@ -67,6 +81,7 @@ module.exports = function(Logbook) {
 
     Logbook.filter = async function(name, filter) {
         if (logbookEnabled) {
+            const { skip, limit } = rison.decode_object(filter);
             try {
                 const accessToken = await scichatLogin(
                     scichatUser,
@@ -76,7 +91,16 @@ module.exports = function(Logbook) {
                     scichatBaseUrl +
                         `/Logbooks/${name}/${filter}?access_token=${accessToken}`
                 );
-                return fetchResponse.body;
+                if (skip >= 0 && limit >= 0) {
+                    const end = skip + limit;
+                    const messages = fetchResponse.body.messages.slice(
+                        skip,
+                        end
+                    );
+                    return { ...fetchResponse.body, messages };
+                } else {
+                    return fetchResponse.body;
+                }
             } catch (err) {
                 console.error(err);
             }
