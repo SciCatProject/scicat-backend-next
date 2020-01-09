@@ -1,5 +1,7 @@
 # gives a docker image below 200 MB
 FROM node:10.16.1-alpine
+RUN apk update && apk upgrade && \
+    apk add --no-cache git
 
 ENV NODE_ENV "production"
 ENV PORT 3000
