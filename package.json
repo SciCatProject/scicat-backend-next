@@ -33,6 +33,7 @@
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
     "request-promise": "^4.2.4",
+    "rison": "github:nanonid/rison",
     "serve-favicon": "2.5.0",
     "strong-error-handler": "3.2.0",
     "superagent": "^5.0.6",
@@ -49,7 +50,6 @@
     "eslint-config-loopback": "^13.1.0",
     "mocha": "^6.1.4",
     "nodemon": "^2.0.0",
-    "rison": "github:nanonid/rison",
     "supertest": "^4.0.2"
   },
   "repository": {
