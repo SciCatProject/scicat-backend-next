@@ -50,7 +50,20 @@ module.exports = function(Logbook) {
                 const fetchResponse = await superagent.get(
                     scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
                 );
-                return fetchResponse.body;
+                const nonEmptyLogbooks = fetchResponse.body.filter(
+                    logbook => logbook.messages.length !== 0
+                );
+                const emptyLogbooks = fetchResponse.body.filter(
+                    logbook => logbook.messages.length === 0
+                );
+                nonEmptyLogbooks
+                    .sort(
+                        (a, b) =>
+                            a.messages[a.messages.length - 1].origin_server_ts -
+                            b.messages[b.messages.length - 1].origin_server_ts
+                    )
+                    .reverse();
+                return nonEmptyLogbooks.concat(emptyLogbooks);
             } catch (err) {
                 console.error(err);
             }
