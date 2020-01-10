@@ -891,10 +891,13 @@ module.exports = function(Dataset) {
                     resolve(res);
                 });
             });
-
-            const metadata = datasets.map(dataset =>
-                Object.keys(dataset.scientificMetadata)
-            );
+            const metadata = datasets.map(dataset => {
+                if (dataset.scientficMetadata) {
+                    return Object.keys(dataset.scientificMetadata)
+                 } else {
+                    return []
+                }
+            });
 
             // Flatten array, ensure uniqueness of keys and filter out
             // blacklisted keys
