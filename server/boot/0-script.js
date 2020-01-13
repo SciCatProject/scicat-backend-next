@@ -235,4 +235,10 @@ module.exports = function(app) {
             verb: "get"
         }
     });
+
+    console.log("Adding relations for User");
+
+    const UserSetting = app.models.UserSetting;
+
+    User.hasOne(UserSetting, {foreignKey: "", as: "settings"});
 };
