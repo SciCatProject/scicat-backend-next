@@ -6,7 +6,7 @@ var boot = require("loopback-boot");
 var app = (module.exports = loopback());
 var configLocal = require("./config.local");
 
-const logger = require("../common/models/logger");
+const logger = require("../common/logger");
 
 const uuidv3 = require("uuid/v3");
 
