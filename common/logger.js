@@ -1,6 +1,6 @@
 "use strict";
 
-const config = require("../../server/config.local");
+const config = require("../server/config.local");
 
 class GrayLogLogger {
     constructor() {
