@@ -120,7 +120,7 @@ class LoggerFactory {
         if (this.logger) {
             return this.logger;
         }
-        const grayLogEnabled = config.grayLog.enabled;
+        const grayLogEnabled = config.grayLog ? config.grayLog.enabled : false;
         if (grayLogEnabled) {
             this.logger = new GrayLogLogger();
             console.log("[+] Logger set to: GrayLog");
