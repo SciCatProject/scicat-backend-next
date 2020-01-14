@@ -6,6 +6,8 @@ var boot = require("loopback-boot");
 var app = (module.exports = loopback());
 var configLocal = require("./config.local");
 
+const logger = require("../common/logger");
+
 const uuidv3 = require("uuid/v3");
 
 // Create an instance of PassportConfigurator with the app instance
@@ -203,5 +205,8 @@ passportConfigurator.setupModels({
 for (var s in config) {
     var c = config[s];
     c.session = c.session !== false;
+    if (c.provider === "ldap") {
+        c["failureErrorCallback"] = err => logger.logError(err.message, {});
+    }
     passportConfigurator.configureProvider(s, c);
 }
