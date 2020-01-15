@@ -918,7 +918,7 @@ module.exports = function(Dataset) {
             }
 
             const metadata = datasets.map(dataset => {
-                if (dataset.scientficMetadata) {
+                if (dataset.scientificMetadata) {
                     return Object.keys(dataset.scientificMetadata);
                 } else {
                     return [];
