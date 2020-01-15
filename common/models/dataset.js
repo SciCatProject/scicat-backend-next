@@ -11,6 +11,7 @@ var dsr = require("./raw-dataset.json");
 var dsd = require("./derived-dataset.json");
 var own = require("./ownable.json");
 const util = require("util");
+const logger = require("../logger");
 // TODO Feature  Add delete functionality for dataset, which removes Dataset and all linked data:
 // OrigDatablock and Datablock and DatasetAttachments
 
@@ -881,23 +882,50 @@ module.exports = function(Dataset) {
     };
 
     Dataset.metadataKeys = async function(fields, limits, options) {
-        const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
-        const returnLimit = 50;
-        const { metadataKey } = fields;
-
         try {
-            const datasets = await new Promise((resolve, reject) => {
-                Dataset.fullquery(fields, limits, options, (err, res) => {
-                    resolve(res);
-                });
+            const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
+            const returnLimit = 50;
+            const { metadataKey } = fields;
+
+            logger.logInfo("Fetching metadataKeys", {
+                fields,
+                limits,
+                options,
+                blacklist,
+                returnLimit
             });
+
+            let datasets;
+            try {
+                datasets = await new Promise((resolve, reject) => {
+                    Dataset.fullquery(fields, limits, options, (err, res) => {
+                        resolve(res);
+                    });
+                });
+            } catch (err) {
+                logger.logError(err.message, {
+                    location: "Dataset.metadataKeys.datasets",
+                    fields,
+                    limits,
+                    options
+                });
+            }
+
+            if (datasets.length > 0) {
+                logger.logInfo("Found datasets", { count: datasets.length });
+            } else {
+                logger.logInfo("No datasets found", { datasets });
+            }
+
             const metadata = datasets.map(dataset => {
                 if (dataset.scientficMetadata) {
-                    return Object.keys(dataset.scientificMetadata)
-                 } else {
-                    return []
+                    return Object.keys(dataset.scientificMetadata);
+                } else {
+                    return [];
                 }
             });
+
+            logger.logInfo("Raw metadata array", { metadata });
 
             // Flatten array, ensure uniqueness of keys and filter out
             // blacklisted keys
@@ -911,6 +939,8 @@ module.exports = function(Dataset) {
                 }, [])
                 .filter(key => !blacklist.some(regex => regex.test(key)));
 
+            logger.logInfo("Curated metadataKeys", { metadataKeys });
+
             if (metadataKey && metadataKey.length > 0) {
                 const filterKey = metadataKey.toLowerCase();
                 return metadataKeys
@@ -920,7 +950,7 @@ module.exports = function(Dataset) {
                 return metadataKeys.slice(0, returnLimit);
             }
         } catch (err) {
-            console.error("Error in Dataset.metadataKeys", err);
+            logger.logError(err.message, { location: "Dataset.metadatakeys" });
         }
     };
 
