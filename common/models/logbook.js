@@ -8,8 +8,6 @@ let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
-scichatBaseUrl = "localhost:3030/api";
-
 module.exports = function(Logbook) {
     /**
      * Find Logbook model instance
