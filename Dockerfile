@@ -1,7 +1,7 @@
 # gives a docker image below 200 MB
 FROM mhart/alpine-node:8
 
-RUN apk add --update 	python 	build-base
+RUN apk add --update 	python 	build-base git
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000
@@ -14,10 +14,12 @@ COPY package*.json ./
 
 USER myuser
 # Install our packages
-RUN npm install --production
+RUN npm ci --production
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
+# this is a hack to allow selected nested keys in queries (tested for Mongo)
+COPY CI/PSI/allow_nested_fields_model.js /usr/src/app/node_modules/loopback-datasource-juggler/lib/model.js
 
 # Start the app
 CMD ["node", "."]
