@@ -1,4 +1,6 @@
 module.exports = function(app) {
+    const logger = require("../../common/logger");
+
     var dataSource = app.datasources.mongo;
     console.log(
         "Datasource host %s, database %s",
@@ -248,13 +250,15 @@ module.exports = function(app) {
         }
     });
 
-    console.log("Adding relations for User");
+    logger.logInfo("Adding relations to User", { relation: "UserSetting" });
 
     const UserSetting = app.models.UserSetting;
 
     User.hasOne(UserSetting, { foreignKey: "", as: "settings" });
 
-    console.log("Adding ACLS for User related models");
+    logger.logInfo("Adding ACLS for User related models", {
+        relation: "UserSetting"
+    });
 
     const userACLS = User.settings.acls;
 
@@ -287,12 +291,10 @@ module.exports = function(app) {
     User.afterRemote("findById", function(ctx, user, next) {
         user.settings((err, settings) => {
             if (err) {
-                console.error(err);
+                logger.logError(err.message);
             } else if (!settings) {
-                console.log("Adding default settings to user");
+                logger.logInfo("Adding default settings to user", { user });
                 user.settings.create({ columns: [] });
-            } else {
-                console.log("settings", settings);
             }
         });
         next();
