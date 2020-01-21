@@ -1,4 +1,6 @@
 module.exports = function(app) {
+    const logger = require("../../common/logger");
+
     var dataSource = app.datasources.mongo;
     console.log(
         "Datasource host %s, database %s",
@@ -77,25 +79,32 @@ module.exports = function(app) {
                 } else {
                     console.log(err);
                 }
-        });
-        db.collection('Sample').createIndex({
-            "$**": "text"
-        }, function (err) {
-            if (!err) {
-                console.log("Text Index on sample created successfully")
-            } else {
-                console.log(err);
             }
-        });
-        db.collection('Proposal').createIndex({
-            "$**": "text"
-        }, function (err) {
-            if (!err) {
-                console.log("Text Index on proposal created successfully")
-            } else {
-                console.log(err);
+        );
+        db.collection("Sample").createIndex(
+            {
+                "$**": "text"
+            },
+            function(err) {
+                if (!err) {
+                    console.log("Text Index on sample created successfully");
+                } else {
+                    console.log(err);
+                }
             }
-        });
+        );
+        db.collection("Proposal").createIndex(
+            {
+                "$**": "text"
+            },
+            function(err) {
+                if (!err) {
+                    console.log("Text Index on proposal created successfully");
+                } else {
+                    console.log(err);
+                }
+            }
+        );
     });
 
     // add further information to options parameter
@@ -147,20 +156,25 @@ module.exports = function(app) {
                                 }
                                 const regex = "/" + u.profile.email + "/i";
                                 // get users share groups and add to the current groups context
-                                ShareGroup.find( {where: {members: {regexp: regex }}}, function(err, share) {
-                                    if (err) return next(err);
-                                    groups = [...groups, ...(share.map(({ id }) => { return String(id)}))];
-                                    ctx.args.options.currentGroups = groups;
-                                    // console.log("============ Phase:", ctx.args.options.currentGroups)
-                                    return next();
-                                });
-                            }
-                            else {
+                                ShareGroup.find(
+                                    { where: { members: { regexp: regex } } },
+                                    function(err, share) {
+                                        if (err) return next(err);
+                                        groups = [
+                                            ...groups,
+                                            ...share.map(({ id }) => {
+                                                return String(id);
+                                            })
+                                        ];
+                                        ctx.args.options.currentGroups = groups;
+                                        // console.log("============ Phase:", ctx.args.options.currentGroups)
+                                        return next();
+                                    }
+                                );
+                            } else {
                                 ctx.args.options.currentGroups = [];
                                 return next();
                             }
-                            
-                            
                         } else {
                             // authorizedRoles can not be used for this, since roles depend on the ACLs used in a collection,
                             // fetch roles via Rolemapping table instead
@@ -234,5 +248,55 @@ module.exports = function(app) {
             path: "/userInfos",
             verb: "get"
         }
+    });
+
+    logger.logInfo("Adding relations to User", { relation: "UserSetting" });
+
+    const UserSetting = app.models.UserSetting;
+
+    User.hasOne(UserSetting, { foreignKey: "", as: "settings" });
+
+    logger.logInfo("Adding ACLS for User related models", {
+        relation: "UserSetting"
+    });
+
+    const userACLS = User.settings.acls;
+
+    const userSettingsACLS = [
+        {
+            principalType: "ROLE",
+            principalId: "$owner",
+            permission: "ALLOW",
+            property: [
+                "__create__settings",
+                "__get__settings",
+                "__update__settings"
+            ]
+        },
+        {
+            principalType: "ROLE",
+            principalId: "admin",
+            permission: "ALLOW",
+            property: [
+                "__create__settings",
+                "__get__settings",
+                "__update__settings",
+                "__destroy__settings"
+            ]
+        }
+    ];
+
+    User.settings.acls = userACLS.concat(userSettingsACLS);
+
+    User.afterRemote("findById", function(ctx, user, next) {
+        user.settings((err, settings) => {
+            if (err) {
+                logger.logError(err.message);
+            } else if (!settings) {
+                logger.logInfo("Adding default settings to user", { user });
+                user.settings.create({ columns: [] });
+            }
+        });
+        next();
     });
 };
