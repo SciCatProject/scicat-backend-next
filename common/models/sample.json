@@ -23,6 +23,10 @@
         },
         "sampleCharacteristics": {
             "type": "object"
+        },
+        "isPublished": {
+            "type": "boolean",
+            "description": "Flag is true when data are made publically available"
         }
     },
     "validations": [],
