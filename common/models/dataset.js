@@ -519,6 +519,29 @@ module.exports = function(Dataset) {
                             }
                         });
                     }
+                } else if (key === "scientific") {
+                    let match = {
+                        $and: []
+                    };
+                    fields[key].forEach(({ lhs, relation, rhs }) => {
+                        const matchKey = `scientificMetadata.${lhs}.value`;
+                        switch (relation) {
+                            case "EQUAL_TO_NUMERIC":
+                            case "EQUAL_TO_STRING": {
+                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                break;
+                            }
+                            case "GREATER_THAN": {
+                                match.$and.push({ [matchKey]: { $gt: rhs } });
+                                break;
+                            }
+                            case "LESS_THAN": {
+                                match.$and.push({ [matchKey]: { $lt: rhs } });
+                                break;
+                            }
+                        }
+                        pipeline.push({ $match: match });
+                    });
                 } else {
                     let match = {};
                     match[key] = searchExpression(key, fields[key]);
@@ -884,7 +907,7 @@ module.exports = function(Dataset) {
     Dataset.metadataKeys = async function(fields, limits, options) {
         try {
             const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
-            const returnLimit = 50;
+            const returnLimit = 100;
             const { metadataKey } = fields;
 
             logger.logInfo("Fetching metadataKeys", {
