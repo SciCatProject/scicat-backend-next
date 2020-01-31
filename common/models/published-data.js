@@ -74,15 +74,7 @@ module.exports = function (PublishedData) {
 
             }
         }
-
-        app.models.User.findById(token.userId)
-            .then(user => {
-                next();
-            })
-            .catch(err => {
-                return next(err)
-            });
-
+        
         if (ctx.instance) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;

@@ -103,6 +103,11 @@
             "index": true,
             "description": "Time when doi is successfully registered"
         },
+        "creationTime": {
+            "type": "date",
+            "index": true,
+            "description": "Dataset creationTime"
+        },
         "status": {
             "type": "string",
             "description": "Indication of position in publication workflow e.g. doiRegistered"
