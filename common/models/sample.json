@@ -53,6 +53,12 @@
         {
             "accessType": "READ",
             "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
             "principalId": "archivemanager",
             "permission": "DENY"
         },
