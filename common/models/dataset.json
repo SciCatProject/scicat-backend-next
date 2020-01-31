@@ -190,6 +190,12 @@
             "principalType": "ROLE",
             "principalId": "$everyone",
             "permission": "ALLOW",
+            "property": ["READ"]
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
             "property": ["anonymousquery"]
         },
         {

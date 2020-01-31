@@ -28,6 +28,30 @@ module.exports = function(Dataset) {
         next();
     };
 
+
+    Dataset.afterRemote("find", function (ctx, modelInstance, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            if (ctx.result) {
+                let answer;
+                if (Array.isArray(modelInstance)) {
+                    answer = [];
+                    ctx.result.forEach(function (result) {
+                        if (result["isPublished"] === true) {
+                            answer.push(result);
+                        }
+                    });
+                } else {
+                    if (ctx.result["isPublished"] === true) {
+                        answer = ctx.result;
+                    }
+                }
+                ctx.result = answer;
+            }
+        }
+        next();
+    });
+
     Dataset.remoteMethod("appendToArrayField", {
         accepts: [
             {
