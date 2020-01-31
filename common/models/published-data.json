@@ -1,182 +1,177 @@
 {
-    "name": "PublishedData",
-    "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
-    "base": "PersistedModel",
-    "strict": false,
-    "idInjection": false,
-    "options": {
-        "validateUpsert": true,
-        "mongodb": {
-            "collection": "PublishedData"
-        }
+  "name": "PublishedData",
+  "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
+  "base": "PersistedModel",
+  "strict": false,
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true,
+    "mongodb": {
+      "collection": "PublishedData"
+    }
+  },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "createdAt",
+      "updatedAt": "updatedAt",
+      "required": false,
+      "validateUpsert": true,
+      "silenceWarnings": false
+    }
+  },
+  "properties": {
+    "doi": {
+      "type": "string",
+      "id": true,
+      "description": "Digital Object Identifier",
+      "defaultFn": "uuidv4"
     },
-    "mixins": {
-        "TimeStamp": {
-            "createdAt": "createdAt",
-            "updatedAt": "updatedAt",
-            "required": false,
-            "validateUpsert": true,
-            "silenceWarnings": false
-        }
+    "affiliation": {
+      "type": "string",
+      "required": false,
+      "description": "Creator Affiliation"
     },
-    "properties": {
-        "doi": {
-            "type": "string",
-            "id": true,
-            "description": "Digital Object Identifier",
-            "defaultFn": "uuidv4"
-        },
-        "affiliation": {
-            "type": "string",
-            "required": false,
-            "description": "Creator Affiliation"
-        },
-        "creator": {
-            "type": [
-                "string"
-            ],
-            "required": true,
-            "description": "Creator of dataset/dataset collection"
-        },
-        "publisher": {
-            "type": "string",
-            "required": true,
-            "description": "Dataset publisher"
-        },
-        "publicationYear": {
-            "type": "number",
-            "required": true,
-            "description": "Year of publication "
-        },
-        "title": {
-            "type": "string",
-            "required": true,
-            "description": "Title"
-        },
-        "url": {
-            "type": "string",
-            "description": "Full URL to the landing page for this DOI"
-        },
-        "abstract": {
-            "type": "string",
-            "required": true,
-            "description": "Abstract text for published datasets"
-        },
-        "dataDescription": {
-            "type": "string",
-            "required": true,
-            "description": "Link to description of how to re-use data"
-        },
-        "thumbnail": {
-            "type": "string",
-            "description": "Small, less than 16 MB base 64 image preview of dataset"
-        },
-        "resourceType": {
-            "type": "string",
-            "required": true,
-            "description": "Type of files, format etc"
-        },
-        "numberOfFiles": {
-            "type": "number",
-            "description": "Number of files"
-        },
-        "sizeOfArchive": {
-            "type": "number",
-            "description": "Size of archive"
-        },
-        "pidArray": {
-            "type": [
-                "string"
-            ],
-            "required": true,
-            "description": "Array of one or more PIDS which make up the published data"
-        },
-        "authors": {
-            "type": [
-                "string"
-            ],
-            "required": false,
-            "description": "Not yet defined"
-        },
-        "doiRegisteredSuccessfullyTime": {
-            "type": "date",
-            "index": true,
-            "description": "Time when doi is successfully registered"
-        },
-        "creationTime": {
-            "type": "date",
-            "index": true,
-            "description": "Dataset creationTime"
-        },
-        "status": {
-            "type": "string",
-            "description": "Indication of position in publication workflow e.g. doiRegistered"
-        },
-        "scicatUser": {
-            "type": "string",
-            "description": "The username of the user that clicks the publish button in the client"
-        },
-        "createdBy": {
-            "type": "string",
-            "description": "Functional or user account name who created this instance"
-        },
-        "updatedBy": {
-            "type": "string",
-            "description": "Functional or user account name who last updated this instance"
-        }
+    "creator": {
+      "type": ["string"],
+      "required": true,
+      "description": "Creator of dataset/dataset collection"
     },
-    "validations": [],
-    "relations": {},
-    "acls": [{
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "admin",
-            "permission": "ALLOW"
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW",
-            "property": ["create", "patchOrCreate", "patchAttributes", "updateAll"]
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "DENY",
-            "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "ALLOW",
-            "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "DENY",
-            "property": ["patchAttributes", "updateAll"]
-        }
-    ],
-    "methods": {}
+    "publisher": {
+      "type": "string",
+      "required": true,
+      "description": "Dataset publisher"
+    },
+    "publicationYear": {
+      "type": "number",
+      "required": true,
+      "description": "Year of publication "
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "description": "Title"
+    },
+    "url": {
+      "type": "string",
+      "description": "Full URL to the landing page for this DOI"
+    },
+    "abstract": {
+      "type": "string",
+      "required": true,
+      "description": "Abstract text for published datasets"
+    },
+    "dataDescription": {
+      "type": "string",
+      "required": true,
+      "description": "Link to description of how to re-use data"
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "Small, less than 16 MB base 64 image preview of dataset"
+    },
+    "resourceType": {
+      "type": "string",
+      "required": true,
+      "description": "Type of files, format etc"
+    },
+    "numberOfFiles": {
+      "type": "number",
+      "description": "Number of files"
+    },
+    "sizeOfArchive": {
+      "type": "number",
+      "description": "Size of archive"
+    },
+    "pidArray": {
+      "type": ["string"],
+      "required": true,
+      "description": "Array of one or more PIDS which make up the published data"
+    },
+    "authors": {
+      "type": ["string"],
+      "required": false,
+      "description": "Not yet defined"
+    },
+    "doiRegisteredSuccessfullyTime": {
+      "type": "date",
+      "index": true,
+      "description": "Time when doi is successfully registered"
+    },
+    "creationTime": {
+      "type": "date",
+      "index": true,
+      "description": "Dataset creationTime"
+    },
+    "status": {
+      "type": "string",
+      "description": "Indication of position in publication workflow e.g. doiRegistered"
+    },
+    "scicatUser": {
+      "type": "string",
+      "description": "The username of the user that clicks the publish button in the client"
+    },
+    "createdBy": {
+      "type": "string",
+      "description": "Functional or user account name who created this instance"
+    },
+    "updatedBy": {
+      "type": "string",
+      "description": "Functional or user account name who last updated this instance"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW",
+      "property": ["create", "patchOrCreate", "patchAttributes", "updateAll"]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "DENY",
+      "property": ["reset", "destroyById", "deleteById"]
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "ALLOW",
+      "property": ["reset", "destroyById", "deleteById"]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
+      "permission": "DENY",
+      "property": ["patchAttributes", "updateAll"]
+    }
+  ],
+  "methods": {}
 }
