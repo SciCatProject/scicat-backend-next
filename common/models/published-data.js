@@ -58,10 +58,10 @@ function formRegistrationXML(publishedData) {
     `;
 }
 
-module.exports = function (PublishedData) {
+module.exports = function(PublishedData) {
     const app = require("../../server/server");
 
-    PublishedData.observe("before save", function (ctx, next) {
+    PublishedData.observe("before save", function(ctx, next) {
         const token = ctx.options.accessToken;
         if (token == null) {
             return next(new Error());
@@ -71,7 +71,6 @@ module.exports = function (PublishedData) {
             if (ctx.isNewInstance) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
                 console.log("      New pid:", ctx.instance.doi);
-
             }
         }
 
@@ -82,13 +81,13 @@ module.exports = function (PublishedData) {
             .catch(err => next(err));
     });
 
-    PublishedData.formPopulate = function (pid, next) {
+    PublishedData.formPopulate = function(pid, next) {
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
         var self = this;
         self.formData = {};
 
-        Dataset.findById(pid, function (err, ds) {
+        Dataset.findById(pid, function(err, ds) {
             if (err) {
                 return next(err);
             }
@@ -96,26 +95,27 @@ module.exports = function (PublishedData) {
             self.formData.resourceType = ds.type;
             self.formData.description = ds.description;
 
-            Proposal.findById(proposalId, function (err, prop) {
+            Proposal.findById(proposalId, function(err, prop) {
                 if (prop) {
                     self.formData.title = prop.title;
                     self.formData.abstract = prop.abstract;
                 }
-                Dataset.thumbnail(pid)
-                    .then((thumb) => {
-                        self.formData.thumbnail = thumb;
-                        return next(null, self.formData);
-                    });
+                Dataset.thumbnail(pid).then(thumb => {
+                    self.formData.thumbnail = thumb;
+                    return next(null, self.formData);
+                });
             });
         });
     };
 
     PublishedData.remoteMethod("formPopulate", {
-        accepts: [{
-            arg: "pid",
-            type: "string",
-            required: true
-        }],
+        accepts: [
+            {
+                arg: "pid",
+                type: "string",
+                required: true
+            }
+        ],
         http: {
             path: "/formPopulate",
             verb: "get"
@@ -127,9 +127,10 @@ module.exports = function (PublishedData) {
     });
 
     //Proposal.findById(ds.pid, function(err, prop)
-    PublishedData.register = function (id, cb) {
-        PublishedData.findById(id, function (err, pub) {
+    PublishedData.register = function(id, cb) {
+        PublishedData.findById(id, function(err, pub) {
             pub.doiRegisteredSuccessfullyTime = new Date();
+            pub.status = "registered";
             const xml = formRegistrationXML(pub);
 
             if (!config) {
@@ -197,7 +198,9 @@ module.exports = function (PublishedData) {
                     .then(() => cb(null, "asdasd"))
                     .catch(() => cb());
             } else if (!config.oaiProviderRoute) {
-                return cb("oaiProviderRoute route not specified in config.local");
+                return cb(
+                    "oaiProviderRoute route not specified in config.local"
+                );
             } else {
                 requestPromise(syncOAIPublication)
                     .then(() => cb(null, "asdasd"))
@@ -207,11 +210,13 @@ module.exports = function (PublishedData) {
     };
 
     PublishedData.remoteMethod("register", {
-        accepts: [{
-            arg: "id",
-            type: "string",
-            required: true
-        }],
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            }
+        ],
         http: {
             path: "/:id/register",
             verb: "post"
@@ -220,6 +225,31 @@ module.exports = function (PublishedData) {
             arg: "doi",
             type: "string"
         }
+    });
+
+    // PublishedData.observe("loaded", function(ctx,  next) {
+    PublishedData.afterRemote("find", function(ctx, modelInstance, next) {
+        const accessToken = ctx.args.options.accessToken; // && ctx["accessToken"];
+        console.log(ctx);
+        if (!accessToken) {
+            if (ctx.result) {
+                let answer;
+                if (Array.isArray(modelInstance)) {
+                    answer = [];
+                    ctx.result.forEach(function(result) {
+                        if (result["status"] === "registered") {
+                            answer.push(result);
+                        }
+                    });
+                } else {
+                    if (ctx.result["status"] === "registered") {
+                        answer = ctx.result;
+                    }
+                }
+                ctx.result = answer;
+            }
+        }
+        next();
     });
     // TODO add logic that give authors privileges to modify data
 
