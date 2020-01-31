@@ -230,17 +230,17 @@ module.exports = function(PublishedData) {
     PublishedData.afterRemote("find", function(ctx, modelInstance, next) {
         const accessToken = ctx.args.options.accessToken; // && ctx["accessToken"];
         console.log(ctx);
-        if (!accessToken ) {
+        if (!accessToken) {
             if (ctx.result) {
+                let answer;
                 if (Array.isArray(modelInstance)) {
-                    var answer = [];
+                    answer = [];
                     ctx.result.forEach(function(result) {
                         if (result["status"] === "confirmed") {
                             answer.push(result);
                         }
                     });
                 } else {
-                    var answer = {};
                     if (ctx.result["status"] === "confirmed") {
                         answer = ctx.result;
                     }
