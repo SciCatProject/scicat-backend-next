@@ -907,7 +907,7 @@ module.exports = function(Dataset) {
     Dataset.metadataKeys = async function(fields, limits, options) {
         try {
             const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
-            const returnLimit = 100;
+            const returnLimit = config.metadataKeysReturnLimit;
             const { metadataKey } = fields;
 
             logger.logInfo("Fetching metadataKeys", {

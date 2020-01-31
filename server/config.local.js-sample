@@ -9,6 +9,7 @@ module.exports = {
     policyRetentionShiftInYears: 10,
     site: 'YOUR-SITE',
     facilities: ["Facility1", "Facility2"],
+    metadataKeysReturnLimit: 100,
     grayLog: {
       enabled: false,
       host: "my.graylog.host",
