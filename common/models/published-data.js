@@ -130,6 +130,7 @@ module.exports = function(PublishedData) {
     PublishedData.register = function(id, cb) {
         PublishedData.findById(id, function(err, pub) {
             pub.doiRegisteredSuccessfullyTime = new Date();
+            pub.status = "registered";
             const xml = formRegistrationXML(pub);
 
             if (!config) {
@@ -236,12 +237,12 @@ module.exports = function(PublishedData) {
                 if (Array.isArray(modelInstance)) {
                     answer = [];
                     ctx.result.forEach(function(result) {
-                        if (result["status"] === "confirmed") {
+                        if (result["status"] === "registered") {
                             answer.push(result);
                         }
                     });
                 } else {
-                    if (ctx.result["status"] === "confirmed") {
+                    if (ctx.result["status"] === "registered") {
                         answer = ctx.result;
                     }
                 }
