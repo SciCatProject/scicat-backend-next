@@ -73,12 +73,56 @@ module.exports = function(PublishedData) {
                 console.log("      New pid:", ctx.instance.doi);
             }
         }
-
-        app.models.User.findById(token.userId)
-            .then(user => {
+        
+        if (ctx.instance) {
+            if (ctx.options.accessToken) {
+                var User = app.models.User;
+                User.findById(ctx.options.accessToken.userId, function (
+                    err,
+                    instance
+                ) {
+                    if (instance) {
+                        if (ctx.instance.createdBy) {
+                            ctx.instance.updatedBy = instance.username;
+                        } else {
+                            ctx.instance.createdBy = instance.username;
+                        }
+                    } else {
+                        if (ctx.instance.createdBy) {
+                            ctx.instance.updatedBy = "anonymous";
+                        } else {
+                            ctx.instance.createdBy = "anonymous";
+                        }
+                    }
+                    next();
+                });
+            } else {
+                if (ctx.instance.createdBy) {
+                    ctx.instance.updatedBy = "anonymous";
+                } else {
+                    ctx.instance.createdBy = "anonymous";
+                }
                 next();
-            })
-            .catch(err => next(err));
+            }
+        } else if (ctx.data) {
+            if (ctx.options.accessToken) {
+                var User = app.models.User;
+                User.findById(ctx.options.accessToken.userId, function (
+                    err,
+                    instance
+                ) {
+                    if (instance) {
+                        ctx.data.updatedBy = instance.username;
+                    } else {
+                        ctx.data.updatedBy = "anonymous";
+                    }
+                    next();
+                });
+            } else {
+                ctx.data.updatedBy = "anonymous";
+                next();
+            }
+        }
     });
 
     PublishedData.formPopulate = function(pid, next) {
@@ -94,6 +138,7 @@ module.exports = function(PublishedData) {
             const proposalId = ds.proposalId;
             self.formData.resourceType = ds.type;
             self.formData.description = ds.description;
+            //self.formData.sizeOfArchive = ds.size;
 
             Proposal.findById(proposalId, function(err, prop) {
                 if (prop) {
