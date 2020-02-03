@@ -29,7 +29,6 @@ module.exports = function(Dataset) {
     };
 
     Dataset.beforeRemote("find", function(ctx, unused, next) {
-        console.log(ctx);
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
             if (!ctx.args.filter) {
@@ -42,7 +41,6 @@ module.exports = function(Dataset) {
                 }
             }
         }
-        console.log(JSON.stringify(ctx.args.filter, null, 2));
         next();
     });
 
