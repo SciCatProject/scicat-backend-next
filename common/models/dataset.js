@@ -28,6 +28,22 @@ module.exports = function(Dataset) {
         next();
     };
 
+    Dataset.beforeRemote("find", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            if (!ctx.args.filter) {
+                ctx.args.filter = { where: { isPublished: true } };
+            } else {
+                if (!ctx.args.filter.where) {
+                    ctx.args.filter.where = { isPublished: true };
+                } else {
+                    ctx.args.filter.where["isPublished"] = true;
+                }
+            }
+        }
+        next();
+    });
+
     Dataset.remoteMethod("appendToArrayField", {
         accepts: [
             {
