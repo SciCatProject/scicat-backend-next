@@ -4,6 +4,7 @@ const app = require("../../server/server");
 const superagent = require("superagent");
 const rison = require("rison");
 const config = require("../../server/config.local");
+const logger = require("../logger");
 
 let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
@@ -73,7 +74,9 @@ module.exports = function(Logbook) {
             );
             return;
         } catch (err) {
-            console.error(err);
+            logger.logError(err.message, {
+                location: "Logbook.afterRemote.findAll"
+            });
             return;
         }
     });
@@ -97,7 +100,10 @@ module.exports = function(Logbook) {
                 );
                 return fetchResponse.body;
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, {
+                    location: "Logbook.findByName",
+                    name
+                });
             }
         } else {
             return [];
@@ -134,7 +140,7 @@ module.exports = function(Logbook) {
                     .reverse();
                 return nonEmptyLogbooks.concat(emptyLogbooks);
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, { location: "Logbook.findAll" });
             }
         } else {
             return [];
@@ -171,7 +177,11 @@ module.exports = function(Logbook) {
                     return fetchResponse.body;
                 }
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, {
+                    location: "Logbook.filter",
+                    name,
+                    filter
+                });
             }
         } else {
             return [];
@@ -197,7 +207,7 @@ async function scichatLogin(username, password) {
             .send(userData);
         return loginResponse.body.id;
     } catch (err) {
-        console.error(err);
+        logger.logError(err.message, { username });
     }
 }
 
