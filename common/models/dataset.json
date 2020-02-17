@@ -137,6 +137,11 @@
             "model": "Attachment",
             "foreignKey": ""
         },
+        "publisheddata": {
+            "type": "belongsTo",
+            "model": "PublishedData",
+            "foreignKey": ""
+        },
         "samples": {
             "type": "hasMany",
             "model": "Sample",
