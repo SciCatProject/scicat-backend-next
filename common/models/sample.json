@@ -35,6 +35,11 @@
             "type": "hasMany",
             "model": "Attachment",
             "foreignKey": ""
+        },
+        "datasets":{
+            "type": "belongsTo",
+            "model": "Dataset",
+            "foreignKey": ""
         }
     },
     "acls": [
