@@ -1,14 +1,37 @@
 "use strict";
 
+const app = require("../../server/server");
 const superagent = require("superagent");
 const rison = require("rison");
 const config = require("../../server/config.local");
+const logger = require("../logger");
 
 let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
 module.exports = function(Logbook) {
+    Logbook.afterRemote("findByName", async function(ctx, logbook) {
+        const { userId } = ctx.req.accessToken;
+        const proposalIds = await getUserProposals(userId);
+        ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
+        return;
+    });
+
+    Logbook.afterRemote("findAll", async function(ctx, logbooks) {
+        const { userId } = ctx.req.accessToken;
+        const proposalIds = await getUserProposals(userId);
+        ctx.result = logbooks.filter(({ name }) => proposalIds.includes(name));
+        return;
+    });
+
+    Logbook.afterRemote("filter", async function(ctx, logbook) {
+        const { userId } = ctx.req.accessToken;
+        const proposalIds = await getUserProposals(userId);
+        ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
+        return;
+    });
+
     /**
      * Find Logbook model instance
      * @param {string} name Name of the Logbook
@@ -28,7 +51,10 @@ module.exports = function(Logbook) {
                 );
                 return fetchResponse.body;
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, {
+                    location: "Logbook.findByName",
+                    name
+                });
             }
         } else {
             return [];
@@ -65,7 +91,7 @@ module.exports = function(Logbook) {
                     .reverse();
                 return nonEmptyLogbooks.concat(emptyLogbooks);
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, { location: "Logbook.findAll" });
             }
         } else {
             return [];
@@ -102,7 +128,11 @@ module.exports = function(Logbook) {
                     return fetchResponse.body;
                 }
             } catch (err) {
-                console.error(err);
+                logger.logError(err.message, {
+                    location: "Logbook.filter",
+                    name,
+                    filter
+                });
             }
         } else {
             return [];
@@ -128,7 +158,75 @@ async function scichatLogin(username, password) {
             .send(userData);
         return loginResponse.body.id;
     } catch (err) {
-        console.error(err);
+        logger.logError(err.message, { username });
+    }
+}
+
+/**
+ * Get ids of proposals that the user has permissions to view
+ * @param {string} userId Id of current user
+ * @returns {string[]} Array of proposalIds
+ */
+
+async function getUserProposals(userId) {
+    const User = app.models.User;
+    const UserIdentity = app.models.UserIdentity;
+    const ShareGroup = app.models.ShareGroup;
+    const RoleMapping = app.models.RoleMapping;
+    const Role = app.models.Role;
+    const Proposal = app.models.Proposal;
+
+    let options = {};
+
+    try {
+        const user = await User.findById(userId);
+        options.currentUser = user.username;
+        options.currentUserEmail = user.email;
+
+        const userIdentity = await UserIdentity.findOne({
+            where: { userId }
+        });
+        if (!!userIdentity) {
+            let groups = [];
+            if (userIdentity.profile) {
+                options.currentUser = userIdentity.profile.username;
+                options.currentUserEmail = userIdentity.profile.email;
+                groups = userIdentity.profile.accessGroups;
+                if (!groups) {
+                    groups = [];
+                }
+                const regex = new RegExp(userIdentity.profile.email, "i");
+
+                const shareGroup = await ShareGroup.find({
+                    where: { members: { regexp: regex } }
+                });
+                groups = [...groups, ...shareGroup.map(({ id }) => String(id))];
+                options.currentGroups = groups;
+            } else {
+                options.currentGroups = groups;
+            }
+        } else {
+            const roleMapping = await RoleMapping.find(
+                { where: { principalId: String(userId) } },
+                options
+            );
+            const roleIdList = roleMapping.map(instance => instance.roleId);
+
+            const role = await Role.find({
+                where: { id: { inq: roleIdList } }
+            });
+            const roleNameList = role.map(instance => instance.name);
+            roleNameList.push(user.username);
+            options.currentGroups = roleNameList;
+        }
+
+        const proposals = await Proposal.fullquery({}, {}, options);
+        return proposals.map(proposal => proposal.proposalId);
+    } catch (err) {
+        logger.logError(err.message, {
+            location: "Logbook.getUserProposals",
+            userId
+        });
     }
 }
 
