@@ -539,20 +539,27 @@ module.exports = function(Dataset) {
                     let match = {
                         $and: []
                     };
-                    fields[key].forEach(({ lhs, relation, rhs }) => {
+                    fields[key].forEach(({ lhs, relation, rhs, unit }) => {
                         const matchKey = `scientificMetadata.${lhs}.value`;
+                        const matchUnit = `scientificMetadata.${lhs}.unit`;
                         switch (relation) {
-                            case "EQUAL_TO_NUMERIC":
                             case "EQUAL_TO_STRING": {
                                 match.$and.push({ [matchKey]: { $eq: rhs } });
                                 break;
                             }
+                            case "EQUAL_TO_NUMERIC": {
+                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                break;
+                            }
                             case "GREATER_THAN": {
                                 match.$and.push({ [matchKey]: { $gt: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
                                 break;
                             }
                             case "LESS_THAN": {
                                 match.$and.push({ [matchKey]: { $lt: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
                                 break;
                             }
                         }
@@ -711,24 +718,33 @@ module.exports = function(Dataset) {
                     let match = {
                         $and: []
                     };
-                    fields[key].forEach(({ lhs, relation, rhs }) => {
+                    fields[key].forEach(({ lhs, relation, rhs, unit }) => {
                         const matchKey = `scientificMetadata.${lhs}.value`;
+                        const matchUnit = `scientificMetadata.${lhs}.unit`;
                         switch (relation) {
-                            case "EQUAL_TO_NUMERIC":
                             case "EQUAL_TO_STRING": {
                                 match.$and.push({ [matchKey]: { $eq: rhs } });
                                 break;
                             }
+                            case "EQUAL_TO_NUMERIC": {
+                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                break;
+                            }
                             case "GREATER_THAN": {
                                 match.$and.push({ [matchKey]: { $gt: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
                                 break;
                             }
                             case "LESS_THAN": {
                                 match.$and.push({ [matchKey]: { $lt: rhs } });
+                                match.$and.push({ [matchUnit]: { $eq: unit } });
                                 break;
                             }
                         }
+                        console.log("match", match);
                         pipeline.push({ $match: match });
+                        console.log("pipeline", pipeline);
                     });
                 } else {
                     if (typeof fields[key].constructor !== Object) {
@@ -930,7 +946,7 @@ module.exports = function(Dataset) {
                 fields,
                 limits,
                 options,
-                blacklist,
+                blacklist: blacklist.map(item => item.toString()),
                 returnLimit
             });
 
@@ -964,7 +980,7 @@ module.exports = function(Dataset) {
                 }
             });
 
-            logger.logInfo("Raw metadata array", { metadata });
+            logger.logInfo("Raw metadata array", { count: metadata.length });
 
             // Flatten array, ensure uniqueness of keys and filter out
             // blacklisted keys
@@ -978,7 +994,9 @@ module.exports = function(Dataset) {
                 }, [])
                 .filter(key => !blacklist.some(regex => regex.test(key)));
 
-            logger.logInfo("Curated metadataKeys", { metadataKeys });
+            logger.logInfo("Curated metadataKeys", {
+                count: metadataKeys.length
+            });
 
             if (metadataKey && metadataKey.length > 0) {
                 const filterKey = metadataKey.toLowerCase();
