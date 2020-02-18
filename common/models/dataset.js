@@ -137,13 +137,7 @@ module.exports = function(Dataset) {
                 if (scientificMetadata[key].type === "measurement") {
                     console.log(key, scientificMetadata[key]);
                     const { value, unit } = scientificMetadata[key];
-                    const converted = math
-                        .unit(value, unit)
-                        .toSI()
-                        .toString()
-                        .split(" ");
-                    const valueSI = Number(converted[0]);
-                    const unitSI = converted[1];
+                    const { valueSI, unitSI } = convertToSI(value, unit);
                     scientificMetadata[key] = {
                         ...scientificMetadata[key],
                         valueSI,
@@ -157,6 +151,15 @@ module.exports = function(Dataset) {
         }
         next();
     });
+
+    function convertToSI(value, unit) {
+        const converted = math
+            .unit(value, unit)
+            .toSI()
+            .toString()
+            .split(" ");
+        return { valueSI: Number(converted[0]), unitSI: converted[1] };
+    }
 
     function addDefaultPolicy(
         ownerGroup,
@@ -574,26 +577,53 @@ module.exports = function(Dataset) {
                         $and: []
                     };
                     fields[key].forEach(({ lhs, relation, rhs, unit }) => {
-                        const matchKey = `scientificMetadata.${lhs}.value`;
-                        const matchUnit = `scientificMetadata.${lhs}.unit`;
+                        const matchKeyString = `scientificMetadata.${lhs}.value`;
+                        const matchKeyNumeric = `scientificMetadata.${lhs}.valueSI`;
+                        const matchUnit = `scientificMetadata.${lhs}.unitSI`;
                         switch (relation) {
                             case "EQUAL_TO_STRING": {
-                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                match.$and.push({
+                                    [matchKeyString]: { $eq: rhs }
+                                });
                                 break;
                             }
                             case "EQUAL_TO_NUMERIC": {
-                                match.$and.push({ [matchKey]: { $eq: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $eq: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                             case "GREATER_THAN": {
-                                match.$and.push({ [matchKey]: { $gt: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $gt: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                             case "LESS_THAN": {
-                                match.$and.push({ [matchKey]: { $lt: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $lt: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                         }
@@ -753,26 +783,53 @@ module.exports = function(Dataset) {
                         $and: []
                     };
                     fields[key].forEach(({ lhs, relation, rhs, unit }) => {
-                        const matchKey = `scientificMetadata.${lhs}.value`;
-                        const matchUnit = `scientificMetadata.${lhs}.unit`;
+                        const matchKeyString = `scientificMetadata.${lhs}.value`;
+                        const matchKeyNumeric = `scientificMetadata.${lhs}.valueSI`;
+                        const matchUnit = `scientificMetadata.${lhs}.unitSI`;
                         switch (relation) {
                             case "EQUAL_TO_STRING": {
-                                match.$and.push({ [matchKey]: { $eq: rhs } });
+                                match.$and.push({
+                                    [matchKeyString]: { $eq: rhs }
+                                });
                                 break;
                             }
                             case "EQUAL_TO_NUMERIC": {
-                                match.$and.push({ [matchKey]: { $eq: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $eq: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                             case "GREATER_THAN": {
-                                match.$and.push({ [matchKey]: { $gt: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $gt: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                             case "LESS_THAN": {
-                                match.$and.push({ [matchKey]: { $lt: rhs } });
-                                match.$and.push({ [matchUnit]: { $eq: unit } });
+                                const { valueSI, unitSI } = convertToSI(
+                                    rhs,
+                                    unit
+                                );
+                                match.$and.push({
+                                    [matchKeyNumeric]: { $lt: valueSI }
+                                });
+                                match.$and.push({
+                                    [matchUnit]: { $eq: unitSI }
+                                });
                                 break;
                             }
                         }
