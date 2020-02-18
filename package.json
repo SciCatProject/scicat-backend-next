@@ -27,6 +27,7 @@
     "loopback-component-visualizer": "^1.2.1",
     "loopback-connector-mongodb": "^5.0.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
+    "mathjs": "^6.6.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.25",
     "nodemailer": "^6.2.1",
