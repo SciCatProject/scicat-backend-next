@@ -135,7 +135,6 @@ module.exports = function(Dataset) {
             const { scientificMetadata } = ctx.args.data;
             Object.keys(scientificMetadata).forEach(key => {
                 if (scientificMetadata[key].type === "measurement") {
-                    console.log(key, scientificMetadata[key]);
                     const { value, unit } = scientificMetadata[key];
                     const { valueSI, unitSI } = convertToSI(value, unit);
                     scientificMetadata[key] = {
@@ -143,11 +142,8 @@ module.exports = function(Dataset) {
                         valueSI,
                         unitSI
                     };
-                    console.log(scientificMetadata[key]);
-                    // console.log("converted", valueSI, unitSI);
                 }
             });
-            console.log("data", ctx.args.data);
         }
         next();
     });
@@ -833,9 +829,7 @@ module.exports = function(Dataset) {
                                 break;
                             }
                         }
-                        console.log("match", match);
                         pipeline.push({ $match: match });
-                        console.log("pipeline", pipeline);
                     });
                 } else {
                     if (typeof fields[key].constructor !== Object) {
