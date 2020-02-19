@@ -148,14 +148,34 @@ module.exports = function(Dataset) {
         next();
     });
 
-    function convertToSI(value, unit) {
-        const converted = math
-            .unit(value, unit)
-            .toSI()
-            .toString()
-            .split(" ");
-        return { valueSI: Number(converted[0]), unitSI: converted[1] };
-    }
+    Dataset.afterRemote("fullquery", function(ctx, datasets, next) {
+        if (ctx.args.fields.scientific) {
+            const { scientific } = ctx.args.fields;
+            datasets.forEach(({ scientificMetadata }) => {
+                scientific.forEach(({ lhs, unit }) => {
+                    if (
+                        lhs in scientificMetadata &&
+                        scientificMetadata[lhs].type === "measurement" &&
+                        scientificMetadata[lhs].unit !== unit
+                    ) {
+                        const converted = math
+                            .unit(
+                                scientificMetadata[lhs].value,
+                                scientificMetadata[lhs].unit
+                            )
+                            .to(unit);
+                        const formatted = math
+                            .format(converted, { precision: 3 })
+                            .toString()
+                            .split(" ");
+                        scientificMetadata[lhs].value = Number(formatted[0]);
+                        scientificMetadata[lhs].unit = formatted[1];
+                    }
+                });
+            });
+        }
+        next();
+    });
 
     function addDefaultPolicy(
         ownerGroup,
@@ -1173,6 +1193,15 @@ module.exports = function(Dataset) {
             }
         ]
     });
+
+    function convertToSI(value, unit) {
+        const converted = math
+            .unit(value, unit)
+            .toSI()
+            .toString()
+            .split(" ");
+        return { valueSI: Number(converted[0]), unitSI: converted[1] };
+    }
 
     function generateScientificExpression({ lhs, relation, rhs, unit }) {
         let match = {
