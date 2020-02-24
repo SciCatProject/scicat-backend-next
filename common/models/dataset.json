@@ -156,6 +156,11 @@
             "type": "embedsOne",
             "model": "Instrument",
             "foreignKey": ""
+        },
+        "techniques": {
+            "type": "embedsMany",
+            "model": "Technique",
+            "foreignKey": ""
         }
     },
     "acls": [
