@@ -141,6 +141,10 @@
     "dataSource": "mongo",
     "public": true
   },
+  "Instrument": {
+    "dataSource": "mongo",
+    "public": true
+  },
   "Technique": {
     "dataSource": "mongo",
     "public": true
