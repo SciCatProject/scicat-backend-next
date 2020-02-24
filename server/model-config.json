@@ -140,5 +140,9 @@
   "UserSetting": {
     "dataSource": "mongo",
     "public": true
+  },
+  "Technique": {
+    "dataSource": "mongo",
+    "public": true
   }
 }
