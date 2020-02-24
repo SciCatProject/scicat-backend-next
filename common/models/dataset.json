@@ -1,353 +1,329 @@
 {
-  "name": "Dataset",
-  "description": "Stores the meta data information for a given collection of files. It defines a list of mandatory and optional metadata fields to be defined. Datasets have a PID field for unique identification. This is the base 'class' for derived documents like raw datasets or derived datasets. The type field is used to distinguish between the different types of datasets. For each dataset in addition an embedded  DatasetLifecycle is created. However the definition of which files belong to a given dataset is defined in an extra OrigDatablock collection.",
-  "base": "Ownable",
-  "strict": false,
-  "idInjection": false,
-  "options": {
-    "validateUpsert": true,
-    "mongodb": {
-      "collection": "Dataset",
-      "allowDiskUse": true,
-      "allowExtendedOperators": true
-    }
-  },
-  "replaceOnPUT": false,
-  "properties": {
-    "pid": {
-      "type": "string",
-      "id": true,
-      "description": "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
-      "defaultFn": "uuidv4"
-    },
-    "owner": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Owner of the data set, usually first name + lastname"
-    },
-    "ownerEmail": {
-      "type": "string",
-      "description": "Email of owner of the data set"
-    },
-    "orcidOfOwner": {
-      "type": "string",
-      "description": "ORCID of owner https://orcid.org if available"
-    },
-    "contactEmail": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Email of contact person for this dataset"
-    },
-    "sourceFolder": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
-    },
-    "sourceFolderHost": {
-      "type": "string",
-      "required": false,
-      "index": true,
-      "description": "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
-    },
-    "size": {
-      "type": "number",
-      "index": true,
-      "description": "Total size of all source files contained in source folder on disk when unpacked"
-    },
-    "packedSize": {
-      "type": "number",
-      "description": "Total size of all datablock package files created for this dataset"
-    },
-    "creationTime": {
-      "type": "date",
-      "required": true,
-      "index": true,
-      "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
-    },
-    "type": {
-      "type": "string",
-      "required": true,
-      "index": true,
-      "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models"
-    },
-    "validationStatus": {
-      "type": "string",
-      "description": "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
-    },
-    "keywords": {
-      "type": [
-        "string"
-      ],
-      "description": "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
-    },
-    "description": {
-      "type": "string",
-      "description": "Free text explanation of contents of dataset"
-    },
-    "datasetName": {
-      "type": "string",
-      "description": "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder"
-    },
-    "classification": {
-      "type": "string",
-      "description": "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'"
-    },
-    "license": {
-      "type": "string",
-      "description": "Name of license under which data can be used"
-    },
-    "version": {
-      "type": "string",
-      "description": "Version of API used in creation of dataset"
-    },
-    "isPublished": {
-      "type": "boolean",
-      "description": "Flag is true when data are made publically available"
-    }
-  },
-  "validations": [],
-  "relations": {
-    "historyList": {
-      "type": "embedsMany",
-      "model": "Message",
-      "property": "history",
-      "options": {
-        "validate": false,
-        "forceId": false,
-        "persistent": true
-      }
-    },
-    "datasetLifecycle": {
-      "type": "embedsOne",
-      "model": "DatasetLifecycle",
-      "property": "datasetlifecycle",
-      "options": {
-        "validate": true,
-        "forceId": false
-      }
-    },
-    "datablocks": {
-      "type": "hasMany",
-      "model": "Datablock",
-      "foreignKey": ""
-    },
-    "attachments": {
-      "type": "hasMany",
-      "model": "Attachment",
-      "foreignKey": ""
-    },
-    "publisheddata": {
-      "type": "belongsTo",
-      "model": "PublishedData",
-      "foreignKey": ""
-    },
-    "samples": {
-      "type": "hasMany",
-      "model": "Sample",
-      "foreignKey": ""
-    },
-    "origdatablocks": {
-      "type": "hasMany",
-      "model": "OrigDatablock",
-      "foreignKey": ""
-    },
-    "instruments": {
-      "type": "embedsOne",
-      "model": "Instrument",
-      "foreignKey": ""
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "DENY",
-      "property": [
-        "reset",
-        "destroyById",
-        "deleteById"
-      ]
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "proposalingestor",
-      "permission": "DENY"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "ALLOW",
-      "property": [
-        "reset",
-        "destroyById",
-        "deleteById"
-      ]
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY",
-      "property": [
-        "facet",
-        "fullquery",
-        "fullfacet"
-      ]
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW",
-      "property": [
-        "facet",
-        "fullquery",
-        "fullfacet"
-      ]
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": [
-        "find"
-      ]
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": [
-        "anonymousquery"
-      ]
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "DENY",
-      "property": [
-        "patchAttributes",
-        "updateAll"
-      ]
-    }
-  ],
-  "methods": {
-    "reset": {
-      "accepts": [
-        {
-          "arg": "datasetId",
-          "type": "string"
-        },
-        {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
+    "name": "Dataset",
+    "description": "Stores the meta data information for a given collection of files. It defines a list of mandatory and optional metadata fields to be defined. Datasets have a PID field for unique identification. This is the base 'class' for derived documents like raw datasets or derived datasets. The type field is used to distinguish between the different types of datasets. For each dataset in addition an embedded  DatasetLifecycle is created. However the definition of which files belong to a given dataset is defined in an extra OrigDatablock collection.",
+    "base": "Ownable",
+    "strict": false,
+    "idInjection": false,
+    "options": {
+        "validateUpsert": true,
+        "mongodb": {
+            "collection": "Dataset",
+            "allowDiskUse": true,
+            "allowExtendedOperators": true
         }
-      ],
-      "returns": {
-        "root": true
-      },
-      "description": "Reset archive status by deleting created datablocks of dataset and resetting  archiveStatusMessage and archivable flag.",
-      "http": {
-        "path": "/resetArchiveStatus",
-        "verb": "put"
-      }
     },
-    "fullfacet": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
+    "replaceOnPUT": false,
+    "properties": {
+        "pid": {
+            "type": "string",
+            "id": true,
+            "description": "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
+            "defaultFn": "uuidv4"
         },
-        {
-          "arg": "facets",
-          "type": "array",
-          "description": "Defines list of field names, for which facet counts should be calculated"
+        "owner": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Owner of the data set, usually first name + lastname"
         },
-        {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
+        "ownerEmail": {
+            "type": "string",
+            "description": "Email of owner of the data set"
+        },
+        "orcidOfOwner": {
+            "type": "string",
+            "description": "ORCID of owner https://orcid.org if available"
+        },
+        "contactEmail": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Email of contact person for this dataset"
+        },
+        "sourceFolder": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
+        },
+        "sourceFolderHost": {
+            "type": "string",
+            "required": false,
+            "index": true,
+            "description": "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
+        },
+        "size": {
+            "type": "number",
+            "index": true,
+            "description": "Total size of all source files contained in source folder on disk when unpacked"
+        },
+        "packedSize": {
+            "type": "number",
+            "description": "Total size of all datablock package files created for this dataset"
+        },
+        "creationTime": {
+            "type": "date",
+            "required": true,
+            "index": true,
+            "description": "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
+        },
+        "type": {
+            "type": "string",
+            "required": true,
+            "index": true,
+            "description": "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models"
+        },
+        "validationStatus": {
+            "type": "string",
+            "description": "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
+        },
+        "keywords": {
+            "type": ["string"],
+            "description": "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
+        },
+        "description": {
+            "type": "string",
+            "description": "Free text explanation of contents of dataset"
+        },
+        "datasetName": {
+            "type": "string",
+            "description": "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder"
+        },
+        "classification": {
+            "type": "string",
+            "description": "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'"
+        },
+        "license": {
+            "type": "string",
+            "description": "Name of license under which data can be used"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of API used in creation of dataset"
+        },
+        "isPublished": {
+            "type": "boolean",
+            "description": "Flag is true when data are made publically available"
         }
-      ],
-      "returns": {
-        "root": true
-      },
-      "description": "Return facet counts relevant for the given selected subset of datasets. ",
-      "http": {
-        "path": "/fullfacet",
-        "verb": "get"
-      }
     },
-    "fullquery": {
-      "accepts": [{
-              "arg": "fields",
-              "type": "object",
-              "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
-          },
-          {
-              "arg": "limits",
-              "type": "object",
-              "description": "Define further query parameters like skip, limit, order"
-          },
-          {
-              "arg": "options",
-              "type": "object",
-              "http": "optionsFromRequest"
-          }
-      ],
-      "returns": {
-          "root": true
-      },
-      "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
-      "http": {
-          "path": "/fullquery",
-          "verb": "get"
-      }
-  },
-    "anonymousquery": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+    "validations": [],
+    "relations": {
+        "historyList": {
+            "type": "embedsMany",
+            "model": "Message",
+            "property": "history",
+            "options": {
+                "validate": false,
+                "forceId": false,
+                "persistent": true
+            }
         },
-        {
-          "arg": "limits",
-          "type": "object",
-          "description": "Define further query parameters like skip, limit, order"
+        "datasetLifecycle": {
+            "type": "embedsOne",
+            "model": "DatasetLifecycle",
+            "property": "datasetlifecycle",
+            "options": {
+                "validate": true,
+                "forceId": false
+            }
         },
-        {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
+        "datablocks": {
+            "type": "hasMany",
+            "model": "Datablock",
+            "foreignKey": ""
+        },
+        "attachments": {
+            "type": "hasMany",
+            "model": "Attachment",
+            "foreignKey": ""
+        },
+        "publisheddata": {
+            "type": "belongsTo",
+            "model": "PublishedData",
+            "foreignKey": ""
+        },
+        "samples": {
+            "type": "hasMany",
+            "model": "Sample",
+            "foreignKey": ""
+        },
+        "origdatablocks": {
+            "type": "hasMany",
+            "model": "OrigDatablock",
+            "foreignKey": ""
+        },
+        "instruments": {
+            "type": "embedsOne",
+            "model": "Instrument",
+            "foreignKey": ""
         }
-      ],
-      "returns": {
-        "root": true
-      },
-      "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
-      "http": {
-        "path": "/anonymousquery",
-        "verb": "get"
-      }
+    },
+    "acls": [
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "DENY",
+            "property": ["reset", "destroyById", "deleteById"]
+        },
+        {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "proposalingestor",
+            "permission": "DENY"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "ALLOW",
+            "property": ["reset", "destroyById", "deleteById"]
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "DENY",
+            "property": ["facet", "fullquery", "fullfacet"]
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$authenticated",
+            "permission": "ALLOW",
+            "property": ["facet", "fullquery", "fullfacet"]
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": ["find"]
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": ["anonymousquery"]
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "DENY",
+            "property": ["patchAttributes", "updateAll"]
+        }
+    ],
+    "methods": {
+        "reset": {
+            "accepts": [
+                {
+                    "arg": "datasetId",
+                    "type": "string"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Reset archive status by deleting created datablocks of dataset and resetting  archiveStatusMessage and archivable flag.",
+            "http": {
+                "path": "/resetArchiveStatus",
+                "verb": "put"
+            }
+        },
+        "fullfacet": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
+                },
+                {
+                    "arg": "facets",
+                    "type": "array",
+                    "description": "Defines list of field names, for which facet counts should be calculated"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return facet counts relevant for the given selected subset of datasets. ",
+            "http": {
+                "path": "/fullfacet",
+                "verb": "get"
+            }
+        },
+        "fullquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/fullquery",
+                "verb": "get"
+            }
+        },
+        "anonymousquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return datasets fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/anonymousquery",
+                "verb": "get"
+            }
+        }
     }
-  }
 }
