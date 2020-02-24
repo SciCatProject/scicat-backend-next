@@ -39,7 +39,7 @@
     "serve-favicon": "2.5.0",
     "strong-error-handler": "3.2.0",
     "superagent": "^5.0.6",
-    "uuid": "^3.3.2"
+    "uuid": "^7.0.0"
   },
   "optionalDependencies": {
     "loopback-connector-kafka": "^0.2.1"
