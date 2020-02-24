@@ -140,5 +140,9 @@
   "UserSetting": {
     "dataSource": "mongo",
     "public": true
+  },
+  "Instrument": {
+    "dataSource": "mongo",
+    "public": true
   }
 }
