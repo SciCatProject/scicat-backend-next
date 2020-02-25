@@ -114,7 +114,7 @@
       "description": "Filter Logbook entries matching query",
       "http": [
         {
-          "path": "/:name/:filter",
+          "path": "/:name/:filters",
           "verb": "get"
         }
       ]
