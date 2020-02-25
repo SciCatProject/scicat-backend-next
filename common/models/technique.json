@@ -1,7 +1,7 @@
 {
     "name": "Technique",
     "description": "Stores the metadata information for a technique",
-    "base": "PersistedModel",
+    "base": "Model",
     "idInjection": false,
     "options": {
         "validateUpsert": true
