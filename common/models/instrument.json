@@ -22,7 +22,13 @@
         }
     },
     "validations": [],
-    "relations": {},
+    "relations": {
+        "datasets": {
+            "type": "hasMany",
+            "model": "Dataset",
+            "foreignKey": ""
+        }
+    },
     "acls": [
         {
             "accessType": "*",
