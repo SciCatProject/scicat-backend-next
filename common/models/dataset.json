@@ -152,8 +152,8 @@
             "model": "OrigDatablock",
             "foreignKey": ""
         },
-        "instruments": {
-            "type": "embedsOne",
+        "instrument": {
+            "type": "belongsTo",
             "model": "Instrument",
             "foreignKey": ""
         },
