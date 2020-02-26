@@ -70,6 +70,7 @@ module.exports = function(PublishedData) {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
+                ctx.instance.status = "pending_registration";
                 console.log("      New pid:", ctx.instance.doi);
             }
         }

@@ -65,14 +65,10 @@
             "required": true,
             "description": "Link to description of how to re-use data"
         },
-        "thumbnail": {
-            "type": "string",
-            "description": "Small, less than 16 MB base 64 image preview of dataset"
-        },
         "resourceType": {
             "type": "string",
             "required": true,
-            "description": "Type of files, format etc"
+            "description": "e.g. raw/ derived"
         },
         "numberOfFiles": {
             "type": "number",
@@ -92,15 +88,10 @@
             "required": false,
             "description": "Not yet defined"
         },
-        "doiRegisteredSuccessfullyTime": {
+        "registeredTime": {
             "type": "date",
             "index": true,
             "description": "Time when doi is successfully registered"
-        },
-        "creationTime": {
-            "type": "date",
-            "index": true,
-            "description": "Dataset creationTime"
         },
         "status": {
             "type": "string",
@@ -109,6 +100,10 @@
         "scicatUser": {
             "type": "string",
             "description": "The username of the user that clicks the publish button in the client"
+        },
+        "thumbnail": {
+            "type": "string",
+            "description": "Small, less than 16 MB base 64 image preview of dataset"
         },
         "createdBy": {
             "type": "string",
