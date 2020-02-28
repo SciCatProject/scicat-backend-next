@@ -1,7 +1,7 @@
 {
   "name": "Attachment",
   "description": "Small less than 16 MB attachments, envisaged for png/jpeg previews",
-  "base": "PersistedModel",
+  "base": "Ownable",
   "idInjection": true,
   "options": {
     "validateUpsert": true
