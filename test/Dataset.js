@@ -96,7 +96,6 @@ describe("Simple Dataset tests", () => {
             "thumbnail": "data/abc123",
             "caption": "Some caption",
             "datasetId": defaultPid,
-            "creationTime": new Date(),
             "ownerGroup": "ess",
             "accessGroups": ["loki", "odin"],
             "createdBy": "Bertram Astor",
