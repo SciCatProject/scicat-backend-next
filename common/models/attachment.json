@@ -17,10 +17,6 @@
       "type": "string",
       "description": "Attachment caption to show in catanie",
       "default": ""
-    },
-    "creationTime": {
-      "type": "date",
-      "description": "Time when attachment is created. Format according to chapter 5.6 internet date/time format in RFC 3339"
     }
   },
   "validations": [],

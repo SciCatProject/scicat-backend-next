@@ -95,8 +95,14 @@ describe("Simple Dataset tests", () => {
         const testAttachment = {
             "thumbnail": "data/abc123",
             "caption": "Some caption",
+            "datasetId": defaultPid,
             "creationTime": new Date(),
-            "datasetId": defaultPid
+            "ownerGroup": "ess",
+            "accessGroups": ["loki", "odin"],
+            "createdBy": "Bertram Astor",
+            "updatedBy": "anonymous",
+            "createdAt": new Date(),
+            "updatedAt": new Date()
         };
         request(app)
             .post(
