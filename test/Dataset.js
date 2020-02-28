@@ -95,8 +95,13 @@ describe("Simple Dataset tests", () => {
         const testAttachment = {
             "thumbnail": "data/abc123",
             "caption": "Some caption",
-            "creationTime": new Date(),
-            "datasetId": defaultPid
+            "datasetId": defaultPid,
+            "ownerGroup": "ess",
+            "accessGroups": ["loki", "odin"],
+            "createdBy": "Bertram Astor",
+            "updatedBy": "anonymous",
+            "createdAt": new Date(),
+            "updatedAt": new Date()
         };
         request(app)
             .post(
@@ -113,7 +118,11 @@ describe("Simple Dataset tests", () => {
                 if (err) return done(err);
                 res.body.should.have.property("thumbnail").and.equal(testAttachment.thumbnail);
                 res.body.should.have.property("caption").and.equal(testAttachment.caption);
-                res.body.should.have.property("creationTime");
+                res.body.should.have.property("ownerGroup").and.equal(testAttachment.ownerGroup);
+                res.body.should.have.property("accessGroups");
+                res.body.should.have.property("createdBy");
+                res.body.should.have.property("updatedBy").and.be.string;
+                res.body.should.have.property("createdAt");
                 res.body.should.have.property("id").and.be.string;
                 res.body.should.have.property("datasetId").and.equal(testAttachment.datasetId);
                 attachmentId = encodeURIComponent(res.body["id"]);
