@@ -152,15 +152,15 @@
             "model": "OrigDatablock",
             "foreignKey": ""
         },
-        "instruments": {
-            "type": "embedsOne",
+        "instrument": {
+            "type": "belongsTo",
             "model": "Instrument",
             "foreignKey": ""
         },
-        "techniques": {
+        "techniquesList": {
             "type": "embedsMany",
             "model": "Technique",
-            "foreignKey": ""
+            "property": "techniques"
         }
     },
     "acls": [

@@ -146,7 +146,7 @@
     "public": true
   },
   "Technique": {
-    "dataSource": "mongo",
-    "public": true
+    "dataSource": "transient",
+    "public": false
   }
 }
