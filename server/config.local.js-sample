@@ -18,6 +18,12 @@ module.exports = {
       owner: "owner",
       service: "service"
     },
+    rabbitmq: {
+      enabled: false,
+      host: null,
+      port: null,
+      queue: null
+    },
     smtpSettings: {
       host: 'SMTP.YOUR.DOMAIN',
       port: 25,
