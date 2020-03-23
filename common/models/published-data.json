@@ -89,8 +89,7 @@
         },
         "authors": {
             "type": ["string"],
-            "required": false,
-            "description": "Not yet defined"
+            "description": "List of Names of authors of the to be published data"
         },
         "doiRegisteredSuccessfullyTime": {
             "type": "date",
@@ -109,6 +108,10 @@
         "scicatUser": {
             "type": "string",
             "description": "The username of the user that clicks the publish button in the client"
+        },
+        "relatedPublications": {
+            "type": ["string"],
+            "description": "List of URLs pointing to related publications like DOI URLS of journal articles"
         },
         "createdBy": {
             "type": "string",
