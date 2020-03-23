@@ -664,10 +664,10 @@ module.exports = function(Dataset) {
         // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection("Dataset");
-            var res = collection.aggregate(pipeline, function(err, cursor) {
+            var res = collection.aggregate(pipeline, {allowDiskUse: true}, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
-                        console.log("Facet err handling:", err);
+                        console.log("Fullfacet err handling:", err);
                     }
                     cb(err, res);
                 });
@@ -792,10 +792,10 @@ module.exports = function(Dataset) {
 
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection("Dataset");
-            var res = collection.aggregate(pipeline, function(err, cursor) {
+            var res = collection.aggregate(pipeline, {allowDiskUse: true}, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
-                        console.log("Facet err handling:", err);
+                        console.log("Fullquery err handling:", err);
                     }
                     // rename _id to pid
                     res.map(ds => {
@@ -917,10 +917,10 @@ module.exports = function(Dataset) {
 
         Dataset.getDataSource().connector.connect(function(err, db) {
             var collection = db.collection("Dataset");
-            var res = collection.aggregate(pipeline, function(err, cursor) {
+            var res = collection.aggregate(pipeline, {allowDiskUse: true}, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
-                        console.log("Facet err handling:", err);
+                        console.log("Anonymousquery err handling:", err);
                     }
                     // rename _id to pid
                     res.map(ds => {
