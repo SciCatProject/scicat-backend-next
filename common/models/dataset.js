@@ -937,11 +937,30 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.metadataKeys = async function(fields, limits, options) {
+    Dataset.metadataKeys = async function(fields, lm,  options) {
         try {
             const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
             const returnLimit = config.metadataKeysReturnLimit;
             const { metadataKey } = fields;
+
+            // ensure that no more than MAXLIMIT datasets are read for metadata key extraction
+            let MAXLIMIT=100
+            if( config.metadataDatasetsReturnLimit ){
+                MAXLIMIT = config.metadataDatasetsReturnLimit
+            } 
+            let limits
+            if (lm) {
+                limits=JSON.parse(JSON.stringify(lm))
+            } else {
+                limits={}
+            }
+            if (limits.limit){
+                if (limits.limit > MAXLIMIT){
+                   limits.limit=MAXLIMIT
+                }
+            } else {
+                limits.limit=MAXLIMIT
+            }
 
             logger.logInfo("Fetching metadataKeys", {
                 fields,
