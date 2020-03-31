@@ -151,9 +151,20 @@
             "type": "hasMany",
             "model": "OrigDatablock",
             "foreignKey": ""
+        },
+        "instrument": {
+            "type": "belongsTo",
+            "model": "Instrument",
+            "foreignKey": ""
+        },
+        "techniquesList": {
+            "type": "embedsMany",
+            "model": "Technique",
+            "property": "techniques"
         }
     },
-    "acls": [{
+    "acls": [
+        {
             "accessType": "*",
             "principalType": "ROLE",
             "principalId": "ingestor",
@@ -218,7 +229,8 @@
     ],
     "methods": {
         "reset": {
-            "accepts": [{
+            "accepts": [
+                {
                     "arg": "datasetId",
                     "type": "string"
                 },
@@ -238,7 +250,8 @@
             }
         },
         "fullfacet": {
-            "accepts": [{
+            "accepts": [
+                {
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
@@ -264,7 +277,8 @@
             }
         },
         "fullquery": {
-            "accepts": [{
+            "accepts": [
+                {
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
@@ -290,7 +304,8 @@
             }
         },
         "anonymousquery": {
-            "accepts": [{
+            "accepts": [
+                {
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."

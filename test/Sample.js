@@ -81,8 +81,13 @@ describe('Simple Sample tests', () => {
         const testAttachment = {
             "thumbnail": "data/abc123",
             "caption": "Some caption",
-            "creationTime": new Date(),
-            "sampleId": defaultSampleId
+            "sampleId": defaultSampleId,
+            "ownerGroup": "ess",
+            "accessGroups": ["loki", "odin"],
+            "createdBy": "Bertram Astor",
+            "updatedBy": "anonymous",
+            "createdAt": new Date(),
+            "updatedAt": new Date()
         };
         request(app)
             .post(
@@ -99,7 +104,11 @@ describe('Simple Sample tests', () => {
                 if (err) return done(err);
                 res.body.should.have.property("thumbnail").and.equal(testAttachment.thumbnail);
                 res.body.should.have.property("caption").and.equal(testAttachment.caption);
-                res.body.should.have.property("creationTime");
+                res.body.should.have.property("ownerGroup").and.equal(testAttachment.ownerGroup);
+                res.body.should.have.property("accessGroups");
+                res.body.should.have.property("createdBy");
+                res.body.should.have.property("updatedBy").and.be.string;
+                res.body.should.have.property("createdAt");
                 res.body.should.have.property("id").and.be.string;
                 res.body.should.have.property("sampleId").and.equal(testAttachment.sampleId);
                 attachmentId = encodeURIComponent(res.body["id"]);

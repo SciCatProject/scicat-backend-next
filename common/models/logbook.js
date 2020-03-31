@@ -101,13 +101,12 @@ module.exports = function(Logbook) {
     /**
      * Filter Logbook entries matching query
      * @param {string} name The name of the Logbook
-     * @param {string} filter Filter JSON object, keys: textSearch, showBotMessages, showUserMessages, showImages
+     * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
      * @returns {Logbook} Filtered Logbook model instance
      */
 
-    Logbook.filter = async function(name, filter) {
+    Logbook.filter = async function(name, filters) {
         if (logbookEnabled) {
-            const { skip, limit } = rison.decode_object(filter);
             try {
                 const accessToken = await scichatLogin(
                     scichatUser,
@@ -115,8 +114,15 @@ module.exports = function(Logbook) {
                 );
                 const fetchResponse = await superagent.get(
                     scichatBaseUrl +
-                        `/Logbooks/${name}/${filter}?access_token=${accessToken}`
+                        `/Logbooks/${name}/${filters}?access_token=${accessToken}`
                 );
+                const { skip, limit, sortField } = rison.decode_object(filters);
+                if (!!sortField && sortField.indexOf(":") > 0) {
+                    fetchResponse.body.messages = sortMessages(
+                        fetchResponse.body.messages,
+                        sortField
+                    );
+                }
                 if (skip >= 0 && limit >= 0) {
                     const end = skip + limit;
                     const messages = fetchResponse.body.messages.slice(
@@ -131,7 +137,7 @@ module.exports = function(Logbook) {
                 logger.logError(err.message, {
                     location: "Logbook.filter",
                     name,
-                    filter
+                    filters
                 });
             }
         } else {
@@ -227,6 +233,43 @@ async function getUserProposals(userId) {
             location: "Logbook.getUserProposals",
             userId
         });
+    }
+}
+
+function sortMessages(messages, sortField) {
+    const [column, direction] = sortField.split(":");
+    const sorted = messages.sort((a, b) => {
+        switch (column) {
+            case "timestamp": {
+                return a.origin_server_ts - b.origin_server_ts;
+            }
+            case "sender": {
+                if (a.sender.replace("@", "") < b.sender.replace("@", "")) {
+                    return -1;
+                }
+                if (a.sender.replace("@", "") > b.sender.replace("@", "")) {
+                    return 1;
+                }
+                return 0;
+            }
+            case "entry": {
+                if (a.content.body < b.content.body) {
+                    return -1;
+                }
+                if (a.content.body > b.content.body) {
+                    return 1;
+                }
+                return 0;
+            }
+        }
+    });
+    switch (direction) {
+        case "asc": {
+            return sorted;
+        }
+        case "desc": {
+            return sorted.reverse();
+        }
     }
 }
 

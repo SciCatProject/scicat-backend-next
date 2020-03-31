@@ -94,10 +94,10 @@
           }
         },
         {
-          "arg": "filter",
+          "arg": "filters",
           "type": "string",
           "required": true,
-          "description": "Filter JSON object, keys: textSearch, showBotMessages, showUserMessages, showImages",
+          "description": "Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField",
           "http": {
             "source": "path"
           }
@@ -114,7 +114,7 @@
       "description": "Filter Logbook entries matching query",
       "http": [
         {
-          "path": "/:name/:filter",
+          "path": "/:name/:filters",
           "verb": "get"
         }
       ]
