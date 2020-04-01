@@ -41,20 +41,20 @@
     {
       "accessType": "*",
       "principalType": "ROLE",
-      "principalId": "ingestor",
+      "principalId": "$authenticated",
       "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
     },
     {
       "accessType": "WRITE",
       "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
+      "principalId": "proposalingestor",
+      "permission": "DENY"
+    },
+    {
+      "principalType": "ROLE",
+      "principalId": "archivemanager",
+      "permission": "DENY",
+      "property": ["create", "patchOrCreate", "patchAttributes", "updateAll"]
     }
   ],
   "methods": {}

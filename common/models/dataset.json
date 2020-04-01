@@ -165,66 +165,22 @@
     },
     "acls": [
         {
-            "accessType": "*",
             "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": ["anonymousquery", "find"]
         },
         {
-            "accessType": "*",
             "principalType": "ROLE",
             "principalId": "$authenticated",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "DENY",
-            "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "proposalingestor",
-            "permission": "DENY"
+            "permission": "ALLOW",
+            "property": ["facet", "fullquery", "fullfacet"]
         },
         {
             "principalType": "ROLE",
             "principalId": "archivemanager",
             "permission": "ALLOW",
             "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "DENY",
-            "property": ["facet", "fullquery", "fullfacet"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW",
-            "property": ["facet", "fullquery", "fullfacet"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "ALLOW",
-            "property": ["find"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "ALLOW",
-            "property": ["anonymousquery"]
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "DENY",
-            "property": ["patchAttributes", "updateAll"]
         }
     ],
     "methods": {

@@ -135,16 +135,28 @@
             "permission": "DENY"
         },
         {
+            "accessType": "READ",
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW"
+        },
+        {
             "accessType": "*",
             "principalType": "ROLE",
             "principalId": "admin",
             "permission": "ALLOW"
         },
         {
-            "accessType": "READ",
+            "accessType": "*",
             "principalType": "ROLE",
-            "principalId": "$everyone",
+            "principalId": "ingestor",
             "permission": "ALLOW"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "ALLOW",
+            "property": ["reset", "destroyById", "deleteById"]
         },
         {
             "principalType": "ROLE",
@@ -158,32 +170,6 @@
             ]
         },
         {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "ingestor",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "*",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "DENY",
-            "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "ALLOW",
-            "property": ["reset", "destroyById", "deleteById"]
-        },
-        {
-            "accessType": "*",
             "principalType": "ROLE",
             "principalId": "ingestor",
             "permission": "DENY",

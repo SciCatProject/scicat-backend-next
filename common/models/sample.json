@@ -44,9 +44,9 @@
     },
     "acls": [
         {
-            "accessType": "*",
+            "accessType": "READ",
             "principalType": "ROLE",
-            "principalId": "ingestor",
+            "principalId": "$everyone",
             "permission": "ALLOW"
         },
         {
@@ -54,24 +54,6 @@
             "principalType": "ROLE",
             "principalId": "$authenticated",
             "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "$everyone",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "proposalingestor",
-            "permission": "DENY"
         }
     ],
     "methods": {
