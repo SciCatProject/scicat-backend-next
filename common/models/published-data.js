@@ -164,7 +164,7 @@ module.exports = function(PublishedData) {
         }
     });
 
-    PublishedData.register = function(id, cb) {
+    PublishedData.register = function(id, cb) { 
         const where = {
             _id: id
         };
