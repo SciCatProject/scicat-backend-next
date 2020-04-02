@@ -62,22 +62,15 @@ module.exports = function(PublishedData) {
     const app = require("../../server/server");
 
     PublishedData.observe("before save", function(ctx, next) {
-        const token = ctx.options.accessToken;
-        if (token == null) {
-            return next(new Error());
-        }
-
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
+                ctx.instance.status = "pending_registration";
                 console.log("      New pid:", ctx.instance.doi);
             }
-        }
-        
-        if (ctx.instance) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function (
+                User.findById(ctx.options.accessToken.userId, function(
                     err,
                     instance
                 ) {
@@ -107,7 +100,7 @@ module.exports = function(PublishedData) {
         } else if (ctx.data) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function (
+                User.findById(ctx.options.accessToken.userId, function(
                     err,
                     instance
                 ) {
@@ -171,17 +164,21 @@ module.exports = function(PublishedData) {
         }
     });
 
-    //Proposal.findById(ds.pid, function(err, prop)
-    PublishedData.register = function(id, cb) {
+    PublishedData.register = function(id, cb) { 
+        const where = {
+            _id: id
+        };
+        const data = {
+            status: "registered",
+            registeredTime: new Date()
+        };
+
         PublishedData.findById(id, function(err, pub) {
-            pub.doiRegisteredSuccessfullyTime = new Date();
-            pub.status = "registered";
             const xml = formRegistrationXML(pub);
 
             if (!config) {
                 return cb("No config.local");
             }
-
             const fullDoi = pub.doi;
             const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
             const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
@@ -233,23 +230,38 @@ module.exports = function(PublishedData) {
                 },
                 auth: doiProviderCredentials
             };
-            console.log("before posting to datacite");
             if (config.site !== "PSI") {
                 console.log("posting to datacite");
                 console.log(registerDataciteMetadataOptions);
                 console.log(registerDataciteDoiOptions);
                 requestPromise(registerDataciteMetadataOptions)
                     .then(() => requestPromise(registerDataciteDoiOptions))
-                    .then(() => cb(null, "asdasd"))
-                    .catch(() => cb());
+                    .then(v => {
+                        PublishedData.update(where, data, function(err) {
+                            if (err) {
+                                return cb(err);
+                            }
+                        });
+                        return cb(null, v);
+                    })
+                    .catch(e => cb(e));
             } else if (!config.oaiProviderRoute) {
                 return cb(
                     "oaiProviderRoute route not specified in config.local"
                 );
             } else {
+                console.log("before OAI sync");
                 requestPromise(syncOAIPublication)
-                    .then(() => cb(null, "asdasd"))
-                    .catch(() => cb());
+                    .then(v => {
+                        console.log("before update");
+                        PublishedData.update(where, data, function(err) {
+                            if (err) {
+                                return cb(err);
+                            }
+                        });
+                        return cb(null, v);
+                    })
+                    .catch(e => cb(e));
             }
         });
     };
