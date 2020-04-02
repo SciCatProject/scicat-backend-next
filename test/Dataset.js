@@ -157,7 +157,7 @@ describe("Simple Dataset tests", () => {
                     "/attachments/" +
                     attachmentId +
                     "?access_token=" +
-                    accessTokenArchiveManager
+                    accessToken
             )
             .set("Accept", "application/json")
             .expect(204)

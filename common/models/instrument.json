@@ -37,10 +37,22 @@
             "permission": "DENY"
         },
         {
-            "accessType": "*",
+            "accessType": "READ",
             "principalType": "ROLE",
             "principalId": "$authenticated",
             "permission": "ALLOW"
+        },
+        {
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "admin",
+            "permission": "ALLOW"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW",
+            "property": ["create","patchOrCreate","patchAttributes", "updateAll"]
         }
     ],
     "methods": {}

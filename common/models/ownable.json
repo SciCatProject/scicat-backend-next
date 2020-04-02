@@ -48,22 +48,28 @@
       "permission": "DENY"
     },
     {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
-    },
-    {
       "principalType": "ROLE",
       "principalId": "$everyone",
       "permission": "ALLOW",
       "property": "isValid"
     },
     {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW"
+    },
+    {
       "principalType": "ROLE",
       "principalId": "$authenticated",
       "permission": "ALLOW",
-      "property": ["create","patchOrCreate","patchAttributes", "updateAll"]
+      "property": ["create", "patchOrCreate", "patchAttributes", "updateAll"]
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW"
     }
   ],
   "methods": {

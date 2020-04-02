@@ -64,28 +64,22 @@
   },
   "acls": [
     {
-      "accessType": "*",
+      "accessType": "WRITE",
       "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
+      "principalId": "proposalingestor",
+      "permission": "DENY"
     },
     {
-      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "ingestor",
-      "permission": "ALLOW"
+      "permission": "ALLOW",
+      "property": ["create","patchOrCreate","patchAttributes", "updateAll"]
     },
     {
-      "accessType": "*",
       "principalType": "ROLE",
       "principalId": "archivemanager",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
+      "permission": "ALLOW",
+      "property": ["reset", "destroyById", "deleteById"]
     }
   ],
   "methods": {}
