@@ -148,6 +148,30 @@ module.exports = function(Dataset) {
         next();
     });
 
+    Dataset.beforeRemote("metadataKeys", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            ctx.args.fields.isPublished = true;
+        }
+        next();
+    });
+
+    Dataset.beforeRemote("fullfacet", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            ctx.args.fields.isPublished = true;
+        }
+        next();
+    });
+
+    Dataset.beforeRemote("fullquery", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            ctx.args.fields.isPublished = true;
+        }
+        next();
+    });
+
     Dataset.afterRemote("fullquery", function(ctx, datasets, next) {
         if (ctx.args.fields.scientific) {
             const { scientific } = ctx.args.fields;
@@ -1195,12 +1219,13 @@ module.exports = function(Dataset) {
     });
 
     function convertToSI(value, unit) {
-        const converted = math
+        const quantity = math
             .unit(value, unit)
             .toSI()
-            .toString()
-            .split(" ");
-        return { valueSI: Number(converted[0]), unitSI: converted[1] };
+            .toString();
+        const convertedValue = quantity.substring(0, quantity.indexOf(" "));
+        const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
+        return { valueSI: Number(convertedValue), unitSI: convertedUnit };
     }
 
     function generateScientificExpression({ lhs, relation, rhs, unit }) {
