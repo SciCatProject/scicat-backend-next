@@ -73,6 +73,12 @@
     },
     "acls": [
         {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": "findById"
+        },
+        {
             "accessType": "*",
             "principalType": "ROLE",
             "principalId": "proposalingestor",

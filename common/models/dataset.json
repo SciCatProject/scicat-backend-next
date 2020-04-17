@@ -171,6 +171,7 @@
             "property": [
                 "anonymousquery",
                 "find",
+                "findOne",
                 "fullfacet",
                 "fullquery",
                 "metadataKeys",
