@@ -937,7 +937,7 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.metadataKeys = async function(fields, limits,  options) {
+    Dataset.metadataKeys = async function(fields, limits, options) {
         try {
             const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
             const returnLimit = config.metadataKeysReturnLimit;
