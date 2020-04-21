@@ -983,6 +983,29 @@ module.exports = function(Dataset) {
             const returnLimit = config.metadataKeysReturnLimit;
             const { metadataKey } = fields;
 
+            // ensure that no more than MAXLIMIT datasets are read for metadata key extraction
+            let MAXLIMIT;
+            if(config.metadataDatasetsReturnLimit) {
+                MAXLIMIT = config.metadataDatasetsReturnLimit;
+                
+                let lm;
+               
+                if (limits) {
+                    lm = JSON.parse(JSON.stringify(limits));
+                } else {
+                    lm = {};
+                }
+                
+                if (lm.limit) {
+                    if (lm.limit > MAXLIMIT) {
+                        lm.limit = MAXLIMIT;
+                    }
+                } else {
+                    lm.limit = MAXLIMIT;
+                }
+                limits = lm;
+            } 
+
             logger.logInfo("Fetching metadataKeys", {
                 fields,
                 limits,
