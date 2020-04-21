@@ -168,7 +168,15 @@
             "principalType": "ROLE",
             "principalId": "$everyone",
             "permission": "ALLOW",
-            "property": ["anonymousquery", "find"]
+            "property": [
+                "anonymousquery",
+                "find",
+                "findOne",
+                "fullfacet",
+                "fullquery",
+                "metadataKeys",
+                "thumbnail"
+            ]
         },
         {
             "accessType": "*",

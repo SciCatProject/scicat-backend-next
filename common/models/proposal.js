@@ -37,6 +37,14 @@ module.exports = function(Proposal) {
         next();
     });
 
+    Proposal.beforeRemote("findById", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
+        if (!accessToken) {
+            ctx.args.filter.fields = { title: true };
+        }
+        next();
+    });
+
     Proposal.findByInstrumentAndDate = function(
         instrument,
         measureTime,
