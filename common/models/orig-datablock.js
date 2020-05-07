@@ -208,7 +208,15 @@ module.exports = function (Origdatablock) {
                 pipeline.push({
                     $limit: Number(limits.limit) < 1 ? 1 : Number(limits.limit)
                 });
+            } else {
+                pipeline.push({
+                    $limit: 100
+                });
             }
+        } else {
+            pipeline.push({
+                $limit: 100
+            });
         }
 
         // group results by dataset
@@ -220,7 +228,7 @@ module.exports = function (Origdatablock) {
                 }
             }
         })
-        // console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
+        console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
 
         Origdatablock.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection("OrigDatablock");
