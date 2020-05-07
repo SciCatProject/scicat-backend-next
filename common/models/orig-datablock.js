@@ -93,13 +93,11 @@ module.exports = function (Origdatablock) {
                 ...theRest
             };
         }
-        console.log("Before adding usergroup:", fields)
         if (!('isPublished' in fields) || !fields.isPublished) {
             const {
                 isPublished,
                 ...theRest
             } = fields;
-            console.log("Adding usergroup")
             return {
                 ...theRest,
                 userGroups: options.currentGroups
