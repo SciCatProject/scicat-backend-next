@@ -119,16 +119,10 @@ module.exports = function (Origdatablock) {
     Origdatablock.findFilesByName = function (fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
-        console.log("Input fields,options", fields, options)
         fields = setFields(fields, options);
-        console.log("After setFields:", fields)
-        // console.log("Inside fullquery:options",options)
-        // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
-        // let matchJoin = {}
         // construct match conditions from fields value
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== "null") {
-                // mode is not a field in dataset, just an object for containing a match clause
                 if (key === "datasetId") {
                     pipeline.push({
                         $match: {
@@ -180,7 +174,6 @@ module.exports = function (Origdatablock) {
             "$unwind": "$dataFileList"
         })
         if ('filenameExp' in fields && fields['filenameExp'] !== "") {
-            console.log("filename expression:", fields['filenameExp'])
             pipeline.push({
                 "$match": {
                     "dataFileList.path": {
@@ -229,7 +222,7 @@ module.exports = function (Origdatablock) {
                 }
             }
         })
-        console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
 
         Origdatablock.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection("OrigDatablock");
