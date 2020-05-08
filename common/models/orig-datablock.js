@@ -115,7 +115,6 @@ module.exports = function (Origdatablock) {
     */
 
     Origdatablock.findFilesByName = function (fields, limits, options, cb) {
-        // keep the full aggregation pipeline definition
         let pipeline = [];
         fields = setFields(fields, options);
         // construct match conditions from fields value
@@ -128,10 +127,17 @@ module.exports = function (Origdatablock) {
                         }
                     });
                 } else if (key === "filenameExp") {
+                    // for simplicity always do a case insensitive search
+                    // use combined $text and filepath search for best performance
+                    // also in case of arbitrary substring search
                     pipeline.push({
                         $match: {
+                            $text: {
+                                $search: fields[key]
+                            },
                             "dataFileList.path": {
-                                "$regex": fields[key]
+                                $regex: fields[key],
+                                $options: 'i'
                             }
                         }
                     });

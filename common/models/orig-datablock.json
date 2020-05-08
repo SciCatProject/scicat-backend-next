@@ -9,6 +9,11 @@
             "keys": {
                 "datasetId": 1
             }
+        },
+        "filename_index": {
+            "keys": {
+                "dataFileList.path": 1
+            }
         }
     },
     "options": {

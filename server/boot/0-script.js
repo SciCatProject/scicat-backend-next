@@ -69,42 +69,23 @@ module.exports = function(app) {
             );
         });
 
-        db.collection("Dataset").createIndex(
-            {
-                "$**": "text"
-            },
-            function(err) {
-                if (!err) {
-                    console.log("Text Index on dataset created successfully");
-                } else {
-                    console.log(err);
+        var textSearchCollections = [
+            "Dataset", "Sample", "Proposal", "OrigDatablock"
+        ]
+        textSearchCollections.forEach(function(coll) {
+            db.collection(coll).createIndex(
+                {
+                    "$**": "text"
+                },
+                function(err) {
+                    if (!err) {
+                        console.log("Text Index on " + coll + " created successfully");
+                    } else {
+                        console.log(err);
+                    }
                 }
-            }
-        );
-        db.collection("Sample").createIndex(
-            {
-                "$**": "text"
-            },
-            function(err) {
-                if (!err) {
-                    console.log("Text Index on sample created successfully");
-                } else {
-                    console.log(err);
-                }
-            }
-        );
-        db.collection("Proposal").createIndex(
-            {
-                "$**": "text"
-            },
-            function(err) {
-                if (!err) {
-                    console.log("Text Index on proposal created successfully");
-                } else {
-                    console.log(err);
-                }
-            }
-        );
+            );
+        })
     });
 
     // add further information to options parameter
