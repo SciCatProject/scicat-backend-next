@@ -108,6 +108,10 @@
             "type": ["string"],
             "description": "List of URLs pointing to related publications like DOI URLS of journal articles"
         },
+        "downloadLink": {
+            "type": "string",
+            "description": "URL pointing to page from which data can be downloaded"
+        },
         "createdBy": {
             "type": "string",
             "description": "Functional or user account name who created this instance"

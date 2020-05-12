@@ -1,73 +1,105 @@
 {
-  "name": "OrigDatablock",
-  "description": "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
-  "base": "Ownable",
-  "strict": true,
-  "idInjection": true,
-  "indexes": {
-    "datasetId_index": {
-      "keys": {
-        "datasetId": 1
-      }
+    "name": "OrigDatablock",
+    "description": "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
+    "base": "Ownable",
+    "strict": true,
+    "idInjection": true,
+    "indexes": {
+        "datasetId_index": {
+            "keys": {
+                "datasetId": 1
+            }
+        },
+        "filename_index": {
+            "keys": {
+                "dataFileList.path": 1
+            }
+        }
+    },
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {
+        "id": {
+            "type": "string",
+            "required": true,
+            "description": "Automatically created ID"
+        },
+        "size": {
+            "type": "number",
+            "required": true,
+            "index": true,
+            "description": "Total size in bytes of all files contained in the dataFileList"
+        },
+        "dataFileList": {
+            "type": [
+                "Datafile"
+            ],
+            "required": true,
+            "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. All file paths are relative paths with respect to the sourceFolder location of the linked dataset."
+        }
+    },
+    "validations": [],
+    "relations": {
+        "dataset": {
+            "type": "belongsTo",
+            "model": "Dataset",
+            "foreignKey": "",
+            "required": true
+        }
+    },
+    "acls": [{
+            "accessType": "*",
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "ALLOW"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "ingestor",
+            "permission": "DENY",
+            "property": ["reset", "destroyById", "deleteById"]
+        },
+        {
+            "accessType": "WRITE",
+            "principalType": "ROLE",
+            "principalId": "proposalingestor",
+            "permission": "DENY"
+        },
+        {
+            "principalType": "ROLE",
+            "principalId": "archivemanager",
+            "permission": "ALLOW",
+            "property": ["reset", "destroyById", "deleteById"]
+        }
+    ],
+    "methods": {
+        "findFilesByName": {
+            "accepts": [{
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define datasetId field to select a dataset and/or the filenameExp field to define a search regexp for file names."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Returns matching file objects in dataFileList grouped by dataset pid",
+            "http": {
+                "path": "/findFilesByName",
+                "verb": "get"
+            }
+        }
+
     }
-  },
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {
-    "id": {
-      "type": "string",
-      "required": true,
-      "description": "Automatically created ID"
-    },
-    "size": {
-      "type": "number",
-      "required": true,
-      "index": true,
-      "description": "Total size in bytes of all files contained in the dataFileList"
-    },
-    "dataFileList": {
-      "type": [
-        "Datafile"
-      ],
-      "required": true,
-      "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. All file paths are relative paths with respect to the sourceFolder location of the linked dataset."
-    }
-  },
-  "validations": [],
-  "relations": {
-    "dataset": {
-      "type": "belongsTo",
-      "model": "Dataset",
-      "foreignKey": "",
-      "required": true
-    }
-  },
-  "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "ingestor",
-      "permission": "DENY",
-      "property": ["reset", "destroyById", "deleteById"]
-    },
-    {
-      "accessType": "WRITE",
-      "principalType": "ROLE",
-      "principalId": "proposalingestor",
-      "permission": "DENY"
-    },
-    {
-      "principalType": "ROLE",
-      "principalId": "archivemanager",
-      "permission": "ALLOW",
-      "property": ["reset", "destroyById", "deleteById"]
-  }
-  ],
-  "methods": {}
 }

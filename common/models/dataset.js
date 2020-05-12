@@ -544,7 +544,7 @@ module.exports = function(Dataset) {
             const { metadataKey, ...theRest } = fields;
             fields = { ...theRest };
         }
-        if (fields.isPublished === false) {
+        if (!('isPublished' in fields) || !fields.isPublished) {
             const { isPublished, ...theRest } = fields;
             return { ...theRest, userGroups: options.currentGroups };
         }
