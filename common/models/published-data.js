@@ -67,6 +67,7 @@ module.exports = function(PublishedData) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
                 ctx.instance.status = "pending_registration";
                 console.log("      New pid:", ctx.instance.doi);
+
             }
             if (ctx.options.accessToken) {
                 var User = app.models.User;
@@ -179,6 +180,18 @@ module.exports = function(PublishedData) {
             if (!config) {
                 return cb("No config.local");
             }
+
+            var Dataset = app.models.Dataset;
+            pub.pidArray.forEach(function (pid) {
+                const whereDS = {pid: pid}
+                Dataset.update(whereDS , {isPublished: true}, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                });
+            });
+
+        
             const fullDoi = pub.doi;
             const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
             const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
