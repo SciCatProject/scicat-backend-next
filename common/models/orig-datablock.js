@@ -118,52 +118,54 @@ module.exports = function (Origdatablock) {
         let pipeline = [];
         fields = setFields(fields, options);
         // construct match conditions from fields value
-        Object.keys(fields).map(function (key) {
-            if (fields[key] && fields[key] !== "null") {
-                if (key === "datasetId") {
-                    pipeline.push({
-                        $match: {
-                            "datasetId": fields[key]
-                        }
-                    });
-                } else if (key === "filenameExp") {
-                    // for simplicity always do a case insensitive search
-                    // use combined $text and filepath search for best performance
-                    // also in case of arbitrary substring search
-                    pipeline.push({
-                        $match: {
-                            $text: {
-                                $search: fields[key]
-                            },
-                            "dataFileList.path": {
-                                $regex: fields[key],
-                                $options: 'i'
-                            }
-                        }
-                    });
-                } else if (key === "userGroups") {
-                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
-                        pipeline.push({
-                            $match: {
-                                $or: [{
-                                        ownerGroup: searchExpression(
-                                            "ownerGroup",
-                                            fields["userGroups"]
-                                        )
-                                    },
-                                    {
-                                        accessGroups: searchExpression(
-                                            "accessGroups",
-                                            fields["userGroups"]
-                                        )
-                                    }
-                                ]
-                            }
-                        });
+        // ensure that fileNameExp test comes first because $text must come first in pipeline
+        let f1=fields["filenameExp"]
+        if ( f1 ) {
+            // for simplicity always do a case insensitive search
+            // use combined $text and filepath search for best performance
+            // also in case of arbitrary substring search
+            pipeline.push({
+                $match: {
+                    $text: {
+                        $search: f1 
+                    },
+                    "dataFileList.path": {
+                        $regex: f1,
+                        $options: 'i'
                     }
                 }
+            });
+        }
+        let f2=fields["datasetId"]
+        if ( f2 ) {
+            pipeline.push({
+                $match: {
+                    "datasetId": f2
+                }
+            });
+        }
+        let f3=fields["userGroups"]
+        if ( f3 ) {
+            if (f3.indexOf("globalaccess") < 0) {
+                pipeline.push({
+                    $match: {
+                        $or: [{
+                                ownerGroup: searchExpression(
+                                    "ownerGroup",
+                                    f3
+                                )
+                            },
+                            {
+                                accessGroups: searchExpression(
+                                    "accessGroups",
+                                    f3
+                                )
+                            }
+                        ]
+                    }
+                });
             }
-        });
+        }
 
         // reformat answer
 
@@ -234,7 +236,7 @@ module.exports = function (Origdatablock) {
                 }
             }
         })
-        console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in findFilesByName method:", JSON.stringify(pipeline, null, 3));
 
         Origdatablock.getDataSource().connector.connect(function (err, db) {
             var collection = db.collection("OrigDatablock");
