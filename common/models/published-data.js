@@ -183,7 +183,7 @@ module.exports = function(PublishedData) {
 
             var Dataset = app.models.Dataset;
             pub.pidArray.forEach(function (pid) {
-                const whereDS = {pid: pid}
+                const whereDS = {pid: pid}  
                 Dataset.update(whereDS , {isPublished: true}, function(err) {
                     if (err) {
                         return cb(err);
@@ -289,6 +289,25 @@ module.exports = function(PublishedData) {
         ],
         http: {
             path: "/:id/register",
+            verb: "post"
+        },
+        returns: {
+            arg: "doi",
+            type: "string"
+        }
+    });
+
+
+    PublishedData.remoteMethod("resync", {
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            }
+        ],
+        http: {
+            path: "/:id/resync",
             verb: "post"
         },
         returns: {
