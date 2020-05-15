@@ -407,6 +407,61 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
     it('Should fetch some filenames from the new dataset', function (done) {
         var fields = {
             "datasetId": testorigDataBlock.datasetId,
+            "filenameExp": "B410"
+        }
+        var limits = {
+            skip: 0,
+            limit: 20
+        }
+        request(app)
+            .get(
+                "/api/v3/OrigDatablocks/findFilesByName" +
+                '?fields=' + encodeURIComponent(JSON.stringify(fields)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                //console.log("Filenames:", JSON.stringify(res.body,null,4))
+                res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+
+    it('Should fetch some filenames using regexp from the new dataset', function (done) {
+        var fields = {
+            "datasetId": testorigDataBlock.datasetId,
+            "filenameExp": "^N10"
+        }
+        var limits = {
+            skip: 0,
+            limit: 20
+        }
+        request(app)
+            .get(
+                "/api/v3/OrigDatablocks/findFilesByName" +
+                '?fields=' + encodeURIComponent(JSON.stringify(fields)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                //console.log("Filenames:", JSON.stringify(res.body,null,4))
+                res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+
+    it('Should fetch some filenames without dataset condition', function (done) {
+        var fields = {
             "filenameExp": "B410200"
         }
         var limits = {

@@ -119,33 +119,55 @@ module.exports = function (Origdatablock) {
         fields = setFields(fields, options);
         // construct match conditions from fields value
         // ensure that fileNameExp test comes first because $text must come first in pipeline
-        let f1=fields["filenameExp"]
-        if ( f1 ) {
-            // for simplicity always do a case insensitive search
-            // use combined $text and filepath search for best performance
-            // also in case of arbitrary substring search
-            pipeline.push({
-                $match: {
-                    $text: {
-                        $search: f1 
-                    },
-                    "dataFileList.path": {
-                        $regex: f1,
-                        $options: 'i'
-                    }
-                }
-            });
-        }
-        let f2=fields["datasetId"]
-        if ( f2 ) {
+        let f1 = fields["filenameExp"]
+        let f2 = fields["datasetId"]
+        // skip $text index if datasetId filter condition is applied. This gives 
+        // the full substring fuctionality and the performance penalty is probably bearable 
+        // under these conditions
+        if (f2) {
             pipeline.push({
                 $match: {
                     "datasetId": f2
                 }
             });
+            if (f1) {
+                // for simplicity always do a case insensitive search
+                // use combined $text and filepath search for best performance
+                // also in case of arbitrary substring search
+                pipeline.push({
+                    $match: {
+                        "dataFileList.path": {
+                            $regex: f1,
+                            $options: 'i'
+                        }
+                    }
+                });
+            }
+        } else {
+            // if only filename conditions are applied then add text index to speedup search
+            // because you may need to search through a whole databse in the worst case
+            // The disdvanatge is that one can only search for tokenized words in filenames
+            // separated by blanks, minus etc (but underscore is unfortunately no word separator)
+            if (f1) {
+                // for simplicity always do a case insensitive search
+                // use combined $text and filepath search for best performance
+                // also in case of arbitrary substring search
+                pipeline.push({
+                    $match: {
+                        $text: {
+                            $search: f1
+                        },
+                        "dataFileList.path": {
+                            $regex: f1,
+                            $options: 'i'
+                        }
+                    }
+                });
+            }
         }
-        let f3=fields["userGroups"]
-        if ( f3 ) {
+
+        let f3 = fields["userGroups"]
+        if (f3) {
             if (f3.indexOf("globalaccess") < 0) {
                 pipeline.push({
                     $match: {
