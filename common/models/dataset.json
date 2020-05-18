@@ -61,6 +61,14 @@
             "type": "number",
             "description": "Total size of all datablock package files created for this dataset"
         },
+        "numberOfFiles": {
+            "type": "number",
+            "description": "Total number of lines in filelisting of all OrigDatablocks for this dataset"
+        },
+        "numberOfFilesArchived": {
+            "type": "number",
+            "description": "Total number of lines in filelisting of all Datablocks for this dataset"
+        },
         "creationTime": {
             "type": "date",
             "required": true,
@@ -163,8 +171,7 @@
             "property": "techniques"
         }
     },
-    "acls": [
-        {
+    "acls": [{
             "principalType": "ROLE",
             "principalId": "$everyone",
             "permission": "ALLOW",
@@ -199,8 +206,7 @@
     ],
     "methods": {
         "reset": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "datasetId",
                     "type": "string"
                 },
@@ -220,8 +226,7 @@
             }
         },
         "fullfacet": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name and values of fields. There ia also support for a `text` search to look for strngs anywhere in the dataset."
@@ -247,8 +252,7 @@
             }
         },
         "fullquery": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
@@ -274,8 +278,7 @@
             }
         },
         "anonymousquery": {
-            "accepts": [
-                {
+            "accepts": [{
                     "arg": "fields",
                     "type": "object",
                     "description": "Define the filter conditions by specifying the name of values of fields requested. There ia also support for a `text` search to look for strings anywhere in the dataset. Skip and limit parameters allow for paging."
