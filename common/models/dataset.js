@@ -68,7 +68,7 @@ module.exports = function(Dataset) {
             "updates a single record by appending data to the specified field"
     });
 
-    Dataset.prototype.updateSize = function(id, sizeField, size, next) {
+    Dataset.prototype.updateSize = function(id, sizeField, size, numFilesField, numFiles, next) {
         // console.log("Updating size field:", id, sizeField, size)
         Dataset.findById(id, function(err, instance) {
             if (err) {
@@ -76,11 +76,18 @@ module.exports = function(Dataset) {
             } else {
                 // console.log("Before addition:",sizeField,instance[sizeField])
                 var oldsize = 0;
+
                 if (instance[sizeField]) {
                     oldsize = instance[sizeField];
                 }
                 instance[sizeField] = size + oldsize;
                 // console.log("new size:",instance[sizeField])
+                var oldNumFiles=0;
+                if (instance[numFilesField]) {
+                    oldNumFiles = instance[numFilesField];
+                }
+                instance[numFilesField] = numFiles + oldNumFiles;
+
                 instance.save();
                 return next();
             }
