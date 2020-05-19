@@ -16,7 +16,32 @@ let accessToken = null,
     defaultPid = null,
     pid = null,
     pidnonpublic = null,
-    attachmentId = null;
+    attachmentId = null,
+    doi = null,
+    pubDataId = null;
+
+const testPublishedData = {
+    "creator" : [ 
+        "ESS"
+    ],
+    "publisher" : "ESS",
+    "publicationYear" : 2020,
+    "title" : "dd",
+    "url" : "",
+    "abstract" : "dd",
+    "dataDescription" : "dd",
+    "resourceType" : "raw",
+    "numberOfFiles" : null,
+    "sizeOfArchive" : null,
+    "pidArray" : [ 
+        "20.500.11935/243adb8a-30b7-4c3a-af2b-a1f2ac46353b"
+    ],
+};
+
+const modifiedPublishedData = {
+    "publisher" : "PSI",
+    "abstract" : "a new abstract",
+};
 
 const testdataset = {
     "owner": "Bertram Astor",
@@ -117,6 +142,100 @@ describe("Test of access to published data", () => {
                         done();
                     });
 
+            });
+    });
+
+    it("adds a published data", function (done) {
+        request(app)
+            .post("/api/v3/PublishedData?access_token=" + accessToken)
+            .send(testPublishedData)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end(function (err, res) {
+                if (err) return done(err);
+                res.body.should.have.property("publisher").and.be.string;
+                doi = encodeURIComponent(res.body["doi"]);
+                done();
+            });
+    });
+
+    it("should fetch this new published data", function (done) {
+        request(app)
+            .get("/api/v3/PublishedData/" + doi + "?access_token=" + accessToken)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.have.property("publisher").and.equal("ESS");
+                res.body.should.have.property("status").and.equal("pending_registration");
+                done();
+            });
+    });
+
+    it("should register this new published data", function (done) {
+        request(app)
+            .post("/api/v3/PublishedData/" + doi + "/register/?access_token=" + accessToken)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+    it("should fetch this new published data", function (done) {
+        request(app)
+            .get("/api/v3/PublishedData/" + doi + "?access_token=" + accessToken)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.have.property("publisher").and.equal("ESS");
+                res.body.should.have.property("status").and.equal("registered");
+                done();
+            });
+    });
+
+    it("should resync this new published data", function (done) {
+        request(app)
+            .post("/api/v3/PublishedData/" + doi + "/resync/?access_token=" + accessToken)
+            .send({data: modifiedPublishedData})
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+    it("should fetch this new published data", function (done) {
+        request(app)
+            .get("/api/v3/PublishedData/" + doi + "?access_token=" + accessToken)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.have.property("publisher").and.equal("PSI");
+                res.body.should.have.property("abstract").and.equal("a new abstract");
+                done();
+            });
+    });
+
+    it("should delete this published data", function (done) {
+        request(app)
+            .delete("/api/v3/PublishedData/" + doi + "?access_token=" + accessTokenArchiveManager)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
             });
     });
 
