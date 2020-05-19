@@ -297,6 +297,47 @@ module.exports = function(PublishedData) {
         }
     });
 
+    PublishedData.resync = function(doi, data, cb) { 
+        if (!config) {
+            return cb("No config.local");
+        }
+        delete data.doi;
+        delete data._id;
+        const OAIServerUri = config.oaiProviderRoute;
+        let doiProviderCredentials = {
+            username: "removed",
+            password: "removed"
+        };
+
+        const resyncOAIPublication = {
+            method: "PUT",
+            body: data,
+            json: true,
+            uri: OAIServerUri + "/" + encodeURIComponent(doi),
+            headers: {
+                "content-type": "application/json;charset=UTF-8"
+            },
+            auth: doiProviderCredentials
+        };
+
+        const where = {
+            doi: doi
+        };
+
+        console.log("before resync");
+        requestPromise(resyncOAIPublication)
+            .then(v => {
+                console.log("before update");
+                PublishedData.update(where, data, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                });
+                return cb(null, v);
+            })
+            .catch(e => cb(e));
+    };
+
 
     PublishedData.remoteMethod("resync", {
         accepts: [
@@ -304,7 +345,12 @@ module.exports = function(PublishedData) {
                 arg: "id",
                 type: "string",
                 required: true
-            }
+            },
+            {
+                arg: "data",
+                type: "object",
+                required: true
+            },
         ],
         http: {
             path: "/:id/resync",
