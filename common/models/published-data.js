@@ -169,12 +169,15 @@ module.exports = function(PublishedData) {
         const where = {
             _id: id
         };
-        const data = {
-            status: "registered",
-            registeredTime: new Date()
-        };
 
         PublishedData.findById(id, function(err, pub) {
+            const data = {
+                status: "registered",
+                registeredTime: new Date()
+            };
+            pub.registeredTime = data.registeredTime;
+            pub.status = data.status;
+
             const xml = formRegistrationXML(pub);
 
             if (!config) {
@@ -267,7 +270,7 @@ module.exports = function(PublishedData) {
                 requestPromise(syncOAIPublication)
                     .then(v => {
                         console.log("before update");
-                        PublishedData.update(where, data, function(err) {
+                        PublishedData.update(where, {"$set": data}, function(err) {
                             if (err) {
                                 return cb(err);
                             }
@@ -328,7 +331,7 @@ module.exports = function(PublishedData) {
         requestPromise(resyncOAIPublication)
             .then(v => {
                 console.log("before update");
-                PublishedData.update(where, data, function(err) {
+                PublishedData.update(where, {"$set": data}, function(err) {
                     if (err) {
                         return cb(err);
                     }
