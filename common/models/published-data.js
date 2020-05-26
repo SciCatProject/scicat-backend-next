@@ -169,12 +169,15 @@ module.exports = function(PublishedData) {
         const where = {
             _id: id
         };
-        const data = {
-            status: "registered",
-            registeredTime: new Date()
-        };
 
         PublishedData.findById(id, function(err, pub) {
+            const data = {
+                status: "registered",
+                registeredTime: new Date()
+            };
+            pub.registeredTime = data.registeredTime;
+            pub.status = data.status;
+
             const xml = formRegistrationXML(pub);
 
             if (!config) {
@@ -183,7 +186,7 @@ module.exports = function(PublishedData) {
 
             var Dataset = app.models.Dataset;
             pub.pidArray.forEach(function (pid) {
-                const whereDS = {pid: pid}
+                const whereDS = {pid: pid}  
                 Dataset.update(whereDS , {isPublished: true}, function(err) {
                     if (err) {
                         return cb(err);
@@ -267,7 +270,7 @@ module.exports = function(PublishedData) {
                 requestPromise(syncOAIPublication)
                     .then(v => {
                         console.log("before update");
-                        PublishedData.update(where, data, function(err) {
+                        PublishedData.update(where, {"$set": data}, function(err) {
                             if (err) {
                                 return cb(err);
                             }
@@ -289,6 +292,71 @@ module.exports = function(PublishedData) {
         ],
         http: {
             path: "/:id/register",
+            verb: "post"
+        },
+        returns: {
+            arg: "doi",
+            type: "string"
+        }
+    });
+
+    PublishedData.resync = function(doi, data, cb) { 
+        if (!config) {
+            return cb("No config.local");
+        }
+        delete data.doi;
+        delete data._id;
+        const OAIServerUri = config.oaiProviderRoute;
+        let doiProviderCredentials = {
+            username: "removed",
+            password: "removed"
+        };
+
+        const resyncOAIPublication = {
+            method: "PUT",
+            body: data,
+            json: true,
+            uri: OAIServerUri + "/" + encodeURIComponent(doi),
+            headers: {
+                "content-type": "application/json;charset=UTF-8"
+            },
+            auth: doiProviderCredentials
+        };
+
+        const where = {
+            doi: doi
+        };
+
+        console.log("before resync");
+        requestPromise(resyncOAIPublication)
+            .then(v => {
+                console.log("before update");
+                PublishedData.update(where, {"$set": data}, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                });
+                return cb(null, v);
+            })
+            .catch(e => cb(e));
+    };
+
+
+    PublishedData.remoteMethod("resync", {
+        accepts: [
+            {
+                arg: "id",
+                type: "string",
+                required: true
+            },
+            {
+                arg: "data",
+                type: "object",
+                required: true
+            },
+        ],
+        http: {
+            path: "/:id/resync",
             verb: "post"
         },
         returns: {

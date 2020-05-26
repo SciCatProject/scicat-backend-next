@@ -168,7 +168,9 @@
                 "create",
                 "patchOrCreate",
                 "patchAttributes",
-                "updateAll"
+                "updateAll",
+                "register",
+                "resync"
             ]
         },
         {

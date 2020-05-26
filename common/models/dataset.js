@@ -90,6 +90,7 @@ module.exports = function(Dataset) {
 
                 instance.save();
                 return next();
+
             }
         });
     };
