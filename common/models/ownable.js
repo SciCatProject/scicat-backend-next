@@ -1,10 +1,10 @@
 "use strict";
 const util = require("util");
-module.exports = function(Ownable) {
+module.exports = function (Ownable) {
     // to get access to other models
     var app = require("../../server/server");
 
-    Ownable.observe("access", function(ctx, next) {
+    Ownable.observe("access", function (ctx, next) {
         // console.log("+++++ Access ctx.options:",ctx.options)
         if (
             ctx.Model.modelName === "Dataset" &&
@@ -15,29 +15,16 @@ module.exports = function(Ownable) {
         } else {
             const groups = ctx.options && ctx.options.currentGroups;
             // append group based conditions unless functional accounts with global access role
-            if (
-                groups &&
-                groups.length > 0 &&
-                groups.indexOf("globalaccess") < 0
-            ) {
-                let regOR = "";
-                for (let group in groups) {
-                    regOR += groups[group] + "|";
-                }
-                regOR = regOR.slice(0, regOR.length - 1);
-                var pattern = new RegExp(regOR, "i");
+            if (groups && groups.length > 0 && groups.indexOf("globalaccess") < 0) {
                 var groupCondition = {
-                    // NOTE inq is not useful here as it allows us to pass an array but not check against an array
-                    // a regex should be used instead
-                    or: [
-                        {
+                    or: [{
                             ownerGroup: {
-                                like: pattern
+                                inq: groups
                             }
                         },
                         {
                             accessGroups: {
-                                like: pattern
+                                inq: groups
                             }
                         }
                     ]
@@ -55,9 +42,9 @@ module.exports = function(Ownable) {
         }
     });
 
-    Ownable.isValid = function(instance, next) {
+    Ownable.isValid = function (instance, next) {
         var ds = new Ownable(instance);
-        ds.isValid(function(valid) {
+        ds.isValid(function (valid) {
             if (!valid) {
                 next(null, {
                     errors: ds.errors,
@@ -71,11 +58,30 @@ module.exports = function(Ownable) {
         });
     };
 
-    Ownable.observe("before save", function(ctx, next) {
+    Ownable.observe("before save", function (ctx, next) {
+        // make sure that only ownerGroup members have modify rights
+        if (ctx.data && ctx.options && !ctx.options.validate) {
+            let groups = []
+            if (ctx.options && ctx.options.currentGroups) {
+                console.log("Your groups are:", ctx.options.currentGroups)
+                groups = ctx.options.currentGroups
+            };
+            // however allow history updates
+            if (!ctx.data['history'] && ctx.currentInstance) {
+                // modify operations are forbidden unless you are member of ownerGroup or have globalaccess role  
+                if ((groups.indexOf("globalaccess") < 0) && !ctx.isNewInstance && groups.indexOf(ctx.currentInstance.ownerGroup) < 0) {
+                    var e = new Error();
+                    e.statusCode = 403;
+                    e.message = 'You must be in ownerGroup ' + ctx.currentInstance.ownerGroup + " or have global role to modify document, your groups are:" + groups
+                    return next(e);
+                }
+            }
+        }
+        // add some admin infos automatically
         if (ctx.instance) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function(
+                User.findById(ctx.options.accessToken.userId, function (
                     err,
                     instance
                 ) {
@@ -92,7 +98,7 @@ module.exports = function(Ownable) {
                             ctx.instance.createdBy = "anonymous";
                         }
                     }
-                    next();
+                    return next();
                 });
             } else {
                 if (ctx.instance.createdBy) {
@@ -100,12 +106,12 @@ module.exports = function(Ownable) {
                 } else {
                     ctx.instance.createdBy = "anonymous";
                 }
-                next();
+                return next();
             }
         } else if (ctx.data) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function(
+                User.findById(ctx.options.accessToken.userId, function (
                     err,
                     instance
                 ) {
@@ -114,11 +120,11 @@ module.exports = function(Ownable) {
                     } else {
                         ctx.data.updatedBy = "anonymous";
                     }
-                    next();
+                    return next();
                 });
             } else {
                 ctx.data.updatedBy = "anonymous";
-                next();
+                return next();
             }
         }
     });

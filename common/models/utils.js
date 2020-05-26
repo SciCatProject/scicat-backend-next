@@ -29,7 +29,7 @@ exports.transferSizeToDataset = function (obj, sizeField, ctx, next) {
                     error.message = 'DatasetId not found. Could be access rule problem - test accessGroups for id: '+instance.pid;
                     next(error)
                 } else {
-                    datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], next)
+                    datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], ctx.options, next)
                 }
             })
         } else {
