@@ -486,7 +486,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
             });
     });
 
-    it('The size fields in the dataset should be correctly updated', function (done) {
+    it('The size and numFiles fields in the dataset should be correctly updated', function (done) {
         request(app)
             .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
@@ -497,6 +497,8 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
                     return done(err);
                 res.body.should.have.property('size').and.equal(41780189);
                 res.body.should.have.property('packedSize').and.equal(83560380)
+                res.body.should.have.property('numberOfFiles').and.equal(5);
+                res.body.should.have.property('numberOfFilesArchived').and.equal(10)
                 done();
             });
     });
