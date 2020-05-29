@@ -36,7 +36,6 @@ module.exports = function (Ownable) {
                         and: [ctx.query.where, groupCondition]
                     };
                 }
-                // console.log("000000000 ctx.query.where", util.inspect(ctx.query, {showHidden: false, depth: null}))
             }
             next();
         }
@@ -63,7 +62,7 @@ module.exports = function (Ownable) {
         if (ctx.data && ctx.options && !ctx.options.validate) {
             let groups = []
             if (ctx.options && ctx.options.currentGroups) {
-                console.log("Your groups are:", ctx.options.currentGroups)
+                // ("Your groups are:", ctx.options.currentGroups)
                 groups = ctx.options.currentGroups
             };
             // however allow history updates

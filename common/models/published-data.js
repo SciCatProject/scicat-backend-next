@@ -66,7 +66,7 @@ module.exports = function(PublishedData) {
             if (ctx.isNewInstance) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
                 ctx.instance.status = "pending_registration";
-                console.log("      New pid:", ctx.instance.doi);
+                // console.log("      New pid:", ctx.instance.doi);
 
             }
             if (ctx.options.accessToken) {
@@ -266,10 +266,8 @@ module.exports = function(PublishedData) {
                     "oaiProviderRoute route not specified in config.local"
                 );
             } else {
-                console.log("before OAI sync");
                 requestPromise(syncOAIPublication)
                     .then(v => {
-                        console.log("before update");
                         PublishedData.update(where, {"$set": data}, function(err) {
                             if (err) {
                                 return cb(err);
@@ -327,10 +325,8 @@ module.exports = function(PublishedData) {
             doi: doi
         };
 
-        console.log("before resync");
         requestPromise(resyncOAIPublication)
             .then(v => {
-                console.log("before update");
                 PublishedData.update(where, {"$set": data}, function(err) {
                     if (err) {
                         return cb(err);
@@ -368,7 +364,7 @@ module.exports = function(PublishedData) {
     // PublishedData.observe("loaded", function(ctx,  next) {
     PublishedData.afterRemote("find", function(ctx, modelInstance, next) {
         const accessToken = ctx.args.options.accessToken; // && ctx["accessToken"];
-        console.log(ctx);
+        // console.log(ctx);
         if (!accessToken) {
             if (ctx.result) {
                 let answer;
