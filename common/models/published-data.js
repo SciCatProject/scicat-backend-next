@@ -348,7 +348,8 @@ module.exports = function(PublishedData) {
             {
                 arg: "data",
                 type: "object",
-                required: true
+                required: true,
+                http: { source: 'body' }
             },
         ],
         http: {
