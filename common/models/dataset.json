@@ -178,6 +178,7 @@
             "property": [
                 "anonymousquery",
                 "find",
+                "findById",
                 "findOne",
                 "fullfacet",
                 "fullquery",
