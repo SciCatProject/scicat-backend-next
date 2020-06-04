@@ -134,38 +134,6 @@ module.exports = function(Dataset) {
         next();
     });
 
-    // Dataset.beforeRemote("findOne", function(ctx, unused, next) {
-    //     const accessToken = ctx.args.options.accessToken;
-    //     if (!accessToken) {
-    //         if (!ctx.args.filter) {
-    //             ctx.args.filter = { where: { isPublished: true } };
-    //         } else {
-    //             if (!ctx.args.filter.where) {
-    //                 ctx.args.filter.where = { isPublished: true };
-    //             } else {
-    //                 ctx.args.filter.where["isPublished"] = true;
-    //             }
-    //         }
-    //     }
-    //     next();
-    // });
-
-    // Dataset.beforeRemote("findById", function(ctx, unused, next) {
-    //     const accessToken = ctx.args.options.accessToken;
-    //     if (!accessToken) {
-    //         if (!ctx.args.filter) {
-    //             ctx.args.filter = { where: { isPublished: true } };
-    //         } else {
-    //             if (!ctx.args.filter.where) {
-    //                 ctx.args.filter.where = { isPublished: true };
-    //             } else {
-    //                 ctx.args.filter.where["isPublished"] = true;
-    //             }
-    //         }
-    //     }
-    //     next();
-    // });
-
     Dataset.beforeRemote("prototype.patchAttributes", function(
         ctx,
         unused,
