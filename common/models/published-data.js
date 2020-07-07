@@ -311,7 +311,7 @@ module.exports = function(PublishedData) {
         };
 
         const resyncOAIPublication = {
-            method: "PUT",
+            method: "POST",
             body: data,
             json: true,
             uri: OAIServerUri + "/" + encodeURIComponent(doi),
