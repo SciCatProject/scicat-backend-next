@@ -314,7 +314,7 @@ module.exports = function(PublishedData) {
             method: "POST",
             body: data,
             json: true,
-            uri: OAIServerUri + "/" + encodeURIComponent(doi),
+            uri: OAIServerUri + "/update/" + encodeURIComponent(doi),
             headers: {
                 "content-type": "application/json;charset=UTF-8"
             },
