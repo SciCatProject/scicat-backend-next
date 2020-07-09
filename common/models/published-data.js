@@ -266,7 +266,6 @@ module.exports = function(PublishedData) {
                     "oaiProviderRoute route not specified in config.local"
                 );
             } else {
-                console.log("register:", syncOAIPublication)
                 requestPromise(syncOAIPublication)
                     .then(v => {
                         PublishedData.update(where, {"$set": data}, function(err) {
@@ -325,7 +324,6 @@ module.exports = function(PublishedData) {
         const where = {
             doi: doi
         };
-        console.log("sync:", resyncOAIPublication)
         requestPromise(resyncOAIPublication)
             .then(v => {
                 PublishedData.update(where, {"$set": data}, function(err) {
