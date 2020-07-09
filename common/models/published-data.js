@@ -315,7 +315,7 @@ module.exports = function(PublishedData) {
             method: "PUT",
             body: data,
             json: true,
-            uri: OAIServerUri + "/" + encodeURIComponent(doi),
+            uri: OAIServerUri + "/" + encodeURIComponent(encodeURIComponent(doi)),
             headers: {
                 "content-type": "application/json;charset=UTF-8"
             },
