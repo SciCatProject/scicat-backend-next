@@ -237,7 +237,7 @@ module.exports = function(PublishedData) {
             };
 
             const syncOAIPublication = {
-                method: "PUT",
+                method: "POST",
                 body: pub,
                 json: true,
                 uri: OAIServerUri,
@@ -311,10 +311,10 @@ module.exports = function(PublishedData) {
         };
 
         const resyncOAIPublication = {
-            method: "POST",
+            method: "PUT",
             body: data,
             json: true,
-            uri: OAIServerUri + "/update/" + encodeURIComponent(doi),
+            uri: OAIServerUri + "/" + encodeURIComponent(doi),
             headers: {
                 "content-type": "application/json;charset=UTF-8"
             },
