@@ -14,7 +14,7 @@ RUN apk update && apk upgrade && \
     apk add --no-cache git
 # Prepare app directory
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
+COPY package*.json /usr/src/app/
 
 #RUN npm config set -g production false
 # Install our packages
@@ -22,7 +22,7 @@ RUN npm config set proxy  $http_proxy
 RUN npm config set https-proxy  $http_proxy
 RUN npm config set registry http://registry.npmjs.org/
 RUN npm config set strict-ssl false
-RUN npm install --no-optional --only=production
+RUN npm ci --only=production
 
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
