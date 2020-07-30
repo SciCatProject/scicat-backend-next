@@ -361,30 +361,47 @@ module.exports = function(PublishedData) {
         }
     });
 
-    // PublishedData.observe("loaded", function(ctx,  next) {
-    PublishedData.afterRemote("find", function(ctx, modelInstance, next) {
-        const accessToken = ctx.args.options.accessToken; // && ctx["accessToken"];
-        // console.log(ctx);
+    PublishedData.beforeRemote("find", function(ctx, unused, next) {
+        const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
-            if (ctx.result) {
-                let answer;
-                if (Array.isArray(modelInstance)) {
-                    answer = [];
-                    ctx.result.forEach(function(result) {
-                        if (result["status"] === "registered") {
-                            answer.push(result);
-                        }
-                    });
-                } else {
-                    if (ctx.result["status"] === "registered") {
-                        answer = ctx.result;
+            let filter = {};
+            if (ctx.args.filter) {
+                if (ctx.args.filter.where) {
+                    filter.where = {};
+                    if (ctx.args.filter.where.and) {
+                        filter.where.and = [];
+                        filter.where.and.push({ status: "registered" });
+                        filter.where.and = filter.where.and.concat(ctx.args.filter.where.and);
+                    } else if (ctx.args.filter.where.or) {
+                        filter.where.and = [];
+                        filter.where.and.push({ status: "registered" });
+                        filter.where.and.push({ or: ctx.args.filter.where.or });
+                    } else {
+                        filter.where = { and: [{ status: "registered" }].concat(ctx.args.filter.where) };
                     }
+                } else {
+                    filter.where = { status: "registered" };
                 }
-                ctx.result = answer;
+                if (ctx.args.filter.skip) {
+                    filter.skip = ctx.args.filter.skip;
+                }
+                if (ctx.args.filter.limit) {
+                    filter.limit = ctx.args.filter.limit;
+                }
+                if (ctx.args.filter.include) {
+                    filter.include = ctx.args.filter.include;
+                }
+                if (ctx.args.filter.fields) {
+                    filter.fields = ctx.args.filter.fields;
+                }
+            } else {
+                filter = { where: { status: "registered" } };
             }
+            ctx.args.filter = filter;
         }
         next();
     });
+
     // TODO add logic that give authors privileges to modify data
 
     // // put
