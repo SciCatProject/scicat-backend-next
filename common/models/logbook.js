@@ -21,7 +21,7 @@ module.exports = function(Logbook) {
     Logbook.afterRemote("findAll", async function(ctx, logbooks) {
         const { userId } = ctx.req.accessToken;
         const proposalIds = await getUserProposals(userId);
-        ctx.result = logbooks.filter(({ name }) => proposalIds.includes(name));
+        ctx.result = logbooks ? logbooks.filter(({ name }) => proposalIds.includes(name)) : [];
         return;
     });
 
