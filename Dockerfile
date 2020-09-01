@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM mhart/alpine-node:8
+FROM mhart/alpine-node:10
 
 RUN apk add --update 	python 	build-base git
 ENV NODE_ENV "production"

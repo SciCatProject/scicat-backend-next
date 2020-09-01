@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:9.4
+FROM node:10
 
 ENV NODE_ENV "qa"
 ENV PORT 3000

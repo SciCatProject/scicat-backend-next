@@ -12,7 +12,7 @@ First you need to have node/npm installed
 
 ```
 npm version 6 or higher
-Node version 8 or higher
+Node version 10 or higher
 ```
 You also need to setup a MongoDB server. E.g. on a Redhat Linux System the following command will suffice
 

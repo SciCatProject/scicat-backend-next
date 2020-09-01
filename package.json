@@ -3,7 +3,7 @@
   "version": "3.0.1",
   "main": "server/server.js",
   "engines": {
-    "node": ">=4"
+    "node": ">=10"
   },
   "scripts": {
     "lint": "eslint common/models",
