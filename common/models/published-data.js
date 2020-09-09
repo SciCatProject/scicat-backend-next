@@ -14,7 +14,7 @@ function formRegistrationXML(publishedData) {
         title,
         abstract,
         resourceType,
-        creator
+        creator,
     } = publishedData;
     const doi =
         config.doiPrefix +
@@ -24,7 +24,7 @@ function formRegistrationXML(publishedData) {
         (author, i) => creator.indexOf(author) === i
     );
 
-    const creatorElements = uniqueCreator.map(author => {
+    const creatorElements = uniqueCreator.map((author) => {
         const names = author.split(" ");
         const firstName = names[0];
         const lastName = names.slice(1).join(" ");
@@ -58,20 +58,19 @@ function formRegistrationXML(publishedData) {
     `;
 }
 
-module.exports = function(PublishedData) {
+module.exports = function (PublishedData) {
     const app = require("../../server/server");
 
-    PublishedData.observe("before save", function(ctx, next) {
+    PublishedData.observe("before save", function (ctx, next) {
         if (ctx.instance) {
             if (ctx.isNewInstance) {
                 ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
                 ctx.instance.status = "pending_registration";
                 // console.log("      New pid:", ctx.instance.doi);
-
             }
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function(
+                User.findById(ctx.options.accessToken.userId, function (
                     err,
                     instance
                 ) {
@@ -101,7 +100,7 @@ module.exports = function(PublishedData) {
         } else if (ctx.data) {
             if (ctx.options.accessToken) {
                 var User = app.models.User;
-                User.findById(ctx.options.accessToken.userId, function(
+                User.findById(ctx.options.accessToken.userId, function (
                     err,
                     instance
                 ) {
@@ -119,13 +118,13 @@ module.exports = function(PublishedData) {
         }
     });
 
-    PublishedData.formPopulate = function(pid, next) {
+    PublishedData.formPopulate = function (pid, next) {
         var Dataset = app.models.Dataset;
         var Proposal = app.models.Proposal;
         var self = this;
         self.formData = {};
 
-        Dataset.findById(pid, function(err, ds) {
+        Dataset.findById(pid, function (err, ds) {
             if (err) {
                 return next(err);
             }
@@ -134,12 +133,12 @@ module.exports = function(PublishedData) {
             self.formData.description = ds.description;
             //self.formData.sizeOfArchive = ds.size;
 
-            Proposal.findById(proposalId, function(err, prop) {
+            Proposal.findById(proposalId, function (err, prop) {
                 if (prop) {
                     self.formData.title = prop.title;
                     self.formData.abstract = prop.abstract;
                 }
-                Dataset.thumbnail(pid).then(thumb => {
+                Dataset.thumbnail(pid).then((thumb) => {
                     self.formData.thumbnail = thumb;
                     return next(null, self.formData);
                 });
@@ -152,28 +151,28 @@ module.exports = function(PublishedData) {
             {
                 arg: "pid",
                 type: "string",
-                required: true
-            }
+                required: true,
+            },
         ],
         http: {
             path: "/formPopulate",
-            verb: "get"
+            verb: "get",
         },
         returns: {
             type: "Object",
-            root: true
-        }
+            root: true,
+        },
     });
 
-    PublishedData.register = function(id, cb) { 
+    PublishedData.register = function (id, cb) {
         const where = {
-            _id: id
+            _id: id,
         };
 
-        PublishedData.findById(id, function(err, pub) {
+        PublishedData.findById(id, function (err, pub) {
             const data = {
                 status: "registered",
-                registeredTime: new Date()
+                registeredTime: new Date(),
             };
             pub.registeredTime = data.registeredTime;
             pub.status = data.status;
@@ -186,15 +185,21 @@ module.exports = function(PublishedData) {
 
             var Dataset = app.models.Dataset;
             pub.pidArray.forEach(function (pid) {
-                const whereDS = {pid: pid}  
-                Dataset.update(whereDS , {isPublished: true}, function(err) {
-                    if (err) {
-                        return cb(err);
+                const whereDS = { pid: pid };
+                Dataset.update(
+                    whereDS,
+                    {
+                        isPublished: true,
+                        datasetlifecycle: { publishedOn: data.registeredTime },
+                    },
+                    function (err) {
+                        if (err) {
+                            return cb(err);
+                        }
                     }
-                });
+                );
             });
 
-        
             const fullDoi = pub.doi;
             const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
             const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
@@ -202,14 +207,14 @@ module.exports = function(PublishedData) {
 
             let doiProviderCredentials = {
                 username: "removed",
-                password: "removed"
+                password: "removed",
             };
             if (fs.existsSync(path)) {
                 doiProviderCredentials = JSON.parse(fs.readFileSync(path));
             } else {
                 doiProviderCredentials = {
                     username: "removed",
-                    password: "removed"
+                    password: "removed",
                 };
             }
             const registerDataciteMetadataOptions = {
@@ -217,9 +222,9 @@ module.exports = function(PublishedData) {
                 body: xml,
                 uri: registerMetadataUri,
                 headers: {
-                    "content-type": "application/xml;charset=UTF-8"
+                    "content-type": "application/xml;charset=UTF-8",
                 },
-                auth: doiProviderCredentials
+                auth: doiProviderCredentials,
             };
             const encodeDoi = encodeURIComponent(fullDoi);
             const registerDataciteDoiOptions = {
@@ -227,13 +232,13 @@ module.exports = function(PublishedData) {
                 body: [
                     "#Content-Type:text/plain;charset=UTF-8",
                     `doi= ${fullDoi}`,
-                    `url= ${config.publicURLprefix}${encodeDoi}` // Same as registerDoiUri?
+                    `url= ${config.publicURLprefix}${encodeDoi}`, // Same as registerDoiUri?
                 ].join("\n"),
                 uri: registerDoiUri,
                 headers: {
-                    "content-type": "text/plain;charset=UTF-8"
+                    "content-type": "text/plain;charset=UTF-8",
                 },
-                auth: doiProviderCredentials
+                auth: doiProviderCredentials,
             };
 
             const syncOAIPublication = {
@@ -242,9 +247,9 @@ module.exports = function(PublishedData) {
                 json: true,
                 uri: OAIServerUri,
                 headers: {
-                    "content-type": "application/json;charset=UTF-8"
+                    "content-type": "application/json;charset=UTF-8",
                 },
-                auth: doiProviderCredentials
+                auth: doiProviderCredentials,
             };
             if (config.site !== "PSI") {
                 console.log("posting to datacite");
@@ -252,30 +257,32 @@ module.exports = function(PublishedData) {
                 console.log(registerDataciteDoiOptions);
                 requestPromise(registerDataciteMetadataOptions)
                     .then(() => requestPromise(registerDataciteDoiOptions))
-                    .then(v => {
-                        PublishedData.update(where, data, function(err) {
+                    .then((v) => {
+                        PublishedData.update(where, data, function (err) {
                             if (err) {
                                 return cb(err);
                             }
                         });
                         return cb(null, v);
                     })
-                    .catch(e => cb(e));
+                    .catch((e) => cb(e));
             } else if (!config.oaiProviderRoute) {
                 return cb(
                     "oaiProviderRoute route not specified in config.local"
                 );
             } else {
                 requestPromise(syncOAIPublication)
-                    .then(v => {
-                        PublishedData.update(where, {"$set": data}, function(err) {
+                    .then((v) => {
+                        PublishedData.update(where, { $set: data }, function (
+                            err
+                        ) {
                             if (err) {
                                 return cb(err);
                             }
                         });
                         return cb(null, v);
                     })
-                    .catch(e => cb(e));
+                    .catch((e) => cb(e));
             }
         });
     };
@@ -285,20 +292,20 @@ module.exports = function(PublishedData) {
             {
                 arg: "id",
                 type: "string",
-                required: true
-            }
+                required: true,
+            },
         ],
         http: {
             path: "/:id/register",
-            verb: "post"
+            verb: "post",
         },
         returns: {
             arg: "doi",
-            type: "string"
-        }
+            type: "string",
+        },
     });
 
-    PublishedData.resync = function(doi, data, cb) { 
+    PublishedData.resync = function (doi, data, cb) {
         if (!config) {
             return cb("No config.local");
         }
@@ -307,61 +314,63 @@ module.exports = function(PublishedData) {
         const OAIServerUri = config.oaiProviderRoute;
         let doiProviderCredentials = {
             username: "removed",
-            password: "removed"
+            password: "removed",
         };
 
         const resyncOAIPublication = {
             method: "PUT",
             body: data,
             json: true,
-            uri: OAIServerUri + "/" + encodeURIComponent(encodeURIComponent(doi)),
+            uri:
+                OAIServerUri +
+                "/" +
+                encodeURIComponent(encodeURIComponent(doi)),
             headers: {
-                "content-type": "application/json;charset=UTF-8"
+                "content-type": "application/json;charset=UTF-8",
             },
-            auth: doiProviderCredentials
+            auth: doiProviderCredentials,
         };
 
         const where = {
-            doi: doi
+            doi: doi,
         };
         requestPromise(resyncOAIPublication)
-            .then(v => {
-                PublishedData.update(where, {"$set": data}, function(err) {
+            .then((v) => {
+                PublishedData.update(where, { $set: data }, function (err) {
                     if (err) {
                         return cb(err);
                     }
                 });
                 return cb(null, v);
             })
-            .catch(e => cb(e));
+            .catch((e) => cb(e));
     };
-
 
     PublishedData.remoteMethod("resync", {
         accepts: [
             {
                 arg: "id",
                 type: "string",
-                required: true
+                required: true,
             },
             {
                 arg: "data",
                 type: "object",
                 required: true,
-                http: { source: 'body' }
+                http: { source: "body" },
             },
         ],
         http: {
             path: "/:id/resync",
-            verb: "post"
+            verb: "post",
         },
         returns: {
             arg: "doi",
-            type: "string"
-        }
+            type: "string",
+        },
     });
 
-    PublishedData.beforeRemote("find", function(ctx, unused, next) {
+    PublishedData.beforeRemote("find", function (ctx, unused, next) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
             let filter = {};
@@ -371,13 +380,19 @@ module.exports = function(PublishedData) {
                     if (ctx.args.filter.where.and) {
                         filter.where.and = [];
                         filter.where.and.push({ status: "registered" });
-                        filter.where.and = filter.where.and.concat(ctx.args.filter.where.and);
+                        filter.where.and = filter.where.and.concat(
+                            ctx.args.filter.where.and
+                        );
                     } else if (ctx.args.filter.where.or) {
                         filter.where.and = [];
                         filter.where.and.push({ status: "registered" });
                         filter.where.and.push({ or: ctx.args.filter.where.or });
                     } else {
-                        filter.where = { and: [{ status: "registered" }].concat(ctx.args.filter.where) };
+                        filter.where = {
+                            and: [{ status: "registered" }].concat(
+                                ctx.args.filter.where
+                            ),
+                        };
                     }
                 } else {
                     filter.where = { status: "registered" };
