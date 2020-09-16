@@ -1003,7 +1003,16 @@ module.exports = function(Dataset) {
 
     Dataset.metadataKeys = async function(fields, limits, options) {
         try {
-            const blacklist = [new RegExp(".*_date"), new RegExp("runNumber")];
+            const blacklist = [
+                new RegExp(".*_date"),
+                new RegExp("runNumber"),
+                new RegExp("Entrych*."),
+                new RegExp("entryCh*."),
+                new RegExp("FMC-PICO*."),
+                new RegExp("BW_measurement*."),
+                new RegExp("Linearity_measurement*."),
+                new RegExp("Pulse_measurement*.")
+            ];
             const returnLimit = config.metadataKeysReturnLimit;
             const { metadataKey } = fields;
 
