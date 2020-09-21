@@ -99,6 +99,36 @@ patch:
         patched: '2020-08-28T09:32:33.780Z'
     - snyk > snyk-nodejs-lockfile-parser > @yarnpkg/core > lodash:
         patched: '2020-09-21T06:07:33.156Z'
+    - snyk > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-cpp-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-go-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-gradle-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-docker-plugin > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-mvn-plugin > @snyk/java-call-graph-builder > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-php-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-python-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-gradle-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
+    - snyk > snyk-mvn-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-09-21T06:17:17.328Z'
   'npm:lodash:20180130':
     - loopback-component-mq > rabbot > machina > lodash:
         patched: '2020-08-28T09:32:33.780Z'
