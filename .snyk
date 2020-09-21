@@ -97,6 +97,8 @@ patch:
         patched: '2020-08-28T09:32:33.780Z'
     - loopback > loopback-connector-remote > strong-remoting > strong-error-handler > strong-globalize > lodash:
         patched: '2020-08-28T09:32:33.780Z'
+    - snyk > snyk-nodejs-lockfile-parser > @yarnpkg/core > lodash:
+        patched: '2020-09-21T06:07:33.156Z'
   'npm:lodash:20180130':
     - loopback-component-mq > rabbot > machina > lodash:
         patched: '2020-08-28T09:32:33.780Z'
