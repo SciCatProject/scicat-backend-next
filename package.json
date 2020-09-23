@@ -28,7 +28,7 @@
     "loopback-component-mq": "^2.2.5",
     "loopback-component-passport": "^3.12.0",
     "loopback-component-visualizer": "^1.2.1",
-    "loopback-connector-mongodb": "^5.3.0",
+    "loopback-connector-mongodb": "^5.4.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
     "mathjs": "^6.6.5",
     "moment": "^2.27.0",
