@@ -1,0 +1,36 @@
+{
+  "local": {
+    "provider": "local",
+    "module": "passport-local",
+    "usernameField": "username",
+    "passwordField": "password",
+    "authPath": "/auth/local",
+    "successRedirect": "/auth/account",
+    "failureRedirect": "/local",
+    "failureFlash": true
+  },
+  "ldap": {
+    "provider": "ldap",
+    "authScheme": "ldap",
+    "module": "passport-ldapauth",
+    "authPath": "/auth/msad",
+    "successRedirect": "/auth/account",
+    "failureRedirect": "/msad",
+    "session": true,
+    "failureFlash": true,
+    "json": "true",
+    "profileAttributesFromLDAP": {
+      "displayName": "displayName",
+      "email": "mail",
+      "id": "uidNumber",
+      "accessGroups": ["memberOf", "CN=(\\d+-group|biomax|nanomax),.*?$", "$1"]
+    },
+    "server": {
+      "url": "",
+      "bindDn": "",
+      "bindCredentials": "",
+      "searchBase": "CN=Users,DC=maxlab,DC=lu,DC=se",
+      "searchFilter": "(sAMAccountName={{username}})"
+    }
+  }
+}
