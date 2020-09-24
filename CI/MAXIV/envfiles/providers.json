@@ -12,25 +12,25 @@
   "ldap": {
     "provider": "ldap",
     "authScheme": "ldap",
-    "module": "passport-ldapauth",
-    "authPath": "/auth/msad",
-    "successRedirect": "/auth/account",
-    "failureRedirect": "/msad",
+    "module": "",
+    "authPath": "",
+    "successRedirect": "",
+    "failureRedirect": "",
     "session": true,
     "failureFlash": true,
     "json": "true",
     "profileAttributesFromLDAP": {
-      "displayName": "displayName",
-      "email": "mail",
-      "id": "uidNumber",
-      "accessGroups": ["memberOf", "CN=(\\d+-group|biomax|nanomax),.*?$", "$1"]
+      "displayName": "",
+      "email": "",
+      "id": "",
+      "accessGroups": []
     },
     "server": {
       "url": "",
       "bindDn": "",
       "bindCredentials": "",
-      "searchBase": "CN=Users,DC=maxlab,DC=lu,DC=se",
-      "searchFilter": "(sAMAccountName={{username}})"
+      "searchBase": "",
+      "searchFilter": ""
     }
   }
 }
