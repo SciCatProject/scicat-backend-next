@@ -30,6 +30,7 @@ const testdataset = {
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": [],
+    "datasetName":"Example Data86",
     "history": ["this should be deleted"],
     "createdBy": "this should be deleted as well"
 };
@@ -163,6 +164,25 @@ describe("Simple Dataset tests", () => {
             .expect(204)
             .end((err, res) => {
                 if (err) return done(err);
+                done();
+            });
+    });
+
+    it("fetches Datasets filtered by datasetName", function(done) {
+        let filter=JSON.stringify({where:{datasetName:'Example Data86'}})
+        // console.log("========"+filter + "===" + encodeURIComponent(filter))
+        request(app)
+            .get(
+                "/api/v3/Datasets?filter="+encodeURIComponent(filter)+"&access_token="+accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.be.instanceof(Array);
+                res.body[0].should.have.property("datasetName").and.equal('Example Data86');
+                // console.log("Found dataset"+JSON.stringify(res.body,null,3))
                 done();
             });
     });
