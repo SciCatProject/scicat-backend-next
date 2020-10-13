@@ -11,12 +11,12 @@ WORKDIR /usr/src/app
 COPY package*.json /usr/src/app/
 COPY .snyk /usr/src/app/
 
-# Install our packages
-RUN npm ci --no-optional
-
 # set up local user to avoid running as root
 RUN chown -R node:node /usr/src/app
 USER node
+
+# Install our packages
+RUN npm ci --no-optional
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app

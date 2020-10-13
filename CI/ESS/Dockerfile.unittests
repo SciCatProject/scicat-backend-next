@@ -11,7 +11,7 @@ RUN npm config set strict-ssl false
 
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache git
+  apk add --no-cache git
 
 ENV PORT 3000
 EXPOSE 3000
@@ -21,12 +21,12 @@ WORKDIR /usr/src/app
 COPY package*.json /usr/src/app/
 COPY .snyk /usr/src/app/
 
-# Install our packages
-RUN npm ci
-
 # set up local user to avoid running as root
 RUN chown -R node:node /usr/src/app
 USER node
+
+# Install our packages
+RUN npm ci
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app
