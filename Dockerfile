@@ -11,6 +11,7 @@ RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app &&
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package*.json ./
+COPY .snyk ./
 
 USER myuser
 # Install our packages
