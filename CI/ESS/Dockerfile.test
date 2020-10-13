@@ -1,15 +1,22 @@
-FROM node:10
+FROM node:10.16.1-alpine
 
-RUN apt-get update && apt-get install -y --no-install-recommends mongodb-clients ldap-utils vim
+RUN apk update && apk upgrade && \
+    apk add --no-cache git
 
 ENV PORT 3000
 EXPOSE 3000
 
+# Prepare app directory
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
-# Install our packages
-RUN npm install --no-optional
+COPY package*.json /usr/src/app/
+COPY .snyk /usr/src/app/
 
+# Install our packages
+RUN npm ci --no-optional
+
+# set up local user to avoid running as root
+RUN chown -R node:node /usr/src/app
+USER node
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app

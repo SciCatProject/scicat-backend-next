@@ -4,19 +4,22 @@ FROM node:10.16.1-alpine
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000
-# create local user to avoid running as root
-
 
 ENV http_proxy "http://192.168.1.1:8123"
 ENV https_proxy $http_proxy
 ENV no_proxy "localhost, 127.0.0.1"
 RUN apk update && apk upgrade && \
     apk add --no-cache git
+
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package*.json /usr/src/app/
+COPY .snyk /usr/src/app/
 
-#RUN npm config set -g production false
+# set up local user to avoid running as root
+RUN chown -R node:node /usr/src/app
+USER node
+
 # Install our packages
 RUN npm config set proxy  $http_proxy
 RUN npm config set https-proxy  $http_proxy
