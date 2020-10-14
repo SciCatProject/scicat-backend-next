@@ -226,13 +226,13 @@ module.exports = function (PublishedData) {
                 },
                 auth: doiProviderCredentials,
             };
-            const encodeDoi = encodeURIComponent(fullDoi);
+            const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi));  //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
             const registerDataciteDoiOptions = {
                 method: "PUT",
                 body: [
                     "#Content-Type:text/plain;charset=UTF-8",
                     `doi= ${fullDoi}`,
-                    `url= ${config.publicURLprefix}${encodeDoi}`, // Same as registerDoiUri?
+                    `url= ${config.publicURLprefix}${encodeDoi}`,
                 ].join("\n"),
                 uri: registerDoiUri,
                 headers: {
