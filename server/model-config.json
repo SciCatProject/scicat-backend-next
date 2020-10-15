@@ -21,6 +21,12 @@
     "acls": [
       {
         "principalType": "ROLE",
+        "principalId": "$everyone",
+        "permission": "ALLOW",
+        "property": "jwt"
+      },
+      {
+        "principalType": "ROLE",
         "principalId": "$authenticated",
         "permission": "ALLOW",
         "property": "userInfos"
