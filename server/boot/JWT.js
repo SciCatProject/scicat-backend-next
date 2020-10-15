@@ -18,11 +18,17 @@ module.exports = function (app) {
             }
             const token = options.accessToken;
             if (!token) {
-                const error = new Error("Authorization Required");
-                error.statusCode = 401;
-                error.name = "Error";
-                error.code = "AUTHORIZATION_REQUIRED";
-                throw error;
+                const groups = ["public"];
+                const payload = {
+                    username: "anonymous",
+                    groups,
+                };
+                const jwtString = jwt.sign(
+                    payload,
+                    secret,
+                    signAndVerifyOptions
+                );
+                return jwtString;
             }
 
             const userId = token && token.userId;
