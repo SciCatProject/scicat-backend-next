@@ -7,7 +7,8 @@ module.exports = function(app) {
 
   const User = app.models.User;
 
-  User.jwt = function(ctx, cb) {
+  User.jwt = function(options, cb) {
+    console.log(">>> options", options);
     const secret = config.jwtSecret;
     if (!secret){
       var error = new Error("jwt secret has not been configured");
@@ -15,7 +16,15 @@ module.exports = function(app) {
       cb(error);
       return;
     }
-    const token = ctx.options && ctx.options.accessToken;
+    const token = options.accessToken;
+    if (!token && !token.id) {
+      const error = new Error("Authorization Required");
+      error.statusCode = 401;
+      error.name = "Error"
+      error.code = "AUTHORIZATION_REQUIRED"
+      cb(error);
+      return;
+    }
     const userId = token && token.userId;
 
       const UserIdentity = app.models.UserIdentity;
@@ -24,6 +33,7 @@ module.exports = function(app) {
           userId: userId
         }
     }, function(err, instance) {
+      console.log(">>> UI", instance);
       var groups = instance && instance.profile && instance.profile.accessGroups;
         if (!groups) {
             groups = [];
@@ -43,7 +53,7 @@ module.exports = function(app) {
         {
           arg: 'options',
           type: 'object',
-          http: { source: 'context' }
+          http: 'optionsFromRequest'
         },
     ],
       returns: {
