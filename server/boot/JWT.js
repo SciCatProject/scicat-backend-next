@@ -28,33 +28,19 @@ module.exports = function (app) {
             const userId = token && token.userId;
 
             const UserIdentity = app.models.UserIdentity;
-            UserIdentity.findOne(
-                {
-                    where: {
-                        userId: userId,
-                    },
-                },
-                function (err, instance) {
-                    console.log(">>> UI", instance);
-                    let groups =
-                        instance &&
-                        instance.profile &&
-                        instance.profile.accessGroups;
-                    if (!groups) {
-                        groups = [];
-                    }
-                    const payload = {
-                        username: userId,
-                        groups: groups,
-                    };
-                    const jwtString = jwt.sign(
-                        payload,
-                        secret,
-                        signAndVerifyOptions
-                    );
-                    return jwtString;
-                }
-            );
+            const instance = UserIdentity.findOne({ where: { userId } });
+            console.log(">>> UI", instance);
+            let groups =
+                instance && instance.profile && instance.profile.accessGroups;
+            if (!groups) {
+                groups = [];
+            }
+            const payload = {
+                username: userId,
+                groups,
+            };
+            const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
+            return jwtString;
         } catch (err) {
             throw err;
         }
