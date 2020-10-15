@@ -8,7 +8,6 @@ module.exports = function (app) {
     const User = app.models.User;
 
     User.jwt = async function (options) {
-        console.log(">>> options", options);
         try {
             const secret = config.jwtSecret;
             if (!secret) {
@@ -35,7 +34,6 @@ module.exports = function (app) {
 
             const UserIdentity = app.models.UserIdentity;
             const instance = UserIdentity.findOne({ where: { userId } });
-            console.log(">>> UI", instance);
             let groups =
                 instance && instance.profile && instance.profile.accessGroups;
             if (!groups) {
