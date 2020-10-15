@@ -10,28 +10,23 @@ var request = require('supertest');
 var should = chai.should();
 var utils = require('./LoginUtils');
 
+var accessTokenArchiveManager = null
 var accessToken = null,
     id = null;
 
 var testdataset = {
   "manager": [
-    "stephan.egli@psi.ch"
+    "ingestor"
   ],
   "tapeRedundancy": "low",
   //"tapeRetentionTime": 3,
   "autoArchiveDelay": 7,
   "archiveEmailNotification": false,
-  "archiveEmailsToBeNotified": [
-    "none"
-  ],
+  "archiveEmailsToBeNotified": [],
   "retrieveEmailNotification": false,
-  "retrieveEmailsToBeNotified": [
-    "none"
-  ],
+  "retrieveEmailsToBeNotified": [],
   "ownerGroup": "p10021",
-  "accessGroups": [
-    "none"
-  ]
+  "accessGroups": []
 }
 
 var app
@@ -47,13 +42,21 @@ describe('Simple Policy tests', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
             });
     });
 
     it('adds a new policy', function(done) {
         request(app)
-            .post('/api/v2/Policies?access_token=' + accessToken)
+            .post('/api/v3/Policies?access_token=' + accessToken)
             .send(testdataset)
             .set('Accept', 'application/json')
             .expect(200)
@@ -70,7 +73,7 @@ describe('Simple Policy tests', () => {
 
     it('should fetch this new policy', function(done) {
         request(app)
-            .get('/api/v2/Policies/' + id + '?access_token=' + accessToken)
+            .get('/api/v3/Policies/' + id + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -81,9 +84,23 @@ describe('Simple Policy tests', () => {
             });
     });
 
+    it('updates this existing policy', function(done) {
+        request(app)
+            .post('/api/v3/Policies/updateWhere?access_token=' + accessToken)
+            .send('ownerGroupList="p10021"&data={"autoArchive":true}')
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err)
+                    return done(err);
+                done();
+            });
+    });
+
     it('should delete this policy', function(done) {
         request(app)
-            .delete('/api/v2/Policies/' + id + '?access_token=' + accessToken)
+            .delete('/api/v3/Policies/' + id + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

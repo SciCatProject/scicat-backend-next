@@ -37,7 +37,7 @@ module.exports = function(Datablock) {
     // transfer packedSize info to dataset
     Datablock.observe('after save', (ctx, next) => {
         var Datablock = app.models.Datablock;
-        utils.transferSizeToDataset(Datablock, 'packedSize', ctx, next);
+        utils.transferSizeToDataset(Datablock, 'packedSize', 'numberOfFilesArchived', ctx, next);
 
     })
 };

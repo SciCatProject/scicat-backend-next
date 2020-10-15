@@ -2,8 +2,8 @@
     "name": "Proposal",
     "description": "Defines the purpose of an experiment and links an experiment to principal investigator and main proposer",
     "base": "Ownable",
-    "idInjection": false,
     "strict": true,
+    "idInjection": false,
     "options": {
         "validateUpsert": true
     },
@@ -46,11 +46,11 @@
         "abstract": {
             "type": "string"
         },
-        "attachments": {
-            "type": [
-                "string"
-            ],
-            "description": "Array of URLs pointing to attached documents"
+        "startTime": {
+            "type": "Date"
+        },
+        "endTime": {
+            "type": "Date"
         }
     },
     "validations": [],
@@ -64,31 +64,25 @@
                 "forceId": false,
                 "persistent": true
             }
+        },
+        "attachments": {
+            "type": "hasMany",
+            "model": "Attachment",
+            "foreignKey": ""
         }
     },
-    "acls": [{
+    "acls": [
+        {
+            "principalType": "ROLE",
+            "principalId": "$everyone",
+            "permission": "ALLOW",
+            "property": "findById"
+        },
+        {
             "accessType": "*",
             "principalType": "ROLE",
             "principalId": "proposalingestor",
             "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "$authenticated",
-            "permission": "ALLOW"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "usergroupingestor",
-            "permission": "DENY"
-        },
-        {
-            "accessType": "READ",
-            "principalType": "ROLE",
-            "principalId": "archivemanager",
-            "permission": "DENY"
         },
         {
             "principalType": "ROLE",
@@ -105,7 +99,8 @@
     ],
     "methods": {
         "findByInstrumentAndDate": {
-            "accepts": [{
+            "accepts": [
+                {
                     "arg": "instrument",
                     "type": "string"
                 },
@@ -130,11 +125,13 @@
             }
         },
         "searchText": {
-            "accepts": [{
-                "arg": "options",
-                "type": "object",
-                "http": "optionsFromRequest"
-            }],
+            "accepts": [
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
             "returns": {
                 "arg": "searchText",
                 "type": "Object"
@@ -142,6 +139,33 @@
             "description": "Search text inside proposal",
             "http": {
                 "path": "/searchText",
+                "verb": "get"
+            }
+        },
+        "fullquery": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the proposal. Skip and limit parameters allow for paging."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": {
+                "root": true
+            },
+            "description": "Return proposals fulfilling complex filter conditions, including from fields of joined models.",
+            "http": {
+                "path": "/fullquery",
                 "verb": "get"
             }
         }

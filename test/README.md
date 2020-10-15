@@ -11,12 +11,12 @@ In the `test/config/settings.json` file, you should have the following fields:
 ```
 {
     "baseURL": "http://localhost:3000/",
-    "apiPrefix": "api/v2/",
+    "apiPrefix": "api/v3/",
     "users": {
         "admin": {
             "username": "<USER>",
             "password": "<PWD>",
-            "login": "api/v2/Users/login"
+            "login": "api/v3/Users/login"
 
         },
         "user": {

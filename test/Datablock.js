@@ -23,7 +23,7 @@ var idDatablock2 = null;
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
     "endTime": "2011-09-14T06:31:25.000Z",
-    "creationLocation": "/SU/XQX/RAMJET",
+    "creationLocation": "/PSI/SLS/MX",
     "dataFormat": "Upchuck pre 2017",
     "scientificMetadata": {
         "beamlineParameters": {
@@ -84,15 +84,14 @@ var testraw = {
     "size": 0,
     "creationTime": "2011-09-14T06:08:25.000Z",
     "description": "None",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
-    "accessGroups": [],
+    "accessGroups": ["slsmx"],
     "proposalId": "10.540.16635/20110123"
 }
 
 var testdataBlock = {
-    "archiveId": "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    "archiveId": "1oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
     "chkAlg": "sha1",
@@ -142,14 +141,13 @@ var testdataBlock = {
             "gid": "p16738",
             "perm": "-rw-rw-r--"
         }
-    ],
-    "ownerGroup": "p10029"
+    ]
 }
 
 var testorigDataBlock = {
     "size": 41780189,
     "dataFileList": [{
-            "path": "N1039__B410489.tif",
+            "path": "N1039-1.tif",
             "size": 8356037,
             "time": "2017-07-24T13:56:30.000Z",
             "uid": "egon.meiera@psi.ch",
@@ -157,7 +155,7 @@ var testorigDataBlock = {
             "perm": "-rw-rw-r--"
         },
         {
-            "path": "N1039__B410613.tif",
+            "path": "N1039-2.tif",
             "size": 8356038,
             "time": "2017-07-24T13:56:35.000Z",
             "uid": "egon.meiera@psi.ch",
@@ -165,7 +163,7 @@ var testorigDataBlock = {
             "perm": "-rw-rw-r--"
         },
         {
-            "path": "N1039__B410729.tif",
+            "path": "N1039-3.tif",
             "size": 8356038,
             "time": "2017-07-24T13:56:41.000Z",
             "uid": "egon.meiera@psi.ch",
@@ -173,7 +171,7 @@ var testorigDataBlock = {
             "perm": "-rw-rw-r--"
         },
         {
-            "path": "N1039__B410200.tif",
+            "path": "N1039-B410200.tif",
             "size": 8356038,
             "time": "2017-07-24T13:56:18.000Z",
             "uid": "egon.meiera@psi.ch",
@@ -181,7 +179,7 @@ var testorigDataBlock = {
             "perm": "-rw-rw-r--"
         },
         {
-            "path": "N1039__B410377.tif",
+            "path": "N1039-B410377.tif",
             "size": 8356038,
             "time": "2017-07-24T13:56:25.000Z",
             "uid": "egon.meiera@psi.ch",
@@ -193,11 +191,11 @@ var testorigDataBlock = {
 
 var app
 
-before( function(){
+before(function () {
     app = require('../server/server')
 });
 
-describe('Test Datablocks and OrigDatablocks and their relation to Datasets', () => {
+describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -217,14 +215,14 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('adds a new raw dataset', function(done) {
+    it('adds a new raw dataset', function (done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
+            .post('/api/v3/RawDatasets?access_token=' + accessTokenIngestor)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('owner').and.be.string;
@@ -238,16 +236,17 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('adds a new origDatablock', function(done) {
+    it('adds a new origDatablock', function (done) {
         request(app)
-            .post('/api/v2/OrigDatablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/OrigDatablocks?access_token=' + accessTokenIngestor)
             .send(testorigDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
+                //console.log("origdatablock:",res.body)
                 res.body.should.have.property('size').and.equal(41780189);
                 res.body.should.have.property('id').and.be.string;
                 idOrigDatablock = encodeURIComponent(res.body['id']);
@@ -259,7 +258,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
     // multi-delete actions to finish
     async function deleteDatablock(item) {
         await request(app)
-            .delete('/api/v2/Datablocks/' + item.id + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + item.id + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
     }
@@ -271,10 +270,10 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
         // console.log("==== Finishing all deletes")
     }
 
-    it('remove potentially existing datablocks to guarantee uniqueness', function(done) {
+    it('remove potentially existing datablocks to guarantee uniqueness', function (done) {
         let filter = '{"where": {"archiveId": {"inq": ["someOtherId", "' + testdataBlock.archiveId + '"]}}}'
         // console.log("Filter expression before encoding:",filter)
-        let url = '/api/v2/Datablocks?filter=' + encodeURIComponent(filter) + '&access_token=' + accessTokenArchiveManager
+        let url = '/api/v3/Datablocks?filter=' + encodeURIComponent(filter) + '&access_token=' + accessTokenArchiveManager
         // console.log("============= url of query: ", url)
         request(app)
             .get(url)
@@ -291,14 +290,14 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('adds a new datablock', function(done) {
+    it('adds a new datablock', function (done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('size');
@@ -308,9 +307,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('adds a new datablock again which should fail because it is already stored', function(done) {
+    it('adds a new datablock again which should fail because it is already stored', function (done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(401)
@@ -322,9 +321,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     });
 
-    it('adds a new datablock which should fail because wrong functional account', function(done) {
+    it('adds a new datablock which should fail because wrong functional account', function (done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenIngestor)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenIngestor)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(401)
@@ -336,15 +335,15 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     });
 
-    it('adds a second datablock for same dataset', function(done) {
+    it('adds a second datablock for same dataset', function (done) {
         testdataBlock.archiveId = "someOtherId",
             request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testdataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('size');
@@ -355,9 +354,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
 
     });
 
-    it('Should fetch all datablocks belonging to the new dataset', function(done) {
+    it('Should fetch all datablocks belonging to the new dataset', function (done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -369,9 +368,127 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('The size fields in the dataset should be correctly updated', function(done) {
+    it("should fetch one dataset including related data", function (done) {
+        var limits = {
+            skip: 0,
+            limit: 10
+        }
+        var filter = {
+            "where": {
+                "pid":  testorigDataBlock.datasetId
+            },
+            "include": [{
+                "relation": "origdatablocks"
+            }, {
+                "relation": "datablocks"
+            }, {
+                "relation": "attachments"
+            }]
+        }
+
         request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .get(
+                "/api/v3/Datasets/findOne" +
+                '?filter=' + encodeURIComponent(JSON.stringify(filter)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor
+            )
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                // console.log("Findone including related data:", JSON.stringify(res.body,null,4))
+                res.body.origdatablocks[0].should.have.property("ownerGroup").and.equal("p10029");
+                done();
+            });
+    });
+
+    it('Should fetch some filenames from the new dataset', function (done) {
+        var fields = {
+            "datasetId": testorigDataBlock.datasetId,
+            "filenameExp": "B410"
+        }
+        var limits = {
+            skip: 0,
+            limit: 20
+        }
+        request(app)
+            .get(
+                "/api/v3/OrigDatablocks/findFilesByName" +
+                '?fields=' + encodeURIComponent(JSON.stringify(fields)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                //console.log("Filenames:", JSON.stringify(res.body,null,4))
+                res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+
+    it('Should fetch some filenames using regexp from the new dataset', function (done) {
+        var fields = {
+            "datasetId": testorigDataBlock.datasetId,
+            "filenameExp": "^N10"
+        }
+        var limits = {
+            skip: 0,
+            limit: 20
+        }
+        request(app)
+            .get(
+                "/api/v3/OrigDatablocks/findFilesByName" +
+                '?fields=' + encodeURIComponent(JSON.stringify(fields)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                //console.log("Filenames:", JSON.stringify(res.body,null,4))
+                res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+
+    it('Should fetch some filenames without dataset condition', function (done) {
+        var fields = {
+            "filenameExp": "B410200"
+        }
+        var limits = {
+            skip: 0,
+            limit: 20
+        }
+        request(app)
+            .get(
+                "/api/v3/OrigDatablocks/findFilesByName" +
+                '?fields=' + encodeURIComponent(JSON.stringify(fields)) +
+                '&limits=' + encodeURIComponent(JSON.stringify(limits)) +
+                '&access_token=' + accessTokenIngestor)
+            .set('Accept', 'application/json')
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err)
+                    return done(err);
+                // console.log("Filenames:", JSON.stringify(res.body,null,4))
+                res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+    it('The size and numFiles fields in the dataset should be correctly updated', function (done) {
+        request(app)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -380,13 +497,15 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
                     return done(err);
                 res.body.should.have.property('size').and.equal(41780189);
                 res.body.should.have.property('packedSize').and.equal(83560380)
+                res.body.should.have.property('numberOfFiles').and.equal(5);
+                res.body.should.have.property('numberOfFilesArchived').and.equal(10)
                 done();
             });
     });
 
-    it('should delete a datablock', function(done) {
+    it('should delete a datablock', function (done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -397,9 +516,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('should delete a OrigDatablock', function(done) {
+    it('should delete a OrigDatablock', function (done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -410,9 +529,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('should delete the 2nd datablock', function(done) {
+    it('should delete the 2nd datablock', function (done) {
         request(app)
-            .delete('/api/v2/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/Datablocks/' + idDatablock2 + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -423,9 +542,9 @@ describe('Test Datablocks and OrigDatablocks and their relation to Datasets', ()
             });
     });
 
-    it('should delete the newly created dataset', function(done) {
+    it('should delete the newly created dataset', function (done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

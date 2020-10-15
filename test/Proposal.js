@@ -4,16 +4,18 @@
 
 // process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var chaiHttp = require('chai-http');
-var request = require('supertest');
-var should = chai.should();
-var utils = require('./LoginUtils');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const request = require('supertest');
+const should = chai.should();
+const utils = require('./LoginUtils');
 
-var accessToken = null,
-    proposalId = null;
+let accessToken = null,
+    defaultProposalId = null,
+    proposalId = null,
+    attachmentId= null;
 
-var testproposal = {
+const testproposal = {
     "proposalId": "20170266",
     "email": "proposer%40uni.edu",
     "title": "A test proposal",
@@ -43,7 +45,7 @@ describe('Simple Proposal tests', () => {
     // multi-delete actions to finish
     async function deleteProposal(item) {
         await request(app)
-            .delete('/api/v2/Proposals/' + item.proposalId + '?access_token=' + accessToken)
+            .delete('/api/v3/Proposals/' + item.proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
     }
@@ -58,7 +60,7 @@ describe('Simple Proposal tests', () => {
     it('remove potentially existing proposals to guarantee uniqueness', function(done) {
         let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}'
         // console.log("Filter expression before encoding:",filter)
-        let url = '/api/v2/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
+        let url = '/api/v3/Proposals?filter=' + encodeURIComponent(filter) + '&access_token=' + accessToken
         // console.log("============= url of query: ", url)
         request(app)
             .get(url)
@@ -77,7 +79,7 @@ describe('Simple Proposal tests', () => {
 
     it('adds a new proposal', function(done) {
         request(app)
-            .post('/api/v2/Proposals?access_token=' + accessToken)
+            .post('/api/v3/Proposals?access_token=' + accessToken)
             .send(testproposal)
             .set('Accept', 'application/json')
             .expect(200)
@@ -87,6 +89,7 @@ describe('Simple Proposal tests', () => {
                     return done(err);
                 res.body.should.have.property('ownerGroup').and.be.string;
                 res.body.should.have.property('proposalId').and.be.string;
+                defaultProposalId = res.body['proposalId'];
                 proposalId = encodeURIComponent(res.body['proposalId']);
                 done();
             });
@@ -94,7 +97,7 @@ describe('Simple Proposal tests', () => {
 
     it('should fetch this new proposal', function(done) {
         request(app)
-            .get('/api/v2/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .get('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -105,9 +108,85 @@ describe('Simple Proposal tests', () => {
             });
     });
 
+    it("should add a new attachment to this proposal", function(done) {
+        const testAttachment = {
+            "thumbnail": "data/abc123",
+            "caption": "Some caption",
+            "proposalId": defaultProposalId,
+            "ownerGroup": "ess",
+            "accessGroups": ["loki", "odin"],
+            "createdBy": "Bertram Astor",
+            "updatedBy": "anonymous",
+            "createdAt": new Date(),
+            "updatedAt": new Date()
+        };
+        request(app)
+            .post(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments?access_token=" +
+                    accessToken
+            )
+            .send(testAttachment)
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.have.property("thumbnail").and.equal(testAttachment.thumbnail);
+                res.body.should.have.property("caption").and.equal(testAttachment.caption);
+                res.body.should.have.property("ownerGroup").and.equal(testAttachment.ownerGroup);
+                res.body.should.have.property("accessGroups");
+                res.body.should.have.property("createdBy");
+                res.body.should.have.property("updatedBy").and.be.string;
+                res.body.should.have.property("createdAt");
+                res.body.should.have.property("id").and.be.string;
+                res.body.should.have.property("proposalId").and.equal(testAttachment.proposalId);
+                attachmentId = encodeURIComponent(res.body["id"]);
+                done();
+            });
+    });
+
+    it("should fetch this proposal attachment", function(done) {
+        request(app)
+            .get(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments/" +
+                    attachmentId +
+                    "?access_token=" +
+                    accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+    it("should delete this proposal attachment", function(done) {
+        request(app)
+            .delete(
+                "/api/v3/Proposals/" +
+                    proposalId +
+                    "/attachments/" +
+                    attachmentId +
+                    "?access_token=" +
+                    accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(204)
+            .end((err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
     it('should delete this proposal', function(done) {
         request(app)
-            .delete('/api/v2/Proposals/' + proposalId + '?access_token=' + accessToken)
+            .delete('/api/v3/Proposals/' + proposalId + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

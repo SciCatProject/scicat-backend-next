@@ -1,0 +1,26 @@
+{
+    "name": "Technique",
+    "description": "Stores the metadata information for a technique",
+    "base": "Model",
+    "idInjection": false,
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {
+        "pid": {
+            "type": "string",
+            "id": true,
+            "description": "Persistent Identifier dervied from UUIDv4",
+            "defaultFn": "uuidv4"
+        },
+        "name": {
+            "type": "string",
+            "required": true,
+            "description": "The name of the technique"
+        }
+    },
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {}
+}

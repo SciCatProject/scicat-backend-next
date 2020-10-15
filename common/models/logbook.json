@@ -1,0 +1,123 @@
+{
+  "name": "Logbook",
+  "base": "Model",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "roomId": {
+      "type": "string",
+      "id": true
+    },
+    "messages": {
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {
+    "findByName": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "findByName",
+          "type": "Logbook",
+          "root": true,
+          "description": "Logbook model instance"
+        }
+      ],
+      "description": "Find Logbook model instance",
+      "http": [
+        {
+          "path": "/:name",
+          "verb": "get"
+        }
+      ]
+    },
+    "findAll": {
+      "accepts": [],
+      "returns": [
+        {
+          "arg": "findAll",
+          "type": "[Logbook]",
+          "root": true,
+          "description": "Array of Logbook model instances"
+        }
+      ],
+      "description": "Find all Logbook model instances",
+      "http": [
+        {
+          "path": "/",
+          "verb": "get"
+        }
+      ]
+    },
+    "filter": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "filters",
+          "type": "string",
+          "required": true,
+          "description": "Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField",
+          "http": {
+            "source": "path"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "filteredLogbook",
+          "type": "Logbook",
+          "root": true,
+          "description": "Filtered Logbook model instance"
+        }
+      ],
+      "description": "Filter Logbook entries matching query",
+      "http": [
+        {
+          "path": "/:name/:filters",
+          "verb": "get"
+        }
+      ]
+    }
+  }
+}

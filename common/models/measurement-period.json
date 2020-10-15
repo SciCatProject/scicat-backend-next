@@ -1,47 +1,42 @@
 {
-    "name": "MeasurementPeriod",
-    "description": "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
-    "base": "PersistedModel",
-    "idInjection": true,
-    "strict": true,
-    "options": {
-        "validateUpsert": true
+  "name": "MeasurementPeriod",
+  "description": "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
+  "base": "PersistedModel",
+  "strict": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "id": "true",
+      "required": true,
+      "description": "id currently needed by limitation in embedsmany"
     },
-    "properties": {
-        "id": {
-            "type": "string",
-            "id": "true",
-            "required": true,
-            "description": "id currently needed by limitation in embedsmany"
-        },
-        "instrument": {
-            "type": "string",
-            "required": true,
-            "index": true,
-            "description": "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT"
-        },
-        "start": {
-            "type": "Date",
-            "index": true,
-            "description": "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
-        },
-        "end": {
-            "type": "Date",
-            "index": true,
-            "description": "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
-        },
-        "comment": {
-            "type": "string",
-            "description": "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking"
-        }
+    "instrument": {
+      "type": "string",
+      "required": true,
+      "index": true,
+      "description": "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT"
     },
-    "validations": [],
-    "relations": {},
-    "acls": [{
-        "accessType": "*",
-        "principalType": "ROLE",
-        "principalId": "$everyone",
-        "permission": "ALLOW"
-    }],
-    "methods": {}
+    "start": {
+      "type": "Date",
+      "index": true,
+      "description": "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    },
+    "end": {
+      "type": "Date",
+      "index": true,
+      "description": "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
 }

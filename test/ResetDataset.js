@@ -17,7 +17,6 @@ var accessTokenUser = null;
 var pid = null;
 var idDatablock = null;
 var idDatablock2 = null;
-var idDatasetLifecycle = null;
 
 var testraw = {
     "principalInvestigator": "bertram.astor@grumble.com",
@@ -81,17 +80,23 @@ var testraw = {
     "contactEmail": "bertram.astor@grumble.com",
     "sourceFolder": "/iramjet/tif/",
     "size": 0,
+    "packedSize":12345,
     "creationTime": "2011-09-14T06:08:25.000Z",
     "description": "None",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p10029",
     "accessGroups": [],
-    "proposalId": "10.540.16635/20110123"
+    "proposalId": "10.540.16635/20110123",
+    "datasetlifecycle": {
+        "archivable": true,
+        "retrievable": false,
+        "archiveStatusMessage": "datasetIsArchived",
+        "retrieveStatusMessage": ""
+    }
 }
 
 var testDataBlock = {
-    "archiveId": "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    "archiveId": "3oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     "size": 41780190,
     "packedSize": 41780190,
     "chkAlg": "sha1",
@@ -147,25 +152,15 @@ var testDataBlock = {
 
 var testArchiveId2 = "oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff410616xxx_1_2018-01-23-03-11-34.tar"
 
-var testDatasetLifecycle = {
-    "id": "", // must be set to the id of the dataset,
-    "archivable": true,
-    "retrievable": false,
-    "archiveStatusMessage": "datasetIsArchived",
-    "retrieveStatusMessage": "",
-    "isExported": false,
-    "ownerGroup": "p10029"
-}
-
 var foundId1 = null;
 var foundId2 = null;
 
 var app
-before(function() {
+before(function () {
     app = require('../server/server')
 });
 
-describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablocks and Datasetlifecycle status', () => {
+describe('Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status', () => {
     before((done) => {
         utils.getToken(app, {
                 'username': 'ingestor',
@@ -188,9 +183,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
     // first get existing datasets with the test archieId to allow to delete them
 
 
-    it('should retrieve existing Datablocks with specific archiveId, if any', function(done) {
+    it('should retrieve existing Datablocks with specific archiveId, if any', function (done) {
         request(app)
-            .get('/api/v2/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testDataBlock.archiveId) + '%22%7D%7D&access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testDataBlock.archiveId) + '%22%7D%7D&access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -202,14 +197,13 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('should retrieve existing Datablocks with 2nd specific archiveId, if any', function(done) {
+    it('should retrieve existing Datablocks with 2nd specific archiveId, if any', function (done) {
         request(app)
-            .get('/api/v2/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testArchiveId2) + '%22%7D%7D&access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22' + encodeURIComponent(testArchiveId2) + '%22%7D%7D&access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                console.log("Result of looking for first id:", res.body)
                 if (err)
                     return done(err);
                 foundId2 = res.body[0] ? res.body[0].id : null
@@ -217,17 +211,16 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('should delete existing Datablocks with specific archiveId', function(done) {
+    it('should delete existing Datablocks (usually none) with specific archiveId', function (done) {
         if (foundId1) {
             request(app)
-                .delete('/api/v2/Datablocks/' + foundId1 + '?access_token=' + accessTokenArchiveManager)
+                .delete('/api/v3/Datablocks/' + foundId1 + '?access_token=' + accessTokenArchiveManager)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .end((err, res) => {
                     if (err)
                         return done(err);
-                    console.log("Deleted datablock:", res.body)
                     done();
                 });
         } else {
@@ -236,17 +229,16 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
     });
 
 
-    it('should delete existing Datablocks with 2nd specific archiveId', function(done) {
+    it('should delete existing Datablocks (usually none) with 2nd specific archiveId', function (done) {
         if (foundId2) {
             request(app)
-                .delete('/api/v2/Datablocks/' + foundId2 + '?access_token=' + accessTokenArchiveManager)
+                .delete('/api/v3/Datablocks/' + foundId2 + '?access_token=' + accessTokenArchiveManager)
                 .set('Accept', 'application/json')
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .end((err, res) => {
                     if (err)
                         return done(err);
-                    console.log("Deleted datablock:", res.body)
                     done();
                 });
         } else {
@@ -255,37 +247,35 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
     });
 
 
-    it('adds a new raw dataset', function(done) {
+    it('adds a new raw dataset', function (done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessTokenIngestor)
+            .post('/api/v3/RawDatasets?access_token=' + accessTokenIngestor)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('owner').and.be.string;
                 res.body.should.have.property('type').and.equal('raw');
                 res.body.should.have.property('pid').and.be.string;
                 res.body.should.have.property('createdBy').and.equal('ingestor');
-                // store link to this dataset in datablocks and datasetlifecycle
+                // store link to this dataset in datablocks 
                 testDataBlock.datasetId = res.body['pid']
-                testDatasetLifecycle.id = res.body['pid']
-                testDatasetLifecycle.datasetId = res.body['pid']
                 pid = encodeURIComponent(res.body['pid']);
                 done();
             });
     });
 
-    it('adds a new datablock', function(done) {
+    it('adds a new datablock', function (done) {
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('size');
@@ -296,15 +286,15 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('adds a second datablock for same dataset', function(done) {
+    it('adds a second datablock for same dataset', function (done) {
         testDataBlock.archiveId = testArchiveId2
         request(app)
-            .post('/api/v2/Datablocks?access_token=' + accessTokenArchiveManager)
+            .post('/api/v3/Datablocks?access_token=' + accessTokenArchiveManager)
             .send(testDataBlock)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
-            .end(function(err, res) {
+            .end(function (err, res) {
                 if (err)
                     return done(err);
                 res.body.should.have.property('size');
@@ -315,26 +305,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
 
     });
 
-
-    it('adds a new DatasetLifecycle', function(done) {
+    it('Should fetch all datablocks belonging to the new dataset', function (done) {
         request(app)
-            .post('/api/v2/DatasetLifecycles?access_token=' + accessTokenIngestor)
-            .send(testDatasetLifecycle)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err)
-                    return done(err);
-                idDatasetLifecycle = encodeURIComponent(res.body['id']);
-                done();
-            });
-    });
-
-
-    it('Should fetch all datablocks belonging to the new dataset', function(done) {
-        request(app)
-            .get('/api/v2/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '/datablocks?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -346,24 +319,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('Should fetch the datasetLifefycle belonging to the new dataset', function(done) {
+    it('should reset the archive information from the newly created dataset', function (done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                res.body.should.be.instanceof(Object);
-                done();
-            });
-    });
-
-
-    it('should reset the archive information from the newly created dataset', function(done) {
-        request(app)
-            .put('/api/v2/DatasetLifecycles/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
+            .put('/api/v3/Datasets/resetArchiveStatus?access_token=' + accessTokenArchiveManager)
             .send({
                 datasetId: testDataBlock.datasetId
             })
@@ -377,9 +335,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('The archive Status Message should now be reset', function(done) {
+    it('The archive Status Message should now be reset', function (done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '/datasetlifecycle?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -387,15 +345,15 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
                 if (err)
                     return done(err);
                 res.body.should.be.instanceof(Object);
-                res.body.archiveStatusMessage.should.be.equal('datasetCreated')
-                res.body.retrieveStatusMessage.should.be.equal('')
+                res.body.should.have.nested.property('datasetlifecycle.archiveStatusMessage').and.equal("datasetCreated");
+                res.body.should.have.nested.property('datasetlifecycle.retrieveStatusMessage').and.equal("");
                 done();
             });
     });
 
-    it('There should be no datablocks any more for this dataset', function(done) {
+    it('There should be no datablocks any more for this dataset', function (done) {
         request(app)
-            .get('/api/v2/Datasets/' + pid + '/datablocks/count?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '/datablocks/count?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -408,22 +366,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('should delete the DatasetLifecycle', function(done) {
+    it('should check createdBy and updatedBy fields of the newly created dataset', function (done) {
         request(app)
-            .delete('/api/v2/DatasetLifecycles/' + idDatasetLifecycle + '?access_token=' + accessTokenIngestor)
-            .set('Accept', 'application/json')
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-                if (err)
-                    return done(err);
-                done();
-            });
-    });
-
-    it('should check createdBy and updatedBy fields of the newly created dataset', function(done) {
-        request(app)
-            .get('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .get('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -437,9 +382,9 @@ describe('Create Dataset and its Datablocks DatasetLifecycle, then reset Datablo
             });
     });
 
-    it('should delete the newly created dataset', function(done) {
+    it('should delete the newly created dataset', function (done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessTokenIngestor)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:9
+FROM node:10.16.1-alpine
 
 ENV http_proxy "http://192.168.1.1:8123"
 ENV https_proxy $http_proxy
@@ -10,16 +10,23 @@ RUN npm config set registry http://registry.npmjs.org/
 RUN npm config set strict-ssl false
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends mongodb-clients vim ldap-utils
+RUN apk update && apk upgrade && \
+  apk add --no-cache git
 
 ENV PORT 3000
 EXPOSE 3000
 
+# Prepare app directory
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
-# Install our packages
-RUN npm install
+COPY package*.json /usr/src/app/
+COPY .snyk /usr/src/app/
 
+# set up local user to avoid running as root
+RUN chown -R node:node /usr/src/app
+USER node
+
+# Install our packages
+RUN npm ci
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY . /usr/src/app

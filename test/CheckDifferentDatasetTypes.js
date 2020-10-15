@@ -12,6 +12,7 @@ var should = chai.should();
 var utils = require('./LoginUtils');
 
 var accessToken = null;
+var accessTokenArchiveManager = null;
 var boot = require('loopback-boot');
 
 // TODO
@@ -30,7 +31,6 @@ var testdataset = {
     ],
     "description": "None",
     "license": "CC BY-SA 4.0",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": [],
@@ -103,8 +103,6 @@ var testraw = {
     "description": "None",
     "classification": "AV=medium,CO=low",
     "license": "CC BY-SA 4.0",
-    "version": "2.5.0",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p13388",
     "accessGroups": [],
@@ -134,7 +132,6 @@ var testderived = {
         "Test", "Derived", "Science", "Math"
     ],
     "description": "Some fancy description",
-    "doi": "not yet defined",
     "isPublished": false,
     "ownerGroup": "p34123",
     "type":"derived"
@@ -167,8 +164,15 @@ describe('Check different dataset types and their inheritance', () => {
             },
             (tokenVal) => {
                 accessToken = tokenVal;
-                // app(done)
-                done();
+                utils.getToken(app, {
+                        'username': 'archiveManager',
+                        'password': 'aman'
+                    },
+                    (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                    });
+
             });
     });
 
@@ -176,7 +180,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should get count of datasets', function(done) {
         request(app)
-            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -192,7 +196,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should get count of raw datasets', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -208,7 +212,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should get count of derived datasets', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -225,13 +229,13 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('check if raw dataset is valid', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets/isValid')
+            .post('/api/v3/RawDatasets/isValid')
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end(function(err, res) {
-                console.log(res.body)
+                //console.log(res.body)
                 if (err)
                     return done(err);
                 res.body.should.have.property('valid').and.equal(true);
@@ -241,13 +245,13 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('check if wrong data is recognized as invalid', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets/isValid')
+            .post('/api/v3/RawDatasets/isValid')
             .send(testderived)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end(function(err, res) {
-                console.log(res.body)
+                //console.log(res.body)
                 if (err)
                     return done(err);
                 res.body.should.have.property('valid').and.equal(false);
@@ -258,7 +262,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('adds a new dataset', function(done) {
         request(app)
-            .post('/api/v2/Datasets?access_token=' + accessToken)
+            .post('/api/v3/Datasets?access_token=' + accessToken)
             .send(testdataset)
             .set('Accept', 'application/json')
             .expect(200)
@@ -279,7 +283,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('check for correct new count of datasets', function(done) {
         request(app)
-            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -294,7 +298,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('check for unchanged count of raw datasets', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -309,7 +313,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('check for unchanged count of derived datasets', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -325,7 +329,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should add a new raw dataset', function(done) {
         request(app)
-            .post('/api/v2/RawDatasets?access_token=' + accessToken)
+            .post('/api/v3/RawDatasets?access_token=' + accessToken)
             .send(testraw)
             .set('Accept', 'application/json')
             .expect(200)
@@ -343,7 +347,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new dataset count should be incremented', function(done) {
         request(app)
-            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -359,7 +363,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new raw dataset count should be incremented', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -374,7 +378,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new derived dataset count should be unchanged', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -391,7 +395,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('adds a new derived dataset', function(done) {
         request(app)
-            .post('/api/v2/DerivedDatasets?access_token=' + accessToken)
+            .post('/api/v3/DerivedDatasets?access_token=' + accessToken)
             .send(testderived)
             .set('Accept', 'application/json')
             .expect(200)
@@ -410,7 +414,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new dataset count should be incremented', function(done) {
         request(app)
-            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -425,7 +429,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new raw dataset count should be unchanged', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -440,7 +444,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new derived dataset count should be incremented', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -455,7 +459,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pid + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pid + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -468,7 +472,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new raw dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pidraw + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pidraw + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -481,7 +485,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('should delete the created new derived dataset', function(done) {
         request(app)
-            .delete('/api/v2/Datasets/' + pidderived + '?access_token=' + accessToken)
+            .delete('/api/v3/Datasets/' + pidderived + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -494,7 +498,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new dataset count should be back to old count', function(done) {
         request(app)
-            .get('/api/v2/Datasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/Datasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -509,7 +513,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new raw dataset count should be back to old count', function(done) {
         request(app)
-            .get('/api/v2/RawDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/RawDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
@@ -524,7 +528,7 @@ describe('Check different dataset types and their inheritance', () => {
 
     it('new derived dataset count should be back to old count', function(done) {
         request(app)
-            .get('/api/v2/DerivedDatasets/count' + '?access_token=' + accessToken)
+            .get('/api/v3/DerivedDatasets/count' + '?access_token=' + accessToken)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)

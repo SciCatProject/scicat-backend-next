@@ -1,28 +1,28 @@
 {
-  "name": "AccessGroup",
+  "name": "ShareGroup",
+  "description": "Definition of groups to share datasets between scicat users",
+  "plural": "ShareGroups",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "sAMAccountName": {
+    "groupID": {
       "type": "string",
-      "id": true,
-      "required": true
+      "description": "group short name id"
     },
-    "description": {
-      "type": "string"
-    },
-    "member": {
+    "members": {
       "type": [
         "string"
-      ]
+      ],
+      "description": "Defines the emails of users that data is shared to"
     },
-    "memberOf": {
+    "datasets": {
       "type": [
         "string"
-      ]
+      ],
+      "description": "Defines the datasets which are shared"
     }
   },
   "validations": [],
@@ -37,19 +37,7 @@
     {
       "accessType": "*",
       "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "usergroupingestor",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
+      "principalId": "$authenticated",
       "permission": "ALLOW"
     }
   ],

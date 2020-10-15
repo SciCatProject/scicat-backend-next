@@ -1,0 +1,36 @@
+{
+  "local": {
+    "provider": "local",
+    "module": "passport-local",
+    "usernameField": "username",
+    "passwordField": "password",
+    "authPath": "/auth/local",
+    "successRedirect": "/auth/account",
+    "failureRedirect": "/local",
+    "failureFlash": true
+  },
+  "ldap": {
+    "provider": "ldap",
+    "authScheme": "ldap",
+    "module": "",
+    "authPath": "",
+    "successRedirect": "",
+    "failureRedirect": "",
+    "session": true,
+    "failureFlash": true,
+    "json": "true",
+    "profileAttributesFromLDAP": {
+      "displayName": "",
+      "email": "",
+      "id": "",
+      "accessGroups": []
+    },
+    "server": {
+      "url": "",
+      "bindDn": "",
+      "bindCredentials": "",
+      "searchBase": "",
+      "searchFilter": ""
+    }
+  }
+}

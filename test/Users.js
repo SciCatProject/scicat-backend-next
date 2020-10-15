@@ -21,7 +21,7 @@ describe('Login with functional accounts', () => {
 
     it('Ingestor login fails with incorrect credentials', function(done) {
         request(app)
-            .post('/api/v2/Users/Login?include=user')
+            .post('/api/v3/Users/Login?include=user')
             .send({
                 'username': 'ingestor',
                 'password': 'abc123'
@@ -38,7 +38,7 @@ describe('Login with functional accounts', () => {
 
     it('Login should succeed with correct credentials', function(done) {
         request(app)
-            .post('/api/v2/Users/Login?include=user')
+            .post('/api/v3/Users/Login?include=user')
             .send({
                 'username': 'ingestor',
                 'password': 'aman'

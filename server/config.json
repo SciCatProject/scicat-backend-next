@@ -17,5 +17,7 @@
     },
     "cors": false,
     "queue": "rabbit"
-  }
+  },
+  "jwtExpiresIn": "1h",
+  "jwtSecret": "ghfuersigersuhi"
 }
