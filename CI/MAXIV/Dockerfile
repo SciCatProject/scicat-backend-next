@@ -22,9 +22,6 @@ RUN npm install --no-optional --only=production
 
 
 COPY . /usr/src/app
-COPY CI/MAXIV/envfiles/config.local.js /usr/src/app/server/config.local.js
-COPY CI/MAXIV/envfiles/providers.json /usr/src/app/server/providers.json
-COPY CI/MAXIV/envfiles/datasources.json /usr/src/app/server/datasources.json
 RUN NODE_ENV=dev
 # Start the app
 CMD ["node", "."]
