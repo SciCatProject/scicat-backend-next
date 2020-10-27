@@ -8,12 +8,12 @@ ENV PORT 3000
 EXPOSE 3000
 
 # Prepare app directory
-WORKDIR /usr/src/app
-COPY package*.json /usr/src/app/
-COPY .snyk /usr/src/app/
+WORKDIR /home/node/app
+COPY package*.json /home/node/app/
+COPY .snyk /home/node/app/
 
 # set up local user to avoid running as root
-RUN chown -R node:node /usr/src/app
+RUN chown -R node:node /home/node/app
 USER node
 
 # Install our packages
@@ -22,11 +22,10 @@ RUN npm config set strict-ssl false
 RUN npm ci --only=production
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
-COPY . /usr/src/app
-COPY CI/ESS/envfiles/config.ess.js /usr/src/app/server/config.local.js
-COPY CI/ESS/envfiles/providers.json /usr/src/app/server/providers.json
-COPY CI/ESS/envfiles/datasources.json /usr/src/app/server/datasources.json
-RUN NODE_ENV=dev
+COPY --chown=node:node . /home/node/app
+COPY --chown=node:node CI/ESS/envfiles/config.ess.js /home/node/app/server/config.local.js
+COPY --chown=node:node CI/ESS/envfiles/providers.json /home/node/app/server/providers.json
+COPY --chown=node:node CI/ESS/envfiles/datasources.json /home/node/app/server/datasources.json
 
 # Start the app
 CMD ["node", "."]
