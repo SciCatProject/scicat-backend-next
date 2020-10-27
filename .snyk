@@ -237,6 +237,116 @@ patch:
         patched: '2020-09-23T11:23:33.336Z'
     - snyk > snyk-mvn-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
         patched: '2020-09-23T11:23:33.336Z'
+    - loopback-component-mq > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - kafka-node > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-boot > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-explorer > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-model-diagram > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-visualizer > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - kafka-node > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-explorer > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-passport > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-boot > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-datasource-juggler > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-explorer > loopback-swagger > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-mq > rabbot > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-datasource-juggler > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-phase > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-explorer > loopback-swagger > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > strong-remoting > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-datasource-juggler > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-phase > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-explorer > loopback-swagger > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > loopback-datasource-juggler > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > strong-remoting > jayson > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-mq > rabbot > postal > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > loopback-datasource-juggler > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > strong-remoting > loopback-phase > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-datasource-juggler > loopback-connector > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > strong-remoting > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > loopback-datasource-juggler > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > strong-remoting > loopback-phase > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > strong-remoting > jayson > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback-component-mq > rabbot > whistlepunk > postal > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-cpp-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-docker-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-go-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-gradle-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-docker-plugin > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-gradle-plugin > @snyk/java-call-graph-builder > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-mvn-plugin > @snyk/java-call-graph-builder > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > strong-remoting > loopback-phase > async > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > loopback-datasource-juggler > loopback-connector > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - loopback > loopback-connector-remote > strong-remoting > loopback-phase > strong-globalize > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-php-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-python-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-gradle-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-mvn-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-10-27T08:18:38.008Z'
   'npm:lodash:20180130':
     - loopback-component-mq > rabbot > machina > lodash:
         patched: '2020-08-28T09:32:33.780Z'
