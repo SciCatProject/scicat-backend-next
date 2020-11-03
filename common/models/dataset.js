@@ -241,6 +241,8 @@ module.exports = function(Dataset) {
         next();
     });
 
+    Dataset.disableRemoteMethodByName("replaceOrCreate")
+
     function addDefaultPolicy(
         ownerGroup,
         accessGroups,
