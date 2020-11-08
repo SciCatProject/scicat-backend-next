@@ -1,5 +1,6 @@
-"use strict";
-const util = require("util");
+'use strict';
+var utils = require('./utils');
+
 // TODO still needed ? Pick out just one model, the one currently queried
 // Or replace all type tests by deriving type from field value rather than from model definitions
 // When using model definitions one always needs to go down down the whole inheritance chain
@@ -63,17 +64,28 @@ module.exports = function (MongoQueryableModel) {
         }
     }
 
-     function setFields(fields, options) {
+    function setFields(fields, options) {
         if (fields === undefined) {
             return {};
         }
         if (fields.metadataKey) {
-            const { metadataKey, ...theRest } = fields;
-            fields = { ...theRest };
+            const {
+                metadataKey,
+                ...theRest
+            } = fields;
+            fields = {
+                ...theRest
+            };
         }
         if (!('isPublished' in fields) || !fields.isPublished) {
-            const { isPublished, ...theRest } = fields;
-            return { ...theRest, userGroups: options.currentGroups };
+            const {
+                isPublished,
+                ...theRest
+            } = fields;
+            return {
+                ...theRest,
+                userGroups: options.currentGroups
+            };
         }
         return fields;
     }
@@ -231,7 +243,12 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            var collection = db.collection(options.modelName);
+            // TODO this should be derived from model definition field options.mongodb.collection in future
+            let modelName = options.modelName
+            if (modelName == "RawDataset" || modelName == "DerivedDataset") {
+                modelName = "Dataset"
+            }
+            var collection = db.collection(modelName);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -361,7 +378,12 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            var collection = db.collection(options.modelName);
+            // TODO this should be derived from model definition field options.mongodb.collection in future
+            let modelName = options.modelName
+            if (modelName == "RawDataset" || modelName == "DerivedDataset") {
+                modelName = "Dataset"
+            }
+            var collection = db.collection(modelName);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {

@@ -148,5 +148,9 @@
   "Technique": {
     "dataSource": "transient",
     "public": false
+  },
+  "MongoQueryableModel": {
+    "dataSource": "mongo",
+    "public": false
   }
 }

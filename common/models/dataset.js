@@ -517,6 +517,53 @@ module.exports = function(Dataset) {
         });
     };
 
+    function searchExpression(key, value) {
+        let type = "string";
+        if (key in ds.properties) {
+            type = ds.properties[key].type;
+        } else if (key in dsr.properties) {
+            type = dsr.properties[key].type;
+        } else if (key in dsd.properties) {
+            type = dsd.properties[key].type;
+        } else if (key in dsl.properties) {
+            type = dsl.properties[key].type;
+        } else if (key in own.properties) {
+            type = own.properties[key].type;
+        }
+        if (key === "text") {
+            return {
+                $search: value,
+                $language: "none"
+            };
+        } else if (type === "string") {
+            if (value.constructor === Array) {
+                if (value.length == 1) {
+                    return value[0];
+                } else {
+                    return {
+                        $in: value
+                    };
+                }
+            } else {
+                return value;
+            }
+        } else if (type === "date") {
+            return {
+                $gte: new Date(value.begin),
+                $lte: new Date(value.end)
+            };
+        } else if (type === "boolean") {
+            return {
+                $eq: value
+            };
+        } else if (type.constructor === Array) {
+            return {
+                $in: value
+            };
+        }
+    }
+
+    // TODO implement anonymousquery differently, avoid code duplication for fullquery
     Dataset.anonymousquery = function(fields, limits, options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
