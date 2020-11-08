@@ -2,7 +2,7 @@
   "name": "ShareGroup",
   "description": "Definition of groups to share datasets between scicat users",
   "plural": "ShareGroups",
-  "base": "PersistedModel",
+  "base": "MongoQueryableModel",
   "idInjection": false,
   "options": {
     "validateUpsert": true

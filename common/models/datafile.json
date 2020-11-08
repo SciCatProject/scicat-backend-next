@@ -1,7 +1,7 @@
 {
   "name": "Datafile",
   "description": "Embedded schema definition for which fields are required for each file",
-  "base": "PersistedModel",
+  "base": "MongoQueryableModel",
   "strict": true,
   "idInjection": false,
   "options": {

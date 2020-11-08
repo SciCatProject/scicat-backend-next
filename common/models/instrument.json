@@ -1,7 +1,7 @@
 {
     "name": "Instrument",
     "description": "Stores metadata information for an instrument",
-    "base": "PersistedModel",
+    "base": "MongoQueryableModel",
     "idInjection": false,
     "options": {
         "validateUpsert": true

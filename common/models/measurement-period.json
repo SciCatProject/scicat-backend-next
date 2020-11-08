@@ -1,7 +1,7 @@
 {
   "name": "MeasurementPeriod",
   "description": "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
-  "base": "PersistedModel",
+  "base": "MongoQueryableModel",
   "strict": true,
   "idInjection": true,
   "options": {

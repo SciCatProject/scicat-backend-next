@@ -1,7 +1,7 @@
 {
   "name": "InitialDataset",
   "description": "Stores a copy of the initial Dataset status if Dtaset is updated.",
-  "base": "PersistedModel",
+  "base": "MongoQueryableModel",
   "strict": false,
   "idInjection": false,
   "properties": {

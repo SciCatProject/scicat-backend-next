@@ -36,14 +36,13 @@
             "model": "Attachment",
             "foreignKey": ""
         },
-        "datasets":{
+        "datasets": {
             "type": "belongsTo",
             "model": "Dataset",
             "foreignKey": ""
         }
     },
-    "acls": [
-        {
+    "acls": [{
             "accessType": "READ",
             "principalType": "ROLE",
             "principalId": "$everyone",
@@ -56,33 +55,5 @@
             "permission": "ALLOW"
         }
     ],
-    "methods": {
-        "fullquery": {
-            "accepts": [
-                {
-                    "arg": "fields",
-                    "type": "object",
-                    "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample. Skip and limit parameters allow for paging."
-                },
-                {
-                    "arg": "limits",
-                    "type": "object",
-                    "description": "Define further query parameters like skip, limit, order"
-                },
-                {
-                    "arg": "options",
-                    "type": "object",
-                    "http": "optionsFromRequest"
-                }
-            ],
-            "returns": {
-                "root": true
-            },
-            "description": "Return samples fulfilling complex filter conditions, including from fields of joined models.",
-            "http": {
-                "path": "/fullquery",
-                "verb": "get"
-            }
-        }
-    }
+    "methods": {}
 }

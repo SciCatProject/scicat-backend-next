@@ -1,7 +1,7 @@
 {
   "name": "UserSetting",
   "description": "User settings such as job count and dataset count",
-  "base": "PersistedModel",
+  "base": "MongoQueryableModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true

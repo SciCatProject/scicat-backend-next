@@ -1,22 +1,13 @@
 {
     "name": "PublishedData",
     "description": "Stores the meta data information for an accessible, published and DOI-identified collection of datasets. It defines a list of mandatory and optional metadata fields to be included. DataCite mandatory fields, a full URL to the landing page and modification times are included.",
-    "base": "PersistedModel",
+    "base": "MongoQueryableModel",
     "strict": false,
     "idInjection": false,
     "options": {
         "validateUpsert": true,
         "mongodb": {
             "collection": "PublishedData"
-        }
-    },
-    "mixins": {
-        "TimeStamp": {
-            "createdAt": "createdAt",
-            "updatedAt": "updatedAt",
-            "required": false,
-            "validateUpsert": true,
-            "silenceWarnings": false
         }
     },
     "properties": {
@@ -111,14 +102,6 @@
         "downloadLink": {
             "type": "string",
             "description": "URL pointing to page from which data can be downloaded"
-        },
-        "createdBy": {
-            "type": "string",
-            "description": "Functional or user account name who created this instance"
-        },
-        "updatedBy": {
-            "type": "string",
-            "description": "Functional or user account name who last updated this instance"
         }
     },
     "validations": [],
