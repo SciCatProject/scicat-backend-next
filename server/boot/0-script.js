@@ -95,10 +95,12 @@ module.exports = function(app) {
         .phases.addBefore("invoke", "options-from-request")
         .use(function(ctx, next) {
             // console.log("============ Phase: args,options modelname", ctx.method.sharedClass.name)
-            if (!ctx.args.options || !ctx.args.options.accessToken)
-                return next();
             // add model name to context options
+            if (!ctx.args.options)
+               return next()
             ctx.args.options.modelName=ctx.method.sharedClass.name
+            if (!ctx.args.options.accessToken)
+                return next();
             const User = app.models.User;
             const UserIdentity = app.models.UserIdentity;
             const RoleMapping = app.models.RoleMapping;
