@@ -11,6 +11,10 @@ var dsr = require("./raw-dataset.json");
 var dsd = require("./derived-dataset.json");
 var own = require("./ownable.json");
 
+function camelCaseToDash(str) {
+    return str.replace(/([a-zA-Z])(?=[A-Z])/g, '$1-').toLowerCase()
+}
+
 module.exports = function (MongoQueryableModel) {
 
     // to get access to other models
@@ -122,12 +126,11 @@ module.exports = function (MongoQueryableModel) {
                         pipeline.unshift({
                             $match: {
                                 $or: [{
-                                        $text: searchExpression(
-                                            key,
-                                            fields[key]
-                                        )
-                                    },
-                                ]
+                                    $text: searchExpression(
+                                        key,
+                                        fields[key]
+                                    )
+                                }, ]
                             }
                         });
                     }
@@ -267,7 +270,24 @@ module.exports = function (MongoQueryableModel) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         fields = setFields(fields, options);
-        // console.log("Inside fullquery:options",options)
+        // TODO this should be derived from model definition field options.mongodb.collection in future
+        let modelName = options.modelName
+        if (modelName == "RawDataset" || modelName == "DerivedDataset") {
+            modelName = "Dataset"
+        }
+        // find out which field is the id field, turn name to hyphenated string first
+        let idField = "id"
+        try {
+            const modelDefinition = require("./" + camelCaseToDash(modelName) + ".json");
+            for (const key in modelDefinition.properties) {
+                if (modelDefinition.properties[key].id) {
+                    idField = key
+                    break
+                }
+            }
+        } catch (err) {
+            console.log("Could not fetch file:", "./" + camelCaseToDash(modelName) + ".json", " - standard id field assumed")
+        } // console.log("Inside fullquery:options",options)
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -279,12 +299,11 @@ module.exports = function (MongoQueryableModel) {
                         pipeline.unshift({
                             $match: {
                                 $or: [{
-                                        $text: searchExpression(
-                                            key,
-                                            String(fields[key])
-                                        )
-                                    }
-                                ]
+                                    $text: searchExpression(
+                                        key,
+                                        String(fields[key])
+                                    )
+                                }]
                             }
                         });
                     }
@@ -343,7 +362,12 @@ module.exports = function (MongoQueryableModel) {
                 sortFields.map(function (sortField) {
                     const parts = sortField.split(":");
                     const dir = parts[1] == "desc" ? -1 : 1;
-                    sortExpr[parts[0]] = dir;
+                    // map id field
+                    let fieldName = parts[0]
+                    if (fieldName == idField) {
+                        fieldName = "_id"
+                    }
+                    sortExpr[fieldName] = dir;
                 });
                 pipeline.push({
                     $sort: sortExpr
@@ -365,11 +389,6 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            // TODO this should be derived from model definition field options.mongodb.collection in future
-            let modelName = options.modelName
-            if (modelName == "RawDataset" || modelName == "DerivedDataset") {
-                modelName = "Dataset"
-            }
             var collection = db.collection(modelName);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
@@ -378,15 +397,16 @@ module.exports = function (MongoQueryableModel) {
                     if (err) {
                         console.log("Fullquery err handling:", err);
                     }
-                    // rename _id to pid
+                    // rename _id to id Field name
                     res.map(ds => {
                         Object.defineProperty(
                             ds,
-                            "pid",
+                            idField,
                             Object.getOwnPropertyDescriptor(ds, "_id")
                         );
                         delete ds["_id"];
                     });
+
                     cb(err, res);
                 });
             });
