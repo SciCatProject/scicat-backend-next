@@ -33,8 +33,7 @@ module.exports = function (MongoQueryableModel) {
         }
         if (key === "text") {
             return {
-                $search: value,
-                $language: "none"
+                $search: value
             };
         } else if (type === "string") {
             if (value.constructor === Array) {
@@ -128,12 +127,6 @@ module.exports = function (MongoQueryableModel) {
                                             fields[key]
                                         )
                                     },
-                                    {
-                                        sourceFolder: {
-                                            $regex: fields[key],
-                                            $options: "i"
-                                        }
-                                    }
                                 ]
                             }
                         });
@@ -290,12 +283,6 @@ module.exports = function (MongoQueryableModel) {
                                             key,
                                             String(fields[key])
                                         )
-                                    },
-                                    {
-                                        sourceFolder: {
-                                            $regex: fields[key],
-                                            $options: "i"
-                                        }
                                     }
                                 ]
                             }
