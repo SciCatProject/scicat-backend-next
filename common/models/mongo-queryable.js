@@ -19,6 +19,7 @@ module.exports = function (MongoQueryableModel) {
 
     // to get access to other models
     var app = require("../../server/server");
+    
 
     // TODO these tests are dataset dependent, replace by something generic
 
@@ -93,11 +94,43 @@ module.exports = function (MongoQueryableModel) {
         return fields;
     }
 
+    function extractCollectionAndIdField(modelName) {
+        let result = {}
+        let mongoModelName = modelName
+        // find out which field is the id field, turn name to hyphenated string first
+        let idField = "id"
+        try {
+            const modelDefinition = require("./" + camelCaseToDash(modelName) + ".json");
+            // map to different mongo collection if defined in model
+            if (modelDefinition.options && modelDefinition.options.mongodb.collection) {
+                mongoModelName = modelDefinition.options.mongodb.collection
+            }
+            for (const key in modelDefinition.properties) {
+                if (modelDefinition.properties[key].id) {
+                    idField = key
+                    break
+                }
+            }
+            result['mongoModelName'] = mongoModelName
+            result['idField'] = idField
+            return result
+        } catch (err) {
+            console.log("Could not fetch file:", "./" + camelCaseToDash(modelName) + ".json", " - standard id field assumed")
+            return {
+                mongoModelName: modelName,
+                idField: "id"
+            }
+        }
+    }
+
+
     MongoQueryableModel.fullfacet = function (fields, facets = [], options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         let facetMatch = {};
         fields = setFields(fields, options);
+        let modelName=options.modelName;
+        let modelMetadata = extractCollectionAndIdField(modelName)
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -237,14 +270,9 @@ module.exports = function (MongoQueryableModel) {
             $facet: facetObject
         });
         console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
+        console.debug("Model:",app.models[options.modelName].definition.rawProperties)
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
-            // fetch calling parent collection
-            // TODO this should be derived from model definition field options.mongodb.collection in future
-            let modelName = options.modelName
-            if (modelName == "RawDataset" || modelName == "DerivedDataset") {
-                modelName = "Dataset"
-            }
-            var collection = db.collection(modelName);
+            var collection = db.collection(modelMetadata.mongoModelName);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -272,22 +300,8 @@ module.exports = function (MongoQueryableModel) {
         fields = setFields(fields, options);
         // TODO this should be derived from model definition field options.mongodb.collection in future
         let modelName = options.modelName
-        if (modelName == "RawDataset" || modelName == "DerivedDataset") {
-            modelName = "Dataset"
-        }
-        // find out which field is the id field, turn name to hyphenated string first
-        let idField = "id"
-        try {
-            const modelDefinition = require("./" + camelCaseToDash(modelName) + ".json");
-            for (const key in modelDefinition.properties) {
-                if (modelDefinition.properties[key].id) {
-                    idField = key
-                    break
-                }
-            }
-        } catch (err) {
-            console.log("Could not fetch file:", "./" + camelCaseToDash(modelName) + ".json", " - standard id field assumed")
-        } // console.log("Inside fullquery:options",options)
+        let modelMetadata = extractCollectionAndIdField(modelName)
+        // console.log("Inside fullquery:options",options)
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -364,7 +378,7 @@ module.exports = function (MongoQueryableModel) {
                     const dir = parts[1] == "desc" ? -1 : 1;
                     // map id field
                     let fieldName = parts[0]
-                    if (fieldName == idField) {
+                    if (fieldName == modelMetadata.idField) {
                         fieldName = "_id"
                     }
                     sortExpr[fieldName] = dir;
@@ -389,7 +403,7 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            var collection = db.collection(modelName);
+            var collection = db.collection(modelMetadata.mongoModelName);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -401,7 +415,7 @@ module.exports = function (MongoQueryableModel) {
                     res.map(ds => {
                         Object.defineProperty(
                             ds,
-                            idField,
+                            modelMetadata.idField,
                             Object.getOwnPropertyDescriptor(ds, "_id")
                         );
                         delete ds["_id"];
