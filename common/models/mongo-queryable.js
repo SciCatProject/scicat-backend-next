@@ -1,42 +1,35 @@
 'use strict';
 var utils = require('./utils');
 
-// TODO still needed ? Pick out just one model, the one currently queried
-// Or replace all type tests by deriving type from field value rather than from model definitions
-// When using model definitions one always needs to go down down the whole inheritance chain
-
-var dsl = require("./dataset-lifecycle.json");
-var ds = require("./dataset.json");
-var dsr = require("./raw-dataset.json");
-var dsd = require("./derived-dataset.json");
-var own = require("./ownable.json");
-
 module.exports = function (MongoQueryableModel) {
 
     // to get access to other models
     var app = require("../../server/server");
 
+    function searchExpression(modelName, key, value) {
+        console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
 
-    // TODO these tests are dataset dependent, replace by something generic
-
-    function searchExpression(key, value) {
-        let type = "string";
-        if (key in ds.properties) {
-            type = ds.properties[key].type;
-        } else if (key in dsr.properties) {
-            type = dsr.properties[key].type;
-        } else if (key in dsd.properties) {
-            type = dsd.properties[key].type;
-        } else if (key in dsl.properties) {
-            type = dsl.properties[key].type;
-        } else if (key in own.properties) {
-            type = own.properties[key].type;
-        }
+        // TODO treat array types correctly
         if (key === "text") {
             return {
                 $search: value
             };
-        } else if (type === "string") {
+        }
+
+        let property = app.models[modelName].definition.properties[key]
+        const type = typeof property.type === 'string' ?
+            property.type :
+            property.type.modelName || property.type.name;
+
+        console.debug("Derived Type:", type)
+        //console.log("Definition model:",testbool)
+
+        // for now treat nested keys as strings
+        if (key.indexOf('.') > 0) {
+            console.debug("Nested key: Type,key,value:", type, key, value)
+            return value
+        } else if (type === "String") {
+            console.debug("String type")
             if (value.constructor === Array) {
                 if (value.length == 1) {
                     return value[0];
@@ -48,19 +41,22 @@ module.exports = function (MongoQueryableModel) {
             } else {
                 return value;
             }
-        } else if (type === "date") {
+        } else if (type === "Date") {
             return {
                 $gte: new Date(value.begin),
                 $lte: new Date(value.end)
             };
-        } else if (type === "boolean") {
+        } else if (type === "Boolean") {
             return {
                 $eq: value
             };
-        } else if (type.constructor === Array) {
+        } else if (Array.isArray(value)) {
             return {
                 $in: value
             };
+        } else {
+            console.log("Unknown Type: Type,key,value:", type, key, value)
+            return value
         }
     }
 
@@ -90,21 +86,21 @@ module.exports = function (MongoQueryableModel) {
         return fields;
     }
 
-    function extractCollectionAndIdField(modelName) {
-        let result = {}
-        // find out which field is the id field, turn name to hyphenated string first
-        let idField = "id"
-        for (const key in app.models[modelName].definition.properties) {
-            if (app.models[modelName].definition.properties[key].id) {
-                idField = key
-                break
+    /*     // TODO this can be simplified and put directly into code
+        function extractCollectionAndIdField(modelName) {
+            let result = {}
+            // find out which field is the id field, turn name to hyphenated string first
+            let idField = "id"
+            for (const key in app.models[modelName].definition.properties) {
+                if (app.models[modelName].definition.properties[key].id) {
+                    idField = key
+                    break
+                }
             }
-        }
-        result["mongoModelName"] = app.models[modelName].definition.settings.mongodb.collection
-        result['idField'] = idField
-        return result
-    }
-
+            result["mongoModelName"] = app.models[modelName].definition.settings.mongodb.collection
+            result['idField'] = idField
+            return result
+        } */
 
     MongoQueryableModel.fullfacet = function (fields, facets = [], options, cb) {
         // keep the full aggregation pipeline definition
@@ -112,7 +108,7 @@ module.exports = function (MongoQueryableModel) {
         let facetMatch = {};
         fields = setFields(fields, options);
         let modelName = options.modelName;
-        let modelMetadata = extractCollectionAndIdField(modelName)
+        // let modelMetadata = extractCollectionAndIdField(modelName)
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -142,6 +138,7 @@ module.exports = function (MongoQueryableModel) {
                             $match: {
                                 $or: [{
                                     $text: searchExpression(
+                                        modelName,
                                         key,
                                         fields[key]
                                     )
@@ -162,12 +159,14 @@ module.exports = function (MongoQueryableModel) {
                             $match: {
                                 $or: [{
                                         ownerGroup: searchExpression(
+                                            modelName,
                                             "ownerGroup",
                                             fields["userGroups"]
                                         )
                                     },
                                     {
                                         accessGroups: searchExpression(
+                                            modelName,
                                             "accessGroups",
                                             fields["userGroups"]
                                         )
@@ -185,53 +184,32 @@ module.exports = function (MongoQueryableModel) {
                     });
                 } else {
                     let match = {};
-                    match[key] = searchExpression(key, fields[key]);
+                    match[key] = searchExpression(modelName, key, fields[key]);
                     pipeline.push({
                         $match: match
                     });
                 }
             } else {
-                facetMatch[key] = searchExpression(key, fields[key]);
+                facetMatch[key] = searchExpression(modelName, key, fields[key]);
             }
         });
 
-        // TODO these tests are dataset dependent, replace by something generic
         // append all facet pipelines
         let facetObject = {};
         facets.forEach(function (facet) {
-            if (facet in ds.properties) {
+            if (facet in app.models[modelName].definition.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(
                     facet,
-                    ds.properties[facet].type,
-                    facetMatch
-                );
-            } else if (facet in dsr.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    dsr.properties[facet].type,
-                    facetMatch
-                );
-            } else if (facet in dsd.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    dsd.properties[facet].type,
-                    facetMatch
-                );
-            } else if (facet in own.properties) {
-                facetObject[facet] = utils.createNewFacetPipeline(
-                    facet,
-                    own.properties[facet].type,
+                    app.models[modelName].definition.properties[facet].type,
                     facetMatch
                 );
             } else if (facet.startsWith("datasetlifecycle.")) {
                 let lifcycleFacet = facet.split(".")[1];
-                if (lifcycleFacet in dsl.properties) {
-                    facetObject[lifcycleFacet] = utils.createNewFacetPipeline(
-                        lifcycleFacet,
-                        dsl.properties[lifcycleFacet].type,
-                        facetMatch
-                    );
-                }
+                facetObject[lifcycleFacet] = utils.createNewFacetPipeline(
+                    lifcycleFacet,
+                    app.models['DatasetLifecycle'].definition.properties[lifcycleFacet].type,
+                    facetMatch
+                );
             } else {
                 console.log(
                     "Warning: Facet not part of any model:",
@@ -254,7 +232,7 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
 
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
-            var collection = db.collection(modelMetadata.mongoModelName);
+            var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -267,6 +245,8 @@ module.exports = function (MongoQueryableModel) {
             });
         });
     };
+
+
 
     /* returns filtered set of datasets. Options:
        filter condition consists of
@@ -282,11 +262,13 @@ module.exports = function (MongoQueryableModel) {
         fields = setFields(fields, options);
         // TODO this should be derived from model definition field options.mongodb.collection in future
         let modelName = options.modelName
-        let modelMetadata = extractCollectionAndIdField(modelName)
+        //let modelMetadata = extractCollectionAndIdField(modelName)
         // console.log("Inside fullquery:options",options)
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
+
+        // TOOD avoid code duplication of large parts with fullfacet
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== "null") {
                 if (key === "text") {
@@ -296,6 +278,7 @@ module.exports = function (MongoQueryableModel) {
                             $match: {
                                 $or: [{
                                     $text: searchExpression(
+                                        modelName,
                                         key,
                                         String(fields[key])
                                     )
@@ -315,12 +298,14 @@ module.exports = function (MongoQueryableModel) {
                             $match: {
                                 $or: [{
                                         ownerGroup: searchExpression(
+                                            modelName,
                                             "ownerGroup",
                                             fields["userGroups"]
                                         )
                                     },
                                     {
                                         accessGroups: searchExpression(
+                                            modelName,
                                             "accessGroups",
                                             fields["userGroups"]
                                         )
@@ -336,10 +321,19 @@ module.exports = function (MongoQueryableModel) {
                             $match: match
                         });
                     });
+                } else if (key.startsWith("datasetlifecycle.")) {
+                    let lifecycleKey = key.split(".")[1];
+                    let match = {};
+                    match[key] = searchExpression("DatasetLifecycle", lifecycleKey, fields[key]);
+                    console.log("Datasetlifecycle Match expression:", match)
+                    pipeline.push({
+                        $match: match
+                    });
                 } else {
                     if (typeof fields[key].constructor !== Object) {
                         let match = {};
-                        match[key] = searchExpression(key, fields[key]);
+                        //console.log("Key, properties:", key, app.models[options.modelName].definition.properties)
+                        match[key] = searchExpression(modelName, key, fields[key]);
                         pipeline.push({
                             $match: match
                         });
@@ -360,7 +354,8 @@ module.exports = function (MongoQueryableModel) {
                     const dir = parts[1] == "desc" ? -1 : 1;
                     // map id field
                     let fieldName = parts[0]
-                    if (fieldName == modelMetadata.idField) {
+                    let idField = app.models[modelName].getIdName()
+                    if (fieldName == idField) {
                         fieldName = "_id"
                     }
                     sortExpr[fieldName] = dir;
@@ -385,7 +380,7 @@ module.exports = function (MongoQueryableModel) {
         console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            var collection = db.collection(modelMetadata.mongoModelName);
+            var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -394,10 +389,11 @@ module.exports = function (MongoQueryableModel) {
                         console.log("Fullquery err handling:", err);
                     }
                     // rename _id to id Field name
+                    let idField = app.models[modelName].getIdName()
                     res.map(ds => {
                         Object.defineProperty(
                             ds,
-                            modelMetadata.idField,
+                            idField,
                             Object.getOwnPropertyDescriptor(ds, "_id")
                         );
                         delete ds["_id"];
