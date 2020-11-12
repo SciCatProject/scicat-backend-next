@@ -6,10 +6,21 @@ module.exports = function (MongoQueryableModel) {
     // to get access to other models
     var app = require("../../server/server");
 
-    function loopbackTypeOf(modelName, key){
+    function loopbackTypeOf(modelName, key) {
         // extract type. For arrays this returns undefined. See 
         // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
         let property = app.models[modelName].definition.properties[key]
+        // Also check derived Datasets
+        // TODO Make code generic by deriving the test from the identical collection value in the model
+        if(!property){
+            property=app.models["RawDataset"].definition.properties[key]
+        }
+        if(!property){
+            property=app.models["DerivedDataset"].definition.properties[key]
+        }
+        if (!property){
+            console.log("Property undefined:")
+        }
         const type = typeof property.type === 'string' ?
             property.type :
             property.type.modelName || property.type.name;
@@ -24,7 +35,7 @@ module.exports = function (MongoQueryableModel) {
                 $search: value
             };
         }
-        const type=loopbackTypeOf(modelName,key)
+        const type = loopbackTypeOf(modelName, key)
         //console.debug("Derived Type:", type
 
         // for now treat nested keys as strings, not yet tested
@@ -184,24 +195,47 @@ module.exports = function (MongoQueryableModel) {
         // append all facet pipelines
         let facetObject = {};
         facets.forEach(function (facet) {
-            if (facet in app.models[modelName].definition.properties) {
+            // console.log("Facet.modelName,properties:", facet, modelName, app.models[modelName].definition.properties)
+            // for inheritance Dataset test parent models as well
+            // TODO make this generic by checking for same collection setting in the models 
+            if (modelName == "Dataset") {
+                if (facet in app.models["RawDataset"].definition.properties) {
+                    facetObject[facet] = utils.createNewFacetPipeline(
+                        facet,
+                        loopbackTypeOf("RawDataset", facet),
+                        facetMatch
+                    );
+                    return
+                } else if (facet in app.models["DerivedDataset"].definition.properties) {
+                    facetObject[facet] = utils.createNewFacetPipeline(
+                        facet,
+                        loopbackTypeOf("DerivedDataset", facet),
+                        facetMatch
+                    );
+                    return
+                }
+            } else if (facet in app.models[modelName].definition.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(
                     facet,
-                    loopbackTypeOf(modelName,facet),
+                    loopbackTypeOf(modelName, facet),
                     facetMatch
                 );
-            } else if (facet.startsWith("datasetlifecycle.")) {
+                return
+            } 
+            if (facet.startsWith("datasetlifecycle.")) {
                 let lifcycleFacet = facet.split(".")[1];
                 facetObject[lifcycleFacet] = utils.createNewFacetPipeline(
                     lifcycleFacet,
-                    loopbackTypeOf('DatasetLifecycle',lifcycleFacet),
+                    loopbackTypeOf('DatasetLifecycle', lifcycleFacet),
                     facetMatch
                 );
+                return
             } else {
                 console.log(
                     "Warning: Facet not part of any model:",
                     facet
                 );
+                return
             }
         });
         // add pipeline to count all documents
