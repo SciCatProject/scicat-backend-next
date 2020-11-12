@@ -87,9 +87,12 @@ exports.addOwnerGroup = function (ctx, next) {
 }
 
 exports.createNewFacetPipeline = function (name, type, query) {
+
+    // console.log("facet pipeline: name,type,query",name,type,query)
     const pipeline = [];
 
-    if (type.constructor === Array) {
+    // undefined type means array
+    if (typeof type === 'undefined') {
         pipeline.push({
             $unwind: '$' + name
         });
@@ -132,6 +135,7 @@ exports.createNewFacetPipeline = function (name, type, query) {
         }
     };
     pipeline.push(sort);
+    // console.log("Resulting pipeline:",pipeline)
     return pipeline;
 }
 

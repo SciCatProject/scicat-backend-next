@@ -6,23 +6,25 @@ module.exports = function (MongoQueryableModel) {
     // to get access to other models
     var app = require("../../server/server");
 
-    function searchExpression(modelName, key, value) {
-        // console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
-
-        // TODO treat array types correctly
-        if (key === "text") {
-            return {
-                $search: value
-            };
-        }
-
+    function loopbackTypeOf(modelName, key){
         // extract type. For arrays this returns undefined. See 
         // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
         let property = app.models[modelName].definition.properties[key]
         const type = typeof property.type === 'string' ?
             property.type :
             property.type.modelName || property.type.name;
+        return type
+    }
 
+    function searchExpression(modelName, key, value) {
+        // console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
+
+        if (key === "text") {
+            return {
+                $search: value
+            };
+        }
+        const type=loopbackTypeOf(modelName,key)
         //console.debug("Derived Type:", type
 
         // for now treat nested keys as strings, not yet tested
@@ -185,14 +187,14 @@ module.exports = function (MongoQueryableModel) {
             if (facet in app.models[modelName].definition.properties) {
                 facetObject[facet] = utils.createNewFacetPipeline(
                     facet,
-                    app.models[modelName].definition.properties[facet].type,
+                    loopbackTypeOf(modelName,facet),
                     facetMatch
                 );
             } else if (facet.startsWith("datasetlifecycle.")) {
                 let lifcycleFacet = facet.split(".")[1];
                 facetObject[lifcycleFacet] = utils.createNewFacetPipeline(
                     lifcycleFacet,
-                    app.models['DatasetLifecycle'].definition.properties[lifcycleFacet].type,
+                    loopbackTypeOf('DatasetLifecycle',lifcycleFacet),
                     facetMatch
                 );
             } else {
@@ -214,7 +216,7 @@ module.exports = function (MongoQueryableModel) {
         pipeline.push({
             $facet: facetObject
         });
-        console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
 
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
@@ -362,7 +364,7 @@ module.exports = function (MongoQueryableModel) {
                 });
             }
         }
-        console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
             var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
