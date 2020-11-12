@@ -427,9 +427,6 @@ module.exports = function (MongoQueryableModel) {
         });
     };
 
-    // to get access to other models
-    var app = require("../../server/server");
-
     // TODO check if this works in generic fashion:
     MongoQueryableModel.isValid = function (instance, next) {
         var ds = new MongoQueryableModel(instance);

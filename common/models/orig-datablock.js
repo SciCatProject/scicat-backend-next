@@ -269,7 +269,6 @@ module.exports = function (Origdatablock) {
                     if (err) {
                         console.log("findFilesByName err handling:", err);
                     }
-                    // TODO restructure result
                     res.map(ds => {
                         Object.defineProperty(
                             ds,

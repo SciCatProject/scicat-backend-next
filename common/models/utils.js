@@ -179,7 +179,7 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         // drop any history , e.g. from outside or from previous loop
         delete ctx.data.history
         // ignore packedsize and size updates for history.
-        // TODO: this ignores any update which contains these fields among other chanegs
+        // TODO: this ignores any update which contains these fields among other changes
         if (!ctx.data.size && !ctx.data.packedSize) {
             // the following triggers a before save hook . endless recursion must be prevented there
             // console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))

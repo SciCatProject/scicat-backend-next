@@ -74,21 +74,4 @@ module.exports = function(Proposal) {
         );
     };
 
-    // TODO check if isValid should be moved somewhere else
-    Proposal.isValid = function(instance, next) {
-        const ds = new Proposal(instance);
-        ds.isValid(function(valid) {
-            if (!valid) {
-                next(null, {
-                    errors: ds.errors,
-                    valid: false
-                });
-            } else {
-                next(null, {
-                    valid: true
-                });
-            }
-        });
-    };
-
  };

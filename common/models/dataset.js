@@ -196,7 +196,6 @@ module.exports = function(Dataset) {
         next();
     });
 
-    // TODO fullquery stuff needed here or somewhere else ?
     Dataset.beforeRemote("fullfacet", function(ctx, unused, next) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
