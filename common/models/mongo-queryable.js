@@ -7,7 +7,7 @@ module.exports = function (MongoQueryableModel) {
     var app = require("../../server/server");
 
     function searchExpression(modelName, key, value) {
-        console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
+        // console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
 
         // TODO treat array types correctly
         if (key === "text") {
@@ -16,20 +16,22 @@ module.exports = function (MongoQueryableModel) {
             };
         }
 
+        // extract type. For arrays this returns undefined. See 
+        // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
         let property = app.models[modelName].definition.properties[key]
         const type = typeof property.type === 'string' ?
             property.type :
             property.type.modelName || property.type.name;
 
-        console.debug("Derived Type:", type)
-        //console.log("Definition model:",testbool)
+        //console.debug("Derived Type:", type
 
-        // for now treat nested keys as strings
+        // for now treat nested keys as strings, not yet tested
+        // may has to be treated outside of this function as is done
+        // currently for datasetLifecycle
         if (key.indexOf('.') > 0) {
-            console.debug("Nested key: Type,key,value:", type, key, value)
+            console.debug("Nested key: modelName,key,value:", modelName, key, value)
             return value
         } else if (type === "String") {
-            console.debug("String type")
             if (value.constructor === Array) {
                 if (value.length == 1) {
                     return value[0];
@@ -55,7 +57,7 @@ module.exports = function (MongoQueryableModel) {
                 $in: value
             };
         } else {
-            console.log("Unknown Type: Type,key,value:", type, key, value)
+            console.log("Unknown Type: modelName,key,value:", modelName, key, value)
             return value
         }
     }
@@ -86,29 +88,12 @@ module.exports = function (MongoQueryableModel) {
         return fields;
     }
 
-    /*     // TODO this can be simplified and put directly into code
-        function extractCollectionAndIdField(modelName) {
-            let result = {}
-            // find out which field is the id field, turn name to hyphenated string first
-            let idField = "id"
-            for (const key in app.models[modelName].definition.properties) {
-                if (app.models[modelName].definition.properties[key].id) {
-                    idField = key
-                    break
-                }
-            }
-            result["mongoModelName"] = app.models[modelName].definition.settings.mongodb.collection
-            result['idField'] = idField
-            return result
-        } */
-
     MongoQueryableModel.fullfacet = function (fields, facets = [], options, cb) {
         // keep the full aggregation pipeline definition
         let pipeline = [];
         let facetMatch = {};
         fields = setFields(fields, options);
         let modelName = options.modelName;
-        // let modelMetadata = extractCollectionAndIdField(modelName)
         // console.log("++++++++++++ after filling fileds with usergroup:",fields)
         // construct match conditions from fields value, excluding facet material
         // i.e. fields is essentially split into match and facetMatch conditions
@@ -262,7 +247,6 @@ module.exports = function (MongoQueryableModel) {
         fields = setFields(fields, options);
         // TODO this should be derived from model definition field options.mongodb.collection in future
         let modelName = options.modelName
-        //let modelMetadata = extractCollectionAndIdField(modelName)
         // console.log("Inside fullquery:options",options)
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
@@ -325,7 +309,7 @@ module.exports = function (MongoQueryableModel) {
                     let lifecycleKey = key.split(".")[1];
                     let match = {};
                     match[key] = searchExpression("DatasetLifecycle", lifecycleKey, fields[key]);
-                    console.log("Datasetlifecycle Match expression:", match)
+                    // ("Datasetlifecycle Match expression:", match)
                     pipeline.push({
                         $match: match
                     });
@@ -355,6 +339,7 @@ module.exports = function (MongoQueryableModel) {
                     // map id field
                     let fieldName = parts[0]
                     let idField = app.models[modelName].getIdName()
+                    // console.log("Derived idField:",idField)
                     if (fieldName == idField) {
                         fieldName = "_id"
                     }
@@ -390,6 +375,7 @@ module.exports = function (MongoQueryableModel) {
                     }
                     // rename _id to id Field name
                     let idField = app.models[modelName].getIdName()
+                    // console.log("Derived idField:",idField)
                     res.map(ds => {
                         Object.defineProperty(
                             ds,
