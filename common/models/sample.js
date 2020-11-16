@@ -1,6 +1,8 @@
 "use strict";
-var ds = require("./sample.json");
-var own = require("./ownable.json");
+
+const ds = require("./sample.json");
+const own = require("./ownable.json");
+
 module.exports = function(Sample) {
     function searchExpression(key, value) {
         let type = "string";
@@ -156,8 +158,8 @@ module.exports = function(Sample) {
         }
         //console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         Sample.getDataSource().connector.connect(function(err, db) {
-            var collection = db.collection("Sample");
-            var res = collection.aggregate(pipeline, {allowDiskUse: true}, function(err, cursor) {
+            const collection = db.collection("Sample");
+            const res = collection.aggregate(pipeline, {allowDiskUse: true}, function(err, cursor) {
                 cursor.toArray(function(err, res) {
                     if (err) {
                         console.log("Facet err handling:", err);
