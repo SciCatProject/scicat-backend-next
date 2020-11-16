@@ -12,13 +12,13 @@ module.exports = function (MongoQueryableModel) {
         let property = app.models[modelName].definition.properties[key]
         // Also check derived Datasets
         // TODO Make code generic by deriving the test from the identical collection value in the model
-        if(!property){
-            property=app.models["RawDataset"].definition.properties[key]
+        if (!property) {
+            property = app.models["RawDataset"].definition.properties[key]
         }
-        if(!property){
-            property=app.models["DerivedDataset"].definition.properties[key]
+        if (!property) {
+            property = app.models["DerivedDataset"].definition.properties[key]
         }
-        if (!property){
+        if (!property) {
             console.log("Property undefined:")
         }
         const type = typeof property.type === 'string' ?
@@ -27,15 +27,22 @@ module.exports = function (MongoQueryableModel) {
         return type
     }
 
-    function searchExpression(modelName, key, value) {
-        // console.debug("Searchexpression input: modelName,key,value:", modelName, key, value)
+    function searchExpression(modelName, fieldName, value) {
+        // console.log("searchExpression modelName, fieldName, value", modelName, fieldName, value)
+        let key = fieldName
+        if (app.models[modelName].getIdName) {
+            let idField = app.models[modelName].getIdName()
+            if (fieldName == idField) {
+                key = "_id"
+            }
+        }
 
         if (key === "text") {
             return {
                 $search: value
             };
         }
-        const type = loopbackTypeOf(modelName, key)
+        const type = loopbackTypeOf(modelName, fieldName)
         //console.debug("Derived Type:", type
 
         // for now treat nested keys as strings, not yet tested
@@ -147,8 +154,15 @@ module.exports = function (MongoQueryableModel) {
                 }
                 // mode is not a field , just an object for containing a match clause
                 else if (key === "mode") {
+                    // substitute potential id field in fields
+                    let idField = app.models[modelName].getIdName();
+                    let currentExpression = JSON.parse(JSON.stringify(fields[key]))
+                    if (idField in currentExpression) {
+                        currentExpression["_id"] = currentExpression[idField]
+                        delete currentExpression[idField]
+                    }
                     pipeline.push({
-                        $match: fields[key]
+                        $match: currentExpression
                     });
                 } else if (key === "userGroups") {
                     // no group conditions if global access role
@@ -221,7 +235,7 @@ module.exports = function (MongoQueryableModel) {
                     facetMatch
                 );
                 return
-            } 
+            }
             if (facet.startsWith("datasetlifecycle.")) {
                 let lifcycleFacet = facet.split(".")[1];
                 facetObject[lifcycleFacet] = utils.createNewFacetPipeline(
@@ -309,8 +323,15 @@ module.exports = function (MongoQueryableModel) {
                 }
                 // mode is not a field , just an object for containing a match clause
                 else if (key === "mode") {
+                    // substitute potential id field in fields
+                    let idField = app.models[modelName].getIdName();
+                    let currentExpression = JSON.parse(JSON.stringify(fields[key]))
+                    if (idField in currentExpression) {
+                        currentExpression["_id"] = currentExpression[idField]
+                        delete currentExpression[idField]
+                    }
                     pipeline.push({
-                        $match: fields[key]
+                        $match: currentExpression
                     });
                 } else if (key === "userGroups") {
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
@@ -411,7 +432,7 @@ module.exports = function (MongoQueryableModel) {
                     }
                     // rename _id to id Field name
                     let idField = app.models[modelName].getIdName()
-                    // console.log("Derived idField:",idField)
+                    // console.log("Derived idField:", idField)
                     res.map(ds => {
                         Object.defineProperty(
                             ds,
