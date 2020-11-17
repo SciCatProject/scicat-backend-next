@@ -179,7 +179,7 @@ module.exports = function(Sample) {
                 });
                 }
             );
-            });
+        });
     };
 
     /**
