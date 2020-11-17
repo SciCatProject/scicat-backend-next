@@ -177,8 +177,7 @@ module.exports = function(Sample) {
                     });
                     cb(err, res);
                 });
-                }
-            );
+            });
         });
     };
 
