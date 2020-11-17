@@ -187,7 +187,7 @@ module.exports = function(Sample) {
      * @param {object} fields Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample.
      * @param {object} limits Define further query parameters like skip, limit, order
      * @param {object} options
-     * @param {Function(Error, array)} callback
+     * @returns {string[]} Array of metadata keys
      */
 
     Sample.metadataKeys = async function (fields, limits, options) {

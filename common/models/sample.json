@@ -109,9 +109,7 @@
           "type": "object",
           "required": false,
           "description": "",
-          "http": {
-            "source": "body"
-          }
+          "http": "optionsFromRequest"
         }
       ],
       "returns": [
