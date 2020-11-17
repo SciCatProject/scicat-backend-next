@@ -5,128 +5,128 @@
   "strict": true,
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+      "validateUpsert": true
   },
   "properties": {
-    "sampleId": {
-      "type": "string",
-      "id": true
-    },
-    "owner": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "createdAt": {
-      "type": "date"
-    },
-    "sampleCharacteristics": {
-      "type": "object"
-    },
-    "isPublished": {
-      "type": "boolean",
-      "description": "Flag is true when data are made publically available"
-    }
+      "sampleId": {
+          "type": "string",
+          "id": true
+      },
+      "owner": {
+          "type": "string"
+      },
+      "description": {
+          "type": "string"
+      },
+      "createdAt": {
+          "type": "date"
+      },
+      "sampleCharacteristics": {
+          "type": "object"
+      },
+      "isPublished": {
+          "type": "boolean",
+          "description": "Flag is true when data are made publically available"
+      }
   },
   "validations": [],
   "relations": {
-    "attachments": {
-      "type": "hasMany",
-      "model": "Attachment",
-      "foreignKey": ""
-    },
-    "datasets": {
-      "type": "belongsTo",
-      "model": "Dataset",
-      "foreignKey": ""
-    }
+      "attachments": {
+          "type": "hasMany",
+          "model": "Attachment",
+          "foreignKey": ""
+      },
+      "datasets":{
+          "type": "belongsTo",
+          "model": "Dataset",
+          "foreignKey": ""
+      }
   },
   "acls": [
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    }
+      {
+          "accessType": "READ",
+          "principalType": "ROLE",
+          "principalId": "$everyone",
+          "permission": "ALLOW"
+      },
+      {
+          "accessType": "*",
+          "principalType": "ROLE",
+          "principalId": "$authenticated",
+          "permission": "ALLOW"
+      }
   ],
   "methods": {
-    "fullquery": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample. Skip and limit parameters allow for paging."
-        },
-        {
-          "arg": "limits",
-          "type": "object",
-          "description": "Define further query parameters like skip, limit, order"
-        },
-        {
-          "arg": "options",
-          "type": "object",
-          "http": "optionsFromRequest"
-        }
-      ],
-      "returns": {
-        "root": true
+      "fullquery": {
+          "accepts": [
+              {
+                  "arg": "fields",
+                  "type": "object",
+                  "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample. Skip and limit parameters allow for paging."
+              },
+              {
+                  "arg": "limits",
+                  "type": "object",
+                  "description": "Define further query parameters like skip, limit, order"
+              },
+              {
+                  "arg": "options",
+                  "type": "object",
+                  "http": "optionsFromRequest"
+              }
+          ],
+          "returns": {
+              "root": true
+          },
+          "description": "Return samples fulfilling complex filter conditions, including from fields of joined models.",
+          "http": {
+              "path": "/fullquery",
+              "verb": "get"
+          }
       },
-      "description": "Return samples fulfilling complex filter conditions, including from fields of joined models.",
-      "http": {
-        "path": "/fullquery",
-        "verb": "get"
-      }
-    },
-    "metadataKeys": {
-      "accepts": [
-        {
-          "arg": "fields",
-          "type": "object",
-          "required": false,
-          "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample.",
-          "http": {
-            "source": "path"
+      "metadataKeys": {
+        "accepts": [
+          {
+            "arg": "fields",
+            "type": "object",
+            "required": false,
+            "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample.",
+            "http": {
+              "source": "path"
+            }
+          },
+          {
+            "arg": "limits",
+            "type": "object",
+            "required": false,
+            "description": "Define further query parameters like skip, limit, order",
+            "http": {
+              "source": "path"
+            }
+          },
+          {
+            "arg": "options",
+            "type": "object",
+            "required": false,
+            "description": "",
+            "http": "optionsFromRequest"
           }
-        },
-        {
-          "arg": "limits",
-          "type": "object",
-          "required": false,
-          "description": "Define further query parameters like skip, limit, order",
-          "http": {
-            "source": "path"
+        ],
+        "returns": [
+          {
+            "arg": "metadataKeys",
+            "type": "array",
+            "root": true,
+            "description": "Array of sample characteristic keys"
           }
-        },
-        {
-          "arg": "options",
-          "type": "object",
-          "required": false,
-          "description": "",
-          "http": "optionsFromRequest"
-        }
-      ],
-      "returns": [
-        {
-          "arg": "metadataKeys",
-          "type": "array",
-          "root": true,
-          "description": "Array of sample characteristic keys"
-        }
-      ],
-      "description": "Get a list of sample characteristic keys",
-      "http": [
-        {
-          "path": "/metadataKeys",
-          "verb": "get"
-        }
-      ]
-    }
+        ],
+        "description": "Get a list of sample characteristic keys",
+        "http": [
+          {
+            "path": "/metadataKeys",
+            "verb": "get"
+          }
+        ]
+      }  
   }
 }
