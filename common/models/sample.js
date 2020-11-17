@@ -1,6 +1,6 @@
 "use strict";
 
-var config = require("../../server/config.local");
+const config = require("../../server/config.local");
 const ds = require("./sample.json");
 const own = require("./ownable.json");
 const logger = require("../logger");
