@@ -215,82 +215,73 @@ module.exports = function(Sample) {
                 }
 
                 limits = lm;
+            }
 
-                logger.logInfo("Fetching metadataKeys", {
+            logger.logInfo("Fetching metadataKeys", {
+                fields,
+                limits,
+                options,
+                blacklist: blacklist.map((item) => item.toString()),
+                returnLimit,
+            });
+
+            let samples;
+            try {
+                samples = await new Promise((resolve, reject) => {
+                    Sample.fullquery(fields, limits, options, (err, res) => {
+                        resolve(res);
+                    });
+                });
+            } catch (err) {
+                logger.logError(err.message, {
+                    location: "Sample.metadataKeys.samples",
                     fields,
                     limits,
                     options,
-                    blacklist: blacklist.map((item) => item.toString()),
-                    returnLimit,
                 });
-
-                let samples;
-                try {
-                    samples = await new Promise((resolve, reject) => {
-                        Sample.fullquery(
-                            fields,
-                            limits,
-                            options,
-                            (err, res) => {
-                                resolve(res);
-                            }
-                        );
-                    });
-                } catch (err) {
-                    logger.logError(err.message, {
-                        location: "Sample.metadataKeys.samples",
-                        fields,
-                        limits,
-                        options,
-                    });
-                }
-
-                if (samples.length > 0) {
-                    logger.logInfo("Found samples", { count: samples.length });
-                } else {
-                    logger.logInfo("No samples found", { samples });
-                }
-
-                const metadata = samples.map((sample) =>
-                    sample.sampleCharacteristics
-                        ? Object.keys(sample.sampleCharacteristics)
-                        : []
-                );
-
-                logger.logInfo("Raw metadata array", {
-                    count: metadata.length,
-                });
-
-                // Flatten array, ensure uniqueness of keys and filter out
-                // blacklisted keys
-                const metadataKeys = [].concat
-                    .apply([], metadata)
-                    .reduce((accumulator, currentValue) => {
-                        if (accumulator.indexOf(currentValue) === -1) {
-                            accumulator.push(currentValue);
-                        }
-                        return accumulator;
-                    }, [])
-                    .filter(
-                        (key) => !blacklist.some((regex) => regex.test(key))
-                    );
-
-                logger.logInfo("Curated metadataKeys", {
-                    count: metadataKeys.length,
-                });
-
-                if (metadataKey && metadataKey.length > 0) {
-                    return metadataKeys
-                        .filter((key) =>
-                            key
-                                .toLowerCase()
-                                .includes(metadataKey.toLowerCase())
-                        )
-                        .slice(0, returnLimit);
-                }
-
-                return metadataKeys.slice(0, returnLimit);
             }
+
+            if (samples.length > 0) {
+                logger.logInfo("Found samples", { count: samples.length });
+            } else {
+                logger.logInfo("No samples found", { samples });
+            }
+
+            const metadata = samples.map((sample) =>
+                sample.sampleCharacteristics
+                    ? Object.keys(sample.sampleCharacteristics)
+                    : []
+            );
+
+            logger.logInfo("Raw metadata array", {
+                count: metadata.length,
+            });
+
+            // Flatten array, ensure uniqueness of keys and filter out
+            // blacklisted keys
+            const metadataKeys = [].concat
+                .apply([], metadata)
+                .reduce((accumulator, currentValue) => {
+                    if (accumulator.indexOf(currentValue) === -1) {
+                        accumulator.push(currentValue);
+                    }
+                    return accumulator;
+                }, [])
+                .filter((key) => !blacklist.some((regex) => regex.test(key)));
+
+            logger.logInfo("Curated metadataKeys", {
+                count: metadataKeys.length,
+            });
+
+            if (metadataKey && metadataKey.length > 0) {
+                return metadataKeys
+                    .filter((key) =>
+                        key.toLowerCase().includes(metadataKey.toLowerCase())
+                    )
+                    .slice(0, returnLimit);
+            }
+
+            return metadataKeys.slice(0, returnLimit);
         } catch (err) {
             logger.logError(err.message, { location: "Sample.metadataKeys" });
         }
