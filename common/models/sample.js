@@ -4,6 +4,7 @@ const config = require("../../server/config.local");
 const ds = require("./sample.json");
 const own = require("./ownable.json");
 const logger = require("../logger");
+const math = require("mathjs");
 
 module.exports = function(Sample) {
     function searchExpression(key, value) {
@@ -119,6 +120,11 @@ module.exports = function(Sample) {
                             }
                         });
                     }
+                } else if (key === "characteristics") {
+                    fields[key].forEach(characteristic => {
+                        const match = generateCharacteristicExpression(characteristic);
+                        pipeline.push({$match: match});
+                    });
                 } else {
                     let match = {};
                     match[key] = searchExpression(key, fields[key]);
@@ -286,4 +292,80 @@ module.exports = function(Sample) {
             logger.logError(err.message, { location: "Sample.metadataKeys" });
         }
     };
+
+    function convertToSI(value, unit) {
+        const quantity = math
+            .unit(value, unit)
+            .toSI()
+            .toString();
+        const convertedValue = quantity.substring(0, quantity.indexOf(" "));
+        const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
+        return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+    }
+
+    function generateCharacteristicExpression({ lhs, relation, rhs, unit }) {
+        let match = {
+            $and: []
+        };
+        const matchKeyGeneric = `sampleCharacteristics.${lhs}.value`;
+        const matchKeyMeasurement = `sampleCharacteristics.${lhs}.valueSI`;
+        const matchUnit = `sampleCharacteristics.${lhs}.unitSI`;
+        switch (relation) {
+            case "EQUAL_TO_STRING": {
+                match.$and.push({
+                    [matchKeyGeneric]: { $eq: rhs }
+                });
+                break;
+            }
+            case "EQUAL_TO_NUMERIC": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $eq: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $eq: rhs }
+                    });
+                }
+                break;
+            }
+            case "GREATER_THAN": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $gt: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $gt: rhs }
+                    });
+                }
+                break;
+            }
+            case "LESS_THAN": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $lt: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $lt: rhs }
+                    });
+                }
+                break;
+            }
+        }
+        return match;
+    }
 };
