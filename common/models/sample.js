@@ -47,6 +47,28 @@ module.exports = function(Sample) {
         }
     }
 
+    Sample.beforeRemote("prototype.patchAttributes", function (
+        ctx,
+        unused,
+        next
+    ) {
+        if ("sampleCharacteristics" in ctx.args.data) {
+            const { sampleCharacteristics } = ctx.args.data;
+            Object.keys(sampleCharacteristics).forEach((key) => {
+                if (sampleCharacteristics[key].type === "measurement") {
+                    const { value, unit } = sampleCharacteristics[key];
+                    const { valueSI, unitSI } = convertToSI(value, unit);
+                    sampleCharacteristics[key] = {
+                        ...sampleCharacteristics[key],
+                        valueSI,
+                        unitSI,
+                    };
+                }
+            });
+        }
+        next();
+    });
+
     Sample.afterRemote("find", function (ctx, modelInstance, next) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
