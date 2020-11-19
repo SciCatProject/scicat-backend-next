@@ -29,44 +29,6 @@ module.exports = function(Dataset) {
         next();
     };
 
-    Dataset.remoteMethod("appendToArrayField", {
-        accepts: [
-            {
-                arg: "id",
-                type: "string",
-                required: true
-            },
-            {
-                arg: "fieldName",
-                type: "string",
-                required: true,
-                description: "Name of field to append data to"
-            },
-            {
-                arg: "data",
-                type: "array",
-                required: true,
-                description: "An array of values to append"
-            },
-            {
-                arg: "options",
-                type: "object",
-                http: {
-                    source: "context"
-                }
-            }
-        ],
-        http: {
-            path: "/:id/appendToArrayField",
-            verb: "post"
-        },
-        returns: {
-            type: "Object",
-            root: true
-        },
-        description:
-            "updates a single record by appending data to the specified field"
-    });
 
     Dataset.prototype.updateSize = function(id, sizeField, size, numFilesField, numFiles, next) {
         // console.log("Updating size field:", id, sizeField, size)
@@ -637,36 +599,7 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.remoteMethod("metadataKeys", {
-        accepts: [
-            {
-                arg: "fields",
-                type: "object",
-                description:
-                    "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset."
-            },
-            {
-                arg: "limits",
-                type: "object",
-                description:
-                    "Define further query parameters like skip, limit, order"
-            },
-            {
-                arg: "options",
-                type: "object",
-                http: "optionsFromRequest"
-            }
-        ],
-        returns: {
-            root: true
-        },
-        description:
-            "Return array of metadata keys from datasets corresponding to the current filters.",
-        http: {
-            path: "/metadataKeys",
-            verb: "get"
-        }
-    });
+
 
     Dataset.isValid = function(dataset, next) {
         var ds = new Dataset(dataset);
@@ -706,24 +639,6 @@ module.exports = function(Dataset) {
             return base64string2;
         });
     };
-
-    Dataset.remoteMethod("thumbnail", {
-        accepts: [
-            {
-                arg: "id",
-                type: "string",
-                required: true
-            }
-        ],
-        http: {
-            path: "/:id/thumbnail",
-            verb: "get"
-        },
-        returns: {
-            type: "string",
-            root: true
-        }
-    });
 
     /**
      * Produces a Kafka message for Dataset reduction in OpenWhisk, then consumes the response
