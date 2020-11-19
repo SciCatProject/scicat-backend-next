@@ -166,28 +166,6 @@ module.exports = function(Dataset) {
         next();
     });
 
-    Dataset.beforeRemote("prototype.patchAttributes", function(
-        ctx,
-        unused,
-        next
-    ) {
-        if ("scientificMetadata" in ctx.args.data) {
-            const { scientificMetadata } = ctx.args.data;
-            Object.keys(scientificMetadata).forEach(key => {
-                if (scientificMetadata[key].type === "measurement") {
-                    const { value, unit } = scientificMetadata[key];
-                    const { valueSI, unitSI } = convertToSI(value, unit);
-                    scientificMetadata[key] = {
-                        ...scientificMetadata[key],
-                        valueSI,
-                        unitSI
-                    };
-                }
-            });
-        }
-        next();
-    });
-
     Dataset.beforeRemote("metadataKeys", function(ctx, unused, next) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
@@ -208,35 +186,6 @@ module.exports = function(Dataset) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
             ctx.args.fields.isPublished = true;
-        }
-        next();
-    });
-
-    Dataset.afterRemote("fullquery", function(ctx, datasets, next) {
-        if (ctx.args.fields.scientific) {
-            const { scientific } = ctx.args.fields;
-            datasets.forEach(({ scientificMetadata }) => {
-                scientific.forEach(({ lhs, unit }) => {
-                    if (
-                        lhs in scientificMetadata &&
-                        scientificMetadata[lhs].type === "measurement" &&
-                        scientificMetadata[lhs].unit !== unit
-                    ) {
-                        const converted = math
-                            .unit(
-                                scientificMetadata[lhs].value,
-                                scientificMetadata[lhs].unit
-                            )
-                            .to(unit);
-                        const formatted = math
-                            .format(converted, { precision: 3 })
-                            .toString()
-                            .split(" ");
-                        scientificMetadata[lhs].value = Number(formatted[0]);
-                        scientificMetadata[lhs].unit = formatted[1];
-                    }
-                });
-            });
         }
         next();
     });
@@ -688,113 +637,6 @@ module.exports = function(Dataset) {
         });
     };
 
-    Dataset.metadataKeys = async function(fields, limits, options) {
-        try {
-            const blacklist = [
-                new RegExp(".*_date"),
-                new RegExp("runNumber"),
-                new RegExp("Entrych*."),
-                new RegExp("entryCh*."),
-                new RegExp("FMC-PICO*."),
-                new RegExp("BW_measurement*."),
-                new RegExp("Linearity_measurement*."),
-                new RegExp("Pulse_measurement*.")
-            ];
-            const returnLimit = config.metadataKeysReturnLimit;
-            const { metadataKey } = fields;
-
-            // ensure that no more than MAXLIMIT datasets are read for metadata key extraction
-            let MAXLIMIT;
-            if(config.metadataDatasetsReturnLimit) {
-                MAXLIMIT = config.metadataDatasetsReturnLimit;
-                
-                let lm;
-               
-                if (limits) {
-                    lm = JSON.parse(JSON.stringify(limits));
-                } else {
-                    lm = {};
-                }
-                
-                if (lm.limit) {
-                    if (lm.limit > MAXLIMIT) {
-                        lm.limit = MAXLIMIT;
-                    }
-                } else {
-                    lm.limit = MAXLIMIT;
-                }
-                limits = lm;
-            } 
-
-            logger.logInfo("Fetching metadataKeys", {
-                fields,
-                limits,
-                options,
-                blacklist: blacklist.map(item => item.toString()),
-                returnLimit
-            });
-
-            let datasets;
-            try {
-                datasets = await new Promise((resolve, reject) => {
-                    Dataset.fullquery(fields, limits, options, (err, res) => {
-                        resolve(res);
-                    });
-                });
-            } catch (err) {
-                logger.logError(err.message, {
-                    location: "Dataset.metadataKeys.datasets",
-                    fields,
-                    limits,
-                    options
-                });
-            }
-
-            if (datasets.length > 0) {
-                logger.logInfo("Found datasets", { count: datasets.length });
-            } else {
-                logger.logInfo("No datasets found", { datasets });
-            }
-
-            const metadata = datasets.map(dataset => {
-                if (dataset.scientificMetadata) {
-                    return Object.keys(dataset.scientificMetadata);
-                } else {
-                    return [];
-                }
-            });
-
-            logger.logInfo("Raw metadata array", { count: metadata.length });
-
-            // Flatten array, ensure uniqueness of keys and filter out
-            // blacklisted keys
-            const metadataKeys = [].concat
-                .apply([], metadata)
-                .reduce((accumulator, currentValue) => {
-                    if (accumulator.indexOf(currentValue) === -1) {
-                        accumulator.push(currentValue);
-                    }
-                    return accumulator;
-                }, [])
-                .filter(key => !blacklist.some(regex => regex.test(key)));
-
-            logger.logInfo("Curated metadataKeys", {
-                count: metadataKeys.length
-            });
-
-            if (metadataKey && metadataKey.length > 0) {
-                const filterKey = metadataKey.toLowerCase();
-                return metadataKeys
-                    .filter(key => key.toLowerCase().includes(filterKey))
-                    .slice(0, returnLimit);
-            } else {
-                return metadataKeys.slice(0, returnLimit);
-            }
-        } catch (err) {
-            logger.logError(err.message, { location: "Dataset.metadatakeys" });
-        }
-    };
-
     Dataset.remoteMethod("metadataKeys", {
         accepts: [
             {
@@ -976,6 +818,115 @@ module.exports = function(Dataset) {
             }
         ]
     });
+
+    Dataset.metadataKeys = async function(fields, limits, options) {
+        try {
+            const blacklist = [
+                new RegExp(".*_date"),
+                new RegExp("runNumber"),
+                new RegExp("Entrych*."),
+                new RegExp("entryCh*."),
+                new RegExp("FMC-PICO*."),
+                new RegExp("BW_measurement*."),
+                new RegExp("Linearity_measurement*."),
+                new RegExp("Pulse_measurement*.")
+            ];
+            const returnLimit = config.metadataKeysReturnLimit;
+            const { metadataKey } = fields;
+
+            // ensure that no more than MAXLIMIT someCollections are read for metadata key extraction
+            let MAXLIMIT;
+            if(config.metadataDatasetsReturnLimit) {
+                MAXLIMIT = config.metadataDatasetsReturnLimit;
+                
+                let lm;
+               
+                if (limits) {
+                    lm = JSON.parse(JSON.stringify(limits));
+                } else {
+                    lm = {};
+                }
+                
+                if (lm.limit) {
+                    if (lm.limit > MAXLIMIT) {
+                        lm.limit = MAXLIMIT;
+                    }
+                } else {
+                    lm.limit = MAXLIMIT;
+                }
+                limits = lm;
+            } 
+
+            logger.logInfo("Fetching metadataKeys", {
+                fields,
+                limits,
+                options,
+                blacklist: blacklist.map(item => item.toString()),
+                returnLimit
+            });
+
+            let someCollections;
+            try {
+                someCollections = await new Promise((resolve, reject) => {
+                    // TODO Is it okay to replace Dataset by MongoQueryableModel
+                    Dataset.fullquery(fields, limits, options, (err, res) => {
+                        resolve(res);
+                    });
+                });
+            } catch (err) {
+                logger.logError(err.message, {
+                    location: "Dataset.metadataKeys.someCollections",
+                    fields,
+                    limits,
+                    options
+                });
+            }
+
+            if (someCollections.length > 0) {
+                logger.logInfo("Found someCollections", { count: someCollections.length });
+            } else {
+                logger.logInfo("No someCollections found", { someCollections });
+            }
+
+            const metadata = someCollections.map(someCollection => {
+                if (someCollection.scientificMetadata) {
+                    return Object.keys(someCollection.scientificMetadata);
+                } else {
+                    return [];
+                }
+            });
+
+            logger.logInfo("Raw metadata array", { count: metadata.length });
+
+            // Flatten array, ensure uniqueness of keys and filter out
+            // blacklisted keys
+            const metadataKeys = [].concat
+                .apply([], metadata)
+                .reduce((accumulator, currentValue) => {
+                    if (accumulator.indexOf(currentValue) === -1) {
+                        accumulator.push(currentValue);
+                    }
+                    return accumulator;
+                }, [])
+                .filter(key => !blacklist.some(regex => regex.test(key)));
+
+            logger.logInfo("Curated metadataKeys", {
+                count: metadataKeys.length
+            });
+
+            if (metadataKey && metadataKey.length > 0) {
+                const filterKey = metadataKey.toLowerCase();
+                return metadataKeys
+                    .filter(key => key.toLowerCase().includes(filterKey))
+                    .slice(0, returnLimit);
+            } else {
+                return metadataKeys.slice(0, returnLimit);
+            }
+        } catch (err) {
+            logger.logError(err.message, { location: "Dataset.metadatakeys" });
+        }
+    };
+
 
     function convertToSI(value, unit) {
         const quantity = math

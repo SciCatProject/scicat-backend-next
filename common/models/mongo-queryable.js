@@ -1,5 +1,6 @@
 'use strict';
 var utils = require('./utils');
+const logger = require("../logger");
 
 module.exports = function (MongoQueryableModel) {
 
@@ -283,7 +284,7 @@ module.exports = function (MongoQueryableModel) {
 
 
 
-    /* returns filtered set of datasets. Options:
+    /* returns filtered set of someCollections. Options:
        filter condition consists of
        - ownerGroup (automatically applied on server side)
        - text search
@@ -535,4 +536,58 @@ module.exports = function (MongoQueryableModel) {
             }
         }
     });
+
+    MongoQueryableModel.beforeRemote("prototype.patchAttributes", function(
+        ctx,
+        unused,
+        next
+    ) {
+        if ("scientificMetadata" in ctx.args.data) {
+            const { scientificMetadata } = ctx.args.data;
+            Object.keys(scientificMetadata).forEach(key => {
+                if (scientificMetadata[key].type === "measurement") {
+                    const { value, unit } = scientificMetadata[key];
+                    const { valueSI, unitSI } = convertToSI(value, unit);
+                    scientificMetadata[key] = {
+                        ...scientificMetadata[key],
+                        valueSI,
+                        unitSI
+                    };
+                }
+            });
+        }
+        next();
+    });
+
+
+    MongoQueryableModel.afterRemote("fullquery", function(ctx, someCollections, next) {
+        if (ctx.args.fields.scientific) {
+            const { scientific } = ctx.args.fields;
+            someCollections.forEach(({ scientificMetadata }) => {
+                scientific.forEach(({ lhs, unit }) => {
+                    if (
+                        lhs in scientificMetadata &&
+                        scientificMetadata[lhs].type === "measurement" &&
+                        scientificMetadata[lhs].unit !== unit
+                    ) {
+                        const converted = math
+                            .unit(
+                                scientificMetadata[lhs].value,
+                                scientificMetadata[lhs].unit
+                            )
+                            .to(unit);
+                        const formatted = math
+                            .format(converted, { precision: 3 })
+                            .toString()
+                            .split(" ");
+                        scientificMetadata[lhs].value = Number(formatted[0]);
+                        scientificMetadata[lhs].unit = formatted[1];
+                    }
+                });
+            });
+        }
+        next();
+    });
+
+
 };
