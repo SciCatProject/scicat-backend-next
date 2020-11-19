@@ -589,5 +589,81 @@ module.exports = function (MongoQueryableModel) {
         next();
     });
 
+    function convertToSI(value, unit) {
+        const quantity = math
+            .unit(value, unit)
+            .toSI()
+            .toString();
+        const convertedValue = quantity.substring(0, quantity.indexOf(" "));
+        const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
+        return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+    }
+
+    function generateScientificExpression({ lhs, relation, rhs, unit }) {
+        let match = {
+            $and: []
+        };
+        const matchKeyGeneric = `scientificMetadata.${lhs}.value`;
+        const matchKeyMeasurement = `scientificMetadata.${lhs}.valueSI`;
+        const matchUnit = `scientificMetadata.${lhs}.unitSI`;
+        switch (relation) {
+            case "EQUAL_TO_STRING": {
+                match.$and.push({
+                    [matchKeyGeneric]: { $eq: rhs }
+                });
+                break;
+            }
+            case "EQUAL_TO_NUMERIC": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $eq: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $eq: rhs }
+                    });
+                }
+                break;
+            }
+            case "GREATER_THAN": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $gt: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $gt: rhs }
+                    });
+                }
+                break;
+            }
+            case "LESS_THAN": {
+                if (unit.length > 0) {
+                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    match.$and.push({
+                        [matchKeyMeasurement]: { $lt: valueSI }
+                    });
+                    match.$and.push({
+                        [matchUnit]: { $eq: unitSI }
+                    });
+                } else {
+                    match.$and.push({
+                        [matchKeyGeneric]: { $lt: rhs }
+                    });
+                }
+                break;
+            }
+        }
+        return match;
+    }
+
 
 };
