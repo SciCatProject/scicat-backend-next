@@ -790,35 +790,7 @@ module.exports = function(Dataset) {
         }
     };
 
-    Dataset.remoteMethod("reduceDataset", {
-        accepts: [
-            {
-                arg: "dataset",
-                type: "Dataset",
-                required: true,
-                description: "The Dataset to send for reduction",
-                http: {
-                    source: "body"
-                }
-            }
-        ],
-        returns: [
-            {
-                arg: "reduceDataset",
-                type: "object",
-                root: true,
-                description: "The response from the OpenWhisk reduce action"
-            }
-        ],
-        description: "Sends a post request for Dataset reduction to OpenWhisk",
-        http: [
-            {
-                path: "/reduce",
-                verb: "post"
-            }
-        ]
-    });
-
+  
     Dataset.metadataKeys = async function(fields, limits, options) {
         try {
             const blacklist = [
