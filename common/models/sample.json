@@ -83,6 +83,43 @@
                 "path": "/fullquery",
                 "verb": "get"
             }
-        }
+        },
+        "metadataKeys": {
+            "accepts": [
+                {
+                    "arg": "fields",
+                    "type": "object",
+                    "required": false,
+                    "description": "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the sample."
+                },
+                {
+                    "arg": "limits",
+                    "type": "object",
+                    "required": false,
+                    "description": "Define further query parameters like skip, limit, order"
+                },
+                {
+                    "arg": "options",
+                    "type": "object",
+                    "required": false,
+                    "http": "optionsFromRequest"
+                }
+            ],
+            "returns": [
+                {
+                    "arg": "metadataKeys",
+                    "type": "array",
+                    "root": true,
+                    "description": "Array of sample characteristic keys"
+                }
+            ],
+            "description": "Get a list of sample characteristic keys",
+            "http": [
+                {
+                    "path": "/metadataKeys",
+                    "verb": "get"
+                }
+            ]
+        }  
     }
 }
