@@ -268,7 +268,12 @@ module.exports = function (MongoQueryableModel) {
         // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
 
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
-            var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
+            let mongoModel = modelName
+            if (app.models[modelName].definition.settings.mongodb &&
+                app.models[modelName].definition.settings.mongodb.collection) {
+                mongoModel = app.models[modelName].definition.settings.mongodb.collection
+            }
+            var collection = db.collection(mongoModel);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -279,6 +284,7 @@ module.exports = function (MongoQueryableModel) {
                     cb(err, res);
                 });
             });
+
         });
     };
 
@@ -423,7 +429,12 @@ module.exports = function (MongoQueryableModel) {
         // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
-            var collection = db.collection(app.models[modelName].definition.settings.mongodb.collection);
+            let mongoModel = modelName
+            if (app.models[modelName].definition.settings.mongodb &&
+                app.models[modelName].definition.settings.mongodb.collection) {
+                mongoModel = app.models[modelName].definition.settings.mongodb.collection
+            }
+            var collection = db.collection(mongoModel);
             var res = collection.aggregate(pipeline, {
                 allowDiskUse: true
             }, function (err, cursor) {
@@ -446,6 +457,7 @@ module.exports = function (MongoQueryableModel) {
                     cb(err, res);
                 });
             });
+
         });
     };
 
@@ -537,17 +549,25 @@ module.exports = function (MongoQueryableModel) {
         }
     });
 
-    MongoQueryableModel.beforeRemote("prototype.patchAttributes", function(
+    MongoQueryableModel.beforeRemote("prototype.patchAttributes", function (
         ctx,
         unused,
         next
     ) {
         if ("scientificMetadata" in ctx.args.data) {
-            const { scientificMetadata } = ctx.args.data;
+            const {
+                scientificMetadata
+            } = ctx.args.data;
             Object.keys(scientificMetadata).forEach(key => {
                 if (scientificMetadata[key].type === "measurement") {
-                    const { value, unit } = scientificMetadata[key];
-                    const { valueSI, unitSI } = convertToSI(value, unit);
+                    const {
+                        value,
+                        unit
+                    } = scientificMetadata[key];
+                    const {
+                        valueSI,
+                        unitSI
+                    } = convertToSI(value, unit);
                     scientificMetadata[key] = {
                         ...scientificMetadata[key],
                         valueSI,
@@ -560,11 +580,18 @@ module.exports = function (MongoQueryableModel) {
     });
 
 
-    MongoQueryableModel.afterRemote("fullquery", function(ctx, someCollections, next) {
+    MongoQueryableModel.afterRemote("fullquery", function (ctx, someCollections, next) {
         if (ctx.args.fields.scientific) {
-            const { scientific } = ctx.args.fields;
-            someCollections.forEach(({ scientificMetadata }) => {
-                scientific.forEach(({ lhs, unit }) => {
+            const {
+                scientific
+            } = ctx.args.fields;
+            someCollections.forEach(({
+                scientificMetadata
+            }) => {
+                scientific.forEach(({
+                    lhs,
+                    unit
+                }) => {
                     if (
                         lhs in scientificMetadata &&
                         scientificMetadata[lhs].type === "measurement" &&
@@ -577,7 +604,9 @@ module.exports = function (MongoQueryableModel) {
                             )
                             .to(unit);
                         const formatted = math
-                            .format(converted, { precision: 3 })
+                            .format(converted, {
+                                precision: 3
+                            })
                             .toString()
                             .split(" ");
                         scientificMetadata[lhs].value = Number(formatted[0]);
@@ -596,10 +625,18 @@ module.exports = function (MongoQueryableModel) {
             .toString();
         const convertedValue = quantity.substring(0, quantity.indexOf(" "));
         const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
-        return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+        return {
+            valueSI: Number(convertedValue),
+            unitSI: convertedUnit
+        };
     }
 
-    function generateScientificExpression({ lhs, relation, rhs, unit }) {
+    function generateScientificExpression({
+        lhs,
+        relation,
+        rhs,
+        unit
+    }) {
         let match = {
             $and: []
         };
@@ -609,54 +646,83 @@ module.exports = function (MongoQueryableModel) {
         switch (relation) {
             case "EQUAL_TO_STRING": {
                 match.$and.push({
-                    [matchKeyGeneric]: { $eq: rhs }
+                    [matchKeyGeneric]: {
+                        $eq: rhs
+                    }
                 });
                 break;
             }
             case "EQUAL_TO_NUMERIC": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = convertToSI(rhs, unit);
                     match.$and.push({
-                        [matchKeyMeasurement]: { $eq: valueSI }
+                        [matchKeyMeasurement]: {
+                            $eq: valueSI
+                        }
                     });
                     match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
+                        [matchUnit]: {
+                            $eq: unitSI
+                        }
                     });
                 } else {
                     match.$and.push({
-                        [matchKeyGeneric]: { $eq: rhs }
+                        [matchKeyGeneric]: {
+                            $eq: rhs
+                        }
                     });
                 }
                 break;
             }
             case "GREATER_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = convertToSI(rhs, unit);
                     match.$and.push({
-                        [matchKeyMeasurement]: { $gt: valueSI }
+                        [matchKeyMeasurement]: {
+                            $gt: valueSI
+                        }
                     });
                     match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
+                        [matchUnit]: {
+                            $eq: unitSI
+                        }
                     });
                 } else {
                     match.$and.push({
-                        [matchKeyGeneric]: { $gt: rhs }
+                        [matchKeyGeneric]: {
+                            $gt: rhs
+                        }
                     });
                 }
                 break;
             }
             case "LESS_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = convertToSI(rhs, unit);
                     match.$and.push({
-                        [matchKeyMeasurement]: { $lt: valueSI }
+                        [matchKeyMeasurement]: {
+                            $lt: valueSI
+                        }
                     });
                     match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
+                        [matchUnit]: {
+                            $eq: unitSI
+                        }
                     });
                 } else {
                     match.$and.push({
-                        [matchKeyGeneric]: { $lt: rhs }
+                        [matchKeyGeneric]: {
+                            $lt: rhs
+                        }
                     });
                 }
                 break;
