@@ -16,10 +16,7 @@ function formRegistrationXML(publishedData) {
         resourceType,
         creator,
     } = publishedData;
-    const doi =
-        config.doiPrefix +
-        "/" +
-        publishedData["doi"].replace(config.pidPrefix, "");
+    const doi = publishedData["doi"];
     const uniqueCreator = creator.filter(
         (author, i) => creator.indexOf(author) === i
     );
@@ -201,8 +198,8 @@ module.exports = function (PublishedData) {
             });
 
             const fullDoi = pub.doi;
-            const registerMetadataUri = `https://mds.datacite.org/metadata/${fullDoi}`;
-            const registerDoiUri = `https://mds.datacite.org/doi/${fullDoi}`;
+            const registerMetadataUri = `${config.registerMetadataUri}/${fullDoi}`;
+            const registerDoiUri = `${config.registerDoiUri}/${fullDoi}`;
             const OAIServerUri = config.oaiProviderRoute;
 
             let doiProviderCredentials = {
@@ -211,11 +208,6 @@ module.exports = function (PublishedData) {
             };
             if (fs.existsSync(path)) {
                 doiProviderCredentials = JSON.parse(fs.readFileSync(path));
-            } else {
-                doiProviderCredentials = {
-                    username: "removed",
-                    password: "removed",
-                };
             }
             const registerDataciteMetadataOptions = {
                 method: "PUT",
