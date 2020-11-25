@@ -347,6 +347,10 @@ patch:
         patched: '2020-10-27T08:18:38.008Z'
     - snyk > snyk-mvn-plugin > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
         patched: '2020-10-27T08:18:38.008Z'
+    - snyk > snyk-python-plugin > snyk-poetry-lockfile-parser > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-11-25T08:00:12.990Z'
+    - snyk > snyk-python-plugin > snyk-poetry-lockfile-parser > @snyk/cli-interface > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-11-25T08:00:12.990Z'
   'npm:lodash:20180130':
     - loopback-component-mq > rabbot > machina > lodash:
         patched: '2020-08-28T09:32:33.780Z'
