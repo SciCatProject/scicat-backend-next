@@ -114,6 +114,7 @@ module.exports = function (Origdatablock) {
      - paging of results
     */
 
+    // TODO Obsolete this function, now replaced by generic fullquery functionality
     Origdatablock.findFilesByName = function (fields, limits, options, cb) {
         let pipeline = [];
         fields = setFields(fields, options);

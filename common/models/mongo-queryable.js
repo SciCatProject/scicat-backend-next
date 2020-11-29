@@ -137,6 +137,7 @@ module.exports = function (MongoQueryableModel) {
         // text: fulltext search
         // mode: additional query expression
 
+        let modeMatch = null;
         Object.keys(fields).map(function (key) {
             // split in facet and non-facet conditions
             if (facets.indexOf(key) < 0) {
@@ -168,6 +169,7 @@ module.exports = function (MongoQueryableModel) {
                     pipeline.push({
                         $match: currentExpression
                     });
+                    modeMatch=currentExpression
                 } else if (key === "userGroups") {
                     // no group conditions if global access role
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
@@ -256,14 +258,47 @@ module.exports = function (MongoQueryableModel) {
                 return
             }
         });
-        // add pipeline to count all documents
-        facetObject["all"] = [{
-                $match: facetMatch
-            },
-            {
-                $count: "totalSets"
+
+        // add pipeline to count all documents, take into account unwinding case for (Orig)Datablock
+        // TODO correct facet handling with actual facets (not just "all") when (Orig)Datablock is used
+    
+        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
+            // console.log("Adding additional pipeline steps for unwinding file names:")
+            if (modeMatch) {
+                facetObject["all"] = [{
+                        $match: facetMatch
+                    },
+                    {
+                        "$unwind": "$dataFileList"
+                    },
+                    {
+                        "$match": modeMatch
+                    }, {
+                        $count: "totalSets"
+                    }
+                ];
+            } else {
+                facetObject["all"] = [{
+                    $match: facetMatch
+                },
+                {
+                    "$unwind": "$dataFileList"
+                }, {
+                    $count: "totalSets"
+                }
+            ];
+
             }
-        ];
+
+        } else {
+            facetObject["all"] = [{
+                    $match: facetMatch
+                },
+                {
+                    $count: "totalSets"
+                }
+            ];
+        }
 
         pipeline.push({
             $facet: facetObject
@@ -396,7 +431,7 @@ module.exports = function (MongoQueryableModel) {
         });
 
         // add further pipeline steps for OrigDatablock
-        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock" ) {
+        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
             // console.log("Adding additional pipeline steps for unwinding file names:")
             pipeline.push({
                 "$project": {
