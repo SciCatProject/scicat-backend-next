@@ -8,6 +8,7 @@ module.exports = function (MongoQueryableModel) {
     var app = require("../../server/server");
 
     function loopbackTypeOf(modelName, key) {
+        // console.log("type extraction:", modelName, key)
         // extract type. For arrays this returns undefined. See 
         // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
         let property = app.models[modelName].definition.properties[key]
@@ -20,12 +21,14 @@ module.exports = function (MongoQueryableModel) {
             property = app.models["DerivedDataset"].definition.properties[key]
         }
         if (!property) {
-            console.log("Property undefined:")
+            console.log("Property undefined for :", modelName, key)
+            return "string"
+        } else {
+            const type = typeof property.type === 'string' ?
+                property.type :
+                property.type.modelName || property.type.name;
+            return type
         }
-        const type = typeof property.type === 'string' ?
-            property.type :
-            property.type.modelName || property.type.name;
-        return type
     }
 
     function searchExpression(modelName, fieldName, value) {
@@ -310,6 +313,7 @@ module.exports = function (MongoQueryableModel) {
         // construct match conditions from fields value
 
         // TOOD avoid code duplication of large parts with fullfacet
+        let modeMatch = null;
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== "null") {
                 if (key === "text") {
@@ -340,6 +344,7 @@ module.exports = function (MongoQueryableModel) {
                     pipeline.push({
                         $match: currentExpression
                     });
+                    modeMatch = currentExpression;
                 } else if (key === "userGroups") {
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
                         pipeline.push({
@@ -389,6 +394,25 @@ module.exports = function (MongoQueryableModel) {
                 }
             }
         });
+
+        // add further pipeline steps for OrigDatablock
+        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock" ) {
+            // console.log("Adding additional pipeline steps for unwinding file names:")
+            pipeline.push({
+                "$project": {
+                    "dataFileList": 1,
+                    "datasetId": 1,
+                    "ownerGroup": 1
+                }
+            }, {
+                "$unwind": "$dataFileList"
+            })
+            if (modeMatch) {
+                pipeline.push({
+                    "$match": modeMatch
+                })
+            }
+        }
 
         // }
         // final paging section ===========================================================
@@ -730,6 +754,4 @@ module.exports = function (MongoQueryableModel) {
         }
         return match;
     }
-
-
 };
