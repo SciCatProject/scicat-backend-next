@@ -30,13 +30,6 @@
             "required": true,
             "index": true,
             "description": "Total size in bytes of all files contained in the dataFileList"
-        },
-        "dataFileList": {
-            "type": [
-                "Datafile"
-            ],
-            "required": true,
-            "description": "List of files contained in the linked dataset. Files can be regular files, folders and softlinks. All file paths are relative paths with respect to the sourceFolder location of the linked dataset."
         }
     },
     "validations": [],
@@ -46,6 +39,15 @@
             "model": "Dataset",
             "foreignKey": "",
             "required": true
+        },
+        "files": {
+            "type": "embedsMany",
+            "model": "Datafile",
+            "property": "dataFileList",
+            "options": {
+                "validate": true,
+                "forceId": false
+            }
         }
     },
     "acls": [{

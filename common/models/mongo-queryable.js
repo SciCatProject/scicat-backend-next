@@ -47,7 +47,7 @@ module.exports = function (MongoQueryableModel) {
             };
         }
         const type = loopbackTypeOf(modelName, fieldName)
-        //console.debug("Derived Type:", type
+        console.debug("Loopback Type:", type)
 
         // for now treat nested keys as strings, not yet tested
         // may has to be treated outside of this function as is done
@@ -342,7 +342,7 @@ module.exports = function (MongoQueryableModel) {
         fields = setFields(fields, options);
         // TODO this should be derived from model definition field options.mongodb.collection in future
         let modelName = options.modelName
-        // console.log("Inside fullquery:options",options)
+        // console.log("Inside fullquery:fields,limits,options",fields,limits,options)
         // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
         // let matchJoin = {}
         // construct match conditions from fields value
@@ -369,6 +369,7 @@ module.exports = function (MongoQueryableModel) {
                 }
                 // mode is not a field , just an object for containing a match clause
                 else if (key === "mode") {
+                    // console.log("Mode key")
                     // substitute potential id field in fields
                     let idField = app.models[modelName].getIdName();
                     let currentExpression = JSON.parse(JSON.stringify(fields[key]))
