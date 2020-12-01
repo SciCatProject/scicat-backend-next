@@ -8,10 +8,12 @@
         "validateUpsert": true
     },
     "replaceOnPUT": false,
-    "MessageQueue": {
-        "producers": {
-            "publishJob": {
-                "exchange": "jobs.write"
+    "mixins": {
+        "MessageQueue": {
+            "producers": {
+                "publishJob": {
+                    "exchange": "jobs.write"
+                }
             }
         }
     },
