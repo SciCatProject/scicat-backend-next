@@ -2,16 +2,16 @@
 
 const config = require("../config.local");
 const logger = require("../../common/logger");
-
+const amqp =require("amqplib")
 module.exports = function(app) {
     const rabbitMqEnabled = config.rabbitmq ? config.rabbitmq.enabled : false;
     if (rabbitMqEnabled) {
         let url;
         if (config.rabbitmq.host) {
             if (config.rabbitmq.port) {
-                url = `amqp://${user}:${pass}@${config.rabbitmq.host}:${config.rabbitmq.port}`;
+                url = `amqp://${config.rabbitmq.user}:${config.rabbitmq.pass}@${config.rabbitmq.host}:${config.rabbitmq.port}`;
             } else {
-                url = `amqp://${user}:${pass}@${config.rabbitmq.host}`;
+                url = `amqp://${config.rabbitmq.user}:${config.rabbitmq.pass}@${config.rabbitmq.host}`;
             }
 
             logger.logInfo("Connecting to RabbitMq", { url });
