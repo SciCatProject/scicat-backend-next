@@ -29,7 +29,14 @@ exports.transferSizeToDataset = function (obj, sizeField, numFilesField, ctx, ne
                     error.message = 'DatasetId not found. Could be access rule problem - test accessGroups for id: '+instance.pid;
                     next(error)
                 } else {
-                    datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], numFilesField, instance["dataFileList"].length, next)
+                    datasetInstance.updateSize(
+                        datasetId,
+                        sizeField,
+                        instance[sizeField],
+                        numFilesField,
+                        instance["dataFileList"].length,
+                        next
+                    );
                 }
             })
         } else {
@@ -144,7 +151,7 @@ function updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next) {
         // modify ctx.data to keep embedded data
         ctx.data = JSON.parse(JSON.stringify(ctxdatacopy))
         if (ctx.data && ctx.data.datasetlifecycle) {
-            changes = JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
+            const changes = JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
             ctx.data.datasetlifecycle = JSON.parse(JSON.stringify(datasetInstances[index].datasetlifecycle))
             // apply changes
             for (var k in changes) ctx.data.datasetlifecycle[k] = changes[k];
@@ -212,8 +219,8 @@ exports.keepHistory = function (ctx, next) {
         }, ctx.options, function (err, datasetInstances) {
             // console.log("++++++ Inside keephistory: Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
             // solve asynch call inside for loop by recursion
-            index = datasetInstances.length - 1
-            ctxdatacopy = JSON.parse(JSON.stringify(ctx.data))
+            let index = datasetInstances.length - 1
+            const ctxdatacopy = JSON.parse(JSON.stringify(ctx.data))
             updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
         })
     }
