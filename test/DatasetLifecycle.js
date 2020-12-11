@@ -305,7 +305,11 @@ describe('Test facet and filter queries', () => {
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 //console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                res.body.should.have.nested
+                    .property(
+                        "history[1].datasetlifecycle.archiveStatusMessage.currentValue"
+                    )
+                    .and.equal("justAnotherTestMessage");
 
                 done();
             });
@@ -320,7 +324,11 @@ describe('Test facet and filter queries', () => {
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 // console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                res.body.should.have.nested
+                    .property(
+                        "history[0].datasetlifecycle.archiveStatusMessage.currentValue"
+                    )
+                    .and.equal("justAnotherTestMessage");
                 done();
             });
 
