@@ -24,7 +24,9 @@ module.exports = {
       enabled: false,
       host: null,
       port: null,
-      queue: null
+      queue: null,
+      user: null,
+      pass: null
     },
     smtpSettings: {
       host: 'SMTP.YOUR.DOMAIN',
