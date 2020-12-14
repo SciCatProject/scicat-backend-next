@@ -29,7 +29,14 @@ exports.transferSizeToDataset = function (obj, sizeField, numFilesField, ctx, ne
                     error.message = 'DatasetId not found. Could be access rule problem - test accessGroups for id: '+instance.pid;
                     next(error)
                 } else {
-                    datasetInstance.updateSize(datasetId, sizeField, instance[sizeField], numFilesField, instance["dataFileList"].length, next)
+                    datasetInstance.updateSize(
+                        datasetId,
+                        sizeField,
+                        instance[sizeField],
+                        numFilesField,
+                        instance["dataFileList"].length,
+                        next
+                    );
                 }
             })
         } else {
@@ -144,7 +151,7 @@ function updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next) {
         // modify ctx.data to keep embedded data
         ctx.data = JSON.parse(JSON.stringify(ctxdatacopy))
         if (ctx.data && ctx.data.datasetlifecycle) {
-            changes = JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
+            const changes = JSON.parse(JSON.stringify(ctx.data.datasetlifecycle))
             ctx.data.datasetlifecycle = JSON.parse(JSON.stringify(datasetInstances[index].datasetlifecycle))
             // apply changes
             for (var k in changes) ctx.data.datasetlifecycle[k] = changes[k];
@@ -177,9 +184,17 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         // ignore packedsize and size updates for history.
         // TODO: this ignores any update which contains these fields among other chanegs
         if (!ctx.data.size && !ctx.data.packedSize) {
+            const { updatedAt, updatedBy, ...updatedFields } = ctxdatacopy;
+            const historyItem = Object.assign({}, ctxdatacopy);
+            Object.keys(updatedFields).forEach((updatedField) => {
+                historyItem[updatedField] = {
+                    currentValue: ctxdatacopy[updatedField],
+                    previousValue: datasetInstance[updatedField],
+                };
+            });
             // the following triggers a before save hook . endless recursion must be prevented there
             // console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy).replace(/\$/g, "")), function (err, instance) {
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")), function (err, instance) {
                 if (err) {
                     console.log("Saving auto history failed:", err)
                 }
@@ -212,8 +227,8 @@ exports.keepHistory = function (ctx, next) {
         }, ctx.options, function (err, datasetInstances) {
             // console.log("++++++ Inside keephistory: Found datasets to be updated:", JSON.stringify(datasetInstances, null, 3))
             // solve asynch call inside for loop by recursion
-            index = datasetInstances.length - 1
-            ctxdatacopy = JSON.parse(JSON.stringify(ctx.data))
+            let index = datasetInstances.length - 1
+            const ctxdatacopy = JSON.parse(JSON.stringify(ctx.data))
             updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
         })
     }
