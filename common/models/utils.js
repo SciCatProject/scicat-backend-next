@@ -184,20 +184,16 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         // ignore packedsize and size updates for history.
         // TODO: this ignores any update which contains these fields among other chanegs
         if (!ctx.data.size && !ctx.data.packedSize) {
-            const updatedField = Object.keys(ctxdatacopy).find(
-                (field) => field !== "updatedAt" || field !== "updatedBy"
-            );
-            const historyItem = {
-                [updatedField]: {
+            const { updatedAt, updatedBy, ...updatedFields } = ctxdatacopy;
+            Object.keys(updatedFields).forEach((updatedField) => {
+                ctxdatacopy[updatedField] = {
                     currentValue: ctxdatacopy[updatedField],
                     previousValue: datasetInstance[updatedField],
-                },
-                updatedAt: ctxdatacopy.updatedAt,
-                updatedBy: ctxdatacopy.updatedBy,
-            };
+                };
+            });
             // the following triggers a before save hook . endless recursion must be prevented there
             // console.log("=====Calling create with ctx.data:", JSON.stringify(ctx.data, null, 3))
-            datasetInstance.historyList.create(JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")), function (err, instance) {
+            datasetInstance.historyList.create(JSON.parse(JSON.stringify(ctxdatacopy).replace(/\$/g, "")), function (err, instance) {
                 if (err) {
                     console.log("Saving auto history failed:", err)
                 }
