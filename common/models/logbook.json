@@ -29,9 +29,15 @@
       "permission": "DENY"
     },
     {
-      "accessType": "*",
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "$authenticated",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "ingestor",
       "permission": "ALLOW"
     }
   ],
@@ -116,6 +122,43 @@
         {
           "path": "/:name/:filters",
           "verb": "get"
+        }
+      ]
+    },
+    "sendMessage": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "data",
+          "type": "object",
+          "required": true,
+          "description": "JSON object with the key `message`",
+          "http": {
+            "source": "body"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "eventId",
+          "type": "object",
+          "root": true,
+          "description": "Object containing the event id of the message"
+        }
+      ],
+      "description": "Send message to logbook",
+      "http": [
+        {
+          "path": "/:name/message",
+          "verb": "post"
         }
       ]
     }

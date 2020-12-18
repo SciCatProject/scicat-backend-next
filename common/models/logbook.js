@@ -144,6 +144,36 @@ module.exports = function(Logbook) {
             return [];
         }
     };
+
+    /**
+     * Send message to logbook
+     * @param {string} name The name of the logbook
+     * @param {object} data JSON object with the key `message`
+     * @returns {object} Object containing the event id of the message
+     */
+
+    Logbook.sendMessage = async function (name, data) {
+        if (logbookEnabled) {
+            try {
+                const accessToken = await scichatLogin(scichatUser, scichatPass);
+                const response = await superagent
+                    .post(
+                        scichatBaseUrl +
+                            `/Rooms/${name}/message?access_token=${accessToken}`
+                    )
+                    .send(data);
+                return response.body;
+            } catch (error) {
+                logger.logError(err.message, {
+                    location: "Logbook.sendMessage",
+                    name,
+                    message
+                });
+            }
+        } else {
+            return [];
+        }
+    };
 };
 
 /**
