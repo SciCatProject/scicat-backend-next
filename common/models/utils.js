@@ -1,4 +1,5 @@
 var app = require('../../server/server');
+const config = require('../../server/config.local');
 var moment = require('moment-timezone');
 var exports = module.exports = {};
 // Utility function to transfer size information from the datablock storage to the related dataset
@@ -197,6 +198,16 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
             datasetInstance.historyList.create(JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")), function (err, instance) {
                 if (err) {
                     console.log("Saving auto history failed:", err)
+                }
+                if (config.logbookEnabled) {
+                    const Logbook = app.models.Logbook;
+                    const user = updatedBy.replace('ldap.', '');
+                    const datasetPid = datasetInstance.pid;
+                    const proposalId = datasetInstance.proposalId;
+                    Object.keys(updatedFields).forEach((updatedField) => {
+                        const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
+                        Logbook.sendMessage(proposalId, {message});
+                    })
                 }
                 //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
                 index--
