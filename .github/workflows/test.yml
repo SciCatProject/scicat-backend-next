@@ -14,5 +14,5 @@ jobs:
                 cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
                 docker-compose down --remove-orphans
                 docker-compose pull
-                docker-compose up --exit-code-from catamel
+                docker-compose up --build --exit-code-from catamel
                 docker-compose down
