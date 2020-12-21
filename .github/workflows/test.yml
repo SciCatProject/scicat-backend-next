@@ -1,19 +1,19 @@
-name: Unit tests
+# name: Unit tests
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-    test:
-        name: Unit Tests
-        runs-on: ubuntu-latest
+# jobs:
+#     test:
+#         name: Unit Tests
+#         runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v1
-            - name: Run tests in docker-compose
-              run: |
-                cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
-                docker-compose down --remove-orphans
-                docker-compose pull
-                DOCKER_BUILDKIT=1 docker-compose build --no-cache
-                docker-compose up --exit-code-from catamel
-                docker-compose down
+#         steps:
+#             - uses: actions/checkout@v1
+#             - name: Run tests in docker-compose
+#               run: |
+#                 cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
+#                 docker-compose down --remove-orphans
+#                 docker-compose pull
+#                 DOCKER_BUILDKIT=1 docker-compose build --no-cache
+#                 docker-compose up --exit-code-from catamel
+#                 docker-compose down
