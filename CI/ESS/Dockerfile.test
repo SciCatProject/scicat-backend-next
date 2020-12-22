@@ -22,6 +22,7 @@ RUN npm ci --no-optional
 COPY --chown=node:node . /home/node/app
 COPY --chown=node:node CI/ESS/envfiles/config.ess.js /home/node/app/server/config.local.js
 COPY --chown=node:node CI/ESS/envfiles/middleware.json /home/node/app/server/
+RUN true
 COPY --chown=node:node CI/ESS/envfiles/providers.unittests.json /home/node/app/server/providers.json
 COPY --chown=node:node CI/ESS/envfiles/datasources.json /home/node/app/server/
 COPY --chown=node:node CI/ESS/envfiles/component-config.json /home/node/app/server/
