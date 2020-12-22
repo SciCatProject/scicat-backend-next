@@ -26,6 +26,7 @@ RUN true
 COPY --chown=node:node CI/ESS/envfiles/providers.unittests.json /home/node/app/server/providers.json
 COPY --chown=node:node CI/ESS/envfiles/datasources.json /home/node/app/server/
 COPY --chown=node:node CI/ESS/envfiles/component-config.json /home/node/app/server/
+RUN true
 COPY --chown=node:node CI/ESS/envfiles/settings.sample.json /home/node/app/test/config/settings.json
 COPY --chown=node:node CI/ESS/wait.sh /home/node/app/
 
