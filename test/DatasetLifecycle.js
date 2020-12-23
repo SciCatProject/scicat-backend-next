@@ -304,8 +304,17 @@ describe('Test facet and filter queries', () => {
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                //console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[1].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                // console.log("Resulting history in first raw:", JSON.stringify(res.body, null, 4))
+                res.body.should.have.nested
+                    .property(
+                        "history[1].datasetlifecycle.previousValue.archiveStatusMessage"
+                    )
+                    .and.equal("dataArchivedOnTape");
+                res.body.should.have.nested
+                    .property(
+                        "history[1].datasetlifecycle.currentValue.archiveStatusMessage"
+                    )
+                    .and.equal("justAnotherTestMessage");
 
                 done();
             });
@@ -320,7 +329,16 @@ describe('Test facet and filter queries', () => {
             .expect('Content-Type', /json/)
             .end((err, res) => {
                 // console.log("Resulting history in second raw:", JSON.stringify(res.body, null, 4))
-                res.body.should.have.nested.property('history[0].datasetlifecycle.archiveStatusMessage').and.equal("justAnotherTestMessage");
+                res.body.should.have.nested
+                    .property(
+                        "history[0].datasetlifecycle.previousValue.archiveStatusMessage"
+                    )
+                    .and.equal("datasetCreated");
+                res.body.should.have.nested
+                    .property(
+                        "history[0].datasetlifecycle.currentValue.archiveStatusMessage"
+                    )
+                    .and.equal("justAnotherTestMessage");
                 done();
             });
 
