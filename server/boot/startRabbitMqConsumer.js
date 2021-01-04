@@ -85,7 +85,7 @@ module.exports = function (app) {
             });
         }
     }
-    // const {maxReconnectionAttempts, reconnectionInterval} = config.rabbitmq;
+
     let connectionAttempts = 0;
     const connect = () => {
         
@@ -114,11 +114,11 @@ module.exports = function (app) {
                 logger.logError("RABBITMQ - Reconnecting", {
                     location: "connection.on close",
                 });
-                if (connectionAttempts < maxReconnectionAttempts) {
+                if (connectionAttempts < config.rabbitmq.maxReconnectionAttempts) {
                     console.log("RABBITMQ - Connection attempt " + connectionAttempts)
                     connectionAttempts++;
                     // try to connect again after some amount of time
-                    return setTimeout(connect, reconnectionInterval, connectionDetails);
+                    return setTimeout(connect, config.rabbitmq.reconnectionInterval, connectionDetails);
                 }
                 console.log("RABBITMQ - Unable to reconnect");
                 sendNotificationEmail();
