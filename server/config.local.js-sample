@@ -21,12 +21,14 @@ module.exports = {
       service: "service"
     },
     rabbitmq: {
-      enabled: false,
-      host: null,
-      port: null,
-      queue: null,
-      user: null,
-      pass: null
+        enabled: false,
+        maxReconnectionAttempts: null,
+        reconnectionInterval: null, //in ms
+        host: null,
+        port: null,
+        username: null,
+        password: null,
+        queue: null
     },
     smtpSettings: {
       host: 'SMTP.YOUR.DOMAIN',
