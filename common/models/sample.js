@@ -47,9 +47,6 @@ module.exports = function(Sample) {
         }
     }
 
-<<<<<<< HEAD
-    // TODO simplify the isPublished handling, bring it into one location
-=======
     Sample.beforeRemote("prototype.patchAttributes", function (
         ctx,
         unused,
@@ -72,7 +69,6 @@ module.exports = function(Sample) {
         next();
     });
 
->>>>>>> develop
     Sample.afterRemote("find", function (ctx, modelInstance, next) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
