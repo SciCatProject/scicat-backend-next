@@ -21,19 +21,19 @@
     "helmet": "^3.23.3",
     "jsonwebtoken": "^8.5.1",
     "kafka-node": "^5.0.0",
-    "loopback": "^3.27.0",
+    "loopback": "^3.28.0",
     "loopback-boot": "^2.28.0",
     "loopback-component-explorer": "^6.5.1",
     "loopback-component-model-diagram": "^0.4.2",
     "loopback-component-mq": "^2.2.5",
     "loopback-component-passport": "^3.12.0",
     "loopback-component-visualizer": "^1.2.1",
-    "loopback-connector-mongodb": "^5.4.0",
+    "loopback-connector-mongodb": "^5.5.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
-    "mathjs": "^7.5.1",
+    "mathjs": "^7.6.0",
     "moment": "^2.29.1",
-    "moment-timezone": "^0.5.31",
-    "nodemailer": "^6.4.13",
+    "moment-timezone": "^0.5.32",
+    "nodemailer": "^6.4.17",
     "passport-ldapauth": "^2.1.4",
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
@@ -43,7 +43,7 @@
     "strong-error-handler": "3.5.0",
     "superagent": "^5.3.1",
     "uuid": "^7.0.3",
-    "snyk": "^1.420.1"
+    "snyk": "^1.437.2"
   },
   "optionalDependencies": {
     "loopback-connector-kafka": "^0.2.1"

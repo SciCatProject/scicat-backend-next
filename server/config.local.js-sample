@@ -10,6 +10,8 @@ module.exports = {
     site: 'YOUR-SITE',
     facilities: ["Facility1", "Facility2"],
     metadataKeysReturnLimit: 100,
+    registerMetadataUri : "https://mds.test.datacite.org/metadata",
+    registerDoiUri : "https://mds.test.datacite.org/doi",
     grayLog: {
       enabled: false,
       host: "my.graylog.host",
@@ -19,10 +21,14 @@ module.exports = {
       service: "service"
     },
     rabbitmq: {
-      enabled: false,
-      host: null,
-      port: null,
-      queue: null
+        enabled: false,
+        maxReconnectionAttempts: null,
+        reconnectionInterval: null, //in ms
+        host: null,
+        port: null,
+        username: null,
+        password: null,
+        queue: null
     },
     smtpSettings: {
       host: 'SMTP.YOUR.DOMAIN',

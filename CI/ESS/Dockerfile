@@ -1,7 +1,7 @@
 # gives a docker image below 200 MB
 FROM node:14-alpine
 RUN apk update && apk upgrade && \
-    apk add --no-cache git
+    apk add --no-cache git openldap-clients
 
 ENV NODE_ENV "production"
 ENV PORT 3000

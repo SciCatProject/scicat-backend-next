@@ -1,8 +1,7 @@
 'use strict';
 var config = require('../../server/config.local');
 var DataSource = require('loopback-datasource-juggler').DataSource;
-
-var nodemailer = require('nodemailer');
+var utils = require('./utils');
 var config = require('../../server/config.local');
 var app = require('../../server/server');
 
@@ -13,37 +12,6 @@ function isEmptyObject(obj) {
         }
     }
     return true;
-}
-
-function sendMail(to, cc, subjectText, mailText, e, next) {
-    if ('smtpSettings' in config && 'smtpMessage' in config) {
-        let transporter = nodemailer.createTransport(config.smtpSettings);
-        transporter.verify(function (error, success) {
-            if (error) {
-                console.log(error);
-                return next(error);
-            } else {
-                console.log('      Server is ready to send message to ', to);
-                var message = Object.assign({}, config.smtpMessage);
-                message['to'] = to;
-                if (cc != "") {
-                    message['cc'] = cc
-                }
-                message['subject'] += subjectText
-                message['text'] = mailText
-                transporter.sendMail(message, function (err, info) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log('      Email sent');
-                    }
-                    return next(e);
-                });
-            }
-        });
-    } else {
-        return next(e)
-    }
 }
 
 
@@ -96,21 +64,21 @@ function sendStartJobEmail(job, ctx, idList, policy, next) {
                 if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
                     to += "," + policy.archiveEmailsToBeNotified.join()
                 }
-                sendMail(to, "", subjectText, mailText, null, next)
+                utils.sendMail(to, "", subjectText, mailText, null, next)
                 return
             }
             if (ctx.instance.type == 'retrieve' && policy.retrieveEmailNotification) {
                 if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
                     to += "," + policy.retrieveEmailsToBeNotified.join()
                 }
-                sendMail(to, "", subjectText, mailText, null, next)
+                utils.sendMail(to, "", subjectText, mailText, null, next)
                 return
             }
             return next()
         })
     } else {
         // other jobs like reset jobs
-        sendMail(to, "", subjectText, mailText, null, next)
+        utils.sendMail(to, "", subjectText, mailText, null, next)
         return
     }
 }
@@ -238,22 +206,22 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
                 if (policy.hasOwnProperty('archiveEmailsToBeNotified')) {
                     to += "," + policy.archiveEmailsToBeNotified.join()
                 }
-                sendMail(to, cc, subjectText, mailText, null, next)
+                utils.sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
             if (ctx.instance.type == 'retrieve' && (policy.retrieveEmailNotification || failure)) {
                 if (policy.hasOwnProperty('retrieveEmailsToBeNotified')) {
                     to += "," + policy.retrieveEmailsToBeNotified.join()
                 }
-                sendMail(to, cc, subjectText, mailText, null, next)
+                utils.sendMail(to, cc, subjectText, mailText, null, next)
                 return
             }
             next()
-            //sendMail(to, cc, subjectText, mailText, null, next)
+            //utils.sendMail(to, cc, subjectText, mailText, null, next)
         })
     } else {
         // other jobs like reset jobs
-        sendMail(to, "", subjectText, mailText, null, next)
+        utils.sendMail(to, "", subjectText, mailText, null, next)
     }
 }
 
@@ -380,7 +348,7 @@ function TestAllDatasets(job, ctx, idList, policy, next) {
             mailText += 'Requested dataset ids:\n======================\n' + JSON.stringify(idList, null, 3);
             mailText += '\n\nFound dataset ids:\n======================\n' + JSON.stringify(p, null, 3);
             let to = ctx.instance.emailJobInitiator
-            sendMail(to, "", subjectText, mailText, e, next)
+            utils.sendMail(to, "", subjectText, mailText, e, next)
         } else {
             //test if all datasets are in archivable state
             if (ctx.instance.type == "archive") {

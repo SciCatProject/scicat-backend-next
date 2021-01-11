@@ -227,4 +227,30 @@ describe("Simple Dataset tests", () => {
                 done();
             });
     });
+
+    it("should fetch a filtered array of datasets", function (done) {
+        const query = JSON.stringify({isPublished: false, text: "test"});
+        const limits = JSON.stringify({
+            skip: 0,
+            limit: 3,
+            order: "datasetName:desc",
+        });
+        request(app)
+            .get(
+                "/api/v3/Datasets/fullquery?fields=" +
+                    query +
+                    "&limits=" +
+                    limits +
+                    "&access_token=" +
+                    accessToken
+            )
+            .set("Accept", "application/json")
+            .expect(200)
+            .expect("Content-Type", /json/)
+            .end((err, res) => {
+                if (err) return done(err);
+                res.body.should.be.an("array");
+                done();
+            });
+    });
 });
