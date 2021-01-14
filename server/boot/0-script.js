@@ -70,7 +70,7 @@ module.exports = function(app) {
         });
 
         var textSearchCollections = [
-            "Dataset", "Sample", "Proposal", "OrigDatablock"
+            "Dataset", "Sample", "Proposal", "OrigDatablock", "Job", "PublishedData", "Logbook", "Policy","Instrument"
         ]
         textSearchCollections.forEach(function(coll) {
             db.collection(coll).createIndex(
