@@ -212,7 +212,9 @@ async function getUserProposals(userId) {
     const Role = app.models.Role;
     const Proposal = app.models.Proposal;
 
-    let options = {};
+    let options = {
+        modelName: "Proposal"
+    };
 
     try {
         const user = await User.findById(userId);
@@ -256,12 +258,16 @@ async function getUserProposals(userId) {
             options.currentGroups = roleNameList;
         }
 
-        const proposals = await Proposal.fullquery({}, {}, options);
+        // const proposals = await Proposal.fullquery({}, {}, options);
+        const proposals = await Proposal.find({
+            where: { ownerGroup: { inq: options.currentGroups } },
+        });
         return proposals.map(proposal => proposal.proposalId);
     } catch (err) {
         logger.logError(err.message, {
             location: "Logbook.getUserProposals",
-            userId
+            userId,
+            options
         });
     }
 }

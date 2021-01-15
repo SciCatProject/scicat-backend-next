@@ -29,10 +29,17 @@
       "permission": "DENY"
     },
     {
-      "accessType": "READ",
+      "accessType": "*",
       "principalType": "ROLE",
       "principalId": "$authenticated",
       "permission": "ALLOW"
+    },
+    {
+      "accessType": "EXECUTE",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "DENY",
+      "property": "sendMessage"
     }
   ],
   "methods": {
