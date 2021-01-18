@@ -212,35 +212,27 @@ async function getUserProposals(userId) {
     const Role = app.models.Role;
     const Proposal = app.models.Proposal;
 
-    let options = {
-        modelName: "Proposal"
-    };
+    let options = {};
 
     try {
         const user = await User.findById(userId);
-        options.currentUser = user.username;
-        options.currentUserEmail = user.email;
-
         const userIdentity = await UserIdentity.findOne({
             where: { userId }
         });
+
         if (!!userIdentity) {
-            let groups = [];
+            options.currentGroups = [];
             if (userIdentity.profile) {
-                options.currentUser = userIdentity.profile.username;
-                options.currentUserEmail = userIdentity.profile.email;
-                groups = userIdentity.profile.accessGroups;
+                let groups = userIdentity.profile.accessGroups;
                 if (!groups) {
                     groups = [];
                 }
                 const regex = new RegExp(userIdentity.profile.email, "i");
 
                 const shareGroup = await ShareGroup.find({
-                    where: { members: { regexp: regex } }
+                    where: { members: { regexp: regex } },
                 });
                 groups = [...groups, ...shareGroup.map(({ id }) => String(id))];
-                options.currentGroups = groups;
-            } else {
                 options.currentGroups = groups;
             }
         } else {
@@ -258,7 +250,6 @@ async function getUserProposals(userId) {
             options.currentGroups = roleNameList;
         }
 
-        // const proposals = await Proposal.fullquery({}, {}, options);
         const proposals = await Proposal.find({
             where: { ownerGroup: { inq: options.currentGroups } },
         });
