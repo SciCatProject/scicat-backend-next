@@ -150,11 +150,6 @@
             "model": "PublishedData",
             "foreignKey": ""
         },
-        "samples": {
-            "type": "hasMany",
-            "model": "Sample",
-            "foreignKey": ""
-        },
         "origdatablocks": {
             "type": "hasMany",
             "model": "OrigDatablock",

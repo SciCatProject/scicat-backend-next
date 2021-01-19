@@ -38,8 +38,8 @@
             "foreignKey": ""
         },
         "datasets": {
-            "type": "belongsTo",
-            "model": "Dataset",
+            "type": "hasMany",
+            "model": "RawDataset",
             "foreignKey": ""
         }
     },
