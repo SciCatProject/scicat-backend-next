@@ -3,14 +3,15 @@
     "description": "Models describing the characteristics of the samples to be investigated. Raw datasets should be linked to such sample definitions.",
     "base": "Ownable",
     "strict": true,
-    "idInjection": true,
+    "idInjection": false,
     "options": {
         "validateUpsert": true
     },
     "properties": {
         "sampleId": {
             "type": "string",
-            "id": true
+            "id": true,
+            "defaultFn": "uuidv4"
         },
         "owner": {
             "type": "string"

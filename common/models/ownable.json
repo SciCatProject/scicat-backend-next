@@ -3,7 +3,7 @@
   "description": "This is the base model for all models which 'belong' to entities like pgroups. It is crucial to implemtn a user dependent access control to datasets or other ownable documents.",
   "base": "MongoQueryableModel",
   "strict": true,
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },

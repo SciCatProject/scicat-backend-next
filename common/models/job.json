@@ -3,7 +3,7 @@
     "description": "This collection keeps information about jobs to be excuted in external systems. In particular it keeps information about the jobs submitted for archiving or retrieving datasets stored inside an archive system. It can also be used to keep track of analysis jobs e.g. for automated analysis workflows.",
     "base": "MongoQueryableModel",
     "strict": true,
-    "idInjection": true,
+    "idInjection": false,
     "options": {
         "validateUpsert": true
     },
@@ -18,6 +18,11 @@
         }
     },
     "properties": {
+        "id": {
+            "type": "string",
+            "id": true,
+            "defaultFn": "uuidv4"
+        },
         "emailJobInitiator": {
             "type": "string",
             "required": true,
@@ -50,7 +55,7 @@
         },
         "datasetList": {
             "type": "object",
-            "required": true,
+            "required": false,
             "description": "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected"
         },
         "jobResultObject": {
