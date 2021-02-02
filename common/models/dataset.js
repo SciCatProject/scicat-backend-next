@@ -722,8 +722,8 @@ module.exports = function(Dataset) {
 
             // ensure that no more than MAXLIMIT someCollections are read for metadata key extraction
             let MAXLIMIT;
-            if(config.metadataDatasetsReturnLimit) {
-                MAXLIMIT = config.metadataDatasetsReturnLimit;
+            if(config.metadataParentInstancesReturnLimit) {
+                MAXLIMIT = config.metadataParentInstancesReturnLimit;
 
                 let lm;
 
