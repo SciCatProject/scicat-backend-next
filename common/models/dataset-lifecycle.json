@@ -3,7 +3,7 @@
   "description": "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
   "base": "Model",
   "strict": true,
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },

@@ -3,7 +3,7 @@
     "description": "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
     "base": "Ownable",
     "strict": true,
-    "idInjection": true,
+    "idInjection": false,
     "indexes": {
         "datasetId_index": {
             "keys": {
@@ -22,8 +22,8 @@
     "properties": {
         "id": {
             "type": "string",
-            "required": true,
-            "description": "Automatically created ID"
+            "id": true,
+            "defaultFn": "uuidv4"
         },
         "size": {
             "type": "number",

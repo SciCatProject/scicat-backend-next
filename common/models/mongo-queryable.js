@@ -169,7 +169,7 @@ module.exports = function (MongoQueryableModel) {
                     pipeline.push({
                         $match: currentExpression
                     });
-                    modeMatch=currentExpression
+                    modeMatch = currentExpression
                 } else if (key === "userGroups") {
                     // no group conditions if global access role
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
@@ -261,7 +261,7 @@ module.exports = function (MongoQueryableModel) {
 
         // add pipeline to count all documents, take into account unwinding case for (Orig)Datablock
         // TODO correct facet handling with actual facets (not just "all") when (Orig)Datablock is used
-    
+
         if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
             // console.log("Adding additional pipeline steps for unwinding file names:")
             if (modeMatch) {
@@ -279,14 +279,14 @@ module.exports = function (MongoQueryableModel) {
                 ];
             } else {
                 facetObject["all"] = [{
-                    $match: facetMatch
-                },
-                {
-                    "$unwind": "$dataFileList"
-                }, {
-                    $count: "totalSets"
-                }
-            ];
+                        $match: facetMatch
+                    },
+                    {
+                        "$unwind": "$dataFileList"
+                    }, {
+                        $count: "totalSets"
+                    }
+                ];
 
             }
 
@@ -463,7 +463,7 @@ module.exports = function (MongoQueryableModel) {
                     // map id field
                     let fieldName = parts[0]
                     let idField = app.models[modelName].getIdName()
-                    // console.log("Derived idField:",idField)
+                    // console.log("Derived idField:", idField)
                     if (fieldName == idField) {
                         fieldName = "_id"
                     }
@@ -504,7 +504,7 @@ module.exports = function (MongoQueryableModel) {
                     }
                     // rename _id to id Field name
                     let idField = app.models[modelName].getIdName()
-                    // console.log("Derived idField:", idField)
+                    // console.log("Derived idField 2:", idField)
                     res.map(ds => {
                         Object.defineProperty(
                             ds,

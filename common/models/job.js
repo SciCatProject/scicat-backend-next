@@ -426,7 +426,7 @@ module.exports = function (Job) {
     });
 
     Job.observe('after save', (ctx, next) => {
-        if (ctx.instance) {
+        if (ctx.instance && ctx.instance.datasetList) {
             // first create array of all pids
             const idList = ctx.instance.datasetList.map(x => x.pid)
             // get policy parameters for pgroup/proposal of first dataset

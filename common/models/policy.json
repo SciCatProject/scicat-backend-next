@@ -3,11 +3,16 @@
   "description": "Definition of policy parameters relevant for the storgae lifecycle management of the datasets",
   "plural": "Policies",
   "base": "Ownable",
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },
   "properties": {
+    "id": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
     "manager": {
       "type": [
         "string"

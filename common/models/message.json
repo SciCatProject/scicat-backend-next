@@ -3,7 +3,7 @@
   "description": "To get auto-created history information.",
   "base": "Model",
   "strict": false,
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },
@@ -12,7 +12,7 @@
       "type": "string",
       "id": "true",
       "description": "id currently needed by limitation in embedsmany",
-      "defaultFn": "uuid"
+      "defaultFn": "uuidv4"
     }
   },
   "validations": [],

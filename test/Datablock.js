@@ -246,7 +246,7 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
             .end(function (err, res) {
                 if (err)
                     return done(err);
-                //console.log("origdatablock:",res.body)
+                console.log("origdatablock:",res.body)
                 res.body.should.have.property('size').and.equal(41780189);
                 res.body.should.have.property('id').and.be.string;
                 idOrigDatablock = encodeURIComponent(res.body['id']);
@@ -518,11 +518,13 @@ describe('Test Datablocks and OrigDatablocks and their relation to raw Datasets'
 
     it('should delete a OrigDatablock', function (done) {
         request(app)
-            .delete('/api/v3/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/OrigDatablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
+                res.body.should.have.property('count').and.equal(1);
+                // console.log("===== Delete OrigDatablock :",JSON.stringify(res.body,null,4),err)
                 if (err)
                     return done(err);
                 done();

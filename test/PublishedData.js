@@ -503,11 +503,13 @@ describe("Test of access to published data", () => {
 
     it('should delete a OrigDatablock', function (done) {
         request(app)
-            .delete('/api/v3/Datablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
+            .delete('/api/v3/OrigDatablocks/' + idOrigDatablock + '?access_token=' + accessTokenArchiveManager)
             .set('Accept', 'application/json')
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
+                res.body.should.have.property('count').and.equal(1);
+                // console.log("===== Delete OrigDatablock :",JSON.stringify(res.body,null,4),err)
                 if (err)
                     return done(err);
                 done();
