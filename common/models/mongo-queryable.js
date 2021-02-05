@@ -47,7 +47,7 @@ module.exports = function (MongoQueryableModel) {
             };
         }
         const type = loopbackTypeOf(modelName, fieldName)
-        console.debug("Loopback Type:", type)
+        // console.debug("Loopback Type:", type)
 
         // for now treat nested keys as strings, not yet tested
         // may has to be treated outside of this function as is done
