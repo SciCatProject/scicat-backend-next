@@ -1,7 +1,6 @@
 "use strict";
 
 const kafka = require("kafka-node");
-const math = require("mathjs");
 
 var config = require("../../server/config.local");
 var p = require("../../package.json");

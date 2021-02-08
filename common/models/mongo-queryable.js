@@ -1,6 +1,7 @@
 'use strict';
 var utils = require('./utils');
 const logger = require("../logger");
+const math = require("mathjs");
 
 module.exports = function (MongoQueryableModel) {
 
@@ -619,7 +620,7 @@ module.exports = function (MongoQueryableModel) {
                 scientificMetadata
             } = ctx.args.data;
             Object.keys(scientificMetadata).forEach(key => {
-                if (scientificMetadata[key].type === "measurement") {
+                if (scientificMetadata[key].unit.length > 0) {
                     const {
                         value,
                         unit
@@ -654,7 +655,7 @@ module.exports = function (MongoQueryableModel) {
                 }) => {
                     if (
                         lhs in scientificMetadata &&
-                        scientificMetadata[lhs].type === "measurement" &&
+                        scientificMetadata[lhs].unit.length > 0 &&
                         scientificMetadata[lhs].unit !== unit
                     ) {
                         const converted = math
