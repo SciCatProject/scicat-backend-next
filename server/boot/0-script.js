@@ -1,4 +1,4 @@
-module.exports = function(app) {
+module.exports = function (app) {
     const logger = require("../../common/logger");
 
     var dataSource = app.datasources.mongo;
@@ -7,10 +7,10 @@ module.exports = function(app) {
         dataSource.connector.settings.host,
         dataSource.connector.settings.database
     );
-    dataSource.isActual(function(err, actual) {
+    dataSource.isActual(function (err, actual) {
         // console.log("Database actual:", actual)
         // if (!actual) {
-        dataSource.autoupdate(function(err, result) {
+        dataSource.autoupdate(function (err, result) {
             if (err) {
                 console.log("Database Autoupdate error: %s", err);
             } else {
@@ -26,8 +26,7 @@ module.exports = function(app) {
     console.log("Adding ACLS for UserIdentity");
 
     DataModel.extend("UserIdentity", null, {
-        acls: [
-            {
+        acls: [{
                 principalType: "ROLE",
                 principalId: "$everyone",
                 permission: "DENY"
@@ -41,9 +40,44 @@ module.exports = function(app) {
         ]
     });
 
-    dataSource.connector.connect(function(err, db) {
-        // add index to embedded fields, dont wait for result
+    dataSource.connector.connect(function (err, db) {
 
+        // verify that ObjectIds have been replaced by UUIDv4 strings
+        db.collection("Policy").countDocuments({
+            $or: [{
+                "_id": {
+                    "$regex": /^[a-f\d]{24}$/i
+                }
+            }, {
+                "_id": {
+                    "$type": "objectId"
+                }
+            }]
+        }, function (err, res) {
+            if (res != 0) {
+                console.error("=============================================")
+                console.error("=============================================")
+                console.error("=============================================")
+                console.error("=============================================")
+                console.error("=============================================")
+                console.error("=============================================")
+                console.error()
+                console.error("   Warning: your DB contains old ID format   ")
+                console.error("   please run the script                     ")
+                console.error("   == catamel/scripts/replaceObjectIds.sh == ")
+                console.error("   on your mongo DB !                        ")
+                console.error()
+                console.error("========================================")
+                console.error("========================================")
+                console.error("========================================")
+                console.error("========================================")
+                console.error("========================================")
+            } else {
+                console.log("Mongo DB already translated to new ID format")
+            }
+        })
+
+        // add index to embedded fields, dont wait for result
         var embedFields = [
             "datasetlifecycle.archivable",
             "datasetlifecycle.retrievable",
@@ -52,12 +86,11 @@ module.exports = function(app) {
             "datasetlifecycle.retrieveStatusMessage"
         ];
 
-        embedFields.forEach(function(field) {
-            db.collection("Dataset").createIndex(
-                {
+        embedFields.forEach(function (field) {
+            db.collection("Dataset").createIndex({
                     field: 1
                 },
-                function(err) {
+                function (err) {
                     if (!err) {
                         console.log(
                             "Index on field " + field + " created successfully"
@@ -70,14 +103,13 @@ module.exports = function(app) {
         });
 
         var textSearchCollections = [
-            "Dataset", "Sample", "Proposal", "OrigDatablock", "Job", "PublishedData", "Logbook", "Policy","Instrument"
+            "Dataset", "Sample", "Proposal", "OrigDatablock", "Job", "PublishedData", "Logbook", "Policy", "Instrument"
         ]
-        textSearchCollections.forEach(function(coll) {
-            db.collection(coll).createIndex(
-                {
+        textSearchCollections.forEach(function (coll) {
+            db.collection(coll).createIndex({
                     "$**": "text"
                 },
-                function(err) {
+                function (err) {
                     if (!err) {
                         console.log("Text Index on " + coll + " created successfully");
                     } else {
@@ -93,12 +125,12 @@ module.exports = function(app) {
 
     app.remotes()
         .phases.addBefore("invoke", "options-from-request")
-        .use(function(ctx, next) {
+        .use(function (ctx, next) {
             // console.log("============ Phase: args,options modelname", ctx.method.sharedClass.name)
             // add model name to context options
             if (!ctx.args.options)
-               return next()
-            ctx.args.options.modelName=ctx.method.sharedClass.name
+                return next()
+            ctx.args.options.modelName = ctx.method.sharedClass.name
             if (!ctx.args.options.accessToken)
                 return next();
             const User = app.models.User;
@@ -107,7 +139,7 @@ module.exports = function(app) {
             const Role = app.models.Role;
             const ShareGroup = app.models.ShareGroup;
             // first check if email in User
-            User.findById(ctx.args.options.accessToken.userId, function(
+            User.findById(ctx.args.options.accessToken.userId, function (
                 err,
                 user
             ) {
@@ -116,14 +148,13 @@ module.exports = function(app) {
                 ctx.args.options.currentUser = user.username;
                 // get email from User for functional accounts and from UserIdentity for normal users
                 ctx.args.options.currentUserEmail = user.email;
-                UserIdentity.findOne(
-                    {
+                UserIdentity.findOne({
                         //json filter
                         where: {
                             userId: ctx.args.options.accessToken.userId
                         }
                     },
-                    function(err, u) {
+                    function (err, u) {
                         // add user email and groups
                         if (!!u) {
                             var groups = [];
@@ -141,13 +172,20 @@ module.exports = function(app) {
                                 }
                                 const regex = "/" + u.profile.email + "/i";
                                 // get users share groups and add to the current groups context
-                                ShareGroup.find(
-                                    { where: { members: { regexp: regex } } },
-                                    function(err, share) {
+                                ShareGroup.find({
+                                        where: {
+                                            members: {
+                                                regexp: regex
+                                            }
+                                        }
+                                    },
+                                    function (err, share) {
                                         if (err) return next(err);
                                         groups = [
                                             ...groups,
-                                            ...share.map(({ id }) => {
+                                            ...share.map(({
+                                                id
+                                            }) => {
                                                 return String(id);
                                             })
                                         ];
@@ -163,8 +201,7 @@ module.exports = function(app) {
                         } else {
                             // authorizedRoles can not be used for this, since roles depend on the ACLs used in a collection,
                             // fetch roles via Rolemapping table instead
-                            RoleMapping.find(
-                                {
+                            RoleMapping.find({
                                     where: {
                                         principalId: String(
                                             ctx.args.options.accessToken.userId
@@ -172,20 +209,19 @@ module.exports = function(app) {
                                     }
                                 },
                                 ctx.args.options,
-                                function(err, instances) {
+                                function (err, instances) {
                                     // map roleid to name
                                     const roleIdList = instances.map(
                                         instance => instance.roleId
                                     );
-                                    Role.find(
-                                        {
+                                    Role.find({
                                             where: {
                                                 id: {
                                                     inq: roleIdList
                                                 }
                                             }
                                         },
-                                        function(err, result) {
+                                        function (err, result) {
                                             if (err) return next(err);
                                             const roleNameList = result.map(
                                                 instance => instance.name
@@ -209,7 +245,7 @@ module.exports = function(app) {
 
     const User = app.models.User;
 
-    User.userInfos = function(options, cb) {
+    User.userInfos = function (options, cb) {
         delete options.prohibitHiddenPropertiesInQuery;
         delete options.maxDepthOfQuery;
         delete options.maxDepthOfData;
@@ -217,29 +253,31 @@ module.exports = function(app) {
     };
 
     User.remoteMethod("userInfos", {
-        accepts: [
-            {
-                arg: "options",
-                type: "object",
-                http: "optionsFromRequest"
-            }
-        ],
+        accepts: [{
+            arg: "options",
+            type: "object",
+            http: "optionsFromRequest"
+        }],
         returns: {
             root: true
         },
-        description:
-            "Returns username, email , group membership etc for the user linked with the provided accessToken.",
+        description: "Returns username, email , group membership etc for the user linked with the provided accessToken.",
         http: {
             path: "/userInfos",
             verb: "get"
         }
     });
 
-    logger.logInfo("Adding relations to User", { relation: "UserSetting" });
+    logger.logInfo("Adding relations to User", {
+        relation: "UserSetting"
+    });
 
     const UserSetting = app.models.UserSetting;
 
-    User.hasOne(UserSetting, { foreignKey: "", as: "settings" });
+    User.hasOne(UserSetting, {
+        foreignKey: "",
+        as: "settings"
+    });
 
     logger.logInfo("Adding ACLS for User related models", {
         relation: "UserSetting"
@@ -247,8 +285,7 @@ module.exports = function(app) {
 
     const userACLS = User.settings.acls;
 
-    const userSettingsACLS = [
-        {
+    const userSettingsACLS = [{
             principalType: "ROLE",
             principalId: "$owner",
             permission: "ALLOW",
@@ -273,13 +310,17 @@ module.exports = function(app) {
 
     User.settings.acls = userACLS.concat(userSettingsACLS);
 
-    User.afterRemote("findById", function(ctx, user, next) {
+    User.afterRemote("findById", function (ctx, user, next) {
         user.settings((err, settings) => {
             if (err) {
                 logger.logError(err.message);
             } else if (!settings) {
-                logger.logInfo("Adding default settings to user", { user });
-                user.settings.create({ columns: [] });
+                logger.logInfo("Adding default settings to user", {
+                    user
+                });
+                user.settings.create({
+                    columns: []
+                });
             }
         });
         next();
