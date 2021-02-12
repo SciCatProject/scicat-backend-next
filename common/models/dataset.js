@@ -10,7 +10,6 @@ var ds = require("./dataset.json");
 var dsr = require("./raw-dataset.json");
 var dsd = require("./derived-dataset.json");
 var own = require("./ownable.json");
-const util = require("util");
 const logger = require("../logger");
 // TODO Feature  Add delete functionality for dataset, which removes Dataset and all linked data:
 // OrigDatablock and Datablock and DatasetAttachments
@@ -147,6 +146,70 @@ module.exports = function(Dataset) {
         const accessToken = ctx.args.options.accessToken;
         if (!accessToken) {
             ctx.args.fields.isPublished = true;
+        }
+        next();
+    });
+
+    Dataset.beforeRemote("prototype.patchAttributes", function (
+        ctx,
+        unused,
+        next
+    ) {
+        if ("scientificMetadata" in ctx.args.data) {
+            const {
+                scientificMetadata
+            } = ctx.args.data;
+            Object.keys(scientificMetadata).forEach(key => {
+                if (scientificMetadata[key].unit.length > 0) {
+                    const {
+                        value,
+                        unit
+                    } = scientificMetadata[key];
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(value, unit);
+                    scientificMetadata[key] = {
+                        ...scientificMetadata[key],
+                        valueSI,
+                        unitSI
+                    };
+                }
+            });
+        }
+        next();
+    });
+
+    Dataset.afterRemote("fullquery", function (ctx, someCollections, next) {
+        if (ctx.args.fields.scientific) {
+            const {
+                scientific
+            } = ctx.args.fields;
+            someCollections.forEach(({
+                scientificMetadata
+            }) => {
+                scientific.forEach(({
+                    lhs,
+                    unit
+                }) => {
+                    if (
+                        lhs in scientificMetadata &&
+                        scientificMetadata[lhs].unit.length > 0 &&
+                        scientificMetadata[lhs].unit !== unit
+                    ) {
+                        const {
+                            valueRequested,
+                            unitRequested,
+                        } = utils.convertToRequestedUnit(
+                            scientificMetadata[lhs].value,
+                            scientificMetadata[lhs].unit,
+                            unit
+                        );
+                        scientificMetadata[lhs].value = valueRequested;
+                        scientificMetadata[lhs].unit = unitRequested;
+                    }
+                });
+            });
         }
         next();
     });
