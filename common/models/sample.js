@@ -1,73 +1,33 @@
 "use strict";
 
 const config = require("../../server/config.local");
-const ds = require("./sample.json");
-const own = require("./ownable.json");
 const logger = require("../logger");
-const math = require("mathjs");
+const utils = require("./utils");
 
-module.exports = function(Sample) {
-    function searchExpression(key, value) {
-        let type = "string";
-        if (key in ds.properties) {
-            type = ds.properties[key].type;
-        } else if (key in own.properties) {
-            type = own.properties[key].type;
-        }
-        if (key === "text") {
-            return {
-                $search: value,
-                $language: "none"
-            };
-        } else if (type === "string") {
-            if (value.constructor === Array) {
-                if (value.length == 1) {
-                    return value[0];
-                } else {
-                    return {
-                        $in: value
-                    };
-                }
-            } else {
-                return value;
+module.exports = function (Sample) {
+    Sample.beforeRemote(
+        "prototype.patchAttributes",
+        function (ctx, unused, next) {
+            if ("sampleCharacteristics" in ctx.args.data) {
+                const { sampleCharacteristics } = ctx.args.data;
+                Object.keys(sampleCharacteristics).forEach((key) => {
+                    if (sampleCharacteristics[key].unit.length > 0) {
+                        const { value, unit } = sampleCharacteristics[key];
+                        const { valueSI, unitSI } = utils.convertToSI(
+                            value,
+                            unit
+                        );
+                        sampleCharacteristics[key] = {
+                            ...sampleCharacteristics[key],
+                            valueSI,
+                            unitSI,
+                        };
+                    }
+                });
             }
-        } else if (type === "date") {
-            return {
-                $gte: new Date(value.begin),
-                $lte: new Date(value.end)
-            };
-        } else if (type === "boolean") {
-            return {
-                $eq: value
-            };
-        } else if (type.constructor === Array) {
-            return {
-                $in: value
-            };
+            next();
         }
-    }
-
-    Sample.beforeRemote("prototype.patchAttributes", function (
-        ctx,
-        unused,
-        next
-    ) {
-        if ("sampleCharacteristics" in ctx.args.data) {
-            const { sampleCharacteristics } = ctx.args.data;
-            Object.keys(sampleCharacteristics).forEach((key) => {
-                if (sampleCharacteristics[key].type === "measurement") {
-                    const { value, unit } = sampleCharacteristics[key];
-                    const { valueSI, unitSI } = convertToSI(value, unit);
-                    sampleCharacteristics[key] = {
-                        ...sampleCharacteristics[key],
-                        valueSI,
-                        unitSI,
-                    };
-                }
-            });
-        }
-        next();
-    });
+    );
 
     Sample.afterRemote("find", function (ctx, modelInstance, next) {
         const accessToken = ctx.args.options.accessToken;
@@ -197,80 +157,4 @@ module.exports = function(Sample) {
             logger.logError(err.message, { location: "Sample.metadataKeys" });
         }
     };
-
-    function convertToSI(value, unit) {
-        const quantity = math
-            .unit(value, unit)
-            .toSI()
-            .toString();
-        const convertedValue = quantity.substring(0, quantity.indexOf(" "));
-        const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
-        return { valueSI: Number(convertedValue), unitSI: convertedUnit };
-    }
-
-    function generateCharacteristicExpression({ lhs, relation, rhs, unit }) {
-        let match = {
-            $and: []
-        };
-        const matchKeyGeneric = `sampleCharacteristics.${lhs}.value`;
-        const matchKeyMeasurement = `sampleCharacteristics.${lhs}.valueSI`;
-        const matchUnit = `sampleCharacteristics.${lhs}.unitSI`;
-        switch (relation) {
-            case "EQUAL_TO_STRING": {
-                match.$and.push({
-                    [matchKeyGeneric]: { $eq: rhs }
-                });
-                break;
-            }
-            case "EQUAL_TO_NUMERIC": {
-                if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
-                    match.$and.push({
-                        [matchKeyMeasurement]: { $eq: valueSI }
-                    });
-                    match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
-                    });
-                } else {
-                    match.$and.push({
-                        [matchKeyGeneric]: { $eq: rhs }
-                    });
-                }
-                break;
-            }
-            case "GREATER_THAN": {
-                if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
-                    match.$and.push({
-                        [matchKeyMeasurement]: { $gt: valueSI }
-                    });
-                    match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
-                    });
-                } else {
-                    match.$and.push({
-                        [matchKeyGeneric]: { $gt: rhs }
-                    });
-                }
-                break;
-            }
-            case "LESS_THAN": {
-                if (unit.length > 0) {
-                    const { valueSI, unitSI } = convertToSI(rhs, unit);
-                    match.$and.push({
-                        [matchKeyMeasurement]: { $lt: valueSI }
-                    });
-                    match.$and.push({
-                        [matchUnit]: { $eq: unitSI }
-                    });
-                } else {
-                    match.$and.push({
-                        [matchKeyGeneric]: { $lt: rhs }
-                    });
-                }
-                break;
-            }
-        }
-        return match;
-    }
 };

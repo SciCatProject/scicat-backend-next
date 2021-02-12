@@ -1,7 +1,5 @@
 'use strict';
-var utils = require('./utils');
-const logger = require("../logger");
-const math = require("mathjs");
+const utils = require('./utils');
 
 module.exports = function (MongoQueryableModel) {
 
@@ -194,9 +192,9 @@ module.exports = function (MongoQueryableModel) {
                             }
                         });
                     }
-                } else if (key === "scientific") {
+                } else if (key === "scientific" || key === "characteristics") {
                     fields[key].forEach(condition => {
-                        const match = generateScientificExpression(condition);
+                        const match = generateScientificExpression(modelName, condition);
                         pipeline.push({
                             $match: match
                         });
@@ -404,9 +402,9 @@ module.exports = function (MongoQueryableModel) {
                             }
                         });
                     }
-                } else if (key === "scientific") {
+                } else if (key === "scientific" || key === "characteristics") {
                     fields[key].forEach(condition => {
-                        const match = generateScientificExpression(condition);
+                        const match = generateScientificExpression(modelName, condition);
                         pipeline.push({
                             $match: match
                         });
@@ -628,7 +626,7 @@ module.exports = function (MongoQueryableModel) {
                     const {
                         valueSI,
                         unitSI
-                    } = convertToSI(value, unit);
+                    } = utils.convertToSI(value, unit);
                     scientificMetadata[key] = {
                         ...scientificMetadata[key],
                         valueSI,
@@ -658,20 +656,16 @@ module.exports = function (MongoQueryableModel) {
                         scientificMetadata[lhs].unit.length > 0 &&
                         scientificMetadata[lhs].unit !== unit
                     ) {
-                        const converted = math
-                            .unit(
-                                scientificMetadata[lhs].value,
-                                scientificMetadata[lhs].unit
-                            )
-                            .to(unit);
-                        const formatted = math
-                            .format(converted, {
-                                precision: 3
-                            })
-                            .toString()
-                            .split(" ");
-                        scientificMetadata[lhs].value = Number(formatted[0]);
-                        scientificMetadata[lhs].unit = formatted[1];
+                        const {
+                            valueRequested,
+                            unitRequested,
+                        } = utils.convertToRequestedUnit(
+                            scientificMetadata[lhs].value,
+                            scientificMetadata[lhs].unit,
+                            unit
+                        );
+                        scientificMetadata[lhs].value = valueRequested;
+                        scientificMetadata[lhs].unit = unitRequested;
                     }
                 });
             });
@@ -679,111 +673,91 @@ module.exports = function (MongoQueryableModel) {
         next();
     });
 
-    function convertToSI(value, unit) {
-        const quantity = math
-            .unit(value, unit)
-            .toSI()
-            .toString();
-        const convertedValue = quantity.substring(0, quantity.indexOf(" "));
-        const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
-        return {
-            valueSI: Number(convertedValue),
-            unitSI: convertedUnit
-        };
-    }
-
-    function generateScientificExpression({
-        lhs,
-        relation,
-        rhs,
-        unit
-    }) {
+    function generateScientificExpression(
+        modelName,
+        { lhs, relation, rhs, unit }
+    ) {
         let match = {
-            $and: []
+            $and: [],
         };
-        const matchKeyGeneric = `scientificMetadata.${lhs}.value`;
-        const matchKeyMeasurement = `scientificMetadata.${lhs}.valueSI`;
-        const matchUnit = `scientificMetadata.${lhs}.unitSI`;
+        const parameterFieldName =
+            modelName === "Dataset"
+                ? "scientificMetadata"
+                : "sampleCharacteristics";
+        const matchKeyGeneric = `${parameterFieldName}.${lhs}.value`;
+        const matchKeyMeasurement = `${parameterFieldName}.${lhs}.valueSI`;
+        const matchUnit = `${parameterFieldName}.${lhs}.unitSI`;
         switch (relation) {
             case "EQUAL_TO_STRING": {
                 match.$and.push({
                     [matchKeyGeneric]: {
-                        $eq: rhs
-                    }
+                        $eq: rhs,
+                    },
                 });
                 break;
             }
             case "EQUAL_TO_NUMERIC": {
                 if (unit.length > 0) {
-                    const {
-                        valueSI,
-                        unitSI
-                    } = convertToSI(rhs, unit);
+                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
-                            $eq: valueSI
-                        }
+                            $eq: valueSI,
+                        },
                     });
                     match.$and.push({
                         [matchUnit]: {
-                            $eq: unitSI
-                        }
+                            $eq: unitSI,
+                        },
                     });
                 } else {
                     match.$and.push({
                         [matchKeyGeneric]: {
-                            $eq: rhs
-                        }
+                            $eq: rhs,
+                        },
                     });
                 }
                 break;
             }
             case "GREATER_THAN": {
                 if (unit.length > 0) {
-                    const {
-                        valueSI,
-                        unitSI
-                    } = convertToSI(rhs, unit);
+                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
-                            $gt: valueSI
-                        }
+                            $gt: valueSI,
+                        },
                     });
                     match.$and.push({
                         [matchUnit]: {
-                            $eq: unitSI
-                        }
+                            $eq: unitSI,
+                        },
                     });
                 } else {
                     match.$and.push({
                         [matchKeyGeneric]: {
-                            $gt: rhs
-                        }
+                            $gt: rhs,
+                        },
                     });
                 }
                 break;
             }
             case "LESS_THAN": {
                 if (unit.length > 0) {
-                    const {
-                        valueSI,
-                        unitSI
-                    } = convertToSI(rhs, unit);
+                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
-                            $lt: valueSI
-                        }
+                            $lt: valueSI,
+                        },
                     });
                     match.$and.push({
                         [matchUnit]: {
-                            $eq: unitSI
-                        }
+                            $eq: unitSI,
+                        },
                     });
                 } else {
                     match.$and.push({
                         [matchKeyGeneric]: {
-                            $lt: rhs
-                        }
+                            $lt: rhs,
+                        },
                     });
                 }
                 break;

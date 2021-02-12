@@ -3,6 +3,7 @@ const config = require('../../server/config.local');
 var moment = require('moment-timezone');
 var exports = module.exports = {};
 var nodemailer = require('nodemailer');
+const math = require("mathjs");
 // Utility function to transfer size information from the datablock storage to the related dataset
 
 // Just a hint
@@ -338,3 +339,21 @@ exports.sendMail = (to, cc, subjectText, mailText, e, next) => {
         return next(e)
     }
 }
+
+exports.convertToSI = (value, unit) => {
+    const quantity = math.unit(value, unit).toSI().toString();
+    const convertedValue = quantity.substring(0, quantity.indexOf(" "));
+    const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
+    return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+};
+
+exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
+    const converted = math.unit(value, currentUnit).to(requestedUnit);
+    const formatted = math.format(converted, { precision: 3 }).toString();
+    const convertedValue = formatted.substring(0, formatted.indexOf(" "));
+    const convertedUnit = formatted.substring(formatted.indexOf(" ") + 1);
+    return {
+        valueRequested: Number(convertedValue),
+        unitRequested: convertedUnit,
+    };
+};
