@@ -325,4 +325,44 @@ module.exports = function (app) {
         });
         next();
     });
+
+    const config = require("../config.local");
+
+    if (config.site === "ESS") {
+        const Sample = app.models.Sample;
+        const utils = require("../../common/models/utils");
+        Sample.find(function(err, samples) {
+            if (err) {
+                throw err;
+            }
+            samples.forEach((sample) => {
+                if (sample.sampleCharacteristics) {
+                    const {sampleCharacteristics} = sample;
+                    Object.keys(sampleCharacteristics).forEach((key, index) => {
+                        if (sampleCharacteristics[key].unit && !sampleCharacteristics[key].unitSI) {
+                            console.log(JSON.stringify({[key]: sampleCharacteristics[key]}));
+                            const {valueSI, unitSI} = utils.convertToSI(sampleCharacteristics[key].value, sampleCharacteristics[key].unit);
+                            sampleCharacteristics[key] = {
+                                value: sampleCharacteristics[key].value,
+                                unit: sampleCharacteristics[key].unit,
+                                valueSI,
+                                unitSI
+                            };
+                            console.log(JSON.stringify({
+                                [key]: sampleCharacteristics[key]
+                            }));
+                        }
+                        if (index === Object.keys(sampleCharacteristics).length - 1) {
+                            Sample.updateAll({"sampleId": sample.sampleId},{sampleCharacteristics}, function(err, info) {
+                                if (err) {
+                                    throw err;
+                                }
+                                console.log(JSON.stringify({info}));
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    }
 };
