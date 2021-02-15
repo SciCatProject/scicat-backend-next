@@ -325,44 +325,4 @@ module.exports = function (app) {
         });
         next();
     });
-
-    const config = require("../config.local");
-
-    if (config.site === "ESS") {
-        const Dataset = app.models.Dataset;
-        const utils = require("../../common/models/utils");
-        Dataset.find(function(err, datasets) {
-            if (err) {
-                throw err;
-            }
-            datasets.forEach((dataset) => {
-                if (dataset.scientificMetadata) {
-                    const {scientificMetadata} = dataset;
-                    Object.keys(scientificMetadata).forEach((key, index) => {
-                        if (scientificMetadata[key].unit && !scientificMetadata[key].unitSI) {
-                            console.log(JSON.stringify({[key]: scientificMetadata[key]}));
-                            const {valueSI, unitSI} = utils.convertToSI(scientificMetadata[key].value, scientificMetadata[key].unit);
-                            scientificMetadata[key] = {
-                                value: scientificMetadata[key].value,
-                                unit: scientificMetadata[key].unit,
-                                valueSI,
-                                unitSI
-                            };
-                            console.log(JSON.stringify({
-                                [key]: scientificMetadata[key]
-                            }));
-                        }
-                        if (index === Object.keys(scientificMetadata).length - 1) {
-                            Dataset.updateAll({"pid": dataset.pid},{scientificMetadata}, function(err, info) {
-                                if (err) {
-                                    throw err;
-                                }
-                                console.log(JSON.stringify({info}));
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    }
 };

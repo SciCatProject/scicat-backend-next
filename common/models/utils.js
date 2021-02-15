@@ -205,16 +205,16 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
                 if (err) {
                     console.log("Saving auto history failed:", err)
                 }
-                // if (config.logbookEnabled) {
-                //     const Logbook = app.models.Logbook;
-                //     const user = updatedBy.replace('ldap.', '');
-                //     const datasetPid = datasetInstance.pid;
-                //     const proposalId = datasetInstance.proposalId;
-                //     Object.keys(updatedFields).forEach((updatedField) => {
-                //         const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
-                //         Logbook.sendMessage(proposalId, {message});
-                //     })
-                // }
+                if (config.logbookEnabled) {
+                    const Logbook = app.models.Logbook;
+                    const user = updatedBy.replace('ldap.', '');
+                    const datasetPid = datasetInstance.pid;
+                    const proposalId = datasetInstance.proposalId;
+                    Object.keys(updatedFields).forEach((updatedField) => {
+                        const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
+                        Logbook.sendMessage(proposalId, {message});
+                    })
+                }
                 //console.log("+++++++ After adding infos to history for dataset ", datasetInstance.pid, JSON.stringify(ctx.data, null, 3))
                 index--
                 updateDatasets(ctx, datasetInstances, ctxdatacopy, index, next)
