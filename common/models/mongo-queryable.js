@@ -309,16 +309,20 @@ module.exports = function (MongoQueryableModel) {
                 mongoModel = app.models[modelName].definition.settings.mongodb.collection
             }
             var collection = db.collection(mongoModel);
-            var res = collection.aggregate(pipeline, {
-                allowDiskUse: true
-            }, function (err, cursor) {
-                cursor.toArray(function (err, res) {
-                    if (err) {
-                        console.log("Fullfacet err handling:", err);
-                    }
-                    cb(err, res);
+            try {
+                var res = collection.aggregate(pipeline, {
+                    allowDiskUse: true
+                }, function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Fullfacet err handling:", err);
+                        }
+                        cb(err, res);
+                    });
                 });
-            });
+            } catch (err) {
+                cb(err, null)
+            }
 
         });
     };
@@ -387,7 +391,7 @@ module.exports = function (MongoQueryableModel) {
                     });
                 }
                 // mode is not a field , just an object for containing a match clause
-                // TODO translate begin/end syntax to $gte, new Date() Syntax, see searchExpression
+                // TODO translate begin/end syntax to $gte, new Date() Syntax, also for mode expression, see searchExpression
                 else if (key === "mode") {
                     // console.log("Mode key")
                     // substitute potential id field in fields
@@ -505,29 +509,32 @@ module.exports = function (MongoQueryableModel) {
                 mongoModel = app.models[modelName].definition.settings.mongodb.collection
             }
             var collection = db.collection(mongoModel);
-            var res = collection.aggregate(pipeline, {
-                allowDiskUse: true
-            }, function (err, cursor) {
-                cursor.toArray(function (err, res) {
-                    if (err) {
-                        console.log("Fullquery err handling:", err);
-                    }
-                    // rename _id to id Field name
-                    let idField = app.models[modelName].getIdName()
-                    // console.log("Derived idField 2:", idField)
-                    res.map(ds => {
-                        Object.defineProperty(
-                            ds,
-                            idField,
-                            Object.getOwnPropertyDescriptor(ds, "_id")
-                        );
-                        delete ds["_id"];
+            try {
+                var res = collection.aggregate(pipeline, {
+                    allowDiskUse: true
+                }, function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Fullquery err handling:", err);
+                        } else {
+                            // rename _id to id Field name
+                            let idField = app.models[modelName].getIdName()
+                            // console.log("Derived idField 2:", idField)
+                            res.map(ds => {
+                                Object.defineProperty(
+                                    ds,
+                                    idField,
+                                    Object.getOwnPropertyDescriptor(ds, "_id")
+                                );
+                                delete ds["_id"];
+                            });
+                        }
+                        cb(err, res);
                     });
-
-                    cb(err, res);
                 });
-            });
-
+            } catch (err) {
+                cb(err, null)
+            }
         });
     };
 
@@ -685,16 +692,20 @@ module.exports = function (MongoQueryableModel) {
     });
 
     function generateScientificExpression(
-        modelName,
-        { lhs, relation, rhs, unit }
+        modelName, {
+            lhs,
+            relation,
+            rhs,
+            unit
+        }
     ) {
         let match = {
             $and: [],
         };
         const parameterFieldName =
-            modelName === "Dataset"
-                ? "scientificMetadata"
-                : "sampleCharacteristics";
+            modelName === "Dataset" ?
+            "scientificMetadata" :
+            "sampleCharacteristics";
         const matchKeyGeneric = `${parameterFieldName}.${lhs}.value`;
         const matchKeyMeasurement = `${parameterFieldName}.${lhs}.valueSI`;
         const matchUnit = `${parameterFieldName}.${lhs}.unitSI`;
@@ -709,7 +720,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "EQUAL_TO_NUMERIC": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $eq: valueSI,
@@ -731,7 +745,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "GREATER_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $gt: valueSI,
@@ -753,7 +770,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "LESS_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $lt: valueSI,
