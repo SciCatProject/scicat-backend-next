@@ -6,7 +6,7 @@ module.exports = function (MongoQueryableModel) {
     // to get access to other models
     var app = require("../../server/server");
 
-    function loopbackTypeOf(modelName, key) {
+    function loopbackTypeOf(modelName, key, value = null) {
         // console.log("type extraction:", modelName, key)
         // extract type. For arrays this returns undefined. See 
         // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
@@ -20,8 +20,13 @@ module.exports = function (MongoQueryableModel) {
             property = app.models["DerivedDataset"].definition.properties[key]
         }
         if (!property) {
-            console.log("Property undefined for :", modelName, key)
-            return "string"
+            // console.log("Property undefined for :", modelName, key, " derive type from value ", value)
+            // if (value.match(/(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/)) {
+            if ('begin' in value) {
+                return "Date"
+            } else {
+                return "string"
+            }
         } else {
             const type = typeof property.type === 'string' ?
                 property.type :
@@ -32,29 +37,14 @@ module.exports = function (MongoQueryableModel) {
 
     function searchExpression(modelName, fieldName, value) {
         // console.log("searchExpression modelName, fieldName, value", modelName, fieldName, value)
-        let key = fieldName
-        if (app.models[modelName].getIdName) {
-            let idField = app.models[modelName].getIdName()
-            if (fieldName == idField) {
-                key = "_id"
-            }
-        }
-
-        if (key === "text") {
+        if (fieldName === "text") {
             return {
                 $search: value
             };
         }
-        const type = loopbackTypeOf(modelName, fieldName)
+        const type = loopbackTypeOf(modelName, fieldName, value)
         // console.debug("Loopback Type:", type)
-
-        // for now treat nested keys as strings, not yet tested
-        // may has to be treated outside of this function as is done
-        // currently for datasetLifecycle
-        if (key.indexOf('.') > 0) {
-            console.debug("Nested key: modelName,key,value:", modelName, key, value)
-            return value
-        } else if (type === "String") {
+        if (type === "String") {
             if (value.constructor === Array) {
                 if (value.length == 1) {
                     return value[0];
@@ -80,7 +70,7 @@ module.exports = function (MongoQueryableModel) {
                 $in: value
             };
         } else {
-            console.log("Unknown Type: modelName,key,value:", modelName, key, value)
+            console.log("Unknown Type: modelName,fieldName,value:", modelName, fieldName, value)
             return value
         }
     }
@@ -155,6 +145,14 @@ module.exports = function (MongoQueryableModel) {
                             }
                         });
                     }
+                }
+                // map all id type fields to _id for mongo query
+                else if (key == app.models[modelName].getIdName()) {
+                    let match = {};
+                    match["_id"] = searchExpression(modelName, key, fields[key]);
+                    pipeline.push({
+                        $match: match
+                    });
                 }
                 // mode is not a field , just an object for containing a match clause
                 else if (key === "mode") {
@@ -311,16 +309,20 @@ module.exports = function (MongoQueryableModel) {
                 mongoModel = app.models[modelName].definition.settings.mongodb.collection
             }
             var collection = db.collection(mongoModel);
-            var res = collection.aggregate(pipeline, {
-                allowDiskUse: true
-            }, function (err, cursor) {
-                cursor.toArray(function (err, res) {
-                    if (err) {
-                        console.log("Fullfacet err handling:", err);
-                    }
-                    cb(err, res);
+            try {
+                var res = collection.aggregate(pipeline, {
+                    allowDiskUse: true
+                }, function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Fullfacet err handling:", err);
+                        }
+                        cb(err, res);
+                    });
                 });
-            });
+            } catch (err) {
+                cb(err, null)
+            }
 
         });
     };
@@ -348,6 +350,20 @@ module.exports = function (MongoQueryableModel) {
 
         // TOOD avoid code duplication of large parts with fullfacet
         let modeMatch = null;
+        // add further pipeline steps for OrigDatablock
+        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
+            // console.log("Adding additional pipeline steps for unwinding file names:")
+            pipeline.push({
+                "$project": {
+                    "dataFileList": 1,
+                    "datasetId": 1,
+                    "ownerGroup": 1
+                }
+            }, {
+                "$unwind": "$dataFileList"
+            })
+        }
+
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== "null") {
                 if (key === "text") {
@@ -366,7 +382,16 @@ module.exports = function (MongoQueryableModel) {
                         });
                     }
                 }
+                // map all id type fields to _id for mongo query
+                else if (key == app.models[modelName].getIdName()) {
+                    let match = {};
+                    match["_id"] = searchExpression(modelName, key, fields[key]);
+                    pipeline.push({
+                        $match: match
+                    });
+                }
                 // mode is not a field , just an object for containing a match clause
+                // TODO translate begin/end syntax to $gte, new Date() Syntax, also for mode expression, see searchExpression
                 else if (key === "mode") {
                     // console.log("Mode key")
                     // substitute potential id field in fields
@@ -430,18 +455,8 @@ module.exports = function (MongoQueryableModel) {
             }
         });
 
-        // add further pipeline steps for OrigDatablock
+        // TODO: why is this match handled separately ?add further pipeline steps for OrigDatablock
         if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
-            // console.log("Adding additional pipeline steps for unwinding file names:")
-            pipeline.push({
-                "$project": {
-                    "dataFileList": 1,
-                    "datasetId": 1,
-                    "ownerGroup": 1
-                }
-            }, {
-                "$unwind": "$dataFileList"
-            })
             if (modeMatch) {
                 pipeline.push({
                     "$match": modeMatch
@@ -485,7 +500,7 @@ module.exports = function (MongoQueryableModel) {
                 });
             }
         }
-        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
+        console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
             let mongoModel = modelName
@@ -494,29 +509,32 @@ module.exports = function (MongoQueryableModel) {
                 mongoModel = app.models[modelName].definition.settings.mongodb.collection
             }
             var collection = db.collection(mongoModel);
-            var res = collection.aggregate(pipeline, {
-                allowDiskUse: true
-            }, function (err, cursor) {
-                cursor.toArray(function (err, res) {
-                    if (err) {
-                        console.log("Fullquery err handling:", err);
-                    }
-                    // rename _id to id Field name
-                    let idField = app.models[modelName].getIdName()
-                    // console.log("Derived idField 2:", idField)
-                    res.map(ds => {
-                        Object.defineProperty(
-                            ds,
-                            idField,
-                            Object.getOwnPropertyDescriptor(ds, "_id")
-                        );
-                        delete ds["_id"];
+            try {
+                var res = collection.aggregate(pipeline, {
+                    allowDiskUse: true
+                }, function (err, cursor) {
+                    cursor.toArray(function (err, res) {
+                        if (err) {
+                            console.log("Fullquery err handling:", err);
+                        } else {
+                            // rename _id to id Field name
+                            let idField = app.models[modelName].getIdName()
+                            // console.log("Derived idField 2:", idField)
+                            res.map(ds => {
+                                Object.defineProperty(
+                                    ds,
+                                    idField,
+                                    Object.getOwnPropertyDescriptor(ds, "_id")
+                                );
+                                delete ds["_id"];
+                            });
+                        }
+                        cb(err, res);
                     });
-
-                    cb(err, res);
                 });
-            });
-
+            } catch (err) {
+                cb(err, null)
+            }
         });
     };
 
@@ -674,16 +692,20 @@ module.exports = function (MongoQueryableModel) {
     });
 
     function generateScientificExpression(
-        modelName,
-        { lhs, relation, rhs, unit }
+        modelName, {
+            lhs,
+            relation,
+            rhs,
+            unit
+        }
     ) {
         let match = {
             $and: [],
         };
         const parameterFieldName =
-            modelName === "Dataset"
-                ? "scientificMetadata"
-                : "sampleCharacteristics";
+            modelName === "Dataset" ?
+            "scientificMetadata" :
+            "sampleCharacteristics";
         const matchKeyGeneric = `${parameterFieldName}.${lhs}.value`;
         const matchKeyMeasurement = `${parameterFieldName}.${lhs}.valueSI`;
         const matchUnit = `${parameterFieldName}.${lhs}.unitSI`;
@@ -698,7 +720,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "EQUAL_TO_NUMERIC": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $eq: valueSI,
@@ -720,7 +745,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "GREATER_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $gt: valueSI,
@@ -742,7 +770,10 @@ module.exports = function (MongoQueryableModel) {
             }
             case "LESS_THAN": {
                 if (unit.length > 0) {
-                    const { valueSI, unitSI } = utils.convertToSI(rhs, unit);
+                    const {
+                        valueSI,
+                        unitSI
+                    } = utils.convertToSI(rhs, unit);
                     match.$and.push({
                         [matchKeyMeasurement]: {
                             $lt: valueSI,
