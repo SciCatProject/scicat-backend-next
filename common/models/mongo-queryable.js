@@ -42,9 +42,9 @@ module.exports = function (MongoQueryableModel) {
                 $search: value
             };
         }
-        const type = loopbackTypeOf(modelName, fieldName, value)
-        // console.debug("Loopback Type:", type)
-        if (type === "String") {
+        const typ = loopbackTypeOf(modelName, fieldName, value)
+        console.debug("Loopback type:", typ)
+        if (typ === "String") {
             if (value.constructor === Array) {
                 if (value.length == 1) {
                     return value[0];
@@ -56,12 +56,12 @@ module.exports = function (MongoQueryableModel) {
             } else {
                 return value;
             }
-        } else if (type === "Date") {
+        } else if (typ === "Date") {
             return {
                 $gte: new Date(value.begin),
                 $lte: new Date(value.end)
             };
-        } else if (type === "Boolean") {
+        } else if (typ === "Boolean") {
             return {
                 $eq: value
             };
@@ -70,7 +70,7 @@ module.exports = function (MongoQueryableModel) {
                 $in: value
             };
         } else {
-            console.log("Unknown Type: modelName,fieldName,value:", modelName, fieldName, value)
+            console.log("Unknown Type: type, modelName,fieldName,value:", typ, modelName, fieldName, value)
             return value
         }
     }
@@ -126,36 +126,41 @@ module.exports = function (MongoQueryableModel) {
         // text: fulltext search
         // mode: additional query expression
 
-        let modeMatch = null;
+        let allMatch = [];
         Object.keys(fields).map(function (key) {
             // split in facet and non-facet conditions
             if (facets.indexOf(key) < 0) {
                 if (key === "text") {
                     // unshift because text must be at start of array
                     if (typeof fields[key] === "string") {
-                        pipeline.unshift({
+                        const m = {
                             $match: {
                                 $or: [{
                                     $text: searchExpression(
                                         modelName,
                                         key,
-                                        fields[key]
+                                        String(fields[key])
                                     )
-                                }, ]
+                                }]
                             }
-                        });
+                        }
+                        pipeline.unshift(m);
                     }
                 }
                 // map all id type fields to _id for mongo query
                 else if (key == app.models[modelName].getIdName()) {
                     let match = {};
                     match["_id"] = searchExpression(modelName, key, fields[key]);
-                    pipeline.push({
+                    const m = {
                         $match: match
-                    });
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
                 }
                 // mode is not a field , just an object for containing a match clause
+                // TODO translate begin/end syntax to $gte, new Date() Syntax, also for mode expression, see searchExpression
                 else if (key === "mode") {
+                    // console.log("Mode key")
                     // substitute potential id field in fields
                     let idField = app.models[modelName].getIdName();
                     let currentExpression = JSON.parse(JSON.stringify(fields[key]))
@@ -163,14 +168,14 @@ module.exports = function (MongoQueryableModel) {
                         currentExpression["_id"] = currentExpression[idField]
                         delete currentExpression[idField]
                     }
-                    pipeline.push({
+                    const m = {
                         $match: currentExpression
-                    });
-                    modeMatch = currentExpression
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
                 } else if (key === "userGroups") {
-                    // no group conditions if global access role
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
-                        pipeline.push({
+                        const m = {
                             $match: {
                                 $or: [{
                                         ownerGroup: searchExpression(
@@ -188,21 +193,40 @@ module.exports = function (MongoQueryableModel) {
                                     }
                                 ]
                             }
-                        });
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
                     }
                 } else if (key === "scientific" || key === "characteristics") {
                     fields[key].forEach(condition => {
                         const match = generateScientificExpression(modelName, condition);
-                        pipeline.push({
+                        const m = {
                             $match: match
-                        });
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
                     });
-                } else {
+                } else if (key.startsWith("datasetlifecycle.")) {
+                    let lifecycleKey = key.split(".")[1];
                     let match = {};
-                    match[key] = searchExpression(modelName, key, fields[key]);
-                    pipeline.push({
+                    match[key] = searchExpression("DatasetLifecycle", lifecycleKey, fields[key]);
+                    // ("Datasetlifecycle Match expression:", match)
+                    const m = {
                         $match: match
-                    });
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
+                } else {
+                    if (typeof fields[key].constructor !== Object) {
+                        let match = {};
+                        //console.log("Key, properties:", key, app.models[options.modelName].definition.properties)
+                        match[key] = searchExpression(modelName, key, fields[key]);
+                        const m = {
+                            $match: match
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
+                    }
                 }
             } else {
                 facetMatch[key] = searchExpression(modelName, key, fields[key]);
@@ -261,16 +285,15 @@ module.exports = function (MongoQueryableModel) {
 
         if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
             // console.log("Adding additional pipeline steps for unwinding file names:")
-            if (modeMatch) {
+            if (allMatch.length > 0) {
                 facetObject["all"] = [{
                         $match: facetMatch
                     },
                     {
                         "$unwind": "$dataFileList"
                     },
+                    ...allMatch,
                     {
-                        "$match": modeMatch
-                    }, {
                         $count: "totalSets"
                     }
                 ];
@@ -300,7 +323,7 @@ module.exports = function (MongoQueryableModel) {
         pipeline.push({
             $facet: facetObject
         });
-        // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
+        console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
 
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             let mongoModel = modelName
@@ -349,27 +372,14 @@ module.exports = function (MongoQueryableModel) {
         // construct match conditions from fields value
 
         // TOOD avoid code duplication of large parts with fullfacet
-        let modeMatch = null;
-        // add further pipeline steps for OrigDatablock
-        if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
-            // console.log("Adding additional pipeline steps for unwinding file names:")
-            pipeline.push({
-                "$project": {
-                    "dataFileList": 1,
-                    "datasetId": 1,
-                    "ownerGroup": 1
-                }
-            }, {
-                "$unwind": "$dataFileList"
-            })
-        }
+        let allMatch = [];
 
         Object.keys(fields).map(function (key) {
             if (fields[key] && fields[key] !== "null") {
                 if (key === "text") {
                     // unshift because text must be at start of array
                     if (typeof fields[key] === "string") {
-                        pipeline.unshift({
+                        const m = {
                             $match: {
                                 $or: [{
                                     $text: searchExpression(
@@ -379,16 +389,19 @@ module.exports = function (MongoQueryableModel) {
                                     )
                                 }]
                             }
-                        });
+                        }
+                        pipeline.unshift(m);
                     }
                 }
                 // map all id type fields to _id for mongo query
                 else if (key == app.models[modelName].getIdName()) {
                     let match = {};
                     match["_id"] = searchExpression(modelName, key, fields[key]);
-                    pipeline.push({
+                    const m = {
                         $match: match
-                    });
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
                 }
                 // mode is not a field , just an object for containing a match clause
                 // TODO translate begin/end syntax to $gte, new Date() Syntax, also for mode expression, see searchExpression
@@ -401,13 +414,14 @@ module.exports = function (MongoQueryableModel) {
                         currentExpression["_id"] = currentExpression[idField]
                         delete currentExpression[idField]
                     }
-                    pipeline.push({
+                    const m = {
                         $match: currentExpression
-                    });
-                    modeMatch = currentExpression;
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
                 } else if (key === "userGroups") {
                     if (fields["userGroups"].indexOf("globalaccess") < 0) {
-                        pipeline.push({
+                        const m = {
                             $match: {
                                 $or: [{
                                         ownerGroup: searchExpression(
@@ -425,42 +439,57 @@ module.exports = function (MongoQueryableModel) {
                                     }
                                 ]
                             }
-                        });
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
                     }
                 } else if (key === "scientific" || key === "characteristics") {
                     fields[key].forEach(condition => {
                         const match = generateScientificExpression(modelName, condition);
-                        pipeline.push({
+                        const m = {
                             $match: match
-                        });
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
                     });
                 } else if (key.startsWith("datasetlifecycle.")) {
                     let lifecycleKey = key.split(".")[1];
                     let match = {};
                     match[key] = searchExpression("DatasetLifecycle", lifecycleKey, fields[key]);
                     // ("Datasetlifecycle Match expression:", match)
-                    pipeline.push({
+                    const m = {
                         $match: match
-                    });
+                    }
+                    allMatch.push(m);
+                    pipeline.push(m);
                 } else {
                     if (typeof fields[key].constructor !== Object) {
                         let match = {};
                         //console.log("Key, properties:", key, app.models[options.modelName].definition.properties)
                         match[key] = searchExpression(modelName, key, fields[key]);
-                        pipeline.push({
+                        const m = {
                             $match: match
-                        });
+                        }
+                        allMatch.push(m);
+                        pipeline.push(m);
                     }
                 }
             }
         });
 
-        // TODO: why is this match handled separately ?add further pipeline steps for OrigDatablock
         if (options.modelName === "OrigDatablock" || options.modelName === "Datablock") {
-            if (modeMatch) {
-                pipeline.push({
-                    "$match": modeMatch
-                })
+            // console.log("Adding additional pipeline steps for unwinding file names:")
+            pipeline.push({
+                "$project": {
+                    "dataFileList": 1,
+                    "datasetId": 1,
+                    "ownerGroup": 1
+                }
+            }, {
+                "$unwind": "$dataFileList"
+            })
+            if (allMatch.length > 0) {
+                pipeline.push(...allMatch)
             }
         }
 

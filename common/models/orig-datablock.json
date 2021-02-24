@@ -14,6 +14,16 @@
             "keys": {
                 "dataFileList.path": 1
             }
+        },
+        "filesize_index": {
+            "keys": {
+                "dataFileList.size": 1
+            }
+        },
+        "filetime_index": {
+            "keys": {
+                "dataFileList.time": 1
+            }
         }
     },
     "options": {
