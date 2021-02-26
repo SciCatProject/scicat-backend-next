@@ -33,7 +33,7 @@ module.exports = function (app) {
             const userId = token && token.userId;
 
             const UserIdentity = app.models.UserIdentity;
-            const instance = UserIdentity.findOne({ where: { userId } });
+            const instance = await UserIdentity.findOne({ where: { userId } });
             let groups =
                 instance && instance.profile && instance.profile.accessGroups;
             if (!groups) {
