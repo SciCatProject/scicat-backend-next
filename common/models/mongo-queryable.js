@@ -43,7 +43,7 @@ module.exports = function (MongoQueryableModel) {
             };
         }
         const typ = loopbackTypeOf(modelName, fieldName, value)
-        console.debug("Loopback type:", typ)
+        // console.debug("Loopback type:", typ)
         if (typ === "String") {
             if (value.constructor === Array) {
                 if (value.length == 1) {
@@ -70,7 +70,7 @@ module.exports = function (MongoQueryableModel) {
                 $in: value
             };
         } else {
-            console.log("Unknown Type: type, modelName,fieldName,value:", typ, modelName, fieldName, value)
+            // console.log("Unknown Type: type, modelName,fieldName,value:", typ, modelName, fieldName, value)
             return value
         }
     }
@@ -323,7 +323,7 @@ module.exports = function (MongoQueryableModel) {
         pipeline.push({
             $facet: facetObject
         });
-        console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in fullfacet method:", JSON.stringify(pipeline, null, 3));
 
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             let mongoModel = modelName
@@ -529,7 +529,7 @@ module.exports = function (MongoQueryableModel) {
                 });
             }
         }
-        console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
+        // console.log("Resulting aggregate query in fullquery method:", JSON.stringify(pipeline, null, 3));
         app.models[options.modelName].getDataSource().connector.connect(function (err, db) {
             // fetch calling parent collection
             let mongoModel = modelName
