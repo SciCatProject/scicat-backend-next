@@ -174,7 +174,7 @@ module.exports = function (MongoQueryableModel) {
                     allMatch.push(m);
                     pipeline.push(m);
                 } else if (key === "userGroups") {
-                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
+                    if (fields["userGroups"].indexOf("globalaccess") < 0 && "ownerGroup" in app.models[modelName].definition.properties) {
                         const m = {
                             $match: {
                                 $or: [{
@@ -420,7 +420,7 @@ module.exports = function (MongoQueryableModel) {
                     allMatch.push(m);
                     pipeline.push(m);
                 } else if (key === "userGroups") {
-                    if (fields["userGroups"].indexOf("globalaccess") < 0) {
+                    if (fields["userGroups"].indexOf("globalaccess") < 0 && "ownerGroup" in app.models[modelName].definition.properties) {
                         const m = {
                             $match: {
                                 $or: [{
