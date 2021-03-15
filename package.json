@@ -43,7 +43,7 @@
     "strong-error-handler": "3.5.0",
     "superagent": "^5.3.1",
     "uuid": "^7.0.3",
-    "snyk": "^1.457.0"
+    "snyk": "^1.458.0"
   },
   "optionalDependencies": {
     "loopback-connector-kafka": "^0.2.1"
