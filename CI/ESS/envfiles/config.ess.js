@@ -1,3 +1,5 @@
+"use strict";
+
 var p = require("../package.json");
 var version = p.version.split(".").shift();
 module.exports = {
