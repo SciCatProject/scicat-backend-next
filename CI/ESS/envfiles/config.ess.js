@@ -1,46 +1,48 @@
-var p = require('../package.json');
-var version = p.version.split('.').shift();
+"use strict";
+
+var p = require("../package.json");
+var version = p.version.split(".").shift();
 module.exports = {
-    restApiRoot: '/api' + (version > 0 ? '/v' + version : ''),
-    host: process.env.HOST || '0.0.0.0',
-    port: process.env.PORT || 3000,
-    pidPrefix: '20.500.12269',
-    doiPrefix: '10.5072',
-    logbookEnabled: true,
-    scichatURL: process.env.SCICHAT_URL || 'scichat-loopback/api',
-    scichatUser: process.env.SCICHAT_USER || "logbookReader",
-    scichatPass: process.env.SCICHAT_PASSWORD || "logrdr",
-    datasetReductionEnabled: false,
-    reductionKafkaBroker: "kafka:9092",
-    reductionKafkaInputTopic: "reduce_input",
-    reductionKafkaOutputTopic: "reduce_output",
-    policyPublicationShiftInYears: 3,
-    policyRetentionShiftInYears: 10,
-    site: 'ESS',
-    facilities: ["loki"],
-    datasetStatusMessages: {
-        datasetCreated: "Dataset created",
-        datasetOndisk: "Stored on primary disk and on archive disk",
-        datasetOnDiskAndTape: "Stored on primary disk and on tape",
-        datasetOnTape: "Stored only in archive",
-        datasetRetrieved: "Retrieved to target disk",
-        datasetDeleted: "Deleted from archive and disk"
-    },
-    datasetTransitionMessages: {
-        scheduleArchive: "Scheduled for archiving",
-        schedulePurgeFromDisk: "Scheduled for purging from primary disk",
-        scheduleRetrieve: "Scheduled for retrieval",
-        scheduleDelete: "Scheduled for removal from archive"
-    },
-    jobMessages: {
-        jobSubmitted: "Submitted for immediate execution",
-        jobSubmittedDelayed: "Submitted for delayed execution",
-        jobForwarded: "Forwarded to archive system",
-        jobStarted: "Execution started",
-        jobInProgress: "Finished by %i percent",
-        jobSuccess: "Successfully finished",
-        jobError: "Finished with errors",
-        jobCancel: "Cancelled"
-    }
+  restApiRoot: "/api" + (version > 0 ? "/v" + version : ""),
+  host: process.env.HOST || "0.0.0.0",
+  port: process.env.PORT || 3000,
+  pidPrefix: "20.500.12269",
+  doiPrefix: "10.5072",
+  logbookEnabled: true,
+  scichatURL: process.env.SCICHAT_URL || "scichat-loopback/api",
+  scichatUser: process.env.SCICHAT_USER || "logbookReader",
+  scichatPass: process.env.SCICHAT_PASSWORD || "logrdr",
+  datasetReductionEnabled: false,
+  reductionKafkaBroker: "kafka:9092",
+  reductionKafkaInputTopic: "reduce_input",
+  reductionKafkaOutputTopic: "reduce_output",
+  policyPublicationShiftInYears: 3,
+  policyRetentionShiftInYears: 10,
+  site: "ESS",
+  facilities: ["loki"],
+  datasetStatusMessages: {
+    datasetCreated: "Dataset created",
+    datasetOndisk: "Stored on primary disk and on archive disk",
+    datasetOnDiskAndTape: "Stored on primary disk and on tape",
+    datasetOnTape: "Stored only in archive",
+    datasetRetrieved: "Retrieved to target disk",
+    datasetDeleted: "Deleted from archive and disk"
+  },
+  datasetTransitionMessages: {
+    scheduleArchive: "Scheduled for archiving",
+    schedulePurgeFromDisk: "Scheduled for purging from primary disk",
+    scheduleRetrieve: "Scheduled for retrieval",
+    scheduleDelete: "Scheduled for removal from archive"
+  },
+  jobMessages: {
+    jobSubmitted: "Submitted for immediate execution",
+    jobSubmittedDelayed: "Submitted for delayed execution",
+    jobForwarded: "Forwarded to archive system",
+    jobStarted: "Execution started",
+    jobInProgress: "Finished by %i percent",
+    jobSuccess: "Successfully finished",
+    jobError: "Finished with errors",
+    jobCancel: "Cancelled"
+  }
 };
 
