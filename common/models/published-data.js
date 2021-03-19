@@ -59,6 +59,7 @@ module.exports = function (PublishedData) {
   const app = require("../../server/server");
 
   PublishedData.observe("before save", function (ctx, next) {
+    const User = app.models.User;
     if (ctx.instance) {
       if (ctx.isNewInstance) {
         ctx.instance.doi = config.doiPrefix + "/" + ctx.instance.doi;
@@ -66,7 +67,6 @@ module.exports = function (PublishedData) {
         // console.log("      New pid:", ctx.instance.doi);
       }
       if (ctx.options.accessToken) {
-        var User = app.models.User;
         User.findById(ctx.options.accessToken.userId, function (
           err,
           instance
@@ -96,7 +96,6 @@ module.exports = function (PublishedData) {
       }
     } else if (ctx.data) {
       if (ctx.options.accessToken) {
-        var User = app.models.User;
         User.findById(ctx.options.accessToken.userId, function (
           err,
           instance
