@@ -263,7 +263,7 @@ module.exports = function (Origdatablock) {
 
     Origdatablock.getDataSource().connector.connect(function (err, db) {
       var collection = db.collection("OrigDatablock");
-      var res = collection.aggregate(pipeline, {
+      collection.aggregate(pipeline, {
         allowDiskUse: true
       }, function (err, cursor) {
         cursor.toArray(function (err, res) {
