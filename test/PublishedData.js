@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
@@ -10,6 +9,8 @@ const should = chai.should();
 const utils = require("./LoginUtils");
 const nock = require("nock");
 
+chai.use(chaiHttp);
+
 var accessTokenArchiveManager = null;
 var idOrigDatablock = null;
 let accessToken = null,
@@ -17,8 +18,7 @@ let accessToken = null,
   pid = null,
   pidnonpublic = null,
   attachmentId = null,
-  doi = null,
-  pubDataId = null;
+  doi = null;
 
 const testPublishedData = {
   "creator" : [ 
@@ -201,7 +201,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -235,7 +235,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -247,7 +247,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -389,7 +389,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -493,7 +493,7 @@ describe("Test of access to published data", () => {
       )
       .set("Accept", "application/json")
       .expect(204)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -521,7 +521,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -533,7 +533,7 @@ describe("Test of access to published data", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
