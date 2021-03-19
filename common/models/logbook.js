@@ -163,11 +163,11 @@ module.exports = function(Logbook) {
           )
           .send(data);
         return response.body;
-      } catch (error) {
+      } catch (err) {
         logger.logError(err.message, {
           location: "Logbook.sendMessage",
           name,
-          message
+          data
         });
       }
     } else {
@@ -301,25 +301,25 @@ function sortMessages(messages, sortField) {
 }
 
 function checkConfigProperties() {
-  if (config.hasOwnProperty("logbookEnabled")) {
+  if (Object.prototype.hasOwnProperty.call(config, "logbookEnabled")) {
     logbookEnabled = config.logbookEnabled;
   } else {
     logbookEnabled = false;
   }
 
-  if (config.hasOwnProperty("scichatURL")) {
+  if (Object.prototype.hasOwnProperty.call(config, "scichatURL")) {
     scichatBaseUrl = config.scichatURL;
   } else {
     scichatBaseUrl = "Url not available";
   }
 
-  if (config.hasOwnProperty("scichatUser")) {
+  if (Object.prototype.hasOwnProperty.call(config, "scichatUser")) {
     scichatUser = config.scichatUser;
   } else {
     scichatUser = "scichatUser";
   }
 
-  if (config.hasOwnProperty("scichatPass")) {
+  if (Object.prototype.hasOwnProperty.call(config, "scichatPass")) {
     scichatPass = config.scichatPass;
   } else {
     scichatPass = "scichatPass";
