@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
@@ -9,13 +8,12 @@ var request = require("supertest");
 var should = chai.should();
 var utils = require("./LoginUtils");
 
+chai.use(chaiHttp);
+
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
-var accessTokenUser = null;
 
 var pid = null;
-var idDatablock = null;
-var idDatablock2 = null;
 
 var testraw = {
   "principalInvestigator": "bertram.astor@grumble.com",
@@ -217,7 +215,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
         .set("Accept", "application/json")
         .expect(200)
         .expect("Content-Type", /json/)
-        .end((err, res) => {
+        .end((err, _res) => {
           if (err)
             return done(err);
           done();
@@ -235,7 +233,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
         .set("Accept", "application/json")
         .expect(200)
         .expect("Content-Type", /json/)
-        .end((err, res) => {
+        .end((err, _res) => {
           if (err)
             return done(err);
           done();
@@ -280,7 +278,6 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
         res.body.should.have.property("size");
         res.body.should.have.property("id").and.be.string;
         res.body.should.have.property("createdBy").and.equal("archiveManager");
-        idDatablock = encodeURIComponent(res.body["id"]);
         done();
       });
   });
@@ -298,7 +295,6 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
           return done(err);
         res.body.should.have.property("size");
         res.body.should.have.property("id").and.be.string;
-        idDatablock2 = encodeURIComponent(res.body["id"]);
         done();
       });
 
@@ -327,7 +323,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -387,7 +383,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
