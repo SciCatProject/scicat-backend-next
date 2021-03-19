@@ -1,18 +1,18 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
 
 var chai = require("chai");
+// eslint-disable-next-line no-unused-vars
+var should = chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");
-
-var should = chai.should();
 var utils = require("./LoginUtils");
+
+chai.use(chaiHttp);
 
 var accessToken = null;
 var accessTokenArchiveManager = null;
-var boot = require("loopback-boot");
 
 // TODO
 // add tests for normal users (non functional accounts)
@@ -462,7 +462,7 @@ describe("Check different dataset types and their inheritance", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -475,7 +475,7 @@ describe("Check different dataset types and their inheritance", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -488,7 +488,7 @@ describe("Check different dataset types and their inheritance", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
