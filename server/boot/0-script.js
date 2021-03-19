@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = function (app) {
   const logger = require("../../common/logger");
 
@@ -7,17 +9,13 @@ module.exports = function (app) {
     dataSource.connector.settings.host,
     dataSource.connector.settings.database
   );
-  dataSource.isActual(function (err, actual) {
-    // console.log("Database actual:", actual)
-    // if (!actual) {
-    dataSource.autoupdate(function (err, result) {
-      if (err) {
-        console.log("Database Autoupdate error: %s", err);
-      } else {
-        console.log("Database Autoupdate result: %s", result);
-      }
-    });
-    //}
+
+  dataSource.autoupdate(function (err, result) {
+    if (err) {
+      console.log("Database Autoupdate error: %s", err);
+    } else {
+      console.log("Database Autoupdate result: %s", result);
+    }
   });
 
   var loopback = require("loopback");

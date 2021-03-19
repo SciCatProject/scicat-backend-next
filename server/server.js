@@ -69,12 +69,12 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     profile.username = [].concat(user["cn"])[0];
   }
   if (!profile.thumbnailPhoto2) {
-    if (user.hasOwnProperty("_raw")) {
+    if (Object.prototype.hasOwnProperty.call(user, "_raw")) {
       let img;
       const userRaw = user._raw;
-      if (userRaw.hasOwnProperty("THUMBNAILPHOTO")) {
+      if (Object.prototype.hasOwnProperty.call(userRaw, "THUMBNAILPHOTO")) {
         img = user._raw.THUMBNAILPHOTO;
-      } else if (userRaw.hasOwnProperty("thumbnailPhoto")) {
+      } else if (Object.prototype.hasOwnProperty.call(userRaw, "thumbnailPhoto")) {
         img = user._raw.thumbnailPhoto;
       }
       if (img) {
@@ -91,8 +91,8 @@ passportConfigurator.buildUserLdapProfile = function(user, options) {
     profile.id = user["uid"];
     if (!("uid" in user)) {
       const MY_NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";
-      const generated_id = uuidv3(user["mail"], MY_NAMESPACE);
-      profile.id = generated_id;
+      const generatedId = uuidv3(user["mail"], MY_NAMESPACE);
+      profile.id = generatedId;
     }
   }
   if (!profile.emails) {

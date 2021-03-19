@@ -1,3 +1,5 @@
+"use strict";
+
 var fs = require("fs");
 
 /* create functional accounts and their roles
@@ -151,7 +153,7 @@ module.exports = function (app, next) {
     }
   }
 
-  path = "server/functionalAccounts.json";
+  const path = "server/functionalAccounts.json";
   var accounts = [];
   if (fs.existsSync(path)) {
     var contents = fs.readFileSync(path, "utf8");
