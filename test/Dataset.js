@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
@@ -8,6 +7,8 @@ const chaiHttp = require("chai-http");
 const request = require("supertest");
 const should = chai.should();
 const utils = require("./LoginUtils");
+
+chai.use(chaiHttp);
 
 var accessTokenArchiveManager = null;
 let accessToken = null,
@@ -85,7 +86,7 @@ describe("Simple Dataset tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -143,7 +144,7 @@ describe("Simple Dataset tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -161,7 +162,7 @@ describe("Simple Dataset tests", () => {
       )
       .set("Accept", "application/json")
       .expect(204)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
@@ -192,7 +193,7 @@ describe("Simple Dataset tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err) return done(err);
         done();
       });
