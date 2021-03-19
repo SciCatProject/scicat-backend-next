@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
@@ -8,6 +7,8 @@ var chaiHttp = require("chai-http");
 var request = require("supertest");
 var should = chai.should();
 var utils = require("./LoginUtils");
+
+chai.use(chaiHttp);
 
 var accessTokenArchiveManager = null;
 var accessToken = null,
@@ -76,7 +77,7 @@ describe("Simple Policy tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -90,7 +91,7 @@ describe("Simple Policy tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end(function(err, res) {
+      .end(function(err, _res) {
         if (err)
           return done(err);
         done();
@@ -103,7 +104,7 @@ describe("Simple Policy tests", () => {
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
