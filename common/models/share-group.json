@@ -41,5 +41,17 @@
       "permission": "ALLOW"
     }
   ],
-  "methods": {}
+  "methods": {
+    "getGroups": {
+      "accepts": [
+        {
+          "arg": "id",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "returns": { "arg": "groups", "type": "Object" },
+      "http": { "path": "/:id/register", "verb": "post" }
+    }
+  }
 }

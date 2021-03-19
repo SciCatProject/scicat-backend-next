@@ -17,18 +17,6 @@ module.exports = function(ShareGroup) {
         );
         */
     let groups = { groups: ["JKFDFJ", "JFKDFD"] };
-    return groups;
+    return cb(groups);
   };
-
-  ShareGroup.remoteMethod("getGroups", {
-    accepts: [
-      {
-        arg: "id",
-        type: "string",
-        required: true
-      }
-    ],
-    http: { path: "/:id/register", verb: "post" },
-    returns: { arg: "groups", type: "Object" }
-  });
 };
