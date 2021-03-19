@@ -22,6 +22,7 @@ class GrayLogLogger {
 
   _createPayload(level, message, context) {
     return {
+      // eslint-disable-next-line camelcase
       level_str: Level[level],
       title: message,
       stackTrace: new Error().stack,
@@ -83,12 +84,13 @@ class ConsoleLogger {
     this._log(Level.ERROR, message, context);
   }
 
-  logException(message, expection, context) {
-    if (expection instanceof Error) {
+  logException(message, exception, context) {
+    if (exception instanceof Error) {
       this.logError(message, () => {
-        const { name, message, stack } = expection;
+        const { name, message, stack } = exception;
         return {
           exception: { name, message, stack },
+          // eslint-disable-next-line camelcase
           level_str: Level.ERROR,
           ...context
         };
