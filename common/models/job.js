@@ -2,7 +2,6 @@
 var config = require("../../server/config.local");
 var DataSource = require("loopback-datasource-juggler").DataSource;
 var utils = require("./utils");
-var config = require("../../server/config.local");
 var app = require("../../server/server");
 
 function isEmptyObject(obj) {
@@ -61,14 +60,14 @@ function sendStartJobEmail(job, ctx, idList, policy, next) {
 
       if (ctx.instance.type == "archive" && policy.archiveEmailNotification) {
         // needs more checking
-        if (policy.hasOwnProperty("archiveEmailsToBeNotified")) {
+        if (Object.prototype.hasOwnProperty.call(policy, "archiveEmailsToBeNotified")) {
           to += "," + policy.archiveEmailsToBeNotified.join();
         }
         utils.sendMail(to, "", subjectText, mailText, null, next);
         return;
       }
       if (ctx.instance.type == "retrieve" && policy.retrieveEmailNotification) {
-        if (policy.hasOwnProperty("retrieveEmailsToBeNotified")) {
+        if (Object.prototype.hasOwnProperty.call(policy, "retrieveEmailsToBeNotified")) {
           to += "," + policy.retrieveEmailsToBeNotified.join();
         }
         utils.sendMail(to, "", subjectText, mailText, null, next);
@@ -83,7 +82,7 @@ function sendStartJobEmail(job, ctx, idList, policy, next) {
   }
 }
 
-function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
+function markDatasetsAsScheduled(job, ctx, idList, policy, next) {
 
   let Dataset = app.models.Dataset;
   Dataset.updateAll({
@@ -97,7 +96,7 @@ function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
       "datasetlifecycle.archiveStatusMessage": "scheduledForArchiving"
     }
   }, ctx.options,
-  function (err, p) {
+  function (err, _p) {
     if (err) {
       var e = new Error();
       e.statusCode = 404;
@@ -203,14 +202,14 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
       // failures are always reported
       if (ctx.instance.type == "archive" && (policy.archiveEmailNotification || failure)) {
         // needs more checking
-        if (policy.hasOwnProperty("archiveEmailsToBeNotified")) {
+        if (Object.prototype.hasOwnProperty.call(policy, "archiveEmailsToBeNotified")) {
           to += "," + policy.archiveEmailsToBeNotified.join();
         }
         utils.sendMail(to, cc, subjectText, mailText, null, next);
         return;
       }
       if (ctx.instance.type == "retrieve" && (policy.retrieveEmailNotification || failure)) {
-        if (policy.hasOwnProperty("retrieveEmailsToBeNotified")) {
+        if (Object.prototype.hasOwnProperty.call(policy, "retrieveEmailsToBeNotified")) {
           to += "," + policy.retrieveEmailsToBeNotified.join();
         }
         utils.sendMail(to, cc, subjectText, mailText, null, next);
@@ -225,33 +224,6 @@ function SendFinishJobEmail(Job, ctx, idList, policy, next) {
   }
 }
 
-function MarkDatasetsAsScheduled(job, ctx, idList, policy, next) {
-
-  let Dataset = app.models.Dataset;
-  Dataset.updateAll({
-    pid: {
-      inq: idList
-    }
-  }, {
-    "$set": {
-      "datasetlifecycle.archivable": false,
-      "datasetlifecycle.retrievable": false,
-      "datasetlifecycle.archiveStatusMessage": "scheduledForArchiving"
-    }
-  }, ctx.options,
-  function (err, p) {
-    if (err) {
-      var e = new Error();
-      e.statusCode = 404;
-      e.message = "Can not find all needed Dataset entries - no archive job sent:\n" + JSON.stringify(err);
-      next(e);
-    } else {
-      sendStartJobEmail(job, ctx, idList, policy, function () {
-        publishJob(job, ctx, next);
-      });
-    }
-  });
-}
 // for archive jobs all datasets must be in state archivable
 function TestArchiveJobs(job, ctx, idList, policy, next) {
 
@@ -274,7 +246,7 @@ function TestArchiveJobs(job, ctx, idList, policy, next) {
       next(e);
     } else {
       // mark all Datasets as in state scheduledForArchiving, archivable=false
-      MarkDatasetsAsScheduled(job, ctx, idList, policy, next);
+      markDatasetsAsScheduled(job, ctx, idList, policy, next);
     }
   });
 }
@@ -381,7 +353,7 @@ function getPolicy(id, options, next) {
       Policy.findOne(filter, options, function (err, policyInstance) {
         // console.log("Inside Jobs, look for policy:err,policyInstance:",err,policyInstance)
         if (err) {
-          var msg = "Error when looking for Policy of pgroup " + ctx.instance.ownerGroup + " " + err;
+          var msg = "Error when looking for Policy of pgroup " + instance.ownerGroup + " " + err;
           console.log(msg);
           return next(msg);
         } else if (policyInstance) {
@@ -406,9 +378,9 @@ module.exports = function (Job) {
 
   // Attach job submission to Kafka
   if ("queue" in config && config.queue === "kafka") {
-    // var options = {
+    var options = {
     //     connectionString: 'localhost:2181/'
-    // };
+    };
     var dataSource = new DataSource("kafka", options);
     Job.attachTo(dataSource);
   }
