@@ -333,7 +333,7 @@ module.exports = function (MongoQueryableModel) {
       }
       var collection = db.collection(mongoModel);
       try {
-        var res = collection.aggregate(pipeline, {
+        collection.aggregate(pipeline, {
           allowDiskUse: true
         }, function (err, cursor) {
           cursor.toArray(function (err, res) {
@@ -539,7 +539,7 @@ module.exports = function (MongoQueryableModel) {
       }
       var collection = db.collection(mongoModel);
       try {
-        var res = collection.aggregate(pipeline, {
+        collection.aggregate(pipeline, {
           allowDiskUse: true
         }, function (err, cursor) {
           cursor.toArray(function (err, res) {
@@ -585,6 +585,7 @@ module.exports = function (MongoQueryableModel) {
   };
 
   MongoQueryableModel.observe("before save", function (ctx, next) {
+    const User = app.models.User;
     // make sure that only ownerGroup members have modify rights
     if (ctx.data && ctx.options && !ctx.options.validate) {
       let groups = [];
@@ -606,7 +607,6 @@ module.exports = function (MongoQueryableModel) {
     // add some admin infos automatically
     if (ctx.instance) {
       if (ctx.options.accessToken) {
-        var User = app.models.User;
         User.findById(ctx.options.accessToken.userId, function (
           err,
           instance
@@ -636,7 +636,6 @@ module.exports = function (MongoQueryableModel) {
       }
     } else if (ctx.data) {
       if (ctx.options.accessToken) {
-        var User = app.models.User;
         User.findById(ctx.options.accessToken.userId, function (
           err,
           instance
