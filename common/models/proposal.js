@@ -1,5 +1,5 @@
 "use strict";
-const ds = require("./proposal.json");
+
 const utils = require("./utils");
 
 module.exports = function(Proposal) {
