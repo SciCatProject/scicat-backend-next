@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 var supertest = require("supertest");
@@ -38,10 +37,7 @@ module.exports = {
         });
 
         const route = c.route;
-        const method = c.method;
-        const expect = c.expect;
         const url = settings.apiPrefix + route;
-        const withData = c.body || false;
         const isWithAuthentication = c.authenticate || false;
 
 
@@ -112,6 +108,7 @@ module.exports = {
 
             parsedMethod
               .expect(c.expect)
+              // eslint-disable-next-line no-unused-vars
               .end(function (err, res) {
                 if (err) {
                   done(err);
