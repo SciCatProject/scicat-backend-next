@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';
@@ -9,9 +8,10 @@ var request = require("supertest");
 var should = chai.should();
 var utils = require("./LoginUtils");
 
+chai.use(chaiHttp);
+
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
-var accessTokenUser = null;
 
 var pid = null;
 var idDatablock = null;
@@ -508,7 +508,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -536,7 +536,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
@@ -549,7 +549,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err, _res) => {
         if (err)
           return done(err);
         done();
