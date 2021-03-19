@@ -1,3 +1,5 @@
+"use strict";
+
 // var loopbackApiTesting = require('loopback-api-testing');
 var loopbackApiTesting = require("./testGenerator");
 var tests = require("./config/tests.json");

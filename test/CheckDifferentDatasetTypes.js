@@ -1,5 +1,4 @@
-/* jshint node:true */
-/* jshint esversion:6 */
+/* eslint-disable no-unused-vars */
 "use strict";
 
 // process.env.NODE_ENV = 'test';

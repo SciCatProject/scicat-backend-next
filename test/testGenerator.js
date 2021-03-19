@@ -1,5 +1,5 @@
+/* eslint-disable no-unused-vars */
 "use strict";
-"esversion: 6";
 
 var supertest = require("supertest");
 var async = require("async");
@@ -31,7 +31,7 @@ module.exports = {
       async.each(conf, function (c, asyncCallback) {
 
         required.map(prop => {
-          if (!c.hasOwnProperty(prop)) {
+          if (!Object.prototype.hasOwnProperty.call(c, prop)) {
             console.log(prop + "  not specified");
             return asyncCallback();
           }
