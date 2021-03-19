@@ -3,7 +3,6 @@
 // process.env.NODE_ENV = 'test';
 
 var chai = require("chai");
-// eslint-disable-next-line no-unused-vars
 var should = chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");

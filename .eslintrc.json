@@ -24,6 +24,7 @@
               "vars": "all",
               "args": "after-used",
               "argsIgnorePattern": "^_",
+              "varsIgnorePattern": "should",
               "ignoreRestSiblings": true
           }
       ],
