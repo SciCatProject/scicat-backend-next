@@ -2,10 +2,6 @@
 
 //model extension file
 
-var config = require("../../server/config.local");
-var p = require("../../package.json");
-var utils = require("./utils");
-var own = require("./ownable.json");
 var ds = require("./dataset");
 
 module.exports = function (Policy) {
