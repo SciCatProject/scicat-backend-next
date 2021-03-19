@@ -1,5 +1,5 @@
 "use strict";
-const util = require("util");
+
 module.exports = function (Ownable) {
 
   Ownable.observe("access", function (ctx, next) {
