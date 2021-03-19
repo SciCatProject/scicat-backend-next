@@ -100,6 +100,9 @@ module.exports = function (Sample) {
       try {
         samples = await new Promise((resolve, reject) => {
           Sample.fullquery(fields, limits, options, (err, res) => {
+            if (err) {
+              return reject(err);
+            }
             resolve(res);
           });
         });
