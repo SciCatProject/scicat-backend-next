@@ -1,0 +1,43 @@
+[{
+    "account": "admin",
+    "password": "2jf0TPNZsS",
+    "email": "scicatadmin@your.site",
+    "role": "admin"
+}, {
+    "account": "ingestor",
+    "password": "23ljlkw",
+    "email": "scicatingestor@your.site",
+    "role": "ingestor"
+}, {
+    "account": "archiveManager",
+    "password": "wewerljk",
+    "email": "scicatarchivemanager@your.site",
+    "role": "archivemanager"
+}, {
+    "account": "proposalIngestor",
+    "password": "werljlkj",
+    "email": "scicatproposalingestor@your.site",
+    "role": "proposalingestor"
+}, {
+    "account": "synmx",
+    "password": "werlwjerlk",
+    "email": "synmx@your.site",
+    "role": "ingestor"
+}, {
+    "account": "syncsaxs",
+    "password": "werwerlkj",
+    "email": "syncsaxs@your.site",
+    "role": "ingestor"
+}, {
+    "account": "syntomcat",
+    "password": "werwel;jrlk",
+    "email": "syntomcat@your.site",
+    "role": "ingestor"
+},
+{
+    "account": "beamline",
+    "password": "@lsrocks!",
+    "email": "dmcreynolds@lbl.gov",
+    "role": "ingestor"
+}
+]

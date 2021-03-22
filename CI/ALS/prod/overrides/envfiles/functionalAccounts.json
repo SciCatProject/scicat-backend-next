@@ -1,0 +1,12 @@
+[{
+    "account": "admin",
+    "password": "",
+    "email": "scicatadmin@your.site",
+    "role": "admin"
+}, {
+    "account": "ingestor",
+    "password": "",
+    "email": "scicatingestor@your.site",
+    "role": "ingestor"
+}
+]
