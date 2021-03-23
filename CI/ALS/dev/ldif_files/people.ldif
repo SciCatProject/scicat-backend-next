@@ -1,0 +1,98 @@
+version: 1
+
+dn: dc=example,dc=org
+objectClass: dcObject
+objectClass: organization
+objectClass: top
+dc: example
+o: LDAP Catamel Auth
+
+dn: ou=Groups,dc=example,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+dn: ou=People,dc=example,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: People
+
+dn: ou=Proposals,dc=example,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Proposals
+
+dn: cn=Developers,ou=Groups,dc=example,dc=org
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: Administrator
+cn: Developers
+uniqueMember: cn=dylan,ou=People,dc=example,dc=org
+uniqueMember: cn=leonardo,ou=People,dc=example,dc=org
+uniqueMember: cn=marpontes,ou=People,dc=example,dc=org
+ou: Groups
+
+dn: cn=Administrator,ou=Groups,dc=example,dc=org
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: Administrator
+uniqueMember: cn=dylan,ou=People,dc=example,dc=org
+uniqueMember: cn=marpontes,ou=People,dc=example,dc=org
+ou: Groups
+
+dn: cn=zach,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: zach
+sn: Zeus
+givenName: Zachary
+mail: zach@oncase.com.br
+uid: 1002
+userPassword:: dGVzdDE=
+
+dn: cn=dylan,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: dylan
+sn: mcreynolds
+givenName: Dylan
+mail: dylan@foo.bar
+uid: 1005
+userPassword:: dGVzdDE=
+
+dn: cn=leonardo,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: leonardo
+sn: Luiz
+givenName: Leonardo
+mail: zach@oncase.com.br
+uid: 1003
+userPassword:: cGFzcw==
+
+dn: cn=marpontes,ou=People,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: marpontes
+sn: Pontes
+givenName: Marcello
+mail: marcello@oncase.com.br
+uid: 1001
+userPassword:: dGVzdDE=
+
+dn: cn=tomo832,ou=Proposals,dc=example,dc=org
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: tomo832
+uniqueMember: cn=dylan,ou=People,dc=example,dc=org
+uniqueMember: cn=marpontes,ou=People,dc=example,dc=org
+ou: Proposals
+
