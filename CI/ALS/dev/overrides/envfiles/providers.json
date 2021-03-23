@@ -30,7 +30,7 @@
             "email": "mail",
             "externalId": "uid",
             "orcid": "uid",
-            "accessGroups": ["memberOf","CN=((p|a-)\\w+).*","$1"]
+            "accessGroups": ["memberOf","^cn=((.+?),+).*","$2"]
         },
         "server": {
             "url": "ldap://openldap:389",
