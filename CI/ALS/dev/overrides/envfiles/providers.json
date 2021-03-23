@@ -29,14 +29,16 @@
             "displayName": "displayName",
             "email": "mail",
             "externalId": "uid",
+            "orcid": "uid",
             "accessGroups": ["memberOf","CN=((p|a-)\\w+).*","$1"]
         },
         "server": {
             "url": "ldap://openldap:389",
             "bindDn": "cn=admin,dc=example,dc=org",
             "bindCredentials": "admin",
-            "searchBase": "ou=People,dc=example,dc=org",
-            "searchFilter": "(&(objectcategory=person)(objectclass=user)(|(sAMAccountName={{username}})(mail={{username}})))"
+            "searchAttributes": ["cn", "mail", "givenName", "sn", "title", "uid", "memberOf"],
+            "searchBase": "dc=example,dc=org",
+            "searchFilter": "(&(objectclass=person)(cn={{username}}))"
         }
     },
     "oidc": {
