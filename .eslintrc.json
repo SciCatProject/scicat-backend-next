@@ -16,6 +16,7 @@
   },
   "rules": {
       "camelcase": "error",
+      "eol-last": ["error", "always"],
       "indent": ["error", 2],
       "linebreak-style": ["error", "unix"],
       "no-unused-vars": [
