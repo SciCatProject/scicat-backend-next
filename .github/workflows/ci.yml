@@ -17,7 +17,7 @@ jobs:
           docker-compose pull
           docker-compose up --build --exit-code-from catamel
           docker-compose down
-  
+
   gitlab:
     name: Build and deploy
     needs: [test]
@@ -38,6 +38,6 @@ jobs:
         with:
           token: ${{ secrets.MAXIV_TOKEN }}
           project_id: 21894404
-          ref: "master"
+          ref: "develop"
           host: "https://gitlab.com"
           debug: true
