@@ -160,7 +160,7 @@ module.exports = function(Dataset) {
         scientificMetadata
       } = ctx.args.data;
       Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key].unit.length > 0) {
+        if (scientificMetadata[key].unit?.length > 0) {
           const {
             value,
             unit
@@ -302,7 +302,7 @@ module.exports = function(Dataset) {
         console.log("      New pid:", ctx.instance.pid);
         /* fill default datasetlifecycle
                     warning: need to transfer datasetlifecycle to a normal object first,
-                    otherwise key tests give wrong results due to some "wrapping" of 
+                    otherwise key tests give wrong results due to some "wrapping" of
                     the objects behind functions in loopback magic
                 */
         var subblock = {};
@@ -802,7 +802,7 @@ module.exports = function(Dataset) {
           lm.limit = MAXLIMIT;
         }
         limits = lm;
-      } 
+      }
 
       logger.logInfo("Fetching metadataKeys", {
         fields,

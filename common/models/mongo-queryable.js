@@ -8,7 +8,7 @@ module.exports = function (MongoQueryableModel) {
 
   function loopbackTypeOf(modelName, key, value = null) {
     // console.log("type extraction:", modelName, key)
-    // extract type. For arrays this returns undefined. See 
+    // extract type. For arrays this returns undefined. See
     // https://stackoverflow.com/questions/52916635/how-do-you-access-loopback-model-property-types-model-definition-properties-ty
     let property = app.models[modelName].definition.properties[key];
     // Also check derived Datasets
@@ -238,7 +238,7 @@ module.exports = function (MongoQueryableModel) {
     facets.forEach(function (facet) {
       // console.log("Facet.modelName,properties:", facet, modelName, app.models[modelName].definition.properties)
       // for inheritance Dataset test parent models as well
-      // TODO make this generic by checking for same collection setting in the models 
+      // TODO make this generic by checking for same collection setting in the models
       if (modelName == "Dataset") {
         if (facet in app.models["RawDataset"].definition.properties) {
           facetObject[facet] = utils.createNewFacetPipeline(
@@ -595,7 +595,7 @@ module.exports = function (MongoQueryableModel) {
       }
       // however allow history updates
       if (!ctx.data["history"] && ctx.currentInstance) {
-        // modify operations are forbidden unless you are member of ownerGroup or have globalaccess role  
+        // modify operations are forbidden unless you are member of ownerGroup or have globalaccess role
         if ((groups.indexOf("globalaccess") < 0) && !ctx.isNewInstance && groups.indexOf(ctx.currentInstance.ownerGroup) < 0) {
           var e = new Error();
           e.statusCode = 403;
@@ -664,7 +664,7 @@ module.exports = function (MongoQueryableModel) {
         scientificMetadata
       } = ctx.args.data;
       Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key].unit.length > 0) {
+        if (scientificMetadata[key].unit?.length > 0) {
           const {
             value,
             unit
