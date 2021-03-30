@@ -664,7 +664,7 @@ module.exports = function (MongoQueryableModel) {
         scientificMetadata
       } = ctx.args.data;
       Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key].unit && scientificMetadata[key].unit.length > 0) {
+        if (scientificMetadata[key] && scientificMetadata[key].unit && scientificMetadata[key].unit.length > 0) {
           const {
             value,
             unit
