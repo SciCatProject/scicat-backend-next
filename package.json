@@ -38,7 +38,7 @@
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
     "request-promise": "^4.2.6",
-    "rison": "github:nanonid/rison",
+    "rison": "git+https://github.com/nanonid/rison.git",
     "serve-favicon": "2.5.0",
     "strong-error-handler": "3.5.0",
     "superagent": "^5.3.1",
