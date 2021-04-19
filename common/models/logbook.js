@@ -43,6 +43,7 @@ module.exports = function (Logbook) {
     if (logbookEnabled) {
       try {
         const accessToken = await login(username, password);
+        logger.logInfo("Fetching Logbooks", {});
         const res = await superagent
           .get(baseUrl + "/Logbooks")
           .set({ Authorization: `Bearer ${accessToken}` });
@@ -59,7 +60,9 @@ module.exports = function (Logbook) {
                             b.messages[b.messages.length - 1].origin_server_ts
           )
           .reverse();
-        return nonEmptyLogbooks.concat(emptyLogbooks);
+        const logbooks = nonEmptyLogbooks.concat(emptyLogbooks);
+        logger.logInfo("Found Logbooks", { count: logbooks.length });
+        return logbooks;
       } catch (err) {
         logger.logError(err.message, { location: "Logbook.find" });
       }
@@ -81,6 +84,7 @@ module.exports = function (Logbook) {
         const decodedFilters = filters
           ? rison.decode_object(filters)
           : undefined;
+        console.log("Fetching logbook", { name, filters });
         const res = await superagent
           .get(
             baseUrl +
@@ -89,7 +93,9 @@ module.exports = function (Logbook) {
                             )}`
           )
           .set({ Authorization: `Bearer ${accessToken}` });
+        logger.logInfo("Found Logbook", { name });
         const { skip, limit, sortField } = decodedFilters;
+        logger.logInfo("Applying filters", { skip, limit, sortField });
         if (!!sortField && sortField.indexOf(":") > 0) {
           res.body.messages = sortMessages(
             res.body.messages,
@@ -124,10 +130,12 @@ module.exports = function (Logbook) {
     if (logbookEnabled) {
       try {
         const accessToken = await login(username, password);
+        console.log("Sending message", { name, data });
         const res = await superagent
           .post(baseUrl + `/Logbooks/${name}/message`)
           .set({ Authorization: `Bearer ${accessToken}` })
           .send(data);
+        logger.logInfo("Message sent", { name, eventId: res.body.event_id });
         return res.body;
       } catch (err) {
         logger.logError(err.message, {
