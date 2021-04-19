@@ -14,7 +14,7 @@ const password = config.scichatPass ? config.scichatPass : "";
 module.exports = function (Logbook) {
   Logbook.afterRemote("find", async function (ctx, logbooks) {
     const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
+    const proposalIds = await getUserProposalIds(userId);
     ctx.result = logbooks
       ? logbooks.filter(({ name }) => proposalIds.includes(name))
       : [];
@@ -23,7 +23,7 @@ module.exports = function (Logbook) {
 
   Logbook.afterRemote("findByName", async function (ctx, logbook) {
     const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
+    const proposalIds = await getUserProposalIds(userId);
     ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
     return;
   });
@@ -158,7 +158,7 @@ async function login(username, password) {
  * @returns {string[]} Array of proposalIds
  */
 
-async function getUserProposals(userId) {
+async function getUserProposalIds(userId) {
   const User = app.models.User;
   const UserIdentity = app.models.UserIdentity;
   const ShareGroup = app.models.ShareGroup;
