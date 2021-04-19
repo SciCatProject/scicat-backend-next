@@ -6,10 +6,16 @@ const rison = require("rison");
 const config = require("../../server/config.local");
 const logger = require("../logger");
 
-const logbookEnabled = config.logbookEnabled ? config.logbookEnabled : false;
-const scichatBaseUrl = config.scichatURL ? config.scichatURL : "http://localhost:3030/scichatapi";
-const username = config.scichatUser ? config.scichatUser : "";
-const password = config.scichatPass ? config.scichatPass : "";
+const logbookEnabled =
+    config.logbook && config.logbook.enabled ? config.logbook.enabled : false;
+const baseUrl =
+    config.logbook && config.logbook.baseUrl
+      ? config.logbook.baseUrl
+      : "http://localhost:3030/scichatapi";
+const username =
+    config.logbook && config.logbook.username ? config.logbook.username : "";
+const password =
+    config.logbook && config.logbook.password ? config.logbook.password : "";
 
 module.exports = function (Logbook) {
   Logbook.afterRemote("find", async function (ctx, logbooks) {
@@ -38,7 +44,7 @@ module.exports = function (Logbook) {
       try {
         const accessToken = await login(username, password);
         const res = await superagent
-          .get(scichatBaseUrl + "/Logbooks")
+          .get(baseUrl + "/Logbooks")
           .set({ Authorization: `Bearer ${accessToken}` });
         const nonEmptyLogbooks = res.body.filter(
           (logbook) => logbook.messages.length !== 0
@@ -77,8 +83,10 @@ module.exports = function (Logbook) {
           : undefined;
         const res = await superagent
           .get(
-            scichatBaseUrl +
-                            `/Logbooks/${name}?filter=${JSON.stringify(decodedFilters)}`
+            baseUrl +
+                            `/Logbooks/${name}?filter=${JSON.stringify(
+                              decodedFilters
+                            )}`
           )
           .set({ Authorization: `Bearer ${accessToken}` });
         const { skip, limit, sortField } = decodedFilters;
@@ -117,7 +125,7 @@ module.exports = function (Logbook) {
       try {
         const accessToken = await login(username, password);
         const res = await superagent
-          .post(scichatBaseUrl + `/Logbooks/${name}/message`)
+          .post(baseUrl + `/Logbooks/${name}/message`)
           .set({ Authorization: `Bearer ${accessToken}` })
           .send(data);
         return res.body;
@@ -144,7 +152,7 @@ async function login(username, password) {
   const credentials = { username, password };
   try {
     const res = await superagent
-      .post(scichatBaseUrl + "/Users/login")
+      .post(baseUrl + "/Users/login")
       .send(credentials);
     return res.body.token;
   } catch (err) {
