@@ -49,7 +49,7 @@ module.exports = function (Logbook) {
           .sort(
             (a, b) =>
               a.messages[a.messages.length - 1].origin_server_ts -
-                          b.messages[b.messages.length - 1].origin_server_ts
+                            b.messages[b.messages.length - 1].origin_server_ts
           )
           .reverse();
         return nonEmptyLogbooks.concat(emptyLogbooks);
@@ -61,19 +61,24 @@ module.exports = function (Logbook) {
   };
 
   /**
- * Find Logbook model instance by name
- * @param {string} name Name of the Logbook
- * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
- * @returns {Logbook} Logbook model instance
- */
+     * Find Logbook model instance by name
+     * @param {string} name Name of the Logbook
+     * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
+     * @returns {Logbook} Logbook model instance
+     */
 
-  Logbook.findByName = async function(name, filters) {
+  Logbook.findByName = async function (name, filters) {
     if (logbookEnabled) {
       try {
         const accessToken = await login(scichatUser, scichatPass);
-        const decodedFilters = filters ? rison.decode_object(filters) : undefined;
+        const decodedFilters = filters
+          ? rison.decode_object(filters)
+          : undefined;
         const res = await superagent
-          .get(scichatBaseUrl + `/Logbooks/${name}?filters=${decodedFilters}`)
+          .get(
+            scichatBaseUrl +
+                            `/Logbooks/${name}?filters=${decodedFilters}`
+          )
           .set({ Authorization: `Bearer ${accessToken}` });
         const { skip, limit, sortField } = decodedFilters;
         if (!!sortField && sortField.indexOf(":") > 0) {
@@ -84,10 +89,7 @@ module.exports = function (Logbook) {
         }
         if (skip >= 0 && limit >= 0) {
           const end = skip + limit;
-          const messages = res.body.messages.slice(
-            skip,
-            end
-          );
+          const messages = res.body.messages.slice(skip, end);
           return { ...res.body, messages };
         }
         return res.body;
@@ -103,37 +105,31 @@ module.exports = function (Logbook) {
   };
 
   /**
-     * Send message to logbook
-     * @param {string} name The name of the logbook
+     * Send message to a Logbook
+     * @param {string} name Name of the Logbook
      * @param {object} data JSON object with the key `message`
      * @returns {object} Object containing the event id of the message
      */
 
-  // Logbook.sendMessage = async function (name, data) {
-  //   if (logbookEnabled) {
-  //     try {
-  //       const accessToken = await scichatLogin(
-  //         scichatUser,
-  //         scichatPass
-  //       );
-  //       const response = await superagent
-  //         .post(
-  //           scichatBaseUrl +
-  //                           `/Rooms/${name}/message?access_token=${accessToken}`
-  //         )
-  //         .send(data);
-  //       return response.body;
-  //     } catch (err) {
-  //       logger.logError(err.message, {
-  //         location: "Logbook.sendMessage",
-  //         name,
-  //         data,
-  //       });
-  //     }
-  //   } else {
-  //     return [];
-  //   }
-  // };
+  Logbook.sendMessage = async function (name, data) {
+    if (logbookEnabled) {
+      try {
+        const accessToken = await login(scichatUser, scichatPass);
+        const res = await superagent
+          .post(scichatBaseUrl + `/Logbooks/${name}/message`)
+          .set({ Authorization: `Bearer ${accessToken}` })
+          .send(data);
+        return res.body;
+      } catch (err) {
+        logger.logError(err.message, {
+          location: "Logbook.sendMessage",
+          name,
+          data,
+        });
+      }
+    }
+    return [];
+  };
 };
 
 /**
