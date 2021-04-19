@@ -52,7 +52,6 @@ module.exports = function (Logbook) {
     if (logbookEnabled) {
       try {
         const accessToken = await login(scichatUser, scichatPass);
-        console.log({ accessToken });
         const res = await superagent
           .get(scichatBaseUrl + "/Logbooks")
           .set({ Authorization: `Bearer ${accessToken}` });
