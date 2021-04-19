@@ -107,43 +107,6 @@ module.exports = function (Logbook) {
   // };
 
   /**
-     * Find all Logbook model instances
-     * @returns {Logbook[]} Array of Logbook model instances
-     */
-
-  // Logbook.findAll = async function () {
-  //   if (logbookEnabled) {
-  //     try {
-  //       const accessToken = await scichatLogin(
-  //         scichatUser,
-  //         scichatPass
-  //       );
-  //       const fetchResponse = await superagent.get(
-  //         scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
-  //       );
-  //       const nonEmptyLogbooks = fetchResponse.body.filter(
-  //         (logbook) => logbook.messages.length !== 0
-  //       );
-  //       const emptyLogbooks = fetchResponse.body.filter(
-  //         (logbook) => logbook.messages.length === 0
-  //       );
-  //       nonEmptyLogbooks
-  //         .sort(
-  //           (a, b) =>
-  //             a.messages[a.messages.length - 1].origin_server_ts -
-  //                           b.messages[b.messages.length - 1].origin_server_ts
-  //         )
-  //         .reverse();
-  //       return nonEmptyLogbooks.concat(emptyLogbooks);
-  //     } catch (err) {
-  //       logger.logError(err.message, { location: "Logbook.findAll" });
-  //     }
-  //   } else {
-  //     return [];
-  //   }
-  // };
-
-  /**
      * Filter Logbook entries matching query
      * @param {string} name The name of the Logbook
      * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
