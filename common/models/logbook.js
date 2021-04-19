@@ -10,27 +10,41 @@ let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 
 checkConfigProperties();
 
-module.exports = function(Logbook) {
-  Logbook.afterRemote("findByName", async function(ctx, logbook) {
+module.exports = function (Logbook) {
+  Logbook.afterRemote("findByName", async function (ctx, logbook) {
     const { userId } = ctx.req.accessToken;
     const proposalIds = await getUserProposals(userId);
     ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
     return;
   });
 
-  Logbook.afterRemote("findAll", async function(ctx, logbooks) {
+  Logbook.afterRemote("findAll", async function (ctx, logbooks) {
     const { userId } = ctx.req.accessToken;
     const proposalIds = await getUserProposals(userId);
-    ctx.result = logbooks ? logbooks.filter(({ name }) => proposalIds.includes(name)) : [];
+    ctx.result = logbooks
+      ? logbooks.filter(({ name }) => proposalIds.includes(name))
+      : [];
     return;
   });
 
-  Logbook.afterRemote("filter", async function(ctx, logbook) {
+  Logbook.afterRemote("filter", async function (ctx, logbook) {
     const { userId } = ctx.req.accessToken;
     const proposalIds = await getUserProposals(userId);
     ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
     return;
   });
+
+  /**
+     * Find Logbook model instances
+     * @param {string} filter Logbook filter
+     * @returns {Logbook[]} Array of Logbook model instances
+     */
+
+  Logbook.find = async function (filter) {
+    var logbooks;
+    // TODO
+    return logbooks;
+  };
 
   /**
      * Find Logbook model instance
@@ -38,65 +52,65 @@ module.exports = function(Logbook) {
      * @returns {Logbook} Logbook model instance
      */
 
-  Logbook.findByName = async function(name) {
-    if (logbookEnabled) {
-      try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
-        );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl +
-                        `/Logbooks/${name}?access_token=${accessToken}`
-        );
-        return fetchResponse.body;
-      } catch (err) {
-        logger.logError(err.message, {
-          location: "Logbook.findByName",
-          name
-        });
-      }
-    } else {
-      return [];
-    }
-  };
+  // Logbook.findByName = async function (name) {
+  //   if (logbookEnabled) {
+  //     try {
+  //       const accessToken = await scichatLogin(
+  //         scichatUser,
+  //         scichatPass
+  //       );
+  //       const fetchResponse = await superagent.get(
+  //         scichatBaseUrl +
+  //                       `/Logbooks/${name}?access_token=${accessToken}`
+  //       );
+  //       return fetchResponse.body;
+  //     } catch (err) {
+  //       logger.logError(err.message, {
+  //         location: "Logbook.findByName",
+  //         name,
+  //       });
+  //     }
+  //   } else {
+  //     return [];
+  //   }
+  // };
 
   /**
      * Find all Logbook model instances
      * @returns {Logbook[]} Array of Logbook model instances
      */
 
-  Logbook.findAll = async function() {
-    if (logbookEnabled) {
-      try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
-        );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
-        );
-        const nonEmptyLogbooks = fetchResponse.body.filter(
-          logbook => logbook.messages.length !== 0
-        );
-        const emptyLogbooks = fetchResponse.body.filter(
-          logbook => logbook.messages.length === 0
-        );
-        nonEmptyLogbooks
-          .sort(
-            (a, b) =>
-              a.messages[a.messages.length - 1].origin_server_ts -
-                            b.messages[b.messages.length - 1].origin_server_ts
-          )
-          .reverse();
-        return nonEmptyLogbooks.concat(emptyLogbooks);
-      } catch (err) {
-        logger.logError(err.message, { location: "Logbook.findAll" });
-      }
-    } else {
-      return [];
-    }
-  };
+  // Logbook.findAll = async function () {
+  //   if (logbookEnabled) {
+  //     try {
+  //       const accessToken = await scichatLogin(
+  //         scichatUser,
+  //         scichatPass
+  //       );
+  //       const fetchResponse = await superagent.get(
+  //         scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
+  //       );
+  //       const nonEmptyLogbooks = fetchResponse.body.filter(
+  //         (logbook) => logbook.messages.length !== 0
+  //       );
+  //       const emptyLogbooks = fetchResponse.body.filter(
+  //         (logbook) => logbook.messages.length === 0
+  //       );
+  //       nonEmptyLogbooks
+  //         .sort(
+  //           (a, b) =>
+  //             a.messages[a.messages.length - 1].origin_server_ts -
+  //                           b.messages[b.messages.length - 1].origin_server_ts
+  //         )
+  //         .reverse();
+  //       return nonEmptyLogbooks.concat(emptyLogbooks);
+  //     } catch (err) {
+  //       logger.logError(err.message, { location: "Logbook.findAll" });
+  //     }
+  //   } else {
+  //     return [];
+  //   }
+  // };
 
   /**
      * Filter Logbook entries matching query
@@ -105,45 +119,45 @@ module.exports = function(Logbook) {
      * @returns {Logbook} Filtered Logbook model instance
      */
 
-  Logbook.filter = async function(name, filters) {
-    if (logbookEnabled) {
-      try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
-        );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl +
-                        `/Logbooks/${name}/${filters}?access_token=${accessToken}`
-        );
-        const { skip, limit, sortField } = rison.decode_object(filters);
-        if (!!sortField && sortField.indexOf(":") > 0) {
-          fetchResponse.body.messages = sortMessages(
-            fetchResponse.body.messages,
-            sortField
-          );
-        }
-        if (skip >= 0 && limit >= 0) {
-          const end = skip + limit;
-          const messages = fetchResponse.body.messages.slice(
-            skip,
-            end
-          );
-          return { ...fetchResponse.body, messages };
-        } else {
-          return fetchResponse.body;
-        }
-      } catch (err) {
-        logger.logError(err.message, {
-          location: "Logbook.filter",
-          name,
-          filters
-        });
-      }
-    } else {
-      return [];
-    }
-  };
+  // Logbook.filter = async function (name, filters) {
+  //   if (logbookEnabled) {
+  //     try {
+  //       const accessToken = await scichatLogin(
+  //         scichatUser,
+  //         scichatPass
+  //       );
+  //       const fetchResponse = await superagent.get(
+  //         scichatBaseUrl +
+  //                       `/Logbooks/${name}/${filters}?access_token=${accessToken}`
+  //       );
+  //       const { skip, limit, sortField } = rison.decode_object(filters);
+  //       if (!!sortField && sortField.indexOf(":") > 0) {
+  //         fetchResponse.body.messages = sortMessages(
+  //           fetchResponse.body.messages,
+  //           sortField
+  //         );
+  //       }
+  //       if (skip >= 0 && limit >= 0) {
+  //         const end = skip + limit;
+  //         const messages = fetchResponse.body.messages.slice(
+  //           skip,
+  //           end
+  //         );
+  //         return { ...fetchResponse.body, messages };
+  //       } else {
+  //         return fetchResponse.body;
+  //       }
+  //     } catch (err) {
+  //       logger.logError(err.message, {
+  //         location: "Logbook.filter",
+  //         name,
+  //         filters,
+  //       });
+  //     }
+  //   } else {
+  //     return [];
+  //   }
+  // };
 
   /**
      * Send message to logbook
@@ -152,28 +166,31 @@ module.exports = function(Logbook) {
      * @returns {object} Object containing the event id of the message
      */
 
-  Logbook.sendMessage = async function (name, data) {
-    if (logbookEnabled) {
-      try {
-        const accessToken = await scichatLogin(scichatUser, scichatPass);
-        const response = await superagent
-          .post(
-            scichatBaseUrl +
-                            `/Rooms/${name}/message?access_token=${accessToken}`
-          )
-          .send(data);
-        return response.body;
-      } catch (err) {
-        logger.logError(err.message, {
-          location: "Logbook.sendMessage",
-          name,
-          data
-        });
-      }
-    } else {
-      return [];
-    }
-  };
+  // Logbook.sendMessage = async function (name, data) {
+  //   if (logbookEnabled) {
+  //     try {
+  //       const accessToken = await scichatLogin(
+  //         scichatUser,
+  //         scichatPass
+  //       );
+  //       const response = await superagent
+  //         .post(
+  //           scichatBaseUrl +
+  //                           `/Rooms/${name}/message?access_token=${accessToken}`
+  //         )
+  //         .send(data);
+  //       return response.body;
+  //     } catch (err) {
+  //       logger.logError(err.message, {
+  //         location: "Logbook.sendMessage",
+  //         name,
+  //         data,
+  //       });
+  //     }
+  //   } else {
+  //     return [];
+  //   }
+  // };
 };
 
 /**
@@ -186,7 +203,7 @@ module.exports = function(Logbook) {
 async function scichatLogin(username, password) {
   const userData = {
     username: username,
-    password: password
+    password: password,
   };
   try {
     const loginResponse = await superagent
@@ -217,7 +234,7 @@ async function getUserProposals(userId) {
   try {
     const user = await User.findById(userId);
     const userIdentity = await UserIdentity.findOne({
-      where: { userId }
+      where: { userId },
     });
 
     if (userIdentity) {
@@ -240,12 +257,12 @@ async function getUserProposals(userId) {
         { where: { principalId: String(userId) } },
         options
       );
-      const roleIdList = roleMapping.map(instance => instance.roleId);
+      const roleIdList = roleMapping.map((instance) => instance.roleId);
 
       const role = await Role.find({
-        where: { id: { inq: roleIdList } }
+        where: { id: { inq: roleIdList } },
       });
-      const roleNameList = role.map(instance => instance.name);
+      const roleNameList = role.map((instance) => instance.name);
       roleNameList.push(user.username);
       options.currentGroups = roleNameList;
     }
@@ -253,12 +270,12 @@ async function getUserProposals(userId) {
     const proposals = await Proposal.find({
       where: { ownerGroup: { inq: options.currentGroups } },
     });
-    return proposals.map(proposal => proposal.proposalId);
+    return proposals.map((proposal) => proposal.proposalId);
   } catch (err) {
     logger.logError(err.message, {
       location: "Logbook.getUserProposals",
       userId,
-      options
+      options,
     });
   }
 }
