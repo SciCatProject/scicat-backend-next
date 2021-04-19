@@ -6,9 +6,10 @@ const rison = require("rison");
 const config = require("../../server/config.local");
 const logger = require("../logger");
 
-let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
-
-checkConfigProperties();
+const logbookEnabled = config.logbookEnabled ? config.logbookEnabled : false;
+const scichatBaseUrl = config.scichatURL ? config.scichatURL : "http://localhost:3030/scichatapi";
+const username = config.scichatUser ? config.scichatUser : "";
+const password = config.scichatPass ? config.scichatPass : "";
 
 module.exports = function (Logbook) {
   Logbook.afterRemote("find", async function (ctx, logbooks) {
@@ -35,7 +36,7 @@ module.exports = function (Logbook) {
   Logbook.find = async function () {
     if (logbookEnabled) {
       try {
-        const accessToken = await login(scichatUser, scichatPass);
+        const accessToken = await login(username, password);
         const res = await superagent
           .get(scichatBaseUrl + "/Logbooks")
           .set({ Authorization: `Bearer ${accessToken}` });
@@ -70,7 +71,7 @@ module.exports = function (Logbook) {
   Logbook.findByName = async function (name, filters) {
     if (logbookEnabled) {
       try {
-        const accessToken = await login(scichatUser, scichatPass);
+        const accessToken = await login(username, password);
         const decodedFilters = filters
           ? rison.decode_object(filters)
           : undefined;
@@ -114,7 +115,7 @@ module.exports = function (Logbook) {
   Logbook.sendMessage = async function (name, data) {
     if (logbookEnabled) {
       try {
-        const accessToken = await login(scichatUser, scichatPass);
+        const accessToken = await login(username, password);
         const res = await superagent
           .post(scichatBaseUrl + `/Logbooks/${name}/message`)
           .set({ Authorization: `Bearer ${accessToken}` })
@@ -250,31 +251,5 @@ function sortMessages(messages, sortField) {
   case "desc": {
     return sorted.reverse();
   }
-  }
-}
-
-function checkConfigProperties() {
-  if (Object.prototype.hasOwnProperty.call(config, "logbookEnabled")) {
-    logbookEnabled = config.logbookEnabled;
-  } else {
-    logbookEnabled = false;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatURL")) {
-    scichatBaseUrl = config.scichatURL;
-  } else {
-    scichatBaseUrl = "Url not available";
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatUser")) {
-    scichatUser = config.scichatUser;
-  } else {
-    scichatUser = "scichatUser";
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatPass")) {
-    scichatPass = config.scichatPass;
-  } else {
-    scichatPass = "scichatPass";
   }
 }
