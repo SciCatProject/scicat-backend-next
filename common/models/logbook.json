@@ -59,6 +59,43 @@
           "verb": "get"
         }
       ]
+    },
+    "findByName": {
+      "accepts": [
+        {
+          "arg": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the Logbook",
+          "http": {
+            "source": "path"
+          }
+        },
+        {
+          "arg": "filters",
+          "type": "string",
+          "required": false,
+          "description": "Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField",
+          "http": {
+            "source": "query"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "arg": "logbook",
+          "type": "object",
+          "root": true,
+          "description": "Logbook model instance"
+        }
+      ],
+      "description": "Find Logbook model instance by name",
+      "http": [
+        {
+          "path": "/:name",
+          "verb": "get"
+        }
+      ]
     }
   }
 }

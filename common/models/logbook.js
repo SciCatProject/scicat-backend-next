@@ -78,6 +78,19 @@ module.exports = function (Logbook) {
   };
 
   /**
+ * Find Logbook model instance by name
+ * @param {string} name Name of the Logbook
+ * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
+ * @returns {Logbook} Logbook model instance
+ */
+
+  Logbook.findByName = function(name, filters) {
+    var logbook;
+    // TODO
+    return logbook;
+  };
+
+  /**
      * Find Logbook model instance
      * @param {string} name Name of the Logbook
      * @returns {Logbook} Logbook model instance
