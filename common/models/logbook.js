@@ -53,10 +53,23 @@ module.exports = function (Logbook) {
       try {
         const accessToken = await login(scichatUser, scichatPass);
         console.log({ accessToken });
-        const res =  await superagent
+        const res = await superagent
           .get(scichatBaseUrl + "/Logbooks")
           .set({ Authorization: `Bearer ${accessToken}` });
-        return res.body;
+        const nonEmptyLogbooks = res.body.filter(
+          (logbook) => logbook.messages.length !== 0
+        );
+        const emptyLogbooks = res.body.filter(
+          (logbook) => logbook.messages.length === 0
+        );
+        nonEmptyLogbooks
+          .sort(
+            (a, b) =>
+              a.messages[a.messages.length - 1].origin_server_ts -
+                          b.messages[b.messages.length - 1].origin_server_ts
+          )
+          .reverse();
+        return nonEmptyLogbooks.concat(emptyLogbooks);
       } catch (err) {
         logger.logError(err.message, { location: "Logbook.find" });
       }
