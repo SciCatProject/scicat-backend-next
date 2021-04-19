@@ -27,15 +27,6 @@ module.exports = function (Logbook) {
     return;
   });
 
-  Logbook.afterRemote("findAll", async function (ctx, logbooks) {
-    const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
-    ctx.result = logbooks
-      ? logbooks.filter(({ name }) => proposalIds.includes(name))
-      : [];
-    return;
-  });
-
   /**
      * Find Logbook model instances
      * @returns {Logbook[]} Array of Logbook model instances
