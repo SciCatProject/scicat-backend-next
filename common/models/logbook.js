@@ -84,10 +84,39 @@ module.exports = function (Logbook) {
  * @returns {Logbook} Logbook model instance
  */
 
-  Logbook.findByName = function(name, filters) {
-    var logbook;
-    // TODO
-    return logbook;
+  Logbook.findByName = async function(name, filters) {
+    if (logbookEnabled) {
+      try {
+        const accessToken = await login(scichatUser, scichatPass);
+        const decodedFilters = filters ? rison.decode_object(filters) : undefined;
+        const res = await superagent
+          .get(scichatBaseUrl + `/Logbooks/${name}?filters=${decodedFilters}`)
+          .set({ Authorization: `Bearer ${accessToken}` });
+        const { skip, limit, sortField } = decodedFilters;
+        if (!!sortField && sortField.indexOf(":") > 0) {
+          res.body.messages = sortMessages(
+            res.body.messages,
+            sortField
+          );
+        }
+        if (skip >= 0 && limit >= 0) {
+          const end = skip + limit;
+          const messages = res.body.messages.slice(
+            skip,
+            end
+          );
+          return { ...res.body, messages };
+        }
+        return res.body;
+      } catch (err) {
+        logger.logError(err.message, {
+          location: "Logbook.findByName",
+          name,
+          filters,
+        });
+      }
+    }
+    return [];
   };
 
   /**
