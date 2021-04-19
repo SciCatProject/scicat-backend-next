@@ -44,17 +44,6 @@
   ],
   "methods": {
     "find": {
-      "accepts": [
-        {
-          "arg": "filter",
-          "type": "string",
-          "required": false,
-          "description": "Logbook filter",
-          "http": {
-            "source": "query"
-          }
-        }
-      ],
       "returns": [
         {
           "arg": "logbooks",

@@ -11,6 +11,15 @@ let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
 checkConfigProperties();
 
 module.exports = function (Logbook) {
+  Logbook.afterRemote("find", async function (ctx, logbooks) {
+    const { userId } = ctx.req.accessToken;
+    const proposalIds = await getUserProposals(userId);
+    ctx.result = logbooks
+      ? logbooks.filter(({ name }) => proposalIds.includes(name))
+      : [];
+    return;
+  });
+
   Logbook.afterRemote("findByName", async function (ctx, logbook) {
     const { userId } = ctx.req.accessToken;
     const proposalIds = await getUserProposals(userId);
@@ -36,14 +45,23 @@ module.exports = function (Logbook) {
 
   /**
      * Find Logbook model instances
-     * @param {string} filter Logbook filter
      * @returns {Logbook[]} Array of Logbook model instances
      */
 
-  Logbook.find = async function (filter) {
-    var logbooks;
-    // TODO
-    return logbooks;
+  Logbook.find = async function () {
+    if (logbookEnabled) {
+      try {
+        const accessToken = await login(scichatUser, scichatPass);
+        console.log({ accessToken });
+        const res =  await superagent
+          .get(scichatBaseUrl + "/Logbooks")
+          .set({ Authorization: `Bearer ${accessToken}` });
+        return res.body;
+      } catch (err) {
+        logger.logError(err.message, { location: "Logbook.find" });
+      }
+    }
+    return [];
   };
 
   /**
@@ -192,6 +210,18 @@ module.exports = function (Logbook) {
   //   }
   // };
 };
+
+async function login(username, password) {
+  const credentials = { username, password };
+  try {
+    const res = await superagent
+      .post(scichatBaseUrl + "/Users/login")
+      .send(credentials);
+    return res.body.token;
+  } catch (err) {
+    logger.logError(err.message, { username });
+  }
+}
 
 /**
  * Sign in to Scichat
