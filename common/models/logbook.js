@@ -78,7 +78,7 @@ module.exports = function (Logbook) {
         const res = await superagent
           .get(
             scichatBaseUrl +
-                            `/Logbooks/${name}?filters=${decodedFilters}`
+                            `/Logbooks/${name}?filter=${JSON.stringify(decodedFilters)}`
           )
           .set({ Authorization: `Bearer ${accessToken}` });
         const { skip, limit, sortField } = decodedFilters;
