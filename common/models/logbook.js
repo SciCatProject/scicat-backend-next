@@ -136,18 +136,6 @@ module.exports = function (Logbook) {
   // };
 };
 
-async function login(username, password) {
-  const credentials = { username, password };
-  try {
-    const res = await superagent
-      .post(scichatBaseUrl + "/Users/login")
-      .send(credentials);
-    return res.body.token;
-  } catch (err) {
-    logger.logError(err.message, { username });
-  }
-}
-
 /**
  * Sign in to Scichat
  * @param {string} username Username of Scichat user
@@ -155,16 +143,13 @@ async function login(username, password) {
  * @returns {string} Scichat access token
  */
 
-async function scichatLogin(username, password) {
-  const userData = {
-    username: username,
-    password: password,
-  };
+async function login(username, password) {
+  const credentials = { username, password };
   try {
-    const loginResponse = await superagent
+    const res = await superagent
       .post(scichatBaseUrl + "/Users/login")
-      .send(userData);
-    return loginResponse.body.id;
+      .send(credentials);
+    return res.body.token;
   } catch (err) {
     logger.logError(err.message, { username });
   }
