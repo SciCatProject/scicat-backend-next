@@ -31,7 +31,7 @@ exports.transferSizeToDataset = function (obj, sizeField, numFilesField, ctx, ne
           console.log("%s: Update size error: Instance %j can not be found. Could be access problem.", new Date(), instance.pid);
           var error = new Error();
           error.statusCode = 403;
-          error.message = "DatasetId not found. Could be access rule problem - test accessGroups for id: "+instance.pid;
+          error.message = "DatasetId not found. Could be access rule problem - test accessGroups for id: " + instance.pid;
           next(error);
         } else {
           datasetInstance.updateSize(
@@ -346,10 +346,14 @@ exports.sendMail = (to, cc, subjectText, mailText, e, next) => {
 };
 
 exports.convertToSI = (value, unit) => {
-  const quantity = math.unit(value, unit).toSI().toString();
-  const convertedValue = quantity.substring(0, quantity.indexOf(" "));
-  const convertedUnit = quantity.substring(quantity.indexOf(" ") + 1);
-  return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+  try {
+    const quantity = math.unit(value, unit).toSI().toString();
+    const [convertedValue, convertedUnit] = quantity.split(" ");
+    return { valueSI: Number(convertedValue), unitSI: convertedUnit };
+  } catch (error) {
+    console.log(error);
+    return { valueSI: value, unitSI: unit };
+  }
 };
 
 exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
