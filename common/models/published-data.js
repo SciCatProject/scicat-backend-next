@@ -1,8 +1,10 @@
 "use strict";
 
 const config = require("../../server/config.local");
-const requestPromise = require("request-promise");
+//const requestPromise = require("request-promise");
+const superagent = require("superagent");
 const fs = require("fs");
+const { util } = require("chai");
 
 const path = "./server/doiconfig.local.json";
 
@@ -246,6 +248,9 @@ module.exports = function (PublishedData) {
         console.log("posting to datacite");
         console.log(registerDataciteMetadataOptions);
         console.log(registerDataciteDoiOptions);
+        
+        /*
+        HERE MAX
         requestPromise(registerDataciteMetadataOptions)
           .then(() => requestPromise(registerDataciteDoiOptions))
           .then((v) => {
@@ -257,11 +262,42 @@ module.exports = function (PublishedData) {
             return cb(null, v);
           })
           .catch((e) => cb(e));
+        */
+
+        (async () => {
+          try {
+            const res = await util.superagent(registerDataciteMetadataOptions);
+            await util.superagent(registerDataciteDoiOptions);
+            
+            /*
+            const res = await superagent.put(registerDataciteMetadataOptions.uri)
+              .send(registerDataciteMetadataOptions.body)
+              .set("content-type", registerDataciteMetadataOptions.headers["content-type"])
+              .auth(registerDataciteMetadataOptions.auth["username"],registerDataciteMetadataOptions.auth["password"]);
+            await superagent.put(registerDataciteDoiOptions.uri)
+              .send(registerDataciteDoiOptions.body)
+              .set("content-type", registerDataciteDoiOptions.headers["content-type"])
+              .auth(registerDataciteDoiOptions.auth["username"],registerDataciteDoiOptions.auth["password"]);
+            */
+            PublishedData.update(where, data, function (err) {
+              if (err) {
+                return cb(err);
+              }
+            });
+
+            return cb(null,res);
+
+          } catch (error) {
+            return cb(error);
+          }
+        })();
+
       } else if (!config.oaiProviderRoute) {
         return cb(
           "oaiProviderRoute route not specified in config.local"
         );
       } else {
+        /*
         requestPromise(syncOAIPublication)
           .then((v) => {
             PublishedData.update(where, { $set: data }, function (
@@ -274,6 +310,22 @@ module.exports = function (PublishedData) {
             return cb(null, v);
           })
           .catch((e) => cb(e));
+          */
+        (async () => {
+          try {
+            const res = await util.superagent(syncOAIPublication);
+            PublishedData.update(where, { $set: data }, function (err) {
+              if (err) {
+                return cb(err);
+              }
+            });
+  
+            return cb(null,res);
+  
+          } catch (error) {
+            return cb(error);
+          }
+        })();
       }
     });
   };
