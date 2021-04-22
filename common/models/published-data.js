@@ -2,7 +2,7 @@
 
 const config = require("../../server/config.local");
 //const requestPromise = require("request-promise");
-const superagent = require("superagent");
+//const superagent = require("superagent");
 const fs = require("fs");
 const { util } = require("chai");
 
@@ -377,7 +377,8 @@ module.exports = function (PublishedData) {
     const where = {
       doi: doi,
     };
-    requestPromise(resyncOAIPublication)
+    /*
+     requestPromise(resyncOAIPublication)
       .then((v) => {
         PublishedData.update(where, { $set: data }, function (err) {
           if (err) {
@@ -387,6 +388,23 @@ module.exports = function (PublishedData) {
         return cb(null, v);
       })
       .catch((e) => cb(e));
+    */
+    (async () => {
+      try {
+        const res = await util.superagent(resyncOAIPublication);
+        
+        PublishedData.update(where, { $set: data }, function (err) {
+          if (err) {
+            return cb(err);
+          }
+        });
+
+        return cb(null,res);
+
+      } catch (error) {
+        return cb(error);
+      }
+    })();
   };
 
   PublishedData.remoteMethod("resync", {

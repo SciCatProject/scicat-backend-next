@@ -7,7 +7,7 @@ var exports = module.exports = {};
 var nodemailer = require("nodemailer");
 const math = require("mathjs");
 const superagent = require("superagent");
-const { cbrt } = require("mathjs");
+
 // Utility function to transfer size information from the datablock storage to the related dataset
 
 // Just a hint
@@ -414,18 +414,18 @@ exports.superagent = (request) => {
   var sao = superagent;
   // check which type of method we should use
   switch(request.method) {
-    case "PUT":
-      sao = sao.put(request.uri);
-      break;
-    case "POST":
-      sao = sao.post(request.uri);
-      break;
-    case "GET":
-      sao = sao.get(request.uri);
-      break;
-    default:
-      console.log("Request method invalid");
-      throw "Request method invalid";
+  case "PUT":
+    sao = sao.put(request.uri);
+    break;
+  case "POST":
+    sao = sao.post(request.uri);
+    break;
+  case "GET":
+    sao = sao.get(request.uri);
+    break;
+  default:
+    console.log("Request method invalid");
+    throw "Request method invalid";
   }
 
   // insert body
@@ -445,4 +445,4 @@ exports.superagent = (request) => {
     });
   }
   return sao;
-}
+};
