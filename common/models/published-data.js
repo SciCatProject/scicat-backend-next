@@ -4,7 +4,8 @@ const config = require("../../server/config.local");
 //const requestPromise = require("request-promise");
 //const superagent = require("superagent");
 const fs = require("fs");
-const { util } = require("chai");
+//const { util } = require("chai");
+const utils = reuire("./utils")
 
 const path = "./server/doiconfig.local.json";
 

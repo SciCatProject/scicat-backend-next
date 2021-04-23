@@ -34,7 +34,7 @@ const superagent_tests = {
             "password" : "the_password"
         },
     }
-}
+};
 
 
 describe("utils.superagent", () => {
@@ -42,17 +42,17 @@ describe("utils.superagent", () => {
     it("should return an instance of superagent", () => {
         const res = utils.superagent(superagent_tests["put"]);
         res.should.be.instanceof('superagent');
-        return console.log(res);
+        console.log(res);
     });
 
     it("should return an instance of superagent with put method", () => {
         const res = utils.superagent(superagent_tests["put"]);
-        res.should.be.instanceof('superagent')
+        res.should.be.instanceof('superagent');
     });
 
     it("should return an instance of superagent with post method", () => {
         const res = utils.superagent(superagent_tests["post"]);
-        res.should.be.instanceof('superagent')
+        res.should.be.instanceof('superagent');
     });
 
 });
