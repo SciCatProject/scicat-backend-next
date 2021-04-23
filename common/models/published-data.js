@@ -5,7 +5,7 @@ const config = require("../../server/config.local");
 //const superagent = require("superagent");
 const fs = require("fs");
 //const { util } = require("chai");
-const utils = reuire("./utils")
+const utils = require("./utils")
 
 const path = "./server/doiconfig.local.json";
 
