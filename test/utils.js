@@ -52,7 +52,7 @@ describe("utils.superagent", () => {
 
     it("should return an instance of superagent with post method", () => {
         const res = utils.superagent(superagent_tests["post"]);
-            res.should.be.instanceof('superagent')
+        res.should.be.instanceof('superagent')
     });
 
 });
