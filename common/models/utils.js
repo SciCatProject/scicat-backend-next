@@ -440,7 +440,7 @@ exports.superagent = (request) => {
 
   // set headers
   if (request.headers) {
-    Object.keys(request.headers).forEach((key, index) => {
+    Object.keys(request.headers).forEach((key) => {
       sao = sao.set(key,request.headers[key]);
     });
   }
