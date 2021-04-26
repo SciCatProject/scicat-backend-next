@@ -1,10 +1,7 @@
 "use strict";
 
 const config = require("../../server/config.local");
-//const requestPromise = require("request-promise");
-//const superagent = require("superagent");
 const fs = require("fs");
-//const { util } = require("chai");
 const utils = require("./utils");
 
 const path = "./server/doiconfig.local.json";
