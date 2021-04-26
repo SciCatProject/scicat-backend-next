@@ -104,7 +104,7 @@
           "arg": "filters",
           "type": "string",
           "required": true,
-          "description": "Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField",
+          "description": "Filter json object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField",
           "http": {
             "source": "path"
           }

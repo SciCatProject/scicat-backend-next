@@ -2,7 +2,7 @@
 
 const app = require("../../server/server");
 const superagent = require("superagent");
-const rison = require("rison");
+
 const config = require("../../server/config.local");
 const logger = require("../logger");
 
@@ -101,7 +101,7 @@ module.exports = function(Logbook) {
   /**
      * Filter Logbook entries matching query
      * @param {string} name The name of the Logbook
-     * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
+     * @param {string} filters Filter json object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
      * @returns {Logbook} Filtered Logbook model instance
      */
 
@@ -116,7 +116,7 @@ module.exports = function(Logbook) {
           scichatBaseUrl +
                         `/Logbooks/${name}/${filters}?access_token=${accessToken}`
         );
-        const { skip, limit, sortField } = rison.decode_object(filters);
+        const { skip, limit, sortField } = JSON.parse(filters);
         if (!!sortField && sortField.indexOf(":") > 0) {
           fetchResponse.body.messages = sortMessages(
             fetchResponse.body.messages,
