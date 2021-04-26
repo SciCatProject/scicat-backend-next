@@ -5,7 +5,7 @@ const config = require("../../server/config.local");
 //const superagent = require("superagent");
 const fs = require("fs");
 //const { util } = require("chai");
-const utils = require("./utils")
+const utils = require("./utils");
 
 const path = "./server/doiconfig.local.json";
 
@@ -252,8 +252,8 @@ module.exports = function (PublishedData) {
         
         (async () => {
           try {
-            const res = await util.superagent(registerDataciteMetadataOptions);
-            await util.superagent(registerDataciteDoiOptions);
+            const res = await utils.superagent(registerDataciteMetadataOptions);
+            await utils.superagent(registerDataciteDoiOptions);
             
             PublishedData.update(where, data, function (err) {
               if (err) {
@@ -276,7 +276,7 @@ module.exports = function (PublishedData) {
         
         (async () => {
           try {
-            const res = await util.superagent(syncOAIPublication);
+            const res = await utils.superagent(syncOAIPublication);
             PublishedData.update(where, { $set: data }, function (err) {
               if (err) {
                 return cb(err);
@@ -343,7 +343,7 @@ module.exports = function (PublishedData) {
     
     (async () => {
       try {
-        const res = await util.superagent(resyncOAIPublication);
+        const res = await utils.superagent(resyncOAIPublication);
         
         PublishedData.update(where, { $set: data }, function (err) {
           if (err) {
