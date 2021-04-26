@@ -41,19 +41,19 @@ const superagentTests = {
 describe("utils.superagent", () => {
     
   it("should return an instance of superagent", () => {
-    const res = utils.superagent(superagent_tests["put"]);
+    const res = utils.superagent(superagentTests["put"]);
     res.should.not.be.empty;
   });
 
   it("should return an instance of superagent with put method", () => {
     // TO-DO: better testing. Test structure of what's returned
-    const res = utils.superagent(superagent_tests["put"]);
+    const res = utils.superagent(superagentTests["put"]);
     res.should.not.be.empty;
   });
 
   it("should return an instance of superagent with post method", () => {
     // TO-DO: better testing. Test structure of what's returned
-    const res = utils.superagent(superagent_tests["post"]);
+    const res = utils.superagent(superagentTests["post"]);
     res.should.not.be.empty;
   });
 
