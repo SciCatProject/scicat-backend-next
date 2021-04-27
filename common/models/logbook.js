@@ -6,81 +6,52 @@ const rison = require("rison");
 const config = require("../../server/config.local");
 const logger = require("../logger");
 
-let logbookEnabled, scichatBaseUrl, scichatUser, scichatPass;
+const logbookEnabled =
+    config.logbook && config.logbook.enabled ? config.logbook.enabled : false;
+const baseUrl =
+    config.logbook && config.logbook.baseUrl
+      ? config.logbook.baseUrl
+      : "http://localhost:3030/scichatapi";
+const username =
+    config.logbook && config.logbook.username ? config.logbook.username : "";
+const password =
+    config.logbook && config.logbook.password ? config.logbook.password : "";
 
-checkConfigProperties();
-
-module.exports = function(Logbook) {
-  Logbook.afterRemote("findByName", async function(ctx, logbook) {
+module.exports = function (Logbook) {
+  Logbook.afterRemote("find", async function (ctx, logbooks) {
     const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
-    ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
+    const proposalIds = await getUserProposalIds(userId);
+    ctx.result = logbooks
+      ? logbooks.filter(({ name }) => proposalIds.includes(name))
+      : [];
     return;
   });
 
-  Logbook.afterRemote("findAll", async function(ctx, logbooks) {
+  Logbook.afterRemote("findByName", async function (ctx, logbook) {
     const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
-    ctx.result = logbooks ? logbooks.filter(({ name }) => proposalIds.includes(name)) : [];
-    return;
-  });
-
-  Logbook.afterRemote("filter", async function(ctx, logbook) {
-    const { userId } = ctx.req.accessToken;
-    const proposalIds = await getUserProposals(userId);
+    const proposalIds = await getUserProposalIds(userId);
     ctx.result = proposalIds.includes(logbook.name) ? logbook : null;
     return;
   });
 
   /**
-     * Find Logbook model instance
-     * @param {string} name Name of the Logbook
-     * @returns {Logbook} Logbook model instance
-     */
-
-  Logbook.findByName = async function(name) {
-    if (logbookEnabled) {
-      try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
-        );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl +
-                        `/Logbooks/${name}?access_token=${accessToken}`
-        );
-        return fetchResponse.body;
-      } catch (err) {
-        logger.logError(err.message, {
-          location: "Logbook.findByName",
-          name
-        });
-      }
-    } else {
-      return [];
-    }
-  };
-
-  /**
-     * Find all Logbook model instances
+     * Find Logbook model instances
      * @returns {Logbook[]} Array of Logbook model instances
      */
 
-  Logbook.findAll = async function() {
+  Logbook.find = async function () {
     if (logbookEnabled) {
       try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
+        const accessToken = await login(username, password);
+        logger.logInfo("Fetching Logbooks", {});
+        const res = await superagent
+          .get(baseUrl + "/Logbooks")
+          .set({ Authorization: `Bearer ${accessToken}` });
+        const nonEmptyLogbooks = res.body.filter(
+          (logbook) => logbook.messages.length !== 0
         );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl + `/Logbooks?access_token=${accessToken}`
-        );
-        const nonEmptyLogbooks = fetchResponse.body.filter(
-          logbook => logbook.messages.length !== 0
-        );
-        const emptyLogbooks = fetchResponse.body.filter(
-          logbook => logbook.messages.length === 0
+        const emptyLogbooks = res.body.filter(
+          (logbook) => logbook.messages.length === 0
         );
         nonEmptyLogbooks
           .sort(
@@ -89,65 +60,68 @@ module.exports = function(Logbook) {
                             b.messages[b.messages.length - 1].origin_server_ts
           )
           .reverse();
-        return nonEmptyLogbooks.concat(emptyLogbooks);
+        const logbooks = nonEmptyLogbooks.concat(emptyLogbooks);
+        logger.logInfo("Found Logbooks", { count: logbooks.length });
+        return logbooks;
       } catch (err) {
-        logger.logError(err.message, { location: "Logbook.findAll" });
+        logger.logError(err.message, { location: "Logbook.find" });
       }
-    } else {
-      return [];
     }
+    return [];
   };
 
   /**
-     * Filter Logbook entries matching query
-     * @param {string} name The name of the Logbook
+     * Find Logbook model instance by name
+     * @param {string} name Name of the Logbook
      * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
-     * @returns {Logbook} Filtered Logbook model instance
+     * @returns {Logbook} Logbook model instance
      */
 
-  Logbook.filter = async function(name, filters) {
+  Logbook.findByName = async function (name, filters) {
     if (logbookEnabled) {
       try {
-        const accessToken = await scichatLogin(
-          scichatUser,
-          scichatPass
-        );
-        const fetchResponse = await superagent.get(
-          scichatBaseUrl +
-                        `/Logbooks/${name}/${filters}?access_token=${accessToken}`
-        );
-        const { skip, limit, sortField } = rison.decode_object(filters);
+        const accessToken = await login(username, password);
+        const decodedFilters = filters
+          ? rison.decode_object(filters)
+          : undefined;
+        console.log("Fetching logbook", { name, filters });
+        const res = await superagent
+          .get(
+            baseUrl +
+                            `/Logbooks/${name}?filter=${JSON.stringify(
+                              decodedFilters
+                            )}`
+          )
+          .set({ Authorization: `Bearer ${accessToken}` });
+        logger.logInfo("Found Logbook", { name });
+        const { skip, limit, sortField } = decodedFilters;
+        logger.logInfo("Applying filters", { skip, limit, sortField });
         if (!!sortField && sortField.indexOf(":") > 0) {
-          fetchResponse.body.messages = sortMessages(
-            fetchResponse.body.messages,
+          res.body.messages = sortMessages(
+            res.body.messages,
             sortField
           );
         }
         if (skip >= 0 && limit >= 0) {
           const end = skip + limit;
-          const messages = fetchResponse.body.messages.slice(
-            skip,
-            end
-          );
-          return { ...fetchResponse.body, messages };
-        } else {
-          return fetchResponse.body;
+          const messages = res.body.messages.slice(skip, end);
+          return { ...res.body, messages };
         }
+        return res.body;
       } catch (err) {
         logger.logError(err.message, {
-          location: "Logbook.filter",
+          location: "Logbook.findByName",
           name,
-          filters
+          filters,
         });
       }
-    } else {
-      return [];
     }
+    return [];
   };
 
   /**
-     * Send message to logbook
-     * @param {string} name The name of the logbook
+     * Send message to a Logbook
+     * @param {string} name Name of the Logbook
      * @param {object} data JSON object with the key `message`
      * @returns {object} Object containing the event id of the message
      */
@@ -155,24 +129,23 @@ module.exports = function(Logbook) {
   Logbook.sendMessage = async function (name, data) {
     if (logbookEnabled) {
       try {
-        const accessToken = await scichatLogin(scichatUser, scichatPass);
-        const response = await superagent
-          .post(
-            scichatBaseUrl +
-                            `/Rooms/${name}/message?access_token=${accessToken}`
-          )
+        const accessToken = await login(username, password);
+        console.log("Sending message", { name, data });
+        const res = await superagent
+          .post(baseUrl + `/Logbooks/${name}/message`)
+          .set({ Authorization: `Bearer ${accessToken}` })
           .send(data);
-        return response.body;
+        logger.logInfo("Message sent", { name, eventId: res.body.event_id });
+        return res.body;
       } catch (err) {
         logger.logError(err.message, {
           location: "Logbook.sendMessage",
           name,
-          data
+          data,
         });
       }
-    } else {
-      return [];
     }
+    return [];
   };
 };
 
@@ -183,16 +156,13 @@ module.exports = function(Logbook) {
  * @returns {string} Scichat access token
  */
 
-async function scichatLogin(username, password) {
-  const userData = {
-    username: username,
-    password: password
-  };
+async function login(username, password) {
+  const credentials = { username, password };
   try {
-    const loginResponse = await superagent
-      .post(scichatBaseUrl + "/Users/login")
-      .send(userData);
-    return loginResponse.body.id;
+    const res = await superagent
+      .post(baseUrl + "/Users/login")
+      .send(credentials);
+    return res.body.token;
   } catch (err) {
     logger.logError(err.message, { username });
   }
@@ -204,7 +174,7 @@ async function scichatLogin(username, password) {
  * @returns {string[]} Array of proposalIds
  */
 
-async function getUserProposals(userId) {
+async function getUserProposalIds(userId) {
   const User = app.models.User;
   const UserIdentity = app.models.UserIdentity;
   const ShareGroup = app.models.ShareGroup;
@@ -217,7 +187,7 @@ async function getUserProposals(userId) {
   try {
     const user = await User.findById(userId);
     const userIdentity = await UserIdentity.findOne({
-      where: { userId }
+      where: { userId },
     });
 
     if (userIdentity) {
@@ -240,12 +210,12 @@ async function getUserProposals(userId) {
         { where: { principalId: String(userId) } },
         options
       );
-      const roleIdList = roleMapping.map(instance => instance.roleId);
+      const roleIdList = roleMapping.map((instance) => instance.roleId);
 
       const role = await Role.find({
-        where: { id: { inq: roleIdList } }
+        where: { id: { inq: roleIdList } },
       });
-      const roleNameList = role.map(instance => instance.name);
+      const roleNameList = role.map((instance) => instance.name);
       roleNameList.push(user.username);
       options.currentGroups = roleNameList;
     }
@@ -253,12 +223,12 @@ async function getUserProposals(userId) {
     const proposals = await Proposal.find({
       where: { ownerGroup: { inq: options.currentGroups } },
     });
-    return proposals.map(proposal => proposal.proposalId);
+    return proposals.map((proposal) => proposal.proposalId);
   } catch (err) {
     logger.logError(err.message, {
       location: "Logbook.getUserProposals",
       userId,
-      options
+      options,
     });
   }
 }
@@ -297,31 +267,5 @@ function sortMessages(messages, sortField) {
   case "desc": {
     return sorted.reverse();
   }
-  }
-}
-
-function checkConfigProperties() {
-  if (Object.prototype.hasOwnProperty.call(config, "logbookEnabled")) {
-    logbookEnabled = config.logbookEnabled;
-  } else {
-    logbookEnabled = false;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatURL")) {
-    scichatBaseUrl = config.scichatURL;
-  } else {
-    scichatBaseUrl = "Url not available";
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatUser")) {
-    scichatUser = config.scichatUser;
-  } else {
-    scichatUser = "scichatUser";
-  }
-
-  if (Object.prototype.hasOwnProperty.call(config, "scichatPass")) {
-    scichatPass = config.scichatPass;
-  } else {
-    scichatPass = "scichatPass";
   }
 }
