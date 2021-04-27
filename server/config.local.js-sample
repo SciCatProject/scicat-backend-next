@@ -12,6 +12,12 @@ module.exports = {
     metadataKeysReturnLimit: 100,
     registerMetadataUri : "https://mds.test.datacite.org/metadata",
     registerDoiUri : "https://mds.test.datacite.org/doi",
+    logbook: {
+      enabled: false,
+      baseUrl: "localhost:3030/scichatapi",
+      username: "",
+      password: ""
+    },
     grayLog: {
       enabled: false,
       host: "my.graylog.host",

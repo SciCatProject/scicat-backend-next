@@ -210,7 +210,7 @@ function updateHistory(ctx, datasetInstances, ctxdatacopy, index, next) {
         if (err) {
           console.log("Saving auto history failed:", err);
         }
-        if (config.logbookEnabled) {
+        if (config.logbook.enabled) {
           const Logbook = app.models.Logbook;
           const user = updatedBy.replace("ldap.", "");
           const datasetPid = datasetInstance.pid;
