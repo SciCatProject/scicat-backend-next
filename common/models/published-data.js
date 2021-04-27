@@ -1,8 +1,8 @@
 "use strict";
 
 const config = require("../../server/config.local");
-const requestPromise = require("request-promise");
 const fs = require("fs");
+const utils = require("./utils");
 
 const path = "./server/doiconfig.local.json";
 
@@ -246,34 +246,46 @@ module.exports = function (PublishedData) {
         console.log("posting to datacite");
         console.log(registerDataciteMetadataOptions);
         console.log(registerDataciteDoiOptions);
-        requestPromise(registerDataciteMetadataOptions)
-          .then(() => requestPromise(registerDataciteDoiOptions))
-          .then((v) => {
+        
+        (async () => {
+          try {
+            const res = await utils.superagent(registerDataciteMetadataOptions);
+            await utils.superagent(registerDataciteDoiOptions);
+            
             PublishedData.update(where, data, function (err) {
               if (err) {
                 return cb(err);
               }
             });
-            return cb(null, v);
-          })
-          .catch((e) => cb(e));
+
+            return cb(null,res);
+
+          } catch (error) {
+            return cb(error);
+          }
+        })();
+
       } else if (!config.oaiProviderRoute) {
         return cb(
           "oaiProviderRoute route not specified in config.local"
         );
       } else {
-        requestPromise(syncOAIPublication)
-          .then((v) => {
-            PublishedData.update(where, { $set: data }, function (
-              err
-            ) {
+        
+        (async () => {
+          try {
+            const res = await utils.superagent(syncOAIPublication);
+            PublishedData.update(where, { $set: data }, function (err) {
               if (err) {
                 return cb(err);
               }
             });
-            return cb(null, v);
-          })
-          .catch((e) => cb(e));
+  
+            return cb(null,res);
+  
+          } catch (error) {
+            return cb(error);
+          }
+        })();
       }
     });
   };
@@ -325,16 +337,23 @@ module.exports = function (PublishedData) {
     const where = {
       doi: doi,
     };
-    requestPromise(resyncOAIPublication)
-      .then((v) => {
+    
+    (async () => {
+      try {
+        const res = await utils.superagent(resyncOAIPublication);
+        
         PublishedData.update(where, { $set: data }, function (err) {
           if (err) {
             return cb(err);
           }
         });
-        return cb(null, v);
-      })
-      .catch((e) => cb(e));
+
+        return cb(null,res);
+
+      } catch (error) {
+        return cb(error);
+      }
+    })();
   };
 
   PublishedData.remoteMethod("resync", {

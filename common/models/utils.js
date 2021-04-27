@@ -6,6 +6,8 @@ var moment = require("moment-timezone");
 var exports = module.exports = {};
 var nodemailer = require("nodemailer");
 const math = require("mathjs");
+const superagent = require("superagent");
+
 // Utility function to transfer size information from the datablock storage to the related dataset
 
 // Just a hint
@@ -365,4 +367,82 @@ exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
     valueRequested: Number(convertedValue),
     unitRequested: convertedUnit,
   };
+};
+
+/*
+ wrapper to superagent library to make it ace as the request-response library
+ passing in a single data structure with all the info and options to define the full request
+
+ Examples:
+  registerDataciteMetadataOptions = {
+    method: "PUT",
+    body: xml,
+    uri: registerMetadataUri,
+    headers: {
+      "content-type": "application/xml;charset=UTF-8",
+    },
+    auth: doiProviderCredentials,
+  };
+
+  const registerDataciteDoiOptions = {
+    method: "PUT",
+    body: [
+      "#Content-Type:text/plain;charset=UTF-8",
+      `doi= ${fullDoi}`,
+      `url= ${config.publicURLprefix}${encodeDoi}`,
+    ].join("\n"),
+    uri: registerDoiUri,
+    headers: {
+      "content-type": "text/plain;charset=UTF-8",
+    },
+    auth: doiProviderCredentials,
+  };
+
+  const syncOAIPublication = {
+    method: "POST",
+    body: pub,
+    json: true,
+    uri: OAIServerUri,
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+    },
+    auth: doiProviderCredentials,
+  };
+ */
+exports.superagent = (request) => {
+  // instantiate the superagent object
+  var sao = superagent;
+  // check which type of method we should use
+  switch(request.method) {
+  case "PUT":
+    sao = sao.put(request.uri);
+    break;
+  case "POST":
+    sao = sao.post(request.uri);
+    break;
+  case "GET":
+    sao = sao.get(request.uri);
+    break;
+  default:
+    console.log("Request method invalid");
+    throw "Request method invalid";
+  }
+
+  // insert body
+  if (request.body) {
+    sao = sao.send(request.body);
+  }
+ 
+  // insert authorization information
+  if (request.auth && request.auth["password"] && request.auth["username"]) {
+    sao = sao.auth(request.auth["username"],request.auth["password"]);
+  }
+
+  // set headers
+  if (request.headers) {
+    Object.keys(request.headers).forEach((key) => {
+      sao = sao.set(key,request.headers[key]);
+    });
+  }
+  return sao;
 };

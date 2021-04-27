@@ -37,13 +37,12 @@
     "passport-ldapauth": "^2.1.4",
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
-    "request-promise": "^4.2.6",
     "rison": "git+https://github.com/nanonid/rison.git",
     "serve-favicon": "2.5.0",
+    "snyk": "^1.518.0",
     "strong-error-handler": "3.5.0",
     "superagent": "^5.3.1",
-    "uuid": "^7.0.3",
-    "snyk": "^1.518.0"
+    "uuid": "^7.0.3"
   },
   "optionalDependencies": {
     "loopback-connector-kafka": "^0.2.1"
