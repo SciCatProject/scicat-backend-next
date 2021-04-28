@@ -73,7 +73,7 @@ module.exports = function (Logbook) {
   /**
      * Find Logbook model instance by name
      * @param {string} name Name of the Logbook
-     * @param {string} filters Filter json object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
+     * @param {string} filters Stringified filter json object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
      * @returns {Logbook} Logbook model instance
      */
 
@@ -85,7 +85,7 @@ module.exports = function (Logbook) {
         const res = await superagent
           .get(
             baseUrl +
-                            `/Logbooks/${name}?filter=${JSON.stringify(filters)}`
+              `/Logbooks/${name}?filter=${filters}`
           )
           .set({ Authorization: `Bearer ${accessToken}` });
         logger.logInfo("Found Logbook", { name });
