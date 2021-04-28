@@ -37,7 +37,6 @@
     "passport-ldapauth": "^2.1.4",
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
-    "rison": "git+https://github.com/nanonid/rison.git",
     "serve-favicon": "2.5.0",
     "snyk": "^1.518.0",
     "strong-error-handler": "3.5.0",
