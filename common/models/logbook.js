@@ -2,7 +2,7 @@
 
 const app = require("../../server/server");
 const superagent = require("superagent");
-const rison = require("rison");
+
 const config = require("../../server/config.local");
 const logger = require("../logger");
 
@@ -73,7 +73,7 @@ module.exports = function (Logbook) {
   /**
      * Find Logbook model instance by name
      * @param {string} name Name of the Logbook
-     * @param {string} filters Filter rison object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
+     * @param {string} filters Stringified filter json object, keys: textSearch, showBotMessages, showUserMessages, showImages, skip, limit, sortField
      * @returns {Logbook} Logbook model instance
      */
 
@@ -81,20 +81,15 @@ module.exports = function (Logbook) {
     if (logbookEnabled) {
       try {
         const accessToken = await login(username, password);
-        const decodedFilters = filters
-          ? rison.decode_object(filters)
-          : undefined;
         console.log("Fetching logbook", { name, filters });
         const res = await superagent
           .get(
             baseUrl +
-                            `/Logbooks/${name}?filter=${JSON.stringify(
-                              decodedFilters
-                            )}`
+              `/Logbooks/${name}?filter=${filters}`
           )
           .set({ Authorization: `Bearer ${accessToken}` });
         logger.logInfo("Found Logbook", { name });
-        const { skip, limit, sortField } = decodedFilters;
+        const { skip, limit, sortField } = JSON.parse(filters);
         logger.logInfo("Applying filters", { skip, limit, sortField });
         if (!!sortField && sortField.indexOf(":") > 0) {
           res.body.messages = sortMessages(
