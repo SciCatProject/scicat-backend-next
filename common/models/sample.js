@@ -77,14 +77,6 @@ module.exports = function (Sample) {
           lm = JSON.parse(JSON.stringify(limits));
         }
 
-        //if (!lm.limit) {
-        //  lm.limit = MAXLIMIT;
-        //}
-
-        //if (lm.limit && lm.limit > MAXLIMIT) {
-        //  lm.limit = MAXLIMIT;
-        //}
-
         if (!lm.limit || lm.limit > MAXLIMIT) {
           lm.limit = MAXLIMIT;
         }

@@ -110,7 +110,6 @@ function markDatasetsAsScheduled(job, ctx, idList, policy, next) {
   });
 }
 
-//function SendFinishJobEmail(Job, ctx, idList, policy, next) {
 function sendFinishJobEmail(ctx, idList, policy, next) {
   let Dataset = app.models.Dataset;
   let subjectText = " " + ctx.instance.type + " job from " + ctx.instance.creationTime.toISOString().replace(/T/, " ").replace(/\..+/, "") + " (UTC) finished with status " + ctx.instance.jobStatusMessage;
@@ -413,7 +412,6 @@ module.exports = function (Job) {
         } else {
           // An existing job got some updates - check if you want to send an email
           if (ctx.instance.jobStatusMessage.startsWith("finish")) {
-            //SendFinishJobEmail(Job, ctx, idList, policy, function () {
             sendFinishJobEmail(ctx, idList, policy, function () {
               publishJob(Job, ctx, next);
             });

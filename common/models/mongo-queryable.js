@@ -127,7 +127,6 @@ module.exports = function (MongoQueryableModel) {
     // mode: additional query expression
 
     let allMatch = [];
-    //Object.keys(fields).map(function (key) {
     Object.keys(fields).forEach(function (key) {      
       // split in facet and non-facet conditions
       if (facets.indexOf(key) < 0) {
@@ -375,7 +374,6 @@ module.exports = function (MongoQueryableModel) {
     // TOOD avoid code duplication of large parts with fullfacet
     let allMatch = [];
 
-    //Object.keys(fields).map(function (key) {
     Object.keys(fields).forEach(function (key) {
       if (fields[key] && fields[key] !== "null") {
         if (key === "text") {

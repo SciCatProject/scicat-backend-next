@@ -94,7 +94,6 @@ module.exports = function (Policy) {
                 itemsProcessed++;
                 // required to avoid callback already called
                 // at this stage, we know that err is not empty
-                //if (!err && itemsProcessed === array.length) {
                 if (itemsProcessed === array.length) {
                   return next(null, "successful policy update");
                 }
@@ -110,7 +109,6 @@ module.exports = function (Policy) {
                     }
                     itemsProcessed++;
                     // required to avoid callback already called
-                    //if (!err && itemsProcessed === array.length) {
                     if (itemsProcessed === array.length) {
                       return next(null, "successful policy update");
                     }
