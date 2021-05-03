@@ -550,7 +550,8 @@ module.exports = function(Dataset) {
     // console.log("++++++++++++ fullquery: after filling fields with usergroup:",fields)
     // let matchJoin = {}
     // construct match conditions from fields value
-    Object.keys(fields).map(function(key) {
+    //Object.keys(fields).map(function(key) {
+    Object.keys(fields).forEach(function(key) {
       if (fields[key] && fields[key] !== "null") {
         if (typeof fields[key] === "string") {
           if (key === "text") {

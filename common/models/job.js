@@ -22,7 +22,7 @@ function publishJob(job, ctx, next) {
   return next();
 }
 
-function sendStartJobEmail(job, ctx, idList, policy, next) {
+function sendStartJobEmail(ctx, idList, policy, next) {
   // // check policy settings if mail should be sent
   let to = ctx.instance.emailJobInitiator;
   let subjectText = " " + ctx.instance.type + " job submitted successfully";
@@ -103,14 +103,15 @@ function markDatasetsAsScheduled(job, ctx, idList, policy, next) {
       e.message = "Can not find all needed Dataset entries - no archive job sent:\n" + JSON.stringify(err);
       next(e);
     } else {
-      sendStartJobEmail(job, ctx, idList, policy, function () {
+      sendStartJobEmail(ctx, idList, policy, function () {
         publishJob(job, ctx, next);
       });
     }
   });
 }
 
-function SendFinishJobEmail(Job, ctx, idList, policy, next) {
+//function SendFinishJobEmail(Job, ctx, idList, policy, next) {
+function sendFinishJobEmail(ctx, idList, policy, next) {
   let Dataset = app.models.Dataset;
   let subjectText = " " + ctx.instance.type + " job from " + ctx.instance.creationTime.toISOString().replace(/T/, " ").replace(/\..+/, "") + " (UTC) finished with status " + ctx.instance.jobStatusMessage;
   let mailText = "Hello, \n\nYour Job from " + ctx.instance.creationTime + " is now finished.\n";
@@ -291,7 +292,7 @@ function TestRetrieveJobs(job, ctx, idList, policy, next) {
         }
       });
     } else {
-      sendStartJobEmail(job, ctx, idList, policy, function () {
+      sendStartJobEmail(ctx, idList, policy, function () {
         publishJob(job, ctx, next);
       });
     }
@@ -329,7 +330,7 @@ function TestAllDatasets(job, ctx, idList, policy, next) {
         TestRetrieveJobs(job, ctx, idList, policy, next);
       } else {
         // all other type of jobs, like reset jobs
-        sendStartJobEmail(job, ctx, idList, policy, function () {
+        sendStartJobEmail(ctx, idList, policy, function () {
           publishJob(job, ctx, next);
         });
       }
@@ -412,7 +413,8 @@ module.exports = function (Job) {
         } else {
           // An existing job got some updates - check if you want to send an email
           if (ctx.instance.jobStatusMessage.startsWith("finish")) {
-            SendFinishJobEmail(Job, ctx, idList, policy, function () {
+            //SendFinishJobEmail(Job, ctx, idList, policy, function () {
+            sendFinishJobEmail(ctx, idList, policy, function () {
               publishJob(Job, ctx, next);
             });
           } else {

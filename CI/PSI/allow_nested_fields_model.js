@@ -622,9 +622,11 @@ const versionParts = process.versions && process.versions.node ?
   [1, 0, 0]; // browserify ships 1.0-compatible version of util.inspect
 
 const INSPECT_SUPPORTS_OBJECT_RETVAL =
- versionParts[0] > 0 ||
- versionParts[1] > 11 ||
- (versionParts[0] === 11 && versionParts[1] >= 14);
+versionParts[0] > 0 ||
+versionParts[1] > 11;
+//versionParts[0] > 0 ||
+//versionParts[1] > 11 ||
+//(versionParts[0] === 11 && versionParts[1] >= 14);
 
 ModelBaseClass.prototype.inspect = function(depth) {
   if (INSPECT_SUPPORTS_OBJECT_RETVAL)
