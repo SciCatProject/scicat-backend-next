@@ -95,7 +95,7 @@ class ConsoleLogger {
           ...context
         };
       });
-    else if (typeof exception === "string" || exception instanceof String) {
+    } else if (typeof exception === "string" || exception instanceof String) {
       this.logError(message, { exception, ...context });
     } else {
       this.logError(message, context || {});
