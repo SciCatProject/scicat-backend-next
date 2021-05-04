@@ -127,7 +127,7 @@ module.exports = function (MongoQueryableModel) {
     // mode: additional query expression
 
     let allMatch = [];
-    Object.keys(fields).forEach(function (key) {      
+    Object.keys(fields).forEach(function (key) {
       // split in facet and non-facet conditions
       if (facets.indexOf(key) < 0) {
         if (key === "text") {
