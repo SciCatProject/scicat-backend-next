@@ -30,8 +30,8 @@ module.exports = function (app) {
       );
       return jwtString;
     }
-
-    const userId = token && token.userId;
+    // by this point, token is true
+    const userId = token.userId;
 
     const UserIdentity = app.models.UserIdentity;
     const instance = await UserIdentity.findOne({ where: { userId } });

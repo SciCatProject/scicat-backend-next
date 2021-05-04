@@ -127,7 +127,7 @@ module.exports = function (MongoQueryableModel) {
     // mode: additional query expression
 
     let allMatch = [];
-    Object.keys(fields).map(function (key) {
+    Object.keys(fields).forEach(function (key) {
       // split in facet and non-facet conditions
       if (facets.indexOf(key) < 0) {
         if (key === "text") {
@@ -374,7 +374,7 @@ module.exports = function (MongoQueryableModel) {
     // TOOD avoid code duplication of large parts with fullfacet
     let allMatch = [];
 
-    Object.keys(fields).map(function (key) {
+    Object.keys(fields).forEach(function (key) {
       if (fields[key] && fields[key] !== "null") {
         if (key === "text") {
           // unshift because text must be at start of array
@@ -589,7 +589,8 @@ module.exports = function (MongoQueryableModel) {
     // make sure that only ownerGroup members have modify rights
     if (ctx.data && ctx.options && !ctx.options.validate) {
       let groups = [];
-      if (ctx.options && ctx.options.currentGroups) {
+      // ctx.options is not empty 
+      if (ctx.options.currentGroups) {
         // ("Your groups are:", ctx.options.currentGroups)
         groups = ctx.options.currentGroups;
       }
