@@ -25,7 +25,7 @@ module.exports = function (Ownable) {
               inq: groups
             }
           },
-          {isPublished: true}
+          { isPublished: true }
           ]
         };
         if (!ctx.query.where) {
