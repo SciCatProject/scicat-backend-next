@@ -24,7 +24,8 @@ module.exports = function (Ownable) {
             accessGroups: {
               inq: groups
             }
-          }
+          },
+          {isPublished: true}
           ]
         };
         if (!ctx.query.where) {
