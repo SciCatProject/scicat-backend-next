@@ -2,17 +2,20 @@
     "account": "admin",
     "password": "2jf0TPNZsS",
     "email": "scicatadmin@your.site",
-    "role": "admin"
+    "role": "admin",
+    "global": true
 }, {
     "account": "ingestor",
     "password": "aman",
     "email": "scicatingestor@your.site",
-    "role": "ingestor"
+    "role": "ingestor",
+    "global": true
 }, {
     "account": "archiveManager",
     "password": "aman",
     "email": "scicatarchivemanager@your.site",
     "role": "archivemanager"
+    
 }, {
     "account": "proposalIngestor",
     "password": "aman",

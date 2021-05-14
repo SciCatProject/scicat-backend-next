@@ -24,21 +24,21 @@
             "type": "string",
             "required": true,
             "index": true,
-            "description": "Owner of the data set, usually first name + lastname"
+            "description": "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
         },
         "ownerEmail": {
             "type": "string",
-            "description": "Email of owner of the data set"
+            "description": "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons."
         },
         "orcidOfOwner": {
             "type": "string",
-            "description": "ORCID of owner https://orcid.org if available"
+            "description": "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons."
         },
         "contactEmail": {
             "type": "string",
             "required": true,
             "index": true,
-            "description": "Email of contact person for this dataset"
+            "description": "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
         },
         "sourceFolder": {
             "type": "string",

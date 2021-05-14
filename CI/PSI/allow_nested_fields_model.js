@@ -16,28 +16,28 @@ module.exports = ModelBaseClass;
  * Module dependencies
  */
 
-const g = require('strong-globalize')();
-const util = require('util');
-const jutil = require('./jutil');
-const List = require('./list');
-const DataAccessUtils = require('./model-utils');
-const Observer = require('./observer');
-const Hookable = require('./hooks');
-const validations = require('./validations');
+const g = require("strong-globalize")();
+const util = require("util");
+const jutil = require("./jutil");
+const List = require("./list");
+const DataAccessUtils = require("./model-utils");
+const Observer = require("./observer");
+const Hookable = require("./hooks");
+const validations = require("./validations");
 const _extend = util._extend;
-const utils = require('./utils');
+const utils = require("./utils");
 const fieldsToArray = utils.fieldsToArray;
-const uuid = require('uuid');
-const shortid = require('shortid');
+const uuid = require("uuid");
+const shortid = require("shortid");
 
 // Set up an object for quick lookup
 const BASE_TYPES = {
-  'String': true,
-  'Boolean': true,
-  'Number': true,
-  'Date': true,
-  'Text': true,
-  'ObjectID': true,
+  "String": true,
+  "Boolean": true,
+  "Number": true,
+  "Date": true,
+  "Text": true,
+  "ObjectID": true,
 };
 
 /**
@@ -52,11 +52,11 @@ const BASE_TYPES = {
  */
 function ModelBaseClass(data, options) {
   options = options || {};
-  if (!('applySetters' in options)) {
+  if (!("applySetters" in options)) {
     // Default to true
     options.applySetters = true;
   }
-  if (!('applyDefaultValues' in options)) {
+  if (!("applyDefaultValues" in options)) {
     options.applyDefaultValues = true;
   }
   this._initProperties(data, options);
@@ -76,9 +76,9 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
   const self = this;
   const ctor = this.constructor;
 
-  if (typeof data !== 'undefined' && data !== null && data.constructor &&
-      typeof (data.constructor) !== 'function') {
-    throw new Error(g.f('Property name "{{constructor}}" is not allowed in %s data', ctor.modelName));
+  if (typeof data !== "undefined" && data !== null && data.constructor &&
+      typeof (data.constructor) !== "function") {
+    throw new Error(g.f("Property name \"{{constructor}}\" is not allowed in %s data", ctor.modelName));
   }
 
   if (data instanceof ctor) {
@@ -88,7 +88,7 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
   const properties = _extend({}, ctor.definition.properties);
   data = data || {};
 
-  if (typeof ctor.applyProperties === 'function') {
+  if (typeof ctor.applyProperties === "function") {
     ctor.applyProperties(data);
   }
 
@@ -99,10 +99,10 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
 
   if (strict === undefined) {
     strict = ctor.definition.settings.strict;
-  } else if (strict === 'throw') {
-    g.warn('Warning: Model %s, {{strict mode: `throw`}} has been removed, ' +
-      'please use {{`strict: true`}} instead, which returns' +
-      '{{`Validation Error`}} for unknown properties,', ctor.modelName);
+  } else if (strict === "throw") {
+    g.warn("Warning: Model %s, {{strict mode: `throw`}} has been removed, " +
+      "please use {{`strict: true`}} instead, which returns" +
+      "{{`Validation Error`}} for unknown properties,", ctor.modelName);
   }
 
   const persistUndefinedAsNull = ctor.definition.settings.persistUndefinedAsNull;
@@ -151,7 +151,7 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
     });
 
     if (strict) {
-      Object.defineProperty(this, '__unknownProperties', {
+      Object.defineProperty(this, "__unknownProperties", {
         writable: true,
         enumerable: false,
         configrable: true,
@@ -192,7 +192,7 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
   for (let k = 0; k < size; k++) {
     p = keys[k];
     propVal = data[p];
-    if (typeof propVal === 'function') {
+    if (typeof propVal === "function") {
       continue;
     }
 
@@ -214,16 +214,16 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
       if (!properties[p]) {
         modelTo = ctor.relations[p].modelTo || ModelBaseClass;
         const multiple = ctor.relations[p].multiple;
-        const typeName = multiple ? 'Array' : modelTo.modelName;
+        const typeName = multiple ? "Array" : modelTo.modelName;
         const propType = multiple ? [modelTo] : modelTo;
-        properties[p] = {name: typeName, type: propType};
+        properties[p] = { name: typeName, type: propType };
         /* Issue #1252
         this.setStrict(false);
         */
       }
 
       // Relation
-      if (relationType === 'belongsTo' && propVal != null) {
+      if (relationType === "belongsTo" && propVal != null) {
         // If the related model is populated
         self.__data[ctor.relations[p].keyFrom] = propVal[ctor.relations[p].keyTo];
 
@@ -251,13 +251,13 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
         // Throw error for properties with unsupported names
         if (/\./.test(p)) {
           throw new Error(g.f(
-            'Property names containing dot(s) are not supported. ' +
-            'Model: %s, dynamic property: %s',
+            "Property names containing dot(s) are not supported. " +
+            "Model: %s, dynamic property: %s",
             this.constructor.modelName, p
           ));
         }
       } else {
-        if (strict !== 'filter') {
+        if (strict !== "filter") {
           this.__unknownProperties.push(p);
         }
       }
@@ -281,9 +281,9 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
 
     // Set default values
     if (applyDefaultValues && propVal === undefined) {
-      let def = properties[p]['default'];
+      let def = properties[p]["default"];
       if (def !== undefined) {
-        if (typeof def === 'function') {
+        if (typeof def === "function") {
           if (def === Date) {
             // FIXME: We should coerce the value in general
             // This is a work around to {default: Date}
@@ -292,7 +292,7 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
           } else {
             def = def();
           }
-        } else if (type.name === 'Date' && def === '$now') {
+        } else if (type.name === "Date" && def === "$now") {
           def = new Date();
         }
         // FIXME: We should coerce the value
@@ -305,26 +305,26 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
     if (applyDefaultValues && propVal === undefined) {
       const defn = properties[p].defaultFn;
       switch (defn) {
-        case undefined:
-          break;
-        case 'guid':
-        case 'uuid':
-          // Generate a v1 (time-based) id
-          propVal = uuid.v1();
-          break;
-        case 'uuidv4':
-          // Generate a RFC4122 v4 UUID
-          propVal = uuid.v4();
-          break;
-        case 'now':
-          propVal = new Date();
-          break;
-        case 'shortid':
-          propVal = shortid.generate();
-          break;
-        default:
-          // TODO Support user-provided functions via a registry of functions
-          g.warn('Unknown default value provider %s', defn);
+      case undefined:
+        break;
+      case "guid":
+      case "uuid":
+        // Generate a v1 (time-based) id
+        propVal = uuid.v1();
+        break;
+      case "uuidv4":
+        // Generate a RFC4122 v4 UUID
+        propVal = uuid.v4();
+        break;
+      case "now":
+        propVal = new Date();
+        break;
+      case "shortid":
+        propVal = shortid.generate();
+        break;
+      default:
+        // TODO Support user-provided functions via a registry of functions
+        g.warn("Unknown default value provider %s", defn);
       }
       // FIXME: We should coerce the value
       // will implement it after we refactor the PropertyDefinition
@@ -338,9 +338,9 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
 
     // Handle complex types (JSON/Object)
     if (!BASE_TYPES[type.name]) {
-      if (typeof self.__data[p] !== 'object' && self.__data[p]) {
+      if (typeof self.__data[p] !== "object" && self.__data[p]) {
         try {
-          self.__data[p] = JSON.parse(self.__data[p] + '');
+          self.__data[p] = JSON.parse(self.__data[p] + "");
         } catch (e) {
           self.__data[p] = String(self.__data[p]);
         }
@@ -348,11 +348,11 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
 
       if (type.prototype instanceof ModelBaseClass) {
         if (!(self.__data[p] instanceof type) &&
-            typeof self.__data[p] === 'object' &&
+            typeof self.__data[p] === "object" &&
             self.__data[p] !== null) {
           self.__data[p] = new type(self.__data[p]);
         }
-      } else if (type.name === 'Array' || Array.isArray(type)) {
+      } else if (type.name === "Array" || Array.isArray(type)) {
         if (!(self.__data[p] instanceof List) &&
             self.__data[p] !== undefined &&
             self.__data[p] !== null) {
@@ -361,7 +361,7 @@ ModelBaseClass.prototype._initProperties = function(data, options) {
       }
     }
   }
-  this.trigger('initialize');
+  this.trigger("initialize");
 };
 
 /**
@@ -389,7 +389,7 @@ ModelBaseClass.getPropertyType = function(propName) {
     return null;
   }
   if (!prop.type) {
-    throw new Error(g.f('Type not defined for property %s.%s', this.modelName, propName));
+    throw new Error(g.f("Type not defined for property %s.%s", this.modelName, propName));
     // return null;
   }
   return prop.type.name;
@@ -409,7 +409,7 @@ ModelBaseClass.prototype.getPropertyType = function(propName) {
  * This overrides the default `toString()` method
  */
 ModelBaseClass.toString = function() {
-  return '[Model ' + this.modelName + ']';
+  return "[Model " + this.modelName + "]";
 };
 
 /**
@@ -422,7 +422,7 @@ ModelBaseClass.toString = function() {
  * @returns {Object} returns Plain JSON object
  */
 ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removeProtected) {
-  if (typeof onlySchema === 'object' && onlySchema != null) {
+  if (typeof onlySchema === "object" && onlySchema != null) {
     const options = onlySchema;
     onlySchema = options.onlySchema;
     removeHidden = options.removeHidden;
@@ -453,7 +453,7 @@ ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removePro
     val = self[propertyName];
 
     // Exclude functions
-    if (typeof val === 'function') {
+    if (typeof val === "function") {
       continue;
     }
     // Exclude hidden properties
@@ -490,7 +490,7 @@ ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removePro
       if (props[propertyName]) {
         continue;
       }
-      if (propertyName.indexOf('__') === 0) {
+      if (propertyName.indexOf("__") === 0) {
         continue;
       }
       if (removeHidden && Model.isHiddenProperty(propertyName)) {
@@ -504,7 +504,7 @@ ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removePro
       }
       val = self[propertyName];
       if (val !== undefined) {
-        if (typeof val === 'function') {
+        if (typeof val === "function") {
           continue;
         }
         if (val !== null && val.toObject) {
@@ -521,7 +521,7 @@ ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removePro
     size = keys.length;
     for (let i = 0; i < size; i++) {
       propertyName = keys[i];
-      if (propertyName.indexOf('__') === 0) {
+      if (propertyName.indexOf("__") === 0) {
         continue;
       }
       if (data[propertyName] === undefined) {
@@ -533,8 +533,8 @@ ModelBaseClass.prototype.toObject = function(onlySchema, removeHidden, removePro
         }
         const ownVal = self[propertyName];
         // The ownVal can be a relation function
-        val = (ownVal !== undefined && (typeof ownVal !== 'function')) ? ownVal : self.__data[propertyName];
-        if (typeof val === 'function') {
+        val = (ownVal !== undefined && (typeof ownVal !== "function")) ? ownVal : self.__data[propertyName];
+        if (typeof val === "function") {
           continue;
         }
 
@@ -608,7 +608,7 @@ ModelBaseClass.prototype.fromObject = function(obj) {
 ModelBaseClass.prototype.reset = function() {
   const obj = this;
   for (const k in obj) {
-    if (k !== 'id' && !obj.constructor.dataSource.definitions[obj.constructor.modelName].properties[k]) {
+    if (k !== "id" && !obj.constructor.dataSource.definitions[obj.constructor.modelName].properties[k]) {
       delete obj[k];
     }
   }
@@ -622,9 +622,8 @@ const versionParts = process.versions && process.versions.node ?
   [1, 0, 0]; // browserify ships 1.0-compatible version of util.inspect
 
 const INSPECT_SUPPORTS_OBJECT_RETVAL =
- versionParts[0] > 0 ||
- versionParts[1] > 11 ||
- (versionParts[0] === 11 && versionParts[1] >= 14);
+versionParts[0] > 0 ||
+versionParts[1] > 11;
 
 ModelBaseClass.prototype.inspect = function(depth) {
   if (INSPECT_SUPPORTS_OBJECT_RETVAL)
@@ -653,7 +652,7 @@ if (util.inspect.custom) {
  * @returns {ModelClass}
  */
 ModelBaseClass.mixin = function(anotherClass, options) {
-  if (typeof anotherClass === 'string') {
+  if (typeof anotherClass === "string") {
     this.modelBuilder.mixins.applyMixin(this, anotherClass, options);
   } else {
     if (anotherClass.prototype instanceof ModelBaseClass) {
@@ -790,12 +789,12 @@ ModelBaseClass.getMergePolicy = function(options) {
   // + fix for relations that should patch matching relations
   // + ranking of ACLs
   let mergePolicy = {
-    description: {replace: true}, // string or array
-    properties: {patch: true}, // object
-    hidden: {replace: false}, // array
-    protected: {replace: false}, // array
-    relations: {patch: true}, // object
-    acls: {rank: true}, // array
+    description: { replace: true }, // string or array
+    properties: { patch: true }, // object
+    hidden: { replace: false }, // array
+    protected: { replace: false }, // array
+    relations: { patch: true }, // object
+    acls: { rank: true }, // array
   };
 
   const config = (options || {}).configureModelMerge;
@@ -803,30 +802,30 @@ ModelBaseClass.getMergePolicy = function(options) {
   if (config === true) {
     // NOTE: recommended merge policy from datasource-juggler v3.6.2
     mergePolicy = {
-      description: {replace: true}, // string or array
-      options: {patch: true}, // object
+      description: { replace: true }, // string or array
+      options: { patch: true }, // object
       // properties: {patch: true}, // object // NOTE: not part of configurable merge
-      hidden: {replace: false}, // array
-      protected: {replace: false}, // array
-      indexes: {patch: true}, // object
-      methods: {patch: true}, // object
-      mixins: {patch: true}, // object
+      hidden: { replace: false }, // array
+      protected: { replace: false }, // array
+      indexes: { patch: true }, // object
+      methods: { patch: true }, // object
+      mixins: { patch: true }, // object
       // validations: {patch: true}, // object // NOTE: not implemented
-      relations: {patch: true}, // object
-      scope: {replace: true}, // object
-      scopes: {patch: true}, // object
-      acls: {rank: true}, // array
+      relations: { patch: true }, // object
+      scope: { replace: true }, // object
+      scopes: { patch: true }, // object
+      acls: { rank: true }, // array
       // this option controls which value assigned on child model allows deleting
       // a base model's setting
       __delete: null,
       // this option controls the default merge behaviour for settings not defined
       // in the mergePolicy specification
-      __default: {replace: true},
+      __default: { replace: true },
     };
   }
 
   // override mergePolicy with provided model setting if required
-  if (config && typeof config === 'object' && !Array.isArray(config)) {
+  if (config && typeof config === "object" && !Array.isArray(config)) {
     // config is an object
     mergePolicy = config;
   }

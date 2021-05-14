@@ -1,0 +1,43 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: test
+        run: |
+          cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
+          docker-compose down --remove-orphans
+          docker-compose pull
+          docker-compose up --build --exit-code-from catamel
+          docker-compose down
+
+  gitlab:
+    name: Build and deploy
+    needs: [test]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ESS pipeline
+        uses: appleboy/gitlab-ci-action@master
+        with:
+          token: ${{ secrets.TOKEN }}
+          project_id: 1903
+          ref: "master"
+          host: "https://gitlab.esss.lu.se"
+          debug: true
+
+      - name: Trigger MAXIV pipeline
+        uses: appleboy/gitlab-ci-action@master
+        with:
+          token: ${{ secrets.MAXIV_TOKEN }}
+          project_id: 21894404
+          ref: "develop"
+          host: "https://gitlab.com"
+          debug: true

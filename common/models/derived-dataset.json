@@ -15,7 +15,7 @@
       "type": "string",
       "required": true,
       "index": true,
-      "description": "Email of person pursuing the data analysis"
+      "description": "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons"
     },
     "inputDatasets": {
       "type": [

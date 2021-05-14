@@ -1,17 +1,17 @@
-'use strict';
+"use strict";
 
 module.exports = function(Attachment) {
 
-        // put
-        Attachment.beforeRemote('replaceOrCreate', function(ctx, instance, next) {
-            // convert base64 image
+  // put
+  Attachment.beforeRemote("replaceOrCreate", function(ctx, instance, next) {
+    // convert base64 image
             
-            next();
-        });
+    next();
+  });
     
-        //patch
-        Attachment.beforeRemote('patchOrCreate', function(ctx, instance, next) {
-            next();
-        });
+  //patch
+  Attachment.beforeRemote("patchOrCreate", function(ctx, instance, next) {
+    next();
+  });
 
 };

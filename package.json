@@ -6,9 +6,9 @@
     "node": ">=10"
   },
   "scripts": {
-    "lint": "eslint common/models",
+    "lint": "eslint --fix .",
     "start": "node .",
-    "posttests": "npm run lint && nsp check",
+    "posttest": "eslint .",
     "test": "./node_modules/mocha/bin/mocha --timeout=30000 --reporter spec --exit",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
@@ -33,17 +33,15 @@
     "mathjs": "^7.6.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
-    "nodemailer": "^6.4.18",
+    "nodemailer": "^6.5.0",
     "passport-ldapauth": "^2.1.4",
     "passport-local": "^1.0.0",
     "passport-openidconnect": "^0.0.2",
-    "request-promise": "^4.2.6",
-    "rison": "github:nanonid/rison",
     "serve-favicon": "2.5.0",
+    "snyk": "^1.518.0",
     "strong-error-handler": "3.5.0",
     "superagent": "^5.3.1",
-    "uuid": "^7.0.3",
-    "snyk": "^1.459.0"
+    "uuid": "^7.0.3"
   },
   "optionalDependencies": {
     "loopback-connector-kafka": "^0.2.1"
@@ -52,7 +50,7 @@
     "@mean-expert/loopback-sdk-builder": "^2.3.1",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "eslint": "^6.2.0",
+    "eslint": "^6.8.0",
     "eslint-config-loopback": "^13.1.0",
     "mocha": "^7.2.0",
     "nock": "^12.0.3",
