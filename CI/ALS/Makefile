@@ -14,7 +14,7 @@ REGISTRY_CATAMEL	:= ${REGISTRY}/${PROJECT}/${NAME_CATAMEL}:${CATAMEL_TAG}
 
 build_catamel:
 	@echo "tagging to: " ${IMG_CATAMEL}    ${REGISTRY_CATAMEL}
-	@docker build -t ${IMG_CATAMEL} -f Dockerfile.prod ../../
+	@docker build -t ${IMG_CATAMEL} -f Dockerfile ../../
 	@echo "tagging to: " ${IMG_CATAMEL}    ${REGISTRY_CATAMEL}
 	@docker tag ${IMG_CATAMEL} ${REGISTRY_CATAMEL}
  
