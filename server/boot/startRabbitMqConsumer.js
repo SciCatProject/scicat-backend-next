@@ -25,45 +25,96 @@ module.exports = function (app) {
           queue
         });
 
+        // instantiate the consumer
         channel.consume(
           queue,
           async function (msg) {
-            const msgJSON = JSON.parse(msg.content);
-            switch (msgJSON.eventType) {
-            case "PROPOSAL_INFORMATION": {
-              logger.logInfo(
-                "RabbitMq received message",
-                {
-                  message: msg.content.toString()
-                }
-              );
-              try {
-                let { eventType, ...proposalData } = msgJSON;
-                Proposal.replaceOrCreate(proposalData, (error, proposalInstance) => {
-                  if (error) {
-                    logger.logError(error.message, {
-                      location: "Proposal.replaceOrCreate"
-                    });
-                  } else {
-                    if (proposalInstance) {
-                      logger.logInfo("Proposal was created/updated",{
-                        proposalId: proposalData.proposalId
-                      });
+            try {
+              const payload = JSON.parse(msg.content);
+              logger.logInfo('properties',JSON.stringify(msg.properties).toString())
+              logger.logInfo('payload',JSON.stringify(payload).toString());
+              switch (msg.properties.type) {
+                case "PROPOSAL_ACCEPTED": {
+                  /* 
+                  from useroffice code, courtesy of Jekabs
+                  msgJSON
+                    content -> payload
+                      proposalId
+                      shortCode
+                      title
+                      members: [
+                        {
+                          firstName
+                          lastName
+                          email
+                        }
+                      ]
+                      proposer: {
+                        firstName
+                        lastName
+                        email
+                      }
+                    properties
+                      type -> event type
+                  */  
+                  logger.logInfo(
+                    "RabbitMq message for PROPOSAL_ACCEPTED",
+                    {
+                      message: payload
                     }
+                  );
+                  /*
+                  We need to refactor proposal fields to match scicat
+                  */
+                  logger.logInfo('members',payload.members.length);
+                  let proposalData = {
+                    'proposalId' : payload.shortCode,
+                    'title' : payload.title,
+                    "pi_email" : ( payload.members.length > 0 ? payload.members[0].email : ( "proposer" in payload ? payload.proposer.email : 'unknown@ess.eu' )),
+                    "pi_firstname" : ( payload.members.length > 0 ? payload.members[0].firstName : ( "proposer" in payload ? payload.proposer.firstName : '' )),
+                    "pi_lastname" : ( payload.members.length > 0 ? payload.members[0].lastName : ( "proposer" in payload ? payload.proposer.lastName : '' )),
+                    "email" : ( "proposer" in payload ? payload.proposer.email : ( payload.members.length > 0 ? payload.members[0].email : 'unknown@ess.eu')),
+                    "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : '')),
+                    "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : '')),
+                    "abstract" : "",
+                    "startTime" : "",
+                    "endTime" : ""
                   }
-                });
-              } catch (error) {
-                logger.logError(error.message, {
-                  location: "channel.consume"
-                });
+                  logger.logInfo(
+                    "SciCat proposal data",
+                    {
+                      proposalData: proposalData 
+                    }
+                  )  
+                  
+                  Proposal.replaceOrCreate(proposalData, (error, proposalInstance) => {
+                    if (error) {
+                      logger.logError(error.message, {
+                        location: "Proposal.replaceOrCreate"
+                      });
+                    } else {
+                      if (proposalInstance) {
+                        logger.logInfo("Proposal was created/updated",{
+                          proposalId: proposalData.proposalId
+                        });
+                      }
+                    }
+                  });
+                  channel.ack(msg);
+                  break;
+                }
+                default: {
+                  channel.ack(msg);
+                  break;
+                }
               }
-              channel.ack(msg);
-              break;
+            } catch (error) {
+              logger.logError(error.message, {
+                location: "channel.consume"
+              });
             }
-            default:
-              channel.ack(msg);
-              break;
-            }
+            // we acknowledge the message no matter what, at least for now
+            channel.ack(msg);
           },
           {
             noAck: false
@@ -138,7 +189,7 @@ module.exports = function (app) {
         username: config.rabbitmq.username,
         password: config.rabbitmq.password,
         heartbeat: 60,
-        vhost: "/",
+        vhost: ("vhost" in config.rabbitmq) ? config.rabbitmq.vhost : "/",
       };
       if (config.rabbitmq.port) {
         connectionDetails = { ...connectionDetails, port: config.rabbitmq.port };
