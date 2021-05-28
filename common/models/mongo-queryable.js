@@ -589,7 +589,7 @@ module.exports = function (MongoQueryableModel) {
     // make sure that only ownerGroup members have modify rights
     if (ctx.data && ctx.options && !ctx.options.validate) {
       let groups = [];
-      // ctx.options is not empty 
+      // ctx.options is not empty
       if (ctx.options.currentGroups) {
         // ("Your groups are:", ctx.options.currentGroups)
         groups = ctx.options.currentGroups;
@@ -661,26 +661,8 @@ module.exports = function (MongoQueryableModel) {
     next
   ) {
     if ("scientificMetadata" in ctx.args.data) {
-      const {
-        scientificMetadata
-      } = ctx.args.data;
-      Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key] && scientificMetadata[key].unit && scientificMetadata[key].unit.length > 0) {
-          const {
-            value,
-            unit
-          } = scientificMetadata[key];
-          const {
-            valueSI,
-            unitSI
-          } = utils.convertToSI(value, unit);
-          scientificMetadata[key] = {
-            ...scientificMetadata[key],
-            valueSI,
-            unitSI
-          };
-        }
-      });
+      const { scientificMetadata } = ctx.args.data;
+      utils.appendSIUnitToPhysicalQuantity(scientificMetadata);
     }
     next();
   });

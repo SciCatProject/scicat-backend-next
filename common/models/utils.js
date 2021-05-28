@@ -369,6 +369,56 @@ exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
   };
 };
 
+exports.appendSIUnitToPhysicalQuantity = (object) => {
+  return Object.keys(object).forEach((key) => {
+    value = object[key];
+    if (value?.unit) {
+      const {
+        valueSI,
+        unitSI
+      } = utils.convertToSI(value.value, value.unit);
+      accumulator[key] = {
+        ...value,
+        valueSI,
+        unitSI
+      };
+    }
+    // has nested object
+    else if (typeof value === "object" && (!Array.isArray(value))) {
+      this.appendSIUnitToPhysicalQuantity(value);
+    }
+  });
+}
+const isObject = (x) => {
+    if(x && typeof x === 'object' && (!Array.isArray(x) && (!x.unit && x.unit !== ""))){
+        return true;
+    }
+    return false;
+}
+exports.extractMetadataKeys = (datasetArray) => {
+    const keys = new Set();
+    const flattenKeys = (object, keyStr) => {
+        Object.keys(object).forEach((key) => {
+            const value = object[key];
+            const newKeyStr = `${keyStr? keyStr + '.': ""}${key}`;
+            if (isObject(value)) {
+                flattenKeys(value, newKeyStr);
+            } else {
+                keys.add(newKeyStr);
+            }
+        });
+    }
+    let time =  new Date().getMilliseconds();
+    datasetArray.forEach((dataset) => {
+        const { scientificMetadata } = dataset;
+        if (scientificMetadata) {
+            flattenKeys(scientificMetadata, "");
+        }
+    });
+    time = (new Date()).getMilliseconds() - time;
+    logger.logInfo("TIME", time);
+    return Array.from(keys);
+}
 /*
  wrapper to superagent library to make it ace as the request-response library
  passing in a single data structure with all the info and options to define the full request
@@ -432,7 +482,7 @@ exports.superagent = (request) => {
   if (request.body) {
     sao = sao.send(request.body);
   }
- 
+
   // insert authorization information
   if (request.auth && request.auth["password"] && request.auth["username"]) {
     sao = sao.auth(request.auth["username"],request.auth["password"]);

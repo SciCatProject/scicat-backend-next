@@ -156,26 +156,8 @@ module.exports = function(Dataset) {
     next
   ) {
     if ("scientificMetadata" in ctx.args.data) {
-      const {
-        scientificMetadata
-      } = ctx.args.data;
-      Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key] && scientificMetadata[key].unit && scientificMetadata[key].unit.length > 0) {
-          const {
-            value,
-            unit
-          } = scientificMetadata[key];
-          const {
-            valueSI,
-            unitSI
-          } = utils.convertToSI(value, unit);
-          scientificMetadata[key] = {
-            ...scientificMetadata[key],
-            valueSI,
-            unitSI
-          };
-        }
-      });
+      const { scientificMetadata } = ctx.args.data;
+      utils.appendSIUnitToPhysicalQuantity(scientificMetadata);
     }
     next();
   });
@@ -838,27 +820,10 @@ module.exports = function(Dataset) {
         logger.logInfo("No someCollections found", { someCollections });
       }
 
-      const metadata = someCollections.map(someCollection => {
-        if (someCollection.scientificMetadata) {
-          return Object.keys(someCollection.scientificMetadata);
-        } else {
-          return [];
-        }
-      });
 
       logger.logInfo("Raw metadata array", { count: metadata.length });
 
-      // Flatten array, ensure uniqueness of keys and filter out
-      // blacklisted keys
-      const metadataKeys = [].concat
-        .apply([], metadata)
-        .reduce((accumulator, currentValue) => {
-          if (accumulator.indexOf(currentValue) === -1) {
-            accumulator.push(currentValue);
-          }
-          return accumulator;
-        }, [])
-        .filter(key => !blacklist.some(regex => regex.test(key)));
+      const metadataKeys = utils.extractMetadataKeys(someCollections).filter(key => !blacklist.some(regex => regex.test(key)));
 
       logger.logInfo("Curated metadataKeys", {
         count: metadataKeys.length
