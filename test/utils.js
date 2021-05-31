@@ -3,7 +3,7 @@
 var chai = require("chai");
 var should = chai.should();
 var utils = require("../common/models/utils.js");
-
+let utilsTestData = require("./utilsTestData");
 
 const superagentTests = {
   "put" : {
@@ -58,14 +58,14 @@ describe("utils.superagent", () => {
 describe("utils.appendSIUnitToPhysicalQuantity", () => {
 
     it("should append SI Unit to physical quantity", () => {
-      const res = utils.appendSIUnitToPhysicalQuantity(testData);
-      chai.expect(res).to.deep.equal(appendSIUnitToPhysicalQuantityExpectedData);
+      const res = utils.appendSIUnitToPhysicalQuantity(utilsTestData.testData);
+      chai.expect(res).to.deep.equal(utilsTestData.appendSIUnitToPhysicalQuantityExpectedData);
     });
 });
 
 describe("utils.extractMetadataKeys", () => {
     it("should return a array of unique keys", () => {
-      const res = utils.extractMetadataKeys([testData]);
-      chai.expect(res).to.deep.equal(extractMetadataKeysExpectedData);
+      const res = utils.extractMetadataKeys([utilsTestData.testData]);
+      chai.expect(res).to.deep.equal(utilsTestData.extractMetadataKeysExpectedData);
     });
 });
