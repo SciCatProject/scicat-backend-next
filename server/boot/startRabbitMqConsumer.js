@@ -77,8 +77,8 @@ module.exports = function (app) {
                     "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : '')),
                     "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : '')),
                     "abstract" : "",
-                    "startTime" : "",
-                    "endTime" : ""
+                    "ownerGroup" : "ess",
+                    "createdBy" : "proposalIngestor"
                   }
                   logger.logInfo(
                     "SciCat proposal data",
@@ -114,7 +114,7 @@ module.exports = function (app) {
               });
             }
             // we acknowledge the message no matter what, at least for now
-            channel.ack(msg);
+            //channel.ack(msg);
           },
           {
             noAck: false
