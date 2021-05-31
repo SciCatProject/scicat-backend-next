@@ -820,9 +820,6 @@ module.exports = function(Dataset) {
         logger.logInfo("No someCollections found", { someCollections });
       }
 
-
-      logger.logInfo("Raw metadata array", { count: metadata.length });
-
       const metadataKeys = utils.extractMetadataKeys(someCollections).filter(key => !blacklist.some(regex => regex.test(key)));
 
       logger.logInfo("Curated metadataKeys", {

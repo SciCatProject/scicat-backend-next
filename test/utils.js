@@ -34,7 +34,7 @@ const superagentTests = {
 
 
 describe("utils.superagent", () => {
-    
+
   it("should return an instance of superagent", () => {
     const res = utils.superagent(superagentTests["put"]);
     res.should.not.be.empty;
@@ -55,4 +55,17 @@ describe("utils.superagent", () => {
 });
 
 
+describe("utils.appendSIUnitToPhysicalQuantity", () => {
 
+    it("should append SI Unit to physical quantity", () => {
+      const res = utils.appendSIUnitToPhysicalQuantity(testData);
+      chai.expect(res).to.deep.equal(appendSIUnitToPhysicalQuantityExpectedData);
+    });
+});
+
+describe("utils.extractMetadataKeys", () => {
+    it("should return a array of unique keys", () => {
+      const res = utils.extractMetadataKeys([testData]);
+      chai.expect(res).to.deep.equal(extractMetadataKeysExpectedData);
+    });
+});

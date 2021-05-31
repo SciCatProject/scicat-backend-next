@@ -7,7 +7,6 @@ var exports = module.exports = {};
 var nodemailer = require("nodemailer");
 const math = require("mathjs");
 const superagent = require("superagent");
-
 // Utility function to transfer size information from the datablock storage to the related dataset
 
 // Just a hint
@@ -371,24 +370,25 @@ exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
 
 exports.appendSIUnitToPhysicalQuantity = (object) => {
   return Object.keys(object).forEach((key) => {
-    value = object[key];
+    const value = object[key];
     if (value?.unit) {
       const {
         valueSI,
         unitSI
-      } = utils.convertToSI(value.value, value.unit);
-      accumulator[key] = {
+      } = exports.convertToSI(value.value, value.unit);
+      object[key] = {
         ...value,
         valueSI,
         unitSI
       };
     }
-    // has nested object
-    else if (typeof value === "object" && (!Array.isArray(value))) {
-      this.appendSIUnitToPhysicalQuantity(value);
+    // Has nested field
+    else if (isObject(value)) {
+      exports.appendSIUnitToPhysicalQuantity(value);
     }
   });
 }
+/**Check if input is object or a physical quantity */
 const isObject = (x) => {
     if(x && typeof x === 'object' && (!Array.isArray(x) && (!x.unit && x.unit !== ""))){
         return true;
@@ -397,6 +397,7 @@ const isObject = (x) => {
 }
 exports.extractMetadataKeys = (datasetArray) => {
     const keys = new Set();
+    //Return nested keys in this structure parentkey.childkey.grandchildkey....
     const flattenKeys = (object, keyStr) => {
         Object.keys(object).forEach((key) => {
             const value = object[key];
@@ -408,15 +409,12 @@ exports.extractMetadataKeys = (datasetArray) => {
             }
         });
     }
-    let time =  new Date().getMilliseconds();
     datasetArray.forEach((dataset) => {
         const { scientificMetadata } = dataset;
         if (scientificMetadata) {
             flattenKeys(scientificMetadata, "");
         }
     });
-    time = (new Date()).getMilliseconds() - time;
-    logger.logInfo("TIME", time);
     return Array.from(keys);
 }
 /*
