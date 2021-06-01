@@ -31,11 +31,11 @@ module.exports = function (app) {
           async function (msg) {
             try {
               const payload = JSON.parse(msg.content);
-              logger.logInfo('properties',JSON.stringify(msg.properties).toString())
-              logger.logInfo('payload',JSON.stringify(payload).toString());
+              logger.logInfo("Message properties",JSON.stringify(msg.properties).toString());
+              logger.logInfo("Message body",JSON.stringify(payload).toString());
               switch (msg.properties.type) {
-                case "PROPOSAL_ACCEPTED": {
-                  /* 
+              case "PROPOSAL_ACCEPTED": {
+                /* 
                   from useroffice code, courtesy of Jekabs
                   msgJSON
                     content -> payload
@@ -56,57 +56,56 @@ module.exports = function (app) {
                       }
                     properties
                       type -> event type
-                  */  
-                  logger.logInfo(
-                    "RabbitMq message for PROPOSAL_ACCEPTED",
-                    {
-                      message: payload
-                    }
-                  );
-                  /*
+                */  
+                logger.logInfo(
+                  "RabbitMq message for PROPOSAL_ACCEPTED",
+                  {
+                    message: payload
+                  }
+                );
+                /*
                   We need to refactor proposal fields to match scicat
                   */
-                  logger.logInfo('members',payload.members.length);
-                  let proposalData = {
-                    'proposalId' : payload.shortCode,
-                    'title' : payload.title,
-                    "pi_email" : ( payload.members.length > 0 ? payload.members[0].email : ( "proposer" in payload ? payload.proposer.email : 'unknown@ess.eu' )),
-                    "pi_firstname" : ( payload.members.length > 0 ? payload.members[0].firstName : ( "proposer" in payload ? payload.proposer.firstName : '' )),
-                    "pi_lastname" : ( payload.members.length > 0 ? payload.members[0].lastName : ( "proposer" in payload ? payload.proposer.lastName : '' )),
-                    "email" : ( "proposer" in payload ? payload.proposer.email : ( payload.members.length > 0 ? payload.members[0].email : 'unknown@ess.eu')),
-                    "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : '')),
-                    "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : '')),
-                    "abstract" : "",
-                    "ownerGroup" : "ess",
-                    "createdBy" : "proposalIngestor"
+                let proposalData = {
+                  "proposalId" : payload.shortCode,
+                  "title" : payload.title,
+                  "pi_email" : ( payload.members.length > 0 ? payload.members[0].email : ( "proposer" in payload ? payload.proposer.email : 'unknown@ess.eu' )),
+                  "pi_firstname" : ( payload.members.length > 0 ? payload.members[0].firstName : ( "proposer" in payload ? payload.proposer.firstName : '' )),
+                  "pi_lastname" : ( payload.members.length > 0 ? payload.members[0].lastName : ( "proposer" in payload ? payload.proposer.lastName : '' )),
+                  "email" : ( "proposer" in payload ? payload.proposer.email : ( payload.members.length > 0 ? payload.members[0].email : 'unknown@ess.eu')),
+                  "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : '')),
+                  "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : '')),
+                  "abstract" : "",
+                  "ownerGroup" : "ess",
+                  "createdBy" : "proposalIngestor"
+                }
+                logger.logInfo(
+                  "SciCat proposal data",
+                  {
+                    proposalData: proposalData 
                   }
-                  logger.logInfo(
-                    "SciCat proposal data",
-                    {
-                      proposalData: proposalData 
-                    }
-                  )  
+                );
                   
-                  Proposal.replaceOrCreate(proposalData, (error, proposalInstance) => {
-                    if (error) {
-                      logger.logError(error.message, {
-                        location: "Proposal.replaceOrCreate"
+                Proposal.replaceOrCreate(proposalData, (error, proposalInstance) => {
+                  if (error) {
+                    logger.logError(error.message, {
+                      location: "Proposal.replaceOrCreate"
+                    });
+                  } else {
+                    if (proposalInstance) {
+                      logger.logInfo("Proposal was created/updated",{
+                        proposalId: proposalData.proposalId
                       });
-                    } else {
-                      if (proposalInstance) {
-                        logger.logInfo("Proposal was created/updated",{
-                          proposalId: proposalData.proposalId
-                        });
-                      }
                     }
-                  });
-                  channel.ack(msg);
-                  break;
-                }
-                default: {
-                  channel.ack(msg);
-                  break;
-                }
+                  }
+                });
+                channel.ack(msg);
+                break;
+              }
+              default: {
+                channel.ack(msg);
+                break;
+              }
               }
             } catch (error) {
               logger.logError(error.message, {
