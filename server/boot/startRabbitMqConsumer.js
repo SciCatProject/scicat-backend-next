@@ -78,7 +78,7 @@ module.exports = function (app) {
                   "abstract" : "",
                   "ownerGroup" : "ess",
                   "createdBy" : "proposalIngestor"
-                }
+                };
                 logger.logInfo(
                   "SciCat proposal data",
                   {
