@@ -113,8 +113,6 @@ module.exports = function (app) {
                 location: "channel.consume"
               });
             }
-            // we acknowledge the message no matter what, at least for now
-            //channel.ack(msg);
           },
           {
             noAck: false
