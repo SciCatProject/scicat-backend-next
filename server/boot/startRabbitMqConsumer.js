@@ -69,12 +69,12 @@ module.exports = function (app) {
                 let proposalData = {
                   "proposalId" : payload.shortCode,
                   "title" : payload.title,
-                  "pi_email" : ( payload.members.length > 0 ? payload.members[0].email : ( "proposer" in payload ? payload.proposer.email : 'unknown@ess.eu' )),
-                  "pi_firstname" : ( payload.members.length > 0 ? payload.members[0].firstName : ( "proposer" in payload ? payload.proposer.firstName : '' )),
-                  "pi_lastname" : ( payload.members.length > 0 ? payload.members[0].lastName : ( "proposer" in payload ? payload.proposer.lastName : '' )),
-                  "email" : ( "proposer" in payload ? payload.proposer.email : ( payload.members.length > 0 ? payload.members[0].email : 'unknown@ess.eu')),
-                  "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : '')),
-                  "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : '')),
+                  "pi_email" : ( payload.members.length > 0 ? payload.members[0].email : ( "proposer" in payload ? payload.proposer.email : "unknown@ess.eu" )),
+                  "pi_firstname" : ( payload.members.length > 0 ? payload.members[0].firstName : ( "proposer" in payload ? payload.proposer.firstName : "" )),
+                  "pi_lastname" : ( payload.members.length > 0 ? payload.members[0].lastName : ( "proposer" in payload ? payload.proposer.lastName : "" )),
+                  "email" : ( "proposer" in payload ? payload.proposer.email : ( payload.members.length > 0 ? payload.members[0].email : "unknown@ess.eu")),
+                  "firstname" : ( "proposer" in payload ? payload.proposer.firstName : ( payload.members.length > 0 ? payload.members[0].firstName : "")),
+                  "lastname" : ( "proposer" in payload ? payload.proposer.lastName : ( payload.members.length > 0 ? payload.members[0].lastName : "")),
                   "abstract" : "",
                   "ownerGroup" : "ess",
                   "createdBy" : "proposalIngestor"
