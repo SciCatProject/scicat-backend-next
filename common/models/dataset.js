@@ -10,6 +10,7 @@ var ds = require("./dataset.json");
 var dsr = require("./raw-dataset.json");
 var dsd = require("./derived-dataset.json");
 var own = require("./ownable.json");
+const lodash = require("lodash");
 const logger = require("../logger");
 // TODO Feature  Add delete functionality for dataset, which removes Dataset and all linked data:
 // OrigDatablock and Datablock and DatasetAttachments
@@ -174,21 +175,19 @@ module.exports = function(Dataset) {
           lhs,
           unit
         }) => {
-          if (
-            lhs in scientificMetadata &&
-                        scientificMetadata[lhs].unit.length > 0 &&
-                        scientificMetadata[lhs].unit !== unit
-          ) {
+          const currentUnit = lodash.get(scientificMetadata, `${lhs}.unit`);
+          const currentValue = lodash.get(scientificMetadata, `${lhs}.value`);
+          if (currentUnit && currentUnit !== unit) {
             const {
               valueRequested,
               unitRequested,
             } = utils.convertToRequestedUnit(
-              scientificMetadata[lhs].value,
-              scientificMetadata[lhs].unit,
+              currentValue,
+              currentUnit,
               unit
             );
-            scientificMetadata[lhs].value = valueRequested;
-            scientificMetadata[lhs].unit = unitRequested;
+            lodash.update(scientificMetadata, `${lhs}.unit`, () => {return unitRequested;});
+            lodash.update(scientificMetadata, `${lhs}.value`, () => {return valueRequested;});
           }
         });
       });

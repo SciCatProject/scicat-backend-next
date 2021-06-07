@@ -717,15 +717,23 @@ module.exports = function (MongoQueryableModel) {
             modelName === "Dataset" ?
               "scientificMetadata" :
               "sampleCharacteristics";
-    const matchKeyGeneric = `${parameterFieldName}.${lhs}.value`;
+    const matchKeyGeneric = `${parameterFieldName}.${lhs}`;
     const matchKeyMeasurement = `${parameterFieldName}.${lhs}.valueSI`;
     const matchUnit = `${parameterFieldName}.${lhs}.unitSI`;
     switch (relation) {
     case "EQUAL_TO_STRING": {
       match.$and.push({
-        [matchKeyGeneric]: {
-          $eq: rhs,
+        $or: [{
+          [matchKeyGeneric]: {
+            $eq: rhs,
+          }
         },
+        {
+          [`${matchKeyGeneric}.value`]: {
+            $eq: rhs,
+          }
+        }
+        ]
       });
       break;
     }
@@ -747,9 +755,16 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $eq: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $eq: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $eq: rhs,
+            }
+          }]
         });
       }
       break;
@@ -772,9 +787,17 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $gt: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $gt: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $gt: rhs,
+            }
+          }
+          ]
         });
       }
       break;
@@ -797,9 +820,16 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $lt: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $lt: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $lt: rhs,
+            }
+          }]
         });
       }
       break;
