@@ -58,7 +58,7 @@ describe("utils.superagent", () => {
 describe("utils.appendSIUnitToPhysicalQuantity", () => {
 
   it("should append SI Unit to physical quantity", () => {
-    const testData = { ...utilsTestData.testData.scientificMetadata }
+    const testData = { ...utilsTestData.testData.scientificMetadata };
     utils.appendSIUnitToPhysicalQuantity(testData);
     chai.expect(testData).to.deep.equal(utilsTestData.appendSIUnitToPhysicalQuantityExpectedData);
   });

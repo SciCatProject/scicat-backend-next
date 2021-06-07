@@ -371,7 +371,7 @@ exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
 exports.appendSIUnitToPhysicalQuantity = (object) => {
   Object.keys(object).forEach((key) => {
     const value = object[key];
-    if (value?.unit) {
+    if (value && value.unit) {
       const {
         valueSI,
         unitSI
@@ -387,36 +387,36 @@ exports.appendSIUnitToPhysicalQuantity = (object) => {
       exports.appendSIUnitToPhysicalQuantity(value);
     }
   });
-}
+};
 /**Check if input is object or a physical quantity */
 const isObject = (x) => {
-    if(x && typeof x === 'object' && (!Array.isArray(x) && (!x.unit && x.unit !== ""))){
-        return true;
-    }
-    return false;
-}
+  if(x && typeof x === "object" && (!Array.isArray(x) && (!x.unit && x.unit !== ""))){
+    return true;
+  }
+  return false;
+};
 exports.extractMetadataKeys = (datasetArray) => {
-    const keys = new Set();
-    //Return nested keys in this structure parentkey.childkey.grandchildkey....
-    const flattenKeys = (object, keyStr) => {
-        Object.keys(object).forEach((key) => {
-            const value = object[key];
-            const newKeyStr = `${keyStr? keyStr + '.': ""}${key}`;
-            if (isObject(value)) {
-                flattenKeys(value, newKeyStr);
-            } else {
-                keys.add(newKeyStr);
-            }
-        });
-    }
-    datasetArray.forEach((dataset) => {
-        const { scientificMetadata } = dataset;
-        if (scientificMetadata) {
-            flattenKeys(scientificMetadata, "");
-        }
+  const keys = new Set();
+  //Return nested keys in this structure parentkey.childkey.grandchildkey....
+  const flattenKeys = (object, keyStr) => {
+    Object.keys(object).forEach((key) => {
+      const value = object[key];
+      const newKeyStr = `${keyStr? keyStr + ".": ""}${key}`;
+      if (isObject(value)) {
+        flattenKeys(value, newKeyStr);
+      } else {
+        keys.add(newKeyStr);
+      }
     });
-    return Array.from(keys);
-}
+  };
+  datasetArray.forEach((dataset) => {
+    const { scientificMetadata } = dataset;
+    if (scientificMetadata) {
+      flattenKeys(scientificMetadata, "");
+    }
+  });
+  return Array.from(keys);
+};
 /*
  wrapper to superagent library to make it ace as the request-response library
  passing in a single data structure with all the info and options to define the full request
