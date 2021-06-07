@@ -369,7 +369,7 @@ exports.convertToRequestedUnit = (value, currentUnit, requestedUnit) => {
 };
 
 exports.appendSIUnitToPhysicalQuantity = (object) => {
-  return Object.keys(object).forEach((key) => {
+  Object.keys(object).forEach((key) => {
     const value = object[key];
     if (value?.unit) {
       const {

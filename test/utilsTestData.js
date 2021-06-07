@@ -1,3 +1,4 @@
+"use strict";
 const testData = {
     "scientificMetadata": {
         "comment": "test2",
@@ -192,7 +193,7 @@ const testData = {
         "resolution": "1.250",
         "skip_images": false
     }
-}
+};
 const appendSIUnitToPhysicalQuantityExpectedData = {
     "scientificMetadata": {
         "comment": "test2",
@@ -522,4 +523,5 @@ const extractMetadataKeysExpectedData = [
   'group_id',
   'resolution',
   'skip_images'
-]
+];
+module.exports = { testData, extractMetadataKeysExpectedData, appendSIUnitToPhysicalQuantityExpectedData };

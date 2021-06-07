@@ -26,8 +26,8 @@ const superagentTests = {
       "content-type": "application/xml;charset=UTF-8",
     },
     auth: {
-      "username" : "a_user",
-      "password" : "the_password"
+      "username": "a_user",
+      "password": "the_password"
     },
   }
 };
@@ -57,15 +57,16 @@ describe("utils.superagent", () => {
 
 describe("utils.appendSIUnitToPhysicalQuantity", () => {
 
-    it("should append SI Unit to physical quantity", () => {
-      const res = utils.appendSIUnitToPhysicalQuantity(utilsTestData.testData);
-      chai.expect(res).to.deep.equal(utilsTestData.appendSIUnitToPhysicalQuantityExpectedData);
-    });
+  it("should append SI Unit to physical quantity", () => {
+    const testData = { ...utilsTestData.testData.scientificMetadata }
+    utils.appendSIUnitToPhysicalQuantity(testData);
+    chai.expect(testData).to.deep.equal(utilsTestData.appendSIUnitToPhysicalQuantityExpectedData);
+  });
 });
 
 describe("utils.extractMetadataKeys", () => {
-    it("should return a array of unique keys", () => {
-      const res = utils.extractMetadataKeys([utilsTestData.testData]);
-      chai.expect(res).to.deep.equal(utilsTestData.extractMetadataKeysExpectedData);
-    });
+  it("should return a array of unique keys", () => {
+    const res = utils.extractMetadataKeys([utilsTestData.testData]);
+    chai.expect(res).to.deep.equal(utilsTestData.extractMetadataKeysExpectedData);
+  });
 });
