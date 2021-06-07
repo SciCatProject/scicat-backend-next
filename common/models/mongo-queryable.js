@@ -680,21 +680,19 @@ module.exports = function (MongoQueryableModel) {
           lhs,
           unit
         }) => {
-          if (
-            lhs in scientificMetadata &&
-                        scientificMetadata[lhs].unit.length > 0 &&
-                        scientificMetadata[lhs].unit !== unit
-          ) {
+          const currentUnit = lodash.get(scientificMetadata, `${lhs}.unit`);
+          const currentValue = lodash.get(scientificMetadata, `${lhs}.value`);
+          if (currentUnit && currentUnit !== unit) {
             const {
               valueRequested,
               unitRequested,
             } = utils.convertToRequestedUnit(
-              scientificMetadata[lhs].value,
-              scientificMetadata[lhs].unit,
+              currentValue,
+              currentUnit,
               unit
             );
-            scientificMetadata[lhs].value = valueRequested;
-            scientificMetadata[lhs].unit = unitRequested;
+            lodash.update(scientificMetadata, `${lhs}.unit`, () => {return unitRequested;});
+            lodash.update(scientificMetadata, `${lhs}.value`, () => {return valueRequested;});
           }
         });
       });
