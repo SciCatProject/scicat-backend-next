@@ -1,6 +1,6 @@
 "use strict";
 const utils = require("./utils");
-
+const lodash = require("lodash");
 module.exports = function (MongoQueryableModel) {
 
   // to get access to other models
