@@ -1,6 +1,6 @@
 "use strict";
 const utils = require("./utils");
-
+const lodash = require("lodash");
 module.exports = function (MongoQueryableModel) {
 
   // to get access to other models
@@ -589,7 +589,7 @@ module.exports = function (MongoQueryableModel) {
     // make sure that only ownerGroup members have modify rights
     if (ctx.data && ctx.options && !ctx.options.validate) {
       let groups = [];
-      // ctx.options is not empty 
+      // ctx.options is not empty
       if (ctx.options.currentGroups) {
         // ("Your groups are:", ctx.options.currentGroups)
         groups = ctx.options.currentGroups;
@@ -661,26 +661,8 @@ module.exports = function (MongoQueryableModel) {
     next
   ) {
     if ("scientificMetadata" in ctx.args.data) {
-      const {
-        scientificMetadata
-      } = ctx.args.data;
-      Object.keys(scientificMetadata).forEach(key => {
-        if (scientificMetadata[key] && scientificMetadata[key].unit && scientificMetadata[key].unit.length > 0) {
-          const {
-            value,
-            unit
-          } = scientificMetadata[key];
-          const {
-            valueSI,
-            unitSI
-          } = utils.convertToSI(value, unit);
-          scientificMetadata[key] = {
-            ...scientificMetadata[key],
-            valueSI,
-            unitSI
-          };
-        }
-      });
+      const { scientificMetadata } = ctx.args.data;
+      utils.appendSIUnitToPhysicalQuantity(scientificMetadata);
     }
     next();
   });
@@ -698,21 +680,19 @@ module.exports = function (MongoQueryableModel) {
           lhs,
           unit
         }) => {
-          if (
-            lhs in scientificMetadata &&
-                        scientificMetadata[lhs].unit.length > 0 &&
-                        scientificMetadata[lhs].unit !== unit
-          ) {
+          const currentUnit = lodash.get(scientificMetadata, `${lhs}.unit`);
+          const currentValue = lodash.get(scientificMetadata, `${lhs}.value`);
+          if (currentUnit && currentUnit !== unit) {
             const {
               valueRequested,
               unitRequested,
             } = utils.convertToRequestedUnit(
-              scientificMetadata[lhs].value,
-              scientificMetadata[lhs].unit,
+              currentValue,
+              currentUnit,
               unit
             );
-            scientificMetadata[lhs].value = valueRequested;
-            scientificMetadata[lhs].unit = unitRequested;
+            lodash.update(scientificMetadata, `${lhs}.unit`, () => {return unitRequested;});
+            lodash.update(scientificMetadata, `${lhs}.value`, () => {return valueRequested;});
           }
         });
       });
@@ -735,15 +715,23 @@ module.exports = function (MongoQueryableModel) {
             modelName === "Dataset" ?
               "scientificMetadata" :
               "sampleCharacteristics";
-    const matchKeyGeneric = `${parameterFieldName}.${lhs}.value`;
+    const matchKeyGeneric = `${parameterFieldName}.${lhs}`;
     const matchKeyMeasurement = `${parameterFieldName}.${lhs}.valueSI`;
     const matchUnit = `${parameterFieldName}.${lhs}.unitSI`;
     switch (relation) {
     case "EQUAL_TO_STRING": {
       match.$and.push({
-        [matchKeyGeneric]: {
-          $eq: rhs,
+        $or: [{
+          [matchKeyGeneric]: {
+            $eq: rhs,
+          }
         },
+        {
+          [`${matchKeyGeneric}.value`]: {
+            $eq: rhs,
+          }
+        }
+        ]
       });
       break;
     }
@@ -765,9 +753,16 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $eq: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $eq: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $eq: rhs,
+            }
+          }]
         });
       }
       break;
@@ -790,9 +785,17 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $gt: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $gt: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $gt: rhs,
+            }
+          }
+          ]
         });
       }
       break;
@@ -815,9 +818,16 @@ module.exports = function (MongoQueryableModel) {
         });
       } else {
         match.$and.push({
-          [matchKeyGeneric]: {
-            $lt: rhs,
+          $or: [{
+            [matchKeyGeneric]: {
+              $lt: rhs,
+            }
           },
+          {
+            [`${matchKeyGeneric}.value`]: {
+              $lt: rhs,
+            }
+          }]
         });
       }
       break;

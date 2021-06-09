@@ -3,7 +3,7 @@
 var chai = require("chai");
 var should = chai.should();
 var utils = require("../common/models/utils.js");
-
+let utilsTestData = require("./utilsTestData");
 
 const superagentTests = {
   "put" : {
@@ -26,15 +26,15 @@ const superagentTests = {
       "content-type": "application/xml;charset=UTF-8",
     },
     auth: {
-      "username" : "a_user",
-      "password" : "the_password"
+      "username": "a_user",
+      "password": "the_password"
     },
   }
 };
 
 
 describe("utils.superagent", () => {
-    
+
   it("should return an instance of superagent", () => {
     const res = utils.superagent(superagentTests["put"]);
     res.should.not.be.empty;
@@ -55,4 +55,18 @@ describe("utils.superagent", () => {
 });
 
 
+describe("utils.appendSIUnitToPhysicalQuantity", () => {
 
+  it("should append SI Unit to physical quantity", () => {
+    const testData = { ...utilsTestData.testData.scientificMetadata };
+    utils.appendSIUnitToPhysicalQuantity(testData);
+    chai.expect(testData).to.deep.equal(utilsTestData.appendSIUnitToPhysicalQuantityExpectedData);
+  });
+});
+
+describe("utils.extractMetadataKeys", () => {
+  it("should return a array of unique keys", () => {
+    const res = utils.extractMetadataKeys([utilsTestData.testData]);
+    chai.expect(res).to.deep.equal(utilsTestData.extractMetadataKeysExpectedData);
+  });
+});
