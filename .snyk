@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.19.0
+version: v1.21.5
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -360,9 +360,16 @@ patch:
         patched: '2020-08-28T09:32:33.780Z'
     - loopback-component-mq > rabbot > whistlepunk > machina > lodash:
         patched: '2020-08-28T09:32:33.780Z'
+    - loopback-connector-kafka > kafka-node > lodash:
+        patched: '2021-07-05T23:24:20.585Z'
   'npm:moment:20160126':
     - loopback-component-mq > rabbot > whistlepunk > moment:
         patched: '2020-08-28T09:32:33.780Z'
   'npm:ms:20170412':
     - loopback-component-mq > rabbot > whistlepunk > debug > ms:
         patched: '2020-08-28T09:32:33.780Z'
+  'npm:minimatch:20160620':
+    - loopback-connector-kafka > kafka-node > snappy > node-gyp > glob > minimatch:
+        patched: '2021-07-05T23:24:20.585Z'
+    - loopback-connector-kafka > kafka-node > snappy > node-gyp > minimatch:
+        patched: '2021-07-05T23:24:20.585Z'
