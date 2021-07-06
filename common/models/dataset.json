@@ -146,9 +146,8 @@
             "foreignKey": ""
         },
         "publisheddata": {
-            "type": "belongsTo",
-            "model": "PublishedData",
-            "foreignKey": ""
+            "type": "hasAndBelongsToMany",
+            "model": "PublishedData"
         },
         "origdatablocks": {
             "type": "hasMany",

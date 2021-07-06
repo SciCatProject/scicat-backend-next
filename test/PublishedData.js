@@ -241,18 +241,6 @@ describe("Test of access to published data", () => {
       });
   });
 
-  it("should delete this published data", function (done) {
-    request(app)
-      .delete("/api/v3/PublishedData/" + doi + "?access_token=" + accessTokenArchiveManager)
-      .set("Accept", "application/json")
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .end((err, _res) => {
-        if (err) return done(err);
-        done();
-      });
-  });
-
   it("adds a new dataset", function (done) {
     request(app)
       .post("/api/v3/Datasets?access_token=" + accessToken)
@@ -289,6 +277,55 @@ describe("Test of access to published data", () => {
         res.body.should.have.property("datasetName").and.be.string;
         //res.body.should.not.have.property('history')
         pidnonpublic = encodeURIComponent(res.body["pid"]);
+        done();
+      });
+  });
+
+  it("should create one publisheddata to dataset relation", function(done) {
+    request(app)
+      .put(
+        "/api/v3/PublishedData/" + 
+                doi + 
+                "/datasets/rel/" + 
+                pid + 
+                "?access_token=" + 
+                accessToken
+      )
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .end(function (err, res) {
+        if (err) return done(err);
+        res.body.should.have.property("datasetId").and.equal(decodeURIComponent(pid));
+        res.body.should.have.property("publishedDataId").and.equal(decodeURIComponent(doi));
+        done();
+      });
+  });
+
+  it("should fetch publisheddata with non empty dataset relation", function(done) {
+    request(app)
+      .get(
+        "/api/v3/PublishedData/" + doi + "?filter=%7B%22include%22%3A%7B%22relation%22%3A%22datasets%22%7D%7D"
+      )
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .end(function (err, res) {
+        if (err) return done(err);
+        res.body.should.have.property("datasets").and.not.equal([]);
+        res.body.datasets[0].should.have.property("pid").and.equal(decodeURIComponent(pid));
+        done();
+      });
+  });
+
+  it("should delete this published data", function (done) {
+    request(app)
+      .delete("/api/v3/PublishedData/" + doi + "?access_token=" + accessTokenArchiveManager)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .end((err, _res) => {
+        if (err) return done(err);
         done();
       });
   });
@@ -444,7 +481,6 @@ describe("Test of access to published data", () => {
         done();
       });
   });
-
 
   it("should fetch one dataset including related data anonymously", function (done) {
     var limits = {
