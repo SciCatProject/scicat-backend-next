@@ -15,6 +15,21 @@ var PassportConfigurator = require("loopback-component-passport")
   .PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
 
+var loginCallbacks = require("./boot/login-callbacks");
+
+// express sessions are required for passport ocid. If your
+// config.Local has a session for the expressionSecret, configure
+// express-session
+if (configLocal.expressSessionSecret){
+  var session = require('express-session');
+  app.use(session({
+    secret: configLocal.expressSessionSecret,
+    resave: false,
+    saveUninitialized: true
+  }));
+}
+
+
 // enhance the profile definition to allow for applying regexp based substitution rules to be applied
 // to the outcome of e.g. LDAP queries. This can for example be exploited to define the groups
 // a user belongs to by scanning the output of the memberOf fields of a user
@@ -201,6 +216,9 @@ passportConfigurator.setupModels({
   userIdentityModel: app.models.userIdentity,
   userCredentialModel: app.models.userCredential
 });
+
+
+
 // Configure passport strategies for third party auth providers
 for (var s in config) {
   var c = config[s];
@@ -208,5 +226,9 @@ for (var s in config) {
   if (c.provider === "ldap") {
     c["failureErrorCallback"] = err => logger.logError(err.message, {});
   }
+  if (c.loginCallback && loginCallbacks[c.loginCallback]){
+    c.loginCallback = loginCallbacks[c.loginCallback];
+  }
   passportConfigurator.configureProvider(s, c);
+  
 }
