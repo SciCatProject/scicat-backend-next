@@ -1,7 +1,7 @@
 "use strict";
 
 /* 
-    A logingCallback is function used by passport that gives one a chance
+    A loginCallback is function used by passport that gives one a chance
     to intercept the login message flow. This is useful in cases where the 
     an OAuth2/OIDC provider is a third part (like ORCID), but an internal system
     must be queried to add information to the user's profile. 
