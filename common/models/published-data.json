@@ -107,9 +107,8 @@
     "validations": [],
     "relations": {
         "datasets": {
-            "type": "hasMany",
-            "model": "Dataset",
-            "foreignKey": ""
+            "type": "hasAndBelongsToMany",
+            "model": "Dataset"
         }
     },
     "acls": [
