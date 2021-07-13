@@ -1,27 +1,28 @@
 # gives a docker image below 200 MB
-FROM mhart/alpine-node:10
+FROM node:14-alpine
+RUN apk update && apk upgrade
 
-RUN apk add --update 	python 	build-base git
 ENV NODE_ENV "production"
 ENV PORT 3000
 EXPOSE 3000
-# create local user to avoid running as root
-RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 # Prepare app directory
-WORKDIR /usr/src/app
-COPY package*.json ./
-COPY .snyk ./
+WORKDIR /home/node/app
+COPY package*.json /home/node/app/
+COPY .snyk /home/node/app/
 
-USER myuser
-
-RUN npm install
+# set up local user to avoid running as root
+# RUN chown -R node:node /home/node/app
+# USER node
 
 # Install our packages
-RUN npm ci --production
+RUN npm config set registry http://registry.npmjs.org/
+RUN npm config set strict-ssl false
+RUN npm ci --only=production
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
-COPY . /usr/src/app
+COPY  . /home/node/app
+
 
 # Start the app
 CMD ["node", "."]
