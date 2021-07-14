@@ -86,6 +86,7 @@ function getUserURL(userIdentity){
   return `${process.env.USER_SVC_API_URL}${subjectId}/${idField}?api_key=${process.env.USER_SVC_API_KEY}`;
 }
 
+// Observe saving UserItentity. This gives us the ability to update the user profile with facitly-specific groups
 module.exports = function (app) {
   app.models.UserIdentity.observe("before save", function(ctx, next) {
     if (!ctx.data){
@@ -115,6 +116,9 @@ module.exports = function (app) {
   });
 };
 
+
+// ALS Login callback, registered with Passport. This gives us the opportunity
+// to deny login if the user is not found in the facility directory.
 module.exports.alsLoginCallback = function(req, done) {
   return function(err, user, identity, token) {
 
