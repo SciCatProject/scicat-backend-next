@@ -59,6 +59,33 @@ module.exports.sampleLoginCallback = function(req, done) {
 const logger = require('../../common/logger')
 var request = require('request');
 
+const authenticators = {
+  ORCID: "orcid",
+  GOOGLE: "google"
+}
+
+const reqIDFields = {
+  ORCID: "orcid",
+  EMAIL: "email"
+}
+
+function getUserURL(userIdentity){
+  let idField = "";
+  let subjectId = "";
+  if (userIdentity.provider == authenticators.ORCID){
+    idField = reqIDFields.ORCID;
+    subjectId = userIdentity.profile._json.sub;
+  }
+  else if (userIdentity.provider == authenticators.GOOGLE){
+    idField = reqIDFields.EMAIL;
+    subjectId = userIdentity.profile._json.email;
+  }
+  else{
+    return null;
+  }
+  return `${process.env.USER_SVC_API_URL}${subjectId}/${idField}?api_key=${process.env.USER_SVC_API_KEY}`;
+}
+
 module.exports = function (app) {
   app.models.UserIdentity.observe("before save", function(ctx, next) {
     if (!ctx.data){
@@ -66,10 +93,13 @@ module.exports = function (app) {
       next();
       return;
     }
-    // 
-    console.log(`PROFILE     ${JSON.stringify(ctx.data.profile)}`);
-    const requestURL = `${process.env.USER_SVC_API_URL}${ctx.data.profile._json.sub}/orcid?api_key=${process.env.USER_SVC_API_KEY}`;
-    request(requestURL, function (error, response, body) {
+    const userURL = getUserURL(ctx.currentInstance);
+    if (!userURL){
+      logger.logError(`unexpected authenticator type: ${ctx.currentInstance.provider}`);
+      next();
+      return;
+    }
+    request(userURL, function (error, response, body) {
       // ask ALSHub for user information so we can get group info
       if (error){
         logger.logError(`error talking to splash_userservice ${error.message}`);
@@ -85,7 +115,7 @@ module.exports = function (app) {
   });
 };
 
-module.exports.alsORCIDLoginCallback = function(req, done) {
+module.exports.alsLoginCallback = function(req, done) {
   return function(err, user, identity, token) {
 
     var authInfo = {
@@ -94,8 +124,13 @@ module.exports.alsORCIDLoginCallback = function(req, done) {
     if (token) {
       authInfo.accessToken = token;
     }
- 
-    const requestURL = `${process.env.USER_SVC_API_URL}${identity.profile._json.sub}/orcid?api_key=${process.env.USER_SVC_API_KEY}`;
+
+    const requestURL = getUserURL(identity);
+    if (!requestURL){
+      logger.logError(`unexpected authenticator type: ${ctx.currentInstance.provider}`);
+      next();
+      return;
+    }
     request(requestURL, function (error, response, body) {
       // ask ALSHub for the user's information
       if (error){
