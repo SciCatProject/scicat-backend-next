@@ -142,7 +142,7 @@ module.exports.alsLoginCallback = function(req, done) {
         done(err, null, null);
         return;
       }
-      if (!error && response.statusCode == 200) {
+      if (response.statusCode == 200) {
         const bodyObj = JSON.parse(body);
         logger.logInfo("user service returned", bodyObj);
       }
