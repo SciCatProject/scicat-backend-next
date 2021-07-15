@@ -21,7 +21,7 @@ var loginCallbacks = require("./boot/login-callbacks");
 // config.Local has a session for the expressionSecret, configure
 // express-session
 if (configLocal.expressSessionSecret){
-  var session = require('express-session');
+  var session = require("express-session");
   app.use(session({
     secret: configLocal.expressSessionSecret,
     resave: false,

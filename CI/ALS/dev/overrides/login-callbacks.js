@@ -56,18 +56,18 @@ module.exports.sampleLoginCallback = function(req, done) {
 };
 */
 
-const logger = require('../../common/logger')
-var request = require('request');
+const logger = require("../../common/logger");
+var request = require("request");
 
 const authenticators = {
   ORCID: "orcid",
   GOOGLE: "google"
-}
+};
 
 const reqIDFields = {
   ORCID: "orcid",
   EMAIL: "email"
-}
+};
 
 function getUserURL(userIdentity){
   let idField = "";
@@ -100,7 +100,7 @@ module.exports = function (app) {
       next();
       return;
     }
-    request(userURL, function (error, response, body) {
+    request(userURL, function (error, response, _body) {
       // ask ALSHub for user information so we can get group info
       if (error){
         logger.logError(`error talking to splash_userservice ${error.message}`);
@@ -131,8 +131,8 @@ module.exports.alsLoginCallback = function(req, done) {
 
     const requestURL = getUserURL(identity);
     if (!requestURL){
-      logger.logError(`unexpected authenticator type: ${ctx.currentInstance.provider}`);
-      next();
+      logger.logError(`unexpected authenticator type: ${identity.provider}`);
+      done();
       return;
     }
     request(requestURL, function (error, response, body) {
@@ -140,11 +140,11 @@ module.exports.alsLoginCallback = function(req, done) {
       if (error){
         logger.logError(`error talking to splash_userservice ${error.message}`);
         done(err, null, null);
-        return
+        return;
       }
       if (!error && response.statusCode == 200) {
         const bodyObj = JSON.parse(body);
-        logger.logInfo("user service returned", body);
+        logger.logInfo("user service returned", bodyObj);
       }
       else{
         logger.logError(`error returned from splash_userservice ${response.statusCode} - ${body}.`);
