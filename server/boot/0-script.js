@@ -135,7 +135,6 @@ module.exports = function (app) {
       const UserIdentity = app.models.UserIdentity;
       const RoleMapping = app.models.RoleMapping;
       const Role = app.models.Role;
-      const ShareGroup = app.models.ShareGroup;
       // first check if email in User
       User.findById(ctx.args.options.accessToken.userId, function (
         err,
@@ -168,30 +167,9 @@ module.exports = function (app) {
               if (typeof groups === "undefined") {
                 groups = [];
               }
-              const regex = "/" + u.profile.email + "/i";
-              // get users share groups and add to the current groups context
-              ShareGroup.find({
-                where: {
-                  members: {
-                    regexp: regex
-                  }
-                }
-              },
-              function (err, share) {
-                if (err) return next(err);
-                groups = [
-                  ...groups,
-                  ...share.map(({
-                    id
-                  }) => {
-                    return String(id);
-                  })
-                ];
-                ctx.args.options.currentGroups = groups;
-                // console.log("============ Phase:", ctx.args.options.currentGroups)
-                return next();
-              }
-              );
+              ctx.args.options.currentGroups = groups;
+              // console.log("============ Phase:", ctx.args.options.currentGroups)
+              return next();
             } else {
               ctx.args.options.currentGroups = [];
               return next();
