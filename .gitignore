@@ -1,52 +1,35 @@
-*.local.js
-*.development.js*
-*.staging.js*
-*.production.js*
-*.qa.js*
-*.csv
-*.dat
-*.iml
-*.log
-*.out
-*.pid
-*.seed
-*.sublime-*
-*.swo
-*.swp
-*.tgz
-*.xml
-.DS_Store
-.idea
-.project
-.strong-pm
-coverage
-node_modules
-npm-debug.log
-server/pass
-server/admin
-server/ingestor
-server/archiveManager
-server/proposalIngestor
-server/providers.json
-server/datasources.json
-server/datacite.json
-server/functionalAccounts.json
-CI/PSI/envfiles/*
-CI/PSI/catamel-psiconfig/
-CI/PSI/catamel-psisecrets/
-client/api/angular2
-client/api/python
-test/config/settings.json
-mongodb/
-rabbitmq/
-.env
-cmd.sh
-Thumb.jpg
-stop.sh
-mongo.sh
-mongo.js
-doiconfig.local.json
-server/config.local.json
+# compiled output
+/dist
+/node_modules
 
-# VS Code workspace settings
-.vscode/
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

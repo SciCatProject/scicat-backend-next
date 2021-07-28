@@ -1,5 +1,0 @@
-Directory with passwords for functional accounts stored inside mongo
-
-functionalAccounts_example.json: this file sets up special user roles. To not assign this roles to specific user groups,
- and therefore let them have access to all aspects of the API an entry "global":"True" needs to be added to the 
- definition of the functional account.
