@@ -1,5 +1,8 @@
+import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Lifecycle, LifecycleSchema } from './lifecycle.schema';
+import { Technique, TechniqueSchema } from './technique.schema';
 
 export type DatasetDocument = Dataset & Document;
 
@@ -57,7 +60,7 @@ export class Dataset {
   datasetName: string;
 
   @Prop()
-  calssification: string;
+  classification: string;
 
   @Prop()
   license: string;
@@ -82,6 +85,21 @@ export class Dataset {
 
   @Prop([Object])
   history: any[];
+
+  @Prop({ type: LifecycleSchema })
+  datasetlifecycle: Lifecycle;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
+
+  @Prop()
+  instrumentId: string;
+
+  @Prop([TechniqueSchema])
+  techniques: Technique[];
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
