@@ -38,10 +38,10 @@ export class Lifecycle {
   @Prop()
   retrieveStatusMessage: string;
 
-  @Prop()
+  @Prop({ type: Object })
   archiveReturnMessage: any;
 
-  @Prop()
+  @Prop({ type: Object })
   retrieveReturnMessage: any;
 
   @Prop()
