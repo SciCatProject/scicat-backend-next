@@ -18,4 +18,8 @@ export class DatasetsService {
   async findAll(): Promise<Dataset[]> {
     return this.datasetModel.find().exec();
   }
+
+  async findById(id: string): Promise<Dataset> {
+    return this.datasetModel.findById(id).exec();
+  }
 }

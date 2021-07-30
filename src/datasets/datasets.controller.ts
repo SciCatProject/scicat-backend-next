@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
@@ -17,5 +17,10 @@ export class DatasetsController {
   @Get()
   async findAll(): Promise<Dataset[]> {
     return this.datasetsService.findAll();
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: string): Promise<Dataset> {
+    return this.datasetsService.findById(id);
   }
 }
