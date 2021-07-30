@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Document } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { Lifecycle, LifecycleSchema } from './lifecycle.schema';
 import { Technique, TechniqueSchema } from './technique.schema';
 
@@ -8,9 +9,21 @@ export type DatasetDocument = Dataset & Document;
 
 @Schema()
 export class Dataset {
-  @ApiProperty()
-  @Prop()
-  pid: string;
+  @ApiProperty({
+    type: String,
+    name: 'pid',
+    default: function genUUID(): string {
+      return '20.500.12269/' + uuidv4();
+    },
+  })
+  @Prop({
+    type: String,
+    alias: 'pid',
+    default: function genUUID(): string {
+      return '20.500.12269/' + uuidv4();
+    },
+  })
+  _id: string;
 
   @ApiProperty()
   @Prop()
@@ -112,7 +125,7 @@ export class Dataset {
   @Prop([Object])
   history: any[];
 
-  @ApiProperty()
+  @ApiProperty({ type: Lifecycle })
   @Prop({ type: LifecycleSchema })
   datasetlifecycle: Lifecycle;
 
@@ -128,7 +141,10 @@ export class Dataset {
   @Prop()
   instrumentId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: 'array',
+    items: { $ref: getSchemaPath(Technique) },
+  })
   @Prop([TechniqueSchema])
   techniques: Technique[];
 }
