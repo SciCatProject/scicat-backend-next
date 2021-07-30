@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
+import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset, DatasetDocument } from './schemas/dataset.schema';
 
 @Injectable()
@@ -21,5 +22,13 @@ export class DatasetsService {
 
   async findById(id: string): Promise<Dataset> {
     return this.datasetModel.findById(id).exec();
+  }
+
+  async patch(id: string, update: UpdateDatasetDto): Promise<Dataset> {
+    return this.datasetModel.findByIdAndUpdate(id, update).exec();
+  }
+
+  async remove(id: string): Promise<Dataset> {
+    return this.datasetModel.findByIdAndDelete(id).exec();
   }
 }
