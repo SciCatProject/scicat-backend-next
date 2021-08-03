@@ -3,7 +3,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatasetsModule } from './datasets/datasets.module';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost/nest'), DatasetsModule],
+  imports: [
+    MongooseModule.forRoot(
+      'mongodb://localhost/nest',
+      {
+        useFindAndModify: false
+      }
+      ), DatasetsModule],
   controllers: [],
   providers: [],
 })

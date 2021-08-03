@@ -151,6 +151,14 @@ export class Dataset {
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
 
+DatasetSchema.virtual('pid')
+  .get(function() { return this._id; })
+  .set(function(v: any) { this._id = v; });
+DatasetSchema.set('toJSON', {
+  virtuals: true
+});
+
+
 export enum DatasetType {
   Raw = 'raw',
   Derived = 'derived',

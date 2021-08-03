@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "label": "npm: build - app",
+      "detail": "NODE_ENV=development tsc -p ."
+    },
+    {
+      "label": "prepare app to debug",
+      "type": "shell",
+      "command": "echo prepare app to debug",
+      "dependsOrder": "sequence",
+      "dependsOn": ["npm: build - app"]
+    },
+    {
+      "label": "clean app after debug",
+      "type": "shell",
+      "command": "echo clean app after debug",
+      "dependsOrder": "sequence",
+      "dependsOn": []
+    }
+  ]
+}
