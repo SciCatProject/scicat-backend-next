@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
@@ -24,11 +24,45 @@ export class DatasetsService {
     return this.datasetModel.findById(id).exec();
   }
 
-  async patch(id: string, update: UpdateDatasetDto): Promise<Dataset> {
-    return this.datasetModel.findByIdAndUpdate(id, update).exec();
+  // PUT dataset
+  // we update the full dataset if exist or create a new one if it does not
+  async findByIdAndReplaceOrCreate(id: string, createDatasetDto: CreateDatasetDto): Promise<Dataset> {
+    const existingDataset = this.datasetModel.findByIdAndUpdate(
+      { _id: id},
+      createDatasetDto
+    );
+
+    // check if we were able to find the dataset and update it
+    if (!existingDataset) {
+      // no luck. we need to create a new dataset
+      return await this.create(createDatasetDto);
+    }
+    
+    // we were able to find the dataset and update it
+    return existingDataset;
   }
 
-  async remove(id: string): Promise<Dataset> {
-    return this.datasetModel.findByIdAndDelete(id).exec();
+  // PATCH dataset
+  // we update only the fields that have been modified on an existing dataset
+  async findByIdAndUpdate(id: string, updateDatasetDto: UpdateDatasetDto): Promise<Dataset> {
+    const existingDataset = this.datasetModel.findByIdAndUpdate(
+      {_id: id },
+      updateDatasetDto
+    );
+
+    // check if we were able to find the dataset and update it
+    if (!existingDataset) {
+      // no luck. we need to create a new dataset
+      throw new NotFoundException(`Dataset #${id} not found`);
+    }
+    
+    // we were able to find the dataset and update it
+    return existingDataset;
+
+  }
+
+  // DELETE dataset
+  async findByIdAndDelete(id: string): Promise<Dataset> {
+    return this.datasetModel.findByIdAndRemove(id);
   }
 }
