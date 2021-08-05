@@ -5,7 +5,7 @@ import { DatasetsModule } from './datasets/datasets.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
-      'mongodb://localhost/nest',
+      'mongodb://localhost/nestdacat',
       {
         useFindAndModify: false
       }

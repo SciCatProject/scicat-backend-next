@@ -7,7 +7,9 @@ import { Technique, TechniqueSchema } from './technique.schema';
 
 export type DatasetDocument = Dataset & Document;
 
-@Schema()
+@Schema({
+  collection: 'Dataset'
+})
 export class Dataset {
   @ApiProperty({
     type: String,

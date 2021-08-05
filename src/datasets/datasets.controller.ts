@@ -1,9 +1,25 @@
-import { Body, Controller, Get, Param, Post, Patch, Put, Delete } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { 
+  Body, 
+  Controller, 
+  Get, 
+  Param, 
+  Post, 
+  Patch, 
+  Put, 
+  Delete, 
+  Req,
+  Query
+} from '@nestjs/common';
+import {
+  json,
+  Request
+} from 'express';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
 import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset } from './schemas/dataset.schema';
+//import { Query } from 'mongoose';
 
 @ApiTags('datasets')
 @Controller('datasets')
@@ -18,8 +34,14 @@ export class DatasetsController {
 
   // GET /datasets
   @Get()
-  async findAll(): Promise<Dataset[]> {
-    return this.datasetsService.findAll();
+  @ApiQuery({
+    name: 'filter',
+    description: 'Database filters to apply when retrieve all datasets'
+  })
+  async findAll(@Query('filter') filter: string, @Req() request: Request): Promise<Dataset[]> {
+    // convert filter string to object
+    const oFilter: object = JSON.parse(filter);
+    return this.datasetsService.findAll(oFilter);
   }
 
   // GET /datasets/:id
