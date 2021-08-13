@@ -20,7 +20,7 @@ import { DatasetsService } from './datasets.service';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
 import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset } from './schemas/dataset.schema';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 //import { Query } from 'mongoose';
 
 @ApiTags('datasets')
