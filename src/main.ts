@@ -11,12 +11,13 @@ async function bootstrap() {
     .setDescription('SciCat backend API')
     .setVersion('4.0.0')
     .addTag('scicat')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('explorer', app, document);
 
   const port = process.env.PORT || 3000;
-  Logger.log("Scicat backend Catamel listening on port: " + port);
+  Logger.log('Scicat backend Catamel listening on port: ' + port);
 
   await app.listen(port);
 }

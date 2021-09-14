@@ -1,34 +1,29 @@
-import { 
-  Body, 
-  Controller, 
-  Get, 
-  Param, 
-  Post, 
-  Patch, 
-  Put, 
-  Delete, 
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Put,
+  Delete,
   Req,
   Query,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
-import {
-  json,
-  Request
-} from 'express';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DatasetsService } from './datasets.service';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
 import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset } from './schemas/dataset.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-//import { Query } from 'mongoose';
 
 @ApiTags('datasets')
+@ApiBearerAuth()
 @Controller('datasets')
 export class DatasetsController {
-  constructor(
-    private datasetsService: DatasetsService
-  ) {}
+  constructor(private datasetsService: DatasetsService) {}
 
   // POST /datasets
   @UseGuards(JwtAuthGuard)
@@ -42,11 +37,14 @@ export class DatasetsController {
   @Get()
   @ApiQuery({
     name: 'filter',
-    description: 'Database filters to apply when retrieve all datasets'
+    description: 'Database filters to apply when retrieve all datasets',
   })
-  async findAll(@Query('filter') filter: string, @Req() request: Request): Promise<Dataset[]> {
+  async findAll(
+    @Query('filter') filter: string,
+    @Req() request: Request,
+  ): Promise<Dataset[]> {
     // convert filter string to object
-    const oFilter: object = JSON.parse( (filter === undefined) ? '{}' : filter );
+    const oFilter: object = JSON.parse(filter === undefined ? '{}' : filter);
     return this.datasetsService.findAll(oFilter);
   }
 
@@ -61,7 +59,10 @@ export class DatasetsController {
   // body: modified fields
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  async findByIdAndUpdate(@Param('id') id: string, @Body() updateDatasetDto: UpdateDatasetDto): Promise<Dataset> {
+  async findByIdAndUpdate(
+    @Param('id') id: string,
+    @Body() updateDatasetDto: UpdateDatasetDto,
+  ): Promise<Dataset> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
@@ -69,8 +70,14 @@ export class DatasetsController {
   // body: full dataset model
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async findByIdReplaceOrCreate(@Param('id') id: string, @Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
-    return this.datasetsService.findByIdAndReplaceOrCreate(id, createDatasetDto);
+  async findByIdReplaceOrCreate(
+    @Param('id') id: string,
+    @Body() createDatasetDto: CreateDatasetDto,
+  ): Promise<Dataset> {
+    return this.datasetsService.findByIdAndReplaceOrCreate(
+      id,
+      createDatasetDto,
+    );
   }
 
   // DELETE /datasets/:id
@@ -78,5 +85,5 @@ export class DatasetsController {
   @Delete(':id')
   async findByIdAndDelete(@Param('id') id: string): Promise<any> {
     return this.datasetsService.findByIdAndDelete(id);
-  };
+  }
 }
