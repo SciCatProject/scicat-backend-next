@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Document } from 'mongoose';
+import { Ownable } from 'src/shared/schemas/ownable.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { Lifecycle, LifecycleSchema } from './lifecycle.schema';
 import { Technique, TechniqueSchema } from './technique.schema';
@@ -8,9 +9,9 @@ import { Technique, TechniqueSchema } from './technique.schema';
 export type DatasetDocument = Dataset & Document;
 
 @Schema({
-  collection: 'Dataset'
+  collection: 'Dataset',
 })
-export class Dataset {
+export class Dataset extends Ownable {
   @ApiProperty({
     type: String,
     name: 'pid',
@@ -108,22 +109,6 @@ export class Dataset {
   isPublished: boolean;
 
   @ApiProperty()
-  @Prop()
-  ownerGroup: string;
-
-  @ApiProperty()
-  @Prop([String])
-  accessGroups: string[];
-
-  @ApiProperty()
-  @Prop()
-  createdBy: string;
-
-  @ApiProperty()
-  @Prop()
-  updatedBy: string;
-
-  @ApiProperty()
   @Prop([Object])
   history: any[];
 
@@ -154,12 +139,15 @@ export class Dataset {
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
 
 DatasetSchema.virtual('pid')
-  .get(function() { return this._id; })
-  .set(function(v: any) { this._id = v; });
+  .get(function () {
+    return this._id;
+  })
+  .set(function (v: any) {
+    this._id = v;
+  });
 DatasetSchema.set('toJSON', {
-  virtuals: true
+  virtuals: true,
 });
-
 
 export enum DatasetType {
   Raw = 'raw',
