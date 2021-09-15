@@ -65,18 +65,6 @@ export class CreateDatasetDto extends OwnableDto {
   @ApiProperty()
   readonly isPublished: boolean;
 
-  // @ApiProperty()
-  // readonly ownerGroup: string;
-
-  // @ApiProperty({ type: [String] })
-  // readonly accessGroups: string[];
-
-  @ApiProperty()
-  readonly createdBy: string;
-
-  @ApiProperty()
-  readonly updatedBy: string;
-
   @ApiProperty({ type: [Object] })
   readonly history: any[];
 

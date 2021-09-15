@@ -11,5 +11,5 @@ export class OwnableDto {
   readonly createdBy: string;
 
   @ApiProperty()
-  updatedBy: string;
+  readonly updatedBy: string;
 }
