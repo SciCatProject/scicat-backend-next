@@ -1,8 +1,4 @@
-import { 
-  Injectable,
-  HttpException,
-  HttpStatus
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { jwtConstants } from './auth.constants';
@@ -11,7 +7,7 @@ import { jwtConstants } from './auth.constants';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async validateUser(payload: any): Promise<any> {
@@ -22,7 +18,7 @@ export class AuthService {
     return user;
   }
 
-  async login(payload: any): Promise<object> {
+  async login(payload: any): Promise<any> {
     // find user
     const user = await this.usersService.findOne(payload.username);
     // here I should check the password, but we are just testing,
@@ -36,7 +32,7 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(signPayload),
       expires_in: jwtConstants.expiration,
-      ...signPayload
-    }
+      ...signPayload,
+    };
   }
 }

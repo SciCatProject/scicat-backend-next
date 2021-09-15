@@ -26,41 +26,44 @@ export class DatasetsService {
 
   // PUT dataset
   // we update the full dataset if exist or create a new one if it does not
-  async findByIdAndReplaceOrCreate(id: string, createDatasetDto: CreateDatasetDto): Promise<Dataset> {
-    const existingDataset = await this.datasetModel.findByIdAndUpdate(
-      id,
-      createDatasetDto
-    ).exec();
+  async findByIdAndReplaceOrCreate(
+    id: string,
+    createDatasetDto: CreateDatasetDto,
+  ): Promise<Dataset> {
+    const existingDataset = await this.datasetModel
+      .findByIdAndUpdate(id, createDatasetDto)
+      .exec();
 
     // check if we were able to find the dataset and update it
     if (!existingDataset) {
       // no luck. we need to create a new dataset with the provided id
       const createdDataset = new this.datasetModel(createDatasetDto);
-      createdDataset.set('_id',id);
+      createdDataset.set('_id', id);
       return await createdDataset.save();
     }
-    
+
     // we were able to find the dataset and update it
     return existingDataset;
   }
 
   // PATCH dataset
   // we update only the fields that have been modified on an existing dataset
-  async findByIdAndUpdate(id: string, updateDatasetDto: UpdateDatasetDto): Promise<Dataset> {
-    const existingDataset = await this.datasetModel.findByIdAndUpdate(
-      id,
-      updateDatasetDto
-    ).exec();
+  async findByIdAndUpdate(
+    id: string,
+    updateDatasetDto: UpdateDatasetDto,
+  ): Promise<Dataset> {
+    const existingDataset = await this.datasetModel
+      .findByIdAndUpdate(id, updateDatasetDto)
+      .exec();
 
     // check if we were able to find the dataset and update it
     if (!existingDataset) {
       // no luck. we need to create a new dataset
       throw new NotFoundException(`Dataset #${id} not found`);
     }
-    
+
     // we were able to find the dataset and update it
     return existingDataset;
-
   }
 
   // DELETE dataset
