@@ -6,10 +6,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { Lifecycle, LifecycleSchema } from './lifecycle.schema';
 import { Technique, TechniqueSchema } from './technique.schema';
 
+export enum DatasetType {
+  Raw = 'raw',
+  Derived = 'derived',
+}
+
 export type DatasetDocument = Dataset & Document;
 
 @Schema({
   collection: 'Dataset',
+  discriminatorKey: 'type',
 })
 export class Dataset extends Ownable {
   @ApiProperty({
@@ -21,6 +27,7 @@ export class Dataset extends Ownable {
   })
   @Prop({
     type: String,
+    required: true,
     alias: 'pid',
     default: function genUUID(): string {
       return '20.500.12269/' + uuidv4();
@@ -29,7 +36,7 @@ export class Dataset extends Ownable {
   _id: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ required: true })
   owner: string;
 
   @ApiProperty()
@@ -41,11 +48,11 @@ export class Dataset extends Ownable {
   orcidOfOwner: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ required: true })
   contactEmail: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ required: true })
   sourceFolder: string;
 
   @ApiProperty()
@@ -69,12 +76,16 @@ export class Dataset extends Ownable {
   numberOfFilesArchived: number;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ required: true })
   creationTime: Date;
 
   @ApiProperty()
-  @Prop()
-  type: DatasetType;
+  @Prop({
+    type: String,
+    required: true,
+    enum: [DatasetType.Raw, DatasetType.Derived],
+  })
+  type: string;
 
   @ApiProperty()
   @Prop()
@@ -148,8 +159,3 @@ DatasetSchema.virtual('pid')
 DatasetSchema.set('toJSON', {
   virtuals: true,
 });
-
-export enum DatasetType {
-  Raw = 'raw',
-  Derived = 'derived',
-}
