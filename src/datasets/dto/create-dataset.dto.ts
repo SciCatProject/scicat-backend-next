@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { OwnableDto } from 'src/shared/dto/ownable.dto';
 import { DatasetType } from '../schemas/dataset.schema';
 import { Lifecycle } from '../schemas/lifecycle.schema';
 import { Technique } from '../schemas/technique.schema';
 
-export class CreateDatasetDto {
+export class CreateDatasetDto extends OwnableDto {
   @ApiProperty()
   readonly owner: string;
 
@@ -64,11 +65,11 @@ export class CreateDatasetDto {
   @ApiProperty()
   readonly isPublished: boolean;
 
-  @ApiProperty()
-  readonly ownerGroup: string;
+  // @ApiProperty()
+  // readonly ownerGroup: string;
 
-  @ApiProperty({ type: [String] })
-  readonly accessGroups: string[];
+  // @ApiProperty({ type: [String] })
+  // readonly accessGroups: string[];
 
   @ApiProperty()
   readonly createdBy: string;
