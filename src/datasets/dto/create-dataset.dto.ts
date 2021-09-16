@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OwnableDto } from 'src/common/dto/ownable.dto';
-import { DatasetType } from '../schemas/dataset.schema';
 import { Lifecycle } from '../schemas/lifecycle.schema';
 import { Technique } from '../schemas/technique.schema';
 
@@ -39,7 +38,7 @@ export class CreateDatasetDto extends OwnableDto {
   readonly creationTime: Date;
 
   @ApiProperty()
-  readonly type: DatasetType;
+  readonly type: string;
 
   @ApiProperty()
   readonly validationStatus: string;
