@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Document } from 'mongoose';
-import { Ownable } from 'src/shared/schemas/ownable.schema';
+import { Ownable } from 'src/common/schemas/ownable.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { Lifecycle, LifecycleSchema } from './lifecycle.schema';
 import { Technique, TechniqueSchema } from './technique.schema';

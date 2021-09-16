@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OwnableDto } from 'src/shared/dto/ownable.dto';
+import { OwnableDto } from 'src/common/dto/ownable.dto';
 import { DatasetType } from '../schemas/dataset.schema';
 import { Lifecycle } from '../schemas/lifecycle.schema';
 import { Technique } from '../schemas/technique.schema';

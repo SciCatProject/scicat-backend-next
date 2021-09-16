@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatasetsModule } from './datasets/datasets.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -13,7 +12,6 @@ import { SharedModule } from './shared/shared.module';
     DatasetsModule,
     AuthModule,
     UsersModule,
-    SharedModule,
   ],
   controllers: [],
   providers: [],
