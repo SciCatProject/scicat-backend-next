@@ -16,7 +16,7 @@ export class RawDataset {
 
   @ApiProperty()
   @Prop({ type: Date })
-  endtime: Date;
+  endTime: Date;
 
   @ApiProperty()
   @Prop({ type: String, required: true })
