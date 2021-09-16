@@ -24,7 +24,7 @@ export class DerivedDataset {
 
   @ApiProperty()
   @Prop({ type: Object })
-  jobParameters: any;
+  jobParameters: Record<string, any>;
 
   @ApiProperty()
   @Prop({ type: String })
