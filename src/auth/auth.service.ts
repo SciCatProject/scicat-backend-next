@@ -1,7 +1,8 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { jwtConstants } from './auth.constants';
+import { jwtConstants } from './constants';
+import { CredentialsDto } from './dto/credentials.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,17 +11,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(payload: any): Promise<any> {
-    const user = await this.usersService.findOne(payload.username);
-    if (!user) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+  async validateUser(username: string, pass: string): Promise<any> {
+    const user = await this.usersService.findOne(username);
+    if (user && user.password === pass) {
+      const { password, ...result } = user;
+      return result;
     }
-    return user;
+    return null;
   }
 
-  async login(payload: any): Promise<any> {
+  async login(credentials: CredentialsDto): Promise<any> {
     // find user
-    const user = await this.usersService.findOne(payload.username);
+    const user = await this.usersService.findOne(credentials.username);
     // here I should check the password, but we are just testing,
     // so free access to the users
     //if (user && user.password === pass) {
