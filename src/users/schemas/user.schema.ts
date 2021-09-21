@@ -10,6 +10,10 @@ export type UserDocument = User & Document;
 export class User {
   @ApiProperty()
   @Prop()
+  _id: string;
+
+  @ApiProperty()
+  @Prop()
   realm: string;
 
   @ApiProperty()
