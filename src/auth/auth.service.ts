@@ -1,8 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { compare } from 'bcrypt';
+import { User } from 'src/users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { jwtConstants } from './constants';
-import { CredentialsDto } from './dto/credentials.dto';
 
 @Injectable()
 export class AuthService {
@@ -11,30 +12,32 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
+  async validateUser(
+    username: string,
+    pass: string,
+  ): Promise<Omit<User, 'password'>> {
     const user = await this.usersService.findOne(username);
-    if (user && user.password === pass) {
-      const { password, ...result } = user;
-      return result;
+
+    if (!user) {
+      return null;
     }
-    return null;
+
+    // Hacky deep copy of User object, as shallow copy is not enough
+    const { password, ...result } = JSON.parse(JSON.stringify(user));
+    const match = await compare(pass, password);
+
+    if (!match) {
+      return null;
+    }
+
+    return result;
   }
 
-  async login(credentials: CredentialsDto): Promise<any> {
-    // find user
-    const user = await this.usersService.findOne(credentials.username);
-    // here I should check the password, but we are just testing,
-    // so free access to the users
-    //if (user && user.password === pass) {
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
-    }
-    // we have the user, create jwt token
-    const { password, ...signPayload } = user;
+  async login(user: Omit<User, 'password'>): Promise<any> {
     return {
-      access_token: this.jwtService.sign(signPayload),
+      access_token: this.jwtService.sign(user),
       expires_in: jwtConstants.expiration,
-      ...signPayload,
+      ...user,
     };
   }
 }
