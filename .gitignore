@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Configs
+/src/config/configuration.ts
+
 # Logs
 logs
 *.log
