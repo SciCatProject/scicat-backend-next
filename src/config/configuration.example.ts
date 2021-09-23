@@ -21,4 +21,13 @@ export default () => ({
       password: 'aman',
     },
   ],
+  ldap: {
+    server: {
+      url: 'ldap://ldap.server.com/',
+      bindDN: '<USERNAME>',
+      bindCredentials: '<PASSWORD>',
+      searchBase: '<SEARCH_BASE>',
+      searchFilter: '<SEARCH_FILTER>',
+    },
+  },
 });
