@@ -29,6 +29,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, 'ldap') {
         email: payload.mail,
       };
       const user = await this.usersService.create(createUser);
+
       const createUserIdentity: CreateUserIdentityDto = {
         authScheme: 'ldap',
         created: new Date(),
@@ -39,16 +40,22 @@ export class LdapStrategy extends PassportStrategy(Strategy, 'ldap') {
           displayName: payload.displayName,
           email: payload.mail,
           username: payload.displayName,
-          thumbnailPhoto:
-            'data:image/jpeg;base64,' +
-            Buffer.from(payload.thumbnailPhoto, 'binary').toString('base64'),
-          emails: [],
+          thumbnailPhoto: payload.thumbnailPhoto
+            ? 'data:image/jpeg;base64,' +
+              Buffer.from(payload.thumbnailPhoto, 'binary').toString('base64')
+            : 'error: no photo found',
+          emails: [{ value: [].concat(payload.mail)[0] }],
           accessGroups: [],
           id: payload.sAMAccountName,
         },
         provider: 'ldap',
         userId: user._id,
       };
+
+      if (this.configService.get<string>('site') === 'ESS') {
+        createUserIdentity.profile.accessGroups = ['ess', 'loki', 'odin'];
+      }
+
       await this.usersService.createUserIdentity(createUserIdentity);
     }
 
