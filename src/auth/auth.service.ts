@@ -16,7 +16,7 @@ export class AuthService {
     username: string,
     pass: string,
   ): Promise<Omit<User, 'password'>> {
-    const user = await this.usersService.findOne(username);
+    const user = await this.usersService.findOne({ username });
 
     if (!user) {
       return null;
