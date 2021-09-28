@@ -30,4 +30,5 @@ export default () => ({
       searchFilter: '<SEARCH_FILTER>',
     },
   },
+  site: '<SITE>',
 });
