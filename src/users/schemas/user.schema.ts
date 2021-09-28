@@ -1,15 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
-export type UserDocument = User & Document;
+export type UserDocument = User & mongoose.Document;
 
 @Schema({
   collection: 'User',
 })
 export class User {
+  _id: string;
+
   @ApiProperty()
-  @Prop()
+  @Prop({ required: false })
   realm: string;
 
   @ApiProperty()
@@ -17,7 +19,7 @@ export class User {
   username: string;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ required: false })
   password: string;
 
   @ApiProperty()
@@ -25,7 +27,7 @@ export class User {
   email: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ required: false })
   emailVerified: boolean;
 }
 
