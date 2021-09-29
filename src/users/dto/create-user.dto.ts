@@ -9,4 +9,10 @@ export class CreateUserDto {
 
   @ApiProperty({ required: false })
   readonly password?: string;
+
+  @ApiProperty({ required: false })
+  readonly role?: string;
+
+  @ApiProperty({ required: false })
+  readonly global?: boolean;
 }
