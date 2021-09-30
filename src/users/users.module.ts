@@ -8,6 +8,9 @@ import {
   UserIdentity,
   UserIdentitySchema,
 } from './schemas/user-identity.schema';
+import { RolesService } from './roles.service';
+import { Role, RoleSchema } from './schemas/role.schema';
+import { UserRole, UserRoleSchema } from './schemas/user-role.schema';
 
 @Module({
   imports: [
@@ -21,9 +24,17 @@ import {
         name: UserIdentity.name,
         schema: UserIdentitySchema,
       },
+      {
+        name: Role.name,
+        schema: RoleSchema,
+      },
+      {
+        name: UserRole.name,
+        schema: UserRoleSchema,
+      },
     ]),
   ],
-  providers: [UsersService],
+  providers: [UsersService, RolesService],
   exports: [UsersService],
   controllers: [UsersController],
 })
