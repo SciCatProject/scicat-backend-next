@@ -88,4 +88,15 @@ export class RolesService implements OnModuleInit {
   ): Promise<UserRole> {
     return this.userRoleModel.findOne(filter).exec();
   }
+
+  async find(filter: FilterQuery<UserRoleDocument>): Promise<Role[]> {
+    const userRoles = await this.userRoleModel.find(filter).exec();
+
+    return await Promise.all(
+      userRoles.map(
+        async (userRole) =>
+          await this.roleModel.findOne({ _id: userRole.roleId }),
+      ),
+    );
+  }
 }
