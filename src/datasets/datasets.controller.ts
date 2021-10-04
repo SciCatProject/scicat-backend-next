@@ -7,11 +7,9 @@ import {
   Patch,
   Put,
   Delete,
-  Req,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -25,6 +23,9 @@ import { Dataset } from './schemas/dataset.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
 import { CreateDerivedDataset } from './dto/create-derived-dataset.dto';
+import { Role } from 'src/auth/role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @ApiBearerAuth()
 @ApiExtraModels(CreateDerivedDataset, CreateRawDatasetDto)
@@ -47,12 +48,9 @@ export class DatasetsController {
     name: 'filter',
     description: 'Database filters to apply when retrieve all datasets',
   })
-  async findAll(
-    @Query('filter') filter: string,
-    @Req() request: Request,
-  ): Promise<Dataset[]> {
+  async findAll(@Query('filter') filter: string): Promise<Dataset[]> {
     // convert filter string to object
-    const oFilter: object = JSON.parse(filter === undefined ? '{}' : filter);
+    const oFilter: any = JSON.parse(filter === undefined ? '{}' : filter);
     return this.datasetsService.findAll(oFilter);
   }
 
@@ -89,7 +87,8 @@ export class DatasetsController {
   }
 
   // DELETE /datasets/:id
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.ArchiveManager)
   @Delete(':id')
   async findByIdAndDelete(@Param('id') id: string): Promise<any> {
     return this.datasetsService.findByIdAndDelete(id);
