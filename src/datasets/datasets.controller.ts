@@ -36,7 +36,6 @@ export class DatasetsController {
 
   // POST /datasets
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Ingestor)
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
