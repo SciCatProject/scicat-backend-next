@@ -13,9 +13,7 @@ import configuration from './config/configuration';
       load: [configuration],
     }),
     DatasetsModule,
-    MongooseModule.forRoot('mongodb://localhost/nest', {
-      useFindAndModify: false,
-    }),
+    MongooseModule.forRoot('mongodb://localhost/nest'),
     UsersModule,
   ],
   controllers: [],
