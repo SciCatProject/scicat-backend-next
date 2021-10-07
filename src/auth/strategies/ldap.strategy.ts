@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CreateUserIdentityDto } from 'src/users/dto/create-user-identity.dto';
+import { FilterQuery } from 'mongoose';
+import { UserDocument } from 'src/users/schemas/user.schema';
 
 @Injectable()
 export class LdapStrategy extends PassportStrategy(Strategy, 'ldap') {
@@ -16,12 +18,13 @@ export class LdapStrategy extends PassportStrategy(Strategy, 'ldap') {
   }
 
   async validate(payload: any) {
-    const userExists = await this.usersService.userExists({
+    const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: `ldap.${payload.displayName}` },
         { email: payload.mail },
       ],
-    });
+    };
+    const userExists = await this.usersService.userExists(userFilter);
 
     if (!userExists) {
       const createUser: CreateUserDto = {
@@ -59,9 +62,8 @@ export class LdapStrategy extends PassportStrategy(Strategy, 'ldap') {
       await this.usersService.createUserIdentity(createUserIdentity);
     }
 
-    return {
-      username: `ldap.${payload.displayName}`,
-      email: payload.mail,
-    };
+    const user = await this.usersService.findOne(userFilter);
+
+    return JSON.parse(JSON.stringify(user));
   }
 }
