@@ -16,7 +16,7 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(filter: object): Promise<Dataset[]> {
+  async findAll(filter: any): Promise<Dataset[]> {
     return this.datasetModel.find(filter).exec();
   }
 
