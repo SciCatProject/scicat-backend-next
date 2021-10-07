@@ -4,6 +4,7 @@ import { DatasetsModule } from './datasets/datasets.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
+import { CaslModule } from './casl/casl.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -15,6 +16,7 @@ import configuration from './config/configuration';
     DatasetsModule,
     MongooseModule.forRoot('mongodb://localhost/nest'),
     UsersModule,
+    CaslModule,
   ],
   controllers: [],
   providers: [],
