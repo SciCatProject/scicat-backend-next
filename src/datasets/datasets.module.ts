@@ -5,6 +5,7 @@ import { DatasetsController } from './datasets.controller';
 import { DatasetsService } from './datasets.service';
 import { RawDatasetSchema } from './schemas/raw-dataset.schema';
 import { DerivedDatasetSchema } from './schemas/derived-dataset.schema';
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { DerivedDatasetSchema } from './schemas/derived-dataset.schema';
     ]),
   ],
   controllers: [DatasetsController],
-  providers: [DatasetsService],
+  providers: [DatasetsService, CaslAbilityFactory],
 })
 export class DatasetsModule {}

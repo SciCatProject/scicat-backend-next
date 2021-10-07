@@ -26,6 +26,10 @@ import { CreateDerivedDataset } from './dto/create-derived-dataset.dto';
 import { Role } from 'src/auth/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { PoliciesGuard } from 'src/casl/guards/policies.guard';
+import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
+import { AppAbility } from 'src/casl/casl-ability.factory';
+import { Action } from 'src/casl/action.enum';
 
 @ApiBearerAuth()
 @ApiExtraModels(CreateDerivedDataset, CreateRawDatasetDto)
@@ -35,7 +39,11 @@ export class DatasetsController {
   constructor(private datasetsService: DatasetsService) {}
 
   // POST /datasets
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) => ability.can(Action.Manage, Dataset),
+    (ability: AppAbility) => ability.can(Action.Create, Dataset),
+  )
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
@@ -87,8 +95,12 @@ export class DatasetsController {
   }
 
   // DELETE /datasets/:id
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PoliciesGuard)
   @Roles(Role.Admin, Role.ArchiveManager)
+  @CheckPolicies(
+    (ability: AppAbility) => ability.can(Action.Manage, Dataset),
+    (ability: AppAbility) => ability.can(Action.Delete, Dataset),
+  )
   @Delete(':id')
   async findByIdAndDelete(@Param('id') id: string): Promise<any> {
     return this.datasetsService.findByIdAndDelete(id);

@@ -1,6 +1,10 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Action } from 'src/casl/action.enum';
+import { AppAbility } from 'src/casl/casl-ability.factory';
+import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
+import { PoliciesGuard } from 'src/casl/guards/policies.guard';
 import { UserIdentity } from './schemas/user-identity.schema';
 import { UsersService } from './users.service';
 
@@ -10,7 +14,10 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, UserIdentity),
+  )
   @Get(':id/userIdentity')
   async getUserIdentity(@Param('id') id: string): Promise<UserIdentity> {
     return await this.usersService.findByIdUserIdentity(id);

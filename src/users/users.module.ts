@@ -11,6 +11,7 @@ import {
 import { RolesService } from './roles.service';
 import { Role, RoleSchema } from './schemas/role.schema';
 import { UserRole, UserRoleSchema } from './schemas/user-role.schema';
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { UserRole, UserRoleSchema } from './schemas/user-role.schema';
       },
     ]),
   ],
-  providers: [UsersService, RolesService],
+  providers: [CaslAbilityFactory, UsersService, RolesService],
   exports: [UsersService, RolesService],
   controllers: [UsersController],
 })
