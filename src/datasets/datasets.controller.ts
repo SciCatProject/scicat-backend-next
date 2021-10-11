@@ -50,6 +50,7 @@ export class DatasetsController {
   @ApiQuery({
     name: 'filter',
     description: 'Database filters to apply when retrieve all datasets',
+    required: false,
   })
   async findAll(@Query('filter') filter: string): Promise<Dataset[]> {
     // convert filter string to object
