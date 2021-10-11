@@ -23,9 +23,6 @@ import { Dataset } from './schemas/dataset.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
 import { CreateDerivedDataset } from './dto/create-derived-dataset.dto';
-import { Role } from 'src/auth/role.enum';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { PoliciesGuard } from 'src/casl/guards/policies.guard';
 import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
@@ -39,18 +36,16 @@ export class DatasetsController {
   constructor(private datasetsService: DatasetsService) {}
 
   // POST /datasets
-  @UseGuards(JwtAuthGuard, RolesGuard, PoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(Action.Manage, Dataset),
-    (ability: AppAbility) => ability.can(Action.Create, Dataset),
-  )
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
   }
 
   // GET /datasets
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get()
   @ApiQuery({
     name: 'filter',
@@ -63,7 +58,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Dataset> {
     return this.datasetsService.findById(id);
@@ -71,7 +67,8 @@ export class DatasetsController {
 
   // PATCH /datasets/:id
   // body: modified fields
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Patch(':id')
   async findByIdAndUpdate(
     @Param('id') id: string,
@@ -82,7 +79,8 @@ export class DatasetsController {
 
   // PUT /datasets/:id
   // body: full dataset model
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Put(':id')
   async findByIdReplaceOrCreate(
     @Param('id') id: string,
@@ -95,8 +93,8 @@ export class DatasetsController {
   }
 
   // DELETE /datasets/:id
-  @UseGuards(JwtAuthGuard, RolesGuard, PoliciesGuard)
-  @Roles(Role.Admin, Role.ArchiveManager)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
   @CheckPolicies(
     (ability: AppAbility) => ability.can(Action.Manage, Dataset),
     (ability: AppAbility) => ability.can(Action.Delete, Dataset),
