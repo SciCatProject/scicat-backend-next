@@ -16,6 +16,7 @@ export type DatasetDocument = Dataset & Document;
 @Schema({
   collection: 'Dataset',
   discriminatorKey: 'type',
+  emitIndexErrors: true,
 })
 export class Dataset extends Ownable {
   @ApiProperty({
@@ -36,7 +37,7 @@ export class Dataset extends Ownable {
   _id: string;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ type: String, required: true, index: true })
   owner: string;
 
   @ApiProperty()
@@ -48,19 +49,19 @@ export class Dataset extends Ownable {
   orcidOfOwner: string;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ type: String, required: true, index: true })
   contactEmail: string;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ type: String, required: true, index: true })
   sourceFolder: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ type: String, index: true })
   sourceFolderHost: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ type: Number, index: true })
   size: number;
 
   @ApiProperty()
@@ -76,7 +77,7 @@ export class Dataset extends Ownable {
   numberOfFilesArchived: number;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true, index: true })
   creationTime: Date;
 
   @ApiProperty()
@@ -84,6 +85,7 @@ export class Dataset extends Ownable {
     type: String,
     required: true,
     enum: [DatasetType.Raw, DatasetType.Derived],
+    index: true,
   })
   type: string;
 
@@ -159,3 +161,5 @@ DatasetSchema.virtual('pid')
 DatasetSchema.set('toJSON', {
   virtuals: true,
 });
+
+DatasetSchema.index({ '$**': 'text' });

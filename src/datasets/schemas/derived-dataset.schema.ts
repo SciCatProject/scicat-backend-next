@@ -11,7 +11,7 @@ export class DerivedDataset {
   type: string;
 
   @ApiProperty()
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   investigator: string;
 
   @ApiProperty()

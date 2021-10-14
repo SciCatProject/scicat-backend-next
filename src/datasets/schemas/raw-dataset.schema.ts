@@ -19,7 +19,7 @@ export class RawDataset {
   endTime: Date;
 
   @ApiProperty()
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   creationLocation: string;
 
   @ApiProperty()
