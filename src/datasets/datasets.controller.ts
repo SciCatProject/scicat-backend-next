@@ -27,6 +27,7 @@ import { PoliciesGuard } from 'src/casl/guards/policies.guard';
 import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { Action } from 'src/casl/action.enum';
+import { IDatasetFilters } from './interfaces/dataset-filters.interface';
 
 @ApiBearerAuth()
 @ApiExtraModels(CreateDerivedDataset, CreateRawDatasetDto)
@@ -53,9 +54,8 @@ export class DatasetsController {
     required: false,
   })
   async findAll(@Query('filter') filter: string): Promise<Dataset[]> {
-    // convert filter string to object
-    const oFilter: any = JSON.parse(filter === undefined ? '{}' : filter);
-    return this.datasetsService.findAll(oFilter);
+    const parsedFilter: IDatasetFilters = JSON.parse(filter ?? '{}');
+    return this.datasetsService.findAll(parsedFilter);
   }
 
   // GET /datasets/:id
