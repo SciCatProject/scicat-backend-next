@@ -1,6 +1,6 @@
 import { ScientificRelation } from 'src/common/scientific-relation.enum';
 
-interface IScientificQuery {
+export interface IScientificFilter {
   lhs: string;
   relation: ScientificRelation;
   rhs: string | number;
@@ -19,7 +19,7 @@ export interface IDatasetFilters {
     creationLocation?: string[];
     ownerGroup?: string[];
     keywords?: string[];
-    scientific?: IScientificQuery[];
+    scientific?: IScientificFilter[];
   };
   limits: {
     skip: number;
