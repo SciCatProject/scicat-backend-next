@@ -22,15 +22,17 @@ import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset } from './schemas/dataset.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
-import { CreateDerivedDataset } from './dto/create-derived-dataset.dto';
+import { CreateDerivedDatasetDto } from './dto/create-derived-dataset.dto';
 import { PoliciesGuard } from 'src/casl/guards/policies.guard';
 import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { Action } from 'src/casl/action.enum';
 import { IDatasetFilters } from './interfaces/dataset-filters.interface';
+import { UpdateRawDatasetDto } from './dto/update-raw-dataset.dto';
+import { UpdateDerivedDatasetDto } from './dto/update-derived-dataset.dto';
 
 @ApiBearerAuth()
-@ApiExtraModels(CreateDerivedDataset, CreateRawDatasetDto)
+@ApiExtraModels(CreateDerivedDatasetDto, CreateRawDatasetDto)
 @ApiTags('datasets')
 @Controller('datasets')
 export class DatasetsController {
@@ -73,7 +75,11 @@ export class DatasetsController {
   @Patch(':id')
   async findByIdAndUpdate(
     @Param('id') id: string,
-    @Body() updateDatasetDto: UpdateDatasetDto,
+    @Body()
+    updateDatasetDto:
+      | UpdateDatasetDto
+      | UpdateRawDatasetDto
+      | UpdateDerivedDatasetDto,
   ): Promise<Dataset> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
@@ -85,7 +91,11 @@ export class DatasetsController {
   @Put(':id')
   async findByIdReplaceOrCreate(
     @Param('id') id: string,
-    @Body() createDatasetDto: CreateDatasetDto,
+    @Body()
+    createDatasetDto:
+      | CreateDatasetDto
+      | CreateRawDatasetDto
+      | CreateDerivedDatasetDto,
   ): Promise<Dataset> {
     return this.datasetsService.findByIdAndReplaceOrCreate(
       id,
