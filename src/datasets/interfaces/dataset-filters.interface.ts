@@ -8,7 +8,7 @@ export interface IScientificFilter {
 }
 
 export interface IDatasetFilters {
-  query?: {
+  fields?: {
     mode?: Record<string, any>;
     text?: string;
     creationTime?: {
@@ -19,9 +19,10 @@ export interface IDatasetFilters {
     creationLocation?: string[];
     ownerGroup?: string[];
     keywords?: string[];
+    isPublished?: boolean;
     scientific?: IScientificFilter[];
   };
-  limits: {
+  limits?: {
     skip: number;
     limit: number;
     order: string;
