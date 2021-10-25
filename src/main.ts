@@ -5,7 +5,8 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  app.enableCors();
+  app.setGlobalPrefix('api/v3');
   const config = new DocumentBuilder()
     .setTitle('Dacat API')
     .setDescription('SciCat backend API')
