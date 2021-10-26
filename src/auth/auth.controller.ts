@@ -5,6 +5,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { CredentialsDto } from './dto/credentials.dto';
 import { LdapAuthGuard } from './guards/ldap.guard';
+import { AllowAny } from './decorators/allow-any.decorator';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -13,6 +14,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @ApiBody({ type: CredentialsDto })
+  @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req: any): Promise<any> {
@@ -20,6 +22,7 @@ export class AuthController {
   }
 
   @ApiBody({ type: CredentialsDto })
+  @AllowAny()
   @UseGuards(LdapAuthGuard)
   @Post('msad')
   async adLogin(@Request() req: any): Promise<any> {
