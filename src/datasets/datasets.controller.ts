@@ -9,6 +9,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -20,7 +21,6 @@ import { DatasetsService } from './datasets.service';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
 import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { Dataset } from './schemas/dataset.schema';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
 import { CreateDerivedDatasetDto } from './dto/create-derived-dataset.dto';
 import { PoliciesGuard } from 'src/casl/guards/policies.guard';
@@ -28,8 +28,8 @@ import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { Action } from 'src/casl/action.enum';
 import { IDatasetFilters } from './interfaces/dataset-filters.interface';
-import { UpdateRawDatasetDto } from './dto/update-raw-dataset.dto';
-import { UpdateDerivedDatasetDto } from './dto/update-derived-dataset.dto';
+import { PublicDatasetsInterceptor } from './interceptors/public-datasets-interceptor';
+import { AllowAny } from 'src/auth/decorators/allow-any.decorator';
 
 @ApiBearerAuth()
 @ApiExtraModels(CreateDerivedDatasetDto, CreateRawDatasetDto)
@@ -39,7 +39,7 @@ export class DatasetsController {
   constructor(private datasetsService: DatasetsService) {}
 
   // POST /datasets
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
@@ -47,21 +47,46 @@ export class DatasetsController {
   }
 
   // GET /datasets
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get()
   @ApiQuery({
-    name: 'filter',
+    name: 'filters',
     description: 'Database filters to apply when retrieve all datasets',
     required: false,
   })
-  async findAll(@Query('filter') filter: string): Promise<Dataset[]> {
-    const parsedFilter: IDatasetFilters = JSON.parse(filter ?? '{}');
-    return this.datasetsService.findAll(parsedFilter);
+  async findAll(
+    @Query() filters?: { fields?: string; limits?: string },
+  ): Promise<Dataset[]> {
+    const parsedFilters: IDatasetFilters = {
+      fields: JSON.parse(filters.fields ?? '{}'),
+      limits: JSON.parse(filters.limits ?? '{}'),
+    };
+    return this.datasetsService.findAll(parsedFilters);
+  }
+
+  //GET /fullquery
+  @AllowAny()
+  @UseInterceptors(PublicDatasetsInterceptor)
+  @Get('/fullquery')
+  @ApiQuery({
+    name: 'filters',
+    description: 'Database filter to apply when retrieve all datasets',
+    required: false,
+  })
+  async fullquery(
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<Dataset[]> {
+    console.log({ filters });
+    const parsedFilters: IDatasetFilters = {
+      fields: JSON.parse(filters.fields ?? '{}'),
+      limits: JSON.parse(filters.limits ?? '{}'),
+    };
+    return this.datasetsService.findAll(parsedFilters);
   }
 
   // GET /datasets/:id
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Dataset> {
@@ -70,32 +95,26 @@ export class DatasetsController {
 
   // PATCH /datasets/:id
   // body: modified fields
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Patch(':id')
   async findByIdAndUpdate(
     @Param('id') id: string,
     @Body()
-    updateDatasetDto:
-      | UpdateDatasetDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto,
+    updateDatasetDto: UpdateDatasetDto,
   ): Promise<Dataset> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
   // PUT /datasets/:id
   // body: full dataset model
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Put(':id')
   async findByIdReplaceOrCreate(
     @Param('id') id: string,
     @Body()
-    createDatasetDto:
-      | CreateDatasetDto
-      | CreateRawDatasetDto
-      | CreateDerivedDatasetDto,
+    createDatasetDto: CreateDatasetDto,
   ): Promise<Dataset> {
     return this.datasetsService.findByIdAndReplaceOrCreate(
       id,
@@ -104,7 +123,7 @@ export class DatasetsController {
   }
 
   // DELETE /datasets/:id
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
   @CheckPolicies(
     (ability: AppAbility) => ability.can(Action.Manage, Dataset),
