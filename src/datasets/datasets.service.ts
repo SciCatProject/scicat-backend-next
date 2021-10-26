@@ -49,11 +49,11 @@ export class DatasetsService {
         }
       }
 
-      if (filter.query) {
-        if (filter.query.mode) {
+      if (filter.fields) {
+        if (filter.fields.mode) {
           const idField = '_id';
           const currentExpression = JSON.parse(
-            JSON.stringify(filter.query.mode),
+            JSON.stringify(filter.fields.mode),
           );
           if (idField in currentExpression) {
             currentExpression['_id'] = currentExpression[idField];
@@ -61,34 +61,41 @@ export class DatasetsService {
           }
           filterQuery = currentExpression;
         }
-        if (filter.query.text) {
-          filterQuery.$text = { $search: filter.query.text };
+        if (filter.fields.text) {
+          filterQuery.$text = { $search: filter.fields.text };
         }
-        if (filter.query.creationTime) {
-          const { begin, end } = filter.query.creationTime;
+        if (filter.fields.creationTime) {
+          const { begin, end } = filter.fields.creationTime;
           filterQuery.creationTime = {
             $gte: new Date(begin),
             $lte: new Date(end),
           };
         }
-        if (filter.query.creationLocation) {
-          filterQuery.creationLocation = { $in: filter.query.creationLocation };
-        }
-        if (filter.query.ownerGroup) {
-          filterQuery.ownerGroup = { $in: filter.query.ownerGroup };
-        }
-        if (filter.query.keywords) {
-          filterQuery.keywords = { $in: filter.query.keywords };
-        }
-        if (filter.query.scientific) {
-          filterQuery = {
-            ...filterQuery,
-            ...mapScientificQuery(filter.query.scientific),
+        if (filter.fields.creationLocation) {
+          filterQuery.creationLocation = {
+            $in: filter.fields.creationLocation,
           };
         }
-        if (filter.query.type) {
-          filterQuery.type = { $in: filter.query.type };
-          const [type] = filter.query.type;
+        if (filter.fields.ownerGroup) {
+          filterQuery.ownerGroup = { $in: filter.fields.ownerGroup };
+        }
+        if (filter.fields.keywords) {
+          filterQuery.keywords = { $in: filter.fields.keywords };
+        }
+        if (filter.fields.isPublished) {
+          filterQuery.isPublished = {
+            $eq: filter.fields.isPublished,
+          };
+        }
+        if (filter.fields.scientific) {
+          filterQuery = {
+            ...filterQuery,
+            ...mapScientificQuery(filter.fields.scientific),
+          };
+        }
+        if (filter.fields.type) {
+          filterQuery.type = { $in: filter.fields.type };
+          const [type] = filter.fields.type;
 
           switch (type) {
             case DatasetType.Derived: {
