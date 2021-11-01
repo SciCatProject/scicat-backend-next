@@ -7,24 +7,31 @@ export interface IScientificFilter {
   unit: string | undefined;
 }
 
-export interface IDatasetFilters {
-  fields?: {
-    mode?: Record<string, any>;
-    text?: string;
-    creationTime?: {
-      begin: string;
-      end: string;
-    };
-    type?: string[];
-    creationLocation?: string[];
-    ownerGroup?: string[];
-    keywords?: string[];
-    isPublished?: boolean;
-    scientific?: IScientificFilter[];
+interface IDatasetFields {
+  mode?: Record<string, any>;
+  text?: string;
+  creationTime?: {
+    begin: string;
+    end: string;
   };
+  type?: string[];
+  creationLocation?: string[];
+  ownerGroup?: string[];
+  keywords?: string[];
+  isPublished?: boolean;
+  scientific?: IScientificFilter[];
+}
+
+export interface IDatasetFilters {
+  fields?: IDatasetFields;
   limits?: {
     skip: number;
     limit: number;
     order: string;
   };
+}
+
+export interface IDatasetFacets {
+  fields?: IDatasetFields;
+  facets?: string[];
 }
