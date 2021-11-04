@@ -27,7 +27,10 @@ import { PoliciesGuard } from 'src/casl/guards/policies.guard';
 import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { Action } from 'src/casl/action.enum';
-import { IDatasetFilters } from './interfaces/dataset-filters.interface';
+import {
+  IDatasetFacets,
+  IDatasetFilters,
+} from './interfaces/dataset-filters.interface';
 import { PublicDatasetsInterceptor } from './interceptors/public-datasets-interceptor';
 import { AllowAny } from 'src/auth/decorators/allow-any.decorator';
 
@@ -65,7 +68,7 @@ export class DatasetsController {
     return this.datasetsService.findAll(parsedFilters);
   }
 
-  //GET /fullquery
+  // GET /fullquery
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
   @Get('/fullquery')
@@ -77,12 +80,30 @@ export class DatasetsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Dataset[]> {
-    console.log({ filters });
     const parsedFilters: IDatasetFilters = {
       fields: JSON.parse(filters.fields ?? '{}'),
       limits: JSON.parse(filters.limits ?? '{}'),
     };
     return this.datasetsService.findAll(parsedFilters);
+  }
+
+  // GET /fullfacets
+  @AllowAny()
+  @UseInterceptors(PublicDatasetsInterceptor)
+  @Get('/fullfacet')
+  @ApiQuery({
+    name: 'filters',
+    description: 'Database filter to apply when retrieve all datasets',
+    required: false,
+  })
+  async fullfacet(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<any[]> {
+    const parsedFilters: IDatasetFacets = {
+      fields: JSON.parse(filters.fields ?? '{}'),
+      facets: JSON.parse(filters.facets ?? '[]'),
+    };
+    return this.datasetsService.fullFacet(parsedFilters);
   }
 
   // GET /datasets/:id
