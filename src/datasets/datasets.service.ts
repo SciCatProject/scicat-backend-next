@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, QueryOptions } from 'mongoose';
 import { mapScientificQuery } from 'src/common/utils';
@@ -8,7 +8,10 @@ import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
 import { UpdateDatasetDto } from './dto/update-dataset.dto';
 import { UpdateDerivedDatasetDto } from './dto/update-derived-dataset.dto';
 import { UpdateRawDatasetDto } from './dto/update-raw-dataset.dto';
-import { IDatasetFilters } from './interfaces/dataset-filters.interface';
+import {
+  IDatasetFacets,
+  IDatasetFilters,
+} from './interfaces/dataset-filters.interface';
 import {
   Dataset,
   DatasetDocument,
@@ -120,6 +123,148 @@ export class DatasetsService {
     return [].concat(derivedDatasets, rawDatasets);
   }
 
+  async fullFacet(filters?: IDatasetFacets): Promise<any[]> {
+    const { fields, facets } = filters;
+    const pipeline = [];
+    const facetMatch = {};
+    const allMatch = [];
+    Object.keys(fields).forEach((key) => {
+      if (facets.indexOf(key) < 0) {
+        if (key === 'text') {
+          if (typeof fields[key] === 'string') {
+            const match = {
+              $match: {
+                $or: [
+                  {
+                    $text: this.searchExpression(key, String(fields[key])),
+                  },
+                ],
+              },
+            };
+            pipeline.unshift(match);
+          }
+        } else if (key === '_id') {
+          const match = {
+            $match: {
+              _id: this.searchExpression(key, fields[key]),
+            },
+          };
+          allMatch.push(match);
+          pipeline.push(match);
+        } else if (key === 'mode') {
+          // substitute potential id field in fields
+          const idField = '_id';
+          const currentExpression = JSON.parse(JSON.stringify(fields[key]));
+          if (idField in currentExpression) {
+            currentExpression['_id'] = currentExpression[idField];
+            delete currentExpression[idField];
+          }
+          const match = {
+            $match: currentExpression,
+          };
+          allMatch.push(match);
+          pipeline.push(match);
+        } else if (key === 'userGroups') {
+          if (
+            fields['userGroups'].indexOf('globalaccess') < 0 &&
+            'ownerGroup' in this.datasetModel.schema.paths
+          ) {
+            const match = {
+              $match: {
+                $or: [
+                  {
+                    ownerGroup: this.searchExpression(
+                      'ownerGroup',
+                      fields['userGroups'],
+                    ),
+                  },
+                  {
+                    accessGroups: this.searchExpression(
+                      'accessGroups',
+                      fields['userGroups'],
+                    ),
+                  },
+                ],
+              },
+            };
+            allMatch.push(match);
+            pipeline.push(match);
+          }
+        } else if (key === 'scientific') {
+          const match = {
+            $match: mapScientificQuery(fields[key]),
+          };
+          allMatch.push(match);
+          pipeline.push(match);
+        } else {
+          const match = {};
+          match[key] = this.searchExpression(key, fields[key]);
+          const m = {
+            $match: match,
+          };
+          allMatch.push(m);
+          pipeline.push(m);
+        }
+      } else {
+        facetMatch[key] = this.searchExpression(key, fields[key]);
+      }
+    });
+
+    // append all facet pipelines
+    const facetObject = {};
+    facets.forEach((facet) => {
+      if (
+        facet in this.datasetModel.schema.discriminators[DatasetType.Raw].paths
+      ) {
+        facetObject[facet] = this.createNewFacetPipeline(
+          facet,
+          this.schemaTypeOf(facet),
+          facetMatch,
+        );
+        return;
+      } else if (
+        facet in
+        this.datasetModel.schema.discriminators[DatasetType.Derived].paths
+      ) {
+        facetObject[facet] = this.createNewFacetPipeline(
+          facet,
+          this.schemaTypeOf(facet),
+          facetMatch,
+        );
+        return;
+      }
+
+      if (facet.startsWith('datasetlifecycle.')) {
+        const lifecycleFacet = facet.split('.')[1];
+        facetObject[lifecycleFacet] = this.createNewFacetPipeline(
+          lifecycleFacet,
+          this.schemaTypeOf(lifecycleFacet),
+          facetMatch,
+        );
+        return;
+      } else {
+        Logger.warn(
+          `Warning: Facet not part of any model: ${facet}`,
+          'DatasetsService',
+        );
+        return;
+      }
+    });
+
+    facetObject['all'] = [
+      {
+        $match: facetMatch,
+      },
+      {
+        $count: 'totalSets',
+      },
+    ];
+    pipeline.push({ $facet: facetObject });
+
+    const results = await this.datasetModel.aggregate(pipeline).exec();
+    return results;
+  }
+
   async findById(id: string): Promise<Dataset> {
     return this.datasetModel.findById(id).exec();
   }
@@ -180,5 +325,125 @@ export class DatasetsService {
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<Dataset> {
     return await this.datasetModel.findByIdAndRemove(id);
+  }
+
+  private schemaTypeOf(key: string, value: any = null): string {
+    let property = this.datasetModel.schema.path(key);
+
+    if (!property) {
+      property =
+        this.datasetModel.discriminators[DatasetType.Raw].schema.path(key);
+    }
+
+    if (!property) {
+      property =
+        this.datasetModel.discriminators[DatasetType.Derived].schema.path(key);
+    }
+
+    if (!property) {
+      if ('begin' in value) {
+        return 'Date';
+      } else {
+        return 'String';
+      }
+    } else {
+      return property.instance;
+    }
+  }
+
+  private searchExpression(fieldName: string, value: any): any {
+    if (fieldName === 'text') {
+      return { $search: value };
+    }
+
+    const valueType = this.schemaTypeOf(fieldName, value);
+
+    if (valueType === 'String') {
+      if (value.constructor === Array) {
+        if (value.length == 1) {
+          return value[0];
+        } else {
+          return {
+            $in: value,
+          };
+        }
+      } else {
+        return value;
+      }
+    } else if (valueType === 'Date') {
+      return {
+        $gte: new Date(value.begin),
+        $lte: new Date(value.end),
+      };
+    } else if (valueType === 'Boolean') {
+      return {
+        $eq: value,
+      };
+    } else if (Array.isArray(value)) {
+      return {
+        $in: value,
+      };
+    } else {
+      return value;
+    }
+  }
+
+  createNewFacetPipeline(name: string, type: string, query: any) {
+    const pipeline = [];
+
+    if (type === 'Array') {
+      pipeline.push({
+        $unwind: '$' + name,
+      });
+    }
+
+    if (query && Object.keys(query).length > 0) {
+      const queryCopy = { ...query };
+      delete queryCopy[name];
+
+      if (Object.keys(queryCopy).length > 0) {
+        pipeline.push({
+          $match: queryCopy,
+        });
+      }
+    }
+
+    const group: {
+      $group: {
+        _id: string | Record<string, any>;
+        count: Record<string, number>;
+      };
+    } = {
+      $group: {
+        _id: '$' + name,
+        count: {
+          $sum: 1,
+        },
+      },
+    };
+
+    if (type === 'Date') {
+      group.$group._id = {
+        year: {
+          $year: '$' + name,
+        },
+        month: {
+          $month: '$' + name,
+        },
+        day: {
+          $dayOfMonth: '$' + name,
+        },
+      };
+    }
+    pipeline.push(group);
+
+    const sort = {
+      $sort: {
+        _id: -1,
+      },
+    };
+    pipeline.push(sort);
+
+    return pipeline;
   }
 }
