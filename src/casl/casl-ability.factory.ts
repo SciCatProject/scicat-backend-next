@@ -6,6 +6,7 @@ import {
   InferSubjects,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
+import { Attachment } from 'src/attachments/schemas/attachment.schema';
 import { Role } from 'src/auth/role.enum';
 import { Dataset } from 'src/datasets/schemas/dataset.schema';
 import { UserIdentity } from 'src/users/schemas/user-identity.schema';
@@ -13,7 +14,9 @@ import { User } from 'src/users/schemas/user.schema';
 import { Action } from './action.enum';
 
 type Subjects =
-  | InferSubjects<typeof Dataset | typeof User | typeof UserIdentity>
+  | InferSubjects<
+      typeof Attachment | typeof Dataset | typeof User | typeof UserIdentity
+    >
   | 'all';
 
 export type AppAbility = Ability<[Action, Subjects]>;
@@ -24,8 +27,6 @@ export class CaslAbilityFactory {
     const { can, cannot, build } = new AbilityBuilder<
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
-
-    console.log({ factoryUser: user });
 
     can(Action.Read, Dataset, { isPublished: true });
     can(Action.Read, Dataset, {
@@ -46,6 +47,8 @@ export class CaslAbilityFactory {
       },
     );
 
+    can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
+
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, 'all');
     }
@@ -61,6 +64,8 @@ export class CaslAbilityFactory {
       cannot(Action.Delete, Dataset);
       can(Action.Create, Dataset);
       can(Action.Update, Dataset);
+
+      can(Action.Create, Attachment);
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });
