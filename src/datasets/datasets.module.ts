@@ -6,9 +6,11 @@ import { DatasetsService } from './datasets.service';
 import { RawDatasetSchema } from './schemas/raw-dataset.schema';
 import { DerivedDatasetSchema } from './schemas/derived-dataset.schema';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory';
+import { AttachmentsModule } from 'src/attachments/attachments.module';
 
 @Module({
   imports: [
+    AttachmentsModule,
     MongooseModule.forFeature([
       {
         name: Dataset.name,
