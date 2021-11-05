@@ -33,13 +33,24 @@ import {
 } from './interfaces/dataset-filters.interface';
 import { PublicDatasetsInterceptor } from './interceptors/public-datasets-interceptor';
 import { AllowAny } from 'src/auth/decorators/allow-any.decorator';
+import { Attachment } from 'src/attachments/schemas/attachment.schema';
+import { CreateAttachmentDto } from 'src/attachments/dto/create-attachment.dto';
+import { AttachmentsService } from 'src/attachments/attachments.service';
+import { UpdateAttachmentDto } from 'src/attachments/dto/update-attachment.dto';
 
 @ApiBearerAuth()
-@ApiExtraModels(CreateDerivedDatasetDto, CreateRawDatasetDto)
+@ApiExtraModels(
+  CreateAttachmentDto,
+  CreateDerivedDatasetDto,
+  CreateRawDatasetDto,
+)
 @ApiTags('datasets')
 @Controller('datasets')
 export class DatasetsController {
-  constructor(private datasetsService: DatasetsService) {}
+  constructor(
+    private attachmentsService: AttachmentsService,
+    private datasetsService: DatasetsService,
+  ) {}
 
   // POST /datasets
   @UseGuards(PoliciesGuard)
@@ -146,12 +157,63 @@ export class DatasetsController {
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(Action.Manage, Dataset),
-    (ability: AppAbility) => ability.can(Action.Delete, Dataset),
-  )
   @Delete(':id')
   async findByIdAndDelete(@Param('id') id: string): Promise<any> {
     return this.datasetsService.findByIdAndDelete(id);
+  }
+
+  // POST /datasets/:id/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, Attachment),
+  )
+  @Post(':id/attachments')
+  async createAttachment(
+    @Param('id') id: string,
+    @Body() createAttachmentDto: CreateAttachmentDto,
+  ): Promise<Attachment> {
+    const createAttachment = { ...createAttachmentDto, datasetId: id };
+    return this.attachmentsService.create(createAttachment);
+  }
+
+  // GET /datasets/:id/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @Get(':id/attachments')
+  async findAllAttachments(@Param('id') id: string): Promise<Attachment[]> {
+    return this.attachmentsService.findAll({ datasetId: id });
+  }
+
+  // PATCH /datasets/:id/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, Attachment),
+  )
+  @Patch(':id/attachments/:fk')
+  async findOneAttachmentAndUpdate(
+    @Param('id') datasetId: string,
+    @Param('fk') attachmentId: string,
+    @Body() updateAttachmentDto: UpdateAttachmentDto,
+  ): Promise<Attachment> {
+    return this.attachmentsService.findOneAndUpdate(
+      { _id: attachmentId, datasetId },
+      updateAttachmentDto,
+    );
+  }
+
+  // DELETE /datasets/:id/attachments/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, Attachment),
+  )
+  @Delete(':id/attachments/:fk')
+  async findOneAttachmentAndRemove(
+    @Param('id') datasetId: string,
+    @Param('fk') attachmentId: string,
+  ): Promise<any> {
+    return this.attachmentsService.findOneAndRemove({
+      _id: attachmentId,
+      datasetId,
+    });
   }
 }
