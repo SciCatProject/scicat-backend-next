@@ -162,6 +162,22 @@ export class DatasetsController {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
+  // GET /datasets/:id/thumbnail
+  @AllowAny()
+  @Get(':id/thumbnail')
+  async thumbnail(@Param('id') id: string): Promise<Partial<Attachment>> {
+    const attachment = await this.attachmentsService.findOne(
+      { datasetId: id },
+      { _id: false, thumbnail: true },
+    );
+
+    if (!attachment || !attachment.thumbnail) {
+      return {};
+    }
+
+    return attachment;
+  }
+
   // POST /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
