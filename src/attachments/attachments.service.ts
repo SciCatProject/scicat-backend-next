@@ -22,8 +22,11 @@ export class AttachmentsService {
     return this.attachmentModel.find(filter).exec();
   }
 
-  async findOne(filter: FilterQuery<AttachmentDocument>): Promise<Attachment> {
-    return this.attachmentModel.findOne(filter).exec();
+  async findOne(
+    filter: FilterQuery<AttachmentDocument>,
+    projection?: any,
+  ): Promise<Attachment> {
+    return this.attachmentModel.findOne(filter, projection ?? {}).exec();
   }
 
   async findOneAndUpdate(
