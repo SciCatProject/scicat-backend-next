@@ -38,5 +38,7 @@ export default () => ({
       searchFilter: '<SEARCH_FILTER>',
     },
   },
+  metadataKeysReturnLimit: 100,
+  metadataParentInstancesReturnLimit: 100,
   site: '<SITE>',
 });
