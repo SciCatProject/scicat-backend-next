@@ -120,7 +120,7 @@ export class DatasetsController {
   // GET /datasets/metadataKeys
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
-  @Get('metadataKeys')
+  @Get('/metadataKeys')
   @ApiQuery({
     name: 'filters',
     description: 'Database filter to apply when retrieve all metadata keys',
@@ -139,7 +139,7 @@ export class DatasetsController {
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
-  @Get(':id')
+  @Get('/:id')
   async findById(@Param('id') id: string): Promise<Dataset> {
     return this.datasetsService.findById(id);
   }
@@ -148,7 +148,7 @@ export class DatasetsController {
   // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
-  @Patch(':id')
+  @Patch('/:id')
   async findByIdAndUpdate(
     @Param('id') id: string,
     @Body()
@@ -161,7 +161,7 @@ export class DatasetsController {
   // body: full dataset model
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
-  @Put(':id')
+  @Put('/:id')
   async findByIdReplaceOrCreate(
     @Param('id') id: string,
     @Body()
@@ -176,14 +176,14 @@ export class DatasetsController {
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
-  @Delete(':id')
+  @Delete('/:id')
   async findByIdAndDelete(@Param('id') id: string): Promise<any> {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
   // GET /datasets/:id/thumbnail
   @AllowAny()
-  @Get(':id/thumbnail')
+  @Get('/:id/thumbnail')
   async thumbnail(@Param('id') id: string): Promise<Partial<Attachment>> {
     const attachment = await this.attachmentsService.findOne(
       { datasetId: id },
@@ -202,7 +202,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Attachment),
   )
-  @Post(':id/attachments')
+  @Post('/:id/attachments')
   async createAttachment(
     @Param('id') id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
@@ -214,7 +214,7 @@ export class DatasetsController {
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
-  @Get(':id/attachments')
+  @Get('/:id/attachments')
   async findAllAttachments(@Param('id') id: string): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ datasetId: id });
   }
@@ -224,7 +224,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
   )
-  @Patch(':id/attachments/:fk')
+  @Patch('/:id/attachments/:fk')
   async findOneAttachmentAndUpdate(
     @Param('id') datasetId: string,
     @Param('fk') attachmentId: string,
@@ -241,7 +241,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, Attachment),
   )
-  @Delete(':id/attachments/:fk')
+  @Delete('/:id/attachments/:fk')
   async findOneAttachmentAndRemove(
     @Param('id') datasetId: string,
     @Param('fk') attachmentId: string,
