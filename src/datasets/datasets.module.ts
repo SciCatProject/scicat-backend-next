@@ -7,10 +7,12 @@ import { RawDatasetSchema } from './schemas/raw-dataset.schema';
 import { DerivedDatasetSchema } from './schemas/derived-dataset.schema';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory';
 import { AttachmentsModule } from 'src/attachments/attachments.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     AttachmentsModule,
+    ConfigModule,
     MongooseModule.forFeature([
       {
         name: Dataset.name,
