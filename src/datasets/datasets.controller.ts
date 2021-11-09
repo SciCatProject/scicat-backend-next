@@ -117,6 +117,25 @@ export class DatasetsController {
     return this.datasetsService.fullFacet(parsedFilters);
   }
 
+  // GET /datasets/metadataKeys
+  @AllowAny()
+  @UseInterceptors(PublicDatasetsInterceptor)
+  @Get('metadataKeys')
+  @ApiQuery({
+    name: 'filters',
+    description: 'Database filter to apply when retrieve all metadata keys',
+    required: false,
+  })
+  async metadataKeys(
+    @Query('fields') filters: { fields?: string; limits?: string },
+  ): Promise<string[]> {
+    const parsedFilters: IDatasetFilters = {
+      fields: JSON.parse(filters.fields ?? '{}'),
+      limits: JSON.parse(filters.limits ?? '{}'),
+    };
+    return this.datasetsService.metadataKeys(parsedFilters);
+  }
+
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
