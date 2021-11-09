@@ -20,6 +20,7 @@ interface IDatasetFields {
   keywords?: string[];
   isPublished?: boolean;
   scientific?: IScientificFilter[];
+  metadataKey?: string;
 }
 
 export interface IDatasetFilters {
