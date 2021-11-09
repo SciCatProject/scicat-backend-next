@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, QueryOptions } from 'mongoose';
-import { mapScientificQuery } from 'src/common/utils';
+import { extractMetadataKeys, mapScientificQuery } from 'src/common/utils';
 import { CreateDatasetDto } from './dto/create-dataset.dto';
 import { CreateDerivedDatasetDto } from './dto/create-derived-dataset.dto';
 import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
@@ -22,6 +23,7 @@ import {
 export class DatasetsService {
   constructor(
     @InjectModel(Dataset.name) private datasetModel: Model<DatasetDocument>,
+    private configService: ConfigService,
   ) {}
 
   async create(createDatasetDto: CreateDatasetDto): Promise<Dataset> {
@@ -325,6 +327,65 @@ export class DatasetsService {
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<Dataset> {
     return await this.datasetModel.findByIdAndRemove(id);
+  }
+
+  // Get metadata keys
+  async metadataKeys(filters: IDatasetFilters): Promise<string[]> {
+    const blacklist = [
+      new RegExp('.*_date'),
+      new RegExp('runNumber'),
+      new RegExp('Entrych*.'),
+      new RegExp('entryCh*.'),
+      new RegExp('FMC-PICO*.'),
+      new RegExp('BW_measurement*.'),
+      new RegExp('Linearity_measurement*.'),
+      new RegExp('Pulse_measurement*.'),
+    ];
+
+    // ensure that no more than MAXLIMIT someCollections are read for metadata key extraction
+    let MAXLIMIT;
+    if (this.configService.get<number>('metadataParentInstancesReturnLimit')) {
+      MAXLIMIT = this.configService.get<number>(
+        'metadataParentInstancesReturnLimit',
+      );
+
+      let lm;
+
+      if (filters.limits) {
+        lm = JSON.parse(JSON.stringify(filters.limits));
+      } else {
+        lm = {};
+      }
+
+      if (lm.limit) {
+        if (lm.limit > MAXLIMIT) {
+          lm.limit = MAXLIMIT;
+        }
+      } else {
+        lm.limit = MAXLIMIT;
+      }
+      filters.limits = lm;
+    }
+
+    const datasets = await this.findAll(filters);
+
+    const metadataKeys = extractMetadataKeys(datasets).filter(
+      (key) => !blacklist.some((regex) => regex.test(key)),
+    );
+
+    const { metadataKey } = filters.fields;
+    const returnLimit = this.configService.get<number>(
+      'metadataKeysReturnLimit',
+    );
+
+    if (metadataKey && metadataKey.length > 0) {
+      const filterKey = metadataKey.toLowerCase();
+      return metadataKeys
+        .filter((key) => key.toLowerCase().includes(filterKey))
+        .slice(0, returnLimit);
+    } else {
+      return metadataKeys.slice(0, returnLimit);
+    }
   }
 
   private schemaTypeOf(key: string, value: any = null): string {
