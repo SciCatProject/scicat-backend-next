@@ -1,5 +1,6 @@
 import { unit } from 'mathjs';
 import { IScientificFilter } from 'src/datasets/interfaces/dataset-filters.interface';
+import { Dataset } from 'src/datasets/schemas/dataset.schema';
 import { ScientificRelation } from './scientific-relation.enum';
 
 export const convertToSI = (
@@ -65,4 +66,43 @@ export const mapScientificQuery = (
   });
 
   return scientificFilterQuery;
+};
+
+/**Check if input is object or a physical quantity */
+const isObject = (x) => {
+  if (
+    x &&
+    typeof x === 'object' &&
+    !Array.isArray(x) &&
+    !x.unit &&
+    x.unit !== '' &&
+    !x.u &&
+    x.u !== ''
+  ) {
+    return true;
+  }
+  return false;
+};
+
+export const extractMetadataKeys = (datasets: Dataset[]): string[] => {
+  const keys = new Set<string>();
+  //Return nested keys in this structure parentkey.childkey.grandchildkey....
+  const flattenKeys = (object, keyStr) => {
+    Object.keys(object).forEach((key) => {
+      const value = object[key];
+      const newKeyStr = `${keyStr ? keyStr + '.' : ''}${key}`;
+      if (isObject(value)) {
+        flattenKeys(value, newKeyStr);
+      } else {
+        keys.add(newKeyStr);
+      }
+    });
+  };
+  datasets.forEach((dataset) => {
+    if (dataset['scientificMetadata']) {
+      const scientificMetadata = dataset['scientificMetadata'];
+      flattenKeys(scientificMetadata, '');
+    }
+  });
+  return Array.from(keys);
 };
