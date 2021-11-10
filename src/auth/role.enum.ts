@@ -1,7 +1,7 @@
 export enum Role {
-  Admin = 'admin',
-  Ingestor = 'ingestor',
-  ArchiveManager = 'archivemanager',
-  ProposalIngestor = 'proposalingestor',
-  GlobalAccess = 'globalaccess',
+  Admin = "admin",
+  Ingestor = "ingestor",
+  ArchiveManager = "archivemanager",
+  ProposalIngestor = "proposalingestor",
+  GlobalAccess = "globalaccess",
 }

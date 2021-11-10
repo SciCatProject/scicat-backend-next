@@ -1,7 +1,7 @@
-import { unit } from 'mathjs';
-import { IScientificFilter } from 'src/datasets/interfaces/dataset-filters.interface';
-import { Dataset } from 'src/datasets/schemas/dataset.schema';
-import { ScientificRelation } from './scientific-relation.enum';
+import { unit } from "mathjs";
+import { IScientificFilter } from "src/datasets/interfaces/dataset-filters.interface";
+import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { ScientificRelation } from "./scientific-relation.enum";
 
 export const convertToSI = (
   inputValue: number,
@@ -72,12 +72,12 @@ export const mapScientificQuery = (
 const isObject = (x) => {
   if (
     x &&
-    typeof x === 'object' &&
+    typeof x === "object" &&
     !Array.isArray(x) &&
     !x.unit &&
-    x.unit !== '' &&
+    x.unit !== "" &&
     !x.u &&
-    x.u !== ''
+    x.u !== ""
   ) {
     return true;
   }
@@ -90,7 +90,7 @@ export const extractMetadataKeys = (datasets: Dataset[]): string[] => {
   const flattenKeys = (object, keyStr) => {
     Object.keys(object).forEach((key) => {
       const value = object[key];
-      const newKeyStr = `${keyStr ? keyStr + '.' : ''}${key}`;
+      const newKeyStr = `${keyStr ? keyStr + "." : ""}${key}`;
       if (isObject(value)) {
         flattenKeys(value, newKeyStr);
       } else {
@@ -99,9 +99,9 @@ export const extractMetadataKeys = (datasets: Dataset[]): string[] => {
     });
   };
   datasets.forEach((dataset) => {
-    if (dataset['scientificMetadata']) {
-      const scientificMetadata = dataset['scientificMetadata'];
-      flattenKeys(scientificMetadata, '');
+    if (dataset["scientificMetadata"]) {
+      const scientificMetadata = dataset["scientificMetadata"];
+      flattenKeys(scientificMetadata, "");
     }
   });
   return Array.from(keys);

@@ -1,12 +1,12 @@
-import * as mongoose from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { UserProfile } from './user-profile.schema';
+import * as mongoose from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+import { UserProfile } from "./user-profile.schema";
 
 export type UserIdentityDocument = UserIdentity & Document;
 
 @Schema({
-  collection: 'UserIdentity',
+  collection: "UserIdentity",
 })
 export class UserIdentity {
   @Prop()
@@ -30,7 +30,7 @@ export class UserIdentity {
   @Prop()
   provider: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: "User" })
   userId: string;
 }
 

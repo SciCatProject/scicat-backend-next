@@ -1,10 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { CreateUserRoleDto } from './dto/create-user-role.dto';
-import { Role, RoleDocument } from './schemas/role.schema';
-import { UserRole, UserRoleDocument } from './schemas/user-role.schema';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
+import { CreateRoleDto } from "./dto/create-role.dto";
+import { CreateUserRoleDto } from "./dto/create-user-role.dto";
+import { Role, RoleDocument } from "./schemas/role.schema";
+import { UserRole, UserRoleDocument } from "./schemas/user-role.schema";
 
 @Injectable()
 export class RolesService implements OnModuleInit {
@@ -15,7 +15,7 @@ export class RolesService implements OnModuleInit {
 
   async onModuleInit() {
     const createRole: CreateRoleDto = {
-      name: 'globalaccess',
+      name: "globalaccess",
       created: new Date(),
       modified: new Date(),
     };
@@ -33,13 +33,13 @@ export class RolesService implements OnModuleInit {
   }
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
-    Logger.log(`Creating role ${createRoleDto.name}`, 'RolesService');
+    Logger.log(`Creating role ${createRoleDto.name}`, "RolesService");
 
     const createdRole = new this.roleModel(createRoleDto);
     return createdRole.save();
   }
 
-  async findOrCreate(createRoleDto: CreateRoleDto): Promise<Role> {
+  async findOrCreate(createRoleDto: CreateRoleDto): Promise<Role | null> {
     const roleExists = await this.roleExists({ name: createRoleDto.name });
 
     if (roleExists) {
@@ -54,7 +54,7 @@ export class RolesService implements OnModuleInit {
   ): Promise<UserRole> {
     Logger.log(
       `Create user role mapping for userId: ${createUserRoleDto.userId} and roleId: ${createUserRoleDto.roleId}`,
-      'RolesService',
+      "RolesService",
     );
 
     const createdUserRole = new this.userRoleModel(createUserRoleDto);
@@ -63,7 +63,7 @@ export class RolesService implements OnModuleInit {
 
   async findOrCreateUserRole(
     createUserRoleDto: CreateUserRoleDto,
-  ): Promise<UserRole> {
+  ): Promise<UserRole | null> {
     const filter: FilterQuery<UserRoleDocument> = {
       $and: [
         { userId: createUserRoleDto.userId },
@@ -79,17 +79,17 @@ export class RolesService implements OnModuleInit {
     return await this.createUserRole(createUserRoleDto);
   }
 
-  async findOne(filter: FilterQuery<RoleDocument>): Promise<Role> {
+  async findOne(filter: FilterQuery<RoleDocument>): Promise<Role | null> {
     return this.roleModel.findOne(filter).exec();
   }
 
   async findOneUserRole(
     filter: FilterQuery<UserRoleDocument>,
-  ): Promise<UserRole> {
+  ): Promise<UserRole | null> {
     return this.userRoleModel.findOne(filter).exec();
   }
 
-  async find(filter: FilterQuery<UserRoleDocument>): Promise<Role[]> {
+  async find(filter: FilterQuery<UserRoleDocument>): Promise<(Role | null)[]> {
     const userRoles = await this.userRoleModel.find(filter).exec();
 
     return await Promise.all(

@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Schema()
 export class DerivedDataset {
@@ -24,7 +24,7 @@ export class DerivedDataset {
 
   @ApiProperty()
   @Prop({ type: Object })
-  jobParameters: Record<string, any>;
+  jobParameters: Record<string, unknown>;
 
   @ApiProperty()
   @Prop({ type: String })
@@ -32,7 +32,7 @@ export class DerivedDataset {
 
   @ApiProperty()
   @Prop({ type: Object })
-  scientificMetadata: Record<string, any>;
+  scientificMetadata: Record<string, unknown>;
 }
 
 export const DerivedDatasetSchema =

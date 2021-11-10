@@ -10,33 +10,33 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiExtraModels,
   ApiQuery,
   ApiTags,
-} from '@nestjs/swagger';
-import { DatasetsService } from './datasets.service';
-import { CreateDatasetDto } from './dto/create-dataset.dto';
-import { UpdateDatasetDto } from './dto/update-dataset.dto';
-import { Dataset } from './schemas/dataset.schema';
-import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
-import { CreateDerivedDatasetDto } from './dto/create-derived-dataset.dto';
-import { PoliciesGuard } from 'src/casl/guards/policies.guard';
-import { CheckPolicies } from 'src/casl/decorators/check-policies.decorator';
-import { AppAbility } from 'src/casl/casl-ability.factory';
-import { Action } from 'src/casl/action.enum';
+} from "@nestjs/swagger";
+import { DatasetsService } from "./datasets.service";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import { UpdateDatasetDto } from "./dto/update-dataset.dto";
+import { Dataset } from "./schemas/dataset.schema";
+import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
+import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
 import {
   IDatasetFacets,
   IDatasetFilters,
-} from './interfaces/dataset-filters.interface';
-import { PublicDatasetsInterceptor } from './interceptors/public-datasets-interceptor';
-import { AllowAny } from 'src/auth/decorators/allow-any.decorator';
-import { Attachment } from 'src/attachments/schemas/attachment.schema';
-import { CreateAttachmentDto } from 'src/attachments/dto/create-attachment.dto';
-import { AttachmentsService } from 'src/attachments/attachments.service';
-import { UpdateAttachmentDto } from 'src/attachments/dto/update-attachment.dto';
+} from "./interfaces/dataset-filters.interface";
+import { PublicDatasetsInterceptor } from "./interceptors/public-datasets-interceptor";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -44,8 +44,8 @@ import { UpdateAttachmentDto } from 'src/attachments/dto/update-attachment.dto';
   CreateDerivedDatasetDto,
   CreateRawDatasetDto,
 )
-@ApiTags('datasets')
-@Controller('datasets')
+@ApiTags("datasets")
+@Controller("datasets")
 export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
@@ -65,35 +65,37 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get()
   @ApiQuery({
-    name: 'filters',
-    description: 'Database filters to apply when retrieve all datasets',
+    name: "filters",
+    description: "Database filters to apply when retrieve all datasets",
     required: false,
   })
   async findAll(
     @Query() filters?: { fields?: string; limits?: string },
   ): Promise<Dataset[]> {
-    const parsedFilters: IDatasetFilters = {
-      fields: JSON.parse(filters.fields ?? '{}'),
-      limits: JSON.parse(filters.limits ?? '{}'),
-    };
+    const parsedFilters: IDatasetFilters = filters
+      ? {
+          fields: JSON.parse(filters.fields ?? "{}"),
+          limits: JSON.parse(filters.limits ?? "{}"),
+        }
+      : { fields: "{}", limits: "{}" };
     return this.datasetsService.findAll(parsedFilters);
   }
 
   // GET /fullquery
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
-  @Get('/fullquery')
+  @Get("/fullquery")
   @ApiQuery({
-    name: 'filters',
-    description: 'Database filter to apply when retrieve all datasets',
+    name: "filters",
+    description: "Database filter to apply when retrieve all datasets",
     required: false,
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Dataset[]> {
     const parsedFilters: IDatasetFilters = {
-      fields: JSON.parse(filters.fields ?? '{}'),
-      limits: JSON.parse(filters.limits ?? '{}'),
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.datasetsService.findAll(parsedFilters);
   }
@@ -101,18 +103,18 @@ export class DatasetsController {
   // GET /fullfacets
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
-  @Get('/fullfacet')
+  @Get("/fullfacet")
   @ApiQuery({
-    name: 'filters',
-    description: 'Database filter to apply when retrieve all datasets',
+    name: "filters",
+    description: "Database filter to apply when retrieve all datasets",
     required: false,
   })
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     const parsedFilters: IDatasetFacets = {
-      fields: JSON.parse(filters.fields ?? '{}'),
-      facets: JSON.parse(filters.facets ?? '[]'),
+      fields: JSON.parse(filters.fields ?? "{}"),
+      facets: JSON.parse(filters.facets ?? "[]"),
     };
     return this.datasetsService.fullFacet(parsedFilters);
   }
@@ -120,18 +122,18 @@ export class DatasetsController {
   // GET /datasets/metadataKeys
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
-  @Get('/metadataKeys')
+  @Get("/metadataKeys")
   @ApiQuery({
-    name: 'filters',
-    description: 'Database filter to apply when retrieve all metadata keys',
+    name: "filters",
+    description: "Database filter to apply when retrieve all metadata keys",
     required: false,
   })
   async metadataKeys(
-    @Query('fields') filters: { fields?: string; limits?: string },
+    @Query("fields") filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const parsedFilters: IDatasetFilters = {
-      fields: JSON.parse(filters.fields ?? '{}'),
-      limits: JSON.parse(filters.limits ?? '{}'),
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.datasetsService.metadataKeys(parsedFilters);
   }
@@ -139,8 +141,8 @@ export class DatasetsController {
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
-  @Get('/:id')
-  async findById(@Param('id') id: string): Promise<Dataset> {
+  @Get("/:id")
+  async findById(@Param("id") id: string): Promise<Dataset | null> {
     return this.datasetsService.findById(id);
   }
 
@@ -148,9 +150,9 @@ export class DatasetsController {
   // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
-  @Patch('/:id')
+  @Patch("/:id")
   async findByIdAndUpdate(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body()
     updateDatasetDto: UpdateDatasetDto,
   ): Promise<Dataset> {
@@ -161,9 +163,9 @@ export class DatasetsController {
   // body: full dataset model
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
-  @Put('/:id')
+  @Put("/:id")
   async findByIdReplaceOrCreate(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body()
     createDatasetDto: CreateDatasetDto,
   ): Promise<Dataset> {
@@ -176,15 +178,15 @@ export class DatasetsController {
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
-  @Delete('/:id')
-  async findByIdAndDelete(@Param('id') id: string): Promise<any> {
+  @Delete("/:id")
+  async findByIdAndDelete(@Param("id") id: string): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
   // GET /datasets/:id/thumbnail
   @AllowAny()
-  @Get('/:id/thumbnail')
-  async thumbnail(@Param('id') id: string): Promise<Partial<Attachment>> {
+  @Get("/:id/thumbnail")
+  async thumbnail(@Param("id") id: string): Promise<Partial<Attachment>> {
     const attachment = await this.attachmentsService.findOne(
       { datasetId: id },
       { _id: false, thumbnail: true },
@@ -202,9 +204,9 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Attachment),
   )
-  @Post('/:id/attachments')
+  @Post("/:id/attachments")
   async createAttachment(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
     const createAttachment = { ...createAttachmentDto, datasetId: id };
@@ -214,8 +216,8 @@ export class DatasetsController {
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
-  @Get('/:id/attachments')
-  async findAllAttachments(@Param('id') id: string): Promise<Attachment[]> {
+  @Get("/:id/attachments")
+  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
@@ -224,10 +226,10 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
   )
-  @Patch('/:id/attachments/:fk')
+  @Patch("/:id/attachments/:fk")
   async findOneAttachmentAndUpdate(
-    @Param('id') datasetId: string,
-    @Param('fk') attachmentId: string,
+    @Param("id") datasetId: string,
+    @Param("fk") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment> {
     return this.attachmentsService.findOneAndUpdate(
@@ -241,11 +243,11 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, Attachment),
   )
-  @Delete('/:id/attachments/:fk')
+  @Delete("/:id/attachments/:fk")
   async findOneAttachmentAndRemove(
-    @Param('id') datasetId: string,
-    @Param('fk') attachmentId: string,
-  ): Promise<any> {
+    @Param("id") datasetId: string,
+    @Param("fk") attachmentId: string,
+  ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
       datasetId,

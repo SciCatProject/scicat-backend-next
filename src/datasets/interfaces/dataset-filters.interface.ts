@@ -1,4 +1,4 @@
-import { ScientificRelation } from 'src/common/scientific-relation.enum';
+import { ScientificRelation } from "src/common/scientific-relation.enum";
 
 export interface IScientificFilter {
   lhs: string;
@@ -8,7 +8,7 @@ export interface IScientificFilter {
 }
 
 interface IDatasetFields {
-  mode?: Record<string, any>;
+  mode?: Record<string, unknown>;
   text?: string;
   creationTime?: {
     begin: string;
@@ -21,6 +21,8 @@ interface IDatasetFields {
   isPublished?: boolean;
   scientific?: IScientificFilter[];
   metadataKey?: string;
+  _id?: string;
+  userGroups?: string[];
 }
 
 export interface IDatasetFilters {

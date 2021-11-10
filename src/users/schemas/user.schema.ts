@@ -1,11 +1,11 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import * as mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
+import * as mongoose from "mongoose";
 
 export type UserDocument = User & mongoose.Document;
 
 @Schema({
-  collection: 'User',
+  collection: "User",
 })
 export class User {
   _id: string;

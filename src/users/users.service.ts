@@ -1,18 +1,18 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectModel } from '@nestjs/mongoose';
-import { genSalt, hash } from 'bcrypt';
-import { FilterQuery, Model } from 'mongoose';
-import { CreateUserIdentityDto } from './dto/create-user-identity.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { RolesService } from './roles.service';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { InjectModel } from "@nestjs/mongoose";
+import { genSalt, hash } from "bcrypt";
+import { FilterQuery, Model } from "mongoose";
+import { CreateUserIdentityDto } from "./dto/create-user-identity.dto";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { RolesService } from "./roles.service";
 import {
   UserIdentity,
   UserIdentityDocument,
-} from './schemas/user-identity.schema';
-import { User, UserDocument } from './schemas/user.schema';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { CreateUserRoleDto } from './dto/create-user-role.dto';
+} from "./schemas/user-identity.schema";
+import { User, UserDocument } from "./schemas/user.schema";
+import { CreateRoleDto } from "./dto/create-role.dto";
+import { CreateUserRoleDto } from "./dto/create-user-role.dto";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -26,41 +26,47 @@ export class UsersService implements OnModuleInit {
 
   async onModuleInit() {
     const functionalAccounts =
-      this.configService.get<CreateUserDto[]>('functionalAccounts');
+      this.configService.get<CreateUserDto[]>("functionalAccounts");
 
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
         const user = await this.findOrCreate(createAccount);
 
-        if (role) {
-          const createRole: CreateRoleDto = {
-            name: role,
-            created: new Date(),
-            modified: new Date(),
-          };
-          const createdRole = await this.rolesService.findOrCreate(createRole);
-          if (createdRole) {
-            const createUserRole: CreateUserRoleDto = {
-              userId: user._id,
-              roleId: createdRole._id,
+        if (user) {
+          if (role) {
+            const createRole: CreateRoleDto = {
+              name: role,
+              created: new Date(),
+              modified: new Date(),
             };
-            await this.rolesService.findOrCreateUserRole(createUserRole);
+            const createdRole = await this.rolesService.findOrCreate(
+              createRole,
+            );
+            if (createdRole) {
+              const createUserRole: CreateUserRoleDto = {
+                userId: user._id,
+                roleId: createdRole._id,
+              };
+              await this.rolesService.findOrCreateUserRole(createUserRole);
+            }
           }
-        }
-        if (global) {
-          const createRole: CreateRoleDto = {
-            name: 'globalaccess',
-            created: new Date(),
-            modified: new Date(),
-          };
-          const createdRole = await this.rolesService.findOrCreate(createRole);
-          if (createdRole) {
-            const createUserRole: CreateUserRoleDto = {
-              userId: user._id,
-              roleId: createdRole._id,
+          if (global) {
+            const createRole: CreateRoleDto = {
+              name: "globalaccess",
+              created: new Date(),
+              modified: new Date(),
             };
-            await this.rolesService.findOrCreateUserRole(createUserRole);
+            const createdRole = await this.rolesService.findOrCreate(
+              createRole,
+            );
+            if (createdRole) {
+              const createUserRole: CreateUserRoleDto = {
+                userId: user._id,
+                roleId: createdRole._id,
+              };
+              await this.rolesService.findOrCreateUserRole(createUserRole);
+            }
           }
         }
       });
@@ -71,12 +77,16 @@ export class UsersService implements OnModuleInit {
     return await this.userModel.exists(filter);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    Logger.log(`Creating user ${createUserDto.username}`, 'UsersService');
+  async create(createUserDto: CreateUserDto): Promise<User | null> {
+    Logger.log(`Creating user ${createUserDto.username}`, "UsersService");
 
-    if (!createUserDto.password && createUserDto.username.startsWith('ldap')) {
+    if (!createUserDto.password && createUserDto.username.startsWith("ldap")) {
       const createdUser = new this.userModel(createUserDto);
       return createdUser.save();
+    }
+
+    if (!createUserDto.password) {
+      return null;
     }
 
     const hashedPassword = await hash(createUserDto.password, await genSalt());
@@ -85,7 +95,7 @@ export class UsersService implements OnModuleInit {
     return createdUser.save();
   }
 
-  async findOrCreate(createUserDto: CreateUserDto): Promise<User> {
+  async findOrCreate(createUserDto: CreateUserDto): Promise<User | null> {
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: createUserDto.username },
@@ -101,11 +111,11 @@ export class UsersService implements OnModuleInit {
     return await this.create(createUserDto);
   }
 
-  async findOne(filter: FilterQuery<UserDocument>): Promise<User | undefined> {
+  async findOne(filter: FilterQuery<UserDocument>): Promise<User | null> {
     return this.userModel.findOne(filter).exec();
   }
 
-  async findById(id: string): Promise<User | undefined> {
+  async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();
   }
 
@@ -118,9 +128,7 @@ export class UsersService implements OnModuleInit {
     return createdUserIdentity.save();
   }
 
-  async findByIdUserIdentity(
-    userId: string,
-  ): Promise<UserIdentity | undefined> {
+  async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
     console.log({ userId });
     return this.userIdentityModel.findOne({ userId }).exec();
   }

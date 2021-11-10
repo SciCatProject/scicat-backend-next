@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { OwnableDto } from 'src/common/dto/ownable.dto';
-import { Lifecycle } from '../schemas/lifecycle.schema';
-import { Technique } from '../schemas/technique.schema';
+import { ApiProperty } from "@nestjs/swagger";
+import { OwnableDto } from "src/common/dto/ownable.dto";
+import { Lifecycle } from "../schemas/lifecycle.schema";
+import { Technique } from "../schemas/technique.schema";
 
 export class CreateDatasetDto extends OwnableDto {
   @ApiProperty()
@@ -46,7 +46,7 @@ export class CreateDatasetDto extends OwnableDto {
   @ApiProperty({ type: [String] })
   readonly keywords: string[];
 
-  @ApiProperty({ description: 'Dataset description' })
+  @ApiProperty({ description: "Dataset description" })
   readonly description: string;
 
   @ApiProperty()

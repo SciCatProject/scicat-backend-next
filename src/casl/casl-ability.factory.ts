@@ -4,20 +4,20 @@ import {
   AbilityClass,
   ExtractSubjectType,
   InferSubjects,
-} from '@casl/ability';
-import { Injectable } from '@nestjs/common';
-import { Attachment } from 'src/attachments/schemas/attachment.schema';
-import { Role } from 'src/auth/role.enum';
-import { Dataset } from 'src/datasets/schemas/dataset.schema';
-import { UserIdentity } from 'src/users/schemas/user-identity.schema';
-import { User } from 'src/users/schemas/user.schema';
-import { Action } from './action.enum';
+} from "@casl/ability";
+import { Injectable } from "@nestjs/common";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { Role } from "src/auth/role.enum";
+import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { UserIdentity } from "src/users/schemas/user-identity.schema";
+import { User } from "src/users/schemas/user.schema";
+import { Action } from "./action.enum";
 
 type Subjects =
   | InferSubjects<
       typeof Attachment | typeof Dataset | typeof User | typeof UserIdentity
     >
-  | 'all';
+  | "all";
 
 export type AppAbility = Ability<[Action, Subjects]>;
 
@@ -41,7 +41,7 @@ export class CaslAbilityFactory {
     can(
       Action.Update,
       Dataset,
-      ['isPublished', 'keywords', 'scientificMetadata'],
+      ["isPublished", "keywords", "scientificMetadata"],
       {
         ownerGroup: { $in: user.currentGroups },
       },
@@ -50,7 +50,7 @@ export class CaslAbilityFactory {
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
 
     if (user.currentGroups.includes(Role.Admin)) {
-      can(Action.Manage, 'all');
+      can(Action.Manage, "all");
     }
     if (user.currentGroups.includes(Role.ArchiveManager)) {
       cannot(Action.Create, Dataset);
@@ -58,7 +58,7 @@ export class CaslAbilityFactory {
       can(Action.Delete, Dataset);
     }
     if (user.currentGroups.includes(Role.GlobalAccess)) {
-      can(Action.Read, 'all');
+      can(Action.Read, "all");
     }
     if (user.currentGroups.includes(Role.Ingestor)) {
       cannot(Action.Delete, Dataset);

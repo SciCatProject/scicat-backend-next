@@ -1,23 +1,23 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, QueryOptions } from 'mongoose';
-import { extractMetadataKeys, mapScientificQuery } from 'src/common/utils';
-import { CreateDatasetDto } from './dto/create-dataset.dto';
-import { CreateDerivedDatasetDto } from './dto/create-derived-dataset.dto';
-import { CreateRawDatasetDto } from './dto/create-raw-dataset.dto';
-import { UpdateDatasetDto } from './dto/update-dataset.dto';
-import { UpdateDerivedDatasetDto } from './dto/update-derived-dataset.dto';
-import { UpdateRawDatasetDto } from './dto/update-raw-dataset.dto';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { extractMetadataKeys, mapScientificQuery } from "src/common/utils";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
+import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
+import { UpdateDatasetDto } from "./dto/update-dataset.dto";
+import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
+import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import {
   IDatasetFacets,
   IDatasetFilters,
-} from './interfaces/dataset-filters.interface';
+} from "./interfaces/dataset-filters.interface";
 import {
   Dataset,
   DatasetDocument,
   DatasetType,
-} from './schemas/dataset.schema';
+} from "./schemas/dataset.schema";
 
 @Injectable()
 export class DatasetsService {
@@ -48,7 +48,7 @@ export class DatasetsService {
           modifiers.skip = filter.limits.skip;
         }
         if (filter.limits.order) {
-          const [field, direction] = filter.limits.order.split(':');
+          const [field, direction] = filter.limits.order.split(":");
           const sort = { [field]: direction };
           modifiers = { ...filter.limits, sort };
         }
@@ -56,12 +56,12 @@ export class DatasetsService {
 
       if (filter.fields) {
         if (filter.fields.mode) {
-          const idField = '_id';
+          const idField = "_id";
           const currentExpression = JSON.parse(
             JSON.stringify(filter.fields.mode),
           );
           if (idField in currentExpression) {
-            currentExpression['_id'] = currentExpression[idField];
+            currentExpression["_id"] = currentExpression[idField];
             delete currentExpression[idField];
           }
           filterQuery = currentExpression;
@@ -122,18 +122,19 @@ export class DatasetsService {
     const rawDatasets = await rawDatasetModel
       .find(filterQuery, null, modifiers)
       .exec();
-    return [].concat(derivedDatasets, rawDatasets);
+    return ([] as Dataset[]).concat(derivedDatasets, rawDatasets);
   }
 
-  async fullFacet(filters?: IDatasetFacets): Promise<any[]> {
-    const { fields, facets } = filters;
+  async fullFacet(filters: IDatasetFacets): Promise<Record<string, unknown>[]> {
+    const fields = filters.fields ?? {};
+    const facets = filters.facets ?? [];
     const pipeline = [];
-    const facetMatch = {};
+    const facetMatch: Record<string, unknown> = {};
     const allMatch = [];
     Object.keys(fields).forEach((key) => {
       if (facets.indexOf(key) < 0) {
-        if (key === 'text') {
-          if (typeof fields[key] === 'string') {
+        if (key === "text") {
+          if (typeof fields[key] === "string") {
             const match = {
               $match: {
                 $or: [
@@ -145,7 +146,7 @@ export class DatasetsService {
             };
             pipeline.unshift(match);
           }
-        } else if (key === '_id') {
+        } else if (key === "_id") {
           const match = {
             $match: {
               _id: this.searchExpression(key, fields[key]),
@@ -153,12 +154,12 @@ export class DatasetsService {
           };
           allMatch.push(match);
           pipeline.push(match);
-        } else if (key === 'mode') {
+        } else if (key === "mode") {
           // substitute potential id field in fields
-          const idField = '_id';
+          const idField = "_id";
           const currentExpression = JSON.parse(JSON.stringify(fields[key]));
           if (idField in currentExpression) {
-            currentExpression['_id'] = currentExpression[idField];
+            currentExpression["_id"] = currentExpression[idField];
             delete currentExpression[idField];
           }
           const match = {
@@ -166,24 +167,25 @@ export class DatasetsService {
           };
           allMatch.push(match);
           pipeline.push(match);
-        } else if (key === 'userGroups') {
+        } else if (key === "userGroups") {
           if (
-            fields['userGroups'].indexOf('globalaccess') < 0 &&
-            'ownerGroup' in this.datasetModel.schema.paths
+            fields.userGroups &&
+            fields.userGroups.indexOf("globalaccess") < 0 &&
+            "ownerGroup" in this.datasetModel.schema.paths
           ) {
             const match = {
               $match: {
                 $or: [
                   {
                     ownerGroup: this.searchExpression(
-                      'ownerGroup',
-                      fields['userGroups'],
+                      "ownerGroup",
+                      fields["userGroups"],
                     ),
                   },
                   {
                     accessGroups: this.searchExpression(
-                      'accessGroups',
-                      fields['userGroups'],
+                      "accessGroups",
+                      fields["userGroups"],
                     ),
                   },
                 ],
@@ -192,14 +194,14 @@ export class DatasetsService {
             allMatch.push(match);
             pipeline.push(match);
           }
-        } else if (key === 'scientific') {
+        } else if (key === "scientific" && fields) {
           const match = {
-            $match: mapScientificQuery(fields[key]),
+            $match: mapScientificQuery(fields[key] ?? []),
           };
           allMatch.push(match);
           pipeline.push(match);
         } else {
-          const match = {};
+          const match: Record<string, unknown> = {};
           match[key] = this.searchExpression(key, fields[key]);
           const m = {
             $match: match,
@@ -213,7 +215,7 @@ export class DatasetsService {
     });
 
     // append all facet pipelines
-    const facetObject = {};
+    const facetObject: Record<string, unknown> = {};
     facets.forEach((facet) => {
       if (
         facet in this.datasetModel.schema.discriminators[DatasetType.Raw].paths
@@ -236,8 +238,8 @@ export class DatasetsService {
         return;
       }
 
-      if (facet.startsWith('datasetlifecycle.')) {
-        const lifecycleFacet = facet.split('.')[1];
+      if (facet.startsWith("datasetlifecycle.")) {
+        const lifecycleFacet = facet.split(".")[1];
         facetObject[lifecycleFacet] = this.createNewFacetPipeline(
           lifecycleFacet,
           this.schemaTypeOf(lifecycleFacet),
@@ -247,18 +249,18 @@ export class DatasetsService {
       } else {
         Logger.warn(
           `Warning: Facet not part of any model: ${facet}`,
-          'DatasetsService',
+          "DatasetsService",
         );
         return;
       }
     });
 
-    facetObject['all'] = [
+    facetObject["all"] = [
       {
         $match: facetMatch,
       },
       {
-        $count: 'totalSets',
+        $count: "totalSets",
       },
     ];
     pipeline.push({ $facet: facetObject });
@@ -267,7 +269,7 @@ export class DatasetsService {
     return results;
   }
 
-  async findById(id: string): Promise<Dataset> {
+  async findById(id: string): Promise<Dataset | null> {
     return this.datasetModel.findById(id).exec();
   }
 
@@ -288,7 +290,7 @@ export class DatasetsService {
     if (!existingDataset) {
       // no luck. we need to create a new dataset with the provided id
       const createdDataset = new this.datasetModel(createDatasetDto);
-      createdDataset.set('_id', id);
+      createdDataset.set("_id", id);
       return await createdDataset.save();
     }
 
@@ -325,28 +327,28 @@ export class DatasetsService {
   }
 
   // DELETE dataset
-  async findByIdAndDelete(id: string): Promise<Dataset> {
+  async findByIdAndDelete(id: string): Promise<Dataset | null> {
     return await this.datasetModel.findByIdAndRemove(id);
   }
 
   // Get metadata keys
   async metadataKeys(filters: IDatasetFilters): Promise<string[]> {
     const blacklist = [
-      new RegExp('.*_date'),
-      new RegExp('runNumber'),
-      new RegExp('Entrych*.'),
-      new RegExp('entryCh*.'),
-      new RegExp('FMC-PICO*.'),
-      new RegExp('BW_measurement*.'),
-      new RegExp('Linearity_measurement*.'),
-      new RegExp('Pulse_measurement*.'),
+      new RegExp(".*_date"),
+      new RegExp("runNumber"),
+      new RegExp("Entrych*."),
+      new RegExp("entryCh*."),
+      new RegExp("FMC-PICO*."),
+      new RegExp("BW_measurement*."),
+      new RegExp("Linearity_measurement*."),
+      new RegExp("Pulse_measurement*."),
     ];
 
     // ensure that no more than MAXLIMIT someCollections are read for metadata key extraction
     let MAXLIMIT;
-    if (this.configService.get<number>('metadataParentInstancesReturnLimit')) {
+    if (this.configService.get<number>("metadataParentInstancesReturnLimit")) {
       MAXLIMIT = this.configService.get<number>(
-        'metadataParentInstancesReturnLimit',
+        "metadataParentInstancesReturnLimit",
       );
 
       let lm;
@@ -357,7 +359,7 @@ export class DatasetsService {
         lm = {};
       }
 
-      if (lm.limit) {
+      if (MAXLIMIT && lm.limit) {
         if (lm.limit > MAXLIMIT) {
           lm.limit = MAXLIMIT;
         }
@@ -375,7 +377,7 @@ export class DatasetsService {
 
     const { metadataKey } = filters.fields;
     const returnLimit = this.configService.get<number>(
-      'metadataKeysReturnLimit',
+      "metadataKeysReturnLimit",
     );
 
     if (metadataKey && metadataKey.length > 0) {
@@ -388,7 +390,7 @@ export class DatasetsService {
     }
   }
 
-  private schemaTypeOf(key: string, value: any = null): string {
+  private schemaTypeOf(key: string, value: unknown = null): string {
     let property = this.datasetModel.schema.path(key);
 
     if (!property) {
@@ -402,25 +404,25 @@ export class DatasetsService {
     }
 
     if (!property) {
-      if ('begin' in value) {
-        return 'Date';
+      if ("begin" in (value as Record<string, unknown>)) {
+        return "Date";
       } else {
-        return 'String';
+        return "String";
       }
     } else {
       return property.instance;
     }
   }
 
-  private searchExpression(fieldName: string, value: any): any {
-    if (fieldName === 'text') {
+  private searchExpression(fieldName: string, value: unknown): unknown {
+    if (fieldName === "text") {
       return { $search: value };
     }
 
     const valueType = this.schemaTypeOf(fieldName, value);
 
-    if (valueType === 'String') {
-      if (value.constructor === Array) {
+    if (valueType === "String") {
+      if (Array.isArray(value)) {
         if (value.length == 1) {
           return value[0];
         } else {
@@ -431,12 +433,12 @@ export class DatasetsService {
       } else {
         return value;
       }
-    } else if (valueType === 'Date') {
+    } else if (valueType === "Date") {
       return {
-        $gte: new Date(value.begin),
-        $lte: new Date(value.end),
+        $gte: new Date((value as Record<string, string | Date>).begin),
+        $lte: new Date((value as Record<string, string | Date>).end),
       };
-    } else if (valueType === 'Boolean') {
+    } else if (valueType === "Boolean") {
       return {
         $eq: value,
       };
@@ -449,12 +451,16 @@ export class DatasetsService {
     }
   }
 
-  createNewFacetPipeline(name: string, type: string, query: any) {
+  createNewFacetPipeline(
+    name: string,
+    type: string,
+    query: Record<string, unknown>,
+  ) {
     const pipeline = [];
 
-    if (type === 'Array') {
+    if (type === "Array") {
       pipeline.push({
-        $unwind: '$' + name,
+        $unwind: "$" + name,
       });
     }
 
@@ -471,28 +477,28 @@ export class DatasetsService {
 
     const group: {
       $group: {
-        _id: string | Record<string, any>;
+        _id: string | Record<string, unknown>;
         count: Record<string, number>;
       };
     } = {
       $group: {
-        _id: '$' + name,
+        _id: "$" + name,
         count: {
           $sum: 1,
         },
       },
     };
 
-    if (type === 'Date') {
+    if (type === "Date") {
       group.$group._id = {
         year: {
-          $year: '$' + name,
+          $year: "$" + name,
         },
         month: {
-          $month: '$' + name,
+          $month: "$" + name,
         },
         day: {
-          $dayOfMonth: '$' + name,
+          $dayOfMonth: "$" + name,
         },
       };
     }

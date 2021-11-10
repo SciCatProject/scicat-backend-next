@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcrypt';
-import { User } from 'src/users/schemas/user.schema';
-import { UsersService } from '../users/users.service';
-import { jwtConstants } from './constants';
+import { Injectable } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { compare } from "bcrypt";
+import { User } from "src/users/schemas/user.schema";
+import { UsersService } from "../users/users.service";
+import { jwtConstants } from "./constants";
 
 @Injectable()
 export class AuthService {
@@ -15,7 +15,7 @@ export class AuthService {
   async validateUser(
     username: string,
     pass: string,
-  ): Promise<Omit<User, 'password'>> {
+  ): Promise<Omit<User, "password">> {
     const user = await this.usersService.findOne({ username });
 
     if (!user) {
@@ -33,7 +33,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<User, 'password'>): Promise<any> {
+  async login(user: Omit<User, "password">): Promise<any> {
     return {
       access_token: this.jwtService.sign(user),
       expires_in: jwtConstants.expiration,

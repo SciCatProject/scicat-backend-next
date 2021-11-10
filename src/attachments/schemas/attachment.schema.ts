@@ -1,13 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
-import { Ownable } from 'src/common/schemas/ownable.schema';
-import { v4 as uuidv4 } from 'uuid';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
+import { Document } from "mongoose";
+import { Ownable } from "src/common/schemas/ownable.schema";
+import { v4 as uuidv4 } from "uuid";
 
 export type AttachmentDocument = Attachment & Document;
 
 @Schema({
-  collection: 'Attachment',
+  collection: "Attachment",
 })
 export class Attachment extends Ownable {
   @ApiProperty({ type: String, default: uuidv4() })
@@ -17,20 +17,20 @@ export class Attachment extends Ownable {
   @ApiProperty({
     type: String,
     description:
-      'Contains a thumbnail preview in base64 encoded png format for a given dataset',
+      "Contains a thumbnail preview in base64 encoded png format for a given dataset",
   })
   @Prop({ type: String })
   thumbnail: string;
 
   @ApiProperty({
     type: String,
-    description: 'Attachment caption to show in catanie',
+    description: "Attachment caption to show in catanie",
   })
   @Prop({ type: String })
   caption: string;
 
   @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: 'Dataset', required: false })
+  @Prop({ type: String, ref: "Dataset", required: false })
   datasetId: string;
 }
 

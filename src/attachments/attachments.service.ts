@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { CreateAttachmentDto } from './dto/create-attachment.dto';
-import { UpdateAttachmentDto } from './dto/update-attachment.dto';
-import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
+import { CreateAttachmentDto } from "./dto/create-attachment.dto";
+import { UpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 
 @Injectable()
 export class AttachmentsService {

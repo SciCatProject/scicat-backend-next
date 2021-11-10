@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Schema()
 export class RawDataset {
@@ -28,7 +28,7 @@ export class RawDataset {
 
   @ApiProperty()
   @Prop({ type: Object })
-  scientificMetadata: Record<string, any>;
+  scientificMetadata: Record<string, unknown>;
 }
 
 export const RawDatasetSchema = SchemaFactory.createForClass(RawDataset);

@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export type LifecycleDocument = Lifecycle & Document;
 
@@ -39,10 +39,10 @@ export class Lifecycle {
   retrieveStatusMessage: string;
 
   @Prop({ type: Object })
-  archiveReturnMessage: any;
+  archiveReturnMessage: unknown;
 
   @Prop({ type: Object })
-  retrieveReturnMessage: any;
+  retrieveReturnMessage: unknown;
 
   @Prop()
   exportedTo: string;
