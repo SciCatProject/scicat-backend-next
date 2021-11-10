@@ -6,6 +6,7 @@
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "noImplicitReturns": true,
