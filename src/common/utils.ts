@@ -1,6 +1,7 @@
 import { unit } from "mathjs";
 import { IScientificFilter } from "src/datasets/interfaces/dataset-filters.interface";
-import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
+import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 import { ScientificRelation } from "./scientific-relation.enum";
 
 export const convertToSI = (
@@ -18,8 +19,8 @@ export const convertToSI = (
 
 export const mapScientificQuery = (
   scientific: IScientificFilter[],
-): Record<string, any> => {
-  const scientificFilterQuery = {};
+): Record<string, unknown> => {
+  const scientificFilterQuery: Record<string, unknown> = {};
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
@@ -69,38 +70,42 @@ export const mapScientificQuery = (
 };
 
 /**Check if input is object or a physical quantity */
-const isObject = (x) => {
+const isObject = (x: unknown) => {
   if (
     x &&
     typeof x === "object" &&
     !Array.isArray(x) &&
-    !x.unit &&
-    x.unit !== "" &&
-    !x.u &&
-    x.u !== ""
+    !(x as Record<string, unknown>).unit &&
+    (x as Record<string, unknown>).unit !== "" &&
+    !(x as Record<string, unknown>).u &&
+    (x as Record<string, unknown>).u !== ""
   ) {
     return true;
   }
   return false;
 };
 
-export const extractMetadataKeys = (datasets: Dataset[]): string[] => {
+export const extractMetadataKeys = (datasets: unknown[]): string[] => {
   const keys = new Set<string>();
   //Return nested keys in this structure parentkey.childkey.grandchildkey....
-  const flattenKeys = (object, keyStr) => {
+  const flattenKeys = (object: Record<string, unknown>, keyStr: string) => {
     Object.keys(object).forEach((key) => {
       const value = object[key];
       const newKeyStr = `${keyStr ? keyStr + "." : ""}${key}`;
       if (isObject(value)) {
-        flattenKeys(value, newKeyStr);
+        flattenKeys(value as Record<string, unknown>, newKeyStr);
       } else {
         keys.add(newKeyStr);
       }
     });
   };
   datasets.forEach((dataset) => {
-    if (dataset["scientificMetadata"]) {
-      const scientificMetadata = dataset["scientificMetadata"];
+    if (dataset instanceof RawDataset && dataset.scientificMetadata) {
+      const scientificMetadata = dataset.scientificMetadata;
+      flattenKeys(scientificMetadata, "");
+    }
+    if (dataset instanceof DerivedDataset && dataset.scientificMetadata) {
+      const scientificMetadata = dataset.scientificMetadata;
       flattenKeys(scientificMetadata, "");
     }
   });

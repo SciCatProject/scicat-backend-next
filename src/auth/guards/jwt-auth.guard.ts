@@ -11,7 +11,13 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   constructor(private readonly reflector: Reflector) {
     super();
   }
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+  handleRequest(
+    err: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    user: any,
+    info: unknown,
+    context: ExecutionContext,
+  ) {
     const allowAny = this.reflector.get<string[]>(
       "allow-any",
       context.getHandler(),

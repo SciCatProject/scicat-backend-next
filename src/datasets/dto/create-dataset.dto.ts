@@ -65,7 +65,7 @@ export class CreateDatasetDto extends OwnableDto {
   readonly isPublished: boolean;
 
   @ApiProperty({ type: [Object] })
-  readonly history: any[];
+  readonly history: Record<string, unknown>[];
 
   @ApiProperty({ type: Lifecycle })
   readonly datasetlifecycle: Lifecycle;

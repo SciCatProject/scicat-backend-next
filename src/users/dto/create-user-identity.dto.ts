@@ -9,7 +9,7 @@ export class CreateUserIdentityDto {
   readonly created: Date;
 
   @ApiProperty()
-  readonly credentials: any;
+  readonly credentials: Record<string, unknown>;
 
   @ApiProperty()
   readonly externalId: string;

@@ -1,5 +1,5 @@
 import * as Strategy from "passport-ldapauth";
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@nestjs/config";
 import { UsersService } from "src/users/users.service";
@@ -14,14 +14,14 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-    super(configService.get<Record<string, any>>("ldap"));
+    super(configService.get<Record<string, unknown>>("ldap"));
   }
 
-  async validate(payload: any) {
+  async validate(payload: Record<string, unknown>) {
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: `ldap.${payload.displayName}` },
-        { email: payload.mail },
+        { email: payload.mail as string },
       ],
     };
     const userExists = await this.usersService.userExists(userFilter);
@@ -29,27 +29,35 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     if (!userExists) {
       const createUser: CreateUserDto = {
         username: `ldap.${payload.displayName}`,
-        email: payload.mail,
+        email: payload.mail as string,
       };
       const user = await this.usersService.create(createUser);
+
+      if (!user) {
+        throw new InternalServerErrorException(
+          "Could not create User from LDAP response.",
+        );
+      }
 
       const createUserIdentity: CreateUserIdentityDto = {
         authScheme: "ldap",
         created: new Date(),
         credentials: {},
-        externalId: payload.sAMAccountName,
+        externalId: payload.sAMAccountName as string,
         modified: new Date(),
         profile: {
-          displayName: payload.displayName,
-          email: payload.mail,
-          username: payload.displayName,
+          displayName: payload.displayName as string,
+          email: payload.mail as string,
+          username: payload.displayName as string,
           thumbnailPhoto: payload.thumbnailPhoto
             ? "data:image/jpeg;base64," +
-              Buffer.from(payload.thumbnailPhoto, "binary").toString("base64")
+              Buffer.from(payload.thumbnailPhoto as string, "binary").toString(
+                "base64",
+              )
             : "error: no photo found",
-          emails: [{ value: [].concat(payload.mail)[0] }],
+          emails: [{ value: payload.mail as string }],
           accessGroups: [],
-          id: payload.sAMAccountName,
+          id: payload.sAMAccountName as string,
         },
         provider: "ldap",
         userId: user._id,

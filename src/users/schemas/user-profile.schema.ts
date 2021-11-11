@@ -21,7 +21,7 @@ export class UserProfile {
   id: string;
 
   @Prop({ type: [Object] })
-  emails: Record<string, any>[];
+  emails: Record<string, string>[];
 
   @Prop({ type: [String] })
   accessGroups: string[];

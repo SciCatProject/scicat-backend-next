@@ -15,7 +15,7 @@ export class AuthService {
   async validateUser(
     username: string,
     pass: string,
-  ): Promise<Omit<User, "password">> {
+  ): Promise<Omit<User, "password"> | null> {
     const user = await this.usersService.findOne({ username });
 
     if (!user) {
@@ -33,7 +33,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<User, "password">): Promise<any> {
+  async login(user: Omit<User, "password">): Promise<Record<string, unknown>> {
     return {
       access_token: this.jwtService.sign(user),
       expires_in: jwtConstants.expiration,

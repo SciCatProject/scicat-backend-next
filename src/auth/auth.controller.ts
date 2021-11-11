@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
 import { AllowAny } from "./decorators/allow-any.decorator";
+import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -17,21 +18,27 @@ export class AuthController {
   @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post("login")
-  async login(@Request() req: any): Promise<any> {
-    return await this.authService.login(req.user);
+  async login(
+    @Request() req: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return await this.authService.login(req.user as Omit<User, "password">);
   }
 
   @ApiBody({ type: CredentialsDto })
   @AllowAny()
   @UseGuards(LdapAuthGuard)
   @Post("msad")
-  async adLogin(@Request() req: any): Promise<any> {
-    return await this.authService.login(req.user);
+  async adLogin(
+    @Request() req: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return await this.authService.login(req.user as Omit<User, "password">);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get("whoami")
-  async whoami(@Request() req: any): Promise<any> {
-    return req.user;
+  async whoami(
+    @Request() req: Record<string, unknown>,
+  ): Promise<Omit<User, "password">> {
+    return req.user as Omit<User, "password">;
   }
 }

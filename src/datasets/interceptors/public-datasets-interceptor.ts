@@ -8,7 +8,7 @@ import { Observable } from "rxjs";
 
 @Injectable()
 export class PublicDatasetsInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const user = context.getArgs()[1].req.user;
     if (!user) {
       if (context.getArgs()[1].req.query.fields) {

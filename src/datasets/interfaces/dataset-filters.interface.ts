@@ -23,6 +23,7 @@ interface IDatasetFields {
   metadataKey?: string;
   _id?: string;
   userGroups?: string[];
+  [key: string]: unknown;
 }
 
 export interface IDatasetFilters {

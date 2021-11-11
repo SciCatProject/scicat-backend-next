@@ -15,5 +15,5 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
   readonly dataFormat: string;
 
   @ApiProperty({ type: Object })
-  readonly scientificMetadata: Record<string, any>;
+  readonly scientificMetadata: Record<string, unknown>;
 }

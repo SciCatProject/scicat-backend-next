@@ -21,20 +21,19 @@ export type DatasetDocument = Dataset & Document;
 export class Dataset extends Ownable {
   @ApiProperty({
     type: String,
-    name: "pid",
     default: function genUUID(): string {
       return "20.500.12269/" + uuidv4();
     },
   })
   @Prop({
     type: String,
+    unique: true,
     required: true,
-    alias: "pid",
     default: function genUUID(): string {
       return "20.500.12269/" + uuidv4();
     },
   })
-  _id: string;
+  pid: string;
 
   @ApiProperty()
   @Prop({ type: String, required: true, index: true })
@@ -151,15 +150,15 @@ export class Dataset extends Ownable {
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
 
-DatasetSchema.virtual("pid")
-  .get(function () {
-    return this._id;
-  })
-  .set(function (value: string) {
-    this._id = value;
-  });
-DatasetSchema.set("toJSON", {
-  virtuals: true,
-});
+// DatasetSchema.virtual("pid")
+//   .get(function () {
+//     return this._id;
+//   })
+//   .set(function (value: string) {
+//     this._id = value;
+//   });
+// DatasetSchema.set("toJSON", {
+//   virtuals: true,
+// });
 
 DatasetSchema.index({ "$**": "text" });

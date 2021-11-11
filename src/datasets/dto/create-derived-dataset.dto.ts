@@ -12,11 +12,11 @@ export class CreateDerivedDatasetDto extends CreateDatasetDto {
   readonly usedSoftware: string[];
 
   @ApiProperty({ type: Object })
-  readonly jobParameters: Record<string, any>;
+  readonly jobParameters: Record<string, unknown>;
 
   @ApiProperty()
   readonly jobLogData: string;
 
   @ApiProperty({ type: Object })
-  readonly scientificMetadata: Record<string, any>;
+  readonly scientificMetadata: Record<string, unknown>;
 }

@@ -16,7 +16,7 @@ export class UserIdentity {
   created: Date;
 
   @Prop({ type: Object })
-  credentials: any;
+  credentials: Record<string, unknown>;
 
   @Prop()
   externalId: string;

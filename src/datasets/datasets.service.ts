@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
@@ -31,9 +36,13 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(filter: IDatasetFilters): Promise<Dataset[]> {
+  async findAll(filter: IDatasetFilters): Promise<Dataset[] | null> {
     let modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<DatasetDocument> = {};
+
+    if (!this.datasetModel.discriminators) {
+      throw new InternalServerErrorException();
+    }
 
     const derivedDatasetModel =
       this.datasetModel.discriminators[DatasetType.Derived];
@@ -56,12 +65,12 @@ export class DatasetsService {
 
       if (filter.fields) {
         if (filter.fields.mode) {
-          const idField = "_id";
+          const idField = "pid";
           const currentExpression = JSON.parse(
             JSON.stringify(filter.fields.mode),
           );
           if (idField in currentExpression) {
-            currentExpression["_id"] = currentExpression[idField];
+            currentExpression["pid"] = currentExpression[idField];
             delete currentExpression[idField];
           }
           filterQuery = currentExpression;
@@ -156,10 +165,10 @@ export class DatasetsService {
           pipeline.push(match);
         } else if (key === "mode") {
           // substitute potential id field in fields
-          const idField = "_id";
+          const idField = "pid";
           const currentExpression = JSON.parse(JSON.stringify(fields[key]));
           if (idField in currentExpression) {
-            currentExpression["_id"] = currentExpression[idField];
+            currentExpression["pid"] = currentExpression[idField];
             delete currentExpression[idField];
           }
           const match = {
@@ -202,7 +211,7 @@ export class DatasetsService {
           pipeline.push(match);
         } else {
           const match: Record<string, unknown> = {};
-          match[key] = this.searchExpression(key, fields[key]);
+          match[key] = this.searchExpression(key, fields[key] as unknown);
           const m = {
             $match: match,
           };
@@ -217,6 +226,9 @@ export class DatasetsService {
     // append all facet pipelines
     const facetObject: Record<string, unknown> = {};
     facets.forEach((facet) => {
+      if (!this.datasetModel.schema.discriminators) {
+        return;
+      }
       if (
         facet in this.datasetModel.schema.discriminators[DatasetType.Raw].paths
       ) {
@@ -269,8 +281,10 @@ export class DatasetsService {
     return results;
   }
 
-  async findById(id: string): Promise<Dataset | null> {
-    return this.datasetModel.findById(id).exec();
+  async findOne(
+    filters: FilterQuery<DatasetDocument>,
+  ): Promise<Dataset | null> {
+    return this.datasetModel.findOne(filters).exec();
   }
 
   // PUT dataset
@@ -283,14 +297,14 @@ export class DatasetsService {
       | CreateDerivedDatasetDto,
   ): Promise<Dataset> {
     const existingDataset = await this.datasetModel
-      .findByIdAndUpdate(id, createDatasetDto, { new: true })
+      .findOneAndUpdate({ pid: id }, createDatasetDto, { new: true })
       .exec();
 
     // check if we were able to find the dataset and update it
     if (!existingDataset) {
       // no luck. we need to create a new dataset with the provided id
       const createdDataset = new this.datasetModel(createDatasetDto);
-      createdDataset.set("_id", id);
+      createdDataset.set("pid", id);
       return await createdDataset.save();
     }
 
@@ -306,8 +320,8 @@ export class DatasetsService {
       | UpdateDatasetDto
       | UpdateRawDatasetDto
       | UpdateDerivedDatasetDto,
-  ): Promise<Dataset> {
-    const existingDataset = await this.datasetModel.findById(id).exec();
+  ): Promise<Dataset | null> {
+    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 
     // check if we were able to find the dataset
     if (!existingDataset) {
@@ -315,11 +329,15 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
+    if (!this.datasetModel.discriminators) {
+      throw new InternalServerErrorException();
+    }
+
     const typedDatasetModel =
       this.datasetModel.discriminators[existingDataset.type];
 
     const patchedDataset = typedDatasetModel
-      .findByIdAndUpdate(id, updateDatasetDto, { new: true })
+      .findOneAndUpdate({ pid: id }, updateDatasetDto, { new: true })
       .exec();
 
     // we were able to find the dataset and update it
@@ -328,7 +346,7 @@ export class DatasetsService {
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<Dataset | null> {
-    return await this.datasetModel.findByIdAndRemove(id);
+    return await this.datasetModel.findOneAndRemove({ pid: id });
   }
 
   // Get metadata keys
@@ -371,11 +389,11 @@ export class DatasetsService {
 
     const datasets = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys(datasets).filter(
+    const metadataKeys = extractMetadataKeys(datasets ?? []).filter(
       (key) => !blacklist.some((regex) => regex.test(key)),
     );
 
-    const { metadataKey } = filters.fields;
+    const metadataKey = filters.fields ? filters.fields.metadataKey : undefined;
     const returnLimit = this.configService.get<number>(
       "metadataKeysReturnLimit",
     );
@@ -392,6 +410,10 @@ export class DatasetsService {
 
   private schemaTypeOf(key: string, value: unknown = null): string {
     let property = this.datasetModel.schema.path(key);
+
+    if (!this.datasetModel.discriminators) {
+      throw new InternalServerErrorException();
+    }
 
     if (!property) {
       property =

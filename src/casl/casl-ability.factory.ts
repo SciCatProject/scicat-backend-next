@@ -7,6 +7,7 @@ import {
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
@@ -23,7 +24,7 @@ export type AppAbility = Ability<[Action, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: any) {
+  createForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder<
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);

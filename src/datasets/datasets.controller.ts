@@ -20,7 +20,7 @@ import {
 import { DatasetsService } from "./datasets.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
-import { Dataset } from "./schemas/dataset.schema";
+import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -37,6 +37,7 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { FilterQuery } from "mongoose";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -71,7 +72,7 @@ export class DatasetsController {
   })
   async findAll(
     @Query() filters?: { fields?: string; limits?: string },
-  ): Promise<Dataset[]> {
+  ): Promise<Dataset[] | null> {
     const parsedFilters: IDatasetFilters = filters
       ? {
           fields: JSON.parse(filters.fields ?? "{}"),
@@ -92,7 +93,7 @@ export class DatasetsController {
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<Dataset[]> {
+  ): Promise<Dataset[] | null> {
     const parsedFilters: IDatasetFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -138,12 +139,21 @@ export class DatasetsController {
     return this.datasetsService.metadataKeys(parsedFilters);
   }
 
+  // GET /datasets/findOne
+  @AllowAny()
+  @Get("/findOne")
+  async findOne(
+    @Query("filter") filters: FilterQuery<DatasetDocument>,
+  ): Promise<Dataset | null> {
+    return this.datasetsService.findOne(filters);
+  }
+
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get("/:id")
   async findById(@Param("id") id: string): Promise<Dataset | null> {
-    return this.datasetsService.findById(id);
+    return this.datasetsService.findOne({ pid: id });
   }
 
   // PATCH /datasets/:id
@@ -155,7 +165,7 @@ export class DatasetsController {
     @Param("id") id: string,
     @Body()
     updateDatasetDto: UpdateDatasetDto,
-  ): Promise<Dataset> {
+  ): Promise<Dataset | null> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 

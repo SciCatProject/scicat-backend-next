@@ -24,8 +24,8 @@ export class AttachmentsService {
 
   async findOne(
     filter: FilterQuery<AttachmentDocument>,
-    projection?: any,
-  ): Promise<Attachment> {
+    projection?: Record<string, unknown>,
+  ): Promise<Attachment | null> {
     return this.attachmentModel.findOne(filter, projection ?? {}).exec();
   }
 
@@ -40,7 +40,7 @@ export class AttachmentsService {
 
   async findOneAndRemove(
     filter: FilterQuery<AttachmentDocument>,
-  ): Promise<any> {
+  ): Promise<unknown> {
     return this.attachmentModel.findOneAndRemove(filter).exec();
   }
 }
