@@ -19,7 +19,6 @@ EXPOSE 3000
 # Prepare app directory
 WORKDIR /home/node/app
 COPY package*.json /home/node/app/
-COPY .snyk /home/node/app/
 
 # set up local user to avoid running as root
 RUN chown -R node:node /home/node/app
