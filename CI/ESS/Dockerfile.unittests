@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:14-alpine
+FROM node:16-alpine
 
 ENV http_proxy "http://192.168.1.1:8123"
 ENV https_proxy $http_proxy

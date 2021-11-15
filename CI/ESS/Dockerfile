@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:14-alpine
+FROM node:16-alpine
 RUN apk update && apk upgrade && \
     apk add --no-cache git openldap-clients
 
