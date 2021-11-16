@@ -241,7 +241,7 @@ export class DatasetsController {
     @Param("id") datasetId: string,
     @Param("fk") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
-  ): Promise<Attachment> {
+  ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
       { _id: attachmentId, datasetId },
       updateAttachmentDto,
