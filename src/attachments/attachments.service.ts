@@ -32,7 +32,7 @@ export class AttachmentsService {
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
     updateAttachmentDto: UpdateAttachmentDto,
-  ): Promise<Attachment> {
+  ): Promise<Attachment | null> {
     return this.attachmentModel
       .findOneAndUpdate(filter, updateAttachmentDto, { new: true })
       .exec();
