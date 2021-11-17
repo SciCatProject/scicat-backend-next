@@ -1,26 +1,30 @@
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "src/users/users.service";
 import { AuthService } from "./auth.service";
 
+class JwtServiceMock {}
+
+class UsersServiceMock {}
+
 describe("AuthService", () => {
   let authService: AuthService;
-  let jwtService: JwtService;
-  let usersService: UsersService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, JwtService, UsersService],
+      imports: [ConfigService],
+      providers: [
+        AuthService,
+        { provide: JwtService, useClass: JwtServiceMock },
+        { provide: UsersService, useClass: UsersServiceMock },
+      ],
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    jwtService = module.get<JwtService>(JwtService);
-    usersService = module.get<UsersService>(UsersService);
   });
 
   it("should be defined", () => {
     expect(authService).toBeDefined();
-    expect(jwtService).toBeDefined();
-    expect(usersService).toBeDefined();
   });
 });
