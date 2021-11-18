@@ -1,0 +1,22 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "mongo": {
+    "host": "w-v-mongo-0.maxiv.lu.se",
+    "port": 27017,
+    "url": "",
+    "database": "dacat",
+    "password": "",
+    "name": "mongo",
+    "user": "scicat",
+    "connector": "mongodb",
+    "useNewUrlParser": true,
+    "allowExtendedOperators": true
+  },
+  "transient": {
+    "name": "transient",
+    "connector": "transient"
+  }
+}

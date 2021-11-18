@@ -1,0 +1,22 @@
+node('docker') {
+  stage('Checkout'){
+    checkout scm
+  }
+  stage('Build Docker'){
+    withCredentials([ usernamePassword(credentialsId: 'dockerhubess',usernameVariable: 'docker_user',passwordVariable: 'docker_password' )]) {
+      sh 'docker login -u essdmscdm -p $docker_password '
+      def IMAGE_ID = sh ( script: 'git rev-parse HEAD',returnStdout: true).trim()
+      echo "Git image id : ${IMAGE_ID}"
+    }
+  }
+  stage('Production Build'){
+      if (env.BRANCH_NAME == 'develop'){
+            def IMAGE_ID = sh ( script: 'git rev-parse HEAD',returnStdout: true).trim()
+        sh "docker build --file CI/ESS/Dockerfile.proxy .  --tag dacat/catamel:${IMAGE_ID}dmscprod" 
+       echo "Git image id : ${IMAGE_ID}"
+       sh "docker push dacat/catamel:${IMAGE_ID}dmscprod"
+       sh "docker rmi dacat/catamel:${IMAGE_ID}dmscprod"    
+      }
+  }
+}
+

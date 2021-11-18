@@ -1,0 +1,79 @@
+def notifySlack(String buildStatus = 'STARTED') {
+  // Build status of null means success.
+  buildStatus = buildStatus ?: 'SUCCESS'
+
+  def color
+
+  if (buildStatus == 'STARTED') {
+   color = '#D4DADF'
+  } else if (buildStatus == 'SUCCESS') {
+   color = '#BDFFC3'
+  } else if (buildStatus == 'UNSTABLE') {
+   color = '#FFFE89'
+  } else {
+   color = '#FF9FA1'
+  }
+
+  def msg = "${buildStatus}: `${env.JOB_NAME}` #${env.BUILD_NUMBER}:\n${env.BUILD_URL}"
+
+  slackSend color: color, message: msg
+}
+podTemplate(label: 'docker',
+ containers: [containerTemplate(name: 'docker', image: 'docker:18.02-git', ttyEnabled: true, command: 'cat'), containerTemplate(name: 'helm', image: 'encima/helm-kubectl-git', ttyEnabled: true, command: 'cat')],
+ volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]
+) {
+ node('docker') {
+     try{
+         notifySlack()
+  container('docker') {
+   stage('Checkout') {
+    checkout scm
+   }
+   stage('Build Docker') {
+    sh 'ls -ahl server/'
+    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+     // available as an env variable, but will be masked if you try to print it out any which way
+     // also available as a Groovy variable—note double quotes for string interpolation
+     echo "$USERNAME"
+     echo "$PASSWORD"
+     sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psisecrets.git"
+     sh "git clone https://$USERNAME:$PASSWORD@git.psi.ch/MELANIE/catamel-psiconfig.git"
+     sh "mkdir -p CI/PSI/envfiles"
+     sh "cp catamel-psisecrets/server/pass-db-development/datasources.json CI/PSI/envfiles/datasources.json"
+     sh "cp catamel-psisecrets/server/providers.json CI/PSI/envfiles/providers.json"
+     sh "cp catamel-psisecrets/server/settings.json CI/PSI/envfiles/settings.json"
+     sh "cp catamel-psiconfig/server/config.local.js CI/PSI/envfiles/config.local.js"
+    }
+    sh 'docker build -f CI/PSI/Dockerfile.test . -t catamel_test'
+   }
+   stage('SuperTest Catamel ') {
+    sh 'docker run  --privileged -t catamel_test'
+   }
+   stage('Build release') {
+    withCredentials([usernamePassword(credentialsId: 'dockerpsi', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+     sh "docker login registry.psi.ch:5000 -u $USERNAME -p $PASSWORD"
+     def tag = sh(script: 'git rev-parse HEAD', returnStdout: true)
+     sh "docker build . -t registry.psi.ch:5000/egli/dacatapiserver:$tag"
+     sh "docker push registry.psi.ch:5000/egli/dacatapiserver:$tag"
+    }
+   }
+  }
+  container('helm') {
+   stage('Release') {
+    def workspace = pwd()
+    sh "export KUBECONFIG=${workspace}@catamel-psisecrets/server/kubernetes/admin.conf"
+    sh 'kubectl version'
+    sh 'helm version'
+    // sh 'helm del --purge dacat-api-server-development'
+    def tag = sh(script: 'git rev-parse HEAD', returnStdout: true)
+    sh "helm upgrade -i dacat-api-server-development catamel-psiconfig/server/kubernetes/helm/dacat-api-server --namespace=development --set image.tag=$tag"
+   }
+  }
+   } catch (e) {
+   currentBuild.result = 'FAILURE'
+   throw e
+  } finally {
+   notifySlack(currentBuild.result)
+  }
+ }
+}
