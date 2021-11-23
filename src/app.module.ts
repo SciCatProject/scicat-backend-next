@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CaslModule } from "./casl/casl.module";
 import configuration from "./config/configuration";
 import { APP_GUARD, Reflector } from "@nestjs/core";
@@ -17,7 +17,13 @@ import { AttachmentsModule } from "./attachments/attachments.module";
       load: [configuration],
     }),
     DatasetsModule,
-    MongooseModule.forRoot("mongodb://localhost/nest"),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>("mongodbUri"),
+      }),
+      inject: [ConfigService],
+    }),
     UsersModule,
     CaslModule,
     AttachmentsModule,

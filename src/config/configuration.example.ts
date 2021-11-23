@@ -38,6 +38,7 @@ export default () => ({
       searchFilter: "<SEARCH_FILTER>",
     },
   },
+  mongodbUri: "mongodb://<USER>:<PASSWORD>#@<SERVER>:27017/<DB_NAME>",
   metadataKeysReturnLimit: 100,
   metadataParentInstancesReturnLimit: 100,
   site: "<SITE>",
