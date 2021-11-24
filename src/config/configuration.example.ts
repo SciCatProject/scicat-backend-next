@@ -29,6 +29,10 @@ export default () => ({
       global: true,
     },
   ],
+  jwt: {
+    secret: "<JWT_SECRET>",
+    expiresIn: 3600,
+  },
   ldap: {
     server: {
       url: "ldap://ldap.server.com/",
