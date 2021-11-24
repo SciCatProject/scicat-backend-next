@@ -41,4 +41,6 @@ export default () => ({
   metadataKeysReturnLimit: 100,
   metadataParentInstancesReturnLimit: 100,
   site: "<SITE>",
+  jwtSecret: "ThisIsASecretThatShouldBeChanged",
+  jwtExpireTime: "1h",
 });

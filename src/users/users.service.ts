@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import {
+  HttpException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  HttpStatus,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { genSalt, hash } from "bcrypt";
@@ -13,6 +19,9 @@ import {
 import { User, UserDocument } from "./schemas/user.schema";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { CreateUserRoleDto } from "./dto/create-user-role.dto";
+import { CreateUserJWT } from "./dto/create-user-jwt.dto";
+import * as jwt from "jsonwebtoken";
+import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -131,5 +140,36 @@ export class UsersService implements OnModuleInit {
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
     console.log({ userId });
     return this.userIdentityModel.findOne({ userId }).exec();
+  }
+
+  async createUserJWT(
+    accessToken: JWTUser | undefined,
+  ): Promise<CreateUserJWT | null> {
+    const signAndVerifyOptions = {
+      expiresIn: this.configService.get<string>("jwtExpireTime") || "1h",
+    };
+    const secret = this.configService.get<string>("jwtSecret");
+    if (!secret) {
+      throw new HttpException(
+        "JWT secret has not been configured",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    if (!accessToken) {
+      const groups = ["public"];
+      const payload = {
+        username: "anonymous",
+        groups,
+      };
+      const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
+      return { jwt: jwtString };
+    }
+
+    const payload = {
+      username: accessToken._id,
+      groups: accessToken.currentGroups,
+    };
+    const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
+    return { jwt: jwtString };
   }
 }
