@@ -45,5 +45,6 @@ export default () => ({
   mongodbUri: "mongodb://<USER>:<PASSWORD>#@<SERVER>:27017/<DB_NAME>",
   metadataKeysReturnLimit: 100,
   metadataParentInstancesReturnLimit: 100,
+  port: 3000,
   site: "<SITE>",
 });
