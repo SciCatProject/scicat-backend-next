@@ -13,9 +13,9 @@ describe("AuthService", () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigService],
       providers: [
         AuthService,
+        ConfigService,
         { provide: JwtService, useClass: JwtServiceMock },
         { provide: UsersService, useClass: UsersServiceMock },
       ],
