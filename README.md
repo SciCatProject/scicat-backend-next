@@ -22,7 +22,7 @@
 
 ## Environment variables
 
-Valid environment variables for the .env file. See [.env.examples](/.env.examples) for examples value formats.
+Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
 
 - `JWT_SECRET` [string] The secret for your JWT token, used for authorization.
 - `JWT_EXPIRES_IN` [number] *Optional*  How long, in seconds, the JWT token is valid. Defaults to `3600`.
