@@ -29,6 +29,10 @@ export default () => ({
       global: true,
     },
   ],
+  jwt: {
+    secret: "<JWT_SECRET>",
+    expiresIn: 3600,
+  },
   ldap: {
     server: {
       url: "ldap://ldap.server.com/",
@@ -38,6 +42,7 @@ export default () => ({
       searchFilter: "<SEARCH_FILTER>",
     },
   },
+  mongodbUri: "mongodb://<USER>:<PASSWORD>#@<SERVER>:27017/<DB_NAME>",
   metadataKeysReturnLimit: 100,
   metadataParentInstancesReturnLimit: 100,
   site: "<SITE>",

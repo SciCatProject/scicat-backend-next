@@ -203,7 +203,7 @@ export class DatasetsService {
             allMatch.push(match);
             pipeline.push(match);
           }
-        } else if (key === "scientific" && fields) {
+        } else if (key === "scientific") {
           const match = {
             $match: mapScientificQuery(fields[key] ?? []),
           };
