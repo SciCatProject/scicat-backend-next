@@ -13,6 +13,7 @@ import {
 import { User, UserDocument } from "./schemas/user.schema";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { CreateUserRoleDto } from "./dto/create-user-role.dto";
+import * as fs from "fs";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -25,8 +26,14 @@ export class UsersService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const functionalAccounts =
+    let functionalAccounts =
       this.configService.get<CreateUserDto[]>("functionalAccounts");
+
+    const filePath = "functionalAccounts.json";
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      functionalAccounts = JSON.parse(data);
+    }
 
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
