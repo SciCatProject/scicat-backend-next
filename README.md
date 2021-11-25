@@ -8,6 +8,35 @@
 
 **This repository contains the source code of the next version of the SciCat backend, which is under development. The current version of the backend is located in [SciCatProject/catamel](https://github.com/SciCatProject/catamel).**
 
+## Get started
+
+1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
+2. `npm install`
+3. Add *.env* file to project root folder. See [Environment variables](#environment-variables).
+4. *Optional* Add *functionalAccounts.json* file to project root folder. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
+5. `npm run start:dev`
+
+## Test the app
+
+`npm run test`
+
+## Environment variables
+
+Valid environment variables for the .env file. See [.env.examples](/.env.examples) for examples value formats.
+
+- `JWT_SECRET` [string] The secret for your JWT token, used for authorization.
+- `JWT_EXPIRES_IN` [number] *Optional*  How long, in seconds, the JWT token is valid. Defaults to `3600`.
+- `LDAP_URL` [string] *Optional* The URL to your LDAP server.
+- `LDAP_BIND_DN` [string] *Optional* Bind_DN for your LDAP server.
+- `LDAP_BIND_CREDENTIALS` [string] *Optional* Credentials for your LDAP server.
+- `LDAP_SEARCH_BASE` [string] *Optional* Search base for your LDAP server.
+- `LDAP_SEARCH_FILTER` [string] *Optional* Search filter for you LDAP server.
+- `METADATA_KEYS_RETURN_LIMIT` [number] *Optional* The return limit for the `/Datasets/metadataKeys` endpoint.
+- `METADATA_PARENT_INSTANCES_RETURN_LIMIT` *Optional* The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint.
+- `MONGODB_URI` [string] The URI for your MongoDB instance.
+- `PORT` [number] *Optional* The port on which you want to access the app. Defaults to `3000`.
+- `SITE` [string] The name of your site.
+
 ---
 
 For the full documentation please go to the [SciCat home page](https://scicatproject.github.io/) and follow the [documentation link](https://scicatproject.github.io/documentation)
