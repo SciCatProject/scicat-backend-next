@@ -146,9 +146,9 @@ export class UsersService implements OnModuleInit {
     accessToken: JWTUser | undefined,
   ): Promise<CreateUserJWT | null> {
     const signAndVerifyOptions = {
-      expiresIn: this.configService.get<string>("jwtExpireTime") || "1h",
+      expiresIn: this.configService.get<string>("jwt.expiresIn") || "1h",
     };
-    const secret = this.configService.get<string>("jwtSecret");
+    const secret = this.configService.get<string>("jwt.secret");
     if (!secret) {
       throw new HttpException(
         "JWT secret has not been configured",
