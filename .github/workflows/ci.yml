@@ -29,6 +29,6 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           project_id: 5160
-          ref: "master"
+          ref: "main"
           host: "https://gitlab.esss.lu.se"
           debug: true
