@@ -16,7 +16,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("explorer", app, document);
+  SwaggerModule.setup("explorer-next", app, document);
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>("port") ?? 3000;
