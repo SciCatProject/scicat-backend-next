@@ -32,12 +32,3 @@ jobs:
           ref: "master"
           host: "https://gitlab.esss.lu.se"
           debug: true
-
-      # - name: Trigger MAXIV pipeline
-      #   uses: appleboy/gitlab-ci-action@master
-      #   with:
-      #     token: ${{ secrets.MAXIV_TOKEN }}
-      #     project_id: 21894404
-      #     ref: "develop"
-      #     host: "https://gitlab.com"
-      #     debug: true
