@@ -15,29 +15,20 @@ jobs:
           cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
           docker-compose down --remove-orphans
           docker-compose pull
-          docker-compose up --build --exit-code-from catamel
+          docker-compose up --build --exit-code-from scicat-backend
           docker-compose down
 
   gitlab:
     name: Build and deploy
     needs: [test]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger ESS pipeline
         uses: appleboy/gitlab-ci-action@master
         with:
           token: ${{ secrets.TOKEN }}
-          project_id: 1903
-          ref: "master"
+          project_id: 5160
+          ref: "main"
           host: "https://gitlab.esss.lu.se"
-          debug: true
-
-      - name: Trigger MAXIV pipeline
-        uses: appleboy/gitlab-ci-action@master
-        with:
-          token: ${{ secrets.MAXIV_TOKEN }}
-          project_id: 21894404
-          ref: "develop"
-          host: "https://gitlab.com"
           debug: true
