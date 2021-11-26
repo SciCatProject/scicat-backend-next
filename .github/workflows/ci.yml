@@ -21,23 +21,23 @@ jobs:
   gitlab:
     name: Build and deploy
     needs: [test]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger ESS pipeline
         uses: appleboy/gitlab-ci-action@master
         with:
           token: ${{ secrets.TOKEN }}
-          project_id: 1903
+          project_id: 5160
           ref: "master"
           host: "https://gitlab.esss.lu.se"
           debug: true
 
-      - name: Trigger MAXIV pipeline
-        uses: appleboy/gitlab-ci-action@master
-        with:
-          token: ${{ secrets.MAXIV_TOKEN }}
-          project_id: 21894404
-          ref: "develop"
-          host: "https://gitlab.com"
-          debug: true
+      # - name: Trigger MAXIV pipeline
+      #   uses: appleboy/gitlab-ci-action@master
+      #   with:
+      #     token: ${{ secrets.MAXIV_TOKEN }}
+      #     project_id: 21894404
+      #     ref: "develop"
+      #     host: "https://gitlab.com"
+      #     debug: true
