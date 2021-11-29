@@ -20,7 +20,7 @@ import { User, UserDocument } from "./schemas/user.schema";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { CreateUserRoleDto } from "./dto/create-user-role.dto";
 import { CreateUserJWT } from "./dto/create-user-jwt.dto";
-import * as jwt from "jsonwebtoken";
+import { JwtService } from "@nestjs/jwt";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 
@@ -154,9 +154,11 @@ export class UsersService implements OnModuleInit {
   ): Promise<CreateUserJWT | null> {
     const signAndVerifyOptions = {
       expiresIn: this.configService.get<string>("jwt.expiresIn") || "1h",
+      secret: this.configService.get<string>("jwt.secret"),
     };
-    const secret = this.configService.get<string>("jwt.secret");
-    if (!secret) {
+    const jwt = new JwtService(signAndVerifyOptions);
+
+    if (!signAndVerifyOptions.secret) {
       throw new HttpException(
         "JWT secret has not been configured",
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -168,7 +170,7 @@ export class UsersService implements OnModuleInit {
         username: "anonymous",
         groups,
       };
-      const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
+      const jwtString = jwt.sign(payload);
       return { jwt: jwtString };
     }
 
@@ -176,7 +178,7 @@ export class UsersService implements OnModuleInit {
       username: accessToken._id,
       groups: accessToken.currentGroups,
     };
-    const jwtString = jwt.sign(payload, secret, signAndVerifyOptions);
+    const jwtString = jwt.sign(payload);
     return { jwt: jwtString };
   }
 }
