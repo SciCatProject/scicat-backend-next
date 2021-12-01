@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  Injectable,
-  Logger,
-  OnModuleInit,
-  HttpStatus,
-} from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { genSalt, hash } from "bcrypt";
@@ -32,6 +26,7 @@ export class UsersService implements OnModuleInit {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UserIdentity.name)
     private userIdentityModel: Model<UserIdentityDocument>,
+    private jwtService: JwtService,
   ) {}
 
   async onModuleInit() {
@@ -156,21 +151,14 @@ export class UsersService implements OnModuleInit {
       expiresIn: this.configService.get<string>("jwt.expiresIn") || "1h",
       secret: this.configService.get<string>("jwt.secret"),
     };
-    const jwt = new JwtService(signAndVerifyOptions);
 
-    if (!signAndVerifyOptions.secret) {
-      throw new HttpException(
-        "JWT secret has not been configured",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
     if (!accessToken) {
       const groups = ["public"];
       const payload = {
         username: "anonymous",
         groups,
       };
-      const jwtString = jwt.sign(payload);
+      const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
       return { jwt: jwtString };
     }
 
@@ -178,7 +166,7 @@ export class UsersService implements OnModuleInit {
       username: accessToken._id,
       groups: accessToken.currentGroups,
     };
-    const jwtString = jwt.sign(payload);
+    const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
     return { jwt: jwtString };
   }
 }
