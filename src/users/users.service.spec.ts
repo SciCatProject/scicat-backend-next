@@ -6,8 +6,10 @@ import { RolesService } from "./roles.service";
 import { UserIdentity } from "./schemas/user-identity.schema";
 import { User } from "./schemas/user.schema";
 import { UsersService } from "./users.service";
+import { JwtService } from "@nestjs/jwt";
 
 class RolesServiceMock {}
+class JwtServiceMock {}
 
 const mockUser: User = {
   _id: "testId",
@@ -47,6 +49,7 @@ describe("UsersService", () => {
       imports: [ConfigModule],
       providers: [
         { provide: RolesService, useClass: RolesServiceMock },
+        { provide: JwtService, useClass: JwtServiceMock },
         {
           provide: getModelToken("User"),
           useValue: {
