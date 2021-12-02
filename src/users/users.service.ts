@@ -13,6 +13,9 @@ import {
 import { User, UserDocument } from "./schemas/user.schema";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { CreateUserRoleDto } from "./dto/create-user-role.dto";
+import { CreateUserJWT } from "./dto/create-user-jwt.dto";
+import { JwtService } from "@nestjs/jwt";
+import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 
 @Injectable()
@@ -23,6 +26,7 @@ export class UsersService implements OnModuleInit {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UserIdentity.name)
     private userIdentityModel: Model<UserIdentityDocument>,
+    private jwtService: JwtService,
   ) {}
 
   async onModuleInit() {
@@ -138,5 +142,31 @@ export class UsersService implements OnModuleInit {
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
     console.log({ userId });
     return this.userIdentityModel.findOne({ userId }).exec();
+  }
+
+  async createUserJWT(
+    accessToken: JWTUser | undefined,
+  ): Promise<CreateUserJWT | null> {
+    const signAndVerifyOptions = {
+      expiresIn: this.configService.get<string>("jwt.expiresIn") || "1h",
+      secret: this.configService.get<string>("jwt.secret"),
+    };
+
+    if (!accessToken) {
+      const groups = ["public"];
+      const payload = {
+        username: "anonymous",
+        groups,
+      };
+      const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+      return { jwt: jwtString };
+    }
+
+    const payload = {
+      username: accessToken._id,
+      groups: accessToken.currentGroups,
+    };
+    const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+    return { jwt: jwtString };
   }
 }
