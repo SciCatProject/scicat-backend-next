@@ -140,7 +140,6 @@ export class UsersService implements OnModuleInit {
   }
 
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
-    console.log({ userId });
     return this.userIdentityModel.findOne({ userId }).exec();
   }
 
