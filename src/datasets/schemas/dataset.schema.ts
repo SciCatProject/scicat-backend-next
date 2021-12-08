@@ -22,7 +22,7 @@ export class Dataset extends Ownable {
   @ApiProperty({
     type: String,
     default: function genUUID(): string {
-      return "20.500.12269/" + uuidv4();
+      return process.env.PID_PREFIX + uuidv4();
     },
   })
   @Prop({
@@ -30,7 +30,7 @@ export class Dataset extends Ownable {
     unique: true,
     required: true,
     default: function genUUID(): string {
-      return "20.500.12269/" + uuidv4();
+      return process.env.PID_PREFIX + uuidv4();
     },
   })
   pid: string;

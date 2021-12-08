@@ -50,6 +50,7 @@ export default () => ({
     ? parseInt(process.env.METADATA_PARENT_INSTANCES_RETURN_LIMIT, 10)
     : undefined,
   mongodbUri: process.env.MONGODB_URI,
+  pidPrefix: process.env.PID_PREFIX,
   port: parseInt(process.env.PORT || "3000", 10),
   site: process.env.SITE,
 });
