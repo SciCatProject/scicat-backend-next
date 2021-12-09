@@ -146,6 +146,10 @@ export class Dataset extends Ownable {
   })
   @Prop([TechniqueSchema])
   techniques: Technique[];
+
+  @ApiProperty()
+  @Prop([String])
+  sharedWith: string[];
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);

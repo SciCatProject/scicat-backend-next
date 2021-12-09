@@ -81,4 +81,7 @@ export class CreateDatasetDto extends OwnableDto {
 
   @ApiProperty({ type: [Technique] })
   readonly techniques: Technique[];
+
+  @ApiProperty({ type: [String] })
+  readonly sharedWith: string[];
 }
