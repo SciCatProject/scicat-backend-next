@@ -38,6 +38,9 @@ export class CaslAbilityFactory {
       isPublished: false,
       accessGroups: { $in: user.currentGroups },
     });
+    can(Action.Read, Dataset, {
+      sharedWith: user.email,
+    });
 
     can(
       Action.Update,
