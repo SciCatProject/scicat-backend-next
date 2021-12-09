@@ -17,16 +17,16 @@ export class Lifecycle {
   @Prop({ default: true })
   publishable: boolean;
 
-  @Prop()
+  @Prop({ type: Date })
   dateOfDiskPurging: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   archiveRetentionTime: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   dateOfPublishing: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   publishedOn: Date;
 
   @Prop({ default: true })
