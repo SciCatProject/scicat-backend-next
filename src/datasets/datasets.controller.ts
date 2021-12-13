@@ -62,8 +62,8 @@ export class DatasetsController {
   }
 
   // GET /datasets
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @AllowAny()
+  @UseInterceptors(PublicDatasetsInterceptor)
   @Get()
   @ApiQuery({
     name: "filters",
