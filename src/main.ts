@@ -18,7 +18,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("explorer-next", app, document);
 
-  const configService = app.get(ConfigService);
+  const configService: ConfigService<Record<string, unknown>, false> = app.get(
+    ConfigService,
+  );
   const port = configService.get<number>("port") ?? 3000;
   Logger.log("Scicat Backend listening on port: " + port, "Main");
 
