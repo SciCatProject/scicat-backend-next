@@ -35,6 +35,12 @@ export class Dataset extends Ownable {
   })
   pid: string;
 
+  @Prop({ 
+    type: String, 
+    unique: true,
+  })
+  _id: string;
+
   @ApiProperty()
   @Prop({ type: String, required: true, index: true })
   owner: string;
