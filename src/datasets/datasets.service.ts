@@ -6,7 +6,13 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, QueryOptions } from "mongoose";
+import {
+  FilterQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+  UpdateQuery,
+} from "mongoose";
 import { extractMetadataKeys, mapScientificQuery } from "src/common/utils";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
@@ -277,7 +283,9 @@ export class DatasetsService {
     ];
     pipeline.push({ $facet: facetObject });
 
-    const results = await this.datasetModel.aggregate(pipeline).exec();
+    const results = await this.datasetModel
+      .aggregate(pipeline as PipelineStage[])
+      .exec();
     return results;
   }
 
@@ -297,7 +305,11 @@ export class DatasetsService {
       | CreateDerivedDatasetDto,
   ): Promise<Dataset> {
     const existingDataset = await this.datasetModel
-      .findOneAndUpdate({ pid: id }, createDatasetDto, { new: true })
+      .findOneAndUpdate(
+        { pid: id },
+        createDatasetDto as UpdateQuery<DatasetDocument>,
+        { new: true },
+      )
       .exec();
 
     // check if we were able to find the dataset and update it
@@ -337,7 +349,11 @@ export class DatasetsService {
       this.datasetModel.discriminators[existingDataset.type];
 
     const patchedDataset = typedDatasetModel
-      .findOneAndUpdate({ pid: id }, updateDatasetDto, { new: true })
+      .findOneAndUpdate(
+        { pid: id },
+        updateDatasetDto as UpdateQuery<DatasetDocument>,
+        { new: true },
+      )
       .exec();
 
     // we were able to find the dataset and update it
