@@ -35,7 +35,7 @@
     "bcrypt": "^5.0.1",
     "mathjs": "^9.5.1",
     "mongoose": "^6.1.2",
-    "passport": "^0.5.0",
+    "passport": "^0.5.1",
     "passport-jwt": "^4.0.0",
     "passport-ldapauth": "^3.0.1",
     "passport-local": "^1.0.0",
