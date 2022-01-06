@@ -35,8 +35,8 @@ export class Dataset extends Ownable {
   })
   pid: string;
 
-  @Prop({ 
-    type: String, 
+  @Prop({
+    type: String,
     unique: true,
   })
   _id: string;
