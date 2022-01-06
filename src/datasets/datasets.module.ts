@@ -26,22 +26,20 @@ import { ConfigModule } from "@nestjs/config";
           const schema = DatasetSchema;
 
           schema.pre<Dataset>(
-            'save', 
-            function (next: Function) {
-              const dataset = this;
+            "save",
+            function (next) {
+              //const dataset = this;
 
-              // if _id is empty or differnet than pid, 
+              // if _id is empty or differnet than pid,
               // set _id to pid
               if (!this._id) {
                 this._id = this.pid;
               }
-
-              next();            
+              next();
           });
 
           return schema;
         },
-
       },
     ]),
   ],
