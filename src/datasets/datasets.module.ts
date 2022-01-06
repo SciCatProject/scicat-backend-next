@@ -25,7 +25,7 @@ import { ConfigModule } from "@nestjs/config";
         useFactory: () => {
           const schema = DatasetSchema;
 
-          schema.pre<Dataset>("save",function (next) {
+          schema.pre<Dataset>("save", function (next) {
             // if _id is empty or differnet than pid,
             // set _id to pid
             if (!this._id) {
