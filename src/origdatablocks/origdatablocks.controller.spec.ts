@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { OrigdatablockController } from "./origdatablock.controller";
-import { OrigdatablockService } from "./origdatablock.service";
+import { OrigdatablockController } from "./origdatablocks.controller";
+import { OrigdatablockService } from "./origdatablocks.service";
 
 describe("OrigdatablockController", () => {
   let controller: OrigdatablockController;

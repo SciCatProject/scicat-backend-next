@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { OrigdatablockService } from "./origdatablock.service";
+import { OrigdatablockService } from "./origdatablocks.service";
 
 describe("OrigdatablockService", () => {
   let service: OrigdatablockService;

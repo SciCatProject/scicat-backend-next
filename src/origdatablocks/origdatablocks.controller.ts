@@ -7,11 +7,14 @@ import {
   Param,
   Delete,
 } from "@nestjs/common";
-import { OrigdatablockService } from "./origdatablock.service";
+import { OrigdatablockService } from "./origdatablocks.service";
 import { CreateOrigdatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigdatablockDto } from "./dto/update-origdatablock.dto";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
-@Controller("origdatablock")
+@ApiBearerAuth()
+@ApiTags("origdatablocks")
+@Controller("origdatablocks")
 export class OrigdatablockController {
   constructor(private readonly origdatablockService: OrigdatablockService) {}
 

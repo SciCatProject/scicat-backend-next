@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { OrigdatablockService } from "./origdatablock.service";
-import { OrigdatablockController } from "./origdatablock.controller";
+import { OrigdatablockService } from "./origdatablocks.service";
+import { OrigdatablockController } from "./origdatablocks.controller";
 
 @Module({
   controllers: [OrigdatablockController],
