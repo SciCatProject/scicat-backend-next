@@ -3,7 +3,7 @@ import { CreateOrigdatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigdatablockDto } from "./dto/update-origdatablock.dto";
 
 @Injectable()
-export class OrigdatablockService {
+export class OrigdatablocksService {
   create(createOrigdatablockDto: CreateOrigdatablockDto) {
     return "This action adds a new origdatablock";
   }

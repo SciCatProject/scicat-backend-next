@@ -1,17 +1,17 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { OrigdatablockController } from "./origdatablocks.controller";
-import { OrigdatablockService } from "./origdatablocks.service";
+import { OrigdatablocksController } from "./origdatablocks.controller";
+import { OrigdatablocksService } from "./origdatablocks.service";
 
-describe("OrigdatablockController", () => {
-  let controller: OrigdatablockController;
+describe("OrigdatablocksController", () => {
+  let controller: OrigdatablocksController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrigdatablockController],
-      providers: [OrigdatablockService],
+      controllers: [OrigdatablocksController],
+      providers: [OrigdatablocksService],
     }).compile();
 
-    controller = module.get<OrigdatablockController>(OrigdatablockController);
+    controller = module.get<OrigdatablocksController>(OrigdatablocksController);
   });
 
   it("should be defined", () => {
