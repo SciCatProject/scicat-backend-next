@@ -8,6 +8,7 @@ import { DerivedDatasetSchema } from "./schemas/derived-dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { ConfigModule } from "@nestjs/config";
+import { OrigdatablocksModule } from "src/origdatablocks/origdatablocks.module";
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ConfigModule } from "@nestjs/config";
         },
       },
     ]),
+    OrigdatablocksModule,
   ],
   controllers: [DatasetsController],
   providers: [DatasetsService, CaslAbilityFactory],
