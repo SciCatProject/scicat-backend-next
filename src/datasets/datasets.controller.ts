@@ -20,7 +20,7 @@ import {
 import { DatasetsService } from "./datasets.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
-import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
+import { Dataset } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -37,7 +37,10 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
-import { FilterQuery } from "mongoose";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { CreateOrigdatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
+import { OrigdatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { UpdateOrigdatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -51,6 +54,7 @@ export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
     private datasetsService: DatasetsService,
+    private origDatablocksService: OrigdatablocksService,
   ) {}
 
   // POST /datasets
@@ -142,10 +146,37 @@ export class DatasetsController {
   // GET /datasets/findOne
   @AllowAny()
   @Get("/findOne")
-  async findOne(
-    @Query("filter") filters: FilterQuery<DatasetDocument>,
-  ): Promise<Dataset | null> {
-    return this.datasetsService.findOne(filters);
+  @ApiQuery({
+    name: "filter",
+    description: "Database filter to apply when finding a Dataset",
+    required: false,
+  })
+  async findOne(@Query("filter") filters: string): Promise<Dataset | null> {
+    const jsonFilters: IDatasetFilters = JSON.parse(filters);
+    const whereFilters = jsonFilters.where ?? {};
+    const dataset = await this.datasetsService.findOne(whereFilters);
+    if (dataset) {
+      const includeFilters = jsonFilters.include ?? [];
+      await Promise.all(
+        includeFilters.map(async ({ relation }) => {
+          switch (relation) {
+            case "attachments": {
+              dataset.attachments = await this.attachmentsService.findAll({
+                datasetId: dataset.pid,
+              });
+              break;
+            }
+            case "origdatablocks": {
+              dataset.origdatablocks = await this.origDatablocksService.findAll(
+                { datasetId: dataset.pid },
+              );
+              break;
+            }
+          }
+        }),
+      );
+    }
+    return dataset;
   }
 
   // GET /datasets/:id
@@ -260,6 +291,65 @@ export class DatasetsController {
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
+      datasetId,
+    });
+  }
+
+  // POST /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, OrigDatablock),
+  )
+  @Post("/:id/origdatablocks")
+  async createOrigDatablock(
+    @Param("id") id: string,
+    @Body() createOrigdatablockDto: CreateOrigdatablockDto,
+  ): Promise<OrigDatablock> {
+    const createOrigDatablock = { ...createOrigdatablockDto, datasetId: id };
+    return this.origDatablocksService.create(createOrigDatablock);
+  }
+
+  // GET /datasets/:id/origdatablocks
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, OrigDatablock),
+  )
+  @Get("/:id/origdatablocks")
+  async findAllOrigDatablocks(
+    @Param("id") id: string,
+  ): Promise<OrigDatablock[]> {
+    return this.origDatablocksService.findAll({ datasetId: id });
+  }
+
+  // PATCH /datasets/:id/origdatablocks/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, OrigDatablock),
+  )
+  @Patch("/:id/origdatablocks/:fk")
+  async findOneOrigDatablockAndUpdate(
+    @Param("id") datasetId: string,
+    @Param("fk") origDatablockId: string,
+    @Body() updateOrigdatablockDto: UpdateOrigdatablockDto,
+  ): Promise<OrigDatablock | null> {
+    return this.origDatablocksService.update(
+      { _id: origDatablockId, datasetId },
+      updateOrigdatablockDto,
+    );
+  }
+
+  // DELETE /datasets/:id/origdatablocks/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, OrigDatablock),
+  )
+  @Delete("/:id/origdatablocks/:fk")
+  async findOneOrigDatablockAndRemove(
+    @Param("id") datasetId: string,
+    @Param("fk") origDatablockId: string,
+  ): Promise<unknown> {
+    return this.origDatablocksService.remove({
+      _id: origDatablockId,
       datasetId,
     });
   }
