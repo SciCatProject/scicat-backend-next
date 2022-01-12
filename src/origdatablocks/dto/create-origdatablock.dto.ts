@@ -6,14 +6,14 @@ export class CreateOrigdatablockDto {
   readonly datasetId: string;
 
   @ApiProperty()
-  ownerGroup: string;
+  readonly ownerGroup: string;
 
   @ApiProperty({ type: [String] })
-  accessGroups: string[];
+  readonly accessGroups: string[];
 
   @ApiProperty()
   readonly size: number;
 
   @ApiProperty({ type: [DataFile] })
-  dataFileList: DataFile[];
+  readonly dataFileList: DataFile[];
 }
