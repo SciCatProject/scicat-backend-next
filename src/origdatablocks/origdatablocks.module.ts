@@ -1,9 +1,21 @@
 import { Module } from "@nestjs/common";
 import { OrigdatablocksService } from "./origdatablocks.service";
-import { OrigdatablocksController } from "./origdatablocks.controller";
+import { MongooseModule } from "@nestjs/mongoose";
+import {
+  OrigDatablock,
+  OrigDatablockSchema,
+} from "./schemas/origdatablock.schema";
 
 @Module({
-  controllers: [OrigdatablocksController],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: OrigDatablock.name,
+        schema: OrigDatablockSchema,
+      },
+    ]),
+  ],
   providers: [OrigdatablocksService],
+  exports: [OrigdatablocksService],
 })
-export class OrigdatablockModule {}
+export class OrigdatablocksModule {}
