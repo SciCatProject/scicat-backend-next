@@ -1,26 +1,51 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreateOrigdatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigdatablockDto } from "./dto/update-origdatablock.dto";
+import {
+  OrigDatablock,
+  OrigDatablockDocument,
+} from "./schemas/origdatablock.schema";
 
 @Injectable()
 export class OrigdatablocksService {
-  create(createOrigdatablockDto: CreateOrigdatablockDto) {
-    return "This action adds a new origdatablock";
+  constructor(
+    @InjectModel(OrigDatablock.name)
+    private origDatablockModel: Model<OrigDatablockDocument>,
+  ) {}
+
+  async create(
+    createOrigdatablockDto: CreateOrigdatablockDto,
+  ): Promise<OrigDatablock> {
+    const createdOrigDatablock = new this.origDatablockModel(
+      createOrigdatablockDto,
+    );
+    return createdOrigDatablock.save();
   }
 
-  findAll() {
-    return `This action returns all origdatablock`;
+  async findAll(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<OrigDatablock[]> {
+    return this.origDatablockModel.find(filter).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} origdatablock`;
+  async findOne(
+    filter: FilterQuery<OrigDatablockDocument>,
+  ): Promise<OrigDatablock | null> {
+    return this.origDatablockModel.findOne(filter).exec();
   }
 
-  update(id: number, updateOrigdatablockDto: UpdateOrigdatablockDto) {
-    return `This action updates a #${id} origdatablock`;
+  async update(
+    filter: FilterQuery<OrigDatablockDocument>,
+    updateOrigdatablockDto: UpdateOrigdatablockDto,
+  ): Promise<OrigDatablock | null> {
+    return this.origDatablockModel
+      .findOneAndUpdate(filter, updateOrigdatablockDto, { new: true })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} origdatablock`;
+  async remove(filter: FilterQuery<OrigDatablockDocument>): Promise<unknown> {
+    return this.origDatablockModel.findOneAndRemove(filter).exec();
   }
 }
