@@ -9,6 +9,7 @@ import configuration from "./config/configuration";
 import { APP_GUARD, Reflector } from "@nestjs/core";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { AttachmentsModule } from "./attachments/attachments.module";
+import { OrigdatablocksModule } from "./origdatablocks/origdatablocks.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AttachmentsModule } from "./attachments/attachments.module";
     UsersModule,
     CaslModule,
     AttachmentsModule,
+    OrigdatablocksModule,
   ],
   controllers: [],
   providers: [
