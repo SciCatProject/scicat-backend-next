@@ -59,6 +59,10 @@ export class CaslAbilityFactory {
     );
 
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Manage, OrigDatablock, {
+      ownerGroup: { $in: user.currentGroups },
+    });
 
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
