@@ -7,6 +7,10 @@ import {
 } from "src/attachments/schemas/attachment.schema";
 import { Ownable } from "src/common/schemas/ownable.schema";
 import {
+  Datablock,
+  DatablockSchema,
+} from "src/datablocks/schemas/datablock.schema";
+import {
   OrigDatablock,
   OrigDatablockSchema,
 } from "src/origdatablocks/schemas/origdatablock.schema";
@@ -172,6 +176,10 @@ export class Dataset extends Ownable {
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(OrigDatablock) } })
   @Prop([OrigDatablockSchema])
   origdatablocks: OrigDatablock[];
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Datablock) } })
+  @Prop([DatablockSchema])
+  datablocks: Datablock[];
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
