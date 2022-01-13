@@ -1,26 +1,44 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { UpdateDatablockDto } from "./dto/update-datablock.dto";
+import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
 
 @Injectable()
 export class DatablocksService {
-  create(createDatablockDto: CreateDatablockDto) {
-    return "This action adds a new datablock";
+  constructor(
+    @InjectModel(Datablock.name)
+    private datablockModel: Model<DatablockDocument>,
+  ) {}
+
+  async create(createDatablockDto: CreateDatablockDto): Promise<Datablock> {
+    const createdDatablock = new this.datablockModel(createDatablockDto);
+    return createdDatablock.save();
   }
 
-  findAll() {
-    return `This action returns all datablocks`;
+  async findAll(filter: FilterQuery<DatablockDocument>): Promise<Datablock[]> {
+    return this.datablockModel.find(filter).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} datablock`;
+  async findOne(
+    filter: FilterQuery<DatablockDocument>,
+  ): Promise<Datablock | null> {
+    return this.datablockModel.findOne(filter).exec();
   }
 
-  update(id: number, updateDatablockDto: UpdateDatablockDto) {
-    return `This action updates a #${id} datablock`;
+  async update(
+    filter: FilterQuery<DatablockDocument>,
+    updateDatablockDto: UpdateDatablockDto,
+  ): Promise<Datablock | null> {
+    return this.datablockModel
+      .findOneAndUpdate(filter, updateDatablockDto, {
+        new: true,
+      })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} datablock`;
+  async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
+    return this.datablockModel.findOneAndRemove(filter).exec();
   }
 }
