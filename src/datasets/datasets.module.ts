@@ -9,11 +9,13 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { ConfigModule } from "@nestjs/config";
 import { OrigdatablocksModule } from "src/origdatablocks/origdatablocks.module";
+import { DatablocksModule } from "src/datablocks/datablocks.module";
 
 @Module({
   imports: [
     AttachmentsModule,
     ConfigModule,
+    DatablocksModule,
     MongooseModule.forFeatureAsync([
       {
         name: Dataset.name,
