@@ -1,7 +1,19 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import {
+  Attachment,
+  AttachmentSchema,
+} from "src/attachments/schemas/attachment.schema";
 import { Ownable } from "src/common/schemas/ownable.schema";
+import {
+  Datablock,
+  DatablockSchema,
+} from "src/datablocks/schemas/datablock.schema";
+import {
+  OrigDatablock,
+  OrigDatablockSchema,
+} from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { Lifecycle, LifecycleSchema } from "./lifecycle.schema";
 import { Technique, TechniqueSchema } from "./technique.schema";
@@ -156,6 +168,18 @@ export class Dataset extends Ownable {
   @ApiProperty()
   @Prop([String])
   sharedWith: string[];
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
+  @Prop([AttachmentSchema])
+  attachments: Attachment[];
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(OrigDatablock) } })
+  @Prop([OrigDatablockSchema])
+  origdatablocks: OrigDatablock[];
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Datablock) } })
+  @Prop([DatablockSchema])
+  datablocks: Datablock[];
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);

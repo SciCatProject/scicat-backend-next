@@ -1,4 +1,6 @@
+import { FilterQuery } from "mongoose";
 import { ScientificRelation } from "src/common/scientific-relation.enum";
+import { DatasetDocument } from "../schemas/dataset.schema";
 
 export interface IScientificFilter {
   lhs: string;
@@ -27,6 +29,8 @@ interface IDatasetFields {
 }
 
 export interface IDatasetFilters {
+  where?: FilterQuery<DatasetDocument>;
+  include?: { relation: string }[];
   fields?: IDatasetFields;
   limits?: {
     skip: number;

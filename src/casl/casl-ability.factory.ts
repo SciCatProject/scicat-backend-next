@@ -9,14 +9,21 @@ import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
+import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 
 type Subjects =
   | InferSubjects<
-      typeof Attachment | typeof Dataset | typeof User | typeof UserIdentity
+      | typeof Attachment
+      | typeof Datablock
+      | typeof Dataset
+      | typeof OrigDatablock
+      | typeof User
+      | typeof UserIdentity
     >
   | "all";
 
@@ -52,6 +59,10 @@ export class CaslAbilityFactory {
     );
 
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Manage, OrigDatablock, {
+      ownerGroup: { $in: user.currentGroups },
+    });
 
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
