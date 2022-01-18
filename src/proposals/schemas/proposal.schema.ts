@@ -17,6 +17,13 @@ export type ProposalDocument = Proposal & Document;
 })
 export class Proposal extends Ownable {
   @ApiProperty()
+  @Prop({ type: String, unique: true, required: true })
+  proposalId: string;
+
+  @Prop({ type: String, unique: true })
+  _id: string;
+
+  @ApiProperty()
   @Prop({ type: String, index: true })
   pi_email: string;
 

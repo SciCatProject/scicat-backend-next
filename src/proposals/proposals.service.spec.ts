@@ -5,6 +5,8 @@ import { ProposalsService } from "./proposals.service";
 import { Proposal } from "./schemas/proposal.schema";
 
 const mockProposal: Proposal = {
+  proposalId: "ABCDEF",
+  _id: "ABCDEF",
   pi_email: "testPi@email.com",
   pi_firstname: "testPiFirstname",
   pi_lastname: "testPiLastname",

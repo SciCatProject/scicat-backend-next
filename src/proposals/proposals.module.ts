@@ -9,10 +9,22 @@ import { AttachmentsModule } from "src/attachments/attachments.module";
 @Module({
   imports: [
     AttachmentsModule,
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Proposal.name,
-        schema: ProposalSchema,
+        useFactory: () => {
+          const schema = ProposalSchema;
+
+          schema.pre<Proposal>("save", function (next) {
+            // if _id is empty or different than proposalId,
+            // set _id to proposalId
+            if (!this._id) {
+              this._id = this.proposalId;
+            }
+            next();
+          });
+          return schema;
+        },
       },
     ]),
   ],
