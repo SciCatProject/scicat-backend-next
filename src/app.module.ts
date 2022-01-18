@@ -11,7 +11,7 @@ import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { AttachmentsModule } from "./attachments/attachments.module";
 import { OrigdatablocksModule } from "./origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "./datablocks/datablocks.module";
-import { ProposalsModule } from './proposals/proposals.module';
+import { ProposalsModule } from "./proposals/proposals.module";
 
 @Module({
   imports: [
