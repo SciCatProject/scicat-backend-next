@@ -1,26 +1,43 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
+import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
 
 @Injectable()
 export class ProposalsService {
-  create(createProposalDto: CreateProposalDto) {
-    return "This action adds a new proposal";
+  constructor(
+    @InjectModel(Proposal.name) private proposalModel: Model<ProposalDocument>,
+  ) {}
+
+  async create(createProposalDto: CreateProposalDto): Promise<Proposal> {
+    const createdProposal = new this.proposalModel(createProposalDto);
+    return createdProposal.save();
   }
 
-  findAll() {
-    return `This action returns all proposals`;
+  async findAll(filter: FilterQuery<ProposalDocument>): Promise<Proposal[]> {
+    return this.proposalModel.find(filter).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} proposal`;
+  async findOne(
+    filter: FilterQuery<ProposalDocument>,
+  ): Promise<Proposal | null> {
+    return this.proposalModel.findOne(filter).exec();
   }
 
-  update(id: number, updateProposalDto: UpdateProposalDto) {
-    return `This action updates a #${id} proposal`;
+  async update(
+    filter: FilterQuery<ProposalDocument>,
+    updateProposalDto: UpdateProposalDto,
+  ): Promise<Proposal | null> {
+    return this.proposalModel
+      .findOneAndUpdate(filter, updateProposalDto, {
+        new: true,
+      })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} proposal`;
+  async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {
+    return this.proposalModel.findOneAndRemove(filter).exec();
   }
 }
