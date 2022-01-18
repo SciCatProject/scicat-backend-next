@@ -32,6 +32,10 @@ export class Attachment extends Ownable {
   @ApiProperty({ type: String, required: false })
   @Prop({ type: String, ref: "Dataset", required: false })
   datasetId: string;
+
+  @ApiProperty({ type: String, required: false })
+  @Prop({ type: String, ref: "Proposal", required: false })
+  proposalId: string;
 }
 
 export const AttachmentSchema = SchemaFactory.createForClass(Attachment);

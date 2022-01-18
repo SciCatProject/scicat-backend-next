@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import {
+  Attachment,
+  AttachmentSchema,
+} from "src/attachments/schemas/attachment.schema";
 import { Ownable } from "src/common/schemas/ownable.schema";
 
 export type ProposalDocument = Proposal & Document;
@@ -47,6 +51,10 @@ export class Proposal extends Ownable {
   @ApiProperty()
   @Prop({ type: Date })
   endTime: Date;
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
+  @Prop([AttachmentSchema])
+  attachments: Attachment[];
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(Proposal);

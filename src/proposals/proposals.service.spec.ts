@@ -19,6 +19,7 @@ const mockProposal: Proposal = {
   accessGroups: ["testAccessGroup"],
   createdBy: "proposalIngestor",
   updatedBy: "proposalIngestor",
+  attachments: [],
 };
 
 describe("ProposalsService", () => {

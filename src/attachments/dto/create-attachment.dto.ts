@@ -27,4 +27,10 @@ export class CreateAttachmentDto {
 
   @ApiProperty({ type: String })
   readonly updatedBy: string;
+
+  @ApiProperty({ type: String, required: false })
+  readonly datasetId: string;
+
+  @ApiProperty({ type: String, required: false })
+  readonly proposalId: string;
 }
