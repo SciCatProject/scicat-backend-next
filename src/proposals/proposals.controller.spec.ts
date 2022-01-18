@@ -3,6 +3,8 @@ import { CaslModule } from "src/casl/casl.module";
 import { ProposalsController } from "./proposals.controller";
 import { ProposalsService } from "./proposals.service";
 
+class ProposalsServiceMock {}
+
 describe("ProposalsController", () => {
   let controller: ProposalsController;
 
@@ -10,7 +12,9 @@ describe("ProposalsController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProposalsController],
       imports: [CaslModule],
-      providers: [ProposalsService],
+      providers: [
+        { provide: ProposalsService, useClass: ProposalsServiceMock },
+      ],
     }).compile();
 
     controller = module.get<ProposalsController>(ProposalsController);
