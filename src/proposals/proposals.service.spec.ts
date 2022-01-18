@@ -20,6 +20,7 @@ const mockProposal: Proposal = {
   createdBy: "proposalIngestor",
   updatedBy: "proposalIngestor",
   attachments: [],
+  MeasurementPeriodList: [],
 };
 
 describe("ProposalsService", () => {

@@ -6,6 +6,10 @@ import {
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
 import { Ownable } from "src/common/schemas/ownable.schema";
+import {
+  MeasurementPeriod,
+  MeasurementPeriodSchema,
+} from "./measurement-peroid.schema";
 
 export type ProposalDocument = Proposal & Document;
 @Schema({
@@ -55,6 +59,10 @@ export class Proposal extends Ownable {
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
   @Prop([AttachmentSchema])
   attachments: Attachment[];
+
+  @ApiProperty({ type: MeasurementPeriod })
+  @Prop({ type: MeasurementPeriodSchema })
+  MeasurementPeriodList: MeasurementPeriod[];
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(Proposal);
