@@ -3,6 +3,7 @@ import { ProposalsService } from "./proposals.service";
 import { ProposalsController } from "./proposals.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Proposal, ProposalSchema } from "./schemas/proposal.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { Proposal, ProposalSchema } from "./schemas/proposal.schema";
     ]),
   ],
   controllers: [ProposalsController],
-  providers: [ProposalsService],
+  providers: [ProposalsService, CaslAbilityFactory],
 })
 export class ProposalsModule {}

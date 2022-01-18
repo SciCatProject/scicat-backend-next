@@ -12,6 +12,7 @@ import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { Proposal } from "src/proposals/schemas/proposal.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
@@ -22,6 +23,7 @@ type Subjects =
       | typeof Datablock
       | typeof Dataset
       | typeof OrigDatablock
+      | typeof Proposal
       | typeof User
       | typeof UserIdentity
     >
@@ -58,6 +60,9 @@ export class CaslAbilityFactory {
       },
     );
 
+    can(Action.Read, Proposal, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Read, Proposal, { accessGroups: { $in: user.currentGroups } });
+
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, OrigDatablock, {
@@ -81,6 +86,11 @@ export class CaslAbilityFactory {
       can(Action.Update, Dataset);
 
       can(Action.Create, Attachment);
+    }
+    if (user.currentGroups.includes(Role.ProposalIngestor)) {
+      cannot(Action.Delete, Proposal);
+      can(Action.Create, Proposal);
+      can(Action.Update, Proposal);
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });
