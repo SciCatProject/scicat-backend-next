@@ -6,7 +6,7 @@ import { UsersService } from "src/users/users.service";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
 import { FilterQuery } from "mongoose";
-import { UserDocument } from "src/users/schemas/user.schema";
+import { User, UserDocument } from "src/users/schemas/user.schema";
 
 @Injectable()
 export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
@@ -17,7 +17,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     super(configService.get<Record<string, unknown>>("ldap"));
   }
 
-  async validate(payload: Record<string, unknown>) {
+  async validate(
+    payload: Record<string, unknown>,
+  ): Promise<Omit<User, "password">> {
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: `ldap.${payload.displayName}` },
@@ -70,8 +72,10 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       await this.usersService.createUserIdentity(createUserIdentity);
     }
 
-    const user = await this.usersService.findOne(userFilter);
+    const foundUser = await this.usersService.findOne(userFilter);
+    const jsonUser = JSON.parse(JSON.stringify(foundUser));
+    const { password, ...user } = jsonUser;
 
-    return JSON.parse(JSON.stringify(user));
+    return user;
   }
 }
