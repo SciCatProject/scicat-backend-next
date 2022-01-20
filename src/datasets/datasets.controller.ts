@@ -156,9 +156,8 @@ export class DatasetsController {
     description: "Database filter to apply when finding a Dataset",
     required: false,
   })
-  async findOne(@Query("filter") filters: string): Promise<Dataset | null> {
-    console.log({ filters });
-    const jsonFilters: IDatasetFilters = JSON.parse(filters);
+  async findOne(@Query("filter") filters?: string): Promise<Dataset | null> {
+    const jsonFilters: IDatasetFilters = filters ? JSON.parse(filters) : {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
     if (dataset) {
