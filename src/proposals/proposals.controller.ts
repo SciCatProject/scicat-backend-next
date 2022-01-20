@@ -68,7 +68,6 @@ export class ProposalsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Proposal[]> {
-    console.log({ filters });
     const parsedFilters: IProposalFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
