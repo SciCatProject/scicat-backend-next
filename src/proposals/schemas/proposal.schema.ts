@@ -6,6 +6,7 @@ import {
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
 import { Ownable } from "src/common/schemas/ownable.schema";
+import { Dataset, DatasetSchema } from "src/datasets/schemas/dataset.schema";
 import {
   MeasurementPeriod,
   MeasurementPeriodSchema,
@@ -66,6 +67,10 @@ export class Proposal extends Ownable {
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
   @Prop([AttachmentSchema])
   attachments: Attachment[];
+
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Dataset) } })
+  @Prop([DatasetSchema])
+  datasets: Dataset[];
 
   @ApiProperty({ type: MeasurementPeriod })
   @Prop({ type: MeasurementPeriodSchema })

@@ -43,6 +43,7 @@ import { DatablocksModule } from "src/datablocks/datablocks.module";
     ]),
     OrigdatablocksModule,
   ],
+  exports: [DatasetsService],
   controllers: [DatasetsController],
   providers: [DatasetsService, CaslAbilityFactory],
 })

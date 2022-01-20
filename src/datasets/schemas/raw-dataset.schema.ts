@@ -51,6 +51,10 @@ export class RawDataset {
   @ApiProperty()
   @Prop({ type: Object })
   scientificMetadata: Record<string, unknown>;
+
+  @ApiProperty({ type: String, required: false })
+  @Prop({ type: String, ref: "Proposal", required: false })
+  proposalId: string;
 }
 
 export const RawDatasetSchema = SchemaFactory.createForClass(RawDataset);

@@ -54,6 +54,7 @@ const mockDataset: RawDataset = {
   creationLocation: "test",
   dataFormat: "Test Format",
   scientificMetadata: {},
+  proposalId: "ABCDEF",
 };
 
 describe("DatasetsService", () => {

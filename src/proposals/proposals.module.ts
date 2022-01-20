@@ -5,10 +5,12 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Proposal, ProposalSchema } from "./schemas/proposal.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [
     AttachmentsModule,
+    DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
         name: Proposal.name,

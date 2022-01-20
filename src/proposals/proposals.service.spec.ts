@@ -22,6 +22,7 @@ const mockProposal: Proposal = {
   createdBy: "proposalIngestor",
   updatedBy: "proposalIngestor",
   attachments: [],
+  datasets: [],
   MeasurementPeriodList: [],
 };
 
