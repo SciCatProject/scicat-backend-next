@@ -12,6 +12,7 @@ import { AttachmentsModule } from "./attachments/attachments.module";
 import { OrigdatablocksModule } from "./origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "./datablocks/datablocks.module";
 import { ProposalsModule } from "./proposals/proposals.module";
+import { SamplesModule } from "./samples/samples.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ProposalsModule } from "./proposals/proposals.module";
     OrigdatablocksModule,
     DatablocksModule,
     ProposalsModule,
+    SamplesModule,
   ],
   controllers: [],
   providers: [
