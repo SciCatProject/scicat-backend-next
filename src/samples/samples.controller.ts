@@ -25,7 +25,6 @@ import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { CreateDatasetDto } from "src/datasets/dto/create-dataset.dto";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 
