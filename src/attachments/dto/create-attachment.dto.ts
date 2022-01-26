@@ -33,4 +33,7 @@ export class CreateAttachmentDto {
 
   @ApiProperty({ type: String, required: false })
   readonly proposalId: string;
+
+  @ApiProperty({ type: String, required: false })
+  readonly sampleId: string;
 }
