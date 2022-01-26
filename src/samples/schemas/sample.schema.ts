@@ -38,6 +38,10 @@ export class Sample extends Ownable {
   createdAt: Date;
 
   @ApiProperty()
+  @Prop({ type: Date })
+  updatedAt: Date;
+
+  @ApiProperty()
   @Prop({ type: Object })
   sampleCharacteristics: Record<string, unknown>;
 
