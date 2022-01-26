@@ -63,7 +63,7 @@ export class ProposalsController {
     return this.proposalsService.findAll(proposalFilters);
   }
 
-  // GET /fullquery
+  // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get("/fullquery")
@@ -77,7 +77,7 @@ export class ProposalsController {
     return this.proposalsService.fullquery(parsedFilters);
   }
 
-  // GET /fullfacet
+  // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get("/fullfacet")
