@@ -57,6 +57,34 @@ export class SamplesController {
     return this.samplesService.findAll(sampleFilters);
   }
 
+  // GET /samples/fullquery
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @Get("/fullquery")
+  async fullquery(
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<Sample[]> {
+    const parsedFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
+    };
+    return this.samplesService.fullquery(parsedFilters);
+  }
+
+  // GET /samples/metadataKeys
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @Get("/metadataKeys")
+  async metadataKeys(
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<string[]> {
+    const parsedFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
+    };
+    return this.samplesService.metadataKeys(parsedFilters);
+  }
+
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))

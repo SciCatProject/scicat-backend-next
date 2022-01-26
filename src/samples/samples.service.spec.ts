@@ -1,3 +1,4 @@
+import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
@@ -28,6 +29,7 @@ describe("SamplesService", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        ConfigService,
         SamplesService,
         {
           provide: getModelToken("Sample"),

@@ -6,10 +6,12 @@ import { DatasetsModule } from "src/datasets/datasets.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Sample, SampleSchema } from "./schemas/sample.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
     AttachmentsModule,
+    ConfigModule,
     DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
