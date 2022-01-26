@@ -16,4 +16,10 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
 
   @ApiProperty({ type: Object })
   readonly scientificMetadata: Record<string, unknown>;
+
+  @ApiProperty({ type: String, required: true })
+  readonly proposalId: string;
+
+  @ApiProperty({ type: String, required: false })
+  readonly sampleId: string;
 }

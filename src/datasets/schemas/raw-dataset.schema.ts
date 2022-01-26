@@ -55,6 +55,10 @@ export class RawDataset {
   @ApiProperty({ type: String, required: false })
   @Prop({ type: String, ref: "Proposal", required: false })
   proposalId: string;
+
+  @ApiProperty({ type: String, required: false })
+  @Prop({ type: String, ref: "Sample", required: false })
+  sampleId: string;
 }
 
 export const RawDatasetSchema = SchemaFactory.createForClass(RawDataset);
