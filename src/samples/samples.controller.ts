@@ -19,12 +19,19 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Sample, SampleDocument } from "./schemas/sample.schema";
 import { FilterQuery } from "mongoose";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 
 @ApiBearerAuth()
 @ApiTags("samples")
 @Controller("samples")
 export class SamplesController {
-  constructor(private readonly samplesService: SamplesService) {}
+  constructor(
+    private readonly attachmentsService: AttachmentsService,
+    private readonly samplesService: SamplesService,
+  ) {}
 
   // POST /samples
   @UseGuards(PoliciesGuard)
@@ -70,5 +77,60 @@ export class SamplesController {
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.samplesService.remove({ sampleId: id });
+  }
+
+  // POST /samples/:id/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, Attachment),
+  )
+  @Post("/:id/attachments")
+  async createAttachments(
+    @Param("id") id: string,
+    @Body() createAttachmentDto: CreateAttachmentDto,
+  ): Promise<Attachment> {
+    const createAttachment = { ...createAttachmentDto, sampleId: id };
+    return this.attachmentsService.create(createAttachment);
+  }
+
+  // GET /samples/:id/attachments
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @Get("/:id/attachments")
+  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
+    return this.attachmentsService.findAll({ sampleId: id });
+  }
+
+  // PATCH /samples/:id/attachments/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, Attachment),
+  )
+  @Patch("/:id/attachments/:fk")
+  async findOneAttachmentAndUpdate(
+    @Param("id") sampleId: string,
+    @Param("fk") attachmentId: string,
+    @Body() updateAttachmentDto: UpdateAttachmentDto,
+  ): Promise<Attachment | null> {
+    return this.attachmentsService.findOneAndUpdate(
+      { _id: attachmentId, sampleId },
+      updateAttachmentDto,
+    );
+  }
+
+  // DELETE /samples/:id/attachments/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, Attachment),
+  )
+  @Delete("/:id/attachments/:fk")
+  async findOneAttachmentAndRemove(
+    @Param("id") sampleId: string,
+    @Param("fk") attachmentId: string,
+  ): Promise<unknown> {
+    return this.attachmentsService.findOneAndRemove({
+      _id: attachmentId,
+      sampleId,
+    });
   }
 }
