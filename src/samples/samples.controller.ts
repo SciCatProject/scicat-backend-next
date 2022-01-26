@@ -23,6 +23,11 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { CreateDatasetDto } from "src/datasets/dto/create-dataset.dto";
+import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
+import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -30,6 +35,7 @@ import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 export class SamplesController {
   constructor(
     private readonly attachmentsService: AttachmentsService,
+    private readonly datasetsService: DatasetsService,
     private readonly samplesService: SamplesService,
   ) {}
 
@@ -132,5 +138,53 @@ export class SamplesController {
       _id: attachmentId,
       sampleId,
     });
+  }
+
+  // POST /samples/:id/datasets
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  @Post("/:id/datasets")
+  async createDataset(
+    @Param("id") id: string,
+    @Body() createRawDatasetDto: CreateRawDatasetDto,
+  ): Promise<Dataset> {
+    const createDataset = { ...createRawDatasetDto, sampleId: id };
+    return this.datasetsService.create(createDataset);
+  }
+
+  // GET /samples/:id/datasets
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @Get("/:id/datasets")
+  async findAllDatasets(
+    @Param("id") sampleId: string,
+  ): Promise<Dataset[] | null> {
+    return this.datasetsService.findAll({ where: { sampleId } });
+  }
+
+  // PATCH /samples/:id/datasets/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @Patch("/:id/datasets/:fk")
+  async findOneDatasetAndUpdate(
+    @Param("id") sampleId: string,
+    @Param("fk") datasetId: string,
+    @Body() updateRawDatasetDto: UpdateRawDatasetDto,
+  ): Promise<Dataset | null> {
+    return this.datasetsService.findByIdAndUpdate(
+      datasetId,
+      updateRawDatasetDto,
+    );
+  }
+
+  // DELETE /samples/:id/datasets/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
+  @Delete("/:id/datasets/:fk")
+  async findOneDatasetAndRemove(
+    @Param("id") sampleId: string,
+    @Param("fk") datasetId: string,
+  ): Promise<unknown> {
+    return this.datasetsService.findByIdAndDelete(datasetId);
   }
 }
