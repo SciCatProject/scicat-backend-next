@@ -10,6 +10,7 @@ const mockAttachment: Attachment = {
   caption: "Test caption",
   datasetId: "testDatasetId",
   proposalId: "testProposalId",
+  sampleId: "testSampleId",
   ownerGroup: "test",
   accessGroups: ["accessTest"],
   createdBy: "testUser",
