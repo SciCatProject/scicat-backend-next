@@ -1,13 +1,6 @@
 import { FilterQuery } from "mongoose";
-import { ScientificRelation } from "src/common/scientific-relation.enum";
+import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { DatasetDocument } from "../schemas/dataset.schema";
-
-export interface IScientificFilter {
-  lhs: string;
-  relation: ScientificRelation;
-  rhs: string | number;
-  unit: string | undefined;
-}
 
 interface IDatasetFields {
   mode?: Record<string, unknown>;

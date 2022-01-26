@@ -1,7 +1,7 @@
 import { unit } from "mathjs";
-import { IScientificFilter } from "src/datasets/interfaces/dataset-filters.interface";
 import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
+import { IScientificFilter } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
 export const convertToSI = (
