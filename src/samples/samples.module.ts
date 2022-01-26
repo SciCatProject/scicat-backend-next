@@ -5,6 +5,7 @@ import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Sample, SampleSchema } from "./schemas/sample.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { Sample, SampleSchema } from "./schemas/sample.schema";
     ]),
   ],
   controllers: [SamplesController],
-  providers: [SamplesService],
+  providers: [SamplesService, CaslAbilityFactory],
 })
 export class SamplesModule {}
