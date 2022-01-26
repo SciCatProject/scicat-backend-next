@@ -1,4 +1,6 @@
+import { FilterQuery } from "mongoose";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
+import { SampleDocument } from "../schemas/sample.schema";
 
 export enum SampleField {
   Text = "text",
@@ -13,6 +15,8 @@ export interface ISampleFields {
 }
 
 export interface ISampleFilters {
+  where?: FilterQuery<SampleDocument>;
+  include?: { relation: string }[];
   fields?: ISampleFields;
   limits?: {
     skip: number;

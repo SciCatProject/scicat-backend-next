@@ -27,6 +27,7 @@ import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
+import { ISampleFilters } from "./interfaces/sample-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -85,11 +86,48 @@ export class SamplesController {
     return this.samplesService.metadataKeys(parsedFilters);
   }
 
+  // GET /samples/findOne
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @Get("/findOne")
+  async findOne(@Query("filter") filters?: string): Promise<Sample | null> {
+    const jsonFilters: ISampleFilters = filters ? JSON.parse(filters) : {};
+    const whereFilters = jsonFilters.where ?? {};
+    const sample = await this.samplesService.findOne(whereFilters);
+
+    if (sample) {
+      const includeFilters = jsonFilters.include ?? [];
+      await Promise.all(
+        includeFilters.map(async ({ relation }) => {
+          switch (relation) {
+            case "attachments": {
+              sample.attachments = await this.attachmentsService.findAll({
+                sampleId: sample.sampleId,
+              });
+              break;
+            }
+            case "datasets": {
+              const datasets = await this.datasetsService.findAll({
+                where: { sampleId: sample.sampleId },
+              });
+              if (datasets) {
+                sample.datasets = datasets;
+              }
+              break;
+            }
+          }
+        }),
+      );
+    }
+
+    return sample;
+  }
+
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
   @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<Sample | null> {
+  async findById(@Param("id") id: string): Promise<Sample | null> {
     return this.samplesService.findOne({ sampleId: id });
   }
 
