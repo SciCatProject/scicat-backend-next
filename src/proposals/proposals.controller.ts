@@ -163,7 +163,7 @@ export class ProposalsController {
   @Delete("/:id/attachments/:fk")
   async findOneAttachmentAndRemove(
     @Param("id") proposalId: string,
-    attachmentId: string,
+    @Param("fk") attachmentId: string,
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
