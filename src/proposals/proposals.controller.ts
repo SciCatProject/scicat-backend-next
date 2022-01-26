@@ -29,6 +29,8 @@ import {
   IProposalFacets,
   IProposalFilters,
 } from "./interfaces/proposal-filters.interface";
+import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
+import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -171,6 +173,18 @@ export class ProposalsController {
     });
   }
 
+  // POST /proposals/:id/datasets
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  @Post("/:id/datasets")
+  async createDataset(
+    @Param("id") id: string,
+    createRawDatasetDto: CreateRawDatasetDto,
+  ): Promise<Dataset> {
+    const createRawDataset = { ...createRawDatasetDto, proposalId: id };
+    return this.datasetsService.create(createRawDataset);
+  }
+
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
@@ -179,5 +193,31 @@ export class ProposalsController {
     @Param("id") proposalId: string,
   ): Promise<Dataset[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
+  }
+
+  // PATCH /proposals/:id/datasets/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @Patch("/:id/datasets/:fk")
+  async findOneDatasetAndUpdate(
+    @Param("id") proposalId: string,
+    @Param("fk") datasetId: string,
+    @Body() updateRawDatasetDto: UpdateRawDatasetDto,
+  ): Promise<Dataset | null> {
+    return this.datasetsService.findByIdAndUpdate(
+      datasetId,
+      updateRawDatasetDto,
+    );
+  }
+
+  // DELETE /proposals/:id/datasets/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
+  @Delete("/:id/datasets/:fk")
+  async findOneDatasetAndRemove(
+    @Param("id") proposalId: string,
+    @Param("fk") datasetId: string,
+  ): Promise<unknown> {
+    return this.datasetsService.findByIdAndDelete(datasetId);
   }
 }
