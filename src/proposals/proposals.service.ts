@@ -22,8 +22,29 @@ export class ProposalsService {
     return createdProposal.save();
   }
 
-  async findAll(filter: FilterQuery<ProposalDocument>): Promise<Proposal[]> {
-    return this.proposalModel.find(filter).exec();
+  async findAll(filters: IProposalFilters): Promise<Proposal[]> {
+    const whereFilters: FilterQuery<ProposalDocument> = filters.where ?? {};
+    let limit = 100;
+    let skip = 0;
+    let sort = {};
+    if (filters.limits) {
+      if (filters.limits.limit) {
+        limit = filters.limits.limit;
+      }
+      if (filters.limits.skip) {
+        skip = filters.limits.skip;
+      }
+      if (filters.limits.order) {
+        const [field, direction] = filters.limits.order.split(":");
+        sort = { [field]: direction };
+      }
+    }
+    return this.proposalModel
+      .find(whereFilters)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort)
+      .exec();
   }
 
   async fullquery(filter: IProposalFilters): Promise<Proposal[]> {

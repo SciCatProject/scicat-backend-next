@@ -1,3 +1,6 @@
+import { FilterQuery } from "mongoose";
+import { ProposalDocument } from "../schemas/proposal.schema";
+
 export enum ProposalField {
   Text = "text",
   StartTime = "startTime",
@@ -29,6 +32,8 @@ export interface IProposalFields {
 }
 
 export interface IProposalFilters {
+  where?: FilterQuery<ProposalDocument>;
+  include?: { relation: string };
   fields?: IProposalFields;
   limits?: {
     skip: number;

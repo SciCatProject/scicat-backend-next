@@ -17,8 +17,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
-import { FilterQuery } from "mongoose";
+import { Proposal } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
@@ -61,10 +60,8 @@ export class ProposalsController {
     description: "Database filters to apply when retrieve all proposals",
     required: false,
   })
-  async findAll(
-    @Query() filters?: FilterQuery<ProposalDocument>,
-  ): Promise<Proposal[]> {
-    const proposalFilters = filters ?? {};
+  async findAll(@Query("filters") filters?: string): Promise<Proposal[]> {
+    const proposalFilters: IProposalFilters = JSON.parse(filters ?? "{}");
     return this.proposalsService.findAll(proposalFilters);
   }
 
