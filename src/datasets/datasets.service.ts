@@ -43,7 +43,9 @@ export class DatasetsService {
   }
 
   async findAll(filter: IDatasetFilters): Promise<Dataset[] | null> {
-    let modifiers: QueryOptions = {};
+    let modifiers: QueryOptions = {
+      limit: 100,
+    };
     let filterQuery: FilterQuery<DatasetDocument> = {};
 
     if (!this.datasetModel.discriminators) {
