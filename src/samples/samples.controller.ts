@@ -12,7 +12,7 @@ import {
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -51,6 +51,11 @@ export class SamplesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
   @Get()
+  @ApiQuery({
+    name: "filters",
+    description: "Database filters to apply when retrieve all samples",
+    required: false,
+  })
   async findAll(
     @Query() filters?: FilterQuery<SampleDocument>,
   ): Promise<Sample[]> {

@@ -12,7 +12,7 @@ import {
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -56,6 +56,11 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get()
+  @ApiQuery({
+    name: "filters",
+    description: "Database filters to apply when retrieve all proposals",
+    required: false,
+  })
   async findAll(
     @Query() filters?: FilterQuery<ProposalDocument>,
   ): Promise<Proposal[]> {
