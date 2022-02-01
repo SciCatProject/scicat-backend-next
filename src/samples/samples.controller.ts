@@ -17,8 +17,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Sample, SampleDocument } from "./schemas/sample.schema";
-import { FilterQuery } from "mongoose";
+import { Sample } from "./schemas/sample.schema";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -56,10 +55,9 @@ export class SamplesController {
     description: "Database filters to apply when retrieve all samples",
     required: false,
   })
-  async findAll(
-    @Query() filters?: FilterQuery<SampleDocument>,
-  ): Promise<Sample[]> {
-    const sampleFilters = filters ?? {};
+  async findAll(@Query("filters") filters?: string): Promise<Sample[]> {
+    console.log({ filters });
+    const sampleFilters: ISampleFilters = JSON.parse(filters ?? "{}");
     return this.samplesService.findAll(sampleFilters);
   }
 

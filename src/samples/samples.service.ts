@@ -23,8 +23,29 @@ export class SamplesService {
     return createdSample.save();
   }
 
-  async findAll(filter: FilterQuery<SampleDocument>): Promise<Sample[]> {
-    return this.sampleModel.find(filter).exec();
+  async findAll(filters: ISampleFilters): Promise<Sample[]> {
+    const whereFilters: FilterQuery<SampleDocument> = filters.where ?? {};
+    let limit = 100;
+    let skip = 0;
+    let sort = {};
+    if (filters.limits) {
+      if (filters.limits.limit) {
+        limit = filters.limits.limit;
+      }
+      if (filters.limits.skip) {
+        skip = filters.limits.skip;
+      }
+      if (filters.limits.order) {
+        const [field, direction] = filters.limits.order.split(":");
+        sort = { [field]: direction };
+      }
+    }
+    return this.sampleModel
+      .find(whereFilters)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort)
+      .exec();
   }
 
   async fullquery(filters: ISampleFilters): Promise<Sample[]> {
