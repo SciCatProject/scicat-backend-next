@@ -33,7 +33,7 @@ export interface IProposalFields {
 
 export interface IProposalFilters {
   where?: FilterQuery<ProposalDocument>;
-  include?: { relation: string };
+  include?: { relation: string }[];
   fields?: IProposalFields;
   limits?: {
     skip: number;
