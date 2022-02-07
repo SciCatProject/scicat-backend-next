@@ -43,7 +43,7 @@ export class DatasetsService {
   }
 
   async findAll(filter: IDatasetFilters): Promise<Dataset[] | null> {
-    let modifiers: QueryOptions = {
+    const modifiers: QueryOptions = {
       limit: 100,
     };
     let filterQuery: FilterQuery<DatasetDocument> = {};
@@ -61,13 +61,13 @@ export class DatasetsService {
         if (filter.limits.limit) {
           modifiers.limit = filter.limits.limit;
         }
-        if (filter.limits.skip) {
+        if (filter.limits.skip >= 0) {
           modifiers.skip = filter.limits.skip;
         }
         if (filter.limits.order) {
           const [field, direction] = filter.limits.order.split(":");
           const sort = { [field]: direction };
-          modifiers = { ...filter.limits, sort };
+          modifiers.sort = sort;
         }
       }
 
@@ -139,7 +139,29 @@ export class DatasetsService {
     const rawDatasets = await rawDatasetModel
       .find(filterQuery, null, modifiers)
       .exec();
-    return ([] as Dataset[]).concat(derivedDatasets, rawDatasets);
+    let datasets = ([] as Dataset[]).concat(derivedDatasets, rawDatasets);
+
+    if (modifiers.sort) {
+      const sortField = Object.keys(modifiers.sort)[0] as keyof Dataset;
+      const order = modifiers.sort[sortField];
+      datasets = datasets.sort((a, b) => {
+        if (order === "asc") {
+          return a[sortField] < b[sortField]
+            ? 1
+            : a[sortField] > b[sortField]
+            ? -1
+            : 0;
+        } else {
+          return a[sortField] < b[sortField]
+            ? -1
+            : a[sortField] > b[sortField]
+            ? 1
+            : 0;
+        }
+      });
+    }
+
+    return datasets.slice(0, modifiers.limit);
   }
 
   async fullFacet(filters: IDatasetFacets): Promise<Record<string, unknown>[]> {
