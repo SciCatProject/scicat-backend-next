@@ -42,7 +42,32 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(filter: IDatasetFilters): Promise<Dataset[] | null> {
+  async findAll(filters: IDatasetFilters): Promise<Dataset[]> {
+    const whereFilters: FilterQuery<DatasetDocument> = filters.where ?? {};
+    let limit = 100;
+    let skip = 0;
+    let sort = {};
+    if (filters.limits) {
+      if (filters.limits.limit) {
+        limit = filters.limits.limit;
+      }
+      if (filters.limits.skip) {
+        skip = filters.limits.skip;
+      }
+      if (filters.limits.order) {
+        const [field, direction] = filters.limits.order.split(":");
+        sort = { [field]: direction };
+      }
+    }
+    return this.datasetModel
+      .find(whereFilters)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort)
+      .exec();
+  }
+
+  async fullquery(filter: IDatasetFilters): Promise<Dataset[] | null> {
     const modifiers: QueryOptions = {
       limit: 100,
     };

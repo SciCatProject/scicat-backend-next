@@ -20,7 +20,7 @@ import {
 import { DatasetsService } from "./datasets.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
-import { Dataset } from "./schemas/dataset.schema";
+import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -45,6 +45,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
+import { FilterQuery } from "mongoose";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -80,15 +81,58 @@ export class DatasetsController {
     required: false,
   })
   async findAll(
-    @Query() filters?: { fields?: string; limits?: string },
+    @Query() filters?: { filters: string; fields: string },
   ): Promise<Dataset[] | null> {
-    const parsedFilters: IDatasetFilters = filters
-      ? {
-          fields: JSON.parse(filters.fields ?? "{}"),
-          limits: JSON.parse(filters.limits ?? "{}"),
-        }
-      : { fields: "{}", limits: "{}" };
-    return this.datasetsService.findAll(parsedFilters);
+    const jsonFilters: IDatasetFilters = filters
+      ? JSON.parse(filters.filters)
+      : {};
+    const jsonFields: FilterQuery<DatasetDocument> = filters
+      ? JSON.parse(filters.fields)
+      : {};
+    const whereFilters: FilterQuery<DatasetDocument> = {
+      ...jsonFilters.where,
+      ...jsonFields,
+    } ?? {
+      ...jsonFields,
+    };
+    const datasetFilters: IDatasetFilters = {
+      where: whereFilters,
+      limits: jsonFilters.limits,
+    };
+    const datasets = await this.datasetsService.findAll(datasetFilters);
+    if (datasets && datasets.length > 0) {
+      const includeFilters = jsonFilters.include ?? [];
+      await Promise.all(
+        datasets.map(async (dataset) => {
+          await Promise.all(
+            includeFilters.map(async ({ relation }) => {
+              switch (relation) {
+                case "attachments": {
+                  dataset.attachments = await this.attachmentsService.findAll({
+                    datasetId: dataset.pid,
+                  });
+                  break;
+                }
+                case "origdatablocks": {
+                  dataset.origdatablocks =
+                    await this.origDatablocksService.findAll({
+                      datasetId: dataset.pid,
+                    });
+                  break;
+                }
+                case "datablocks": {
+                  dataset.datablocks = await this.datablocksService.findAll({
+                    datasetId: dataset.pid,
+                  });
+                  break;
+                }
+              }
+            }),
+          );
+        }),
+      );
+    }
+    return datasets;
   }
 
   // GET /fullquery
@@ -107,7 +151,7 @@ export class DatasetsController {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
-    return this.datasetsService.findAll(parsedFilters);
+    return this.datasetsService.fullquery(parsedFilters);
   }
 
   // GET /fullfacets
