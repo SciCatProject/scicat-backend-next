@@ -56,7 +56,6 @@ export class SamplesController {
     required: false,
   })
   async findAll(@Query("filters") filters?: string): Promise<Sample[]> {
-    console.log({ filters });
     const sampleFilters: ISampleFilters = JSON.parse(filters ?? "{}");
     return this.samplesService.findAll(sampleFilters);
   }
