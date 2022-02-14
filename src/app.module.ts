@@ -13,6 +13,7 @@ import { OrigdatablocksModule } from "./origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "./datablocks/datablocks.module";
 import { ProposalsModule } from "./proposals/proposals.module";
 import { SamplesModule } from "./samples/samples.module";
+import { PublishedDataModule } from "./published-data/published-data.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SamplesModule } from "./samples/samples.module";
     DatablocksModule,
     ProposalsModule,
     SamplesModule,
+    PublishedDataModule,
   ],
   controllers: [],
   providers: [
