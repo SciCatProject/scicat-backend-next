@@ -8,8 +8,8 @@ import {
   Delete,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
-import { CreatePublishedDatumDto } from "./dto/create-published-datum.dto";
-import { UpdatePublishedDatumDto } from "./dto/update-published-datum.dto";
+import { CreatePublishedDatumDto } from "./dto/create-published-data.dto";
+import { UpdatePublishedDatumDto } from "./dto/update-published-data.dto";
 
 @Controller("published-data")
 export class PublishedDataController {

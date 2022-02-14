@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { CreatePublishedDatumDto } from "./dto/create-published-datum.dto";
-import { UpdatePublishedDatumDto } from "./dto/update-published-datum.dto";
+import { CreatePublishedDatumDto } from "./dto/create-published-data.dto";
+import { UpdatePublishedDatumDto } from "./dto/update-published-data.dto";
 
 @Injectable()
 export class PublishedDataService {
