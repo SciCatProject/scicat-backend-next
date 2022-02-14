@@ -8,16 +8,16 @@ import {
   Delete,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
-import { CreatePublishedDatumDto } from "./dto/create-published-data.dto";
-import { UpdatePublishedDatumDto } from "./dto/update-published-data.dto";
+import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
+import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 
 @Controller("published-data")
 export class PublishedDataController {
   constructor(private readonly publishedDataService: PublishedDataService) {}
 
   @Post()
-  create(@Body() createPublishedDatumDto: CreatePublishedDatumDto) {
-    return this.publishedDataService.create(createPublishedDatumDto);
+  create(@Body() createPublishedDataDto: CreatePublishedDataDto) {
+    return this.publishedDataService.create(createPublishedDataDto);
   }
 
   @Get()
@@ -33,9 +33,9 @@ export class PublishedDataController {
   @Patch(":id")
   update(
     @Param("id") id: string,
-    @Body() updatePublishedDatumDto: UpdatePublishedDatumDto,
+    @Body() updatePublishedDataDto: UpdatePublishedDataDto,
   ) {
-    return this.publishedDataService.update(+id, updatePublishedDatumDto);
+    return this.publishedDataService.update(+id, updatePublishedDataDto);
   }
 
   @Delete(":id")

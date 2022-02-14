@@ -1,6 +1,6 @@
 import { PartialType } from "@nestjs/swagger";
-import { CreatePublishedDatumDto } from "./create-published-data.dto";
+import { CreatePublishedDataDto } from "./create-published-data.dto";
 
-export class UpdatePublishedDatumDto extends PartialType(
-  CreatePublishedDatumDto,
+export class UpdatePublishedDataDto extends PartialType(
+  CreatePublishedDataDto,
 ) {}

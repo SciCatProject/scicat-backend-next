@@ -1,1 +1,1 @@
-export class CreatePublishedDatumDto {}
+export class CreatePublishedDataDto {}

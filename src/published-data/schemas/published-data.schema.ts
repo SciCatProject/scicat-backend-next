@@ -1,1 +1,1 @@
-export class PublishedDatum {}
+export class PublishedData {}
