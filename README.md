@@ -24,6 +24,7 @@
 
 Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
 
+- `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
 - `JWT_SECRET` [string] The secret for your JWT token, used for authorization.
 - `JWT_EXPIRES_IN` [number] *Optional*  How long, in seconds, the JWT token is valid. Defaults to `3600`.
 - `LDAP_URL` [string] *Optional* The URL to your LDAP server.
@@ -34,6 +35,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `METADATA_KEYS_RETURN_LIMIT` [number] *Optional* The return limit for the `/Datasets/metadataKeys` endpoint.
 - `METADATA_PARENT_INSTANCES_RETURN_LIMIT` *Optional* The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint.
 - `MONGODB_URI` [string] The URI for your MongoDB instance.
+- `PID_PREFIX` [string] The facility PID prefix, with trailing slash.
 - `PORT` [number] *Optional* The port on which you want to access the app. Defaults to `3000`.
 - `SITE` [string] The name of your site.
 
