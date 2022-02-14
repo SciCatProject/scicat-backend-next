@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Ownable } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type PublishedDataDocument = PublishedData & Document;
@@ -9,7 +8,7 @@ export type PublishedDataDocument = PublishedData & Document;
 @Schema({
   collection: "PublishedData",
 })
-export class PublishedData extends Ownable {
+export class PublishedData {
   @Prop({ type: String, unique: true })
   _id: string;
 
