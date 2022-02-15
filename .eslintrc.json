@@ -48,7 +48,6 @@
       }
     ],
     "@typescript-eslint/semi": ["error", "always"],
-    "brace-style": ["error", "1tbs"],
     "no-constant-condition": ["error", { "checkLoops": false }]
   }
 }
