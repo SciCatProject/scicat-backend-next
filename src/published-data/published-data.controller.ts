@@ -21,8 +21,8 @@ import { PublishedData } from "./schemas/published-data.schema";
 import { IPublishedDataFilters } from "./interfaces/published-data-filters.interface";
 
 @ApiBearerAuth()
-@ApiTags("publisheddata")
-@Controller("published-data")
+@ApiTags("published data")
+@Controller("publisheddata")
 export class PublishedDataController {
   constructor(private readonly publishedDataService: PublishedDataService) {}
 
