@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
+  Logger,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -46,6 +47,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery } from "mongoose";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -76,59 +78,67 @@ export class DatasetsController {
   @UseInterceptors(PublicDatasetsInterceptor)
   @Get()
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description: "Database filters to apply when retrieve all datasets",
     required: false,
   })
   async findAll(
-    @Query() filters?: { filters: string; fields: string },
+    @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
-    const jsonFilters: IDatasetFilters = filters
-      ? JSON.parse(filters.filters)
-      : {};
-    const jsonFields: FilterQuery<DatasetDocument> = filters
-      ? JSON.parse(filters.fields)
-      : {};
+    console.log(JSON.stringify(filter));
+    const jsonFilters: IDatasetFilters =
+      filter && filter.filter ? JSON.parse(filter.filter) : {};
+    const jsonFields: FilterQuery<DatasetDocument> =
+      filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> = {
-      ...jsonFilters.where,
+      ...(jsonFilters && jsonFilters.where ? jsonFilters.where : {}),
       ...jsonFields,
     } ?? {
       ...jsonFields,
     };
     const datasetFilters: IDatasetFilters = {
       where: whereFilters,
-      limits: jsonFilters.limits,
     };
+    if (jsonFilters && jsonFilters.limits) {
+      datasetFilters.limits = jsonFilters.limits;
+    }
     const datasets = await this.datasetsService.findAll(datasetFilters);
     if (datasets && datasets.length > 0) {
-      const includeFilters = jsonFilters.include ?? [];
+      const includeFilters =
+        jsonFilters && jsonFilters.include ? jsonFilters.include : [];
       await Promise.all(
         datasets.map(async (dataset) => {
-          await Promise.all(
-            includeFilters.map(async ({ relation }) => {
-              switch (relation) {
-                case "attachments": {
-                  dataset.attachments = await this.attachmentsService.findAll({
-                    datasetId: dataset.pid,
-                  });
-                  break;
-                }
-                case "origdatablocks": {
-                  dataset.origdatablocks =
-                    await this.origDatablocksService.findAll({
+          if (includeFilters) {
+            await Promise.all(
+              includeFilters.map(async ({ relation }) => {
+                switch (relation) {
+                  case "attachments": {
+                    dataset.attachments = await this.attachmentsService.findAll(
+                      {
+                        datasetId: dataset.pid,
+                      },
+                    );
+                    break;
+                  }
+                  case "origdatablocks": {
+                    dataset.origdatablocks =
+                      await this.origDatablocksService.findAll({
+                        datasetId: dataset.pid,
+                      });
+                    break;
+                  }
+                  case "datablocks": {
+                    dataset.datablocks = await this.datablocksService.findAll({
                       datasetId: dataset.pid,
                     });
-                  break;
+                    break;
+                  }
                 }
-                case "datablocks": {
-                  dataset.datablocks = await this.datablocksService.findAll({
-                    datasetId: dataset.pid,
-                  });
-                  break;
-                }
-              }
-            }),
-          );
+              }),
+            );
+          } else {
+            dataset;
+          }
         }),
       );
     }
@@ -239,6 +249,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get("/:id")
   async findById(@Param("id") id: string): Promise<Dataset | null> {
+    Logger.log("Finding dataset with pid : " + id);
     return this.datasetsService.findOne({ pid: id });
   }
 
