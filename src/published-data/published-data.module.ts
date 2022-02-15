@@ -6,6 +6,7 @@ import {
   PublishedData,
   PublishedDataSchema,
 } from "./schemas/published-data.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   imports: [
@@ -29,6 +30,6 @@ import {
     ]),
   ],
   controllers: [PublishedDataController],
-  providers: [PublishedDataService],
+  providers: [PublishedDataService, CaslAbilityFactory],
 })
 export class PublishedDataModule {}

@@ -13,6 +13,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Proposal } from "src/proposals/schemas/proposal.schema";
+import { PublishedData } from "src/published-data/schemas/published-data.schema";
 import { Sample } from "src/samples/schemas/sample.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { User } from "src/users/schemas/user.schema";
@@ -25,6 +26,7 @@ type Subjects =
       | typeof Dataset
       | typeof OrigDatablock
       | typeof Proposal
+      | typeof PublishedData
       | typeof Sample
       | typeof User
       | typeof UserIdentity
