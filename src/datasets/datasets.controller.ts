@@ -86,27 +86,26 @@ export class DatasetsController {
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
     console.log(JSON.stringify(filter));
-    const jsonFilters: IDatasetFilters = (filter && filter.filter)
-       ? JSON.parse(filter.filter)
-      : {};
-    const jsonFields: FilterQuery<DatasetDocument> = (filter && filter.fields)
-      ? JSON.parse(filter.fields)
-      : {};
+    const jsonFilters: IDatasetFilters =
+      filter && filter.filter ? JSON.parse(filter.filter) : {};
+    const jsonFields: FilterQuery<DatasetDocument> =
+      filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> = {
-      ...( (jsonFilters && jsonFilters.where) ? jsonFilters.where : {}),
+      ...(jsonFilters && jsonFilters.where ? jsonFilters.where : {}),
       ...jsonFields,
     } ?? {
       ...jsonFields,
     };
     const datasetFilters: IDatasetFilters = {
-      where: whereFilters
-    }
+      where: whereFilters,
+    };
     if (jsonFilters && jsonFilters.limits) {
       datasetFilters.limits = jsonFilters.limits;
     }
     const datasets = await this.datasetsService.findAll(datasetFilters);
     if (datasets && datasets.length > 0) {
-      const includeFilters = ( jsonFilters && jsonFilters.include) ? jsonFilters.include : [];
+      const includeFilters =
+        jsonFilters && jsonFilters.include ? jsonFilters.include : [];
       await Promise.all(
         datasets.map(async (dataset) => {
           if (includeFilters) {
@@ -114,9 +113,11 @@ export class DatasetsController {
               includeFilters.map(async ({ relation }) => {
                 switch (relation) {
                   case "attachments": {
-                    dataset.attachments = await this.attachmentsService.findAll({
-                      datasetId: dataset.pid,
-                    });
+                    dataset.attachments = await this.attachmentsService.findAll(
+                      {
+                        datasetId: dataset.pid,
+                      },
+                    );
                     break;
                   }
                   case "origdatablocks": {
@@ -133,13 +134,11 @@ export class DatasetsController {
                     break;
                   }
                 }
-              })
+              }),
             );
-          }
-          else {
+          } else {
             dataset;
           }
-          
         }),
       );
     }
@@ -250,7 +249,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
   @Get("/:id")
   async findById(@Param("id") id: string): Promise<Dataset | null> {
-    Logger.log("Finding dataset with pid : " + id)
+    Logger.log("Finding dataset with pid : " + id);
     return this.datasetsService.findOne({ pid: id });
   }
 
