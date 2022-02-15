@@ -1,26 +1,72 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import { IPublishedDataFilters } from "./interfaces/published-data-filters.interface";
+import {
+  PublishedData,
+  PublishedDataDocument,
+} from "./schemas/published-data.schema";
 
 @Injectable()
 export class PublishedDataService {
-  create(createPublishedDataDto: CreatePublishedDataDto) {
-    return "This action adds a new publishedDatum";
+  constructor(
+    @InjectModel(PublishedData.name)
+    private publishedDataModel: Model<PublishedDataDocument>,
+  ) {}
+
+  async create(
+    createPublishedDataDto: CreatePublishedDataDto,
+  ): Promise<PublishedData> {
+    const createdPublishedData = new this.publishedDataModel(
+      createPublishedDataDto,
+    );
+    return createdPublishedData.save();
   }
 
-  findAll() {
-    return `This action returns all publishedData`;
+  async findAll(filters: IPublishedDataFilters): Promise<PublishedData[]> {
+    const whereFilters: FilterQuery<PublishedDataDocument> =
+      filters.where ?? {};
+    let limit = 100;
+    let skip = 0;
+    let sort = {};
+    if (filters.limits) {
+      if (filters.limits.limit) {
+        limit = filters.limits.limit;
+      }
+      if (filters.limits.skip) {
+        skip = filters.limits.skip;
+      }
+      if (filters.limits.order) {
+        const [field, direction] = filters.limits.order.split(":");
+        sort = { [field]: direction };
+      }
+    }
+    return this.publishedDataModel
+      .find(whereFilters)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort)
+      .exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} publishedDatum`;
+  async findOne(
+    filter: FilterQuery<PublishedDataDocument>,
+  ): Promise<PublishedData | null> {
+    return this.publishedDataModel.findOne(filter).exec();
   }
 
-  update(id: number, updatePublishedDataDto: UpdatePublishedDataDto) {
-    return `This action updates a #${id} publishedDatum`;
+  async update(
+    filter: FilterQuery<PublishedDataDocument>,
+    updatePublishedDataDto: UpdatePublishedDataDto,
+  ): Promise<PublishedData | null> {
+    return this.publishedDataModel
+      .findOneAndUpdate(filter, updatePublishedDataDto, { new: true })
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} publishedDatum`;
+  async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
+    return this.publishedDataModel.findOneAndRemove(filter).exec();
   }
 }
