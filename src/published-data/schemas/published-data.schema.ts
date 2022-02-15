@@ -98,6 +98,14 @@ export class PublishedData {
   @ApiProperty()
   @Prop({ type: String, required: false })
   downloadLink: string;
+
+  @ApiProperty()
+  @Prop({ type: Date, required: true })
+  createdAt: Date;
+
+  @ApiProperty()
+  @Prop({ type: Date, required: true })
+  updatedAt: Date;
 }
 
 export const PublishedDataSchema = SchemaFactory.createForClass(PublishedData);
