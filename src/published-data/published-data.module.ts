@@ -7,9 +7,14 @@ import {
   PublishedDataSchema,
 } from "./schemas/published-data.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { ProposalsModule } from "src/proposals/proposals.module";
 
 @Module({
   imports: [
+    AttachmentsModule,
+    DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
         name: PublishedData.name,
@@ -28,6 +33,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
         },
       },
     ]),
+    ProposalsModule,
   ],
   controllers: [PublishedDataController],
   providers: [PublishedDataService, CaslAbilityFactory],

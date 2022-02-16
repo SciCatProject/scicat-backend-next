@@ -17,3 +17,11 @@ export interface IPublishedDataFilters {
 export interface ICount {
   count: number;
 }
+
+export interface IFormPopulateData {
+  resourceType?: string;
+  description?: string;
+  title?: string;
+  abstract?: string;
+  thumbnail?: string;
+}

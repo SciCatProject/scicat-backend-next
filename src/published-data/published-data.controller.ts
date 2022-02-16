@@ -24,17 +24,27 @@ import {
 } from "./schemas/published-data.schema";
 import {
   ICount,
+  IFormPopulateData,
   IPublishedDataFilters,
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
 import { FilterQuery } from "mongoose";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { AttachmentsService } from "src/attachments/attachments.service";
 
 @ApiBearerAuth()
 @ApiTags("published data")
 @Controller("publisheddata")
 export class PublishedDataController {
-  constructor(private readonly publishedDataService: PublishedDataService) {}
+  constructor(
+    private readonly attachmentsService: AttachmentsService,
+    private readonly datasetsService: DatasetsService,
+    private readonly proposalsService: ProposalsService,
+    private readonly publishedDataService: PublishedDataService,
+  ) {}
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
@@ -93,6 +103,49 @@ export class PublishedDataController {
       publishedDataFilters.limits = jsonFilters.limits;
     }
     return this.publishedDataService.count(publishedDataFilters);
+  }
+
+  // GET /formpopulate
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, PublishedData),
+  )
+  @Get("/formpopulate")
+  @ApiQuery({
+    name: "pid",
+    description: "Dataset pid used to fetch form data.",
+    required: true,
+  })
+  async formPopulate(@Query("pid") pid: string) {
+    const formData: IFormPopulateData = {};
+    const dataset = await this.datasetsService.findOne({ pid });
+
+    let proposalId;
+    if (dataset) {
+      formData.resourceType = dataset?.type;
+      formData.description = dataset?.description;
+      proposalId = (dataset as unknown as RawDataset).proposalId;
+    }
+
+    let proposal;
+    if (proposalId) {
+      proposal = await this.proposalsService.findOne({ proposalId });
+    }
+
+    if (proposal) {
+      formData.title = proposal.title;
+      formData.abstract = proposal.abstract;
+    }
+
+    const attachment = await this.attachmentsService.findOne({
+      datasetId: pid,
+    });
+
+    if (attachment) {
+      formData.thumbnail = attachment.thumbnail;
+    }
+
+    return formData;
   }
 
   // GET /publisheddata/:id
