@@ -21,7 +21,6 @@ export class RegisteredInterceptor implements NestInterceptor {
         });
       }
     }
-    console.log(">>>>> Intercept");
     return next.handle();
   }
 }

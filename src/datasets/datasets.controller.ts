@@ -85,7 +85,6 @@ export class DatasetsController {
   async findAll(
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
-    console.log(JSON.stringify(filter));
     const jsonFilters: IDatasetFilters =
       filter && filter.filter ? JSON.parse(filter.filter) : {};
     const jsonFields: FilterQuery<DatasetDocument> =
