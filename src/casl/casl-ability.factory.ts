@@ -67,6 +67,8 @@ export class CaslAbilityFactory {
     can(Action.Read, Proposal, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Read, Proposal, { accessGroups: { $in: user.currentGroups } });
 
+    can(Action.Read, PublishedData);
+
     can(Action.Create, Sample);
     can(Action.Read, Sample, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Read, Sample, { accessGroups: { $in: user.currentGroups } });
