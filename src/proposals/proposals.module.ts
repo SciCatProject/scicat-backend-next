@@ -30,6 +30,7 @@ import { DatasetsModule } from "src/datasets/datasets.module";
       },
     ]),
   ],
+  exports: [ProposalsService],
   controllers: [ProposalsController],
   providers: [ProposalsService, CaslAbilityFactory],
 })
