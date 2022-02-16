@@ -13,3 +13,7 @@ export interface IPublishedDataFilters {
     order: string;
   };
 }
+
+export interface ICount {
+  count: number;
+}

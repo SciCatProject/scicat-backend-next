@@ -3,7 +3,10 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
-import { IPublishedDataFilters } from "./interfaces/published-data-filters.interface";
+import {
+  ICount,
+  IPublishedDataFilters,
+} from "./interfaces/published-data.interface";
 import {
   PublishedData,
   PublishedDataDocument,
@@ -49,6 +52,11 @@ export class PublishedDataService {
       .skip(skip)
       .sort(sort)
       .exec();
+  }
+
+  async count(filter: FilterQuery<PublishedDataDocument>): Promise<ICount> {
+    const count = await this.publishedDataModel.count(filter).exec();
+    return { count };
   }
 
   async findOne(

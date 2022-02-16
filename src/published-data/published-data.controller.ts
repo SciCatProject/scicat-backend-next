@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -17,8 +18,17 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { PublishedData } from "./schemas/published-data.schema";
-import { IPublishedDataFilters } from "./interfaces/published-data-filters.interface";
+import {
+  PublishedData,
+  PublishedDataDocument,
+} from "./schemas/published-data.schema";
+import {
+  ICount,
+  IPublishedDataFilters,
+} from "./interfaces/published-data.interface";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
+import { FilterQuery } from "mongoose";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -39,21 +49,50 @@ export class PublishedDataController {
   }
 
   // GET /publisheddata
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, PublishedData),
-  )
+  @AllowAny()
+  @UseInterceptors(RegisteredInterceptor)
   @Get()
   @ApiQuery({
     name: "filter",
     description: "Database filters to apply when retrieve all published data",
     required: false,
   })
-  async findAll(@Query("filter") filters?: string): Promise<PublishedData[]> {
+  async findAll(@Query("filter") filter?: string): Promise<PublishedData[]> {
     const publishedDataFilters: IPublishedDataFilters = JSON.parse(
-      filters ?? "{}",
+      filter ?? "{}",
     );
     return this.publishedDataService.findAll(publishedDataFilters);
+  }
+
+  // GET /publisheddata/count
+  @AllowAny()
+  @UseInterceptors(RegisteredInterceptor)
+  @Get("/count")
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieve published data count",
+    required: false,
+  })
+  async count(
+    @Query() filter?: { filter: string; fields: string },
+  ): Promise<ICount> {
+    const jsonFilters: IPublishedDataFilters =
+      filter && filter.filter ? JSON.parse(filter.filter) : {};
+    const jsonFields: FilterQuery<PublishedDataDocument> =
+      filter && filter.fields ? JSON.parse(filter.fields) : {};
+    const whereFilters: FilterQuery<PublishedDataDocument> = {
+      ...(jsonFilters && jsonFilters.where ? jsonFilters.where : {}),
+      ...jsonFields,
+    } ?? {
+      ...jsonFields,
+    };
+    const publishedDataFilters: IPublishedDataFilters = {
+      where: whereFilters,
+    };
+    if (jsonFilters && jsonFilters.limits) {
+      publishedDataFilters.limits = jsonFilters.limits;
+    }
+    return this.publishedDataService.count(publishedDataFilters);
   }
 
   // GET /publisheddata/:id
@@ -82,7 +121,7 @@ export class PublishedDataController {
     );
   }
 
-  // DELETE /pubvlisheddata/:id
+  // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
