@@ -25,3 +25,7 @@ export interface IFormPopulateData {
   abstract?: string;
   thumbnail?: string;
 }
+
+export interface IRegister {
+  doi: string;
+}

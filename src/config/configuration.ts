@@ -30,6 +30,8 @@ export default () => ({
       global: true,
     },
   ],
+  httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
+  httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: parseInt(process.env.JWT_EXPIRES_IN ?? "3600", 10),
