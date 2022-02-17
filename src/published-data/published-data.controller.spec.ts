@@ -1,3 +1,5 @@
+import { HttpService } from "@nestjs/axios";
+import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { CaslModule } from "src/casl/casl.module";
@@ -9,6 +11,8 @@ import { PublishedDataService } from "./published-data.service";
 class AttachmentsServiceMock {}
 
 class DatasetsServiceMock {}
+
+class HttpServiceMock {}
 
 class ProposalsServiceMock {}
 
@@ -22,8 +26,10 @@ describe("PublishedDataController", () => {
       controllers: [PublishedDataController],
       imports: [CaslModule],
       providers: [
+        ConfigService,
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
+        { provide: HttpService, useClass: HttpServiceMock },
         { provide: ProposalsService, useClass: ProposalsServiceMock },
         { provide: PublishedDataService, useClass: PublishedDataServiceMock },
       ],
