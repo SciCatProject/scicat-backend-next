@@ -1,4 +1,5 @@
 export default () => ({
+  doiPrefix: process.env.DOI_PREFIX,
   functionalAccounts: [
     {
       username: "admin",
@@ -50,7 +51,11 @@ export default () => ({
     ? parseInt(process.env.METADATA_PARENT_INSTANCES_RETURN_LIMIT, 10)
     : undefined,
   mongodbUri: process.env.MONGODB_URI,
+  oaiProviderRoute: process.env.OAI_PROVIDER_ROUTE,
   pidPrefix: process.env.PID_PREFIX,
   port: parseInt(process.env.PORT || "3000", 10),
+  publicURLprefix: process.env.PUBLIC_URL_PREFIX,
+  registerDoiUri: process.env.REGISTER_DOI_URI,
+  registerMetadataUri: process.env.REGISTER_METADATA_URI,
   site: process.env.SITE,
 });
