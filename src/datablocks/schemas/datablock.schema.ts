@@ -12,13 +12,13 @@ export type DatablockDocument = Datablock & Document;
 export class Datablock extends Ownable {
   @ApiProperty({
     type: String,
-    default: () => uuidv4(),
+    default: uuidv4(),
   })
   @Prop({
     type: String,
     unique: true,
     required: true,
-    default: () => uuidv4(),
+    default: uuidv4(),
   })
   _id: string;
 
