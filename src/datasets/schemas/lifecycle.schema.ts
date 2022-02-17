@@ -5,50 +5,50 @@ export type LifecycleDocument = Lifecycle & Document;
 
 @Schema()
 export class Lifecycle {
-  @Prop()
-  id: string;
+  @Prop({ required: false })
+  id?: string;
 
-  @Prop({ default: true })
-  archivable: boolean;
+  @Prop({ default: true, required: false })
+  archivable?: boolean;
 
-  @Prop({ default: false })
-  retrievable: boolean;
+  @Prop({ default: false, required: false })
+  retrievable?: boolean;
 
-  @Prop({ default: true })
-  publishable: boolean;
+  @Prop({ default: true, required: false })
+  publishable?: boolean;
 
-  @Prop({ type: Date, default: Date.now() })
-  dateOfDiskPurging: Date;
+  @Prop({ type: Date, default: Date.now(), required: false })
+  dateOfDiskPurging?: Date;
 
-  @Prop({ type: Date, default: Date.now() })
-  archiveRetentionTime: Date;
+  @Prop({ type: Date, default: Date.now(), required: false })
+  archiveRetentionTime?: Date;
 
-  @Prop({ type: Date, default: Date.now() })
-  dateOfPublishing: Date;
+  @Prop({ type: Date, default: Date.now(), required: false })
+  dateOfPublishing?: Date;
 
-  @Prop({ type: Date, default: Date.now() })
-  publishedOn: Date;
+  @Prop({ type: Date, default: Date.now(), required: false })
+  publishedOn?: Date;
 
-  @Prop({ default: true })
-  isOnCentralDisk: boolean;
+  @Prop({ default: true, required: false })
+  isOnCentralDisk?: boolean;
 
-  @Prop()
-  archiveStatusMessage: string;
+  @Prop({ required: false })
+  archiveStatusMessage?: string;
 
-  @Prop()
-  retrieveStatusMessage: string;
+  @Prop({ required: false })
+  retrieveStatusMessage?: string;
 
-  @Prop({ type: Object })
-  archiveReturnMessage: unknown;
+  @Prop({ type: Object, required: false })
+  archiveReturnMessage?: unknown;
 
-  @Prop({ type: Object })
-  retrieveReturnMessage: unknown;
+  @Prop({ type: Object, required: false })
+  retrieveReturnMessage?: unknown;
 
-  @Prop()
-  exportedTo: string;
+  @Prop({ required: false })
+  exportedTo?: string;
 
-  @Prop({ default: true })
-  retrieveIntegrityCheck: boolean;
+  @Prop({ default: true, required: false })
+  retrieveIntegrityCheck?: boolean;
 }
 
 export const LifecycleSchema = SchemaFactory.createForClass(Lifecycle);
