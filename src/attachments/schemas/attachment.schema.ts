@@ -10,8 +10,8 @@ export type AttachmentDocument = Attachment & Document;
   collection: "Attachment",
 })
 export class Attachment extends Ownable {
-  @ApiProperty({ type: String, default: uuidv4() })
-  @Prop({ type: String, required: true, default: uuidv4() })
+  @ApiProperty({ type: String, default: () => uuidv4() })
+  @Prop({ type: String, required: true, default: () => uuidv4() })
   _id: string;
 
   @ApiProperty({

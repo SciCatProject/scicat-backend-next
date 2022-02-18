@@ -22,7 +22,7 @@ export class Sample extends Ownable {
     type: String,
     default: () => uuidv4(),
   })
-  @Prop({ type: String, unique: true, default: uuidv4() })
+  @Prop({ type: String, unique: true, default: () => uuidv4() })
   sampleId: string;
 
   @ApiProperty()

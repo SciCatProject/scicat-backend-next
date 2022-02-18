@@ -9,7 +9,13 @@ export type PublishedDataDocument = PublishedData & Document;
   collection: "PublishedData",
 })
 export class PublishedData {
-  @Prop({ type: String, unique: true })
+  @Prop({
+    type: String,
+    unique: true,
+    default: function genUUID(): string {
+      return process.env.DOI_PREFIX + uuidv4();
+    },
+  })
   _id: string;
 
   @ApiProperty()
