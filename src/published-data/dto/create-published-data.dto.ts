@@ -2,6 +2,12 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class CreatePublishedDataDto {
   @ApiProperty({ required: false })
+  readonly _id?: string;
+
+  @ApiProperty({ required: false })
+  readonly doi?: string;
+
+  @ApiProperty({ required: false })
   readonly affiliation: string;
 
   @ApiProperty({ required: true })
