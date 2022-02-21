@@ -44,7 +44,6 @@ export class DatasetsService {
 
   async findAll(filters: IDatasetFilters): Promise<Dataset[]> {
     const whereFilters: FilterQuery<DatasetDocument> = filters.where ?? {};
-    console.log(JSON.stringify(whereFilters));
     let limit = 100;
     let skip = 0;
     let sort = {};
