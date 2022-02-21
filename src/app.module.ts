@@ -14,6 +14,7 @@ import { DatablocksModule } from "./datablocks/datablocks.module";
 import { ProposalsModule } from "./proposals/proposals.module";
 import { SamplesModule } from "./samples/samples.module";
 import { PublishedDataModule } from "./published-data/published-data.module";
+import { LogbooksModule } from "./logbooks/logbooks.module";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PublishedDataModule } from "./published-data/published-data.module";
     ProposalsModule,
     SamplesModule,
     PublishedDataModule,
+    LogbooksModule,
   ],
   controllers: [],
   providers: [
