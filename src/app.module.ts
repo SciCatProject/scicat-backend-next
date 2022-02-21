@@ -18,11 +18,15 @@ import { LogbooksModule } from "./logbooks/logbooks.module";
 
 @Module({
   imports: [
+    AttachmentsModule,
     AuthModule,
+    CaslModule,
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    DatablocksModule,
     DatasetsModule,
+    LogbooksModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -30,15 +34,11 @@ import { LogbooksModule } from "./logbooks/logbooks.module";
       }),
       inject: [ConfigService],
     }),
-    UsersModule,
-    CaslModule,
-    AttachmentsModule,
     OrigdatablocksModule,
-    DatablocksModule,
     ProposalsModule,
-    SamplesModule,
     PublishedDataModule,
-    LogbooksModule,
+    SamplesModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [
