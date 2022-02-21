@@ -10,7 +10,10 @@ import {
 import { LogbooksService } from "./logbooks.service";
 import { CreateLogbookDto } from "./dto/create-logbook.dto";
 import { UpdateLogbookDto } from "./dto/update-logbook.dto";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+@ApiBearerAuth()
+@ApiTags("logbooks")
 @Controller("logbooks")
 export class LogbooksController {
   constructor(private readonly logbooksService: LogbooksService) {}
