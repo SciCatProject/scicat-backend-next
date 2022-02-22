@@ -45,6 +45,15 @@ export default () => ({
       searchFilter: process.env.LDAP_SEARCH_FILTER,
     },
   },
+  logbook: {
+    enabled:
+      process.env.LOGBOOK_ENABLED && process.env.LOGBOOK_ENABLED === "yes"
+        ? true
+        : false,
+    baseUrl: process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
+    username: process.env.LOGBOOK_USERNAME,
+    password: process.env.LOGBOOK_PASSWORD,
+  },
   metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
     ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
     : undefined,

@@ -25,8 +25,8 @@
 Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
 
 - `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
-- `HTTP_MAX_REDIRECTS` [number] Max redirects for http requests. Defaults to 5.
-- `HTTP_TIMEOUT` [number] Timeout from http requests in ms. Defaults to 5000.
+- `HTTP_MAX_REDIRECTS` [number] *Optional* Max redirects for http requests. Defaults to 5.
+- `HTTP_TIMEOUT` [number] *Optional* Timeout from http requests in ms. Defaults to 5000.
 - `JWT_SECRET` [string] The secret for your JWT token, used for authorization.
 - `JWT_EXPIRES_IN` [number] *Optional*  How long, in seconds, the JWT token is valid. Defaults to `3600`.
 - `LDAP_URL` [string] *Optional* The URL to your LDAP server.
@@ -34,10 +34,14 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `LDAP_BIND_CREDENTIALS` [string] *Optional* Credentials for your LDAP server.
 - `LDAP_SEARCH_BASE` [string] *Optional* Search base for your LDAP server.
 - `LDAP_SEARCH_FILTER` [string] *Optional* Search filter for you LDAP server.
+- `LOGBOOK_ENABLED` [string] *Optional* Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
+- `LOGBOOK_BASE_URL` [string] *Optional* The base URL to the Logbook API. Only required if Logbook is enabled.
+- `LOGBOOK_USERNAME` [string] *Optional* The username used to authenticate to the Logbook API. Only required if Logbook is enabled.
+- `LOGBOOK_PASSWORD` [string] *Optional* The password used to authenticate to the Logbook API. Only required if Logbook is enabled.
 - `METADATA_KEYS_RETURN_LIMIT` [number] *Optional* The return limit for the `/Datasets/metadataKeys` endpoint.
 - `METADATA_PARENT_INSTANCES_RETURN_LIMIT` *Optional* The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint.
 - `MONGODB_URI` [string] The URI for your MongoDB instance.
-- `OAI_PROVIDER_ROUTE` [string] URI to OAI provider, used for the `/publisheddata/:id/resync` endpoint.
+- `OAI_PROVIDER_ROUTE` [string] *Optional* URI to OAI provider, used for the `/publisheddata/:id/resync` endpoint.
 - `PID_PREFIX` [string] The facility PID prefix, with trailing slash.
 - `PUBLIC_URL_PREFIX` [string] The base URL to the facility Landing Page.
 - `PORT` [number] *Optional* The port on which you want to access the app. Defaults to `3000`.
