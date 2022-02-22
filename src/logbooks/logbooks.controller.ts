@@ -13,8 +13,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Logbook } from "./schemas/logbook.schema";
-import { FilterLogbooksInterceptor } from "./interceptors/filter-logbooks.interceptor";
-import { FilterLogbookInterceptor } from "./interceptors/filter-logbook.interceptor";
+import { UsersLogbooksInterceptor } from "./interceptors/users-logbooks.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("logbooks")
@@ -24,7 +23,7 @@ export class LogbooksController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
-  @UseInterceptors(FilterLogbooksInterceptor)
+  @UseInterceptors(UsersLogbooksInterceptor)
   @Get()
   findAll() {
     return this.logbooksService.findAll();
@@ -32,7 +31,7 @@ export class LogbooksController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
-  @UseInterceptors(FilterLogbookInterceptor)
+  @UseInterceptors(UsersLogbooksInterceptor)
   @Get("/:name")
   async findByName(
     @Param("name") name: string,
