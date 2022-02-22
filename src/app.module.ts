@@ -15,6 +15,7 @@ import { ProposalsModule } from "./proposals/proposals.module";
 import { SamplesModule } from "./samples/samples.module";
 import { PublishedDataModule } from "./published-data/published-data.module";
 import { LogbooksModule } from "./logbooks/logbooks.module";
+import { PoliciesModule } from "./policies/policies.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { LogbooksModule } from "./logbooks/logbooks.module";
       inject: [ConfigService],
     }),
     OrigdatablocksModule,
+    PoliciesModule,
     ProposalsModule,
     PublishedDataModule,
     SamplesModule,
