@@ -293,7 +293,7 @@ export class PublishedDataController {
             }),
           );
         } catch (err) {
-          handleAxiosRequestError(err);
+          handleAxiosRequestError(err, "PublishedDataController.register");
           return null;
         }
 
@@ -305,7 +305,7 @@ export class PublishedDataController {
             }),
           );
         } catch (err) {
-          handleAxiosRequestError(err);
+          handleAxiosRequestError(err, "PublishedDataController.register");
           return null;
         }
 
@@ -333,7 +333,7 @@ export class PublishedDataController {
             }),
           );
         } catch (err) {
-          handleAxiosRequestError(err);
+          handleAxiosRequestError(err, "PublishedDataController.register");
           return null;
         }
 
@@ -398,7 +398,7 @@ export class PublishedDataController {
         }),
       );
     } catch (error) {
-      handleAxiosRequestError(error);
+      handleAxiosRequestError(error, "PublishedDataController.resync");
     }
 
     try {
