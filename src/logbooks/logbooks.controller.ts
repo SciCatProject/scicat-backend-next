@@ -1,16 +1,20 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
+  UseGuards,
+  UseInterceptors,
+  Query,
 } from "@nestjs/common";
 import { LogbooksService } from "./logbooks.service";
-import { CreateLogbookDto } from "./dto/create-logbook.dto";
-import { UpdateLogbookDto } from "./dto/update-logbook.dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
+import { Logbook } from "./schemas/logbook.schema";
+import { FilterLogbooksInterceptor } from "./interceptors/filter-logbooks.interceptor";
+import { FilterLogbookInterceptor } from "./interceptors/filter-logbook.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("logbooks")
@@ -18,28 +22,22 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 export class LogbooksController {
   constructor(private readonly logbooksService: LogbooksService) {}
 
-  @Post()
-  create(@Body() createLogbookDto: CreateLogbookDto) {
-    return this.logbooksService.create(createLogbookDto);
-  }
-
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
+  @UseInterceptors(FilterLogbooksInterceptor)
   @Get()
   findAll() {
     return this.logbooksService.findAll();
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.logbooksService.findOne(+id);
-  }
-
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateLogbookDto: UpdateLogbookDto) {
-    return this.logbooksService.update(+id, updateLogbookDto);
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.logbooksService.remove(+id);
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
+  @UseInterceptors(FilterLogbookInterceptor)
+  @Get("/:name")
+  async findByName(
+    @Param("name") name: string,
+    @Query("filters") filters: string,
+  ): Promise<Logbook | null> {
+    return this.logbooksService.findByName(name, filters);
   }
 }
