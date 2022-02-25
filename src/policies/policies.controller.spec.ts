@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { PoliciesController } from "./policies.controller";
 import { PoliciesService } from "./policies.service";
 
@@ -10,7 +11,10 @@ describe("PoliciesController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PoliciesController],
-      providers: [{ provide: PoliciesService, useClass: PoliciesServiceMock }],
+      providers: [
+        CaslAbilityFactory,
+        { provide: PoliciesService, useClass: PoliciesServiceMock },
+      ],
     }).compile();
 
     controller = module.get<PoliciesController>(PoliciesController);

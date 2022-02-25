@@ -2,9 +2,12 @@ import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
+import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { DatasetsService } from "./datasets.service";
 import { Dataset } from "./schemas/dataset.schema";
 import { RawDataset } from "./schemas/raw-dataset.schema";
+
+class InitialDatasetsServiceMock {}
 
 const mockDataset: RawDataset = {
   pid: "testPid",
@@ -77,6 +80,10 @@ describe("DatasetsService", () => {
           },
         },
         DatasetsService,
+        {
+          provide: InitialDatasetsService,
+          useClass: InitialDatasetsServiceMock,
+        },
       ],
     }).compile();
 
