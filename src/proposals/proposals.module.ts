@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ProposalsService } from "./proposals.service";
 import { ProposalsController } from "./proposals.controller";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -10,7 +10,7 @@ import { DatasetsModule } from "src/datasets/datasets.module";
 @Module({
   imports: [
     AttachmentsModule,
-    DatasetsModule,
+    forwardRef(() => DatasetsModule),
     MongooseModule.forFeatureAsync([
       {
         name: Proposal.name,
