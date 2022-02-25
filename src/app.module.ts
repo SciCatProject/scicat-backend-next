@@ -16,6 +16,7 @@ import { SamplesModule } from "./samples/samples.module";
 import { PublishedDataModule } from "./published-data/published-data.module";
 import { LogbooksModule } from "./logbooks/logbooks.module";
 import { PoliciesModule } from "./policies/policies.module";
+import { InitialDatasetsModule } from "./initial-datasets/initial-datasets.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PoliciesModule } from "./policies/policies.module";
     }),
     DatablocksModule,
     DatasetsModule,
+    InitialDatasetsModule,
     LogbooksModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
