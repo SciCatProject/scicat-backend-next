@@ -243,6 +243,16 @@ export class DatasetsController {
     return dataset;
   }
 
+  // GET /count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @Get("/count")
+  async count(
+    @Query("where") where: FilterQuery<DatasetDocument>,
+  ): Promise<{ count: number }> {
+    return this.datasetsService.count(where);
+  }
+
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
