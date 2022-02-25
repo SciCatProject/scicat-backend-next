@@ -19,6 +19,7 @@ import { ProposalsModule } from "src/proposals/proposals.module";
     }),
     ProposalsModule,
   ],
+  exports: [LogbooksService],
   controllers: [LogbooksController],
   providers: [LogbooksService, CaslAbilityFactory],
 })
