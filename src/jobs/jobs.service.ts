@@ -1,26 +1,35 @@
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
+import { Job, JobDocument } from "./schemas/job.schema";
 
 @Injectable()
 export class JobsService {
-  create(createJobDto: CreateJobDto) {
-    return "This action adds a new job";
+  constructor(@InjectModel(Job.name) private jobModel: Model<JobDocument>) {}
+
+  create(createJobDto: CreateJobDto): Promise<Job> {
+    const createdJob = new this.jobModel(createJobDto);
+    return createdJob.save();
   }
 
-  findAll() {
-    return `This action returns all jobs`;
+  findAll(filter: FilterQuery<JobDocument>): Promise<Job[]> {
+    return this.jobModel.find(filter).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} job`;
+  findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {
+    return this.jobModel.findOne(filter).exec();
   }
 
-  update(id: number, updateJobDto: UpdateJobDto) {
-    return `This action updates a #${id} job`;
+  update(
+    filter: FilterQuery<JobDocument>,
+    updateJobDto: UpdateJobDto,
+  ): Promise<Job | null> {
+    return this.jobModel.findOneAndUpdate(filter, updateJobDto).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} job`;
+  remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
+    return this.jobModel.findOneAndRemove(filter).exec();
   }
 }
