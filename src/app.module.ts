@@ -30,6 +30,7 @@ import { JobsModule } from "./jobs/jobs.module";
     DatablocksModule,
     DatasetsModule,
     InitialDatasetsModule,
+    JobsModule,
     LogbooksModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -44,7 +45,6 @@ import { JobsModule } from "./jobs/jobs.module";
     PublishedDataModule,
     SamplesModule,
     UsersModule,
-    JobsModule,
   ],
   controllers: [],
   providers: [
