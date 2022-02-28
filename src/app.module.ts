@@ -17,6 +17,7 @@ import { PublishedDataModule } from "./published-data/published-data.module";
 import { LogbooksModule } from "./logbooks/logbooks.module";
 import { PoliciesModule } from "./policies/policies.module";
 import { InitialDatasetsModule } from "./initial-datasets/initial-datasets.module";
+import { JobsModule } from "./jobs/jobs.module";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { InitialDatasetsModule } from "./initial-datasets/initial-datasets.modul
     PublishedDataModule,
     SamplesModule,
     UsersModule,
+    JobsModule,
   ],
   controllers: [],
   providers: [
