@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
 import {
   FilterQuery,
   Model,
@@ -13,7 +14,10 @@ import {
   QueryOptions,
   UpdateQuery,
 } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { extractMetadataKeys, mapScientificQuery } from "src/common/utils";
+import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
+import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
@@ -29,12 +33,15 @@ import {
   DatasetDocument,
   DatasetType,
 } from "./schemas/dataset.schema";
+import { RawDataset } from "./schemas/raw-dataset.schema";
 
 @Injectable()
 export class DatasetsService {
   constructor(
-    @InjectModel(Dataset.name) private datasetModel: Model<DatasetDocument>,
     private configService: ConfigService,
+    @InjectModel(Dataset.name) private datasetModel: Model<DatasetDocument>,
+    private initialDatasetsService: InitialDatasetsService,
+    private logbooksService: LogbooksService,
   ) {}
 
   async create(createDatasetDto: CreateDatasetDto): Promise<Dataset> {
@@ -344,6 +351,11 @@ export class DatasetsService {
     return this.datasetModel.findOne(filters).exec();
   }
 
+  async count(where: FilterQuery<DatasetDocument>): Promise<{ count: number }> {
+    const count = await this.datasetModel.count(where).exec();
+    return { count };
+  }
+
   // PUT dataset
   // we update the full dataset if exist or create a new one if it does not
   async findByIdAndReplaceOrCreate(
@@ -599,5 +611,108 @@ export class DatasetsService {
     pipeline.push(sort);
 
     return pipeline;
+  }
+
+  // this should update the history in all affected documents
+  async keepHistory(req: Request) {
+    // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
+    if (req.query.where && req.body.data) {
+      // do not keep history for status updates from jobs, because this can take much too long for large jobs
+      if (req.body.data.$set) {
+        return;
+      }
+
+      const datasets = await this.findAll({
+        where: req.query.where as FilterQuery<DatasetDocument>,
+      });
+
+      const dataCopy = JSON.parse(JSON.stringify(req.body.data));
+      await Promise.all(
+        datasets.map(async (dataset) => {
+          req.body.data = JSON.parse(JSON.stringify(dataCopy));
+          if (req.body.data && req.body.data.datasetlifecycle) {
+            const changes = JSON.parse(
+              JSON.stringify(req.body.data.datasetlifecycle),
+            );
+            req.body.data.datasetlifecycle = JSON.parse(
+              JSON.stringify(dataset.datasetlifecycle),
+            );
+            for (const k in changes) {
+              req.body.data.datasetlifecycle[k] = changes[k];
+            }
+
+            const initialDataset = await this.initialDatasetsService.findById(
+              dataset.pid,
+            );
+
+            if (!initialDataset) {
+              await this.initialDatasetsService.create(dataset);
+              await this.updateHistory(req, dataset, dataCopy);
+            } else {
+              await this.updateHistory(req, dataset, dataCopy);
+            }
+          }
+        }),
+      );
+    }
+
+    // single dataset, update
+    if (!req.query.where && req.body.data) {
+      Logger.warn(
+        "Single dataset update case without where condition is currently not treated: " +
+          req.body.data,
+        "DatasetsService.keepHistory",
+      );
+      return;
+    }
+
+    // single dataset, update
+    if (!req.query.where && !req.body.data) {
+      return;
+    }
+
+    // single dataset, update
+    if (req.query.where && !req.body.data) {
+      return;
+    }
+  }
+
+  async updateHistory(req: Request, dataset: Dataset, data: UpdateDatasetDto) {
+    if (req.body.data.history) {
+      delete req.body.data.history;
+    }
+
+    if (!req.body.data.size && !req.body.data.packedSize) {
+      const updatedFields: Omit<UpdateDatasetDto, "updatedAt" | "updatedBy"> =
+        data;
+      const historyItem: Record<string, unknown> = {};
+      Object.keys(updatedFields).forEach((updatedField) => {
+        historyItem[updatedField as keyof UpdateDatasetDto] = {
+          currentValue: data[updatedField as keyof UpdateDatasetDto],
+          previousValue: dataset[updatedField as keyof UpdateDatasetDto],
+        };
+      });
+      dataset.history.push(
+        JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
+      );
+      await this.findByIdAndUpdate(dataset.pid, { history: dataset.history });
+      const logbookEnabled = this.configService.get<boolean>("logbook.enabled");
+      if (logbookEnabled) {
+        const user = (req.user as JWTUser).username.replace("ldap.", "");
+        const datasetPid = dataset.pid;
+        const proposalId =
+          dataset.type === DatasetType.Raw
+            ? (dataset as unknown as RawDataset).proposalId
+            : undefined;
+        if (proposalId) {
+          await Promise.all(
+            Object.keys(updatedFields).map(async (updatedField) => {
+              const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
+              await this.logbooksService.sendMessage(proposalId, { message });
+            }),
+          );
+        }
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Dataset, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
@@ -10,12 +10,16 @@ import { AttachmentsModule } from "src/attachments/attachments.module";
 import { ConfigModule } from "@nestjs/config";
 import { OrigdatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
+import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
+import { LogbooksModule } from "src/logbooks/logbooks.module";
 
 @Module({
   imports: [
     AttachmentsModule,
     ConfigModule,
     DatablocksModule,
+    InitialDatasetsModule,
+    forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([
       {
         name: Dataset.name,

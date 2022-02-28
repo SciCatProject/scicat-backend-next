@@ -8,6 +8,9 @@ export class CreateProposalDto {
   readonly accessGroups: string[];
 
   @ApiProperty()
+  proposalId: string;
+
+  @ApiProperty()
   readonly pi_email: string;
 
   @ApiProperty()
