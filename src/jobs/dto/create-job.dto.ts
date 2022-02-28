@@ -20,7 +20,7 @@ export class CreateJobDto {
   readonly jobStatusMessage: string;
 
   @ApiProperty({ required: false })
-  readonly datasetsList: Record<string, unknown>;
+  readonly datasetList: Record<string, unknown>;
 
   @ApiProperty({ required: false })
   readonly jobResultObject: Record<string, unknown>;
