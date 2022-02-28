@@ -18,6 +18,7 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Job } from "./schemas/job.schema";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { IJobFilters } from "./interfaces/job-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -41,7 +42,7 @@ export class JobsController {
     required: false,
   })
   async findAll(@Query("filter") filter?: string): Promise<Job[]> {
-    const parsedFilter = JSON.parse(filter ?? "{}");
+    const parsedFilter: IJobFilters = JSON.parse(filter ?? "{}");
     return this.jobsService.findAll(parsedFilter);
   }
 
