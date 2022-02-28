@@ -9,20 +9,20 @@ import { Job, JobDocument } from "./schemas/job.schema";
 export class JobsService {
   constructor(@InjectModel(Job.name) private jobModel: Model<JobDocument>) {}
 
-  create(createJobDto: CreateJobDto): Promise<Job> {
+  async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
     return createdJob.save();
   }
 
-  findAll(filter: FilterQuery<JobDocument>): Promise<Job[]> {
+  async findAll(filter: FilterQuery<JobDocument>): Promise<Job[]> {
     return this.jobModel.find(filter).exec();
   }
 
-  findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {
+  async findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {
     return this.jobModel.findOne(filter).exec();
   }
 
-  update(
+  async update(
     filter: FilterQuery<JobDocument>,
     updateJobDto: UpdateJobDto,
   ): Promise<Job | null> {
@@ -31,7 +31,7 @@ export class JobsService {
       .exec();
   }
 
-  remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
+  async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
     return this.jobModel.findOneAndRemove(filter).exec();
   }
 }

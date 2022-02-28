@@ -28,7 +28,7 @@ export class JobsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Job))
   @Post()
-  create(@Body() createJobDto: CreateJobDto): Promise<Job> {
+  async create(@Body() createJobDto: CreateJobDto): Promise<Job> {
     return this.jobsService.create(createJobDto);
   }
 
@@ -40,18 +40,18 @@ export class JobsController {
     description: "Database filters to apply when retrieve all jobs",
     required: false,
   })
-  findAll(@Query("filter") filter?: string): Promise<Job[]> {
+  async findAll(@Query("filter") filter?: string): Promise<Job[]> {
     const parsedFilter = JSON.parse(filter ?? "{}");
     return this.jobsService.findAll(parsedFilter);
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string): Promise<Job | null> {
+  async findOne(@Param("id") id: string): Promise<Job | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
   @Patch(":id")
-  update(
+  async update(
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<Job | null> {
@@ -59,7 +59,7 @@ export class JobsController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string): Promise<unknown> {
+  async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });
   }
 }
