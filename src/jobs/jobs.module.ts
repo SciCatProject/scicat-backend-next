@@ -3,6 +3,7 @@ import { JobsService } from "./jobs.service";
 import { JobsController } from "./jobs.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Job, JobSchema } from "./schemas/job.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   controllers: [JobsController],
@@ -14,6 +15,6 @@ import { Job, JobSchema } from "./schemas/job.schema";
       },
     ]),
   ],
-  providers: [JobsService],
+  providers: [JobsService, CaslAbilityFactory],
 })
 export class JobsModule {}
