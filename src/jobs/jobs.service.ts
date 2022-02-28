@@ -26,7 +26,9 @@ export class JobsService {
     filter: FilterQuery<JobDocument>,
     updateJobDto: UpdateJobDto,
   ): Promise<Job | null> {
-    return this.jobModel.findOneAndUpdate(filter, updateJobDto).exec();
+    return this.jobModel
+      .findOneAndUpdate(filter, updateJobDto, { new: true })
+      .exec();
   }
 
   remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
