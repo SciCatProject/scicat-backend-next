@@ -85,7 +85,8 @@ export class UsersService implements OnModuleInit {
   }
 
   async userExists(filter: FilterQuery<UserDocument>): Promise<boolean> {
-    return await this.userModel.exists(filter);
+    const user = await this.userModel.exists(filter);
+    return user ? true : false;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {

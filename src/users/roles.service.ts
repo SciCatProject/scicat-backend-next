@@ -23,13 +23,15 @@ export class RolesService implements OnModuleInit {
   }
 
   async roleExists(filter: FilterQuery<RoleDocument>): Promise<boolean> {
-    return await this.roleModel.exists(filter);
+    const role = await this.roleModel.exists(filter).exec();
+    return role ? true : false;
   }
 
   async userRoleExists(
     filter: FilterQuery<UserRoleDocument>,
   ): Promise<boolean> {
-    return await this.userRoleModel.exists(filter);
+    const userRole = await this.userRoleModel.exists(filter).exec();
+    return userRole ? true : false;
   }
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
