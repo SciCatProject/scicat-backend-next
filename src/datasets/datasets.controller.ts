@@ -89,12 +89,15 @@ export class DatasetsController {
       filter && filter.filter ? JSON.parse(filter.filter) : {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
-    const whereFilters: FilterQuery<DatasetDocument> = {
-      ...(jsonFilters && jsonFilters.where ? jsonFilters.where : {}),
-      ...jsonFields,
-    } ?? {
-      ...jsonFields,
-    };
+    const whereFilters: FilterQuery<DatasetDocument> =
+      jsonFilters && jsonFilters.where
+        ? {
+            ...jsonFilters.where,
+            ...jsonFields,
+          }
+        : {
+            ...jsonFields,
+          };
     const datasetFilters: IDatasetFilters = {
       where: whereFilters,
     };

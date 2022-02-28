@@ -101,12 +101,15 @@ export class PublishedDataController {
       filter && filter.filter ? JSON.parse(filter.filter) : {};
     const jsonFields: FilterQuery<PublishedDataDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
-    const whereFilters: FilterQuery<PublishedDataDocument> = {
-      ...(jsonFilters && jsonFilters.where ? jsonFilters.where : {}),
-      ...jsonFields,
-    } ?? {
-      ...jsonFields,
-    };
+    const whereFilters: FilterQuery<PublishedDataDocument> =
+      jsonFilters && jsonFilters.where
+        ? {
+            ...jsonFilters.where,
+            ...jsonFields,
+          }
+        : {
+            ...jsonFields,
+          };
     const publishedDataFilters: IPublishedDataFilters = {
       where: whereFilters,
     };
@@ -133,8 +136,8 @@ export class PublishedDataController {
 
     let proposalId;
     if (dataset) {
-      formData.resourceType = dataset?.type;
-      formData.description = dataset?.description;
+      formData.resourceType = dataset.type;
+      formData.description = dataset.description;
       proposalId = (dataset as unknown as RawDataset).proposalId;
     }
 
