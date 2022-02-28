@@ -11,6 +11,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -26,6 +27,7 @@ type Subjects =
       | typeof Attachment
       | typeof Datablock
       | typeof Dataset
+      | typeof Job
       | typeof Logbook
       | typeof OrigDatablock
       | typeof Policy
@@ -67,6 +69,8 @@ export class CaslAbilityFactory {
         ownerGroup: { $in: user.currentGroups },
       },
     );
+
+    can(Action.Manage, Job);
 
     can(Action.Read, Logbook);
 
