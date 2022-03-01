@@ -9,8 +9,11 @@ export type JobDocument = Job & Document;
   collection: "Job",
 })
 export class Job {
-  @Prop({ type: String, unique: true, default: () => uuidv4() })
+  @Prop({ type: String, unique: true })
   _id: string;
+
+  @Prop({ type: String, unique: true, default: () => uuidv4() })
+  id: string;
 
   @ApiProperty({
     description: "The email of the person initiating the job request",
