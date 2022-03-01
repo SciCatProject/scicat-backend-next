@@ -46,11 +46,15 @@ export class JobsController {
     return this.jobsService.findAll(parsedFilter);
   }
 
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<Job | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Job))
   @Patch(":id")
   async update(
     @Param("id") id: string,
@@ -59,6 +63,8 @@ export class JobsController {
     return this.jobsService.update({ _id: id }, updateJobDto);
   }
 
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Job))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });
