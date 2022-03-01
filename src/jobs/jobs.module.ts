@@ -8,10 +8,22 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 @Module({
   controllers: [JobsController],
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Job.name,
-        schema: JobSchema,
+        useFactory: () => {
+          const schema = JobSchema;
+
+          schema.pre<Job>("save", function (next) {
+            // if _id is empty or different than id,
+            // set _id to id
+            if (!this._id) {
+              this._id = this.id;
+            }
+            next();
+          });
+          return schema;
+        },
       },
     ]),
   ],
