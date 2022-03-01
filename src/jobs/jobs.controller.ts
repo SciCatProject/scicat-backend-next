@@ -48,6 +48,20 @@ export class JobsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @Get("/fullquery")
+  async fullquery(
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<Job[]> {
+    console.log({ filters });
+    const parsedFilters: IJobFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
+    };
+    return this.jobsService.fullquery(parsedFilters);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<Job | null> {
     return this.jobsService.findOne({ _id: id });
