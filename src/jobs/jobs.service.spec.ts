@@ -6,6 +6,7 @@ import { Job } from "./schemas/job.schema";
 
 const mockJob: Job = {
   _id: "testId",
+  id: "testId",
   emailJobInitiator: "test@email.com",
   type: "retrieve",
   creationTime: new Date(),
