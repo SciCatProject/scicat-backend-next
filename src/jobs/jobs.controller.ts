@@ -18,7 +18,7 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Job } from "./schemas/job.schema";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { IJobFilters } from "./interfaces/job-filters.interface";
+import { IJobFacets, IJobFilters } from "./interfaces/job-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -52,12 +52,24 @@ export class JobsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Job[]> {
-    console.log({ filters });
     const parsedFilters: IJobFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.jobsService.fullquery(parsedFilters);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @Get("/fullfacet")
+  async fullfacet(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const parsedFilters: IJobFacets = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      facets: JSON.parse(filters.facets ?? "[]"),
+    };
+    return this.jobsService.fullfacet(parsedFilters);
   }
 
   @UseGuards(PoliciesGuard)
