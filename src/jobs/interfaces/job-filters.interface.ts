@@ -22,3 +22,8 @@ export interface IJobFilters {
     order: string;
   };
 }
+
+export interface IJobFacets {
+  fields?: FilterQuery<JobDocument>;
+  facets?: string[];
+}
