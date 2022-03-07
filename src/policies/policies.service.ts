@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -18,13 +19,96 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
 
 @Injectable()
-export class PoliciesService {
+export class PoliciesService implements OnModuleInit {
   constructor(
     private configService: ConfigService,
     private datasetsService: DatasetsService,
     @InjectModel(Policy.name) private policyModel: Model<PolicyDocument>,
     private usersService: UsersService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    const count = await this.policyModel
+      .countDocuments({
+        $or: [
+          {
+            _id: {
+              $regex: /^[a-f\d]{24}$/i,
+            },
+          },
+          {
+            _id: {
+              $type: "objectId",
+            },
+          },
+        ],
+      })
+      .exec();
+
+    if (count !== 0) {
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================\n",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "    Warning: your DB contains old ID format   ",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "    please run the script                     ",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "= scicat-backend-next/scripts/replaceObjectIds.sh =",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "     on your mongo DB !                        \n",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================",
+        "PoliciesService",
+      );
+      Logger.warn(
+        "===================================================\n",
+        "PoliciesService",
+      );
+    } else {
+      Logger.log(
+        "Mongo DB already translated to new ID format",
+        "PoliciesService",
+      );
+    }
+  }
 
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
     const createdPolicy = new this.policyModel(createPolicyDto);
