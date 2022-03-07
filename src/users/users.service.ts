@@ -17,16 +17,22 @@ import { CreateUserJWT } from "./dto/create-user-jwt.dto";
 import { JwtService } from "@nestjs/jwt";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
+import {
+  UserSettings,
+  UserSettingsDocument,
+} from "./schemas/user-settings.schema";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
   constructor(
     private configService: ConfigService,
+    private jwtService: JwtService,
     private rolesService: RolesService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UserIdentity.name)
     private userIdentityModel: Model<UserIdentityDocument>,
-    private jwtService: JwtService,
+    @InjectModel(UserSettings.name)
+    private userSettingsModel: Model<UserSettingsDocument>,
   ) {}
 
   async onModuleInit() {
@@ -142,6 +148,10 @@ export class UsersService implements OnModuleInit {
 
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
     return this.userIdentityModel.findOne({ userId }).exec();
+  }
+
+  async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
+    return this.userSettingsModel.findOne({ userId }).exec();
   }
 
   async createUserJWT(

@@ -10,6 +10,7 @@ import { CreateUserJWT } from "./dto/create-user-jwt.dto";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
+import { UserSettings } from "./schemas/user-settings.schema";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -17,18 +18,29 @@ import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @AllowAny()
+  @Post("jwt")
+  async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
+    return this.usersService.createUserJWT(request.user as JWTUser);
+  }
+
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, UserIdentity),
   )
   @Get(":id/userIdentity")
   async getUserIdentity(@Param("id") id: string): Promise<UserIdentity | null> {
-    return await this.usersService.findByIdUserIdentity(id);
+    return this.usersService.findByIdUserIdentity(id);
   }
 
-  @AllowAny()
-  @Post("jwt")
-  async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
-    return await this.usersService.createUserJWT(request.user as JWTUser);
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, UserSettings),
+  )
+  @Get("/:id/userSettings")
+  async getUsersSettings(
+    @Param("id") id: string,
+  ): Promise<UserSettings | null> {
+    return this.usersService.findByIdUserSettings(id);
   }
 }

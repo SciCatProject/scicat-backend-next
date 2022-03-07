@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import * as mongoose from "mongoose";
+import { UserSettings, UserSettingsSchema } from "./user-settings.schema";
 
 export type UserDocument = User & mongoose.Document;
 
@@ -29,6 +30,10 @@ export class User {
   @ApiProperty()
   @Prop({ required: false })
   emailVerified: boolean;
+
+  @ApiProperty()
+  @Prop({ type: UserSettingsSchema })
+  userSettings: UserSettings;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
