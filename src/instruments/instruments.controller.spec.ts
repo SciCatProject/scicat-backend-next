@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { InstrumentsController } from "./instruments.controller";
 import { InstrumentsService } from "./instruments.service";
 
@@ -11,6 +12,7 @@ describe("InstrumentsController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InstrumentsController],
       providers: [
+        CaslAbilityFactory,
         { provide: InstrumentsService, useClass: InstrumentsServiceMock },
       ],
     }).compile();
