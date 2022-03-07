@@ -7,6 +7,7 @@ import { UserIdentity } from "./schemas/user-identity.schema";
 import { User } from "./schemas/user.schema";
 import { UsersService } from "./users.service";
 import { JwtService } from "@nestjs/jwt";
+import { UserSettings } from "./schemas/user-settings.schema";
 
 class RolesServiceMock {}
 class JwtServiceMock {}
@@ -18,6 +19,14 @@ const mockUser: User = {
   password: "testPassword",
   email: "test@email.com",
   emailVerified: true,
+  userSettings: {
+    _id: "testId",
+    id: "testId",
+    columns: [],
+    datasetCount: 25,
+    jobCount: 25,
+    userId: "testUserId",
+  },
 };
 
 const mockUserIdentity: UserIdentity = {
@@ -39,10 +48,20 @@ const mockUserIdentity: UserIdentity = {
   userId: "testId",
 };
 
+const mockUserSettings: UserSettings = {
+  _id: "testId",
+  id: "testId",
+  columns: [],
+  datasetCount: 25,
+  jobCount: 25,
+  userId: "testUserId",
+};
+
 describe("UsersService", () => {
   let service: UsersService;
   let userModel: Model<User>;
   let userIdentityModel: Model<UserIdentity>;
+  let userSettingsModel: Model<UserSettings>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -70,6 +89,16 @@ describe("UsersService", () => {
             exec: jest.fn(),
           },
         },
+        {
+          provide: getModelToken("UserSettings"),
+          useValue: {
+            new: jest.fn().mockResolvedValue(mockUserSettings),
+            constructor: jest.fn().mockResolvedValue(mockUserSettings),
+            find: jest.fn(),
+            create: jest.fn(),
+            exec: jest.fn(),
+          },
+        },
         UsersService,
       ],
     }).compile();
@@ -78,6 +107,9 @@ describe("UsersService", () => {
     userModel = module.get<Model<User>>(getModelToken("User"));
     userIdentityModel = module.get<Model<UserIdentity>>(
       getModelToken("UserIdentity"),
+    );
+    userSettingsModel = module.get<Model<UserSettings>>(
+      getModelToken("UserSettings"),
     );
   });
 
