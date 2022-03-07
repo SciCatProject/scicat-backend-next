@@ -18,7 +18,7 @@ import { LogbooksModule } from "./logbooks/logbooks.module";
 import { PoliciesModule } from "./policies/policies.module";
 import { InitialDatasetsModule } from "./initial-datasets/initial-datasets.module";
 import { JobsModule } from "./jobs/jobs.module";
-import { InstrumentsModule } from './instruments/instruments.module';
+import { InstrumentsModule } from "./instruments/instruments.module";
 
 @Module({
   imports: [
@@ -31,6 +31,7 @@ import { InstrumentsModule } from './instruments/instruments.module';
     DatablocksModule,
     DatasetsModule,
     InitialDatasetsModule,
+    InstrumentsModule,
     JobsModule,
     LogbooksModule,
     MongooseModule.forRootAsync({
@@ -46,7 +47,6 @@ import { InstrumentsModule } from './instruments/instruments.module';
     PublishedDataModule,
     SamplesModule,
     UsersModule,
-    InstrumentsModule,
   ],
   controllers: [],
   providers: [
