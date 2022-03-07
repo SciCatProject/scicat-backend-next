@@ -20,6 +20,7 @@ import { Proposal } from "src/proposals/schemas/proposal.schema";
 import { PublishedData } from "src/published-data/schemas/published-data.schema";
 import { Sample } from "src/samples/schemas/sample.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
+import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 
@@ -38,6 +39,7 @@ type Subjects =
       | typeof Sample
       | typeof User
       | typeof UserIdentity
+      | typeof UserSettings
     >
   | "all";
 
@@ -124,6 +126,10 @@ export class CaslAbilityFactory {
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });
+
+    can(Action.Create, UserSettings, { userId: user._id });
+    can(Action.Read, UserSettings, { userId: user._id });
+    can(Action.Update, UserSettings, { userId: user._id });
 
     return build({
       detectSubjectType: (item) =>
