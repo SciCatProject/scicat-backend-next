@@ -8,13 +8,13 @@ export class Lifecycle {
   @Prop({ required: false })
   id?: string;
 
-  @Prop({ default: true, required: false })
+  @Prop({ default: true, required: false, index: true })
   archivable?: boolean;
 
-  @Prop({ default: false, required: false })
+  @Prop({ default: false, required: false, index: true })
   retrievable?: boolean;
 
-  @Prop({ default: true, required: false })
+  @Prop({ default: true, required: false, index: true })
   publishable?: boolean;
 
   @Prop({ type: Date, default: Date.now(), required: false })
@@ -32,10 +32,10 @@ export class Lifecycle {
   @Prop({ default: true, required: false })
   isOnCentralDisk?: boolean;
 
-  @Prop({ required: false })
+  @Prop({ required: false, index: true })
   archiveStatusMessage?: string;
 
-  @Prop({ required: false })
+  @Prop({ required: false, index: true })
   retrieveStatusMessage?: string;
 
   @Prop({ type: Object, required: false })
