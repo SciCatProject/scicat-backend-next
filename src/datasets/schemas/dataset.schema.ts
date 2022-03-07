@@ -154,8 +154,8 @@ export class Dataset extends Ownable {
   @Prop()
   updatedAt: Date;
 
-  @ApiProperty()
-  @Prop()
+  @ApiProperty({ type: String, required: false })
+  @Prop({ type: String, ref: "Instrument", required: false })
   instrumentId: string;
 
   @ApiProperty({
