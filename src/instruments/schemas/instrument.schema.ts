@@ -1,4 +1,4 @@
-import { Prop, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 
 export type InstrumentDocument = Instrument & Document;
 
+@Schema({
+  collection: "Instrument",
+})
 export class Instrument {
   @Prop({ type: String, unique: true })
   _id: string;
