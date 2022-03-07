@@ -184,15 +184,4 @@ export class Dataset extends Ownable {
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
 
-// DatasetSchema.virtual("pid")
-//   .get(function () {
-//     return this._id;
-//   })
-//   .set(function (value: string) {
-//     this._id = value;
-//   });
-// DatasetSchema.set("toJSON", {
-//   virtuals: true,
-// });
-
 DatasetSchema.index({ "$**": "text" });
