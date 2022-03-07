@@ -59,3 +59,5 @@ export class Sample extends Ownable {
 }
 
 export const SampleSchema = SchemaFactory.createForClass(Sample);
+
+SampleSchema.index({ "$**": "text" });

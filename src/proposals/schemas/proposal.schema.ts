@@ -78,3 +78,5 @@ export class Proposal extends Ownable {
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(Proposal);
+
+ProposalSchema.index({ "$**": "text" });

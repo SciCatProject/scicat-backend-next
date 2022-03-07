@@ -115,3 +115,5 @@ export class PublishedData {
 }
 
 export const PublishedDataSchema = SchemaFactory.createForClass(PublishedData);
+
+PublishedDataSchema.index({ "$**": "text" });

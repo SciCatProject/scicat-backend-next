@@ -79,3 +79,5 @@ export class Policy extends Ownable {
 }
 
 export const PolicySchema = SchemaFactory.createForClass(Policy);
+
+PolicySchema.index({ "$**": "text" });

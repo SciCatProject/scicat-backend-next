@@ -21,3 +21,5 @@ export class Logbook {
 }
 
 export const LogbookSchema = SchemaFactory.createForClass(Logbook);
+
+LogbookSchema.index({ "$**": "text" });

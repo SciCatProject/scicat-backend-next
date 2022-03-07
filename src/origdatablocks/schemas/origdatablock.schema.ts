@@ -39,3 +39,5 @@ export class OrigDatablock extends Ownable {
 }
 
 export const OrigDatablockSchema = SchemaFactory.createForClass(OrigDatablock);
+
+OrigDatablockSchema.index({ "$**": "text" });
