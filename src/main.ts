@@ -22,7 +22,10 @@ async function bootstrap() {
     ConfigService,
   );
   const port = configService.get<number>("port") ?? 3000;
-  Logger.log("mongodb uri : " + configService.get<string>("mongodbUri"));
+  Logger.log(
+    "MongoDB URI : " + configService.get<string>("mongodbUri"),
+    "Main",
+  );
   Logger.log("Scicat Backend listening on port: " + port, "Main");
 
   await app.listen(port);
