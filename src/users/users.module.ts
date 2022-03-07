@@ -13,6 +13,10 @@ import { UserRole, UserRoleSchema } from "./schemas/user-role.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import {
+  UserSettings,
+  UserSettingsSchema,
+} from "./schemas/user-settings.schema";
 
 @Module({
   imports: [
@@ -41,6 +45,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
       {
         name: UserRole.name,
         schema: UserRoleSchema,
+      },
+      {
+        name: UserSettings.name,
+        schema: UserSettingsSchema,
       },
     ]),
   ],
