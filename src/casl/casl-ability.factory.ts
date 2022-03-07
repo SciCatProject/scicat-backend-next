@@ -11,6 +11,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
@@ -27,6 +28,7 @@ type Subjects =
       | typeof Attachment
       | typeof Datablock
       | typeof Dataset
+      | typeof Instrument
       | typeof Job
       | typeof Logbook
       | typeof OrigDatablock
@@ -70,6 +72,8 @@ export class CaslAbilityFactory {
       },
     );
 
+    can(Action.Read, Instrument);
+
     can(Action.Manage, Job);
 
     can(Action.Read, Logbook);
@@ -104,11 +108,14 @@ export class CaslAbilityFactory {
       can(Action.Read, "all");
     }
     if (user.currentGroups.includes(Role.Ingestor)) {
+      can(Action.Create, Attachment);
+
       cannot(Action.Delete, Dataset);
       can(Action.Create, Dataset);
       can(Action.Update, Dataset);
 
-      can(Action.Create, Attachment);
+      can(Action.Create, Instrument);
+      can(Action.Update, Instrument);
     }
     if (user.currentGroups.includes(Role.ProposalIngestor)) {
       cannot(Action.Delete, Proposal);
