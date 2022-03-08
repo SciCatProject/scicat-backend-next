@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Param, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  UseGuards,
+  Req,
+  Patch,
+  Delete,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -11,6 +20,8 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
+import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
+import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -35,12 +46,46 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, UserSettings),
+  )
+  @Post("/:id/settings")
+  async createSettings(
+    @Param("id") id: string,
+    createUserSettingsDto: CreateUserSettingsDto,
+  ): Promise<UserSettings> {
+    return this.usersService.createUserSettings(id, createUserSettingsDto);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, UserSettings),
   )
-  @Get("/:id/userSettings")
-  async getUsersSettings(
-    @Param("id") id: string,
-  ): Promise<UserSettings | null> {
+  @Get("/:id/settings")
+  async getSettings(@Param("id") id: string): Promise<UserSettings | null> {
     return this.usersService.findByIdUserSettings(id);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, UserSettings),
+  )
+  @Patch("/:id/settings")
+  async updateSettings(
+    @Param("id") userId: string,
+    updateUserSettingsDto: UpdateUserSettingsDto,
+  ): Promise<UserSettings | null> {
+    return this.usersService.findOneAndUpdateUserSettings(
+      userId,
+      updateUserSettingsDto,
+    );
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, UserSettings),
+  )
+  @Delete("/:id/settings")
+  async removeSettings(@Param("id") userId: string): Promise<unknown> {
+    return this.usersService.findOneAndRemoveUserSettings(userId);
   }
 }

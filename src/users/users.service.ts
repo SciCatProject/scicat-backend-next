@@ -21,6 +21,8 @@ import {
   UserSettings,
   UserSettingsDocument,
 } from "./schemas/user-settings.schema";
+import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
+import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -150,8 +152,32 @@ export class UsersService implements OnModuleInit {
     return this.userIdentityModel.findOne({ userId }).exec();
   }
 
+  async createUserSettings(
+    userId: string,
+    createUserSettingsDto: CreateUserSettingsDto,
+  ): Promise<UserSettings> {
+    const createdUserSettings = new this.userSettingsModel({
+      ...createUserSettingsDto,
+      userId,
+    });
+    return createdUserSettings.save();
+  }
+
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
     return this.userSettingsModel.findOne({ userId }).exec();
+  }
+
+  async findOneAndUpdateUserSettings(
+    userId: string,
+    updateUserSettingsDto: UpdateUserSettingsDto,
+  ): Promise<UserSettings | null> {
+    return this.userSettingsModel
+      .findOneAndUpdate({ userId }, updateUserSettingsDto, { new: true })
+      .exec();
+  }
+
+  async findOneAndRemoveUserSettings(userId: string): Promise<unknown> {
+    return this.userSettingsModel.findOneAndRemove({ userId }).exec();
   }
 
   async createUserJWT(
