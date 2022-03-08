@@ -7,6 +7,7 @@ import {
   Req,
   Patch,
   Delete,
+  UseInterceptors,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
@@ -22,6 +23,8 @@ import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import { User } from "./schemas/user.schema";
+import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -33,6 +36,16 @@ export class UsersController {
   @Post("jwt")
   async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
     return this.usersService.createUserJWT(request.user as JWTUser);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
+  @UseInterceptors(CreateUserSettingsInterceptor)
+  @Get("/:id")
+  async findById(
+    @Param("id") id: string,
+  ): Promise<Omit<User, "password"> | null> {
+    return this.usersService.findById(id);
   }
 
   @UseGuards(PoliciesGuard)
