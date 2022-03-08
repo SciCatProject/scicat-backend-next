@@ -115,7 +115,9 @@ export class UsersService implements OnModuleInit {
     return createdUser.save();
   }
 
-  async findOrCreate(createUserDto: CreateUserDto): Promise<User | null> {
+  async findOrCreate(
+    createUserDto: CreateUserDto,
+  ): Promise<Omit<User, "password"> | null> {
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: createUserDto.username },
@@ -131,11 +133,13 @@ export class UsersService implements OnModuleInit {
     return await this.create(createUserDto);
   }
 
-  async findOne(filter: FilterQuery<UserDocument>): Promise<User | null> {
+  async findOne(
+    filter: FilterQuery<UserDocument>,
+  ): Promise<Omit<User, "password"> | null> {
     return this.userModel.findOne(filter).exec();
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<Omit<User, "password"> | null> {
     return this.userModel.findById(id).exec();
   }
 
