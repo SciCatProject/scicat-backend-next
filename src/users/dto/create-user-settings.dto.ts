@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateUserSettingsDto {
   @ApiProperty({ type: String, required: true })
-  readonly name: string;
+  readonly userId: string;
 
   @ApiProperty()
   readonly columns: Record<string, unknown>[];
