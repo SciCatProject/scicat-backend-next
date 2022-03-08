@@ -17,3 +17,18 @@ export interface IAxiosError {
   message: unknown;
   config: Record<string, unknown>;
 }
+
+export interface IProposalMember {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface IProposalAcceptedMessage {
+  proposalId: number;
+  shortCode: string;
+  title: string;
+  abstract: string;
+  members: IProposalMember[];
+  proposer: IProposalMember;
+}
