@@ -25,6 +25,7 @@
 Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
 
 - `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
+- `EXPRESS_SESSION_SECRET` [string] *Optional* Secret used to set up express session.
 - `HTTP_MAX_REDIRECTS` [number] *Optional* Max redirects for http requests. Defaults to 5.
 - `HTTP_TIMEOUT` [number] *Optional* Timeout from http requests in ms. Defaults to 5000.
 - `JWT_SECRET` [string] The secret for your JWT token, used for authorization.

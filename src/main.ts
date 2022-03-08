@@ -1,3 +1,4 @@
+import * as session from "express-session";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
@@ -21,6 +22,20 @@ async function bootstrap() {
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
     ConfigService,
   );
+
+  const expressSessionSecret = configService.get<string>(
+    "expressSessionSecret",
+  );
+  if (expressSessionSecret) {
+    app.use(
+      session({
+        secret: expressSessionSecret,
+        resave: false,
+        saveUninitialized: true,
+      }),
+    );
+  }
+
   const port = configService.get<number>("port") ?? 3000;
   Logger.log(
     "MongoDB URI : " + configService.get<string>("mongodbUri"),

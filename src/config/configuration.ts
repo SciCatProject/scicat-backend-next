@@ -1,5 +1,6 @@
 export default () => ({
   doiPrefix: process.env.DOI_PREFIX,
+  expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
   functionalAccounts: [
     {
       username: "admin",
