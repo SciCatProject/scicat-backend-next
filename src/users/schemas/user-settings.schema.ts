@@ -10,7 +10,7 @@ export type UserSettingsDocument = UserSettings & Document;
   collection: "UserSetting",
 })
 export class UserSettings {
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String, unique: true, default: () => uuidv4() })
   _id: string;
 
   @ApiProperty({ type: String, default: () => uuidv4() })
