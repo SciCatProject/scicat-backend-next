@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { OwnableDto } from "src/common/dto/ownable.dto";
 
-export class CreateProposalDto {
+export class CreateProposalDto extends OwnableDto {
   @ApiProperty()
   readonly ownerGroup: string;
 
@@ -35,8 +36,8 @@ export class CreateProposalDto {
   readonly abstract: string;
 
   @ApiProperty()
-  readonly startTime: Date;
+  readonly startTime?: Date;
 
   @ApiProperty()
-  readonly endTime: Date;
+  readonly endTime?: Date;
 }
