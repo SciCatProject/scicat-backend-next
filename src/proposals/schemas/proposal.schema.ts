@@ -57,11 +57,11 @@ export class Proposal extends Ownable {
   abstract: string;
 
   @ApiProperty()
-  @Prop({ type: Date })
+  @Prop({ type: Date, required: false })
   startTime: Date;
 
   @ApiProperty()
-  @Prop({ type: Date })
+  @Prop({ type: Date, required: false })
   endTime: Date;
 
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
