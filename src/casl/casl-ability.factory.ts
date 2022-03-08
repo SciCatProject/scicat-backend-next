@@ -98,6 +98,9 @@ export class CaslAbilityFactory {
       ownerGroup: { $in: user.currentGroups },
     });
 
+    can(Action.Read, User, { _id: user._id });
+    can(Action.Update, User, { _id: user._id });
+
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
     }
