@@ -11,7 +11,7 @@ export type AttachmentDocument = Attachment & Document;
 })
 export class Attachment extends Ownable {
   @ApiProperty({ type: String, default: () => uuidv4() })
-  @Prop({ type: String, required: true, default: () => uuidv4() })
+  @Prop({ type: String, required: true, unique: true, default: () => uuidv4() })
   _id: string;
 
   @ApiProperty({

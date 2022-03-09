@@ -9,6 +9,7 @@ export type UserDocument = User & mongoose.Document;
   collection: "User",
 })
 export class User {
+  @Prop({ type: String, unique: true })
   _id: string;
 
   @ApiProperty()
@@ -24,7 +25,7 @@ export class User {
   password: string;
 
   @ApiProperty()
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @ApiProperty()

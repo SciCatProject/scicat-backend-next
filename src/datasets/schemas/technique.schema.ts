@@ -5,7 +5,7 @@ export type TechniqueDocument = Technique & Document;
 
 @Schema()
 export class Technique {
-  @Prop()
+  @Prop({ type: String, unique: true })
   pid: string;
 
   @Prop()

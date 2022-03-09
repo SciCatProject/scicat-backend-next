@@ -8,6 +8,7 @@ export type RoleDocument = Role & Document;
   collection: "Role",
 })
 export class Role {
+  @Prop({ type: String, unique: true })
   _id: string;
 
   @ApiProperty()
