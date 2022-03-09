@@ -46,6 +46,10 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `PID_PREFIX` [string] The facility PID prefix, with trailing slash.
 - `PUBLIC_URL_PREFIX` [string] The base URL to the facility Landing Page.
 - `PORT` [number] *Optional* The port on which you want to access the app. Defaults to `3000`.
+- `RABBITMQ_ENABLED` [string] *Optional* Flag to enable/disable RabbitMQ consumer. Values "yes" or "no". Defaults to "no".
+- `RABBITMQ_HOSTNAME` [string] *Optional* The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled.
+- `RABBITMQ_USERNAME` [string] *Optional* The username used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled.
+- `RABBITMQ_PASSWORD` [string] *Optional* The password used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled.
 - `REGISTER_DOI_URI` [string] URI to the organization that registers the facilities DOI's.
 - `REGISTER_METADATA_URI` [string] URI to the organization that registers the facilities published data metadata.
 - `SITE` [string] The name of your site.

@@ -67,6 +67,12 @@ export default () => ({
   pidPrefix: process.env.PID_PREFIX,
   port: parseInt(process.env.PORT || "3000", 10),
   publicURLprefix: process.env.PUBLIC_URL_PREFIX,
+  rabbitMq: {
+    enabled: process.env.RABBITMQ_ENABLED ?? "no",
+    hostname: process.env.RABBITMQ_HOSTNAME,
+    username: process.env.RABBITMQ_USERNAME,
+    password: process.env.RABBITMQ_PASSWORD,
+  },
   registerDoiUri: process.env.REGISTER_DOI_URI,
   registerMetadataUri: process.env.REGISTER_METADATA_URI,
   site: process.env.SITE,
