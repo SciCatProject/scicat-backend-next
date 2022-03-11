@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { JobType } from "../job-type.enum";
 
 export type JobDocument = Job & Document;
 
@@ -22,7 +23,12 @@ export class Job {
   emailJobInitiator: string;
 
   @ApiProperty({ description: "Type of job, e.g. archive, retrieve etc" })
-  @Prop({ type: String, required: true, default: "retrieve" })
+  @Prop({
+    type: String,
+    required: true,
+    enum: [JobType.Archive, JobType.Retrieve],
+    default: JobType.Retrieve,
+  })
   type: string;
 
   @ApiProperty({
@@ -54,8 +60,8 @@ export class Job {
     description:
       "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected",
   })
-  @Prop({ type: Object, required: false })
-  datasetList: Record<string, unknown>;
+  @Prop({ type: [Object], required: false })
+  datasetList: Record<string, unknown>[];
 
   @ApiProperty({ description: "Detailed return value after job is finished" })
   @Prop({ type: Object, required: false })
