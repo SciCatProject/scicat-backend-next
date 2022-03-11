@@ -23,12 +23,18 @@ import { RabbitMQMessageBroker } from "@user-office-software/duo-message-broker"
 import { IProposalAcceptedMessage } from "./common/interfaces/common.interface";
 import { CreateProposalDto } from "./proposals/dto/create-proposal.dto";
 import { ProposalsService } from "./proposals/proposals.service";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { join } from "path";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
+import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
+import { CommonModule } from "./common/common.module";
 
 @Module({
   imports: [
     AttachmentsModule,
     AuthModule,
     CaslModule,
+    CommonModule,
     ConfigModule.forRoot({
       load: [configuration],
     }),
@@ -38,6 +44,35 @@ import { ProposalsService } from "./proposals/proposals.service";
     InstrumentsModule,
     JobsModule,
     LogbooksModule,
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const port = configService.get<string>("SMTP_PORT");
+        return {
+          transport: {
+            host: configService.get<string>("SMTP_HOST"),
+            port: port ? parseInt(port) : undefined,
+            secure:
+              configService.get<string>("SMTP_SECURE") === "yes" ? true : false,
+          },
+          defaults: {
+            from: configService.get<string>("SMTP_MESSAGE_FROM"),
+          },
+          template: {
+            dir: join(__dirname, "./common/email-templates"),
+            adapter: new HandlebarsAdapter({
+              unwrapJSON: (json) => unwrapJSON(json),
+              keyToWord: (string) => formatCamelCase(string),
+              eq: (a, b) => a === b,
+            }),
+            options: {
+              strict: true,
+            },
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
