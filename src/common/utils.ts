@@ -1,7 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { unit } from "mathjs";
-import { createTransport } from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { tz } from "moment-timezone";
 import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 import { IAxiosError, IScientificFilter } from "./interfaces/common.interface";
@@ -139,42 +138,23 @@ export const handleAxiosRequestError = (
   Logger.verbose(error.config, context);
 };
 
-export const sendMail = async (
-  to: string,
-  cc: string,
-  subjectText: string,
-  mailText: string | null,
-  html: string | null = null,
-) => {
-  const smtpSettings: SMTPTransport.Options = {
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
-    secure: process.env.SMTP_SECURE === "yes" ? true : false,
-  };
-  const smtpMessage = {
-    from: process.env.SMTP_MESSAGE_FROM,
-    to: undefined,
-    subject: undefined,
-    text: undefined,
-  };
+// transform date strings in all fields with key dateKeys to updateTimesToUTC
+// do nothing if input values are already UTC
 
-  if (smtpSettings.host && smtpMessage) {
-    try {
-      const transporter = createTransport(smtpSettings);
-      const message = {
-        ...smtpMessage,
-        to,
-        ...(cc && { cc }),
-        ...(subjectText && { subject: subjectText }),
-        ...(html && { html }),
-        ...(mailText && { mailText }),
-      };
-      Logger.log("Sending email to: " + to, "Utils.sendMail");
-      return await transporter.sendMail(message);
-    } catch (error) {
-      Logger.error("Failed sending email to: " + to, "Utils.sendMail");
-      Logger.error(error, "Utils.sendMail");
+export const updateTimesToUTC = <T, K extends keyof T>(
+  dateKeys: K[],
+  instance: T,
+) =>
+  dateKeys.map((key) => {
+    if (instance[key]) {
+      const dateField = instance[key] as unknown as string;
+      instance[key] = tz(dateField, tz.guess()).format() as unknown as T[K];
     }
-  }
-  return;
-};
+  });
+
+// dito but for array of instances
+
+export const updateAllTimesToUTC = <T, K extends keyof T>(
+  dateKeys: K[],
+  instances: T[],
+) => instances.map((instance) => updateTimesToUTC(dateKeys, instance));
