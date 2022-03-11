@@ -4,8 +4,6 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { registerHelper } from "handlebars";
-import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,10 +18,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("explorer-next", app, document);
-
-  registerHelper("unwrapJSON", (json) => unwrapJSON(json));
-  registerHelper("keyToWord", (string) => formatCamelCase(string));
-  registerHelper("eq", (a, b) => a === b);
 
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
     ConfigService,
