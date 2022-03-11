@@ -345,6 +345,15 @@ export class DatasetsService {
     return results;
   }
 
+  async updateAll(
+    filter: FilterQuery<DatasetDocument>,
+    updateDatasetDto: Record<string, unknown>,
+  ): Promise<unknown> {
+    return this.datasetModel
+      .updateMany(filter, updateDatasetDto, { new: true })
+      .exec();
+  }
+
   async findOne(
     filters: FilterQuery<DatasetDocument>,
   ): Promise<Dataset | null> {
