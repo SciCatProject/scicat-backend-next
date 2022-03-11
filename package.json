@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@casl/ability": "^5.4.3",
+    "@nestjs-modules/mailer": "^1.6.1",
     "@nestjs/axios": "0.0.5",
     "@nestjs/common": "^8.2.6",
     "@nestjs/config": "^1.1.7",
