@@ -15,8 +15,6 @@ export class FilterPipe
     /*
      * intercept filter and make sure to convert loopback operators to mongo operators
      */
-    console.log("Filter pipe ---------");
-    console.log(inValue);
     const outValue = inValue;
     if (inValue.filter) {
       let filter = inValue.filter;
@@ -35,7 +33,6 @@ export class FilterPipe
       filter = filter.replace(/{"or":\[/g, '{"$or":[');
       outValue.filter = filter;
     }
-    console.log("Output :" + JSON.stringify(outValue));
     return outValue;
   }
 }
