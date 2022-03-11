@@ -24,5 +24,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
     UsersModule,
   ],
   providers: [PoliciesService, CaslAbilityFactory],
+  exports: [PoliciesService],
 })
 export class PoliciesModule {}
