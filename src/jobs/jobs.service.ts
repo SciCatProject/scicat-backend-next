@@ -4,6 +4,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { readFileSync } from "fs";
 import { compile } from "handlebars";
@@ -26,15 +27,10 @@ import { Job, JobDocument } from "./schemas/job.schema";
 @Injectable()
 export class JobsService implements OnModuleInit {
   private domainName = process.env.HOST;
-
-  private smtpMessage = {
-    from: process.env.SMTP_MESSAGE_FROM,
-    to: undefined,
-    subject: undefined,
-    text: undefined,
-  };
+  private smtpMessageFrom = this.configService.get<string>("smtpMessageFrom");
 
   constructor(
+    private configService: ConfigService,
     private datasetsService: DatasetsService,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private mailService: MailService,
@@ -415,7 +411,7 @@ export class JobsService implements OnModuleInit {
 
         // add cc message in case of failure to scicat archivemanager
         const cc =
-          bad.length > 0 && this.smtpMessage.from ? this.smtpMessage.from : "";
+          bad.length > 0 && this.smtpMessageFrom ? this.smtpMessageFrom : "";
         const creationTime = currentData.creationTime
           .toISOString()
           .replace(/T/, " ")
