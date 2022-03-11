@@ -8,7 +8,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { readFileSync } from "fs";
 import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { sendMail } from "src/common/utils";
+import { MailService } from "src/common/mail.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFilters } from "src/datasets/interfaces/dataset-filters.interface";
 import { PoliciesService } from "src/policies/policies.service";
@@ -37,6 +37,7 @@ export class JobsService implements OnModuleInit {
   constructor(
     private datasetsService: DatasetsService,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    private mailService: MailService,
     private policiesService: PoliciesService,
   ) {}
 
@@ -588,6 +589,6 @@ export class JobsService implements OnModuleInit {
     const emailTemplate = compile(htmlTemplate);
     const email = emailTemplate(emailContext);
     const subject = emailContext.subject as string;
-    await sendMail(to, cc, subject, null, email);
+    await this.mailService.sendMail(to, cc, subject, null, email);
   }
 }
