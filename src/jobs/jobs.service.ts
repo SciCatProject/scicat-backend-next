@@ -1,6 +1,18 @@
-import { Injectable, Logger } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { readFileSync } from "fs";
+import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { sendMail } from "src/common/utils";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { IDatasetFilters } from "src/datasets/interfaces/dataset-filters.interface";
+import { PoliciesService } from "src/policies/policies.service";
+import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import {
@@ -8,11 +20,30 @@ import {
   IJobFilters,
   JobField,
 } from "./interfaces/job-filters.interface";
+import { JobType } from "./job-type.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
 
 @Injectable()
-export class JobsService {
-  constructor(@InjectModel(Job.name) private jobModel: Model<JobDocument>) {}
+export class JobsService implements OnModuleInit {
+  private domainName = process.env.HOST;
+
+  private smtpMessage = {
+    from: process.env.SMTP_MESSAGE_FROM,
+    to: undefined,
+    subject: undefined,
+    text: undefined,
+  };
+
+  constructor(
+    private datasetsService: DatasetsService,
+    @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    private policiesService: PoliciesService,
+  ) {}
+
+  onModuleInit() {
+    this.jobModel.addListener("jobCreated", this.sendStartJobEmail);
+    this.jobModel.addListener("jobUpdated", this.sendFinishJobEmail);
+  }
 
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
@@ -284,5 +315,279 @@ export class JobsService {
     }
 
     return property.instance;
+  }
+
+  async sendStartJobEmail(context: { instance: Job }) {
+    const ids: string[] = context.instance.datasetList.map(
+      (dataset) => dataset.pid as string,
+    );
+    const to: string = context.instance.emailJobInitiator;
+    const jobType: string = context.instance.type;
+    await this.markDatasetsAsScheduled(ids, jobType);
+
+    const filter: IDatasetFilters = {
+      where: {
+        pid: {
+          inq: ids,
+        },
+      },
+    };
+
+    const jobData = ["archive", "retrieve"].includes(jobType)
+      ? (await this.datasetsService.findAll(filter)).map((dataset) => ({
+          pid: dataset.pid,
+          ownerGroup: dataset.ownerGroup,
+          sourceFolder: dataset.sourceFolder,
+          size: dataset.size,
+          archivable: dataset.datasetlifecycle.archivable,
+          retrievable: dataset.datasetlifecycle.retrievable,
+        }))
+      : [];
+
+    const emailContext = {
+      domainName: this.domainName,
+      subject: `Your ${jobType} job submitted successfully`,
+      jobSubmissionNotification: {
+        jobId: context.instance.id,
+        jobType,
+        jobData,
+      },
+    };
+
+    const policy = await this.getPolicy(ids[0]);
+    await this.applyPolicyAndSendEmail(jobType, policy, emailContext, to);
+  }
+
+  // Populate email context for finished job notification
+  async sendFinishJobEmail(context: {
+    instance: Job;
+    hookState: { oldData: Job[] };
+  }) {
+    // Iterate through list of jobs that were updated
+    // Iterate in case of bulk update send out email to each job
+    context.hookState.oldData.forEach(async (oldData) => {
+      const currentData = await this.findOne({ id: oldData.id });
+      //Check that statusMessage has changed. Only run on finished job
+      if (
+        currentData &&
+        currentData.jobStatusMessage !== oldData.jobStatusMessage &&
+        currentData.jobStatusMessage.indexOf("finish") !== -1
+      ) {
+        const ids = currentData.datasetList.map(
+          (dataset) => dataset.pid as string,
+        );
+        const to = currentData.emailJobInitiator;
+        const {
+          type: jobType,
+          id: jobId,
+          jobStatusMessage,
+          jobResultObject,
+        } = currentData;
+        const failure = jobStatusMessage.indexOf("finishedSuccessful") === -1;
+        const filter = {
+          where: {
+            pid: {
+              inq: ids,
+            },
+          },
+        };
+
+        const datasets = (await this.datasetsService.findAll(filter)).map(
+          (dataset) => ({
+            pid: dataset.pid,
+            ownerGroup: dataset.ownerGroup,
+            sourceFolder: dataset.sourceFolder,
+            size: dataset.size,
+            archiveStatusMessage: dataset.datasetlifecycle.archiveStatusMessage,
+            retrieveStatusMessage:
+              dataset.datasetlifecycle.retrieveStatusMessage,
+            archiveReturnMessage: dataset.datasetlifecycle.archiveReturnMessage,
+            retrieveReturnMessage:
+              dataset.datasetlifecycle.retrieveReturnMessage,
+            retrievable: dataset.datasetlifecycle.retrievable,
+          }),
+        );
+
+        // split result into good and bad
+        const good = datasets.filter((dataset) => dataset.retrievable);
+        const bad = datasets.filter((dataset) => !dataset.retrievable);
+
+        // add cc message in case of failure to scicat archivemanager
+        const cc =
+          bad.length > 0 && this.smtpMessage.from ? this.smtpMessage.from : "";
+        const creationTime = currentData.creationTime
+          .toISOString()
+          .replace(/T/, " ")
+          .replace(/\..+/, "");
+        const additionalMsg =
+          jobType === JobType.Retrieve && good.length > 0
+            ? "You can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination."
+            : "";
+
+        const emailContext = {
+          domainName: this.domainName,
+          subject: ` Your ${jobType} job from ${creationTime} is finished ${
+            failure ? "with failure" : "successfully"
+          }`,
+          jobFinishedNotification: {
+            jobId,
+            jobType,
+            failure,
+            creationTime,
+            jobStatusMessage,
+            jobResultObject: jobResultObject,
+            datasets: {
+              good,
+              bad,
+            },
+            additionalMsg,
+          },
+        };
+
+        const policy = await this.getPolicy(ids[0]);
+        await this.applyPolicyAndSendEmail(
+          jobType,
+          policy,
+          emailContext,
+          to,
+          cc,
+        );
+      }
+    });
+  }
+
+  async markDatasetsAsScheduled(ids: string[], jobType: string) {
+    const statusMessage = {
+      retrieve: "scheduledForRetrieval",
+      archive: "scheduledForArchiving",
+    };
+    const filter = {
+      pid: {
+        inq: ids,
+      },
+    };
+
+    switch (jobType) {
+      case JobType.Archive: {
+        const values = {
+          $set: {
+            "datasetlifecycle.archivable": false,
+            "datasetlifecycle.retrievable": false,
+            [`datasetlifecycle.${jobType}StatusMessage`]:
+              statusMessage[jobType],
+          },
+        };
+        await this.datasetsService.updateAll(filter, values);
+        break;
+      }
+      case JobType.Retrieve: {
+        const values = {
+          $set: {
+            [`datasetlifecycle.${jobType}StatusMessage`]:
+              statusMessage[jobType],
+          },
+        };
+        await this.datasetsService.updateAll(filter, values);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  async getPolicy(datasetId: string): Promise<Partial<Policy>> {
+    try {
+      const dataset = await this.datasetsService.findOne({ pid: datasetId });
+      if (!dataset) {
+        throw new NotFoundException(
+          "Could not dataset with pid " + datasetId,
+          "JobsService",
+        );
+      }
+      const policy = await this.policiesService.findOne({
+        ownerGroup: dataset.ownerGroup,
+      });
+
+      if (policy) {
+        return policy;
+      }
+    } catch (error) {
+      const message = "Error when looking for Policy of pgroup " + error;
+      Logger.error("Dataset ID: " + datasetId, "JobsService");
+      Logger.error(message);
+    }
+
+    Logger.log(
+      "No policy found for dataset with id: " + datasetId,
+      "JobsService",
+    );
+    Logger.log("Returning default policy instead", "JobsService");
+    // this should not happen anymore, but kept as additional safety belt
+    const defaultPolicy: Partial<Policy> = {
+      archiveEmailNotification: true,
+      retrieveEmailNotification: true,
+      archiveEmailsToBeNotified: [],
+      retrieveEmailsToBeNotified: [],
+    };
+    return defaultPolicy;
+  }
+
+  async applyPolicyAndSendEmail(
+    jobType: string,
+    policy: Partial<Policy>,
+    emailContext: Record<string, unknown>,
+    to: string,
+    cc = "",
+  ) {
+    const { failure } = emailContext;
+
+    switch (jobType) {
+      case JobType.Archive: {
+        const { archiveEmailNotification, archiveEmailsToBeNotified } = policy;
+        if (archiveEmailsToBeNotified) {
+          to += "," + archiveEmailsToBeNotified.join();
+        }
+
+        // Always notify on failure
+        if (archiveEmailNotification || failure) {
+          await this.sendEmail(to, cc, emailContext);
+        }
+        break;
+      }
+      case JobType.Retrieve: {
+        const { retrieveEmailNotification, retrieveEmailsToBeNotified } =
+          policy;
+
+        if (retrieveEmailsToBeNotified) {
+          to += "," + retrieveEmailsToBeNotified.join();
+        }
+
+        // Always notify on failure
+        if (retrieveEmailNotification || failure) {
+          await this.sendEmail(to, cc, emailContext);
+        }
+        break;
+      }
+      default: {
+        // For other jobs like reset job
+        await this.sendEmail(to, cc, emailContext);
+        break;
+      }
+    }
+  }
+
+  async sendEmail(
+    to: string,
+    cc: string,
+    emailContext: Record<string, unknown>,
+  ) {
+    const htmlTemplate = readFileSync(
+      "src/common/email-templates/job-template.html",
+      "utf-8",
+    );
+    const emailTemplate = compile(htmlTemplate);
+    const email = emailTemplate(emailContext);
+    const subject = emailContext.subject as string;
+    await sendMail(to, cc, subject, null, email);
   }
 }
