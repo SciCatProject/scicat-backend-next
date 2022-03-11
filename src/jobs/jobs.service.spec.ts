@@ -1,6 +1,8 @@
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { PoliciesService } from "src/policies/policies.service";
 import { JobsService } from "./jobs.service";
 import { Job } from "./schemas/job.schema";
 
@@ -13,9 +15,13 @@ const mockJob: Job = {
   executionTime: new Date(),
   jobParams: {},
   jobStatusMessage: "testStatus",
-  datasetList: {},
+  datasetList: [],
   jobResultObject: {},
 };
+
+class DatasetsServiceMock {}
+
+class PoliciesServiceMock {}
 
 describe("JobsService", () => {
   let service: JobsService;
@@ -24,6 +30,7 @@ describe("JobsService", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: DatasetsService, useClass: DatasetsServiceMock },
         JobsService,
         {
           provide: getModelToken("Job"),
@@ -35,6 +42,7 @@ describe("JobsService", () => {
             exec: jest.fn(),
           },
         },
+        { provide: PoliciesService, useClass: PoliciesServiceMock },
       ],
     }).compile();
 
