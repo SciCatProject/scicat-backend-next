@@ -6,10 +6,12 @@ import { Job, JobSchema } from "./schemas/job.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
+import { CommonModule } from "src/common/common.module";
 
 @Module({
   controllers: [JobsController],
   imports: [
+    CommonModule,
     DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
