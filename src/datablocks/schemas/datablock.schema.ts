@@ -22,12 +22,12 @@ export class Datablock extends Ownable {
   })
   _id: string;
 
-  @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Dataset", required: false })
+  @ApiProperty({ type: String, required: true })
+  @Prop({ type: String, ref: "Dataset", required: true })
   datasetId: string;
 
   @ApiProperty()
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   archiveId: string;
 
   @ApiProperty()
