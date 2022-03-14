@@ -48,6 +48,8 @@ import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
+import { RawDataset } from "./schemas/raw-dataset.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -68,6 +70,10 @@ export class DatasetsController {
   // POST /datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  @UseInterceptors(
+    new UTCTimeInterceptor<Dataset, keyof Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset, keyof RawDataset>(["endTime"]),
+  )
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
@@ -269,6 +275,10 @@ export class DatasetsController {
   // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @UseInterceptors(
+    new UTCTimeInterceptor<Dataset, keyof Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset, keyof RawDataset>(["endTime"]),
+  )
   @Patch("/:id")
   async findByIdAndUpdate(
     @Param("id") id: string,
