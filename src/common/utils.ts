@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
+import { DateTime } from "luxon";
 import { unit } from "mathjs";
-import { tz } from "moment-timezone";
 import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 import { IAxiosError, IScientificFilter } from "./interfaces/common.interface";
@@ -148,7 +148,9 @@ export const updateTimesToUTC = <T, K extends keyof T>(
   dateKeys.map((key) => {
     if (instance[key]) {
       const dateField = instance[key] as unknown as string;
-      instance[key] = tz(dateField, tz.guess()).format() as unknown as T[K];
+      instance[key] = DateTime.fromISO(dateField, {
+        zone: DateTime.local().zoneName,
+      }).toISO() as unknown as T[K];
     }
   });
 
