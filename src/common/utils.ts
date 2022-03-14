@@ -144,8 +144,8 @@ export const handleAxiosRequestError = (
 export const updateTimesToUTC = <T, K extends keyof T>(
   dateKeys: K[],
   instance: T,
-) =>
-  dateKeys.map((key) => {
+): T => {
+  dateKeys.forEach((key) => {
     if (instance[key]) {
       const dateField = instance[key] as unknown as string;
       instance[key] = DateTime.fromISO(dateField, {
@@ -153,10 +153,12 @@ export const updateTimesToUTC = <T, K extends keyof T>(
       }).toISO() as unknown as T[K];
     }
   });
+  return instance;
+};
 
 // dito but for array of instances
 
 export const updateAllTimesToUTC = <T, K extends keyof T>(
   dateKeys: K[],
   instances: T[],
-) => instances.map((instance) => updateTimesToUTC(dateKeys, instance));
+): T[] => instances.map((instance) => updateTimesToUTC(dateKeys, instance));
