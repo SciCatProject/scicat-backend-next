@@ -32,7 +32,7 @@ import {
   IDatasetFacets,
   IDatasetFilters,
 } from "./interfaces/dataset-filters.interface";
-import { PublicDatasetsInterceptor } from "./interceptors/public-datasets-interceptor";
+import { PublicDatasetsInterceptor } from "./interceptors/public-datasets.interceptor";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
