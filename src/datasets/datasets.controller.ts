@@ -488,7 +488,12 @@ export class DatasetsController {
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
       };
-      return this.datablocksService.create(createDatablock);
+      const datablock = await this.datablocksService.create(createDatablock);
+      await this.datasetsService.findByIdAndUpdate(id, {
+        packedSize: datablock.packedSize,
+        numberOfFilesArchived: datablock.dataFileList.length,
+      });
+      return datablock;
     }
     return null;
   }
@@ -513,10 +518,18 @@ export class DatasetsController {
     @Param("fk") datablockId: string,
     @Body() updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
-    return this.datablocksService.update(
+    const datablock = await this.datablocksService.update(
       { _id: datablockId, datasetId },
       updateDatablockDto,
     );
+    if (datablock) {
+      await this.datasetsService.findByIdAndUpdate(datasetId, {
+        packedSize: datablock.packedSize,
+        numberOfFilesArchived: datablock.dataFileList.length,
+      });
+      return datablock;
+    }
+    return null;
   }
 
   // DELETE /datasets/:id/datablocks/:fk
