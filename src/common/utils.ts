@@ -141,16 +141,13 @@ export const handleAxiosRequestError = (
 // transform date strings in all fields with key dateKeys to updateTimesToUTC
 // do nothing if input values are already UTC
 
-export const updateTimesToUTC = <T, K extends keyof T>(
-  dateKeys: K[],
-  instance: T,
-): T => {
+export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
   dateKeys.forEach((key) => {
     if (instance[key]) {
       const dateField = instance[key] as unknown as string;
       instance[key] = DateTime.fromISO(dateField, {
         zone: DateTime.local().zoneName,
-      }).toISO() as unknown as T[K];
+      }).toISO() as unknown as T[keyof T];
     }
   });
   return instance;
@@ -158,7 +155,7 @@ export const updateTimesToUTC = <T, K extends keyof T>(
 
 // dito but for array of instances
 
-export const updateAllTimesToUTC = <T, K extends keyof T>(
-  dateKeys: K[],
+export const updateAllTimesToUTC = <T>(
+  dateKeys: (keyof T)[],
   instances: T[],
-): T[] => instances.map((instance) => updateTimesToUTC(dateKeys, instance));
+): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
