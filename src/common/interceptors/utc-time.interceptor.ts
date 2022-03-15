@@ -8,12 +8,10 @@ import { Observable } from "rxjs";
 import { updateTimesToUTC } from "../utils";
 
 @Injectable()
-export class UTCTimeInterceptor<T, K extends keyof T>
-  implements NestInterceptor
-{
-  dateKeys: K[];
+export class UTCTimeInterceptor<T> implements NestInterceptor {
+  dateKeys: (keyof T)[];
 
-  constructor(dateKeys: K[]) {
+  constructor(dateKeys: (keyof T)[]) {
     this.dateKeys = dateKeys;
   }
 
@@ -23,8 +21,7 @@ export class UTCTimeInterceptor<T, K extends keyof T>
   ): Observable<unknown> | Promise<Observable<unknown>> {
     const req = context.switchToHttp().getRequest();
     const instance = req.body as T;
-
-    updateTimesToUTC<T, keyof T>(this.dateKeys, instance);
+    req.body = updateTimesToUTC<T>(this.dateKeys, instance);
     return next.handle();
   }
 }
