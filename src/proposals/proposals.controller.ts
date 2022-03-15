@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
@@ -30,6 +31,8 @@ import {
 } from "./interfaces/proposal-filters.interface";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
+import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
+import { MeasurementPeriod } from "./schemas/measurement-peroid.schema";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -44,6 +47,12 @@ export class ProposalsController {
   // POST /proposals
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Proposal))
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<Proposal, MeasurementPeriod>(
+      "MeasurementPeriodList",
+      ["start", "end"],
+    ),
+  )
   @Post()
   async create(
     @Body() createProposalDto: CreateProposalDto,
@@ -104,6 +113,12 @@ export class ProposalsController {
   // PATCH /proposals/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Proposal))
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<Proposal, MeasurementPeriod>(
+      "MeasurementPeriodList",
+      ["start", "end"],
+    ),
+  )
   @Patch("/:id")
   async update(
     @Param("id") id: string,
