@@ -339,9 +339,17 @@ export class DatasetsController {
   async createAttachment(
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<Attachment> {
-    const createAttachment = { ...createAttachmentDto, datasetId: id };
-    return this.attachmentsService.create(createAttachment);
+  ): Promise<Attachment | null> {
+    const dataset = await this.datasetsService.findOne({ pid: id });
+    if (dataset) {
+      const createAttachment: CreateAttachmentDto = {
+        ...createAttachmentDto,
+        datasetId: id,
+        ownerGroup: dataset.ownerGroup,
+      };
+      return this.attachmentsService.create(createAttachment);
+    }
+    return null;
   }
 
   // GET /datasets/:id/attachments
@@ -399,9 +407,17 @@ export class DatasetsController {
   async createOrigDatablock(
     @Param("id") id: string,
     @Body() createOrigdatablockDto: CreateOrigdatablockDto,
-  ): Promise<OrigDatablock> {
-    const createOrigDatablock = { ...createOrigdatablockDto, datasetId: id };
-    return this.origDatablocksService.create(createOrigDatablock);
+  ): Promise<OrigDatablock | null> {
+    const dataset = await this.datasetsService.findOne({ pid: id });
+    if (dataset) {
+      const createOrigDatablock: CreateOrigdatablockDto = {
+        ...createOrigdatablockDto,
+        datasetId: id,
+        ownerGroup: dataset.ownerGroup,
+      };
+      return this.origDatablocksService.create(createOrigDatablock);
+    }
+    return null;
   }
 
   // GET /datasets/:id/origdatablocks
@@ -464,9 +480,17 @@ export class DatasetsController {
   async createDatablock(
     @Param("id") id: string,
     @Body() createDatablockDto: CreateDatablockDto,
-  ): Promise<Datablock> {
-    const createDatablock = { ...createDatablockDto, datasetId: id };
-    return this.datablocksService.create(createDatablock);
+  ): Promise<Datablock | null> {
+    const dataset = await this.datasetsService.findOne({ pid: id });
+    if (dataset) {
+      const createDatablock: CreateDatablockDto = {
+        ...createDatablockDto,
+        datasetId: id,
+        ownerGroup: dataset.ownerGroup,
+      };
+      return this.datablocksService.create(createDatablock);
+    }
+    return null;
   }
 
   // GET /datasets/:id/datablocks
