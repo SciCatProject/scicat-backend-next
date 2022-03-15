@@ -50,6 +50,8 @@ import { FilterQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { RawDataset } from "./schemas/raw-dataset.schema";
+import { DataFile } from "src/common/schemas/datafile.schema";
+import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -71,8 +73,8 @@ export class DatasetsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset, keyof Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset, keyof RawDataset>(["endTime"]),
+    new UTCTimeInterceptor<Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset>(["endTime"]),
   )
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
@@ -276,8 +278,8 @@ export class DatasetsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset, keyof Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset, keyof RawDataset>(["endTime"]),
+    new UTCTimeInterceptor<Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset>(["endTime"]),
   )
   @Patch("/:id")
   async findByIdAndUpdate(
@@ -388,6 +390,11 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, OrigDatablock),
   )
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
+      "time",
+    ]),
+  )
   @Post("/:id/origdatablocks")
   async createOrigDatablock(
     @Param("id") id: string,
@@ -413,6 +420,11 @@ export class DatasetsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, OrigDatablock),
+  )
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
+      "time",
+    ]),
   )
   @Patch("/:id/origdatablocks/:fk")
   async findOneOrigDatablockAndUpdate(
@@ -445,6 +457,9 @@ export class DatasetsController {
   // POST /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Datablock))
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
+  )
   @Post("/:id/datablocks")
   async createDatablock(
     @Param("id") id: string,
@@ -465,6 +480,9 @@ export class DatasetsController {
   // PATCH /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Datablock))
+  @UseInterceptors(
+    new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
+  )
   @Patch("/:id/datablocks/:fk")
   async findOneDatablockAndUpdate(
     @Param("id") datasetId: string,
