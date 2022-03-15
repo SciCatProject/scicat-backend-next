@@ -401,7 +401,8 @@ export class DatasetsService {
     updateDatasetDto:
       | UpdateDatasetDto
       | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto,
+      | UpdateDerivedDatasetDto
+      | UpdateQuery<DatasetDocument>,
   ): Promise<Dataset | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 

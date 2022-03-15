@@ -46,7 +46,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { RawDataset } from "./schemas/raw-dataset.schema";
@@ -312,6 +312,25 @@ export class DatasetsController {
   @Delete("/:id")
   async findByIdAndDelete(@Param("id") id: string): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(id);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @Post("/:id/appendToArrayField")
+  async appendToArrayField(
+    @Param("id") id: string,
+    @Query("fieldName") fieldName: string,
+    data: unknown[],
+  ): Promise<Dataset | null> {
+    // $addToSet is necessary to append to the field and not overwrite
+    // $each is necessary as data is an array of values
+    const updateQuery: UpdateQuery<DatasetDocument> = {
+      $addToSet: {
+        [fieldName]: { $each: data },
+      },
+    };
+
+    return this.datasetsService.findByIdAndUpdate(id, updateQuery);
   }
 
   // GET /datasets/:id/thumbnail
