@@ -117,9 +117,10 @@ export class SamplesService {
 
     const samples = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys(samples ?? []).filter(
-      (key) => !blacklist.some((regex) => regex.test(key)),
-    );
+    const metadataKeys = extractMetadataKeys<Sample>(
+      samples,
+      "sampleCharacteristics",
+    ).filter((key) => !blacklist.some((regex) => regex.test(key)));
 
     const metadataKey: string | undefined = filters.fields
       ? filters.fields.metadataKey
