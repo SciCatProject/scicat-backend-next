@@ -2,7 +2,7 @@ import { FilterQuery } from "mongoose";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { DatasetDocument } from "../schemas/dataset.schema";
 
-interface IDatasetFields {
+export interface IDatasetFields {
   mode?: Record<string, unknown>;
   text?: string;
   creationTime?: {
