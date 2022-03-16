@@ -45,7 +45,6 @@ export class PoliciesController {
     required: false,
   })
   async findAll(@Query("filter") filter?: string): Promise<Policy[]> {
-    console.log({ filter });
     const parsedFilter: IPolicyFilter = JSON.parse(filter ?? "{}");
     return this.policiesService.findAll(parsedFilter);
   }
