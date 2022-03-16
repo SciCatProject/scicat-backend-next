@@ -52,6 +52,7 @@ import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor
 import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
+import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -157,7 +158,7 @@ export class DatasetsController {
 
   // GET /fullquery
   @AllowAny()
-  @UseInterceptors(PublicDatasetsInterceptor)
+  @UseInterceptors(PublicDatasetsInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
   @ApiQuery({
     name: "filters",
