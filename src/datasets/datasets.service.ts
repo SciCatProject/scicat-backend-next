@@ -33,6 +33,7 @@ import {
   DatasetDocument,
   DatasetType,
 } from "./schemas/dataset.schema";
+import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { RawDataset } from "./schemas/raw-dataset.schema";
 
 @Injectable()
@@ -476,9 +477,10 @@ export class DatasetsService {
 
     const datasets = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys(datasets ?? []).filter(
-      (key) => !blacklist.some((regex) => regex.test(key)),
-    );
+    const metadataKeys = extractMetadataKeys<RawDataset | DerivedDataset>(
+      datasets as unknown as (RawDataset | DerivedDataset)[],
+      "scientificMetadata",
+    ).filter((key) => !blacklist.some((regex) => regex.test(key)));
 
     const metadataKey = filters.fields ? filters.fields.metadataKey : undefined;
     const returnLimit = this.configService.get<number>(
