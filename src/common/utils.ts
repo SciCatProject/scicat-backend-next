@@ -1,8 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
-import { unit } from "mathjs";
-import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
-import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
+import { format, unit } from "mathjs";
 import { IAxiosError, IScientificFilter } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
@@ -17,6 +15,63 @@ export const convertToSI = (
     console.error(error);
     return { valueSI: inputValue, unitSI: inputUnit };
   }
+};
+
+export const appendSIUnitToPhysicalQuantity = <T>(object: T) => {
+  let updatedObject = {} as T;
+  Object.keys(object).forEach((key) => {
+    const instance = object[key as keyof T] as T[keyof T];
+    let value: number | undefined;
+    let unit: string | undefined;
+    if (instance) {
+      Object.keys(instance).forEach((scientificKey) => {
+        if (scientificKey.startsWith("u") && !scientificKey.endsWith("SI")) {
+          unit = instance[
+            scientificKey as keyof T[keyof T]
+          ] as unknown as string;
+        }
+        if (scientificKey.startsWith("v") && !scientificKey.endsWith("SI")) {
+          value = instance[
+            scientificKey as keyof T[keyof T]
+          ] as unknown as number;
+        }
+      });
+
+      if (value !== undefined && unit && unit.length > 0) {
+        const { valueSI, unitSI } = convertToSI(value, unit);
+        updatedObject[key as keyof T] = {
+          ...instance,
+          valueSI,
+          unitSI,
+        };
+      }
+      // Has nested field
+      else if (isObject(instance)) {
+        updatedObject = {
+          ...updatedObject,
+          [key]: appendSIUnitToPhysicalQuantity(instance),
+        };
+      } else {
+        updatedObject[key as keyof T] = instance;
+      }
+    }
+  });
+  return updatedObject;
+};
+
+export const convertToRequestedUnit = (
+  value: number,
+  currentUnit: string,
+  requestedUnit: string,
+): { valueRequested: number; unitRequested: string } => {
+  const converted = unit(value, currentUnit).to(requestedUnit);
+  const formatted = format(converted, { precision: 3 }).toString();
+  const convertedValue = formatted.substring(0, formatted.indexOf(" "));
+  const convertedUnit = formatted.substring(formatted.indexOf(" ") + 1);
+  return {
+    valueRequested: Number(convertedValue),
+    unitRequested: convertedUnit,
+  };
 };
 
 export const mapScientificQuery = (
@@ -87,29 +142,26 @@ const isObject = (x: unknown) => {
   return false;
 };
 
-export const extractMetadataKeys = (datasets: unknown[]): string[] => {
+export const extractMetadataKeys = <T>(
+  instances: T[],
+  prop: keyof T,
+): string[] => {
   const keys = new Set<string>();
   //Return nested keys in this structure parentkey.childkey.grandchildkey....
   const flattenKeys = (object: Record<string, unknown>, keyStr: string) => {
     Object.keys(object).forEach((key) => {
-      const value = object[key];
+      const value = object[key] as Record<string, unknown>;
       const newKeyStr = `${keyStr ? keyStr + "." : ""}${key}`;
       if (isObject(value)) {
-        flattenKeys(value as Record<string, unknown>, newKeyStr);
+        flattenKeys(value, newKeyStr);
       } else {
         keys.add(newKeyStr);
       }
     });
   };
-  datasets.forEach((dataset) => {
-    if (dataset instanceof RawDataset && dataset.scientificMetadata) {
-      const scientificMetadata = dataset.scientificMetadata;
-      flattenKeys(scientificMetadata, "");
-    }
-    if (dataset instanceof DerivedDataset && dataset.scientificMetadata) {
-      const scientificMetadata = dataset.scientificMetadata;
-      flattenKeys(scientificMetadata, "");
-    }
+  instances.forEach((instance) => {
+    const propObject = instance[prop] as unknown as Record<string, unknown>;
+    flattenKeys(propObject, "");
   });
   return Array.from(keys);
 };
