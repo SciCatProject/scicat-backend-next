@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
@@ -19,6 +20,7 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Instrument } from "./schemas/instrument.schema";
 import { IInstrumentFilters } from "./interfaces/instrument-filters.interface";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -29,6 +31,9 @@ export class InstrumentsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Instrument),
+  )
+  @UseInterceptors(
+    new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
   )
   @Post()
   async create(
@@ -60,6 +65,9 @@ export class InstrumentsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Instrument),
+  )
+  @UseInterceptors(
+    new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
   )
   @Patch(":id")
   async update(

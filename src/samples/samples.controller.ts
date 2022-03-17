@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -27,6 +28,7 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { ISampleFilters } from "./interfaces/sample-filters.interface";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -41,6 +43,9 @@ export class SamplesController {
   // POST /samples
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Sample))
+  @UseInterceptors(
+    new FormatPhysicalQuantitiesInterceptor<Sample>("sampleCharacteristics"),
+  )
   @Post()
   async create(@Body() createSampleDto: CreateSampleDto): Promise<Sample> {
     return this.samplesService.create(createSampleDto);
@@ -136,6 +141,9 @@ export class SamplesController {
   // PATCH /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Sample))
+  @UseInterceptors(
+    new FormatPhysicalQuantitiesInterceptor<Sample>("sampleCharacteristics"),
+  )
   @Patch("/:id")
   async update(
     @Param("id") id: string,
