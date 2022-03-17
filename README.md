@@ -6,7 +6,7 @@
 
 ---
 
-**This repository contains the source code of the next version of the SciCat backend, which is under development. The current version of the backend is located in [SciCatProject/catamel](https://github.com/SciCatProject/catamel).**
+**This repository contains the source code of the next version of the SciCat backend, which is under development. The current version of the backend is located in [SciCatProject/backend](https://github.com/SciCatProject/backend).**
 
 ## Get started
 
