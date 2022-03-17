@@ -53,6 +53,8 @@ import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { DerivedDataset } from "./schemas/derived-dataset.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -76,6 +78,9 @@ export class DatasetsController {
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
     new UTCTimeInterceptor<RawDataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
+      "scientificMetadata",
+    ),
   )
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
@@ -281,6 +286,9 @@ export class DatasetsController {
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
     new UTCTimeInterceptor<RawDataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
+      "scientificMetadata",
+    ),
   )
   @Patch("/:id")
   async findByIdAndUpdate(
@@ -295,6 +303,13 @@ export class DatasetsController {
   // body: full dataset model
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @UseInterceptors(
+    new UTCTimeInterceptor<Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
+      "scientificMetadata",
+    ),
+  )
   @Put("/:id")
   async findByIdReplaceOrCreate(
     @Param("id") id: string,
