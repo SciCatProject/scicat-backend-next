@@ -450,7 +450,19 @@ export class DatasetsController {
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
       };
-      return this.origDatablocksService.create(createOrigDatablock);
+      const datablock = await this.origDatablocksService.create(
+        createOrigDatablock,
+      );
+
+      const updateDatasetDto: UpdateDatasetDto = {
+        size: datablock.size,
+        numberOfFiles: datablock.dataFileList.length,
+      };
+      await this.datasetsService.findByIdAndUpdate(
+        dataset.pid,
+        updateDatasetDto,
+      );
+      return datablock;
     }
     return null;
   }
