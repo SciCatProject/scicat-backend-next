@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { OwnableDto } from "src/common/dto/ownable.dto";
 
-export class CreateAttachmentDto {
+export class CreateAttachmentDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -15,12 +16,6 @@ export class CreateAttachmentDto {
     description: "Attachment caption to show in catanie",
   })
   readonly caption: string;
-
-  @ApiProperty({ type: String, required: true })
-  readonly ownerGroup: string;
-
-  @ApiProperty({ type: [String], required: false })
-  readonly accessGroups?: string[];
 
   @ApiProperty({ type: String })
   readonly createdBy: string;

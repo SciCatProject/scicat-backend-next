@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { OwnableDto } from "src/common/dto/ownable.dto";
 
-export class CreateSampleDto {
+export class CreateSampleDto extends OwnableDto {
   @ApiProperty()
   readonly ownerGroup: string;
 
