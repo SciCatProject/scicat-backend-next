@@ -18,6 +18,8 @@ export class Instrument {
     default: function genUUID(): string {
       return process.env.PID_PREFIX + uuidv4();
     },
+    required: true,
+    description: "PID of the instrument",
   })
   @Prop({
     type: String,
@@ -29,11 +31,20 @@ export class Instrument {
   })
   pid: string;
 
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "The name of the instrument.",
+  })
   @Prop({ type: String, required: true })
   name: string;
 
-  @ApiProperty({ type: Object, required: false, default: {} })
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing custom metadata",
+  })
   @Prop({ type: Object, required: false, default: {} })
   customMetadata: Record<string, unknown>;
 
