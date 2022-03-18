@@ -45,7 +45,11 @@ export class Sample extends Ownable {
   @Prop({ type: Object })
   sampleCharacteristics: Record<string, unknown>;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Boolean,
+    default: false,
+    description: "Flag is true when data are made publically available",
+  })
   @Prop({ type: Boolean, default: false })
   isPublished: boolean;
 
