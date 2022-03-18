@@ -32,31 +32,63 @@ export class RawDataset {
   updatedAt: Date;
   techniques: Technique[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Email of principal investigator",
+  })
   @Prop({ type: String, required: true })
   principalInvestigator: string;
 
-  @ApiProperty()
-  @Prop({ type: Date })
+  @ApiProperty({
+    type: Date,
+    required: false,
+    description:
+      "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server",
+  })
+  @Prop({ type: Date, required: false })
   endTime: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name",
+  })
   @Prop({ type: String, required: true, index: true })
   creationLocation: string;
 
-  @ApiProperty()
-  @Prop({ type: String })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Defines format of subsequent scientific meta data, e.g Nexus Version x.y",
+  })
+  @Prop({ type: String, required: false })
   dataFormat: string;
 
-  @ApiProperty()
-  @Prop({ type: Object })
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the scientific meta data",
+  })
+  @Prop({ type: Object, required: false, default: {} })
   scientificMetadata: Record<string, unknown>;
 
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The ID of the proposal to which the dataset belongs.",
+  })
   @Prop({ type: String, ref: "Proposal", required: false })
   proposalId: string;
 
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of the sample used when collecting the data.",
+  })
   @Prop({ type: String, ref: "Sample", required: false })
   sampleId: string;
 }
