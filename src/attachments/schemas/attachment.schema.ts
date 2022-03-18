@@ -24,7 +24,7 @@ export class Attachment extends Ownable {
 
   @ApiProperty({
     type: String,
-    description: "Attachment caption to show in catanie",
+    description: "Attachment caption to show in frontend",
   })
   @Prop({ type: String })
   caption: string;
