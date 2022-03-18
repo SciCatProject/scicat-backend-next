@@ -74,7 +74,7 @@ export class DerivedDataset {
 
   @ApiProperty({
     type: Object,
-    description: "JSON object containing the scientific meta data",
+    description: "JSON object containing the scientific metadata",
   })
   @Prop({ type: Object })
   scientificMetadata: Record<string, unknown>;

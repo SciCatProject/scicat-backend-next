@@ -71,7 +71,7 @@ export class RawDataset {
     type: Object,
     required: false,
     default: {},
-    description: "JSON object containing the scientific meta data",
+    description: "JSON object containing the scientific metadata",
   })
   @Prop({ type: Object, required: false, default: {} })
   scientificMetadata: Record<string, unknown>;
