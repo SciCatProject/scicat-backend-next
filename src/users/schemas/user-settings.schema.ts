@@ -17,15 +17,27 @@ export class UserSettings {
   @Prop({ type: String, unique: true, required: true, default: () => uuidv4() })
   id: string;
 
-  @ApiProperty()
-  @Prop([Object])
+  @ApiProperty({
+    type: [Object],
+    default: [],
+    description: "Array of the users preferred columns in dataset table",
+  })
+  @Prop({ type: [Object], default: [] })
   columns: Record<string, unknown>[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    default: 25,
+    description: "The users preferred number of datasets to view per page",
+  })
   @Prop({ type: Number, default: 25 })
   datasetCount: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    default: 25,
+    description: "The users preferred number of jobs to view per page",
+  })
   @Prop({ type: Number, default: 25 })
   jobCount: number;
 

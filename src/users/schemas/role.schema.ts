@@ -11,16 +11,22 @@ export class Role {
   @Prop({ type: String, unique: true })
   _id: string;
 
-  @ApiProperty()
-  @Prop({ unique: true })
+  @ApiProperty({ type: String, description: "The name of the role" })
+  @Prop({ type: String, unique: true })
   name: string;
 
-  @ApiProperty()
-  @Prop()
+  @ApiProperty({
+    type: Date,
+    description: "The date when the role was created",
+  })
+  @Prop({ type: Date })
   created: Date;
 
-  @ApiProperty()
-  @Prop()
+  @ApiProperty({
+    type: Date,
+    description: "The date when the role was last modified",
+  })
+  @Prop({ type: Date })
   modified: Date;
 }
 
