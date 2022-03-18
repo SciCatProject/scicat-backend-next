@@ -32,7 +32,7 @@ import {
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
-import { MeasurementPeriod } from "./schemas/measurement-peroid.schema";
+import { MeasurementPeriod } from "./schemas/measurement-period.schema";
 
 @ApiBearerAuth()
 @ApiTags("proposals")

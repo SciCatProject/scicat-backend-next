@@ -10,7 +10,7 @@ import { Dataset, DatasetSchema } from "src/datasets/schemas/dataset.schema";
 import {
   MeasurementPeriod,
   MeasurementPeriodSchema,
-} from "./measurement-peroid.schema";
+} from "./measurement-period.schema";
 
 export type ProposalDocument = Proposal & Document;
 @Schema({
