@@ -22,18 +22,30 @@ export class OrigDatablock extends Ownable {
   })
   _id: string;
 
-  @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Dataset", required: false })
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "PID of the dataset to which the orig datablock belongs.",
+  })
+  @Prop({ type: String, ref: "Dataset", required: true })
   datasetId: string;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({
+    type: Number,
+    required: true,
+    description:
+      "Total size in bytes of all files contained in the dataFileList",
+  })
   @Prop({
     type: Number,
     required: true,
   })
   size: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      "Embedded schema definition for which fields are required for each file",
+  })
   @Prop([DataFileSchema])
   dataFileList: DataFile[];
 }
