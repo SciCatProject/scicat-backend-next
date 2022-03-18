@@ -25,24 +25,31 @@ export class Sample extends Ownable {
   @Prop({ type: String, unique: true, default: () => uuidv4() })
   sampleId: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, description: "The owner of the sample" })
   @Prop()
   owner: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, description: "A description of the sample" })
   @Prop()
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: Date, description: "Date when the sample was created" })
   @Prop({ type: Date })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+    description: "Date when the sample was last modified",
+  })
   @Prop({ type: Date })
   updatedAt: Date;
 
-  @ApiProperty()
-  @Prop({ type: Object })
+  @ApiProperty({
+    type: Object,
+    default: {},
+    description: "JSON object containing the sample characteristics metadata",
+  })
+  @Prop({ type: Object, default: {} })
   sampleCharacteristics: Record<string, unknown>;
 
   @ApiProperty({
