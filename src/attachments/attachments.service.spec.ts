@@ -13,6 +13,7 @@ const mockAttachment: Attachment = {
   sampleId: "testSampleId",
   ownerGroup: "test",
   accessGroups: ["accessTest"],
+  instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
 };

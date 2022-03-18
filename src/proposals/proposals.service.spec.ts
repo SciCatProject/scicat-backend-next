@@ -19,6 +19,7 @@ const mockProposal: Proposal = {
   endTime: new Date(),
   ownerGroup: "testOwnerGroup",
   accessGroups: ["testAccessGroup"],
+  instrumentGroup: "testInstrument",
   createdBy: "proposalIngestor",
   updatedBy: "proposalIngestor",
   attachments: [],

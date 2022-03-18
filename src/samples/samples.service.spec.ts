@@ -18,6 +18,7 @@ const mockSample: Sample = {
   datasets: [],
   ownerGroup: "testOwnerGroup",
   accessGroups: ["testAccessGroup"],
+  instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
 };

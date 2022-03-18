@@ -14,6 +14,7 @@ const mockDatablock: Datablock = {
   version: "testVersion",
   ownerGroup: "testOwner",
   accessGroups: ["testAccess"],
+  instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
   dataFileList: [

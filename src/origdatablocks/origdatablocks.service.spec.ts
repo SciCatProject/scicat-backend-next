@@ -10,6 +10,7 @@ const mockOrigDatablock: OrigDatablock = {
   size: 1000,
   ownerGroup: "testOwner",
   accessGroups: ["testAccess"],
+  instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
   dataFileList: [

@@ -23,6 +23,7 @@ const mockPolicy: Policy = {
   embargoPeriod: 3,
   ownerGroup: "testOwnerGroup",
   accessGroups: ["testAccessGroup"],
+  instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
 };
