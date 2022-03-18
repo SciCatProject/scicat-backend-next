@@ -18,7 +18,7 @@ export class PublishedData {
   })
   _id: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, description: "Digital Object Identifier" })
   @Prop({
     type: String,
     unique: true,
@@ -29,87 +29,168 @@ export class PublishedData {
   })
   doi: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Creator Affiliation",
+  })
   @Prop({ type: String, required: false })
   affiliation: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description: "Creator of dataset/dataset collection",
+  })
   @Prop({ type: [String], required: true })
   creator: string[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Dataset publisher",
+  })
   @Prop({ type: String, required: true })
   publisher: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: true,
+    description: "Year of publication ",
+  })
   @Prop({ type: Number, required: true })
   publicationYear: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, required: true, description: "Title" })
   @Prop({ type: String, required: true })
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Full URL to the landing page for this DOI",
+  })
   @Prop({ type: String, required: false })
   url: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Abstract text for published datasets",
+  })
   @Prop({ type: String, required: true })
   abstract: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Link to description of how to re-use data",
+  })
   @Prop({ type: String, required: true })
   dataDescription: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "e.g. raw/ derived",
+  })
   @Prop({ type: String, required: true })
   resourceType: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description: "Number of files",
+  })
   @Prop({ type: Number, required: false })
   numberOfFiles: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description: "Size of archive",
+  })
   @Prop({ type: Number, required: false })
   sizeOfArchive: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description: "Array of one or more PIDS which make up the published data",
+  })
   @Prop({ type: [String], required: true })
   pidArray: string[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description: "List of Names of authors of the to be published data",
+  })
   @Prop({ type: [String], required: false })
   authors: string[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+    description: "Time when doi is successfully registered",
+  })
   @Prop({ type: Date, index: true })
   registeredTime: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    description:
+      "Indication of position in publication workflow e.g. doiRegistered",
+  })
   @Prop({ type: String, required: false })
   status: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "The username of the user that clicks the publish button in the client",
+  })
   @Prop({ type: String, required: false })
   scicatUser: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Small, less than 16 MB base 64 image preview of dataset",
+  })
   @Prop({ type: String, required: false })
   thumbnail: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description:
+      "List of URLs pointing to related publications like DOI URLS of journal articles",
+  })
   @Prop({ type: [String], required: false })
   relatedPublications: string[];
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "URL pointing to page from which data can be downloaded",
+  })
   @Prop({ type: String, required: false })
   downloadLink: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+    required: true,
+    description: "Date when the published data was created",
+  })
   @Prop({ type: Date, required: true })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+    required: true,
+    description: "Date when the published data was last updated",
+  })
   @Prop({ type: Date, required: true })
   updatedAt: Date;
 }
