@@ -13,6 +13,7 @@ export class Datablock extends Ownable {
   @ApiProperty({
     type: String,
     default: () => uuidv4(),
+    description: "Catalog internal UUIDv4 for datablock",
   })
   @Prop({
     type: String,
@@ -22,27 +23,45 @@ export class Datablock extends Ownable {
   })
   _id: string;
 
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "PID of the dataset to which the datablock belongs",
+  })
   @Prop({ type: String, ref: "Dataset", required: true })
   datasetId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    description:
+      "Unique identifier given bey archive system to the stored datablock. This id is used when data is retrieved back.",
+  })
   @Prop({ type: String, required: true, unique: true })
   archiveId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Number,
+    description: "Total size in bytes of all files in datablock when unpacked",
+  })
   @Prop({ type: Number, required: true })
   size: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, description: "Size of datablock package file" })
   @Prop()
   packedSize: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    description: "Algoritm used for calculation of checksums, e.g. sha2",
+  })
   @Prop()
   chkAlg: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    description:
+      "Version string defining format of how data is packed and stored in archive",
+  })
   @Prop({ type: String, required: true })
   version: string;
 
