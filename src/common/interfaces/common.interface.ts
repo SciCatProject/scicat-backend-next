@@ -1,3 +1,4 @@
+import { FilterQuery } from "mongoose";
 import { ScientificRelation } from "../scientific-relation.enum";
 
 export interface IScientificFilter {
@@ -37,4 +38,16 @@ export interface ILimitsFilter {
   limit: number;
   skip: number;
   order: string;
+}
+
+export interface IFilters<T, Y = null> {
+  where?: FilterQuery<T>;
+  include?: { relation: string }[];
+  fields?: Y;
+  limits?: ILimitsFilter;
+}
+
+export interface IFacets<T> {
+  fields?: T;
+  facets?: string[];
 }
