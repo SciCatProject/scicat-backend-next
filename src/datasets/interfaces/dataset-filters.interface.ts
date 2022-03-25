@@ -1,6 +1,4 @@
-import { FilterQuery } from "mongoose";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
-import { DatasetDocument } from "../schemas/dataset.schema";
 
 export interface IDatasetFields {
   mode?: Record<string, unknown>;
@@ -19,20 +17,4 @@ export interface IDatasetFields {
   _id?: string;
   userGroups?: string[];
   [key: string]: unknown;
-}
-
-export interface IDatasetFilters {
-  where?: FilterQuery<DatasetDocument>;
-  include?: { relation: string }[];
-  fields?: IDatasetFields;
-  limits?: {
-    skip: number;
-    limit: number;
-    order: string;
-  };
-}
-
-export interface IDatasetFacets {
-  fields?: IDatasetFields;
-  facets?: string[];
 }
