@@ -1,6 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
+import { PipelineStage } from "mongoose";
 import {
   IAxiosError,
   ILimitsFilter,
@@ -234,4 +235,67 @@ export const parseLimitFilters = <T>(
     sort = { [field]: direction };
   }
   return { limit, skip, sort };
+};
+
+export const createNewFacetPipeline = (
+  name: string,
+  type: string,
+  query: Record<string, unknown>,
+): PipelineStage[] => {
+  const pipeline: PipelineStage[] = [];
+
+  if (type === "Array") {
+    pipeline.push({
+      $unwind: "$" + name,
+    });
+  }
+
+  if (query && Object.keys(query).length > 0) {
+    const queryCopy = { ...query };
+    delete queryCopy[name];
+
+    if (Object.keys(queryCopy).length > 0) {
+      pipeline.push({
+        $match: queryCopy,
+      });
+    }
+  }
+
+  const group: {
+    $group: {
+      _id: string | Record<string, unknown>;
+      count: Record<string, number>;
+    };
+  } = {
+    $group: {
+      _id: "$" + name,
+      count: {
+        $sum: 1,
+      },
+    },
+  };
+
+  if (type === "Date") {
+    group.$group._id = {
+      year: {
+        $year: "$" + name,
+      },
+      month: {
+        $month: "$" + name,
+      },
+      day: {
+        $dayOfMonth: "$" + name,
+      },
+    };
+  }
+  pipeline.push(group);
+
+  const sort: PipelineStage.Sort = {
+    $sort: {
+      _id: -1,
+    },
+  };
+  pipeline.push(sort);
+
+  return pipeline;
 };

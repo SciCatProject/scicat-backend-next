@@ -11,7 +11,7 @@ import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
-import { parseLimitFilters } from "src/common/utils";
+import { createNewFacetPipeline, parseLimitFilters } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
@@ -142,10 +142,10 @@ export class JobsService implements OnModuleInit {
       }
     });
 
-    const facetObject: Record<string, unknown> = {};
+    const facetObject: Record<string, PipelineStage[]> = {};
     facets.forEach((facet) => {
       if (facet in this.jobModel.schema.paths) {
-        facetObject[facet] = this.createNewFacetPipeline(
+        facetObject[facet] = createNewFacetPipeline(
           facet,
           this.schemaTypeOf(facet),
           facetMatch,
@@ -221,65 +221,6 @@ export class JobsService implements OnModuleInit {
     } else {
       return value;
     }
-  }
-
-  private createNewFacetPipeline(
-    name: string,
-    type: string,
-    query: Record<string, unknown>,
-  ) {
-    const pipeline = [];
-
-    if (type === "Array") {
-      pipeline.push({ $unwind: "$" + name });
-    }
-
-    if (query && Object.keys(query).length > 0) {
-      const queryCopy = { ...query };
-      delete queryCopy[name];
-
-      if (Object.keys(queryCopy).length > 0) {
-        pipeline.push({ $match: queryCopy });
-      }
-    }
-
-    const group: {
-      $group: {
-        _id: string | Record<string, unknown>;
-        count: Record<string, number>;
-      };
-    } = {
-      $group: {
-        _id: "$" + name,
-        count: {
-          $sum: 1,
-        },
-      },
-    };
-
-    if (type === "Date") {
-      group.$group._id = {
-        year: {
-          $year: "$" + name,
-        },
-        month: {
-          $month: "$" + name,
-        },
-        day: {
-          $dayOfMonth: "$" + name,
-        },
-      };
-    }
-    pipeline.push(group);
-
-    const sort = {
-      $sort: {
-        _id: -1,
-      },
-    };
-    pipeline.push(sort);
-
-    return pipeline;
   }
 
   private schemaTypeOf(key: string, value: unknown = null): string {

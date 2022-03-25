@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { parseLimitFilters } from "src/common/utils";
+import { createNewFacetPipeline, parseLimitFilters } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -128,10 +128,10 @@ export class ProposalsService {
       }
     });
 
-    const facetObject: Record<string, unknown> = {};
+    const facetObject: Record<string, PipelineStage[]> = {};
     facets.forEach((facet) => {
       if (facet in this.proposalModel.schema.paths) {
-        facetObject[facet] = this.createNewFacetPipeline(
+        facetObject[facet] = createNewFacetPipeline(
           facet,
           this.schemaTypeOf(facet),
           facetMatch,
@@ -218,69 +218,6 @@ export class ProposalsService {
     } else {
       return value;
     }
-  }
-
-  private createNewFacetPipeline(
-    name: string,
-    type: string,
-    query: Record<string, unknown>,
-  ) {
-    const pipeline = [];
-
-    if (type === "Array") {
-      pipeline.push({
-        $unwind: "$" + name,
-      });
-    }
-
-    if (query && Object.keys(query).length > 0) {
-      const queryCopy = { ...query };
-      delete queryCopy[name];
-
-      if (Object.keys(queryCopy).length > 0) {
-        pipeline.push({
-          $match: queryCopy,
-        });
-      }
-    }
-
-    const group: {
-      $group: {
-        _id: string | Record<string, unknown>;
-        count: Record<string, number>;
-      };
-    } = {
-      $group: {
-        _id: "$" + name,
-        count: {
-          $sum: 1,
-        },
-      },
-    };
-
-    if (type === "Date") {
-      group.$group._id = {
-        year: {
-          $year: "$" + name,
-        },
-        month: {
-          $month: "$" + name,
-        },
-        day: {
-          $dayOfMonth: "$" + name,
-        },
-      };
-    }
-    pipeline.push(group);
-
-    const sort = {
-      $sort: {
-        _id: -1,
-      },
-    };
-    pipeline.push(sort);
-
-    return pipeline;
   }
 
   private schemaTypeOf(key: string, value: unknown = null): string {

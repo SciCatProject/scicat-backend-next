@@ -17,6 +17,7 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  createNewFacetPipeline,
   extractMetadataKeys,
   mapScientificQuery,
   parseLimitFilters,
@@ -270,7 +271,7 @@ export class DatasetsService {
     });
 
     // append all facet pipelines
-    const facetObject: Record<string, unknown> = {};
+    const facetObject: Record<string, PipelineStage[]> = {};
     facets.forEach((facet) => {
       if (!this.datasetModel.schema.discriminators) {
         return;
@@ -278,7 +279,7 @@ export class DatasetsService {
       if (
         facet in this.datasetModel.schema.discriminators[DatasetType.Raw].paths
       ) {
-        facetObject[facet] = this.createNewFacetPipeline(
+        facetObject[facet] = createNewFacetPipeline(
           facet,
           this.schemaTypeOf(facet),
           facetMatch,
@@ -288,7 +289,7 @@ export class DatasetsService {
         facet in
         this.datasetModel.schema.discriminators[DatasetType.Derived].paths
       ) {
-        facetObject[facet] = this.createNewFacetPipeline(
+        facetObject[facet] = createNewFacetPipeline(
           facet,
           this.schemaTypeOf(facet),
           facetMatch,
@@ -298,7 +299,7 @@ export class DatasetsService {
 
       if (facet.startsWith("datasetlifecycle.")) {
         const lifecycleFacet = facet.split(".")[1];
-        facetObject[lifecycleFacet] = this.createNewFacetPipeline(
+        facetObject[lifecycleFacet] = createNewFacetPipeline(
           lifecycleFacet,
           this.schemaTypeOf(lifecycleFacet),
           facetMatch,
@@ -545,69 +546,6 @@ export class DatasetsService {
     } else {
       return value;
     }
-  }
-
-  createNewFacetPipeline(
-    name: string,
-    type: string,
-    query: Record<string, unknown>,
-  ) {
-    const pipeline = [];
-
-    if (type === "Array") {
-      pipeline.push({
-        $unwind: "$" + name,
-      });
-    }
-
-    if (query && Object.keys(query).length > 0) {
-      const queryCopy = { ...query };
-      delete queryCopy[name];
-
-      if (Object.keys(queryCopy).length > 0) {
-        pipeline.push({
-          $match: queryCopy,
-        });
-      }
-    }
-
-    const group: {
-      $group: {
-        _id: string | Record<string, unknown>;
-        count: Record<string, number>;
-      };
-    } = {
-      $group: {
-        _id: "$" + name,
-        count: {
-          $sum: 1,
-        },
-      },
-    };
-
-    if (type === "Date") {
-      group.$group._id = {
-        year: {
-          $year: "$" + name,
-        },
-        month: {
-          $month: "$" + name,
-        },
-        day: {
-          $dayOfMonth: "$" + name,
-        },
-      };
-    }
-    pipeline.push(group);
-
-    const sort = {
-      $sort: {
-        _id: -1,
-      },
-    };
-    pipeline.push(sort);
-
-    return pipeline;
   }
 
   // this should update the history in all affected documents
