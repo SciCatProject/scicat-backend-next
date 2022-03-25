@@ -218,9 +218,9 @@ export const updateAllTimesToUTC = <T>(
 ): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
 
 export const parseLimitFilters = (limits: ILimitsFilter): QueryOptions => {
-  const limit = limits.limit ? limits.limit : undefined;
-  const skip = limits.skip ? limits.skip : undefined;
-  let sort;
+  const limit = limits.limit ? limits.limit : 100;
+  const skip = limits.skip ? limits.skip : 0;
+  let sort = {};
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
     sort = { [field]: direction };

@@ -74,9 +74,7 @@ export class JobsService implements OnModuleInit {
   }
 
   async fullquery(filter: IJobFilters): Promise<Job[]> {
-    const modifiers: QueryOptions = {
-      limit: 100,
-    };
+    const modifiers: QueryOptions = {};
     const filterQuery: FilterQuery<JobDocument> = {};
 
     if (filter) {

@@ -80,9 +80,7 @@ export class DatasetsService {
   }
 
   async fullquery(filter: IDatasetFilters): Promise<Dataset[] | null> {
-    const modifiers: QueryOptions = {
-      limit: 100,
-    };
+    const modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<DatasetDocument> = {};
 
     if (!this.datasetModel.discriminators) {
