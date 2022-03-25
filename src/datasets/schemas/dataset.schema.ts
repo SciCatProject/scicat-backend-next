@@ -15,13 +15,9 @@ import {
   OrigDatablockSchema,
 } from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
+import { DatasetType } from "../dataset-type.enum";
 import { Lifecycle, LifecycleSchema } from "./lifecycle.schema";
 import { Technique, TechniqueSchema } from "./technique.schema";
-
-export enum DatasetType {
-  Raw = "raw",
-  Derived = "derived",
-}
 
 export type DatasetDocument = Dataset & Document;
 
