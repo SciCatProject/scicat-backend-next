@@ -2,7 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
-import { extractMetadataKeys, mapScientificQuery } from "src/common/utils";
+import {
+  extractMetadataKeys,
+  mapScientificQuery,
+  parseLimitFilters,
+} from "src/common/utils";
 import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
 import {
@@ -48,27 +52,20 @@ export class SamplesService {
       .exec();
   }
 
-  async fullquery(filters: ISampleFilters): Promise<Sample[]> {
+  async fullquery(filter: ISampleFilters): Promise<Sample[]> {
     const modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<SampleDocument> = {};
 
-    if (filters) {
-      if (filters.limits) {
-        if (filters.limits.limit) {
-          modifiers.limit = filters.limits.limit;
-        }
-        if (filters.limits.skip) {
-          modifiers.skip = filters.limits.skip;
-        }
-        if (filters.limits.order) {
-          const [field, direction] = filters.limits.order.split(":");
-          const sort = { [field]: direction };
-          modifiers.sort = sort;
-        }
+    if (filter) {
+      if (filter.limits) {
+        const { limit, skip, sort } = parseLimitFilters(filter.limits);
+        modifiers.limit = limit;
+        modifiers.skip = skip;
+        modifiers.sort = sort;
       }
 
-      if (filters.fields) {
-        const fields = filters.fields;
+      if (filter.fields) {
+        const fields = filter.fields;
         Object.keys(fields).forEach((key) => {
           if (key === SampleField.Text) {
             const text = fields[key];

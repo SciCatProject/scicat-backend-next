@@ -32,3 +32,9 @@ export interface IProposalAcceptedMessage {
   members: IProposalMember[];
   proposer: IProposalMember;
 }
+
+export interface ILimitsFilter {
+  limit: number;
+  skip: number;
+  order: string;
+}

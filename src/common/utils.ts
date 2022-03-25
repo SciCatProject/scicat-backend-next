@@ -1,8 +1,13 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
-import { IAxiosError, IScientificFilter } from "./interfaces/common.interface";
+import {
+  IAxiosError,
+  ILimitsFilter,
+  IScientificFilter,
+} from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
+import { QueryOptions } from "mongoose";
 
 export const convertToSI = (
   inputValue: number,
@@ -211,3 +216,14 @@ export const updateAllTimesToUTC = <T>(
   dateKeys: (keyof T)[],
   instances: T[],
 ): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
+
+export const parseLimitFilters = (limits: ILimitsFilter): QueryOptions => {
+  const limit = limits.limit ? limits.limit : undefined;
+  const skip = limits.skip ? limits.skip : undefined;
+  let sort;
+  if (limits.order) {
+    const [field, direction] = limits.order.split(":");
+    sort = { [field]: direction };
+  }
+  return { limit, skip, sort };
+};

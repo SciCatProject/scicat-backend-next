@@ -10,6 +10,7 @@ import { readFileSync } from "fs";
 import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { MailService } from "src/common/mail.service";
+import { parseLimitFilters } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFilters } from "src/datasets/interfaces/dataset-filters.interface";
 import { PoliciesService } from "src/policies/policies.service";
@@ -72,29 +73,22 @@ export class JobsService implements OnModuleInit {
       .exec();
   }
 
-  async fullquery(filters: IJobFilters): Promise<Job[]> {
+  async fullquery(filter: IJobFilters): Promise<Job[]> {
     const modifiers: QueryOptions = {
       limit: 100,
     };
     const filterQuery: FilterQuery<JobDocument> = {};
 
-    if (filters) {
-      if (filters.limits) {
-        if (filters.limits.limit) {
-          modifiers.limit = filters.limits.limit;
-        }
-        if (filters.limits.skip) {
-          modifiers.skip = filters.limits.skip;
-        }
-        if (filters.limits.order) {
-          const [field, direction] = filters.limits.order.split(":");
-          const sort = { [field]: direction };
-          modifiers.sort = sort;
-        }
+    if (filter) {
+      if (filter.limits) {
+        const { limit, skip, sort } = parseLimitFilters(filter.limits);
+        modifiers.limit = limit;
+        modifiers.skip = skip;
+        modifiers.sort = sort;
       }
 
-      if (filters.fields) {
-        const fields = filters.fields;
+      if (filter.fields) {
+        const fields = filter.fields;
         Object.keys(fields).forEach((key) => {
           if (key === JobField.Text) {
             const text = fields[key];

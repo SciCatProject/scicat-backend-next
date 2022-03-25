@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { parseLimitFilters } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import {
@@ -53,17 +54,10 @@ export class ProposalsService {
 
     if (filter) {
       if (filter.limits) {
-        if (filter.limits.limit) {
-          modifiers.limit = filter.limits.limit;
-        }
-        if (filter.limits.skip) {
-          modifiers.skip = filter.limits.skip;
-        }
-        if (filter.limits.order) {
-          const [field, direction] = filter.limits.order.split(":");
-          const sort = { [field]: direction };
-          modifiers.sort = sort;
-        }
+        const { limit, skip, sort } = parseLimitFilters(filter.limits);
+        modifiers.limit = limit;
+        modifiers.skip = skip;
+        modifiers.sort = sort;
       }
 
       if (filter.fields) {

@@ -15,7 +15,11 @@ import {
   UpdateQuery,
 } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { extractMetadataKeys, mapScientificQuery } from "src/common/utils";
+import {
+  extractMetadataKeys,
+  mapScientificQuery,
+  parseLimitFilters,
+} from "src/common/utils";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
@@ -91,17 +95,10 @@ export class DatasetsService {
 
     if (filter) {
       if (filter.limits) {
-        if (filter.limits.limit) {
-          modifiers.limit = filter.limits.limit;
-        }
-        if (filter.limits.skip >= 0) {
-          modifiers.skip = filter.limits.skip;
-        }
-        if (filter.limits.order) {
-          const [field, direction] = filter.limits.order.split(":");
-          const sort = { [field]: direction };
-          modifiers.sort = sort;
-        }
+        const { limit, skip, sort } = parseLimitFilters(filter.limits);
+        modifiers.limit = limit;
+        modifiers.skip = skip;
+        modifiers.sort = sort;
       }
 
       if (filter.fields) {
