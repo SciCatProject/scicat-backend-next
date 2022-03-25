@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
+import { parseLimitFilters } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
@@ -28,26 +29,14 @@ export class PublishedDataService {
     return createdPublishedData.save();
   }
 
-  async findAll(filters: IPublishedDataFilters): Promise<PublishedData[]> {
-    const whereFilters: FilterQuery<PublishedDataDocument> =
-      filters.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filters.limits) {
-      if (filters.limits.limit) {
-        limit = filters.limits.limit;
-      }
-      if (filters.limits.skip) {
-        skip = filters.limits.skip;
-      }
-      if (filters.limits.order) {
-        const [field, direction] = filters.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+  async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {
+    const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
+    const { limit, skip, sort } = parseLimitFilters<PublishedData>(
+      filter.limits,
+    );
+
     return this.publishedDataModel
-      .find(whereFilters)
+      .find(whereFilter)
       .limit(limit)
       .skip(skip)
       .sort(sort)

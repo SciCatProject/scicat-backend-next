@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
+import { IFilters } from "src/common/interfaces/common.interface";
+import { parseLimitFilters } from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
-import { IInstrumentFilters } from "./interfaces/instrument-filters.interface";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 
 @Injectable()
@@ -18,23 +19,10 @@ export class InstrumentsService {
     return createdInstrument.save();
   }
 
-  async findAll(filter: IInstrumentFilters): Promise<Instrument[]> {
+  async findAll(filter: IFilters<InstrumentDocument>): Promise<Instrument[]> {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filter.limits) {
-      if (filter.limits.limit) {
-        limit = filter.limits.limit;
-      }
-      if (filter.limits.skip) {
-        skip = filter.limits.skip;
-      }
-      if (filter.limits.order) {
-        const [field, direction] = filter.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+    const { limit, skip, sort } = parseLimitFilters<Instrument>(filter.limits);
+
     return this.instrumentModel
       .find(whereFilter)
       .limit(limit)

@@ -18,21 +18,19 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Proposal } from "./schemas/proposal.schema";
+import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { Dataset } from "src/datasets/schemas/dataset.schema";
-import {
-  IProposalFacets,
-  IProposalFilters,
-} from "./interfaces/proposal-filters.interface";
+import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { MeasurementPeriod } from "./schemas/measurement-period.schema";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -70,7 +68,8 @@ export class ProposalsController {
     required: false,
   })
   async findAll(@Query("filters") filters?: string): Promise<Proposal[]> {
-    const proposalFilters: IProposalFilters = JSON.parse(filters ?? "{}");
+    const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
+      JSON.parse(filters ?? "{}");
     return this.proposalsService.findAll(proposalFilters);
   }
 
@@ -81,7 +80,7 @@ export class ProposalsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Proposal[]> {
-    const parsedFilters: IProposalFilters = {
+    const parsedFilters: IFilters<ProposalDocument, IProposalFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
@@ -95,7 +94,7 @@ export class ProposalsController {
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
-    const parsedFilters: IProposalFacets = {
+    const parsedFilters: IFacets<IProposalFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       facets: JSON.parse(filters.facets ?? "[]"),
     };

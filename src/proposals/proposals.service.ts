@@ -1,15 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { parseLimitFilters } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
-import {
-  IProposalFacets,
-  IProposalFields,
-  IProposalFilters,
-  ProposalField,
-} from "./interfaces/proposal-filters.interface";
+import { IProposalFields } from "./interfaces/proposal-filters.interface";
+import { ProposalField } from "./proposal-field.enum";
 import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
 
 @Injectable()
@@ -23,42 +20,31 @@ export class ProposalsService {
     return createdProposal.save();
   }
 
-  async findAll(filters: IProposalFilters): Promise<Proposal[]> {
-    const whereFilters: FilterQuery<ProposalDocument> = filters.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filters.limits) {
-      if (filters.limits.limit) {
-        limit = filters.limits.limit;
-      }
-      if (filters.limits.skip) {
-        skip = filters.limits.skip;
-      }
-      if (filters.limits.order) {
-        const [field, direction] = filters.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+  async findAll(
+    filter: IFilters<ProposalDocument, IProposalFields>,
+  ): Promise<Proposal[]> {
+    const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
+    const { limit, skip, sort } = parseLimitFilters<Proposal>(filter.limits);
+
     return this.proposalModel
-      .find(whereFilters)
+      .find(whereFilter)
       .limit(limit)
       .skip(skip)
       .sort(sort)
       .exec();
   }
 
-  async fullquery(filter: IProposalFilters): Promise<Proposal[]> {
+  async fullquery(
+    filter: IFilters<ProposalDocument, IProposalFields>,
+  ): Promise<Proposal[]> {
     const modifiers: QueryOptions = {};
     const filterQuery: FilterQuery<ProposalDocument> = {};
 
     if (filter) {
-      if (filter.limits) {
-        const { limit, skip, sort } = parseLimitFilters(filter.limits);
-        modifiers.limit = limit;
-        modifiers.skip = skip;
-        modifiers.sort = sort;
-      }
+      const { limit, skip, sort } = parseLimitFilters(filter.limits);
+      modifiers.limit = limit;
+      modifiers.skip = skip;
+      modifiers.sort = sort;
 
       if (filter.fields) {
         const fields = filter.fields;
@@ -91,7 +77,7 @@ export class ProposalsService {
   }
 
   async fullfacet(
-    filters: IProposalFacets,
+    filters: IFacets<IProposalFields>,
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];

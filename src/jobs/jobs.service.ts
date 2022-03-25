@@ -9,19 +9,17 @@ import { InjectModel } from "@nestjs/mongoose";
 import { readFileSync } from "fs";
 import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
 import { parseLimitFilters } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { IDatasetFilters } from "src/datasets/interfaces/dataset-filters.interface";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
 import { PoliciesService } from "src/policies/policies.service";
 import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
-import {
-  IJobFacets,
-  IJobFilters,
-  JobField,
-} from "./interfaces/job-filters.interface";
+import { JobField } from "./job-field.enum";
 import { JobType } from "./job-type.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
 
@@ -48,23 +46,12 @@ export class JobsService implements OnModuleInit {
     return createdJob.save();
   }
 
-  async findAll(filter: IJobFilters): Promise<Job[]> {
+  async findAll(
+    filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
+  ): Promise<Job[]> {
     const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filter.limits) {
-      if (filter.limits.limit) {
-        limit = filter.limits.limit;
-      }
-      if (filter.limits.skip) {
-        skip = filter.limits.skip;
-      }
-      if (filter.limits.order) {
-        const [field, direction] = filter.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+    const { limit, skip, sort } = parseLimitFilters<Job>(filter.limits);
+
     return this.jobModel
       .find(whereFilters)
       .limit(limit)
@@ -73,17 +60,17 @@ export class JobsService implements OnModuleInit {
       .exec();
   }
 
-  async fullquery(filter: IJobFilters): Promise<Job[]> {
+  async fullquery(
+    filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
+  ): Promise<Job[]> {
     const modifiers: QueryOptions = {};
     const filterQuery: FilterQuery<JobDocument> = {};
 
     if (filter) {
-      if (filter.limits) {
-        const { limit, skip, sort } = parseLimitFilters(filter.limits);
-        modifiers.limit = limit;
-        modifiers.skip = skip;
-        modifiers.sort = sort;
-      }
+      const { limit, skip, sort } = parseLimitFilters(filter.limits);
+      modifiers.limit = limit;
+      modifiers.skip = skip;
+      modifiers.sort = sort;
 
       if (filter.fields) {
         const fields = filter.fields;
@@ -109,7 +96,9 @@ export class JobsService implements OnModuleInit {
     return await this.jobModel.find(filterQuery, null, modifiers).exec();
   }
 
-  async fullfacet(filters: IJobFacets): Promise<Record<string, unknown>[]> {
+  async fullfacet(
+    filters: IFacets<FilterQuery<JobDocument>>,
+  ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
     const pipeline = [];
@@ -314,7 +303,7 @@ export class JobsService implements OnModuleInit {
     const jobType: string = context.instance.type;
     await this.markDatasetsAsScheduled(ids, jobType);
 
-    const filter: IDatasetFilters = {
+    const filter: IFilters<DatasetDocument, IDatasetFields> = {
       where: {
         pid: {
           inq: ids,

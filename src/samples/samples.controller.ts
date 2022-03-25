@@ -18,7 +18,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Sample } from "./schemas/sample.schema";
+import { Sample, SampleDocument } from "./schemas/sample.schema";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -27,8 +27,9 @@ import { Dataset } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
-import { ISampleFilters } from "./interfaces/sample-filters.interface";
+import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { IFilters } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -61,7 +62,9 @@ export class SamplesController {
     required: false,
   })
   async findAll(@Query("filters") filters?: string): Promise<Sample[]> {
-    const sampleFilters: ISampleFilters = JSON.parse(filters ?? "{}");
+    const sampleFilters: IFilters<SampleDocument, ISampleFields> = JSON.parse(
+      filters ?? "{}",
+    );
     return this.samplesService.findAll(sampleFilters);
   }
 
@@ -98,7 +101,9 @@ export class SamplesController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
   @Get("/findOne")
   async findOne(@Query("filter") filters?: string): Promise<Sample | null> {
-    const jsonFilters: ISampleFilters = filters ? JSON.parse(filters) : {};
+    const jsonFilters: IFilters<SampleDocument, ISampleFields> = filters
+      ? JSON.parse(filters)
+      : {};
     const whereFilters = jsonFilters.where ?? {};
     const sample = await this.samplesService.findOne(whereFilters);
 

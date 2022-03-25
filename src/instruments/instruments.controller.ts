@@ -18,9 +18,9 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Instrument } from "./schemas/instrument.schema";
-import { IInstrumentFilters } from "./interfaces/instrument-filters.interface";
+import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { IFilters } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -51,7 +51,9 @@ export class InstrumentsController {
     required: false,
   })
   async findAll(@Query("filter") filter?: string): Promise<Instrument[]> {
-    const instrumentFilter: IInstrumentFilters = JSON.parse(filter ?? "{}");
+    const instrumentFilter: IFilters<InstrumentDocument> = JSON.parse(
+      filter ?? "{}",
+    );
     return this.instrumentsService.findAll(instrumentFilter);
   }
 

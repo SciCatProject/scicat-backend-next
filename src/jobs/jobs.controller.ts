@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
 } from "@nestjs/common";
+import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
@@ -16,9 +17,9 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Job } from "./schemas/job.schema";
+import { Job, JobDocument } from "./schemas/job.schema";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { IJobFacets, IJobFilters } from "./interfaces/job-filters.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -42,7 +43,10 @@ export class JobsController {
     required: false,
   })
   async findAll(@Query("filter") filter?: string): Promise<Job[]> {
-    const parsedFilter: IJobFilters = JSON.parse(filter ?? "{}");
+    const parsedFilter: IFilters<
+      JobDocument,
+      FilterQuery<JobDocument>
+    > = JSON.parse(filter ?? "{}");
     return this.jobsService.findAll(parsedFilter);
   }
 
@@ -52,7 +56,7 @@ export class JobsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Job[]> {
-    const parsedFilters: IJobFilters = {
+    const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
@@ -65,7 +69,7 @@ export class JobsController {
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
-    const parsedFilters: IJobFacets = {
+    const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       facets: JSON.parse(filters.facets ?? "[]"),
     };

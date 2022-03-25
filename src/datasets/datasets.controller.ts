@@ -28,10 +28,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import {
-  IDatasetFacets,
-  IDatasetFilters,
-} from "./interfaces/dataset-filters.interface";
+import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { PublicDatasetsInterceptor } from "./interceptors/public-datasets.interceptor";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
@@ -55,6 +52,7 @@ import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { DerivedDataset } from "./schemas/derived-dataset.schema";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -99,7 +97,7 @@ export class DatasetsController {
   async findAll(
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
-    const jsonFilters: IDatasetFilters =
+    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter ? JSON.parse(filter.filter) : {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
@@ -112,7 +110,7 @@ export class DatasetsController {
         : {
             ...jsonFields,
           };
-    const datasetFilters: IDatasetFilters = {
+    const datasetFilters: IFilters<DatasetDocument, IDatasetFields> = {
       where: whereFilters,
     };
     if (jsonFilters && jsonFilters.limits) {
@@ -173,7 +171,7 @@ export class DatasetsController {
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Dataset[] | null> {
-    const parsedFilters: IDatasetFilters = {
+    const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
@@ -192,7 +190,7 @@ export class DatasetsController {
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
-    const parsedFilters: IDatasetFacets = {
+    const parsedFilters: IFacets<IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       facets: JSON.parse(filters.facets ?? "[]"),
     };
@@ -211,7 +209,7 @@ export class DatasetsController {
   async metadataKeys(
     @Query("fields") filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
-    const parsedFilters: IDatasetFilters = {
+    const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
@@ -227,7 +225,9 @@ export class DatasetsController {
     required: false,
   })
   async findOne(@Query("filter") filters?: string): Promise<Dataset | null> {
-    const jsonFilters: IDatasetFilters = filters ? JSON.parse(filters) : {};
+    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = filters
+      ? JSON.parse(filters)
+      : {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
     if (dataset) {

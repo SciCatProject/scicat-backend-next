@@ -15,6 +15,7 @@ import {
   UpdateQuery,
 } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   extractMetadataKeys,
   mapScientificQuery,
@@ -22,21 +23,15 @@ import {
 } from "src/common/utils";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
+import { DatasetType } from "./dataset-type.enum";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
 import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
-import {
-  IDatasetFacets,
-  IDatasetFilters,
-} from "./interfaces/dataset-filters.interface";
-import {
-  Dataset,
-  DatasetDocument,
-  DatasetType,
-} from "./schemas/dataset.schema";
+import { IDatasetFields } from "./interfaces/dataset-filters.interface";
+import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
 import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { RawDataset } from "./schemas/raw-dataset.schema";
 
@@ -54,32 +49,25 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(filters: IDatasetFilters): Promise<Dataset[]> {
-    const whereFilters: FilterQuery<DatasetDocument> = filters.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filters.limits) {
-      if (filters.limits.limit) {
-        limit = filters.limits.limit;
-      }
-      if (filters.limits.skip) {
-        skip = filters.limits.skip;
-      }
-      if (filters.limits.order) {
-        const [field, direction] = filters.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+  async findAll(
+    filter: IFilters<DatasetDocument, IDatasetFields>,
+  ): Promise<Dataset[]> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const { limit, skip, sort } = parseLimitFilters<
+      DerivedDataset | RawDataset
+    >(filter.limits);
+
     return this.datasetModel
-      .find(whereFilters)
+      .find(whereFilter)
       .limit(limit)
       .skip(skip)
       .sort(sort)
       .exec();
   }
 
-  async fullquery(filter: IDatasetFilters): Promise<Dataset[] | null> {
+  async fullquery(
+    filter: IFilters<DatasetDocument, IDatasetFields>,
+  ): Promise<Dataset[] | null> {
     const modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<DatasetDocument> = {};
 
@@ -92,12 +80,10 @@ export class DatasetsService {
     const rawDatasetModel = this.datasetModel.discriminators[DatasetType.Raw];
 
     if (filter) {
-      if (filter.limits) {
-        const { limit, skip, sort } = parseLimitFilters(filter.limits);
-        modifiers.limit = limit;
-        modifiers.skip = skip;
-        modifiers.sort = sort;
-      }
+      const { limit, skip, sort } = parseLimitFilters(filter.limits);
+      modifiers.limit = limit;
+      modifiers.skip = skip;
+      modifiers.sort = sort;
 
       if (filter.fields) {
         if (filter.fields.mode) {
@@ -192,7 +178,9 @@ export class DatasetsService {
     return datasets.slice(0, modifiers.limit);
   }
 
-  async fullFacet(filters: IDatasetFacets): Promise<Record<string, unknown>[]> {
+  async fullFacet(
+    filters: IFacets<IDatasetFields>,
+  ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
     const pipeline = [];
@@ -433,7 +421,9 @@ export class DatasetsService {
   }
 
   // Get metadata keys
-  async metadataKeys(filters: IDatasetFilters): Promise<string[]> {
+  async metadataKeys(
+    filters: IFilters<DatasetDocument, IDatasetFields>,
+  ): Promise<string[]> {
     const blacklist = [
       new RegExp(".*_date"),
       new RegExp("runNumber"),

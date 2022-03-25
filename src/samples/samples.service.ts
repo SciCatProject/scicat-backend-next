@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { IFilters } from "src/common/interfaces/common.interface";
 import {
   extractMetadataKeys,
   mapScientificQuery,
@@ -9,10 +10,8 @@ import {
 } from "src/common/utils";
 import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
-import {
-  ISampleFilters,
-  SampleField,
-} from "./interfaces/sample-filters.interface";
+import { ISampleFields } from "./interfaces/sample-filters.interface";
+import { SampleField } from "./sample-field.enum";
 import { Sample, SampleDocument } from "./schemas/sample.schema";
 
 @Injectable()
@@ -27,42 +26,31 @@ export class SamplesService {
     return createdSample.save();
   }
 
-  async findAll(filters: ISampleFilters): Promise<Sample[]> {
-    const whereFilters: FilterQuery<SampleDocument> = filters.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filters.limits) {
-      if (filters.limits.limit) {
-        limit = filters.limits.limit;
-      }
-      if (filters.limits.skip) {
-        skip = filters.limits.skip;
-      }
-      if (filters.limits.order) {
-        const [field, direction] = filters.limits.order.split(":");
-        sort = { [field]: direction };
-      }
-    }
+  async findAll(
+    filter: IFilters<SampleDocument, ISampleFields>,
+  ): Promise<Sample[]> {
+    const whereFilter: FilterQuery<SampleDocument> = filter.where ?? {};
+    const { limit, skip, sort } = parseLimitFilters<Sample>(filter.limits);
+
     return this.sampleModel
-      .find(whereFilters)
+      .find(whereFilter)
       .limit(limit)
       .skip(skip)
       .sort(sort)
       .exec();
   }
 
-  async fullquery(filter: ISampleFilters): Promise<Sample[]> {
+  async fullquery(
+    filter: IFilters<SampleDocument, ISampleFields>,
+  ): Promise<Sample[]> {
     const modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<SampleDocument> = {};
 
     if (filter) {
-      if (filter.limits) {
-        const { limit, skip, sort } = parseLimitFilters(filter.limits);
-        modifiers.limit = limit;
-        modifiers.skip = skip;
-        modifiers.sort = sort;
-      }
+      const { limit, skip, sort } = parseLimitFilters(filter.limits);
+      modifiers.limit = limit;
+      modifiers.skip = skip;
+      modifiers.sort = sort;
 
       if (filter.fields) {
         const fields = filter.fields;
@@ -85,7 +73,9 @@ export class SamplesService {
     return this.sampleModel.find(filterQuery, null, modifiers).exec();
   }
 
-  async metadataKeys(filters: ISampleFilters): Promise<string[]> {
+  async metadataKeys(
+    filters: IFilters<SampleDocument, ISampleFields>,
+  ): Promise<string[]> {
     const blacklist = [new RegExp(".*_date")];
 
     let MAXLIMIT;
