@@ -7,7 +7,6 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
-import { QueryOptions } from "mongoose";
 
 export const convertToSI = (
   inputValue: number,
@@ -217,7 +216,16 @@ export const updateAllTimesToUTC = <T>(
   instances: T[],
 ): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
 
-export const parseLimitFilters = (limits: ILimitsFilter): QueryOptions => {
+export const parseLimitFilters = <T>(
+  limits: ILimitsFilter | undefined,
+): {
+  limit: number;
+  skip: number;
+  sort: { [key in keyof T]: "asc" | "desc" } | Record<string, string>;
+} => {
+  if (!limits) {
+    return { limit: 100, skip: 0, sort: {} };
+  }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
   let sort = {};
