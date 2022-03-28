@@ -2,7 +2,11 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { createNewFacetPipeline, parseLimitFilters } from "src/common/utils";
+import {
+  createNewFacetPipeline,
+  parseLimitFilters,
+  schemaTypeOf,
+} from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -52,7 +56,9 @@ export class ProposalsService {
           if (key === ProposalField.Text) {
             const text = fields[key];
             if (text) {
-              filterQuery.$text = { $search: text };
+              filterQuery.$text = this.searchExpression<
+                typeof filterQuery.$text
+              >(key, String(fields[key]));
             }
           } else if (
             key === ProposalField.StartTime ||
@@ -60,14 +66,13 @@ export class ProposalsService {
           ) {
             const time = fields[key];
             if (time) {
-              const { begin, end } = time;
-              filterQuery[key] = {
-                $gte: new Date(begin),
-                $lt: new Date(end),
-              };
+              filterQuery[key] = this.searchExpression(key, fields[key]);
             }
           } else {
-            filterQuery[key] = fields[key as keyof IProposalFields];
+            filterQuery[key] = this.searchExpression(
+              key,
+              fields[key as keyof IProposalFields],
+            );
           }
         });
       }
@@ -133,7 +138,7 @@ export class ProposalsService {
       if (facet in this.proposalModel.schema.paths) {
         facetObject[facet] = createNewFacetPipeline(
           facet,
-          this.schemaTypeOf(facet),
+          schemaTypeOf<ProposalDocument>(this.proposalModel, facet),
           facetMatch,
         );
         return;
@@ -183,12 +188,16 @@ export class ProposalsService {
     return this.proposalModel.findOneAndRemove(filter).exec();
   }
 
-  private searchExpression(fieldName: string, value: unknown): unknown {
+  private searchExpression<T>(fieldName: string, value: unknown): T {
     if (fieldName === ProposalField.Text) {
-      return { $search: value };
+      return { $search: value } as unknown as T;
     }
 
-    const valueType = this.schemaTypeOf(fieldName, value);
+    const valueType = schemaTypeOf<ProposalDocument>(
+      this.proposalModel,
+      fieldName,
+      value,
+    );
 
     if (valueType === "String") {
       if (Array.isArray(value)) {
@@ -197,39 +206,26 @@ export class ProposalsService {
         } else {
           return {
             $in: value,
-          };
+          } as unknown as T;
         }
       } else {
-        return value;
+        return value as unknown as T;
       }
     } else if (valueType === "Date") {
       return {
         $gte: new Date((value as Record<string, string | Date>).begin),
         $lte: new Date((value as Record<string, string | Date>).end),
-      };
+      } as unknown as T;
     } else if (valueType === "Boolean") {
       return {
         $eq: value,
-      };
+      } as unknown as T;
     } else if (Array.isArray(value)) {
       return {
         $in: value,
-      };
+      } as unknown as T;
     } else {
-      return value;
+      return value as unknown as T;
     }
-  }
-
-  private schemaTypeOf(key: string, value: unknown = null): string {
-    const property = this.proposalModel.schema.path(key);
-
-    if (!property) {
-      if ("begin" in (value as Record<string, unknown>)) {
-        return "Date";
-      }
-      return "String";
-    }
-
-    return property.instance;
   }
 }

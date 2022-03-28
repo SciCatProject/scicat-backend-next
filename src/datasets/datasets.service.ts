@@ -21,6 +21,7 @@ import {
   extractMetadataKeys,
   mapScientificQuery,
   parseLimitFilters,
+  schemaTypeOf,
 } from "src/common/utils";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -281,7 +282,7 @@ export class DatasetsService {
       ) {
         facetObject[facet] = createNewFacetPipeline(
           facet,
-          this.schemaTypeOf(facet),
+          schemaTypeOf<DatasetDocument>(this.datasetModel, facet),
           facetMatch,
         );
         return;
@@ -291,7 +292,7 @@ export class DatasetsService {
       ) {
         facetObject[facet] = createNewFacetPipeline(
           facet,
-          this.schemaTypeOf(facet),
+          schemaTypeOf<DatasetDocument>(this.datasetModel, facet),
           facetMatch,
         );
         return;
@@ -301,7 +302,7 @@ export class DatasetsService {
         const lifecycleFacet = facet.split(".")[1];
         facetObject[lifecycleFacet] = createNewFacetPipeline(
           lifecycleFacet,
-          this.schemaTypeOf(lifecycleFacet),
+          schemaTypeOf<DatasetDocument>(this.datasetModel, lifecycleFacet),
           facetMatch,
         );
         return;
@@ -483,40 +484,16 @@ export class DatasetsService {
     }
   }
 
-  private schemaTypeOf(key: string, value: unknown = null): string {
-    let property = this.datasetModel.schema.path(key);
-
-    if (!this.datasetModel.discriminators) {
-      throw new InternalServerErrorException();
-    }
-
-    if (!property) {
-      property =
-        this.datasetModel.discriminators[DatasetType.Raw].schema.path(key);
-    }
-
-    if (!property) {
-      property =
-        this.datasetModel.discriminators[DatasetType.Derived].schema.path(key);
-    }
-
-    if (!property) {
-      if ("begin" in (value as Record<string, unknown>)) {
-        return "Date";
-      } else {
-        return "String";
-      }
-    } else {
-      return property.instance;
-    }
-  }
-
   private searchExpression(fieldName: string, value: unknown): unknown {
     if (fieldName === "text") {
       return { $search: value };
     }
 
-    const valueType = this.schemaTypeOf(fieldName, value);
+    const valueType = schemaTypeOf<DatasetDocument>(
+      this.datasetModel,
+      fieldName,
+      value,
+    );
 
     if (valueType === "String") {
       if (Array.isArray(value)) {

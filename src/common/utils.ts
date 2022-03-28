@@ -1,7 +1,8 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
-import { PipelineStage } from "mongoose";
+import { Model, PipelineStage } from "mongoose";
+import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
   ILimitsFilter,
@@ -298,4 +299,36 @@ export const createNewFacetPipeline = (
   pipeline.push(sort);
 
   return pipeline;
+};
+
+export const schemaTypeOf = <T>(
+  model: Model<
+    T,
+    Record<string, never>,
+    Record<string, never>,
+    Record<string, never>
+  >,
+  key: string,
+  value: unknown = null,
+): string => {
+  let property = model.schema.path(key);
+
+  if (typeof model.discriminators !== "undefined") {
+    if (!property) {
+      property = model.discriminators[DatasetType.Raw].schema.path(key);
+    }
+
+    if (!property) {
+      property = model.discriminators[DatasetType.Derived].schema.path(key);
+    }
+  }
+
+  if (!property) {
+    if ("begin" in (value as Record<string, unknown>)) {
+      return "Date";
+    }
+    return "String";
+  }
+
+  return property.instance;
 };

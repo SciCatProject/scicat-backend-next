@@ -11,7 +11,11 @@ import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
-import { createNewFacetPipeline, parseLimitFilters } from "src/common/utils";
+import {
+  createNewFacetPipeline,
+  parseLimitFilters,
+  schemaTypeOf,
+} from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
@@ -147,7 +151,7 @@ export class JobsService implements OnModuleInit {
       if (facet in this.jobModel.schema.paths) {
         facetObject[facet] = createNewFacetPipeline(
           facet,
-          this.schemaTypeOf(facet),
+          schemaTypeOf<JobDocument>(this.jobModel, facet),
           facetMatch,
         );
         return;
@@ -197,7 +201,11 @@ export class JobsService implements OnModuleInit {
       return { $search: value };
     }
 
-    const valueType = this.schemaTypeOf(fieldName, value);
+    const valueType = schemaTypeOf<JobDocument>(
+      this.jobModel,
+      fieldName,
+      value,
+    );
 
     if (valueType === "String") {
       if (Array.isArray(value)) {
@@ -221,19 +229,6 @@ export class JobsService implements OnModuleInit {
     } else {
       return value;
     }
-  }
-
-  private schemaTypeOf(key: string, value: unknown = null): string {
-    const property = this.jobModel.schema.path(key);
-
-    if (!property) {
-      if ("begin" in (value as Record<string, unknown>)) {
-        return "Date";
-      }
-      return "String";
-    }
-
-    return property.instance;
   }
 
   async sendStartJobEmail(context: { instance: Job }) {
