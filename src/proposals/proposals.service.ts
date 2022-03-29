@@ -163,7 +163,6 @@ export class ProposalsService {
     const results = await this.proposalModel
       .aggregate(pipeline as PipelineStage[])
       .exec();
-    // const results: Record<string, unknown>[] = [];
     return results;
   }
 
