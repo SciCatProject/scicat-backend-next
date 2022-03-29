@@ -17,6 +17,7 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  createFullqueryFilter,
   createNewFacetPipeline,
   extractMetadataKeys,
   mapScientificQuery,
@@ -71,9 +72,6 @@ export class DatasetsService {
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<Dataset[] | null> {
-    const modifiers: QueryOptions = {};
-    let filterQuery: FilterQuery<DatasetDocument> = {};
-
     if (!this.datasetModel.discriminators) {
       throw new InternalServerErrorException();
     }
@@ -82,56 +80,17 @@ export class DatasetsService {
       this.datasetModel.discriminators[DatasetType.Derived];
     const rawDatasetModel = this.datasetModel.discriminators[DatasetType.Raw];
 
-    if (filter) {
-      const { limit, skip, sort } = parseLimitFilters(filter.limits);
-      modifiers.limit = limit;
-      modifiers.skip = skip;
-      modifiers.sort = sort;
+    const filterQuery: FilterQuery<DatasetDocument> =
+      createFullqueryFilter<DatasetDocument>(this.datasetModel, filter.fields);
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-      if (filter.fields) {
-        const fields = filter.fields;
-        Object.keys(fields).forEach((key) => {
-          if (key === "mode") {
-            const idField = "pid";
-            const currentExpression = JSON.parse(JSON.stringify(fields.mode));
-            if (idField in currentExpression) {
-              currentExpression["pid"] = currentExpression[idField];
-              delete currentExpression[idField];
-            }
-            filterQuery = { ...filterQuery, ...currentExpression };
-          } else if (key === "text") {
-            const text = fields[key];
-            if (text) {
-              filterQuery.$text = searchExpression<DatasetDocument>(
-                this.datasetModel,
-                key,
-                fields[key],
-              ) as typeof filterQuery.$text;
-            }
-          } else if (key === "scientific") {
-            filterQuery = {
-              ...filterQuery,
-              ...mapScientificQuery(fields[key]),
-            };
-          } else {
-            filterQuery[key] = searchExpression<DatasetDocument>(
-              this.datasetModel,
-              key,
-              fields[key],
-            );
-          }
-        });
-        if (filterQuery.type) {
-          switch (filterQuery.type) {
-            case DatasetType.Derived: {
-              return derivedDatasetModel
-                .find(filterQuery, null, modifiers)
-                .exec();
-            }
-            case DatasetType.Raw: {
-              return rawDatasetModel.find(filterQuery, null, modifiers).exec();
-            }
-          }
+    if (filterQuery.type) {
+      switch (filterQuery.type) {
+        case DatasetType.Derived: {
+          return derivedDatasetModel.find(filterQuery, null, modifiers).exec();
+        }
+        case DatasetType.Raw: {
+          return rawDatasetModel.find(filterQuery, null, modifiers).exec();
         }
       }
     }

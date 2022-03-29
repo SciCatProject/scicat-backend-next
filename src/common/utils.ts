@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
-import { Model, PipelineStage } from "mongoose";
+import { FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
@@ -377,4 +377,46 @@ export const searchExpression = <T>(
   } else {
     return value;
   }
+};
+
+export const createFullqueryFilter = <T>(
+  model: Model<
+    T,
+    Record<string, never>,
+    Record<string, never>,
+    Record<string, never>
+  >,
+  fields: FilterQuery<T> = {},
+): FilterQuery<T> => {
+  let filterQuery: FilterQuery<T> = {};
+
+  Object.keys(fields).forEach((key) => {
+    if (key === "mode") {
+      const idField = "pid";
+      const currentExpression = JSON.parse(JSON.stringify(fields.mode));
+      if (idField in currentExpression) {
+        currentExpression["pid"] = currentExpression[idField];
+        delete currentExpression[idField];
+      }
+      filterQuery = { ...filterQuery, ...currentExpression };
+    } else if (key === "text") {
+      filterQuery.$text = searchExpression<T>(
+        model,
+        key,
+        fields[key],
+      ) as typeof filterQuery.$text;
+    } else if (key === "scientific" || key === "sampleCharacteristics") {
+      filterQuery = {
+        ...filterQuery,
+        ...mapScientificQuery(fields[key]),
+      };
+    } else {
+      filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
+        model,
+        key,
+        fields[key],
+      );
+    }
+  });
+  return filterQuery;
 };

@@ -12,6 +12,7 @@ import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
 import {
+  createFullqueryFilter,
   createNewFacetPipeline,
   parseLimitFilters,
   schemaTypeOf,
@@ -68,35 +69,9 @@ export class JobsService implements OnModuleInit {
   async fullquery(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
   ): Promise<Job[]> {
-    const modifiers: QueryOptions = {};
-    const filterQuery: FilterQuery<JobDocument> = {};
-
-    if (filter) {
-      const { limit, skip, sort } = parseLimitFilters(filter.limits);
-      modifiers.limit = limit;
-      modifiers.skip = skip;
-      modifiers.sort = sort;
-
-      if (filter.fields) {
-        const fields = filter.fields;
-        Object.keys(fields).forEach((key) => {
-          if (key === JobField.Text) {
-            const text = fields[key];
-            if (text) {
-              filterQuery.$text = { $search: text };
-            }
-          } else if (key === JobField.CreationTime) {
-            const { begin, end } = fields.creationTime;
-            filterQuery.creationTime = {
-              $gte: new Date(begin),
-              $lte: new Date(end),
-            };
-          } else {
-            filterQuery[key] = fields[key];
-          }
-        });
-      }
-    }
+    const filterQuery: FilterQuery<JobDocument> =
+      createFullqueryFilter<JobDocument>(this.jobModel, filter.fields);
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     return await this.jobModel.find(filterQuery, null, modifiers).exec();
   }

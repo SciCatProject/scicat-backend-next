@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  createFullqueryFilter,
   createNewFacetPipeline,
   parseLimitFilters,
   schemaTypeOf,
@@ -42,49 +43,12 @@ export class ProposalsService {
   async fullquery(
     filter: IFilters<ProposalDocument, IProposalFields>,
   ): Promise<Proposal[]> {
-    const modifiers: QueryOptions = {};
-    const filterQuery: FilterQuery<ProposalDocument> = {};
-
-    if (filter) {
-      const { limit, skip, sort } = parseLimitFilters(filter.limits);
-      modifiers.limit = limit;
-      modifiers.skip = skip;
-      modifiers.sort = sort;
-
-      if (filter.fields) {
-        const fields = filter.fields;
-        Object.keys(fields).forEach((key) => {
-          if (key === ProposalField.Text) {
-            const text = fields[key];
-            if (text) {
-              filterQuery.$text = searchExpression<ProposalDocument>(
-                this.proposalModel,
-                key,
-                String(fields[key]),
-              ) as typeof filterQuery.$text;
-            }
-          } else if (
-            key === ProposalField.StartTime ||
-            key === ProposalField.EndTime
-          ) {
-            const time = fields[key];
-            if (time) {
-              filterQuery[key] = searchExpression<ProposalDocument>(
-                this.proposalModel,
-                key,
-                fields[key],
-              );
-            }
-          } else {
-            filterQuery[key] = searchExpression<ProposalDocument>(
-              this.proposalModel,
-              key,
-              fields[key as keyof IProposalFields],
-            );
-          }
-        });
-      }
-    }
+    const filterQuery: FilterQuery<ProposalDocument> =
+      createFullqueryFilter<ProposalDocument>(
+        this.proposalModel,
+        filter.fields,
+      );
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     return this.proposalModel.find(filterQuery, null, modifiers).exec();
   }
