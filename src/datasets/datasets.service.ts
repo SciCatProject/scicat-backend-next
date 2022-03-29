@@ -22,6 +22,7 @@ import {
   mapScientificQuery,
   parseLimitFilters,
   schemaTypeOf,
+  searchExpression,
 } from "src/common/utils";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -88,54 +89,40 @@ export class DatasetsService {
       modifiers.sort = sort;
 
       if (filter.fields) {
-        if (filter.fields.mode) {
-          const idField = "pid";
-          const currentExpression = JSON.parse(
-            JSON.stringify(filter.fields.mode),
-          );
-          if (idField in currentExpression) {
-            currentExpression["pid"] = currentExpression[idField];
-            delete currentExpression[idField];
+        const fields = filter.fields;
+        Object.keys(fields).forEach((key) => {
+          if (key === "mode") {
+            const idField = "pid";
+            const currentExpression = JSON.parse(JSON.stringify(fields.mode));
+            if (idField in currentExpression) {
+              currentExpression["pid"] = currentExpression[idField];
+              delete currentExpression[idField];
+            }
+            filterQuery = { ...filterQuery, ...currentExpression };
+          } else if (key === "text") {
+            const text = fields[key];
+            if (text) {
+              filterQuery.$text = searchExpression<DatasetDocument>(
+                this.datasetModel,
+                key,
+                fields[key],
+              ) as typeof filterQuery.$text;
+            }
+          } else if (key === "scientific") {
+            filterQuery = {
+              ...filterQuery,
+              ...mapScientificQuery(fields[key]),
+            };
+          } else {
+            filterQuery[key] = searchExpression<DatasetDocument>(
+              this.datasetModel,
+              key,
+              fields[key],
+            );
           }
-          filterQuery = currentExpression;
-        }
-        if (filter.fields.text) {
-          filterQuery.$text = { $search: filter.fields.text };
-        }
-        if (filter.fields.creationTime) {
-          const { begin, end } = filter.fields.creationTime;
-          filterQuery.creationTime = {
-            $gte: new Date(begin),
-            $lte: new Date(end),
-          };
-        }
-        if (filter.fields.creationLocation) {
-          filterQuery.creationLocation = {
-            $in: filter.fields.creationLocation,
-          };
-        }
-        if (filter.fields.ownerGroup) {
-          filterQuery.ownerGroup = { $in: filter.fields.ownerGroup };
-        }
-        if (filter.fields.keywords) {
-          filterQuery.keywords = { $in: filter.fields.keywords };
-        }
-        if (filter.fields.isPublished) {
-          filterQuery.isPublished = {
-            $eq: filter.fields.isPublished,
-          };
-        }
-        if (filter.fields.scientific) {
-          filterQuery = {
-            ...filterQuery,
-            ...mapScientificQuery(filter.fields.scientific),
-          };
-        }
-        if (filter.fields.type) {
-          filterQuery.type = { $in: filter.fields.type };
-          const [type] = filter.fields.type;
-
-          switch (type) {
+        });
+        if (filterQuery.type) {
+          switch (filterQuery.type) {
             case DatasetType.Derived: {
               return derivedDatasetModel
                 .find(filterQuery, null, modifiers)
@@ -196,7 +183,11 @@ export class DatasetsService {
               $match: {
                 $or: [
                   {
-                    $text: this.searchExpression(key, String(fields[key])),
+                    $text: searchExpression<DatasetDocument>(
+                      this.datasetModel,
+                      key,
+                      String(fields[key]),
+                    ),
                   },
                 ],
               },
@@ -206,7 +197,11 @@ export class DatasetsService {
         } else if (key === "_id") {
           const match = {
             $match: {
-              _id: this.searchExpression(key, fields[key]),
+              _id: searchExpression<DatasetDocument>(
+                this.datasetModel,
+                key,
+                fields[key],
+              ),
             },
           };
           allMatch.push(match);
@@ -234,13 +229,15 @@ export class DatasetsService {
               $match: {
                 $or: [
                   {
-                    ownerGroup: this.searchExpression(
+                    ownerGroup: searchExpression<DatasetDocument>(
+                      this.datasetModel,
                       "ownerGroup",
                       fields["userGroups"],
                     ),
                   },
                   {
-                    accessGroups: this.searchExpression(
+                    accessGroups: searchExpression<DatasetDocument>(
+                      this.datasetModel,
                       "accessGroups",
                       fields["userGroups"],
                     ),
@@ -259,7 +256,11 @@ export class DatasetsService {
           pipeline.push(match);
         } else {
           const match: Record<string, unknown> = {};
-          match[key] = this.searchExpression(key, fields[key] as unknown);
+          match[key] = searchExpression<DatasetDocument>(
+            this.datasetModel,
+            key,
+            fields[key] as unknown,
+          );
           const m = {
             $match: match,
           };
@@ -267,7 +268,11 @@ export class DatasetsService {
           pipeline.push(m);
         }
       } else {
-        facetMatch[key] = this.searchExpression(key, fields[key]);
+        facetMatch[key] = searchExpression<DatasetDocument>(
+          this.datasetModel,
+          key,
+          fields[key],
+        );
       }
     });
 
@@ -481,47 +486,6 @@ export class DatasetsService {
         .slice(0, returnLimit);
     } else {
       return metadataKeys.slice(0, returnLimit);
-    }
-  }
-
-  private searchExpression(fieldName: string, value: unknown): unknown {
-    if (fieldName === "text") {
-      return { $search: value };
-    }
-
-    const valueType = schemaTypeOf<DatasetDocument>(
-      this.datasetModel,
-      fieldName,
-      value,
-    );
-
-    if (valueType === "String") {
-      if (Array.isArray(value)) {
-        if (value.length == 1) {
-          return value[0];
-        } else {
-          return {
-            $in: value,
-          };
-        }
-      } else {
-        return value;
-      }
-    } else if (valueType === "Date") {
-      return {
-        $gte: new Date((value as Record<string, string | Date>).begin),
-        $lte: new Date((value as Record<string, string | Date>).end),
-      };
-    } else if (valueType === "Boolean") {
-      return {
-        $eq: value,
-      };
-    } else if (Array.isArray(value)) {
-      return {
-        $in: value,
-      };
-    } else {
-      return value;
     }
   }
 

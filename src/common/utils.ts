@@ -81,7 +81,7 @@ export const convertToRequestedUnit = (
 };
 
 export const mapScientificQuery = (
-  scientific: IScientificFilter[],
+  scientific: IScientificFilter[] = [],
 ): Record<string, unknown> => {
   const scientificFilterQuery: Record<string, unknown> = {};
 
@@ -331,4 +331,50 @@ export const schemaTypeOf = <T>(
   }
 
   return property.instance;
+};
+
+export const searchExpression = <T>(
+  model: Model<
+    T,
+    Record<string, never>,
+    Record<string, never>,
+    Record<string, never>
+  >,
+  fieldName: string,
+  value: unknown,
+): unknown => {
+  if (fieldName === "text") {
+    return { $search: value };
+  }
+
+  const valueType = schemaTypeOf<T>(model, fieldName, value);
+
+  if (valueType === "String") {
+    if (Array.isArray(value)) {
+      if (value.length == 1) {
+        return value[0];
+      } else {
+        return {
+          $in: value,
+        };
+      }
+    } else {
+      return value;
+    }
+  } else if (valueType === "Date") {
+    return {
+      $gte: new Date((value as Record<string, string | Date>).begin),
+      $lte: new Date((value as Record<string, string | Date>).end),
+    };
+  } else if (valueType === "Boolean") {
+    return {
+      $eq: value,
+    };
+  } else if (Array.isArray(value)) {
+    return {
+      $in: value,
+    };
+  } else {
+    return value;
+  }
 };

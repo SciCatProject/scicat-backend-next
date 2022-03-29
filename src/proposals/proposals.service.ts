@@ -6,6 +6,7 @@ import {
   createNewFacetPipeline,
   parseLimitFilters,
   schemaTypeOf,
+  searchExpression,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
@@ -56,9 +57,11 @@ export class ProposalsService {
           if (key === ProposalField.Text) {
             const text = fields[key];
             if (text) {
-              filterQuery.$text = this.searchExpression<
-                typeof filterQuery.$text
-              >(key, String(fields[key]));
+              filterQuery.$text = searchExpression<ProposalDocument>(
+                this.proposalModel,
+                key,
+                String(fields[key]),
+              ) as typeof filterQuery.$text;
             }
           } else if (
             key === ProposalField.StartTime ||
@@ -66,10 +69,15 @@ export class ProposalsService {
           ) {
             const time = fields[key];
             if (time) {
-              filterQuery[key] = this.searchExpression(key, fields[key]);
+              filterQuery[key] = searchExpression<ProposalDocument>(
+                this.proposalModel,
+                key,
+                fields[key],
+              );
             }
           } else {
-            filterQuery[key] = this.searchExpression(
+            filterQuery[key] = searchExpression<ProposalDocument>(
+              this.proposalModel,
               key,
               fields[key as keyof IProposalFields],
             );
@@ -98,7 +106,11 @@ export class ProposalsService {
               $match: {
                 $or: [
                   {
-                    $text: this.searchExpression(key, String(fields[key])),
+                    $text: searchExpression<ProposalDocument>(
+                      this.proposalModel,
+                      key,
+                      String(fields[key]),
+                    ),
                   },
                 ],
               },
@@ -108,14 +120,19 @@ export class ProposalsService {
         } else if (key === ProposalField.ProposalId) {
           const match = {
             $match: {
-              proposalId: this.searchExpression(key, fields[key]),
+              proposalId: searchExpression<ProposalDocument>(
+                this.proposalModel,
+                key,
+                fields[key],
+              ),
             },
           };
           allMatch.push(match);
           pipeline.push(match);
         } else {
           const match: Record<string, unknown> = {};
-          match[key] = this.searchExpression(
+          match[key] = searchExpression<ProposalDocument>(
+            this.proposalModel,
             key,
             fields[key as keyof IProposalFields],
           );
@@ -126,7 +143,8 @@ export class ProposalsService {
           pipeline.push(m);
         }
       } else {
-        facetMatch[key] = this.searchExpression(
+        facetMatch[key] = searchExpression<ProposalDocument>(
+          this.proposalModel,
           key,
           fields[key as keyof IProposalFields],
         );
@@ -185,46 +203,5 @@ export class ProposalsService {
 
   async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {
     return this.proposalModel.findOneAndRemove(filter).exec();
-  }
-
-  private searchExpression<T>(fieldName: string, value: unknown): T {
-    if (fieldName === ProposalField.Text) {
-      return { $search: value } as unknown as T;
-    }
-
-    const valueType = schemaTypeOf<ProposalDocument>(
-      this.proposalModel,
-      fieldName,
-      value,
-    );
-
-    if (valueType === "String") {
-      if (Array.isArray(value)) {
-        if (value.length === 1) {
-          return value[0];
-        } else {
-          return {
-            $in: value,
-          } as unknown as T;
-        }
-      } else {
-        return value as unknown as T;
-      }
-    } else if (valueType === "Date") {
-      return {
-        $gte: new Date((value as Record<string, string | Date>).begin),
-        $lte: new Date((value as Record<string, string | Date>).end),
-      } as unknown as T;
-    } else if (valueType === "Boolean") {
-      return {
-        $eq: value,
-      } as unknown as T;
-    } else if (Array.isArray(value)) {
-      return {
-        $in: value,
-      } as unknown as T;
-    } else {
-      return value as unknown as T;
-    }
   }
 }

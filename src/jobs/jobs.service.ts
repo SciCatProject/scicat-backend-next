@@ -15,6 +15,7 @@ import {
   createNewFacetPipeline,
   parseLimitFilters,
   schemaTypeOf,
+  searchExpression,
 } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
@@ -117,7 +118,11 @@ export class JobsService implements OnModuleInit {
               $match: {
                 $or: [
                   {
-                    $text: this.searchExpression(key, fields[key]),
+                    $text: searchExpression<JobDocument>(
+                      this.jobModel,
+                      key,
+                      fields[key],
+                    ),
                   },
                 ],
               },
@@ -127,14 +132,22 @@ export class JobsService implements OnModuleInit {
         } else if (key === JobField.Id) {
           const match = {
             $match: {
-              id: this.searchExpression(key, fields[key]),
+              id: searchExpression<JobDocument>(
+                this.jobModel,
+                key,
+                fields[key],
+              ),
             },
           };
           allMatch.push(match);
           pipeline.push(match);
         } else {
           const match: Record<string, unknown> = {};
-          match[key] = this.searchExpression(key, fields[key]);
+          match[key] = searchExpression<JobDocument>(
+            this.jobModel,
+            key,
+            fields[key],
+          );
           const m = {
             $match: match,
           };
@@ -142,7 +155,11 @@ export class JobsService implements OnModuleInit {
           pipeline.push(m);
         }
       } else {
-        facetMatch[key] = this.searchExpression(key, fields[key]);
+        facetMatch[key] = searchExpression<JobDocument>(
+          this.jobModel,
+          key,
+          fields[key],
+        );
       }
     });
 
@@ -194,41 +211,6 @@ export class JobsService implements OnModuleInit {
 
   async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
     return this.jobModel.findOneAndRemove(filter).exec();
-  }
-
-  private searchExpression(fieldName: string, value: unknown): unknown {
-    if (fieldName === JobField.Text) {
-      return { $search: value };
-    }
-
-    const valueType = schemaTypeOf<JobDocument>(
-      this.jobModel,
-      fieldName,
-      value,
-    );
-
-    if (valueType === "String") {
-      if (Array.isArray(value)) {
-        if (value.length === 1) {
-          return value[0];
-        } else {
-          return { $in: value };
-        }
-      } else {
-        return value;
-      }
-    } else if (valueType === "Date") {
-      return {
-        $gte: new Date((value as Record<string, string | Date>).begin),
-        $lte: new Date((value as Record<string, string | Date>).end),
-      };
-    } else if (valueType === "Boolean") {
-      return { $eq: value };
-    } else if (Array.isArray(value)) {
-      return { $in: value };
-    } else {
-      return value;
-    }
   }
 
   async sendStartJobEmail(context: { instance: Job }) {
