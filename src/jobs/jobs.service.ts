@@ -12,11 +12,9 @@ import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
 import {
+  createFullfacetPipeline,
   createFullqueryFilter,
-  createNewFacetPipeline,
   parseLimitFilters,
-  schemaTypeOf,
-  searchExpression,
 } from "src/common/utils";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
@@ -25,7 +23,6 @@ import { PoliciesService } from "src/policies/policies.service";
 import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
-import { JobField } from "./job-field.enum";
 import { JobType } from "./job-type.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
 
@@ -70,7 +67,7 @@ export class JobsService implements OnModuleInit {
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
   ): Promise<Job[]> {
     const filterQuery: FilterQuery<JobDocument> =
-      createFullqueryFilter<JobDocument>(this.jobModel, filter.fields);
+      createFullqueryFilter<JobDocument>(this.jobModel, "id", filter.fields);
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     return await this.jobModel.find(filterQuery, null, modifiers).exec();
@@ -81,94 +78,13 @@ export class JobsService implements OnModuleInit {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
-    const pipeline = [];
-    const facetMatch: Record<string, unknown> = {};
-    const allMatch = [];
 
-    Object.keys(fields).forEach((key) => {
-      if (facets.indexOf(key) < 0) {
-        if (key === JobField.Text) {
-          if (typeof fields[key] === "string") {
-            const match = {
-              $match: {
-                $or: [
-                  {
-                    $text: searchExpression<JobDocument>(
-                      this.jobModel,
-                      key,
-                      fields[key],
-                    ),
-                  },
-                ],
-              },
-            };
-            pipeline.unshift(match);
-          }
-        } else if (key === JobField.Id) {
-          const match = {
-            $match: {
-              id: searchExpression<JobDocument>(
-                this.jobModel,
-                key,
-                fields[key],
-              ),
-            },
-          };
-          allMatch.push(match);
-          pipeline.push(match);
-        } else {
-          const match: Record<string, unknown> = {};
-          match[key] = searchExpression<JobDocument>(
-            this.jobModel,
-            key,
-            fields[key],
-          );
-          const m = {
-            $match: match,
-          };
-          allMatch.push(m);
-          pipeline.push(m);
-        }
-      } else {
-        facetMatch[key] = searchExpression<JobDocument>(
-          this.jobModel,
-          key,
-          fields[key],
-        );
-      }
-    });
+    const pipeline: PipelineStage[] = createFullfacetPipeline<
+      JobDocument,
+      FilterQuery<JobDocument>
+    >(this.jobModel, "id", fields, facets);
 
-    const facetObject: Record<string, PipelineStage[]> = {};
-    facets.forEach((facet) => {
-      if (facet in this.jobModel.schema.paths) {
-        facetObject[facet] = createNewFacetPipeline(
-          facet,
-          schemaTypeOf<JobDocument>(this.jobModel, facet),
-          facetMatch,
-        );
-        return;
-      } else {
-        Logger.warn(
-          `Warning: Facet not part of any model: ${facet}`,
-          "JobsService",
-        );
-      }
-    });
-
-    facetObject["all"] = [
-      {
-        $match: facetMatch,
-      },
-      {
-        $count: "totalSets",
-      },
-    ];
-    pipeline.push({ $facet: facetObject });
-
-    const results = await this.jobModel
-      .aggregate(pipeline as PipelineStage[])
-      .exec();
-    return results;
+    return await this.jobModel.aggregate(pipeline).exec();
   }
 
   async findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {

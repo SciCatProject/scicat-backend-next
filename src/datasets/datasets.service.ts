@@ -7,23 +7,14 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import {
-  FilterQuery,
-  Model,
-  PipelineStage,
-  QueryOptions,
-  UpdateQuery,
-} from "mongoose";
+import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  createFullfacetPipeline,
   createFullqueryFilter,
-  createNewFacetPipeline,
   extractMetadataKeys,
-  mapScientificQuery,
   parseLimitFilters,
-  schemaTypeOf,
-  searchExpression,
 } from "src/common/utils";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -81,7 +72,11 @@ export class DatasetsService {
     const rawDatasetModel = this.datasetModel.discriminators[DatasetType.Raw];
 
     const filterQuery: FilterQuery<DatasetDocument> =
-      createFullqueryFilter<DatasetDocument>(this.datasetModel, filter.fields);
+      createFullqueryFilter<DatasetDocument>(
+        this.datasetModel,
+        "pid",
+        filter.fields,
+      );
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     if (filterQuery.type) {
@@ -131,168 +126,15 @@ export class DatasetsService {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
-    const pipeline = [];
-    const facetMatch: Record<string, unknown> = {};
-    const allMatch = [];
-    Object.keys(fields).forEach((key) => {
-      if (facets.indexOf(key) < 0) {
-        if (key === "text") {
-          if (typeof fields[key] === "string") {
-            const match = {
-              $match: {
-                $or: [
-                  {
-                    $text: searchExpression<DatasetDocument>(
-                      this.datasetModel,
-                      key,
-                      String(fields[key]),
-                    ),
-                  },
-                ],
-              },
-            };
-            pipeline.unshift(match);
-          }
-        } else if (key === "_id") {
-          const match = {
-            $match: {
-              _id: searchExpression<DatasetDocument>(
-                this.datasetModel,
-                key,
-                fields[key],
-              ),
-            },
-          };
-          allMatch.push(match);
-          pipeline.push(match);
-        } else if (key === "mode") {
-          // substitute potential id field in fields
-          const idField = "pid";
-          const currentExpression = JSON.parse(JSON.stringify(fields[key]));
-          if (idField in currentExpression) {
-            currentExpression["pid"] = currentExpression[idField];
-            delete currentExpression[idField];
-          }
-          const match = {
-            $match: currentExpression,
-          };
-          allMatch.push(match);
-          pipeline.push(match);
-        } else if (key === "userGroups") {
-          if (
-            fields.userGroups &&
-            fields.userGroups.indexOf("globalaccess") < 0 &&
-            "ownerGroup" in this.datasetModel.schema.paths
-          ) {
-            const match = {
-              $match: {
-                $or: [
-                  {
-                    ownerGroup: searchExpression<DatasetDocument>(
-                      this.datasetModel,
-                      "ownerGroup",
-                      fields["userGroups"],
-                    ),
-                  },
-                  {
-                    accessGroups: searchExpression<DatasetDocument>(
-                      this.datasetModel,
-                      "accessGroups",
-                      fields["userGroups"],
-                    ),
-                  },
-                ],
-              },
-            };
-            allMatch.push(match);
-            pipeline.push(match);
-          }
-        } else if (key === "scientific") {
-          const match = {
-            $match: mapScientificQuery(fields[key] ?? []),
-          };
-          allMatch.push(match);
-          pipeline.push(match);
-        } else {
-          const match: Record<string, unknown> = {};
-          match[key] = searchExpression<DatasetDocument>(
-            this.datasetModel,
-            key,
-            fields[key] as unknown,
-          );
-          const m = {
-            $match: match,
-          };
-          allMatch.push(m);
-          pipeline.push(m);
-        }
-      } else {
-        facetMatch[key] = searchExpression<DatasetDocument>(
-          this.datasetModel,
-          key,
-          fields[key],
-        );
-      }
-    });
 
-    // append all facet pipelines
-    const facetObject: Record<string, PipelineStage[]> = {};
-    facets.forEach((facet) => {
-      if (!this.datasetModel.schema.discriminators) {
-        return;
-      }
-      if (
-        facet in this.datasetModel.schema.discriminators[DatasetType.Raw].paths
-      ) {
-        facetObject[facet] = createNewFacetPipeline(
-          facet,
-          schemaTypeOf<DatasetDocument>(this.datasetModel, facet),
-          facetMatch,
-        );
-        return;
-      } else if (
-        facet in
-        this.datasetModel.schema.discriminators[DatasetType.Derived].paths
-      ) {
-        facetObject[facet] = createNewFacetPipeline(
-          facet,
-          schemaTypeOf<DatasetDocument>(this.datasetModel, facet),
-          facetMatch,
-        );
-        return;
-      }
+    const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+      this.datasetModel,
+      "pid",
+      fields,
+      facets,
+    );
 
-      if (facet.startsWith("datasetlifecycle.")) {
-        const lifecycleFacet = facet.split(".")[1];
-        facetObject[lifecycleFacet] = createNewFacetPipeline(
-          lifecycleFacet,
-          schemaTypeOf<DatasetDocument>(this.datasetModel, lifecycleFacet),
-          facetMatch,
-        );
-        return;
-      } else {
-        Logger.warn(
-          `Warning: Facet not part of any model: ${facet}`,
-          "DatasetsService",
-        );
-        return;
-      }
-    });
-
-    facetObject["all"] = [
-      {
-        $match: facetMatch,
-      },
-      {
-        $count: "totalSets",
-      },
-    ];
-    pipeline.push({ $facet: facetObject });
-
-    const results = await this.datasetModel
-      .aggregate(pipeline as PipelineStage[])
-      .exec();
-    return results;
+    return await this.datasetModel.aggregate(pipeline).exec();
   }
 
   async updateAll(
