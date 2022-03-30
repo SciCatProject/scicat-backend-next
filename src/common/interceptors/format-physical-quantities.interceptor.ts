@@ -21,8 +21,12 @@ export class FormatPhysicalQuantitiesInterceptor<T> implements NestInterceptor {
   ): Observable<unknown> | Promise<Observable<unknown>> {
     const req = context.switchToHttp().getRequest();
     const instance = (req.body as T)[this.propName];
-    req.body[this.propName] =
-      appendSIUnitToPhysicalQuantity<T[keyof T]>(instance);
+
+    if (req.body[this.propName]) {
+      req.body[this.propName] =
+        appendSIUnitToPhysicalQuantity<T[keyof T]>(instance);
+    }
+
     return next.handle();
   }
 }
