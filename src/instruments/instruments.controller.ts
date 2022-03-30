@@ -60,8 +60,8 @@ export class InstrumentsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Instrument))
   @Get(":id")
-  async findOne(@Param("id") id: string): Promise<Instrument | null> {
-    return this.instrumentsService.findOne({ id });
+  async findOne(@Param("id") pid: string): Promise<Instrument | null> {
+    return this.instrumentsService.findOne({ pid });
   }
 
   @UseGuards(PoliciesGuard)
