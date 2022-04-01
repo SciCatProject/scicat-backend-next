@@ -24,7 +24,6 @@ export type DatasetDocument = Dataset & Document;
 @Schema({
   collection: "Dataset",
   discriminatorKey: "type",
-  emitIndexErrors: true,
 })
 export class Dataset extends Ownable {
   @ApiProperty({
