@@ -41,7 +41,7 @@
     "lodash": "^4.17.21",
     "luxon": "^2.3.1",
     "mathjs": "^9.5.2",
-    "mongoose": "^6.2.5",
+    "mongoose": "^6.2.6",
     "nodemailer": "^6.7.2",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
