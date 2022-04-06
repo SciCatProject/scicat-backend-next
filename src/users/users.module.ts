@@ -17,6 +17,8 @@ import {
   UserSettings,
   UserSettingsSchema,
 } from "./schemas/user-settings.schema";
+import { UserIdentitiesController } from "./user-identities.controller";
+import { UserIdentitiesService } from "./user-identities.service";
 
 @Module({
   imports: [
@@ -52,8 +54,13 @@ import {
       },
     ]),
   ],
-  providers: [CaslAbilityFactory, UsersService, RolesService],
+  providers: [
+    CaslAbilityFactory,
+    UsersService,
+    UserIdentitiesService,
+    RolesService,
+  ],
   exports: [UsersService, RolesService],
-  controllers: [UsersController],
+  controllers: [UsersController, UserIdentitiesController],
 })
 export class UsersModule {}
