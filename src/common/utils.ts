@@ -166,8 +166,10 @@ export const extractMetadataKeys = <T>(
     });
   };
   instances.forEach((instance) => {
-    const propObject = instance[prop] as unknown as Record<string, unknown>;
-    flattenKeys(propObject, "");
+    if (instance[prop]) {
+      const propObject = instance[prop] as unknown as Record<string, unknown>;
+      flattenKeys(propObject, "");
+    }
   });
   return Array.from(keys);
 };
