@@ -21,7 +21,6 @@ export class UserIdentitiesController {
   async findOne(
     @Headers() headers: Record<string, string>,
   ): Promise<UserIdentity | null> {
-    console.log({ headers });
     let filter = {};
     if (headers.filter) {
       const parsedFilter = JSON.parse(headers.filter);
