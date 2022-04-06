@@ -8,6 +8,7 @@ import {
   Patch,
   Delete,
   UseInterceptors,
+  Put,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
@@ -82,8 +83,23 @@ export class UsersController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, UserSettings),
   )
-  @Patch("/:id/settings")
+  @Put("/:id/settings")
   async updateSettings(
+    @Param("id") userId: string,
+    updateUserSettingsDto: UpdateUserSettingsDto,
+  ): Promise<UserSettings | null> {
+    return this.usersService.findOneAndUpdateUserSettings(
+      userId,
+      updateUserSettingsDto,
+    );
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, UserSettings),
+  )
+  @Patch("/:id/settings")
+  async patchSettings(
     @Param("id") userId: string,
     updateUserSettingsDto: UpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
