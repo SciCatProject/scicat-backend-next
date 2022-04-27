@@ -9,10 +9,8 @@ export type UserDocument = User & mongoose.Document;
   collection: "User",
 })
 export class User {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, unique: true })
   _id: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, unique: true })
   id?: string;
 
   @ApiProperty()
