@@ -52,8 +52,8 @@ export class PoliciesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
   @Get("/count")
-  async count(@Query("where") where: string): Promise<{ count: number }> {
-    const parsedWhere: FilterQuery<PolicyDocument> = JSON.parse(where);
+  async count(@Query("where") where?: string): Promise<{ count: number }> {
+    const parsedWhere: FilterQuery<PolicyDocument> = JSON.parse(where ?? "{}");
     return this.policiesService.count(parsedWhere);
   }
 
