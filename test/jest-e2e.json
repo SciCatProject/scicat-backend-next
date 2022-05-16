@@ -4,15 +4,25 @@
     "json",
     "ts"
   ],
+  "globals": {
+    "ts-jest": {
+      "babel": true,
+      "tsconfig": "tsconfig.json"
+    }
+  },
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "moduleDirectories": [
+  "modulePaths": [
     "<rootDir>/../",
     "node_modules"
   ],
-  "setupTestFrameworkScriptFile": "test-setup.ts"
+  "setupFiles": [
+    "<rootDir>/setup/before-every-suite.ts"
+  ],
+  "globalSetup": "<rootDir>/setup/test-setup.ts",
+  "globalTeardown": "<rootDir>/setup/test-teardown.ts"
 }

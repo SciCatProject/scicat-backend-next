@@ -1,13 +1,13 @@
+require('tsconfig-paths/register');
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, Logger } from "@nestjs/common";
-import * as request from "supertest";
-import { AppModule } from "../src/app.module";
-import * as pactum from 'pactum';
 import { ConfigService } from "@nestjs/config";
 import session from "express-session";
+import { AppModule } from "src/app.module";
 export let app: INestApplication;
-export let baseUrl: string;
-beforeAll(async () => {
+
+export default async function (globalConfig: any, projectConfig: any) {
+  console.warn("APP INIT");
   const moduleRef: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   }).compile();
@@ -37,10 +37,5 @@ beforeAll(async () => {
     "Main",
   );
   Logger.log("Scicat Backend listening on port: " + port, "Main");
-  baseUrl = `http:localhost:${port}/api/v3`
-  return app;
-});
+}
 
-afterAll(() => {
-  app.close();
-})
