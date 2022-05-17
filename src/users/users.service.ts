@@ -135,8 +135,11 @@ export class UsersService implements OnModuleInit {
 
   async findOne(
     filter: FilterQuery<UserDocument>,
+    includePassword = false,
   ): Promise<Omit<User, "password"> | null> {
-    return this.userModel.findOne(filter).exec();
+    return includePassword
+      ? this.userModel.findOne(filter).select("+password").exec()
+      : this.userModel.findOne(filter).exec();
   }
 
   async findById(id: string): Promise<Omit<User, "password"> | null> {
