@@ -39,12 +39,16 @@ jobs:
           path: frontend
           fetch-depth: 1
       
-      - name: Run Cypress tests
+      - name: Set Up Cypress
         run: |
           cd frontend
-          npm install --omit peer
           cp CI/ESS/e2e/cypress.nestjs.json cypress.json
-          npx cypress run
+
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v2
+        with:
+          browser: chrome
+          headless: true
 
   gitlab:
     name: Build and deploy
