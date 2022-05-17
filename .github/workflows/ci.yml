@@ -29,7 +29,7 @@ jobs:
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
-          docker-compouse build --no-cache
+          docker-compose build --no-cache
           docker-compose up
       
       - name: Checkout frontend
