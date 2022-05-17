@@ -9,6 +9,8 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -47,6 +49,7 @@ export class SamplesController {
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Sample>("sampleCharacteristics"),
   )
+  @HttpCode(HttpStatus.OK)
   @Post()
   async create(@Body() createSampleDto: CreateSampleDto): Promise<Sample> {
     return this.samplesService.create(createSampleDto);

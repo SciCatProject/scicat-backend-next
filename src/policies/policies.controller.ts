@@ -9,6 +9,8 @@ import {
   Req,
   UseGuards,
   Query,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
@@ -71,6 +73,7 @@ export class PoliciesController {
   })
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
+  @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
   async updateWhere(
     @Query("ownerGroupList") ownerGroupList: string,
