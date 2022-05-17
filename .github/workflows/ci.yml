@@ -44,7 +44,7 @@ jobs:
           cd frontend
           npm install --omit peer
           cp CI/ESS/e2e/cypress.nestjs.json cypress.json
-          npx cypress run
+          npx cypress run --browser chrome
 
   gitlab:
     name: Build and deploy
