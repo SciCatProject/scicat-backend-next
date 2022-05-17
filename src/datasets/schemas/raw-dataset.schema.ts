@@ -3,7 +3,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Lifecycle } from "./lifecycle.schema";
 import { Technique } from "./technique.schema";
 
-@Schema()
+@Schema({
+  minimize: false,
+})
 export class RawDataset {
   pid: string;
   owner: string;
