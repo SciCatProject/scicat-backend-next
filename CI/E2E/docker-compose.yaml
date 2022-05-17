@@ -1,0 +1,42 @@
+version: "3.2"
+services:
+  mongodb:
+    image: bitnami/mongodb:latest
+    volumes:
+      - "mongodb_data:/bitnami"
+  scichat-loopback:
+    image: dacat/scichat-loopback:e2e
+    command:
+      [
+        "./wait-for-it.sh",
+        "mongodb:27017",
+        "--",
+        "node",
+        "-r",
+        "dotenv/config",
+        "."
+      ]
+    volumes:
+      - "./CI/E2E/.env.scichat-loopback:/home/node/app/.env"
+    depends_on:
+      - mongodb
+  backend-next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./CI/E2E/.env.backend-next:/home/node/app/.env"
+  frontend:
+    image: scicatproject/frontend:latest
+    ports:
+      - "4200:80"
+    volumes:
+      - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
+    depends_on:
+      - backend-next
+
+volumes:
+  mongodb_data:
+    driver: local
