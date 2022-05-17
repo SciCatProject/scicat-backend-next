@@ -27,7 +27,7 @@ jobs:
       
       - name: Run docker-compose
         run: |
-          cp /CI/E2E/docker-compose.yaml docker-compose.yaml
+          cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
           docker-compouse build --no-cache
           docker-compose up
