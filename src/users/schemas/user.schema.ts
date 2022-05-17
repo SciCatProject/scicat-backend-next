@@ -7,6 +7,9 @@ export type UserDocument = User & mongoose.Document;
 
 @Schema({
   collection: "User",
+  toJSON: {
+    getters: true,
+  },
 })
 export class User {
   _id: string;
