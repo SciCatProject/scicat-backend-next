@@ -201,7 +201,7 @@ export class PoliciesService implements OnModuleInit {
         if (!userIdentity) {
           try {
             // allow all functional users
-            await this.policyModel
+            return await this.policyModel
               .updateOne({ ownerGroup }, data, { new: true })
               .exec();
           } catch (error) {
@@ -220,7 +220,7 @@ export class PoliciesService implements OnModuleInit {
           }
 
           try {
-            await this.policyModel
+            return await this.policyModel
               .updateOne({ ownerGroup }, data, { new: true })
               .exec();
           } catch (error) {
@@ -229,6 +229,7 @@ export class PoliciesService implements OnModuleInit {
         }
       }),
     );
+    return { message: "successful policy update" };
   }
 
   async addDefaultPolicy(
