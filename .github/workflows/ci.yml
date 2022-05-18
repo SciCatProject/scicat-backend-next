@@ -44,7 +44,7 @@ jobs:
         with:
           working-directory: frontend
           config-file: CI/ESS/e2e/cypress.nestjs.json
-          install-command: npm install --omit peer --ignore-scripts
+          install-command: npm install --omit peer
           browser: chrome
 
       - uses: actions/upload-artifact@v2
