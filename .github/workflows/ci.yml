@@ -42,7 +42,7 @@ jobs:
       - name: Run Cypress tests
         run: |
           cd frontend
-          npm install --omit peer
+          npm install --omit peer --ignore-scripts
           cp CI/ESS/e2e/cypress.nestjs.json cypress.json
           npx cypress run --browser chrome
 
