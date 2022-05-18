@@ -39,12 +39,10 @@ jobs:
           path: frontend
           fetch-depth: 1
 
-      - name: Go to frontend directory
-        run: cd frontend
-
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
         with:
+          working-directory: frontend
           config-file: CI/ESS/e2e/cypress.nestjs.json
           install-command: npm install --omit peer
           browser: chrome
