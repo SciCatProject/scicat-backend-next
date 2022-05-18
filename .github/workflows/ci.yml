@@ -22,7 +22,8 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Run stack in docker-compose
         run: |
@@ -31,15 +32,15 @@ jobs:
           docker-compose build --no-cache
           docker-compose up &
 
-      - uses: actions/checkout@v3
+      - name: Checkout frontend repo
+        uses: actions/checkout@v3
         with:
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1
 
       - name: Go to frontend directory
-        run: |
-          cd frontend
+        run: cd frontend
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
@@ -48,17 +49,17 @@ jobs:
           install-command: npm install --omit peer
           browser: chrome
 
-        - uses: actions/upload-artifact@v2
-          if: failure()
-          with:
-            name: cypress-screenshots
-            path: cypress-screenshots
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress-screenshots
 
-        - uses: actions/upload-artifact@v2
-          if: failure()
-          with:
-            name: cypress-videos
-            path: cypress/videos
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-videos
+          path: cypress/videos
 
   gitlab:
     name: Build and deploy
