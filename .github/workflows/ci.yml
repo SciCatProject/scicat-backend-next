@@ -51,13 +51,13 @@ jobs:
         if: failure()
         with:
           name: cypress-screenshots
-          path: frontend/cypress/screenshots
+          path: frontend/cypress/screenshots/
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-videos
-          path: frontend/cypress/videos
+          path: frontend/cypress/videos/
 
   gitlab:
     name: Build and deploy
