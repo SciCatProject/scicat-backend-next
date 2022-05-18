@@ -44,20 +44,20 @@ jobs:
         with:
           working-directory: frontend
           config-file: CI/ESS/e2e/cypress.nestjs.json
-          install-command: npm install --omit peer
+          install-command: npm install --omit peer --ignore-scripts
           browser: chrome
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress-screenshots
+          path: frontend/cypress/screenshots
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: frontend/cypress/videos
 
   gitlab:
     name: Build and deploy
