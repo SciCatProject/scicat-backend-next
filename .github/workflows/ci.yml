@@ -37,20 +37,16 @@ jobs:
           path: frontend
           fetch-depth: 1
 
-      - run: |
+      - name: Go to frontend directory
+        run: |
           cd frontend
-          cp CI/ESS/e2e/cypress.nestjs.json cypress.json
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
         with:
+          config-file: CI/ESS/e2e/cypress.nestjs.json
           install-command: npm install --omit peer
           browser: chrome
-        run: |
-          cd frontend
-          npm install --omit peer --ignore-scripts
-          cp CI/ESS/e2e/cypress.nestjs.json cypress.json
-          npx cypress run --browser chrome
 
         - uses: actions/upload-artifact@v2
           if: failure()
