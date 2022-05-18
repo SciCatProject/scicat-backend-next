@@ -1,0 +1,14 @@
+{
+  "Attachment": {
+    "thumbnail": "data/abc123",
+    "caption": "Some caption",
+    "datasetId": "pid",
+    "ownerGroup": "20170251-group",
+    "accessGroups": [
+      "biomax"
+    ],
+    "proposalId": "20170251",
+    "createdBy": "Bertram Astor",
+    "updatedBy": "anonymous"
+  }
+}

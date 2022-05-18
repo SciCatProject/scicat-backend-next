@@ -1,0 +1,150 @@
+{
+  "Dataset": {
+    "owner": "Ana Gonzalez",
+    "ownerEmail": "Ana.Gonzalez@maxiv.lu.se",
+    "contactEmail": "Ana.Gonzalez@maxiv.lu.se",
+    "sourceFolder": "/data/visitors/biomax/20170251/20220321/raw/acr/acr-inyterleaded",
+    "size": 0,
+    "numberOfFiles": 28,
+    "creationTime": "2022-03-21T10:53:43.478Z",
+    "type": "raw",
+    "description": "OSC collection in Biomax for Sample -1",
+    "datasetName": "test-dataset",
+    "classification": "IN=medium,AV=low,CO=low",
+    "version": "3.1.0",
+    "ownerGroup": "20170251-group",
+    "accessGroups": [
+      "biomax"
+    ],
+    "instrumentGroup": "biomax",
+    "createdBy": "ingestor",
+    "updatedBy": "ingestor",
+    "createdAt": "2022-03-21T10:53:44.015Z",
+    "updatedAt": "2022-04-11T08:30:19.292Z",
+    "techniques": [],
+    "principalInvestigator": "Ana.Gonzalez@maxiv.lu.se",
+    "creationLocation": "BioMAX",
+    "dataFormat": "HDF5 / NeXus",
+    "scientificMetadata": {
+      "status": "Data collection successful",
+      "collection_id": 64777,
+      "synchrotronMode": "Variable TopUp/Decay",
+      "skip_images": false,
+      "slitGapHorizontal": {
+        "unit": "mm",
+        "value": 0.02
+      },
+      "energy": {
+        "unit": "keV",
+        "value": 11.9997
+      },
+      "processing": "True",
+      "motors": {
+        "sampx": {
+          "unit": "mm",
+          "value": 0.000024671052631567237
+        },
+        "sampy": {
+          "unit": "mm",
+          "value": 0.00000548245614035478
+        },
+        "phi": {
+          "unit": "deg",
+          "value": 329.4575999999943
+        },
+        "kappa": {
+          "unit": "deg",
+          "value": 0.0008984531264033535
+        },
+        "phiz": {
+          "unit": "deg",
+          "value": 0.21057516052601194
+        },
+        "kappa_phi": {
+          "unit": "deg",
+          "value": 0.005286250203572429
+        },
+        "zoom": null,
+        "phiy": {
+          "unit": "deg",
+          "value": -0.8048007701610924
+        },
+        "focus": {
+          "unit": "mm",
+          "value": -0.27198017842060906
+        }
+      },
+      "take_snapshots": false,
+      "residues": 200,
+      "dark": true,
+      "resolutionAtCorner": null,
+      "shape": "P1",
+      "slitGapVertical": 0.02,
+      "in_interleave": false,
+      "wavelength": {
+        "unit": "angstrom",
+        "value": 1.0332398549498594
+      },
+      "yBeam": 2129.196940496,
+      "group_id": 65311,
+      "actualSampleBarcode": null,
+      "beamSizeAtSampleY": {
+        "unit": "mm",
+        "value": 0.02
+      },
+      "in_queue": true,
+      "beamSizeAtSampleX": {
+        "unit": "mm",
+        "value": 0.02
+      },
+      "detector_mode": {},
+      "shutterless": true,
+      "photon flux": {
+        "unit": "s^-1",
+        "value": "0.00E+00"
+      },
+      "undulatorGap1": {
+        "unit": "mm",
+        "value": "6.18"
+      },
+      "transmission": 0,
+      "resolution": {
+        "unit": "angstrom",
+        "value": "5.351"
+      },
+      "collection_start_time": "2022-03-21 11:53:37",
+      "anomalous": false,
+      "detectorDistance": {
+        "unit": "mm",
+        "value": 781.85516
+      },
+      "beamShape": "ellipse",
+      "sessionId": 9659,
+      "do_inducedraddam": false,
+      "experiment_type": "OSC",
+      "xBeam": 2108.231497044,
+      "detector_id": 3,
+      "actualContainerBarcode": null,
+      "sample_reference": {
+        "cell": ",,,,,",
+        "spacegroup": "",
+        "blSampleId": -1
+      },
+      "blSampleId": -1,
+      "oscillation_sequence": {
+        "exposure_time": 0.011,
+        "kappaStart": 0.0008984531264033535,
+        "number_of_lines": 1,
+        "phiStart": 0.005286250203572429,
+        "start_image_number": 101,
+        "number_of_images": 100,
+        "overlap": 0,
+        "start": 361.4710999999952,
+        "range": 0.1,
+        "mesh_range": [],
+        "number_of_passes": 1
+      }
+    },
+    "proposalId": "20170251"
+  }
+}

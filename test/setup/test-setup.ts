@@ -5,7 +5,6 @@ import { ConfigService } from "@nestjs/config";
 import session from "express-session";
 import { AppModule } from "src/app.module";
 export let app: INestApplication;
-
 export default async function (globalConfig: any, projectConfig: any) {
   console.warn("APP INIT");
   const moduleRef: TestingModule = await Test.createTestingModule({
