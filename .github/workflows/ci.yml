@@ -17,34 +17,56 @@ jobs:
           docker-compose pull
           docker-compose up --build --exit-code-from scicat-backend
           docker-compose down
-  
+
   e2etests:
     name: E2E Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Run docker-compose
+      - uses: actions/checkout@v3
+
+      - name: Run stack in docker-compose
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
           docker-compose build --no-cache
           docker-compose up &
-      
-      - name: Checkout frontend
-        uses: actions/checkout@v3
+
+      - uses: actions/checkout@v3
         with:
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1
-      
+
+      - run: |
+          cd frontend
+          cp CI/ESS/e2e/cypress.nestjs.json cypress.json
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
       - name: Run Cypress tests
+        uses: cypress-io/github-action@v2
+        with:
+          install-command: npm install --omit peer
+          browser: chrome
         run: |
           cd frontend
           npm install --omit peer --ignore-scripts
           cp CI/ESS/e2e/cypress.nestjs.json cypress.json
           npx cypress run --browser chrome
+
+        - uses: actions/upload-artifact@v2
+          if: failure()
+          with:
+            name: cypress-screenshots
+            path: cypress-screenshots
+
+        - uses: actions/upload-artifact@v2
+          if: failure()
+          with:
+            name: cypress-videos
+            path: cypress/videos
 
   gitlab:
     name: Build and deploy
