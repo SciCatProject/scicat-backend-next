@@ -1,13 +1,20 @@
 {
-  "Attachment": {
+  "Attachment:Dataset": {
     "thumbnail": "data/abc123",
     "caption": "Some caption",
     "datasetId": "pid",
-    "ownerGroup": "20170251-group",
-    "accessGroups": [
-      "biomax"
-    ],
-    "proposalId": "20170251",
+    "ownerGroup": "$M{Dataset.ownerGroup}",
+    "accessGroups": "$M{Dataset.accessGroups}",
+    "proposalId": "$M{Dataset.proposalId}",
+    "createdBy": "Bertram Astor",
+    "updatedBy": "anonymous"
+  },
+  "Attachment:Sample": {
+    "thumbnail": "data/abc123",
+    "caption": "Some caption",
+    "sampleId": "sampleId",
+    "ownerGroup": "$M{Dataset.ownerGroup}",
+    "accessGroups": "$M{Dataset.accessGroups}",
     "createdBy": "Bertram Astor",
     "updatedBy": "anonymous"
   }

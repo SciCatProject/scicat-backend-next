@@ -1,26 +1,31 @@
 import * as pactum from "pactum";
 describe("e2e test /auth endpoint", () => {
-  const dto = {
-    username: "ingestor",
-    password: "aman"
-  };
+  const template_key = '@DATA:TEMPLATE@';
+  const override_key = '@OVERRIDES@';
   const unauthorizedResBody = {
     "statusCode": 401,
     "message": "Unauthorized"
   };
   describe("/login - Login with functional accounts", () => {
 
-    it("Ingestor login fails with incorrect credentials", async () => {
+    it("Login fails with incorrect credentials", async () => {
       return pactum.spec()
         .post('/auth/login')
-        .withBody({ ...dto, password: "incorrect password" })
+        .withBody({
+          [template_key]: "User:ingestor",
+          [override_key]: {
+            password: "incorrect password"
+          }
+        })
         .expectStatus(401)
         .expectBody(unauthorizedResBody);
     });
     it("Login should succeed with correct credentials", async () => {
       return pactum.spec()
         .post('/auth/login')
-        .withBody(dto)
+        .withBody({
+          [template_key]: "User:ingestor"
+        })
         .expectStatus(201)
         .expectBodyContains("access_token")
         .stores("access_token", "access_token");

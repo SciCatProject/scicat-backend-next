@@ -1,0 +1,32 @@
+{
+  "Proposal": {
+    "proposalId": "$M{Dataset.proposalId}",
+    "pi_email": "$M{Dataset.ownerEmail}",
+    "pi_firstname": "Firstname",
+    "pi_lastname": "Lastname",
+    "email": "$M{Dataset.ownerEmail}",
+    "firstname": "Firstname",
+    "lastname": "Lastname",
+    "title": "TEST for checking data handling",
+    "abstract": "In-house proposal for IT to test data handling\r\n",
+    "startTime": null,
+    "endTime": null,
+    "ownerGroup": "$M{Dataset.ownerGroup}",
+    "accessGroups": "$M{Dataset.accessGroups}",
+    "createdBy": "anonymous",
+    "updatedBy": "ingestor",
+    "MeasurementPeriodList": [
+      {
+        "instrument": "Mirror",
+        "start": "2020-12-21T13:48:59.272Z",
+        "end": "2020-12-21T13:48:59.272Z",
+        "comment": "Good",
+        "createdAt": "2021-05-26T07:41:30.838Z",
+        "createdBy": "anonymous",
+        "updatedBy": "ingestor"
+      }
+    ],
+    "createdAt": "2020-12-23T13:38:08.074Z",
+    "updatedAt": "2022-03-24T11:37:24.200Z"
+  }
+}

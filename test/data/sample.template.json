@@ -1,0 +1,26 @@
+{
+  "Sample": {
+    "owner": "$M{Dataset.owner}",
+    "description": "test",
+    "sampleCharacteristics": {
+      "parent": {
+        "child": {
+          "value": 1,
+          "unit": "ampere",
+          "valueSI": 1,
+          "unitSI": "A"
+        },
+        "date": "2022-03-24T07:30:01.000Z"
+      },
+      "mass": {
+        "value": 3,
+        "unit": "grams",
+        "valueSI": 0.003,
+        "unitSI": "kg"
+      },
+      "characteristics": "test123"
+    },
+    "ownerGroup": "$M{Dataset.ownerGroup}",
+    "createdBy": "ldap.$M{Dataset.owner}"
+  }
+}

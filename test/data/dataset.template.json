@@ -1,7 +1,7 @@
 {
   "Dataset": {
-    "owner": "Ana Gonzalez",
-    "ownerEmail": "Ana.Gonzalez@maxiv.lu.se",
+    "owner": "$M{Dataset.owner}",
+    "ownerEmail": "$M{Dataset.ownerEmail}",
     "contactEmail": "Ana.Gonzalez@maxiv.lu.se",
     "sourceFolder": "/data/visitors/biomax/20170251/20220321/raw/acr/acr-inyterleaded",
     "size": 0,
@@ -12,10 +12,8 @@
     "datasetName": "test-dataset",
     "classification": "IN=medium,AV=low,CO=low",
     "version": "3.1.0",
-    "ownerGroup": "20170251-group",
-    "accessGroups": [
-      "biomax"
-    ],
+    "ownerGroup": "$M{Dataset.ownerGroup}",
+    "accessGroups": "$M{Dataset.accessGroups}",
     "instrumentGroup": "biomax",
     "createdBy": "ingestor",
     "updatedBy": "ingestor",
@@ -145,6 +143,6 @@
         "number_of_passes": 1
       }
     },
-    "proposalId": "20170251"
+    "proposalId": "$M{Dataset.proposalId}"
   }
 }
