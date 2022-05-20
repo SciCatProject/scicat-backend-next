@@ -21,7 +21,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "pretest:e2e:restart:db": "docker-compose rm -s -f -v test-db  && docker-compose up -d test-db && sleep 1",
-    "test:e2e": "npm run pretest:e2e:restart:db && dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json test/useridentities.e2e-spec.ts"
+    "test:e2e": "npm run pretest:e2e:restart:db && dotenv -e .env.test -- jest --watch=false --no-cache --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@casl/ability": "^5.4.3",
