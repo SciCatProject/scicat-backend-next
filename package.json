@@ -4,7 +4,7 @@
   "description": "scicat-backend-next",
   "author": "",
   "private": true,
-  "license": "GPL-3.0",
+  "license": "BSD-3-Clause",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
