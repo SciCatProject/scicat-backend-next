@@ -7,6 +7,9 @@ export type UserIdentityDocument = UserIdentity & Document;
 
 @Schema({
   collection: "UserIdentity",
+  toJSON: {
+    getters: true,
+  },
 })
 export class UserIdentity {
   @Prop()

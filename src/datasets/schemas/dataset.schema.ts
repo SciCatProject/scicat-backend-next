@@ -25,6 +25,9 @@ export type DatasetDocument = Dataset & Document;
   collection: "Dataset",
   discriminatorKey: "type",
   minimize: false,
+  toJSON: {
+    getters: true,
+  },
 })
 export class Dataset extends Ownable {
   @ApiProperty({

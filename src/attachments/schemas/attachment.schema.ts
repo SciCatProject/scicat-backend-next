@@ -8,6 +8,9 @@ export type AttachmentDocument = Attachment & Document;
 
 @Schema({
   collection: "Attachment",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Attachment extends Ownable {
   @ApiProperty({ type: String, default: () => uuidv4() })
