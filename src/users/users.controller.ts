@@ -10,7 +10,7 @@ import {
   UseInterceptors,
   Put,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -26,17 +26,33 @@ import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { User } from "./schemas/user.schema";
 import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
+import { AuthService } from "src/auth/auth.service";
+import { CredentialsDto } from "src/auth/dto/credentials.dto";
+import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
 
 @ApiBearerAuth()
 @ApiTags("users")
 @Controller("users")
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @AllowAny()
   @Post("jwt")
   async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
     return this.usersService.createUserJWT(request.user as JWTUser);
+  }
+
+  @ApiBody({ type: CredentialsDto })
+  @AllowAny()
+  @UseGuards(LocalAuthGuard)
+  @Post("login")
+  async login(
+    @Req() req: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return await this.authService.login(req.user as Omit<User, "password">);
   }
 
   @UseGuards(PoliciesGuard)

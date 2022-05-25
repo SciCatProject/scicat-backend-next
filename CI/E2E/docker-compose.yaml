@@ -1,0 +1,54 @@
+version: "3.2"
+services:
+  reverse-proxy:
+    image: traefik:2.5
+    command: --api.insecure=true --providers.docker=true --entrypoints.web.address=:80
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  mongodb:
+    image: bitnami/mongodb:latest
+    volumes:
+      - "mongodb_data:/bitnami"
+  scichat-loopback:
+    image: dacat/scichat-loopback:e2e
+    command:
+      [
+        "./wait-for-it.sh",
+        "mongodb:27017",
+        "--",
+        "node",
+        "-r",
+        "dotenv/config",
+        "."
+      ]
+    volumes:
+      - "./CI/E2E/.env.scichat-loopback:/home/node/app/.env"
+    depends_on:
+      - mongodb
+  backend-next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./CI/E2E/.env.backend-next:/home/node/app/.env"
+    depends_on:
+      - mongodb
+    labels:
+      - "traefik.http.routers.backend-next.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-next.entrypoints=web"
+  frontend:
+    image: scicatproject/frontend:latest
+    volumes:
+      - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
+    depends_on:
+      - backend-next
+    labels:
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+
+volumes:
+  mongodb_data:
+    driver: local

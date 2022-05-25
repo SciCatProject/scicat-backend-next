@@ -11,6 +11,8 @@ import {
   UseGuards,
   UseInterceptors,
   Logger,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -80,6 +82,7 @@ export class DatasetsController {
       "scientificMetadata",
     ),
   )
+  @HttpCode(HttpStatus.OK)
   @Post()
   async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
@@ -300,7 +303,6 @@ export class DatasetsController {
   }
 
   // PUT /datasets/:id
-  // body: full dataset model
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
@@ -314,12 +316,9 @@ export class DatasetsController {
   async findByIdReplaceOrCreate(
     @Param("id") id: string,
     @Body()
-    createDatasetDto: CreateDatasetDto,
-  ): Promise<Dataset> {
-    return this.datasetsService.findByIdAndReplaceOrCreate(
-      id,
-      createDatasetDto,
-    );
+    updateDatasetDto: UpdateDatasetDto,
+  ): Promise<Dataset | null> {
+    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
   // DELETE /datasets/:id
@@ -370,6 +369,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Attachment),
   )
+  @HttpCode(HttpStatus.OK)
   @Post("/:id/attachments")
   async createAttachment(
     @Param("id") id: string,

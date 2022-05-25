@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { AuthService } from "src/auth/auth.service";
 import { CaslModule } from "src/casl/casl.module";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
@@ -9,6 +10,8 @@ class UsersServiceMock {
   }
 }
 
+class AuthServiceMock {}
+
 describe("UsersController", () => {
   let controller: UsersController;
 
@@ -16,7 +19,10 @@ describe("UsersController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       imports: [CaslModule],
-      providers: [{ provide: UsersService, useClass: UsersServiceMock }],
+      providers: [
+        { provide: AuthService, useClass: AuthServiceMock },
+        { provide: UsersService, useClass: UsersServiceMock },
+      ],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
