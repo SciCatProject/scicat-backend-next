@@ -9,6 +9,9 @@ beforeAll(async () => {
     .expectBodyContains("access_token")
     .stores("access_token", "access_token")
     .stores("userId", "_id");
+  pactum.handler.addCaptureHandler('encodePid', (ctx: any) => {
+    return encodeURIComponent(ctx.res.body.pid);
+  });
 });
 describe("e2e test /datasets endpoint", () => {
   const authHeader = { Authorization: 'Bearer $S{access_token}' }
@@ -19,23 +22,20 @@ describe("e2e test /datasets endpoint", () => {
       .post('/datasets')
       .withHeaders(authHeader)
       .withJson({ [template_key]: 'Dataset' })
-      .expectStatus(201)
+      .expectStatus(200)
       .stores('datasetId', 'pid')
+      .stores('encodedPid', '#encodePid')
       .expectBodyContains('pid')
       .expectJsonLike({ [template_key]: 'Dataset' })
-    const encodedPid = encodeURIComponent(pactum.parse('$S{datasetId}'));
-    testCase
-      .step("Clean up")
       .clean()
-      .delete(`/datasets/${encodedPid}`)
+      .delete(`/datasets/$S{encodedPid}`)
       .withHeaders(authHeader)
       .expectStatus(200);
   });
   it("GET - should fetch the new dataset", async () => {
-    const encodedPid = encodeURIComponent(pactum.parse('$S{datasetId}'));
     return pactum
       .spec()
-      .get(`/datasets/${encodedPid}`)
+      .get(`/datasets/$S{encodedPid}`)
       .withHeaders(authHeader)
       .expectStatus(200)
       .expectBodyContains("unitSI")
@@ -46,36 +46,36 @@ describe("e2e test /datasets endpoint", () => {
   it("POST /{id}/attachments - should add a new attachment to this dataset", async () => {
     return testCase.step('Add attachment')
       .spec()
-      .post('/datasets/$S{datasetId}/attachments')
+      .post('/datasets/$S{encodedPid}/attachments')
       .withHeaders(authHeader)
-      .stores("attachmentId", "_id")
-      .expectStatus(201)
       .withJson({
         [template_key]: 'Attachment:Dataset',
         [override_key]: {
           datasetId: '$S{datasetId}',
         }
       })
+      .stores("attachmentId", "_id")
+      .expectStatus(200)
       .expectBodyContains("_id")
       .expectJsonLike({
-        [template_key]: 'Attachment',
+        [template_key]: 'Attachment:Dataset',
         [override_key]: {
           datasetId: '$S{datasetId}',
         }
       })
       .clean()
-      .delete('/datasets/$S{datasetId}/attachments/$S{attachmentId}')
+      .delete('/datasets/$S{encodedPid}/attachments/$S{attachmentId}')
       .withHeaders(authHeader)
       .expectStatus(200);
   });
   it("GET /{id}/attachments - Should get the newly added attachment to this dataset", async () => {
     return testCase.step('Add attachment')
       .spec()
-      .get('/datasets/$S{datasetId}/attachments')
+      .get('/datasets/$S{encodedPid}/attachments')
       .withHeaders(authHeader)
       .expectStatus(200)
       .expectJsonLike([{
-        [template_key]: 'Attachment',
+        [template_key]: 'Attachment:Dataset',
         [override_key]: {
           datasetId: '$S{datasetId}',
         }
@@ -99,7 +99,7 @@ describe("e2e test /datasets endpoint", () => {
       .withJson({
         [template_key]: 'Dataset',
         [override_key]: {
-          techniques: '$M{Dataset:NonUniqueTechniques}'
+          techniques: '$M{DatasetNonUniqueTechniques}'
         }
       })
       .expectStatus(422)
