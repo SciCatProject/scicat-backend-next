@@ -8,6 +8,9 @@ export type InstrumentDocument = Instrument & Document;
 
 @Schema({
   collection: "Instrument",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Instrument {
   @Prop({ type: String, unique: true })

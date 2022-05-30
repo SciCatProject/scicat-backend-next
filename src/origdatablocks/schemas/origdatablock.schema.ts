@@ -8,6 +8,9 @@ export type OrigDatablockDocument = OrigDatablock & Document;
 
 @Schema({
   collection: "OrigDatablock",
+  toJSON: {
+    getters: true,
+  },
 })
 export class OrigDatablock extends Ownable {
   @ApiProperty({

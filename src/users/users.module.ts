@@ -42,42 +42,16 @@ import { AuthService } from "src/auth/auth.service";
         schema: RoleSchema,
       },
       {
+        name: User.name,
+        schema: UserSchema,
+      },
+      {
         name: UserRole.name,
         schema: UserRoleSchema,
       },
-    ]),
-    MongooseModule.forFeatureAsync([
-      {
-        name: User.name,
-        useFactory: () => {
-          const schema = UserSchema;
-
-          schema.pre<User>("save", function (next) {
-            // if id is empty or different than _id,
-            // set id to _id
-            if (!this.id) {
-              this.id = this._id;
-            }
-            next();
-          });
-          return schema;
-        },
-      },
       {
         name: UserSettings.name,
-        useFactory: () => {
-          const schema = UserSettingsSchema;
-
-          schema.pre<UserSettings>("save", function (next) {
-            // if id is empty or different than _id,
-            // set id to _id
-            if (!this.id) {
-              this.id = this._id;
-            }
-            next();
-          });
-          return schema;
-        },
+        schema: UserSettingsSchema,
       },
     ]),
   ],

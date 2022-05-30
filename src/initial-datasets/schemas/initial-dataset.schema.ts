@@ -5,6 +5,9 @@ export type InitialDatasetDocument = InitialDataset & Document;
 
 @Schema({
   collection: "InitialDataset",
+  toJSON: {
+    getters: true,
+  },
 })
 export class InitialDataset {
   @Prop({ type: String, required: true, unique: true })

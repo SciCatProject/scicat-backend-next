@@ -7,6 +7,9 @@ export type PublishedDataDocument = PublishedData & Document;
 
 @Schema({
   collection: "PublishedData",
+  toJSON: {
+    getters: true,
+  },
 })
 export class PublishedData {
   @Prop({

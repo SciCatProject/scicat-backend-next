@@ -15,6 +15,9 @@ import {
 export type ProposalDocument = Proposal & Document;
 @Schema({
   collection: "Proposal",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Proposal extends Ownable {
   @ApiProperty({

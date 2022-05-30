@@ -8,6 +8,9 @@ export type PolicyDocument = Policy & Document;
 
 @Schema({
   collection: "Policy",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Policy extends Ownable {
   @ApiProperty()
