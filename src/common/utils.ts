@@ -29,37 +29,39 @@ export const appendSIUnitToPhysicalQuantity = <T>(object: T) => {
     const instance = object[key as keyof T] as T[keyof T];
     let value: number | undefined;
     let unit: string | undefined;
-    if (instance) {
-      Object.keys(instance).forEach((scientificKey) => {
-        if (scientificKey.startsWith("u") && !scientificKey.endsWith("SI")) {
-          unit = instance[
-            scientificKey as keyof T[keyof T]
-          ] as unknown as string;
-        }
-        if (scientificKey.startsWith("v") && !scientificKey.endsWith("SI")) {
-          value = instance[
-            scientificKey as keyof T[keyof T]
-          ] as unknown as number;
-        }
-      });
+    if (!instance) {
+      updatedObject[key as keyof T] = instance;
+      return;
+    }
+    Object.keys(instance).forEach((scientificKey) => {
+      if (scientificKey.startsWith("u") && !scientificKey.endsWith("SI")) {
+        unit = instance[
+          scientificKey as keyof T[keyof T]
+        ] as unknown as string;
+      }
+      if (scientificKey.startsWith("v") && !scientificKey.endsWith("SI")) {
+        value = instance[
+          scientificKey as keyof T[keyof T]
+        ] as unknown as number;
+      }
+    });
 
-      if (value !== undefined && unit && unit.length > 0) {
-        const { valueSI, unitSI } = convertToSI(value, unit);
-        updatedObject[key as keyof T] = {
-          ...instance,
-          valueSI,
-          unitSI,
-        };
-      }
-      // Has nested field
-      else if (isObject(instance)) {
-        updatedObject = {
-          ...updatedObject,
-          [key]: appendSIUnitToPhysicalQuantity(instance),
-        };
-      } else {
-        updatedObject[key as keyof T] = instance;
-      }
+    if (value !== undefined && unit && unit.length > 0) {
+      const { valueSI, unitSI } = convertToSI(value, unit);
+      updatedObject[key as keyof T] = {
+        ...instance,
+        valueSI,
+        unitSI,
+      };
+    }
+    // Has nested field
+    else if (isObject(instance)) {
+      updatedObject = {
+        ...updatedObject,
+        [key]: appendSIUnitToPhysicalQuantity(instance),
+      };
+    } else {
+      updatedObject[key as keyof T] = instance;
     }
   });
   return updatedObject;
