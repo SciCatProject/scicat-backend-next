@@ -35,9 +35,7 @@ export const appendSIUnitToPhysicalQuantity = <T>(object: T) => {
     }
     Object.keys(instance).forEach((scientificKey) => {
       if (scientificKey.startsWith("u") && !scientificKey.endsWith("SI")) {
-        unit = instance[
-          scientificKey as keyof T[keyof T]
-        ] as unknown as string;
+        unit = instance[scientificKey as keyof T[keyof T]] as unknown as string;
       }
       if (scientificKey.startsWith("v") && !scientificKey.endsWith("SI")) {
         value = instance[
