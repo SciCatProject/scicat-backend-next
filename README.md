@@ -54,6 +54,16 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `REGISTER_METADATA_URI` [string] URI to the organization that registers the facilities published data metadata.
 - `SITE` [string] The name of your site.
 
+## Migrating from the old SciCat Backend
+
+Where the [current SciCat Backend](https://github.com/SciCatProject/backend) accepts id fields in the database named `pid`, `doi`, or similar, this implementation requires there to be an id field of the form `_id` on every document. It is therefore necessary to run a database migration script in your MongoDB instance before you can connect this backend to it.
+
+The scripts [migrateIdFields.js](/scripts/migrateIdFields.js) and [migrateIdFields.sh](/scripts/migrateIdFields.sh) are located in the [/scripts](/scripts/) folder. Copy these to a location were you can access your MongoDB instance, then modify the shell script to run the script on your MongoDB instance. Once modified, start the migration by running
+
+```sh
+sh ./migrateIdFields.sh
+```
+
 ---
 
 For the full documentation please go to the [SciCat home page](https://scicatproject.github.io/) and follow the [documentation link](https://scicatproject.github.io/documentation)
