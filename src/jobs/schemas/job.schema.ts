@@ -8,13 +8,15 @@ export type JobDocument = Job & Document;
 
 @Schema({
   collection: "Job",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Job {
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String, unique: true, default: () => uuidv4() })
   _id: string;
 
-  @Prop({ type: String, unique: true, default: () => uuidv4() })
-  id: string;
+  id?: string;
 
   @ApiProperty({
     description: "The email of the person initiating the job request",

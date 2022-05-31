@@ -6,6 +6,9 @@ export type RoleDocument = Role & Document;
 
 @Schema({
   collection: "Role",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Role {
   _id: string;

@@ -13,6 +13,9 @@ export type SampleDocument = Sample & Document;
 
 @Schema({
   collection: "Sample",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Sample extends Ownable {
   @Prop({ type: String, unique: true })

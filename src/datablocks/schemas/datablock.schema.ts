@@ -8,6 +8,9 @@ export type DatablockDocument = Datablock & Document;
 
 @Schema({
   collection: "Datablock",
+  toJSON: {
+    getters: true,
+  },
 })
 export class Datablock extends Ownable {
   @ApiProperty({
