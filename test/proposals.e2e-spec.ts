@@ -24,7 +24,7 @@ describe('e2e test /proposals endpoint', () => {
       })
       .stores("proposalId", "proposalId")
       .clean()
-      .delete('proposals/$S{proposalId}')
+      .delete('/proposals/$S{proposalId}')
       .expectStatus(200)
   });
   it("Clean up", () => {
