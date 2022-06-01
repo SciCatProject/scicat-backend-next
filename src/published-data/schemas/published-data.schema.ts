@@ -14,7 +14,6 @@ export type PublishedDataDocument = PublishedData & Document;
 export class PublishedData {
   @Prop({
     type: String,
-    unique: true,
     default: function genUUID(): string {
       return process.env.DOI_PREFIX + uuidv4();
     },

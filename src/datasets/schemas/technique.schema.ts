@@ -10,7 +10,7 @@ export class Technique {
     type: String,
     description: "Persistent Identifier dervied from UUIDv4",
   })
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String, unique: true, sparse: true })
   pid: string;
 
   @ApiProperty({
