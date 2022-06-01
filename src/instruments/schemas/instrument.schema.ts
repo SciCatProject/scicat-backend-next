@@ -13,7 +13,7 @@ export type InstrumentDocument = Instrument & Document;
   },
 })
 export class Instrument {
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String })
   _id: string;
 
   @ApiProperty({

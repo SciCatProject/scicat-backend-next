@@ -13,7 +13,7 @@ export type JobDocument = Job & Document;
   },
 })
 export class Job {
-  @Prop({ type: String, unique: true, default: () => uuidv4() })
+  @Prop({ type: String, default: () => uuidv4() })
   _id: string;
 
   id?: string;
