@@ -1,4 +1,5 @@
 import * as session from "express-session";
+import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
@@ -18,6 +19,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("explorer-next", app, document);
+
+  app.use(json({ limit: "16mb" }));
 
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
     ConfigService,
