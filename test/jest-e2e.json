@@ -1,9 +1,28 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "globals": {
+    "ts-jest": {
+      "babel": true,
+      "tsconfig": "tsconfig.json"
+    }
+  },
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "modulePaths": [
+    "<rootDir>/../",
+    "node_modules"
+  ],
+  "setupFiles": [
+    "<rootDir>/setup/before-every-suite.ts"
+  ],
+  "globalSetup": "<rootDir>/setup/test-setup.ts",
+  "globalTeardown": "<rootDir>/setup/test-teardown.ts"
 }

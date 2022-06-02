@@ -1,0 +1,21 @@
+{
+  "Dataset": {
+    "owner": "Firstname Lastname",
+    "ownerGroup": "20170251-group",
+    "accessGroups": [
+      "biomax"
+    ],
+    "proposalId": "20170251",
+    "ownerEmail": "Firstname.LastName@gmail.com"
+  },
+  "DatasetNonUniqueTechniques": [
+    {
+      "pid": "1",
+      "name": "a"
+    },
+    {
+      "pid": "1",
+      "name": "a"
+    }
+  ]
+}

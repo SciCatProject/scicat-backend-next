@@ -39,3 +39,4 @@ lerna-debug.log*
 
 # Misc
 /mongodb_data
+functionalAccounts.json
