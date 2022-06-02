@@ -29,7 +29,7 @@ export class Proposal extends Ownable {
   @Prop({ type: String, unique: true, required: true })
   proposalId: string;
 
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String })
   _id: string;
 
   @ApiProperty({ type: String, description: "Email of principal investigator" })
@@ -108,7 +108,7 @@ export class Proposal extends Ownable {
     description:
       "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
   })
-  @Prop({ type: MeasurementPeriodSchema })
+  @Prop([MeasurementPeriodSchema])
   MeasurementPeriodList: MeasurementPeriod[];
 }
 
