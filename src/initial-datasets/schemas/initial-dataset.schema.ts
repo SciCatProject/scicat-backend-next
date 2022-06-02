@@ -10,7 +10,7 @@ export type InitialDatasetDocument = InitialDataset & Document;
   },
 })
 export class InitialDataset {
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({ type: String, required: true })
   _id: string;
 }
 

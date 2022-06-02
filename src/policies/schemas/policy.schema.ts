@@ -14,7 +14,7 @@ export type PolicyDocument = Policy & Document;
 })
 export class Policy extends Ownable {
   @ApiProperty()
-  @Prop({ type: String, unique: true, default: () => uuidv4() })
+  @Prop({ type: String, default: () => uuidv4() })
   _id: string;
 
   @ApiProperty({
