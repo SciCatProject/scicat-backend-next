@@ -144,5 +144,18 @@
       }
     },
     "proposalId": "$M{Dataset.proposalId}"
+  },
+  "Dataset:UpdateScientificMetadata": {
+    "scientificMetadata": {
+      "status": "Data collection processed",
+      "collection_id": 64777,
+      "synchrotronMode": "Variable TopUp/Decay",
+      "comment": "should update the dataset with new data",
+      "skip_images": true,
+      "slitGapHorizontal": {
+        "unit": "mm",
+        "value": 0.03
+      }
+    }
   }
 }

@@ -32,7 +32,7 @@ describe("e2e test /datasets endpoint", () => {
       .withHeaders(authHeader)
       .expectStatus(200);
   });
-  it("GET - should fetch the new dataset", async () => {
+  it("GET - Should fetch the new dataset", async () => {
     return pactum
       .spec()
       .get(`/datasets/$S{encodedPid}`)
@@ -42,8 +42,15 @@ describe("e2e test /datasets endpoint", () => {
       .expectBodyContains("valueSI")
       .expectJsonLike({ [template_key]: 'Dataset' })
   });
-
-  it("POST /{id}/attachments - should add a new attachment to this dataset", async () => {
+  it("PATCH - Should update the dataset with new scientificMetadata", async () => {
+    return pactum
+      .spec()
+      .patch("/datasets/$S{encodedPid}")
+      .withHeaders(authHeader)
+      .withJson({ [template_key]: "Dataset:UpdateScientificMetadata" })
+      .inspect()
+  });
+  it("POST /{id}/attachments - Should add a new attachment to this dataset", async () => {
     return testCase.step('Add attachment')
       .spec()
       .post('/datasets/$S{encodedPid}/attachments')
