@@ -108,7 +108,7 @@ export class Proposal extends Ownable {
     description:
       "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
   })
-  @Prop({ type: MeasurementPeriodSchema })
+  @Prop([MeasurementPeriodSchema])
   MeasurementPeriodList: MeasurementPeriod[];
 }
 
