@@ -13,6 +13,7 @@ import {
   Logger,
   HttpCode,
   HttpStatus,
+  Headers,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -227,9 +228,14 @@ export class DatasetsController {
     description: "Database filter to apply when finding a Dataset",
     required: false,
   })
-  async findOne(@Query("filter") filters?: string): Promise<Dataset | null> {
-    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = filters
-      ? JSON.parse(filters)
+  async findOne(
+    @Query("filter") queryFilters?: string,
+    @Headers("filter") headerFilters?: string,
+  ): Promise<Dataset | null> {
+    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
+      ? JSON.parse(queryFilters)
+      : headerFilters
+      ? JSON.parse(headerFilters)
       : {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
