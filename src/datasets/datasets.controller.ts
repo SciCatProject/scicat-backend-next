@@ -99,10 +99,15 @@ export class DatasetsController {
     required: false,
   })
   async findAll(
+    @Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
-      filter && filter.filter ? JSON.parse(filter.filter) : {};
+      filter && filter.filter
+        ? JSON.parse(filter.filter)
+        : headers.filter
+        ? JSON.parse(headers.filter as string)
+        : {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> =
