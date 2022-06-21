@@ -30,7 +30,7 @@ export class SamplesService {
     filter: IFilters<SampleDocument, ISampleFields>,
   ): Promise<Sample[]> {
     const whereFilter: FilterQuery<SampleDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<Sample>(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.sampleModel
       .find(whereFilter)

@@ -31,9 +31,7 @@ export class PublishedDataService {
 
   async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {
     const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<PublishedData>(
-      filter.limits,
-    );
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.publishedDataModel
       .find(whereFilter)
