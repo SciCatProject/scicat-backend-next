@@ -225,14 +225,14 @@ export const parseLimitFilters = (
 ): {
   limit: number;
   skip: number;
-  sort: { [key: string]: "asc" | "desc" } | undefined;
+  sort: { [key: string]: "asc" | "desc" } | string;
 } => {
   if (!limits) {
-    return { limit: 100, skip: 0, sort: undefined };
+    return { limit: 100, skip: 0, sort: "" };
   }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
-  let sort: { [key: string]: "asc" | "desc" } | undefined;
+  let sort: { [key: string]: "asc" | "desc" } | string = "";
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
     if (direction === "asc" || direction === "desc") {
