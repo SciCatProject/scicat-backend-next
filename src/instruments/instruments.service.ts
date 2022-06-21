@@ -21,7 +21,7 @@ export class InstrumentsService {
 
   async findAll(filter: IFilters<InstrumentDocument>): Promise<Instrument[]> {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<Instrument>(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.instrumentModel
       .find(whereFilter)

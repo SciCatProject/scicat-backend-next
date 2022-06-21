@@ -27,7 +27,7 @@ export class ProposalsService {
     filter: IFilters<ProposalDocument, IProposalFields>,
   ): Promise<Proposal[]> {
     const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<Proposal>(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.proposalModel
       .find(whereFilter)
