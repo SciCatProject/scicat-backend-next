@@ -29,7 +29,7 @@ import { Job, JobDocument } from "./schemas/job.schema";
 @Injectable()
 export class JobsService implements OnModuleInit {
   private domainName = process.env.HOST;
-  private smtpMessageFrom = this.configService.get<string>("smtpMessageFrom");
+  private smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
 
   constructor(
     private configService: ConfigService,

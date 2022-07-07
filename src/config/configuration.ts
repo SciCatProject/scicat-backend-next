@@ -76,4 +76,10 @@ export default () => ({
   registerDoiUri: process.env.REGISTER_DOI_URI,
   registerMetadataUri: process.env.REGISTER_METADATA_URI,
   site: process.env.SITE,
+  smtp: {
+    host: process.env.SMTP_HOST,
+    messageFrom: process.env.SMTP_MESSAGE_FROM,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE,
+  },
 });
