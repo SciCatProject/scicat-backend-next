@@ -47,16 +47,16 @@ import { CommonModule } from "./common/common.module";
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const port = configService.get<string>("SMTP_PORT");
+        const port = configService.get<string>("smtp.port");
         return {
           transport: {
-            host: configService.get<string>("SMTP_HOST"),
+            host: configService.get<string>("smtp.host"),
             port: port ? parseInt(port) : undefined,
             secure:
-              configService.get<string>("SMTP_SECURE") === "yes" ? true : false,
+              configService.get<string>("smtp.secure") === "yes" ? true : false,
           },
           defaults: {
-            from: configService.get<string>("SMTP_MESSAGE_FROM"),
+            from: configService.get<string>("smtp.messageFrom"),
           },
           template: {
             dir: join(__dirname, "./common/email-templates"),
