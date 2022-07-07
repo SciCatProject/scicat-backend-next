@@ -15,6 +15,7 @@
 3. Add *.env* file to project root folder. See [Environment variables](#environment-variables).
 4. *Optional* Add *functionalAccounts.json* file to project root folder. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
 5. `npm run start:dev`
+6. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
