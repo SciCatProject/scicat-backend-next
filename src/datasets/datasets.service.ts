@@ -73,7 +73,7 @@ export class DatasetsService {
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
         "pid",
-        filter.fields,
+        filter.fields as FilterQuery<DatasetDocument>,
       );
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
