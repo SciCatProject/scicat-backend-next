@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
-import { FilterQuery, Model, PipelineStage } from "mongoose";
+import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
@@ -261,7 +261,7 @@ export const createNewFacetPipelineStage = (
 
     if (Object.keys(queryCopy).length > 0) {
       pipeline.push({
-        $match: queryCopy,
+        $match: queryCopy as Record<string, Expression>,
       });
     }
   }
@@ -575,7 +575,7 @@ export const createFullfacetPipeline = <T, Y>(
 
   facetObject["all"] = [
     {
-      $match: facetMatch,
+      $match: facetMatch as Record<string, Expression>,
     },
     {
       $count: "totalSets",
