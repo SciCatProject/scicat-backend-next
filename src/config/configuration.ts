@@ -99,6 +99,9 @@ const configuration = () => {
         bindCredentials: process.env.LDAP_BIND_CREDENTIALS,
         searchBase: process.env.LDAP_SEARCH_BASE,
         searchFilter: process.env.LDAP_SEARCH_FILTER,
+        Mode: process.env.LDAP_MODE ?? "ad",
+        externalIdAttr: process.env.LDAP_EXTERNAL_ID ?? "sAMAccountName",
+        usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
     oidc: {
