@@ -13,9 +13,9 @@
     "provider": "ldap",
     "authScheme": "ldap",
     "module": "",
-    "authPath": "/auth/ldap",
+    "authPath": "/auth/msad",
     "successRedirect": "/auth/account",
-    "failureRedirect": "/auth/ldap",
+    "failureRedirect": "/auth/msad",
     "session": true,
     "failureFlash": true,
     "json": "true",
@@ -26,7 +26,7 @@
       "accessGroups": []
     },
     "server": {
-      "url": "ldaps://minos.admin.frm2.tum.de",
+      "url": "ldap://minos.admin.frm2.tum.de",
       "bindDn": "",
       "bindCredentials": "",
       "searchBase": "ou=People,dc=ghost,dc=mlz-garching,dc=de",
