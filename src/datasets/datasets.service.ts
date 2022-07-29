@@ -48,9 +48,7 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<Dataset[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<
-      DerivedDataset | RawDataset
-    >(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.datasetModel
       .find(whereFilter)
@@ -75,7 +73,7 @@ export class DatasetsService {
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
         "pid",
-        filter.fields,
+        filter.fields as FilterQuery<DatasetDocument>,
       );
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 

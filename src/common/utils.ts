@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
-import { FilterQuery, Model, PipelineStage } from "mongoose";
+import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
@@ -220,22 +220,24 @@ export const updateAllTimesToUTC = <T>(
   instances: T[],
 ): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
 
-export const parseLimitFilters = <T>(
+export const parseLimitFilters = (
   limits: ILimitsFilter | undefined,
 ): {
   limit: number;
   skip: number;
-  sort: { [key in keyof T]: "asc" | "desc" } | Record<string, string>;
+  sort: { [key: string]: "asc" | "desc" } | string;
 } => {
   if (!limits) {
-    return { limit: 100, skip: 0, sort: {} };
+    return { limit: 100, skip: 0, sort: "" };
   }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
-  let sort = {};
+  let sort: { [key: string]: "asc" | "desc" } | string = "";
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
-    sort = { [field]: direction };
+    if (direction === "asc" || direction === "desc") {
+      sort = { [field]: direction as "asc" | "desc" };
+    }
   }
   return { limit, skip, sort };
 };
@@ -259,7 +261,7 @@ export const createNewFacetPipelineStage = (
 
     if (Object.keys(queryCopy).length > 0) {
       pipeline.push({
-        $match: queryCopy,
+        $match: queryCopy as Record<string, Expression>,
       });
     }
   }
@@ -573,7 +575,7 @@ export const createFullfacetPipeline = <T, Y>(
 
   facetObject["all"] = [
     {
-      $match: facetMatch,
+      $match: facetMatch as Record<string, Expression>,
     },
     {
       $count: "totalSets",

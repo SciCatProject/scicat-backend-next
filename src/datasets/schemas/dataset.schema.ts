@@ -50,7 +50,6 @@ export class Dataset extends Ownable {
 
   @Prop({
     type: String,
-    unique: true,
   })
   _id: string;
 

@@ -29,7 +29,7 @@ export class Proposal extends Ownable {
   @Prop({ type: String, unique: true, required: true })
   proposalId: string;
 
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String })
   _id: string;
 
   @ApiProperty({ type: String, description: "Email of principal investigator" })

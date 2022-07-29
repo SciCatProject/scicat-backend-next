@@ -29,7 +29,7 @@ import { Job, JobDocument } from "./schemas/job.schema";
 @Injectable()
 export class JobsService implements OnModuleInit {
   private domainName = process.env.HOST;
-  private smtpMessageFrom = this.configService.get<string>("smtpMessageFrom");
+  private smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
 
   constructor(
     private configService: ConfigService,
@@ -53,7 +53,7 @@ export class JobsService implements OnModuleInit {
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
   ): Promise<Job[]> {
     const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters<Job>(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.jobModel
       .find(whereFilters)

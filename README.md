@@ -15,6 +15,7 @@
 3. Add *.env* file to project root folder. See [Environment variables](#environment-variables).
 4. *Optional* Add *functionalAccounts.json* file to project root folder. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
 5. `npm run start:dev`
+6. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
@@ -53,6 +54,10 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `REGISTER_DOI_URI` [string] URI to the organization that registers the facilities DOI's.
 - `REGISTER_METADATA_URI` [string] URI to the organization that registers the facilities published data metadata.
 - `SITE` [string] The name of your site.
+- `SMTP_HOST` [string] *Optional* Host of SMTP server.
+- `SMTP_MESSAGE_FROM` [string] *Optional* Email address that emails should be sent from.
+- `SMTP_PORT` [string] *Optional* Port of SMTP server.
+- `SMTP_SECURE` [string] *Optional* Secure of SMTP server.
 
 ## Migrating from the old SciCat Backend
 

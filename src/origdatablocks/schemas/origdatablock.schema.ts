@@ -19,7 +19,6 @@ export class OrigDatablock extends Ownable {
   })
   @Prop({
     type: String,
-    unique: true,
     required: true,
     default: () => uuidv4(),
   })

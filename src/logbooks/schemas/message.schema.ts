@@ -6,7 +6,7 @@ export type MessageDocument = Message & Document;
 
 @Schema()
 export class Message {
-  @Prop(MessageContentSchema)
+  @Prop({ type: MessageContentSchema })
   content: MessageContent;
 
   @Prop()

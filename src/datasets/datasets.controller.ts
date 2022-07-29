@@ -13,6 +13,7 @@ import {
   Logger,
   HttpCode,
   HttpStatus,
+  Headers,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -98,10 +99,15 @@ export class DatasetsController {
     required: false,
   })
   async findAll(
+    @Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<Dataset[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
-      filter && filter.filter ? JSON.parse(filter.filter) : {};
+      filter && filter.filter
+        ? JSON.parse(filter.filter)
+        : headers.filter
+        ? JSON.parse(headers.filter as string)
+        : {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> =
@@ -227,9 +233,14 @@ export class DatasetsController {
     description: "Database filter to apply when finding a Dataset",
     required: false,
   })
-  async findOne(@Query("filter") filters?: string): Promise<Dataset | null> {
-    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = filters
-      ? JSON.parse(filters)
+  async findOne(
+    @Query("filter") queryFilters?: string,
+    @Headers("filter") headerFilters?: string,
+  ): Promise<Dataset | null> {
+    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
+      ? JSON.parse(queryFilters)
+      : headerFilters
+      ? JSON.parse(headerFilters)
       : {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);

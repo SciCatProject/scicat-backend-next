@@ -18,7 +18,7 @@ export type SampleDocument = Sample & Document;
   },
 })
 export class Sample extends Ownable {
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String })
   _id: string;
 
   @ApiProperty({
