@@ -20,7 +20,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:prepare:e2e:local": "docker-compose -f CI/E2E/docker-compose-local.yaml up -d && cp functionalAccounts.json.example functionalAccounts.json"
   },
   "dependencies": {
     "@casl/ability": "^5.4.4",
