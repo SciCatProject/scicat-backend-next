@@ -42,7 +42,7 @@
     "luxon": "^2.4.0",
     "mathjs": "^9.5.2",
     "mongoose": "^6.4.6",
-    "nodemailer": "^6.7.5",
+    "nodemailer": "^6.7.6",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-ldapauth": "^3.0.1",
