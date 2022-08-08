@@ -46,6 +46,16 @@ export default () => ({
       searchFilter: process.env.LDAP_SEARCH_FILTER,
     },
   },
+  oidc: {
+    issuer: process.env.OIDC_ISSUER,
+    authorizationURL: process.env.OIDC_AUTHORIZATION_URL,
+    clientID: process.env.OIDC_CLIENT_ID,
+    clientSecret: process.env.OIDC_CLIENT_SECRET,
+    callbackURL: process.env.OIDC_CALLBACK_URL,
+    scope: process.env.OIDC_SCOPE,
+    successURL: process.env.OIDC_SUCCESS_URL,
+    accessGroups: process.env.OIDC_ACCESS_GROUPS,
+  },
   logbook: {
     enabled:
       process.env.LOGBOOK_ENABLED && process.env.LOGBOOK_ENABLED === "yes"
