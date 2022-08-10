@@ -5,6 +5,7 @@
   "author": "",
   "private": true,
   "license": "BSD-3-Clause",
+  "type": "commonjs",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
