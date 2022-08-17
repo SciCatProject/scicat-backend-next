@@ -66,7 +66,7 @@ describe("Simple Dataset tests", () => {
       .send(testdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("version").and.be.string;
