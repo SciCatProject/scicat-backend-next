@@ -38,6 +38,7 @@ var testderived = {
   description: "Some fancy description",
   isPublished: false,
   ownerGroup: "p34123",
+  type: "derived",
 };
 
 var testdataBlock = {
@@ -169,7 +170,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
 
   it("adds a new derived dataset", async () => {
     return request(app)
-      .post("/api/v3/DerivedDatasets")
+      .post("/api/v3/Datasets")
       .send(testderived)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -182,17 +183,17 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
         // store link to this dataset in datablocks
         testdataBlock.datasetId = res.body["pid"];
         testorigDataBlock.datasetId = res.body["pid"];
-        pid = encodeURIComponent(res.body["pid"]);
+        pid = res.body["pid"];
       });
   });
 
   it("adds a new origDatablock", async () => {
     return request(app)
-      .post("/api/v3/OrigDatablocks")
+      .post(`/api/v3/datasets/${pid}/OrigDatablocks`)
       .send(testorigDataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(41780189);
@@ -222,7 +223,10 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
       '{"where": {"archiveId": {"inq": ["someOtherId", "' +
       testdataBlock.archiveId +
       '"]}}}';
-    let url = "/api/v3/Datablocks?filter=" + encodeURIComponent(filter);
+
+    let url =
+      `/api/v3/Datasets/${pid}/Datablocks?filter=` +
+      encodeURIComponent(JSON.stringify(filter));
     return request(app)
       .get(url)
       .set("Accept", "application/json")
@@ -237,11 +241,11 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
 
   it("adds a new datablock", async () => {
     return request(app)
-      .post("/api/v3/Datablocks")
+      .post(`/api/v3/datasets/${pid}/Datablocks`)
       .send(testdataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size");
@@ -252,38 +256,38 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
 
   it("adds a new datablock again which should fail because it is already stored", async () => {
     return request(app)
-      .post("/api/v3/Datablocks")
+      .post(`/api/v3/datasets/${pid}/Datablocks`)
       .send(testdataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(401)
+      .expect(500)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("error");
+        res.should.have.property("error");
       });
   });
 
   it("adds a new datablock which should fail because wrong functional account", async () => {
     return request(app)
-      .post("/api/v3/Datablocks")
+      .post(`/api/v3/datasets/${pid}/Datablocks`)
       .send(testdataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(401)
+      .expect(500)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("error");
+        res.should.have.property("error");
       });
   });
 
   it("adds a second datablock for same dataset", async () => {
     testdataBlock.archiveId = "someOtherId";
     return request(app)
-      .post("/api/v3/Datablocks")
+      .post(`/api/v3/datasets/${pid}/Datablocks`)
       .send(testdataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size");
@@ -313,13 +317,13 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(41780189);
-        res.body.should.have.property("packedSize").and.equal(83560380);
+        res.body.should.have.property("packedSize").and.equal(41780190);
       });
   });
 
   it("should delete a datablock", async () => {
     return request(app)
-      .delete("/api/v3/Datablocks/" + idDatablock)
+      .delete(`/api/v3/datasets/${pid}/Datablocks/${idDatablock}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -328,19 +332,15 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
 
   it("should delete a OrigDatablock", async () => {
     return request(app)
-      .delete("/api/v3/OrigDatablocks/" + idOrigDatablock)
+      .delete(`/api/v3/datasets/${pid}/OrigDatablocks/` + idOrigDatablock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("count").and.equal(1);
-      });
+      .expect(200);
   });
 
   it("should delete the 2nd datablock", async () => {
     return request(app)
-      .delete("/api/v3/Datablocks/" + idDatablock2)
+      .delete(`/api/v3/datasets/${pid}/Datablocks/${idDatablock2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
