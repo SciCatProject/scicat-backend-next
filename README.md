@@ -19,7 +19,11 @@
 
 ## Test the app
 
-`npm run test`
+1. **Running the unit tests:** `npm run test`
+2. **Running the e2e(api) tests:**
+  - First of all run `npm run prepare:local` to prepare the local environment for starting
+  - After that run `npm run start` or `npm run start:dev` for starting the backend locally
+  - And in the end start the e2e/api tests with running `npm run test:e2e:mocha`
 
 ## Environment variables
 

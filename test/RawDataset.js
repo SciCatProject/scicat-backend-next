@@ -19,6 +19,7 @@ var testproposal = {
   title: "A test proposal",
   abstract: "Abstract of test proposal",
   ownerGroup: "p10029",
+  MeasurementPeriodList: [],
 };
 
 var testraw = {
@@ -83,6 +84,7 @@ var testraw = {
   contactEmail: "bertram.astor@grumble.com",
   sourceFolder: "/iramjet/tif/",
   size: 0,
+  type: "raw",
   creationTime: "2011-09-14T06:08:25.000Z",
   description: "None",
   isPublished: false,
@@ -135,7 +137,7 @@ describe("RawDatasets", () => {
       .send(testproposal)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessProposalToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
@@ -146,7 +148,7 @@ describe("RawDatasets", () => {
 
   it("adds a new raw dataset", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets")
+      .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -156,13 +158,23 @@ describe("RawDatasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-        pid = encodeURIComponent(res.body["pid"]);
+        pid = res.body["pid"];
       });
   });
 
   it("should fetch several raw datasets", async () => {
+    const filter = {
+      where: {
+        type: "raw",
+      },
+      limit: 2,
+    };
+
     return request(app)
-      .get("/api/v3/RawDatasets?filter=%7B%22limit%22%3A2%7D")
+      .get(
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
+      .query(JSON.stringify(filter))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -173,17 +185,30 @@ describe("RawDatasets", () => {
   });
 
   it("should fetch this raw dataset", async () => {
+    const filter = {
+      where: {
+        pid: pid,
+      },
+    };
+
     return request(app)
-      .get("/api/v3/RawDatasets/" + pid)
+      .get(
+        `/api/v3/Datasets/findOne?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(pid);
+      });
   });
 
   it("should delete this raw dataset", async () => {
     return request(app)
-      .delete("/api/v3/RawDatasets/" + pid)
+      .delete("/api/v3/datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -191,13 +216,18 @@ describe("RawDatasets", () => {
   });
 
   it("should contain an array of facets", async () => {
+    const filter = {
+      ownerGroup: ["p11114"],
+    };
+
     return request(app)
-      .get("/api/v3/RawDatasets/fullfacet")
+      .get(
+        `/api/v3/datasets/fullfacet?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .send({
-        ownerGroup: ["p11114"],
-      })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
