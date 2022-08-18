@@ -88,6 +88,7 @@ var testraw = {
   accessGroups: [],
   proposalId: "10.540.16635/20110123",
   keywords: ["sls", "protein"],
+  type: "raw",
 };
 
 const testOriginDataBlock = {
@@ -199,7 +200,7 @@ describe("Test New Job Model", () => {
 
   it("adds a new raw dataset", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets")
+      .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -215,12 +216,12 @@ describe("Test New Job Model", () => {
         testRetrieveJob.datasetList[0].pid = pidtest;
         testPublicJob.datasetList[0].pid = pidtest;
         testOriginDataBlock.datasetId = pidtest;
-        pid1 = encodeURIComponent(res.body["pid"]);
+        pid1 = res.body["pid"];
       });
   });
   it("adds another new raw dataset", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets")
+      .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -235,7 +236,7 @@ describe("Test New Job Model", () => {
         testArchiveJob.datasetList[1].pid = pidtest;
         testRetrieveJob.datasetList[1].pid = pidtest;
         testPublicJob.datasetList[1].pid = pidtest;
-        pid2 = encodeURIComponent(res.body["pid"]);
+        pid2 = res.body["pid"];
       });
   });
 
@@ -247,7 +248,7 @@ describe("Test New Job Model", () => {
       .expect(401)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("error");
+        res.should.have.property("error");
       });
   });
 
@@ -257,12 +258,11 @@ describe("Test New Job Model", () => {
       .send(testArchiveJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
         archiveJobId = res.body["id"];
-        //setTimeout(done, 3000);
       });
   });
 
@@ -277,10 +277,7 @@ describe("Test New Job Model", () => {
       .expect(404)
       .expect("Content-Type", /json/)
       .then((res) => {
-        if (err) {
-          return done(err);
-        }
-        res.body.should.have.property("error");
+        res.should.have.property("error");
       });
   });
 
@@ -879,8 +876,7 @@ describe("Test New Job Model", () => {
       .delete("/api/v3/Jobs/" + retrieveJobId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/);
+      .expect(200);
   });
 
   publicJobIds.forEach((jobId) => {
@@ -896,11 +892,10 @@ describe("Test New Job Model", () => {
 
   it("should delete the originDataBlock", async () => {
     return request(app)
-      .delete("/api/v3/OrigDatablocks/" + origDatablockId)
+      .delete(`/api/v3/datasets/${pid1}/OrigDatablocks/` + origDatablockId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/);
+      .expect(200);
   });
 
   it("should delete the newly created dataset", async () => {
