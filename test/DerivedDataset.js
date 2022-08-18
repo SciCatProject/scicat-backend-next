@@ -31,6 +31,7 @@ var testderived = {
   keywords: ["Test", "Derived", "Science", "Math"],
   description: "Some fancy description",
   isPublished: false,
+  type: "derived",
   ownerGroup: "p34123",
 };
 
@@ -63,7 +64,7 @@ describe("DerivedDatasets", () => {
 
   it("adds a new derived dataset", async () => {
     return request(app)
-      .post("/api/v3/DerivedDatasets")
+      .post("/api/v3/Datasets")
       .send(testderived)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -72,22 +73,34 @@ describe("DerivedDatasets", () => {
       .then((res) => {
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
-        pid = encodeURIComponent(res.body["pid"]);
+        pid = res.body["pid"];
       });
   });
 
   it("should fetch one derived dataset", async () => {
+    const filter = {
+      where: {
+        pid: pid,
+      },
+    };
+
     return request(app)
-      .get("/api/v3/DerivedDatasets/" + pid)
+      .get(
+        `/api/v3/datasets/findOne?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(pid);
+      });
   });
 
   it("should delete a derived dataset", async () => {
     return request(app)
-      .delete("/api/v3/DerivedDatasets/" + pid)
+      .delete("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -95,10 +108,15 @@ describe("DerivedDatasets", () => {
   });
 
   it("should fetch all derived datasets", async () => {
+    const filter = {
+      where: {
+        type: "derived",
+      },
+    };
+
     return request(app)
       .get(
-        "/api/v3/DerivedDatasets?filter=%7B%22limit%22%3A2%7D&access_token=" +
-          accessToken,
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -110,8 +128,16 @@ describe("DerivedDatasets", () => {
   });
 
   it("should contain an array of facets", async () => {
+    const filter = {
+      where: {
+        type: "derived",
+      },
+    };
+
     return request(app)
-      .get("/api/v3/DerivedDatasets/fullfacet")
+      .get(
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
