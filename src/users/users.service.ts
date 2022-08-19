@@ -100,7 +100,10 @@ export class UsersService implements OnModuleInit {
   async create(createUserDto: CreateUserDto): Promise<User | null> {
     Logger.log(`Creating user ${createUserDto.username}`, "UsersService");
 
-    if (!createUserDto.password && ["ldap", "oidc"].some(word => createUserDto.username.startsWith(word))) {
+    if (
+      !createUserDto.password &&
+      ["ldap", "oidc"].some((word) => createUserDto.username.startsWith(word))
+    ) {
       const createdUser = new this.userModel(createUserDto);
       return createdUser.save();
     }

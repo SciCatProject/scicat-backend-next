@@ -6,31 +6,36 @@ import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User, UserDocument } from "src/users/schemas/user.schema";
 import { UsersService } from "src/users/users.service";
-import { Strategy, Client, UserinfoResponse, TokenSet, Issuer } from 'openid-client';
+import {
+  Strategy,
+  Client,
+  UserinfoResponse,
+  TokenSet,
+  Issuer,
+} from "openid-client";
 import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 
-
-export class buildOpenIdClient {
-  constructor(
-    private configService: ConfigService
-  ) { }
+export class BuildOpenIdClient {
+  constructor(private configService: ConfigService) {}
   async build() {
-    const oidcConfig = this.configService.get<Record<string, unknown>>("oidc")
-    const TrustIssuer = await Issuer.discover(`${oidcConfig?.issuer}/.well-known/openid-configuration`);
-    const client = new TrustIssuer.Client({
+    const oidcConfig = this.configService.get<Record<string, unknown>>("oidc");
+    const trustIssuer = await Issuer.discover(
+      `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+    );
+    const client = new trustIssuer.Client({
       client_id: oidcConfig?.clientID as string,
-      client_secret: oidcConfig?.clientSecret as string
+      client_secret: oidcConfig?.clientSecret as string,
     });
     return client;
   }
-};
+}
 
 @Injectable()
 export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
   client: Client;
-  authScheme = 'oidc';
+  authScheme = "oidc";
 
   constructor(
     private readonly authService: AuthService,
@@ -38,7 +43,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-    const oidcConfig = configService.get<Record<string, unknown>>("oidc")
+    const oidcConfig = configService.get<Record<string, unknown>>("oidc");
     super({
       client: client,
       params: {
@@ -52,13 +57,10 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     this.client = client;
   }
 
-  async validate(
-    tokenset: TokenSet,
-  ): Promise<Omit<User, "password">> {
-
+  async validate(tokenset: TokenSet): Promise<Omit<User, "password">> {
     const userinfo: UserinfoResponse = await this.client.userinfo(tokenset);
 
-    const userProfile = this.parseUserInfo(userinfo)
+    const userProfile = this.parseUserInfo(userinfo);
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
@@ -92,7 +94,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-
     }
     const foundUser = await this.usersService.findOne(userFilter);
     const jsonUser = JSON.parse(JSON.stringify(foundUser));
@@ -100,12 +101,11 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     user.userId = user._id;
 
     return user;
-
-  };
+  }
 
   parseUserInfo(userinfo: UserinfoResponse) {
     type OidcProfile = Profile & UserProfile;
-    var profile = {} as OidcProfile;
+    const profile = {} as OidcProfile;
     profile.id = userinfo.sub;
     // Prior to OpenID Connect Basic Client Profile 1.0 - draft 22, the "sub"
     // claim was named "user_id".  Many providers still use the old name, so
@@ -116,21 +116,26 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
     profile.thumbnailPhoto = userinfo.thumbnailPhoto
       ? "data:image/jpeg;base64," +
-      Buffer.from(userinfo.thumbnailPhoto as string, "binary").toString(
-        "base64",
-      )
-      : "error: no photo found"
+        Buffer.from(userinfo.thumbnailPhoto as string, "binary").toString(
+          "base64",
+        )
+      : "error: no photo found";
 
-    if (userinfo.name) { profile.displayName = userinfo.name; }
-    if (userinfo.preferred_username) { profile.username = userinfo.preferred_username; }
-    if (userinfo.email) { 
-      profile.emails = [{ value: userinfo.email }]; 
-      profile.email = userinfo.email
+    if (userinfo.name) {
+      profile.displayName = userinfo.name;
+    }
+    if (userinfo.preferred_username) {
+      profile.username = userinfo.preferred_username;
+    }
+    if (userinfo.email) {
+      profile.emails = [{ value: userinfo.email }];
+      profile.email = userinfo.email;
     }
 
-    profile.accessGroups = userinfo[this.configService.get("oidc").accessGroups] as string[];
+    profile.accessGroups = userinfo[
+      this.configService.get("oidc").accessGroups
+    ] as string[];
 
     return profile;
-  };
-
+  }
 }
