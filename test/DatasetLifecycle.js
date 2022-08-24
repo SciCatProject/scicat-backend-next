@@ -85,6 +85,7 @@ var testraw = {
   accessGroups: [],
   proposalId: "10.540.16635/20110123",
   keywords: ["sls", "protein"],
+  type: "raw",
 };
 
 const app = "http://localhost:3000";
@@ -116,7 +117,7 @@ describe("Test facet and filter queries", () => {
 
   it("adds a new raw dataset", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets")
+      .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -128,7 +129,6 @@ describe("Test facet and filter queries", () => {
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
         pidraw = res.body["pid"];
-        pid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -136,7 +136,7 @@ describe("Test facet and filter queries", () => {
     // modify owner
     testraw.ownerGroup = "p12345";
     return request(app)
-      .post("/api/v3/RawDatasets")
+      .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -148,7 +148,6 @@ describe("Test facet and filter queries", () => {
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
         pidraw2 = res.body["pid"];
-        pid2 = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -168,7 +167,7 @@ describe("Test facet and filter queries", () => {
 
     return request(app)
       .get(
-        "/api/v3/RawDatasets/fullquery?fields=" +
+        "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(JSON.stringify(fields)),
       )
       .set("Accept", "application/json")
@@ -219,7 +218,7 @@ describe("Test facet and filter queries", () => {
 
     return request(app)
       .get(
-        "/api/v3/RawDatasets/fullquery?fields=" +
+        "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
           "&limits=" +
           encodeURIComponent(JSON.stringify(limits)),
@@ -252,7 +251,7 @@ describe("Test facet and filter queries", () => {
     ];
     return request(app)
       .get(
-        "/api/v3/RawDatasets/fullfacet?fields=" +
+        "/api/v3/Datasets/fullfacet?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
           "&facets=" +
           encodeURIComponent(JSON.stringify(facets)),
@@ -266,7 +265,7 @@ describe("Test facet and filter queries", () => {
   // Note: make the tests with PUT instead of patch as long as replaceOnPut false
   it("Should update archive status message from archiveManager account", async () => {
     return request(app)
-      .put("/api/v3/RawDatasets/" + pid)
+      .put("/api/v3/Datasets/" + pid)
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "dataArchivedOnTape",
@@ -290,7 +289,7 @@ describe("Test facet and filter queries", () => {
       },
     };
     return request(app)
-      .post("/api/v3/RawDatasets/update?where=" + JSON.stringify(filter))
+      .put("/api/v3/Datasets/where=" + JSON.stringify(filter))
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "justAnotherTestMessage",
@@ -307,7 +306,7 @@ describe("Test facet and filter queries", () => {
 
   it("The history status should now include the last change for the first raw dataset", async () => {
     return request(app)
-      .get("/api/v3/RawDatasets/" + pid)
+      .get("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -328,7 +327,7 @@ describe("Test facet and filter queries", () => {
 
   it("The history status should now include the last change for second raw dataset", async () => {
     return request(app)
-      .get("/api/v3/RawDatasets/" + pid2)
+      .get("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -349,7 +348,7 @@ describe("Test facet and filter queries", () => {
 
   it("Should update the datasetLifecycle information directly via embedded model API", async () => {
     return request(app)
-      .put("/api/v3/RawDatasets/" + pid + "/datasetLifecycle")
+      .put("/api/v3/Datasets/" + pid + "/datasetLifecycle")
       .send({
         archiveStatusMessage: "Testing embedded case",
       })
@@ -381,8 +380,7 @@ describe("Test facet and filter queries", () => {
       .delete("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/);
+      .expect(200);
   });
 
   it("should delete the newly created dataset", async () => {
@@ -390,7 +388,6 @@ describe("Test facet and filter queries", () => {
       .delete("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/);
+      .expect(200);
   });
 });

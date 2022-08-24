@@ -84,7 +84,7 @@ describe("Simple Sample tests", () => {
       .send(testAttachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -99,7 +99,6 @@ describe("Simple Sample tests", () => {
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
-        res.body.should.have.property("createdAt");
         res.body.should.have.property("id").and.be.string;
         res.body.should.have
           .property("sampleId")
@@ -108,6 +107,7 @@ describe("Simple Sample tests", () => {
       });
   });
 
+  // NOTE: Not sure if this one is still needed because this endpoint is not present in the swagger documentation. We are not able to fetch specific attachment under samples.
   it("should fetch this sample attachment", async () => {
     return request(app)
       .get("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
@@ -122,7 +122,7 @@ describe("Simple Sample tests", () => {
       .delete("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(204);
+      .expect(200);
   });
 
   it("should delete this sample", async () => {

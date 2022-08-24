@@ -19,6 +19,7 @@ const testproposal = {
   title: "A test proposal",
   abstract: "Abstract of test proposal",
   ownerGroup: "20170251-group",
+  MeasurementPeriodList: [],
 };
 
 const app = "http://localhost:3000";
@@ -78,7 +79,7 @@ describe("Simple Proposal tests", () => {
       .send(testproposal)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
@@ -114,7 +115,7 @@ describe("Simple Proposal tests", () => {
       .send(testAttachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -129,7 +130,6 @@ describe("Simple Proposal tests", () => {
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
-        res.body.should.have.property("createdAt");
         res.body.should.have.property("id").and.be.string;
         res.body.should.have
           .property("proposalId")
@@ -140,11 +140,15 @@ describe("Simple Proposal tests", () => {
 
   it("should fetch this proposal attachment", async () => {
     return request(app)
-      .get("/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId)
+      .get("/api/v3/Proposals/" + proposalId + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body[res.body.length - 1].id.should.be.equal(attachmentId);
+      });
   });
 
   it("should delete this proposal attachment", async () => {
@@ -154,7 +158,7 @@ describe("Simple Proposal tests", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(204);
+      .expect(200);
   });
 
   it("should delete this proposal", async () => {

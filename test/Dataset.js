@@ -33,6 +33,7 @@ const testdataset = {
   datasetName: "Example Data86",
   history: ["this should be deleted"],
   createdBy: "this should be deleted as well",
+  type: "base",
 };
 
 describe("Simple Dataset tests", () => {
@@ -69,12 +70,10 @@ describe("Simple Dataset tests", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("version").and.be.string;
-        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("type").and.equal("base");
         res.body.should.have.property("pid").and.be.string;
         res.body.should.have.property("datasetName").and.be.string;
-        defaultPid = res.body["pid"];
-        pid = encodeURIComponent(res.body["pid"]);
+        pid = res.body["pid"];
       });
   });
 
@@ -91,15 +90,12 @@ describe("Simple Dataset tests", () => {
     return request(app)
       .get("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
-      .expect(403)
+      .expect(401)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("error");
-        res.body.error.should.have.property("statusCode").and.equal(403);
-        res.body.error.should.have.property("name").and.equal("Error");
-        res.body.error.should.have
-          .property("message")
-          .and.equal("Dataset is not public");
+        res.should.have.property("error");
+        res.body.should.have.property("statusCode").and.equal(401);
+        res.body.should.have.property("message").and.equal("Unauthorized");
       });
   });
 
@@ -107,7 +103,7 @@ describe("Simple Dataset tests", () => {
     const testAttachment = {
       thumbnail: "data/abc123",
       caption: "Some caption",
-      datasetId: defaultPid,
+      datasetId: pid,
       ownerGroup: "ess",
       accessGroups: ["loki", "odin"],
       createdBy: "Bertram Astor",
@@ -129,28 +125,28 @@ describe("Simple Dataset tests", () => {
         res.body.should.have
           .property("caption")
           .and.equal(testAttachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal(testAttachment.ownerGroup);
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
-        res.body.should.have.property("createdAt");
         res.body.should.have.property("id").and.be.string;
         res.body.should.have
           .property("datasetId")
           .and.equal(testAttachment.datasetId);
-        attachmentId = encodeURIComponent(res.body["id"]);
+        attachmentId = res.body["id"];
       });
   });
 
   it("should fetch this dataset attachment", async () => {
     return request(app)
-      .get("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
+      .get("/api/v3/Datasets/" + pid + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body[res.body.length - 1].id.should.be.equal(attachmentId);
+      });
   });
 
   it("should delete this dataset attachment", async () => {
@@ -158,7 +154,7 @@ describe("Simple Dataset tests", () => {
       .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(204);
+      .expect(200);
   });
 
   it("fetches Datasets filtered by datasetName", async () => {

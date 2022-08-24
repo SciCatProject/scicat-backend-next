@@ -58,7 +58,7 @@ describe("Simple Policy tests", () => {
       .send(testdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("manager").and.be.string;
@@ -78,8 +78,8 @@ describe("Simple Policy tests", () => {
 
   it("updates this existing policy", async () => {
     return request(app)
-      .post("/api/v3/Policies/updateWhere")
-      .send('ownerGroupList="p10021"&data={"autoArchive":true}')
+      .patch("/api/v3/Policies/" + id)
+      .send({ ownerGroup: "test_test" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
