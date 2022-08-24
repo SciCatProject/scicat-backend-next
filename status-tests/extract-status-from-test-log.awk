@@ -13,7 +13,7 @@ BEGIN {
   gsub(/[[:space:]]+$/,"",section)
 }
 ( NR >= 6 ) && /^    [^\s]/ && ( extract == 1 ) {
-  result=($1 == "✔")?"Passed":"Failed"
+  result=($1 == "✔")?"*Passed*":"__Failed__"
   $1=""
   test=$0
   gsub(/^[[:space:]]+/,"",test)
