@@ -166,10 +166,7 @@ describe("Test facet and filter queries", () => {
     };
 
     return request(app)
-      .get(
-        "/api/v3/Datasets/fullquery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)),
-      )
+      .get("/api/v3/Datasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -192,12 +189,7 @@ describe("Test facet and filter queries", () => {
     };
 
     return request(app)
-      .get(
-        "/api/v3/RawDatasets/fullquery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/RawDatasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -217,12 +209,7 @@ describe("Test facet and filter queries", () => {
     };
 
     return request(app)
-      .get(
-        "/api/v3/Datasets/fullquery?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/Datasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -250,12 +237,7 @@ describe("Test facet and filter queries", () => {
       "keywords",
     ];
     return request(app)
-      .get(
-        "/api/v3/Datasets/fullfacet?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&facets=" +
-          encodeURIComponent(JSON.stringify(facets)),
-      )
+      .get("/api/v3/Datasets/fullfacet?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&facets=" + encodeURIComponent(JSON.stringify(facets)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -289,7 +271,7 @@ describe("Test facet and filter queries", () => {
       },
     };
     return request(app)
-      .put("/api/v3/Datasets/where=" + JSON.stringify(filter))
+      .put("/api/v3/Datasets/?where=" + JSON.stringify(filter))
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "justAnotherTestMessage",

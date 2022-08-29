@@ -269,12 +269,12 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       '{"where": {"archiveId": {"inq": ["someOtherId", "' +
       testdataBlock.archiveId +
       '"]}}}';
-    let url =
-      `/api/v3/datasets/${testorigDataBlock.datasetId}/Datablocks?filter=` +
-      encodeURIComponent(filter);
+    //let url =
+    //  `/api/v3/datasets/${testorigDataBlock.datasetId}/Datablocks?filter=` +
+    //  encodeURIComponent(filter);
 
     return request(app)
-      .get(url)
+      .get("/api/v3/datasets/" + testorigDataBlock.datasetId + "/Datablocks?filter=" + encodeURIComponent(filter))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -377,13 +377,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
     };
 
     return request(app)
-      .get(
-        "/api/v3/Datasets/findOne" +
-          "?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/Datasets/findOne" + "?filter=" + encodeURIComponent(JSON.stringify(filter)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -405,13 +399,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       limit: 20,
     };
     return request(app)
-      .get(
-        "/api/v3/OrigDatablocks/findFilesByName" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/OrigDatablocks/findFilesByName" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -431,13 +419,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       limit: 20,
     };
     return request(app)
-      .get(
-        "/api/v3/OrigDatablocks/findFilesByName" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/OrigDatablocks/findFilesByName" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -456,13 +438,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       limit: 20,
     };
     return request(app)
-      .get(
-        "/api/v3/OrigDatablocks/findFilesByName" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/OrigDatablocks/findFilesByName" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -489,10 +465,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
 
   it("should delete a datablock", async () => {
     return request(app)
-      .delete(
-        `/api/v3/datasets/${testorigDataBlock.datasetId}/Datablocks/` +
-          idDatablock,
-      )
+      .delete("/api/v3/datasets/" + testorigDataBlock.datasetId + "/Datablocks/" + idDatablock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -501,10 +474,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
 
   it("should delete a OrigDatablock", async () => {
     return request(app)
-      .delete(
-        `/api/v3/datasets/${testorigDataBlock.datasetId}/OrigDatablocks/` +
-          idOrigDatablock,
-      )
+      .delete("/api/v3/datasets/" + testorigDataBlock.datasetId + "/OrigDatablocks/" + idOrigDatablock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -513,10 +483,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
 
   it("should delete the 2nd datablock", async () => {
     return request(app)
-      .delete(
-        `/api/v3/datasets/${testorigDataBlock.datasetId}/Datablocks/` +
-          idDatablock2,
-      )
+      .delete("/api/v3/datasets/" + testorigDataBlock.datasetId + "/Datablocks/" + idDatablock2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)

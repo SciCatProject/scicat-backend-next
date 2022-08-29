@@ -286,11 +286,7 @@ describe("Test of access to published data", () => {
 
   it("should fetch publisheddata with non empty dataset relation", async () => {
     return request(app)
-      .get(
-        "/api/v3/PublishedData/" +
-          doi +
-          "?filter=%7B%22include%22%3A%7B%22relation%22%3A%22datasets%22%7D%7D",
-      )
+      .get("/api/v3/PublishedData/" + doi + "?filter=%7B%22include%22%3A%7B%22relation%22%3A%22datasets%22%7D%7D")
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -409,13 +405,7 @@ describe("Test of access to published data", () => {
       limit: 2,
     };
     return request(app)
-      .get(
-        "/api/v3/Datasets/fullquery" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/Datasets/fullquery" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -433,13 +423,7 @@ describe("Test of access to published data", () => {
       limit: 2,
     };
     return request(app)
-      .get(
-        "/api/v3/Datasets/fullquery" +
-          "?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/Datasets/fullquery" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -471,13 +455,7 @@ describe("Test of access to published data", () => {
     };
 
     return request(app)
-      .get(
-        "/api/v3/Datasets/findOne" +
-          "?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
+      .get("/api/v3/Datasets/findOne" + "?filter=" + encodeURIComponent(JSON.stringify(filter)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)

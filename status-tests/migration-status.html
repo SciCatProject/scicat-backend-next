@@ -1,0 +1,1851 @@
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Section</th>
+      <th>Test</th>
+      <th>Status</th>
+      <th>Test file</th>
+      <th>Predicate</th>
+      <th>Endpoint</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should get count of datasets</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should get count of raw datasets</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/count</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should get count of derived datasets</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/DerivedDatasets/count</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>check if raw dataset is valid</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>post</td>
+      <td>/api/v3/RawDatasets/isValid</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>check if wrong data is recognized as invalid</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>post</td>
+      <td>/api/v3/RawDatasets/isValid</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>adds a new dataset</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>check for correct new count of datasets</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>check for unchanged count of raw datasets</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/count</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>check for unchanged count of derived datasets</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/DerivedDatasets/count</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should add a new raw dataset</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new raw dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/count</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new derived dataset count should be unchanged</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/DerivedDatasets/count</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>adds a new derived dataset</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new raw dataset count should be unchanged</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/count</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new derived dataset count should be incremented</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/DerivedDatasets/count</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should delete the created new dataset</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should delete the created new raw dataset</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>should delete the created new derived dataset</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new dataset count should be back to old count</td>
+      <td>*Passed*</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/count</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new raw dataset count should be back to old count</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/count</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Check different dataset types and their inheritance</td>
+      <td>new derived dataset count should be back to old count</td>
+      <td>__Failed__</td>
+      <td>CheckDifferentDatasetTypes.js</td>
+      <td>get</td>
+      <td>/api/v3/DerivedDatasets/count</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new raw dataset</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new origDatablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/OrigDatablocks</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new origDatablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>remove potentially existing datablocks to guarantee uniqueness</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new datablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new datablock again which should fail because it is already stored</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a new datablock which should fail because wrong functional account</td>
+      <td>__Failed__</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>adds a second datablock for same dataset</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>Should fetch all datablocks belonging to the new dataset</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/datablocks</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>should fetch one dataset including related data</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/findOne</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>Should fetch some filenames from the new dataset</td>
+      <td>__Failed__</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/OrigDatablocks/findFilesByName</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>Should fetch some filenames using regexp from the new dataset</td>
+      <td>__Failed__</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/OrigDatablocks/findFilesByName</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>Should fetch some filenames without dataset condition</td>
+      <td>__Failed__</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/OrigDatablocks/findFilesByName</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>The size and numFiles fields in the dataset should be correctly updated</td>
+      <td>__Failed__</td>
+      <td>Datablock.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>should delete a datablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks/_datablockId_</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>should delete a OrigDatablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/OrigDatablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>should delete the 2nd datablock</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks/_datablockId_</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to raw Datasets</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>Datablock.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new derived dataset</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new origDatablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/OrigDatablocks</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new origDatablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>remove potentially existing datablocks to guarantee uniqueness</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new datablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new datablock again which should fail because it is already stored</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a new datablock which should fail because wrong functional account</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>adds a second datablock for same dataset</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>post</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>Should fetch all datablocks belonging to the new dataset</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/datablocks</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>The size fields in the dataset should be correctly updated</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>should delete a datablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks/_datablockId_</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>should delete a OrigDatablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/OrigDatablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>should delete the 2nd datablock</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/Datablocks/_datablockId_</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>Test Datablocks and OrigDatablocks and their relation to Derived Datasets</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>DatablockDerived.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>Simple Dataset tests</td>
+      <td>adds a new dataset</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>Simple Dataset tests</td>
+      <td>should fetch this new dataset</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>Simple Dataset tests</td>
+      <td>should fail fetching this new dataset</td>
+      <td>*Passed*</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>Simple Dataset tests</td>
+      <td>should add a new attachment to this dataset</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>Simple Dataset tests</td>
+      <td>should fetch this dataset attachment</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>Simple Dataset tests</td>
+      <td>should delete this dataset attachment</td>
+      <td>*Passed*</td>
+      <td>Dataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>Simple Dataset tests</td>
+      <td>fetches Datasets filtered by datasetName</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>Simple Dataset tests</td>
+      <td>should delete this dataset</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>Simple Dataset tests</td>
+      <td>fetches array of Datasets</td>
+      <td>*Passed*</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>Simple Dataset tests</td>
+      <td>should contain an array of facets</td>
+      <td>*Passed*</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullfacet</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>Simple Dataset tests</td>
+      <td>should fetch a filtered array of datasets</td>
+      <td>*Passed*</td>
+      <td>Dataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>Simple Dataset tests</td>
+      <td>should fail creating a dataset with non unique techniques</td>
+      <td>__Failed__</td>
+      <td>Dataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>Test facet and filter queries</td>
+      <td>adds a new raw dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>Test facet and filter queries</td>
+      <td>adds another new raw dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>Test facet and filter queries</td>
+      <td>Should return datasets with complex join query fulfilled</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>Test facet and filter queries</td>
+      <td>Should return datasets with ordered results</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/RawDatasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>Test facet and filter queries</td>
+      <td>Should return no datasets, because number of hits exhausted</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>Test facet and filter queries</td>
+      <td>Should return facets with complex join query fulfilled</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullfacet</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>Test facet and filter queries</td>
+      <td>Should update archive status message from archiveManager account</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>Test facet and filter queries</td>
+      <td>Should update the datasetLifecycle information for multiple datasets</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>Test facet and filter queries</td>
+      <td>The history status should now include the last change for the first raw dataset</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>Test facet and filter queries</td>
+      <td>The history status should now include the last change for second raw dataset</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>Test facet and filter queries</td>
+      <td>Should update the datasetLifecycle information directly via embedded model API</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_/datasetLifecycle</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>Test facet and filter queries</td>
+      <td>Should reset the embedded DatasetLifecycle status and delete Datablocks</td>
+      <td>__Failed__</td>
+      <td>DatasetLifecycle.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/resetArchiveStatus</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>Test facet and filter queries</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>Test facet and filter queries</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>Test facet and filter queries</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>Test facet and filter queries</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>DatasetLifecycle.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>DerivedDatasets</td>
+      <td>adds a new derived dataset</td>
+      <td>*Passed*</td>
+      <td>DerivedDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>DerivedDatasets</td>
+      <td>should fetch one derived dataset</td>
+      <td>*Passed*</td>
+      <td>DerivedDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/datasets/findOne</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>DerivedDatasets</td>
+      <td>should delete a derived dataset</td>
+      <td>*Passed*</td>
+      <td>DerivedDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>DerivedDatasets</td>
+      <td>should fetch all derived datasets</td>
+      <td>*Passed*</td>
+      <td>DerivedDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>DerivedDatasets</td>
+      <td>should contain an array of facets</td>
+      <td>*Passed*</td>
+      <td>DerivedDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>Test New Job Model</td>
+      <td>adds a new raw dataset</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>Test New Job Model</td>
+      <td>adds another new raw dataset</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new archive job request without authentication, which should fails</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new archive job request</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new archive job request contains empty datasetList, which should fail</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new archive job request on non exist dataset which should fail</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>Test New Job Model</td>
+      <td>Check if dataset 1 was updated by job request</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>Test New Job Model</td>
+      <td>Check if dataset 2 was updated by job request</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>Test New Job Model</td>
+      <td>Create retrieve job request on same dataset, which should fail as well because not yet retrievable</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to dataset 1, simulating the archive system response</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>100</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to dataset 2, simulating the archive system response</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>101</th>
+      <td>Test New Job Model</td>
+      <td>Disable notification bt email</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Policies/updatewhere</td>
+    </tr>
+    <tr>
+      <th>102</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new archive job request for same data which should fail</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>103</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the archive job request, signal successful archiving</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_archiveJobId_</td>
+    </tr>
+    <tr>
+      <th>104</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new retrieve job request on same dataset, which should succeed now</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>105</th>
+      <td>Test New Job Model</td>
+      <td>Read contents of dataset 1 after retrieve job and make sure that still retrievable</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>106</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the dataset</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>107</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the dataset, simulating the archive system response of finished job with partial failure</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>108</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status message to the Job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_retrieveJobId_</td>
+    </tr>
+    <tr>
+      <th>109</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status message to the Job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_retrieveJobId_</td>
+    </tr>
+    <tr>
+      <th>110</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status message to the Job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_retrieveJobId_</td>
+    </tr>
+    <tr>
+      <th>111</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status message to the Job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_retrieveJobId_</td>
+    </tr>
+    <tr>
+      <th>112</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the datasets, simulating the archive system response of successful job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets/update</td>
+    </tr>
+    <tr>
+      <th>113</th>
+      <td>Test New Job Model</td>
+      <td>Bulk update Job status prepare to trigger sending email mechanism</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs/update</td>
+    </tr>
+    <tr>
+      <th>114</th>
+      <td>Test New Job Model</td>
+      <td>Bulk update Job status, should send out email</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs/update</td>
+    </tr>
+    <tr>
+      <th>115</th>
+      <td>Test New Job Model</td>
+      <td>adds a new origDatablock</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/OrigDatablocks</td>
+    </tr>
+    <tr>
+      <th>116</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request on private datasets, which should fails</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>117</th>
+      <td>Test New Job Model</td>
+      <td>Set to true for one of the dataset</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>118</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request on one public and one private dataset, which should fails</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>119</th>
+      <td>Test New Job Model</td>
+      <td>Update isPublished to true on both datasets</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets/update</td>
+    </tr>
+    <tr>
+      <th>120</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request without authentication</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>121</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request with authentication</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>122</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the public job request, signal finished job with partial failure</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_publicJobIds[0]_</td>
+    </tr>
+    <tr>
+      <th>123</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request to download some selected files</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>124</th>
+      <td>Test New Job Model</td>
+      <td>Send an update status to the public job request, signal successful job</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/_publicJobIds[1]_</td>
+    </tr>
+    <tr>
+      <th>125</th>
+      <td>Test New Job Model</td>
+      <td>Add new job using put, which should fails. Ensure that adding new job without authentication using put is not possible</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>put</td>
+      <td>/api/v3/Jobs/</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>Test New Job Model</td>
+      <td>Adds a new public job request with to download some selected files that dont exist, which should fail</td>
+      <td>__Failed__</td>
+      <td>Jobs.js</td>
+      <td>post</td>
+      <td>/api/v3/Jobs</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>Test New Job Model</td>
+      <td>should delete the archive Job</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/Jobs/_archiveJobId_</td>
+    </tr>
+    <tr>
+      <th>128</th>
+      <td>Test New Job Model</td>
+      <td>should delete the retrieve Job</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/Jobs/_retrieveJobId_</td>
+    </tr>
+    <tr>
+      <th>129</th>
+      <td>Test New Job Model</td>
+      <td>should delete the retrieve Job</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/Jobs/_jobId_</td>
+    </tr>
+    <tr>
+      <th>130</th>
+      <td>Test New Job Model</td>
+      <td>should delete the originDataBlock</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_/OrigDatablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>131</th>
+      <td>Test New Job Model</td>
+      <td>should delete the newly created dataset</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>132</th>
+      <td>Test New Job Model</td>
+      <td>should delete the second newly created dataset</td>
+      <td>*Passed*</td>
+      <td>Jobs.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>133</th>
+      <td>Simple Policy tests</td>
+      <td>adds a new policy</td>
+      <td>*Passed*</td>
+      <td>Policy.js</td>
+      <td>post</td>
+      <td>/api/v3/Policies</td>
+    </tr>
+    <tr>
+      <th>134</th>
+      <td>Simple Policy tests</td>
+      <td>should fetch this new policy</td>
+      <td>*Passed*</td>
+      <td>Policy.js</td>
+      <td>get</td>
+      <td>/api/v3/Policies/_id_</td>
+    </tr>
+    <tr>
+      <th>135</th>
+      <td>Simple Policy tests</td>
+      <td>updates this existing policy</td>
+      <td>*Passed*</td>
+      <td>Policy.js</td>
+      <td>patch</td>
+      <td>/api/v3/Policies/_id_</td>
+    </tr>
+    <tr>
+      <th>136</th>
+      <td>Simple Policy tests</td>
+      <td>should delete this policy</td>
+      <td>*Passed*</td>
+      <td>Policy.js</td>
+      <td>delete</td>
+      <td>/api/v3/Policies/_id_</td>
+    </tr>
+    <tr>
+      <th>137</th>
+      <td>Simple Proposal tests</td>
+      <td>remove potentially existing proposals to guarantee uniqueness</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>get</td>
+      <td>/api/v3/Proposals</td>
+    </tr>
+    <tr>
+      <th>138</th>
+      <td>Simple Proposal tests</td>
+      <td>adds a new proposal</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>post</td>
+      <td>/api/v3/Proposals</td>
+    </tr>
+    <tr>
+      <th>139</th>
+      <td>Simple Proposal tests</td>
+      <td>should fetch this new proposal</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>get</td>
+      <td>/api/v3/Proposals/_proposalId_</td>
+    </tr>
+    <tr>
+      <th>140</th>
+      <td>Simple Proposal tests</td>
+      <td>should add a new attachment to this proposal</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>post</td>
+      <td>/api/v3/Proposals/_proposalId_/attachments</td>
+    </tr>
+    <tr>
+      <th>141</th>
+      <td>Simple Proposal tests</td>
+      <td>should fetch this proposal attachment</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>get</td>
+      <td>/api/v3/Proposals/_proposalId_/attachments</td>
+    </tr>
+    <tr>
+      <th>142</th>
+      <td>Simple Proposal tests</td>
+      <td>should delete this proposal attachment</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>delete</td>
+      <td>/api/v3/Proposals/_proposalId_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>143</th>
+      <td>Simple Proposal tests</td>
+      <td>should delete this proposal</td>
+      <td>*Passed*</td>
+      <td>Proposal.js</td>
+      <td>delete</td>
+      <td>/api/v3/Proposals/_proposalId_</td>
+    </tr>
+    <tr>
+      <th>144</th>
+      <td>Test of access to published data</td>
+      <td>adds a published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>146</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>150</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>152</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>153</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>154</th>
+      <td>Test of access to published data</td>
+      <td>should register this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData/_doi_/register</td>
+    </tr>
+    <tr>
+      <th>155</th>
+      <td>Test of access to published data</td>
+      <td>should register this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData/_doi_/register/</td>
+    </tr>
+    <tr>
+      <th>156</th>
+      <td>Test of access to published data</td>
+      <td>should register this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData/_doi_/register</td>
+    </tr>
+    <tr>
+      <th>157</th>
+      <td>Test of access to published data</td>
+      <td>should register this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData/_doi_/register/</td>
+    </tr>
+    <tr>
+      <th>158</th>
+      <td>Test of access to published data</td>
+      <td>should resync this new published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/PublishedData/_doi_/resync</td>
+    </tr>
+    <tr>
+      <th>159</th>
+      <td>Test of access to published data</td>
+      <td>adds a new dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>160</th>
+      <td>Test of access to published data</td>
+      <td>adds a new nonpublic dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>161</th>
+      <td>Test of access to published data</td>
+      <td>should create one publisheddata to dataset relation</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>put</td>
+      <td>/api/v3/PublishedData/_doi_/datasets/rel/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>162</th>
+      <td>Test of access to published data</td>
+      <td>should fetch publisheddata with non empty dataset relation</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>163</th>
+      <td>Test of access to published data</td>
+      <td>should delete this published data</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>delete</td>
+      <td>/api/v3/PublishedData/_doi_</td>
+    </tr>
+    <tr>
+      <th>164</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this new dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>165</th>
+      <td>Test of access to published data</td>
+      <td>should fetch the non public dataset as ingestor</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_pidnonpublic_</td>
+    </tr>
+    <tr>
+      <th>166</th>
+      <td>Test of access to published data</td>
+      <td>adds a new origDatablock</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/OrigDatablocks</td>
+    </tr>
+    <tr>
+      <th>167</th>
+      <td>Test of access to published data</td>
+      <td>should add a new attachment to this dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>Test of access to published data</td>
+      <td>should fetch this dataset attachment</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>169</th>
+      <td>Test of access to published data</td>
+      <td>should fetch some published datasets anonymously</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>170</th>
+      <td>Test of access to published data</td>
+      <td>should fail to fetch non-public dataset anonymously</td>
+      <td>*Passed*</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/fullquery</td>
+    </tr>
+    <tr>
+      <th>171</th>
+      <td>Test of access to published data</td>
+      <td>should fetch one dataset including related data anonymously</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/findOne</td>
+    </tr>
+    <tr>
+      <th>172</th>
+      <td>Test of access to published data</td>
+      <td>should delete this dataset attachment</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>173</th>
+      <td>Test of access to published data</td>
+      <td>should delete a OrigDatablock</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>delete</td>
+      <td>/api/v3/OrigDatablocks/_origDatablockId_</td>
+    </tr>
+    <tr>
+      <th>174</th>
+      <td>Test of access to published data</td>
+      <td>should delete the nonpublic dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_pidnonpublic_</td>
+    </tr>
+    <tr>
+      <th>175</th>
+      <td>Test of access to published data</td>
+      <td>should delete this dataset</td>
+      <td>__Failed__</td>
+      <td>PublishedData.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>176</th>
+      <td>RawDatasets</td>
+      <td>adds a new proposal</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Proposals</td>
+    </tr>
+    <tr>
+      <th>177</th>
+      <td>RawDatasets</td>
+      <td>adds a new raw dataset</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>178</th>
+      <td>RawDatasets</td>
+      <td>should fetch several raw datasets</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets</td>
+    </tr>
+    <tr>
+      <th>179</th>
+      <td>RawDatasets</td>
+      <td>should fetch this raw dataset</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/findOne</td>
+    </tr>
+    <tr>
+      <th>180</th>
+      <td>RawDatasets</td>
+      <td>should delete this raw dataset</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>181</th>
+      <td>RawDatasets</td>
+      <td>should contain an array of facets</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/datasets/fullfacet</td>
+    </tr>
+    <tr>
+      <th>182</th>
+      <td>RawDatasets</td>
+      <td>should delete this proposal</td>
+      <td>*Passed*</td>
+      <td>RawDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Proposals/_proposalId_</td>
+    </tr>
+    <tr>
+      <th>183</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should retrieve existing Datablocks with specific archiveId, if any</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/datasets//Datablocks</td>
+    </tr>
+    <tr>
+      <th>184</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should retrieve existing Datablocks with 2nd specific archiveId, if any</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datablocks</td>
+    </tr>
+    <tr>
+      <th>185</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should delete existing Datablocks (usually none) with specific archiveId</td>
+      <td>*Passed*</td>
+      <td>ResetDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datablocks/_foundId1_</td>
+    </tr>
+    <tr>
+      <th>186</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should delete existing Datablocks (usually none) with 2nd specific archiveId</td>
+      <td>*Passed*</td>
+      <td>ResetDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datablocks/_foundId2_</td>
+    </tr>
+    <tr>
+      <th>187</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>adds a new raw dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/RawDatasets</td>
+    </tr>
+    <tr>
+      <th>188</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>adds a new datablock</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datablocks</td>
+    </tr>
+    <tr>
+      <th>189</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>adds a second datablock for same dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>post</td>
+      <td>/api/v3/Datablocks</td>
+    </tr>
+    <tr>
+      <th>190</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>Should fetch all datablocks belonging to the new dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>191</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should reset the archive information from the newly created dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>put</td>
+      <td>/api/v3/Datasets/resetArchiveStatus</td>
+    </tr>
+    <tr>
+      <th>192</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>The archive Status Message should now be reset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>193</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>There should be no datablocks any more for this dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_/datablocks/count</td>
+    </tr>
+    <tr>
+      <th>194</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should check createdBy and updatedBy fields of the newly created dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>get</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>195</th>
+      <td>Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status</td>
+      <td>should delete the newly created dataset</td>
+      <td>__Failed__</td>
+      <td>ResetDataset.js</td>
+      <td>delete</td>
+      <td>/api/v3/Datasets/_datasetPid_</td>
+    </tr>
+    <tr>
+      <th>196</th>
+      <td>Simple Sample tests</td>
+      <td>adds a new sample</td>
+      <td>*Passed*</td>
+      <td>Sample.js</td>
+      <td>post</td>
+      <td>/api/v3/Samples</td>
+    </tr>
+    <tr>
+      <th>197</th>
+      <td>Simple Sample tests</td>
+      <td>should fetch this new sample</td>
+      <td>*Passed*</td>
+      <td>Sample.js</td>
+      <td>get</td>
+      <td>/api/v3/Samples/_sampleId_</td>
+    </tr>
+    <tr>
+      <th>198</th>
+      <td>Simple Sample tests</td>
+      <td>should add a new attachment to this sample</td>
+      <td>*Passed*</td>
+      <td>Sample.js</td>
+      <td>post</td>
+      <td>/api/v3/Samples/_sampleId_/attachments</td>
+    </tr>
+    <tr>
+      <th>199</th>
+      <td>Simple Sample tests</td>
+      <td>should fetch this sample attachment</td>
+      <td>__Failed__</td>
+      <td>Sample.js</td>
+      <td>get</td>
+      <td>/api/v3/Samples/_sampleId_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>200</th>
+      <td>Simple Sample tests</td>
+      <td>should delete this sample attachment</td>
+      <td>*Passed*</td>
+      <td>Sample.js</td>
+      <td>delete</td>
+      <td>/api/v3/Samples/_sampleId_/attachments/_attachmentId_</td>
+    </tr>
+    <tr>
+      <th>201</th>
+      <td>Simple Sample tests</td>
+      <td>should delete this sample</td>
+      <td>*Passed*</td>
+      <td>Sample.js</td>
+      <td>delete</td>
+      <td>/api/v3/Samples/_sampleId_</td>
+    </tr>
+    <tr>
+      <th>202</th>
+      <td>Login with functional accounts</td>
+      <td>Ingestor login fails with incorrect credentials</td>
+      <td>*Passed*</td>
+      <td>Users.js</td>
+      <td>post</td>
+      <td>/api/v3/Users/Login</td>
+    </tr>
+    <tr>
+      <th>203</th>
+      <td>Login with functional accounts</td>
+      <td>Login should succeed with correct credentials</td>
+      <td>*Passed*</td>
+      <td>Users.js</td>
+      <td>post</td>
+      <td>/api/v3/Users/Login</td>
+    </tr>
+  </tbody>
+</table>

@@ -8,7 +8,7 @@ import re
 
 # test folders
 test_folder = os.path.abspath("../test")
-print("Tests folder : " + test_folder);
+#print("Tests folder : " + test_folder);
 
 # initialize variables
 section="unknown"
@@ -20,11 +20,12 @@ endpoint="unknown"
 re_section = re.compile("^describe\([\"\'](.+)[\"\']\, ")
 re_test = re.compile("^ +it\([\"\'](.+)[\"\']\, ")
 #re_endpoint = re.compile("^ +\.(post|get|delete)\([\"\'\`](.+)[\"\'\`]\)")
-re_endpoint = re.compile("^ +\.(post|get|delete)\((.+)\)")
+re_endpoint = re.compile("^ +\.(post|get|delete|put|patch)\((.+)[\),]")
 
 re_dataset1 = re.compile("<pid[12]*>|<.+\.datasetId>|<pidraw>|<pidderived>")
 re_datablock1 = re.compile("<idDatablock[12]*>")
-re_origdatablock1 = re.compile("<idOrigDatablock[12]*>")
+re_origdatablock1 = re.compile("<idOrigDatablock[12]*>|<item\.id>")
+re_proposal1 = re.compile("<item\.proposalId>")
 
 url_convert = {
     "pid": "<pid>",
@@ -50,6 +51,12 @@ for f in os.listdir(test_folder):
 
     # read file content
     with open(ffp,'r') as fh:
+        # initialize variables
+        section="unknown"
+        test="unknown"
+        predicate="unknown"
+        endpoint="unknown"
+
         for l in fh.readlines():
             # discard lines with comments
             if l.startswith('//'):
@@ -81,6 +88,8 @@ for f in os.listdir(test_folder):
                         t2 = re_dataset1.sub("<datasetPid>",t2)
                         t2 = re_datablock1.sub("<datablockId>",t2)
                         t2 = re_origdatablock1.sub("<origDatablockId>",t2)
+                        t2 = re_proposal1.sub("<proposalId>",t2)
+                        t2 = t2.replace("<","_").replace(">","_")
 
                         print(f"| {f} | {section} | {test} | {predicate} | {t2} |")
 

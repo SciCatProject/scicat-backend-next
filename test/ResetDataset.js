@@ -185,11 +185,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
   // NOTE: Not sure if this one is still needed because we don't have a way to do this in the new backend.
   it("should retrieve existing Datablocks with specific archiveId, if any", async () => {
     return request(app)
-      .get(
-        "/api/v3/datasets//Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" +
-          encodeURIComponent(testDataBlock.archiveId) +
-          "%22%7D%7D",
-      )
+      .get("/api/v3/datasets//Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" + encodeURIComponent(testDataBlock.archiveId) + "%22%7D%7D")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -202,11 +198,7 @@ describe("Create Dataset and its Datablocks, then reset Datablocks and embedded 
   // NOTE: Not sure if this one is still needed because we don't have a way to do this in the new backend.
   it("should retrieve existing Datablocks with 2nd specific archiveId, if any", async () => {
     return request(app)
-      .get(
-        "/api/v3/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" +
-          encodeURIComponent(testArchiveId2) +
-          "%22%7D%7D",
-      )
+      .get("/api/v3/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" + encodeURIComponent(testArchiveId2) + "%22%7D%7D")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
