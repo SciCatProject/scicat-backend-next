@@ -36,7 +36,7 @@
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  Should fetch some filenames using regexp from the new dataset  |  __Failed__  |
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  Should fetch some filenames without dataset condition  |  __Failed__  |
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  The size and numFiles fields in the dataset should be correctly updated  |  __Failed__  |
-|  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  should delete a datablock (42ms)  |  *Passed*  |
+|  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  should delete a datablock  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  should delete a OrigDatablock  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  should delete the 2nd datablock  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to raw Datasets  |  should delete the newly created dataset  |  *Passed*  |
@@ -45,7 +45,7 @@
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  remove potentially existing datablocks to guarantee uniqueness  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  adds a new datablock  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  adds a new datablock again which should fail because it is already stored  |  *Passed*  |
-|  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  adds a new datablock which should fail because wrong functional account (84ms)  |  *Passed*  |
+|  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  adds a new datablock which should fail because wrong functional account  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  adds a second datablock for same dataset  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  Should fetch all datablocks belonging to the new dataset  |  *Passed*  |
 |  Test Datablocks and OrigDatablocks and their relation to Derived Datasets  |  The size fields in the dataset should be correctly updated  |  *Passed*  |
@@ -63,7 +63,7 @@
 |  Simple Dataset tests  |  should delete this dataset  |  __Failed__  |
 |  Simple Dataset tests  |  fetches array of Datasets  |  *Passed*  |
 |  Simple Dataset tests  |  should contain an array of facets  |  *Passed*  |
-|  Simple Dataset tests  |  should fetch a filtered array of datasets (65ms)  |  *Passed*  |
+|  Simple Dataset tests  |  should fetch a filtered array of datasets  |  *Passed*  |
 |  Simple Dataset tests  |  should fail creating a dataset with non unique techniques  |  __Failed__  |
 |  Test facet and filter queries  |  adds a new raw dataset  |  *Passed*  |
 |  Test facet and filter queries  |  adds another new raw dataset  |  *Passed*  |
@@ -185,5 +185,5 @@
 |  Simple Sample tests  |  should fetch this sample attachment  |  __Failed__  |
 |  Simple Sample tests  |  should delete this sample attachment  |  *Passed*  |
 |  Simple Sample tests  |  should delete this sample  |  *Passed*  |
-|  Login with functional accounts  |  Ingestor login fails with incorrect credentials (70ms)  |  *Passed*  |
-|  Login with functional accounts  |  Login should succeed with correct credentials (65ms)  |  *Passed*  |
+|  Login with functional accounts  |  Ingestor login fails with incorrect credentials  |  *Passed*  |
+|  Login with functional accounts  |  Login should succeed with correct credentials  |  *Passed*  |

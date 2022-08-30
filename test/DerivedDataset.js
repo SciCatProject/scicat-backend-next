@@ -85,11 +85,7 @@ describe("DerivedDatasets", () => {
     };
 
     return request(app)
-      .get(
-        `/api/v3/datasets/findOne?filter=${encodeURIComponent(
-          JSON.stringify(filter),
-        )}`,
-      )
+      .get("/api/v3/datasets/findOne?filter=" + encodeURIComponent(JSON.stringify(filter)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -115,9 +111,7 @@ describe("DerivedDatasets", () => {
     };
 
     return request(app)
-      .get(
-        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
-      )
+      .get("/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -135,9 +129,7 @@ describe("DerivedDatasets", () => {
     };
 
     return request(app)
-      .get(
-        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
-      )
+      .get("/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)

@@ -464,7 +464,7 @@ describe("Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("Adds a new retrieve job request on same dataset, which should  succeed now", async () => {
+  it("Adds a new retrieve job request on same dataset, which should succeed now", async () => {
     return request(app)
       .post("/api/v3/Jobs")
       .send(testRetrieveJob)
@@ -675,7 +675,7 @@ describe("Test New Job Model", () => {
       });
   });
 
-  it("Set  to true for one of the dataset", async () => {
+  it("Set to true for one of the dataset", async () => {
     return request(app)
       .put("/api/v3/Datasets/" + pid1)
       .send({

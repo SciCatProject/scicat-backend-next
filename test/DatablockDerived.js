@@ -224,11 +224,11 @@ describe("Test Datablocks and OrigDatablocks and their relation to Derived Datas
       testdataBlock.archiveId +
       '"]}}}';
 
-    let url =
-      `/api/v3/Datasets/${pid}/Datablocks?filter=` +
-      encodeURIComponent(JSON.stringify(filter));
+    //let url =
+    //  `/api/v3/Datasets/${pid}/Datablocks?filter=` +
+    //  encodeURIComponent(JSON.stringify(filter));
     return request(app)
-      .get(url)
+      .get("/api/v3/Datasets/" + pid + "/Datablocks?filter=" + encodeURIComponent(JSON.stringify(filter)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)

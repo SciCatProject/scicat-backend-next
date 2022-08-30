@@ -59,10 +59,10 @@ describe("Simple Proposal tests", () => {
 
   it("remove potentially existing proposals to guarantee uniqueness", async () => {
     let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}';
-    let url = "/api/v3/Proposals?filter=" + encodeURIComponent(filter);
+    //let url = "/api/v3/Proposals?filter=" + encodeURIComponent(filter);
 
     return request(app)
-      .get(url)
+      .get("/api/v3/Proposals?filter=" + encodeURIComponent(filter))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -153,9 +153,7 @@ describe("Simple Proposal tests", () => {
 
   it("should delete this proposal attachment", async () => {
     return request(app)
-      .delete(
-        "/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId,
-      )
+      .delete("/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200);
