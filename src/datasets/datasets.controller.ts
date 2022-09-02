@@ -89,6 +89,23 @@ export class DatasetsController {
     return this.datasetsService.create(createDatasetDto);
   }
 
+  // POST /datasets
+  /*  @UseGuards(PoliciesGuard)
+  @UseInterceptors(
+    new UTCTimeInterceptor<Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<RawDataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
+      "scientificMetadata",
+    ),
+  )
+*/
+  @AllowAny()
+  @HttpCode(HttpStatus.OK)
+  @Post("/isValid")
+  async isValid(@Body() createDatasetDto: CreateDatasetDto): Promise<boolean> {
+    return true;
+  }
+
   // GET /datasets
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
@@ -277,11 +294,21 @@ export class DatasetsController {
   // GET /count
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @ApiQuery({
+    name: "where",
+    description: "Database where condition to apply when counting Datasets",
+    required: false,
+  })
   @Get("/count")
   async count(
-    @Query("where") where: FilterQuery<DatasetDocument>,
+    @Query("where") where: string, //FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
-    return this.datasetsService.count(where);
+    const whereFilters =
+      typeof where === "string" || (where as unknown) instanceof String
+        ? JSON.parse(where)
+        : where;
+    console.log("Where : " + JSON.stringify(whereFilters));
+    return this.datasetsService.count(whereFilters);
   }
 
   // GET /datasets/:id

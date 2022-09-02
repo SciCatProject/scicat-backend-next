@@ -16,7 +16,7 @@ let accessToken = null,
   pid = null,
   attachmentId = null;
 
-const testdataset = {
+const testDataset = {
   owner: "Bertram Astor",
   ownerEmail: "bertram.astor@grumble.com",
   orcidOfOwner: "unknown",
@@ -33,7 +33,7 @@ const testdataset = {
   datasetName: "Example Data86",
   history: ["this should be deleted"],
   createdBy: "this should be deleted as well",
-  type: "base",
+  type: "raw",
 };
 
 describe("Simple Dataset tests", () => {
@@ -64,7 +64,7 @@ describe("Simple Dataset tests", () => {
   it("adds a new dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testdataset)
+      .send(testDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -225,8 +225,8 @@ describe("Simple Dataset tests", () => {
   });
 
   it("should fail creating a dataset with non unique techniques", async () => {
-    const ds = Object.keys(testdataset).reduce(
-      (o, k) => ((o[k] = testdataset[k]), o),
+    const ds = Object.keys(testDataset).reduce(
+      (o, k) => ((o[k] = testDataset[k]), o),
       {},
     );
     ds["techniques"] = [

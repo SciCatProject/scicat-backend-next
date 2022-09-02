@@ -9,7 +9,7 @@ chai.use(chaiHttp);
 const app = "http://localhost:3000";
 
 describe("Check different dataset types and their inheritance", () => {
-  const testdataset = {
+  const testDatasetWrong = {
     owner: "Bertram Astor",
     ownerEmail: "bertram.astor@grumble.com",
     orcidOfOwner: "unknown",
@@ -25,7 +25,7 @@ describe("Check different dataset types and their inheritance", () => {
     type: "base",
   };
 
-  const testraw = {
+  const testRawCorrect = {
     principalInvestigator: "bertram.astor@grumble.com",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
@@ -98,7 +98,7 @@ describe("Check different dataset types and their inheritance", () => {
     type: "raw",
   };
 
-  const testderived = {
+  const testDerivedCorrect = {
     investigator: "egon.meier@web.de",
     inputDatasets: ["/data/input/file1.dat"],
     usedSoftware: [
@@ -121,12 +121,30 @@ describe("Check different dataset types and their inheritance", () => {
     type: "derived",
   };
 
+  const testDerivedWrong = {
+    investigator: "egon.meier@web.de",
+    jobParameters: {
+      nscans: 10,
+    },
+    jobLogData: "Output of log file...",
+    owner: "Egon Meier",
+    ownerEmail: "egon.meier@web.de",
+    contactEmail: "egon.meier@web.de",
+    sourceFolder: "/data/example/2017",
+    creationTime: "2017-01-31T09:20:19.562Z",
+    keywords: ["Test", "Derived", "Science", "Math"],
+    description: "Some fancy description",
+    isPublished: false,
+    ownerGroup: "p34123",
+    type: "derived",
+  };
+
   let countDataset = 0;
-  let rawCountDataset = 0;
-  let derivedCountDataset = 0;
-  let pid = null;
-  let pidraw = null;
-  let pidderived = null;
+  let countRawDataset = 0;
+  let countDerivedDataset = 0;
+  let pidRaw1 = null;
+  let pidRaw2 = null;
+  let pidDerived1 = null;
   let accessToken = null;
   let accessTokenArchiveManager = null;
 
@@ -172,37 +190,40 @@ describe("Check different dataset types and their inheritance", () => {
   // NOTE: This is not using a correct endpoint. This endpoint RawDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "raw" })
   it("should get count of raw datasets", async () => {
     return request(app)
-      .get("/api/v3/RawDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.be.a("number");
-        rawCountDataset = res.body.count;
+        countRawDataset = res.body.count;
       });
+    //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
   // NOTE: This is not using a correct endpoint. This endpoint DerivedDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "derived" })
   it("should get count of derived datasets", async () => {
     return request(app)
-      .get("/api/v3/DerivedDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.be.a("number");
-        derivedCountDataset = res.body.count;
+        countDerivedDataset = res.body.count;
       });
+    //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
   // // check if dataset is valid
-
   it("check if raw dataset is valid", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets/isValid")
-      .send(testraw)
+      .post("/api/v3/Datasets/isValid")
+      .send(testRawCorrect)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -211,10 +232,22 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  it("check if wrong data is recognized as invalid", async () => {
+  it("check if derived dataset is valid", async () => {
     return request(app)
-      .post("/api/v3/RawDatasets/isValid")
-      .send(testderived)
+      .post("/api/v3/Datasets/isValid")
+      .send(testDerivedCorrect)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
+  it("check if wrong derived dataset is recognized as invalid", async () => {
+    return request(app)
+      .post("/api/v3/Datasets/isValid")
+      .send(testDerivedWrong)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -222,29 +255,40 @@ describe("Check different dataset types and their inheritance", () => {
         res.body.should.have.property("valid").and.equal(false);
       });
   });
-  // add dataset and check what happened to counts
 
+  it("check if wrong typed dataset is recognized as invalid", async () => {
+    return request(app)
+      .post("/api/v3/Datasets/isValid")
+      .send(testDatasetWrong)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(false);
+      });
+  });
+
+  // add dataset and check what happened to counts
   it("adds a new dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testdataset)
+      .send(testRawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("__v").and.to.be.a("number");
-        res.body.should.have.property("type").and.equal("base");
+        res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         res.body.should.have
           .property("ownerEmail")
           .and.equal(testdataset.ownerEmail);
-        pid = encodeURIComponent(res.body.pid);
+        pidRaw1 = encodeURIComponent(res.body.pid);
       });
   });
 
   // get counts again
-
   it("check for correct new count of datasets", async () => {
     return request(app)
       .get("/api/v3/Datasets/count")
@@ -258,41 +302,38 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  // NOTE: This is not using a correct endpoint. This endpoint RawDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "raw" })
-  it("check for unchanged count of raw datasets", async () => {
+  it("check for count of raw datasets which should be 1", async () => {
     return request(app)
-      .get("/api/v3/RawDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ filter: "raw" })
+      .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - rawCountDataset).should.equal(0);
+        (res.body.count - countRawDataset).should.equal(1);
       });
   });
 
-  // NOTE: This is not using a correct endpoint. This endpoint DerivedDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "derived" })
   it("check for unchanged count of derived datasets", async () => {
     return request(app)
-      .get("/api/v3/DerivedDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ filter: "raw" })
+      .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - derivedCountDataset).should.equal(0);
+        (res.body.count - countDerivedDataset).should.equal(0);
       });
   });
 
-  // NOTE: This is changed to use /Datasets instead of /RawDatasets as it is in the old backend because that endpoint doesn't exist
   it("should add a new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testraw)
+      .send(testRawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -302,7 +343,7 @@ describe("Check different dataset types and their inheritance", () => {
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
 
-        pidraw = encodeURIComponent(res.body.pid);
+        pidRaw2 = encodeURIComponent(res.body.pid);
       });
   });
 
@@ -321,27 +362,29 @@ describe("Check different dataset types and their inheritance", () => {
 
   it("new raw dataset count should be incremented", async () => {
     return request(app)
-      .get("/api/v3/RawDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - rawCountDataset).should.equal(1);
+        (res.body.count - countRawDataset).should.equal(2);
       });
   });
 
   it("new derived dataset count should be unchanged", async () => {
     return request(app)
-      .get("/api/v3/DerivedDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - derivedCountDataset).should.equal(0);
+        (res.body.count - countDerivedDataset).should.equal(0);
       });
   });
 
@@ -357,7 +400,7 @@ describe("Check different dataset types and their inheritance", () => {
         res.body.should.have.property("__v").and.to.be.a("number");
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
-        pidderived = encodeURIComponent(res.body["pid"]);
+        pidDerived1 = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -378,37 +421,39 @@ describe("Check different dataset types and their inheritance", () => {
 
   it("new raw dataset count should be unchanged", function (done) {
     request(app)
-      .get("/api/v3/RawDatasets/count" + "?access_token=" + accessToken)
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
         if (err) return done(err);
         res.body.should.have.property("count").and.be.a("number");
-        (res.body.count - rawCountDataset).should.equal(1);
+        (res.body.count - countRawDataset).should.equal(2);
         done();
       });
   });
 
   it("new derived dataset count should be incremented", function (done) {
     request(app)
-      .get("/api/v3/DerivedDatasets/count" + "?access_token=" + accessToken)
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
         if (err) return done(err);
         res.body.should.have.property("count").and.be.a("number");
-        (res.body.count - derivedCountDataset).should.equal(1);
+        (res.body.count - countDerivedDataset).should.equal(1);
         done();
       });
   });
 
-  it("should delete the created new dataset", function (done) {
+  it("should delete the first raw dataset", function (done) {
     request(app)
-      .delete("/api/v3/Datasets/" + pid)
+      .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -419,9 +464,9 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  it("should delete the created new raw dataset", function (done) {
+  it("should delete the second raw dataset", function (done) {
     request(app)
-      .delete("/api/v3/Datasets/" + pidraw)
+      .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -432,9 +477,9 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  it("should delete the created new derived dataset", function (done) {
+  it("should delete the derived dataset", function (done) {
     request(app)
-      .delete("/api/v3/Datasets/" + pidderived)
+      .delete("/api/v3/Datasets/" + pidDerived1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -465,12 +510,13 @@ describe("Check different dataset types and their inheritance", () => {
       .get("/api/v3/RawDatasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
         if (err) return done(err);
         res.body.should.have.property("count").and.be.a("number");
-        (res.body.count - rawCountDataset).should.equal(0);
+        (res.body.count - countRawDataset).should.equal(0);
         done();
       });
   });
@@ -480,12 +526,13 @@ describe("Check different dataset types and their inheritance", () => {
       .get("/api/v3/DerivedDatasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
         if (err) return done(err);
         res.body.should.have.property("count").and.be.a("number");
-        (res.body.count - derivedCountDataset).should.equal(0);
+        (res.body.count - countDerivedDataset).should.equal(0);
         done();
       });
   });

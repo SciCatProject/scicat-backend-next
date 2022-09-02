@@ -3,7 +3,7 @@ import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
@@ -18,7 +18,36 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("explorer-next", app, document);
+  SwaggerModule.setup("explorer", app, document);
+
+  app.useGlobalPipes(
+    /**
+     * Reference: https://docs.nestjs.com/techniques/validation#auto-validation
+     */
+    new ValidationPipe({
+      // Make sure that there's no unexpected data
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+
+      /**
+       * Detailed error messages since this is 4xx
+       */
+      disableErrorMessages: false,
+      validationError: {
+        /**
+         * WARNING: Avoid exposing the values in the error output (could leak sensitive information)
+         */
+        value: false,
+      },
+
+      /**
+       * Transform the JSON into a class instance when possible.
+       * Depends on the type of the data on the controllers
+       */
+      transform: true,
+    }),
+  );
 
   app.use(json({ limit: "16mb" }));
 

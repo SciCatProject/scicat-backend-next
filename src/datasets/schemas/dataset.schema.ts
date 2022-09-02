@@ -17,6 +17,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
 import { Lifecycle, LifecycleSchema } from "./lifecycle.schema";
+import { Relationship, RelationshipSchema } from "./relationship.schema";
 import { Technique, TechniqueSchema } from "./technique.schema";
 
 export type DatasetDocument = Dataset & Document;
@@ -255,6 +256,14 @@ export class Dataset extends Ownable {
   })
   @Prop([TechniqueSchema])
   techniques: Technique[];
+
+  @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(Relationship) },
+    description: "Stores the metadata information for techniques",
+  })
+  @Prop([RelationshipSchema])
+  relationships: Relationship[];
 
   @ApiProperty({
     type: [String],

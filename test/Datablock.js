@@ -274,7 +274,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
     //  encodeURIComponent(filter);
 
     return request(app)
-      .get("/api/v3/datasets/" + testorigDataBlock.datasetId + "/Datablocks?filter=" + encodeURIComponent(filter))
+      .get(`/api/v3/datasets/${testorigDataBlock.datasetId}/Datablocks?filter=${encodeURIComponent(filter)}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -377,7 +377,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
     };
 
     return request(app)
-      .get("/api/v3/Datasets/findOne" + "?filter=" + encodeURIComponent(JSON.stringify(filter)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
+      .get("/api/v3/Datasets/findOne?filter=" + encodeURIComponent(JSON.stringify(filter)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -399,7 +399,7 @@ describe("Test Datablocks and OrigDatablocks and their relation to raw Datasets"
       limit: 20,
     };
     return request(app)
-      .get("/api/v3/OrigDatablocks/findFilesByName" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
+      .get("/api/v3/OrigDatablocks/findFilesByName?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
