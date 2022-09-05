@@ -1,8 +1,13 @@
+const { expect } = require("chai");
 var chai = require("chai");
 var should = chai.should();
 var chaiHttp = require("chai-http");
+const { plainToInstance } = require("class-transformer");
+const { validate } = require("class-validator");
 var request = require("supertest");
 var utils = require("./LoginUtils");
+
+let CreateRawDatasetDto = import("../src/datasets/dto/create-raw-dataset.dto");
 
 chai.use(chaiHttp);
 
@@ -87,8 +92,10 @@ describe("Check different dataset types and their inheritance", () => {
     contactEmail: "bertram.astor@grumble.com",
     sourceFolder: "/iramjet/tif/",
     size: 0,
+    numberOfFiles: 0,
     creationTime: "2011-09-14T06:08:25.000Z",
     description: "None",
+    datasetName: "Test raw dataset",
     classification: "AV=medium,CO=low",
     license: "CC BY-SA 4.0",
     isPublished: false,
@@ -113,11 +120,15 @@ describe("Check different dataset types and their inheritance", () => {
     ownerEmail: "egon.meier@web.de",
     contactEmail: "egon.meier@web.de",
     sourceFolder: "/data/example/2017",
+    size: 0,
+    numberOfFiles: 0,
     creationTime: "2017-01-31T09:20:19.562Z",
     keywords: ["Test", "Derived", "Science", "Math"],
     description: "Some fancy description",
+    datasetName: "Test derviced dataset",
     isPublished: false,
     ownerGroup: "p34123",
+    accessGroups: [],
     type: "derived",
   };
 
@@ -187,7 +198,6 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  // NOTE: This is not using a correct endpoint. This endpoint RawDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "raw" })
   it("should get count of raw datasets", async () => {
     return request(app)
       .get("/api/v3/Datasets/count")
@@ -203,7 +213,6 @@ describe("Check different dataset types and their inheritance", () => {
     //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
-  // NOTE: This is not using a correct endpoint. This endpoint DerivedDatasets does not exist in the new backend. The solution is maybe to use a filtering in the existing Datasets endpoint like this: .query({ filter: "derived" })
   it("should get count of derived datasets", async () => {
     return request(app)
       .get("/api/v3/Datasets/count")
@@ -219,7 +228,7 @@ describe("Check different dataset types and their inheritance", () => {
     //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
-  // // check if dataset is valid
+  // check if dataset is valid
   it("check if raw dataset is valid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
@@ -269,7 +278,7 @@ describe("Check different dataset types and their inheritance", () => {
   });
 
   // add dataset and check what happened to counts
-  it("adds a new dataset", async () => {
+  it("adds a new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
       .send(testRawCorrect)
@@ -283,7 +292,7 @@ describe("Check different dataset types and their inheritance", () => {
         res.body.should.have.property("pid").and.be.string;
         res.body.should.have
           .property("ownerEmail")
-          .and.equal(testdataset.ownerEmail);
+          .and.equal(testRawCorrect.ownerEmail);
         pidRaw1 = encodeURIComponent(res.body.pid);
       });
   });
@@ -330,7 +339,7 @@ describe("Check different dataset types and their inheritance", () => {
       });
   });
 
-  it("should add a new raw dataset", async () => {
+  it("should add a second raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
       .send(testRawCorrect)
@@ -391,7 +400,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("adds a new derived dataset", async () => {
     request(app)
       .post("/api/v3/Datasets")
-      .send(testderived)
+      .send(testDerivedCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -458,7 +467,7 @@ describe("Check different dataset types and their inheritance", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, _res) => {
+      .end((err, res) => {
         if (err) return done(err);
         done();
       });
@@ -471,7 +480,7 @@ describe("Check different dataset types and their inheritance", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, _res) => {
+      .end((err, res) => {
         if (err) return done(err);
         done();
       });
@@ -507,7 +516,7 @@ describe("Check different dataset types and their inheritance", () => {
 
   it("new raw dataset count should be back to old count", function (done) {
     request(app)
-      .get("/api/v3/RawDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .query({ where: { type: "raw" } })
@@ -523,7 +532,7 @@ describe("Check different dataset types and their inheritance", () => {
 
   it("new derived dataset count should be back to old count", function (done) {
     request(app)
-      .get("/api/v3/DerivedDatasets/count")
+      .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .query({ where: { type: "derived" } })

@@ -56,6 +56,8 @@ import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -85,7 +87,9 @@ export class DatasetsController {
   )
   @HttpCode(HttpStatus.OK)
   @Post()
-  async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
+  async create(
+    @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ): Promise<Dataset> {
     return this.datasetsService.create(createDatasetDto);
   }
 
@@ -102,8 +106,27 @@ export class DatasetsController {
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
-  async isValid(@Body() createDatasetDto: CreateDatasetDto): Promise<boolean> {
-    return true;
+  async isValid(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body() createDataset: unknown,
+  ): Promise<{ valid: boolean }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoTestRawCorrect = plainToInstance(
+      CreateRawDatasetDto,
+      createDataset,
+    );
+    const errorsTestRawCorrect = await validate(dtoTestRawCorrect);
+
+    const dtoTestDerivedCorrect = plainToInstance(
+      CreateDerivedDatasetDto,
+      createDataset,
+    );
+    const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
+
+    const valid =
+      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0;
+
+    return { valid: valid };
   }
 
   // GET /datasets
@@ -307,7 +330,7 @@ export class DatasetsController {
       typeof where === "string" || (where as unknown) instanceof String
         ? JSON.parse(where)
         : where;
-    console.log("Where : " + JSON.stringify(whereFilters));
+    //console.log("Where : " + JSON.stringify(whereFilters));
     return this.datasetsService.count(whereFilters);
   }
 

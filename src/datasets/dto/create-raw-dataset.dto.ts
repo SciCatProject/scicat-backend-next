@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsObject, IsOptional, IsString } from "class-validator";
+import { IsDateString, IsObject, IsOptional, IsString } from "class-validator";
 import { CreateDatasetDto } from "./create-dataset.dto";
 
 export class CreateRawDatasetDto extends CreateDatasetDto {
@@ -9,7 +9,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
 
   @ApiProperty({ type: Date })
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   readonly endTime: Date;
 
   @ApiProperty()

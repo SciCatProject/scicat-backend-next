@@ -9,7 +9,7 @@ import {
   IsEmail,
   IsFQDN,
   IsInt,
-  IsDate,
+  IsDateString,
   IsBoolean,
   ValidateNested,
 } from "class-validator";
@@ -65,7 +65,7 @@ export class CreateDatasetDto extends OwnableDto {
   readonly numberOfFilesArchived: number;
 
   @ApiProperty({ type: Date })
-  @IsDate()
+  @IsDateString()
   readonly creationTime: Date;
 
   @ApiProperty()
