@@ -101,15 +101,23 @@ export class DatasetsService {
       const order = modifiers.sort[sortField];
       datasets = datasets.sort((a, b) => {
         if (order === "asc") {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           return a[sortField] < b[sortField]
             ? 1
-            : a[sortField] > b[sortField]
+            : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            a[sortField] > b[sortField]
             ? -1
             : 0;
         } else {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           return a[sortField] < b[sortField]
             ? -1
-            : a[sortField] > b[sortField]
+            : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            a[sortField] > b[sortField]
             ? 1
             : 0;
         }

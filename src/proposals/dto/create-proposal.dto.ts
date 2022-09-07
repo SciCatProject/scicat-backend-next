@@ -1,43 +1,68 @@
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsDateString,
+  IsEmail,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 
 export class CreateProposalDto extends OwnableDto {
-  @ApiProperty()
-  readonly ownerGroup: string;
+  //@ApiProperty()
+  @IsString()
+  readonly proposalId: string;
 
-  @ApiProperty()
-  readonly accessGroups: string[];
-
-  @ApiProperty()
-  proposalId: string;
-
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsEmail()
   readonly pi_email: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly pi_firstname: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly pi_lastname: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsEmail()
   readonly email: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly firstname: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly lastname: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsString()
   readonly title: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly abstract: string;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsDateString()
   readonly startTime?: Date;
 
-  @ApiProperty()
+  //@ApiProperty()
+  @IsOptional()
+  @IsDateString()
   readonly endTime?: Date;
+
+  //@ApiProperty({ type: Object })
+  @IsOptional()
+  @ValidateNested()
+  readonly MeasurementPeriodList?: Record<string, unknown>;
 }

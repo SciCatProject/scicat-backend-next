@@ -5,10 +5,25 @@ import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Attachment.name,
-        schema: AttachmentSchema,
+        //schema: AttachmentSchema,
+
+        useFactory: () => {
+          const schema = AttachmentSchema;
+
+          schema.pre<Attachment>("save", function (next) {
+            // if _id is empty or differnet than pid,
+            // set _id to pid
+            if (!this._id) {
+              this._id = this.id;
+            }
+            next();
+          });
+
+          return schema;
+        },
       },
     ]),
   ],

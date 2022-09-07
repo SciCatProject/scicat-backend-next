@@ -25,7 +25,7 @@ export class Ownable {
       "Optional additional groups which have read and write access to the data. Users which are member in one of the groups listed here are allowed to access this data.",
   })
   @Prop({ type: String, required: false })
-  instrumentGroup: string;
+  instrumentGroup?: string;
 
   @ApiProperty()
   @Prop({ type: String, index: true })
@@ -34,4 +34,12 @@ export class Ownable {
   @ApiProperty()
   @Prop({ type: String })
   updatedBy: string;
+
+  @ApiProperty()
+  @Prop({ type: Date })
+  createdAt: Date;
+
+  @ApiProperty()
+  @Prop({ type: Date })
+  updatedAt: Date;
 }

@@ -5,6 +5,7 @@ const chaiHttp = require("chai-http");
 const request = require("supertest");
 const should = chai.should();
 const utils = require("./LoginUtils");
+const { TestData } = require("./TestData");
 
 chai.use(chaiHttp);
 
@@ -13,14 +14,14 @@ let accessToken = null,
   proposalId = null,
   attachmentId = null;
 
-const testproposal = {
+/* const testproposal = {
   proposalId: "20170266",
   email: "proposer%40uni.edu",
   title: "A test proposal",
   abstract: "Abstract of test proposal",
   ownerGroup: "20170251-group",
   MeasurementPeriodList: [],
-};
+}; */
 
 const app = "http://localhost:3000";
 
@@ -58,11 +59,15 @@ describe("Simple Proposal tests", () => {
   }
 
   it("remove potentially existing proposals to guarantee uniqueness", async () => {
-    let filter = '{"where": {"proposalId": "' + testproposal.proposalId + '"}}';
-    //let url = "/api/v3/Proposals?filter=" + encodeURIComponent(filter);
-
+    /*     let filter =
+      // eslint-disable-next-line @typescript-eslint/quotes
+      '{"where": {"proposalId": "' +
+      TestData.ProposalCorrect.proposalId +
+      // eslint-disable-next-line @typescript-eslint/quotes
+      '"}}';
+    */
     return request(app)
-      .get("/api/v3/Proposals?filter=" + encodeURIComponent(filter))
+      .get("/api/v3/Proposals")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -71,12 +76,55 @@ describe("Simple Proposal tests", () => {
         // now remove all these entries
         processArray(res.body);
       });
+    //.get("/api/v3/Proposals?filter=" + encodeURIComponent(filter))
   });
 
-  it("adds a new proposal", async () => {
+  // check if proposal is valid
+  it("check if minimal proposal is valid", async () => {
+    return request(app)
+      .post("/api/v3/Proposals/isValid")
+      .send(TestData.ProposalCorrectMin)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
+  it("adds a new proposal with minimal data", async () => {
     return request(app)
       .post("/api/v3/Proposals")
-      .send(testproposal)
+      .send(TestData.ProposalCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        defaultProposalId = res.body["proposalId"];
+        proposalId = encodeURIComponent(res.body["proposalId"]);
+      });
+  });
+
+  // check if proposal is valid
+  it("check if complete proposal is valid", async () => {
+    return request(app)
+      .post("/api/v3/Proposals/isValid")
+      .send(TestData.ProposalCorrectComplete)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
+  it("adds a new proposal with complete data", async () => {
+    return request(app)
+      .post("/api/v3/Proposals")
+      .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(201)
@@ -95,21 +143,16 @@ describe("Simple Proposal tests", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("createdBy").and.be.string;
+        res.body.should.have.property("updatedBy").and.be.string;
+      });
   });
 
   it("should add a new attachment to this proposal", async () => {
-    const testAttachment = {
-      thumbnail: "data/abc123",
-      caption: "Some caption",
-      proposalId: defaultProposalId,
-      ownerGroup: "ess",
-      accessGroups: ["loki", "odin"],
-      createdBy: "Bertram Astor",
-      updatedBy: "anonymous",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    let testAttachment = TestData.AttachmentCorrect;
+    testAttachment.proposalId = defaultProposalId;
     return request(app)
       .post("/api/v3/Proposals/" + proposalId + "/attachments")
       .send(testAttachment)
@@ -128,7 +171,7 @@ describe("Simple Proposal tests", () => {
           .property("ownerGroup")
           .and.equal(testAttachment.ownerGroup);
         res.body.should.have.property("accessGroups");
-        res.body.should.have.property("createdBy");
+        res.body.should.have.property("createdBy").and.be.string;
         res.body.should.have.property("updatedBy").and.be.string;
         res.body.should.have.property("id").and.be.string;
         res.body.should.have
@@ -153,7 +196,9 @@ describe("Simple Proposal tests", () => {
 
   it("should delete this proposal attachment", async () => {
     return request(app)
-      .delete("/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId)
+      .delete(
+        "/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200);

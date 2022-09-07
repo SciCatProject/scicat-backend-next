@@ -7,14 +7,16 @@ const { validate } = require("class-validator");
 var request = require("supertest");
 var utils = require("./LoginUtils");
 
-let CreateRawDatasetDto = import("../src/datasets/dto/create-raw-dataset.dto");
+//let CreateRawDatasetDto = import("../src/datasets/dto/create-raw-dataset.dto");
+
+const { TestData } = require("./TestData");
 
 chai.use(chaiHttp);
 
 const app = "http://localhost:3000";
 
 describe("Check different dataset types and their inheritance", () => {
-  const testDatasetWrong = {
+/*   const testDatasetWrong = {
     owner: "Bertram Astor",
     ownerEmail: "bertram.astor@grumble.com",
     orcidOfOwner: "unknown",
@@ -148,7 +150,7 @@ describe("Check different dataset types and their inheritance", () => {
     isPublished: false,
     ownerGroup: "p34123",
     type: "derived",
-  };
+  }; */
 
   let countDataset = 0;
   let countRawDataset = 0;
@@ -232,7 +234,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("check if raw dataset is valid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
-      .send(testRawCorrect)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -244,7 +246,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("check if derived dataset is valid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
-      .send(testDerivedCorrect)
+      .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -256,7 +258,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("check if wrong derived dataset is recognized as invalid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
-      .send(testDerivedWrong)
+      .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -268,7 +270,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("check if wrong typed dataset is recognized as invalid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
-      .send(testDatasetWrong)
+      .send(TestData.DatasetWrong)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -281,7 +283,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("adds a new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testRawCorrect)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -292,7 +294,7 @@ describe("Check different dataset types and their inheritance", () => {
         res.body.should.have.property("pid").and.be.string;
         res.body.should.have
           .property("ownerEmail")
-          .and.equal(testRawCorrect.ownerEmail);
+          .and.equal(TestData.RawCorrect.ownerEmail);
         pidRaw1 = encodeURIComponent(res.body.pid);
       });
   });
@@ -342,7 +344,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("should add a second raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testRawCorrect)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -400,7 +402,7 @@ describe("Check different dataset types and their inheritance", () => {
   it("adds a new derived dataset", async () => {
     request(app)
       .post("/api/v3/Datasets")
-      .send(testDerivedCorrect)
+      .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)

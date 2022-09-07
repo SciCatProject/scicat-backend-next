@@ -6,6 +6,8 @@ var request = require("supertest");
 var should = chai.should();
 var utils = require("./LoginUtils");
 
+const { TestData } = require("./TestData");
+
 chai.use(chaiHttp);
 
 var accessToken = null;
@@ -13,7 +15,7 @@ var pid = null;
 var accessProposalToken = null;
 var accessTokenArchiveManager = null;
 
-var testproposal = {
+/* var testproposal = {
   proposalId: "someprefix/20170266",
   email: "proposer%40uni.edu",
   title: "A test proposal",
@@ -90,7 +92,7 @@ var testraw = {
   isPublished: false,
   ownerGroup: "p10029",
   accessGroups: [],
-};
+}; */
 
 var proposalId = null;
 

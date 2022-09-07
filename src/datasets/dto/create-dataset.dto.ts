@@ -15,104 +15,104 @@ import {
 } from "class-validator";
 
 export class CreateDatasetDto extends OwnableDto {
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly pid: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsString()
   readonly owner: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsEmail()
   readonly ownerEmail: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly orcidOfOwner: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsEmail()
   readonly contactEmail: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsString()
   readonly sourceFolder: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsFQDN()
   readonly sourceFolderHost: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsInt()
   readonly size: number;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsInt()
   readonly packedSize: number;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsInt()
   readonly numberOfFiles: number;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsInt()
   readonly numberOfFilesArchived: number;
 
-  @ApiProperty({ type: Date })
+  //@ApiProperty({ type: Date })
   @IsDateString()
   readonly creationTime: Date;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsString()
   readonly type: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly validationStatus: string;
 
-  @ApiProperty({ type: [String] })
+  //@ApiProperty({ type: [String] })
   @IsOptional()
   @IsString({
     each: true,
   })
   readonly keywords: string[];
 
-  @ApiProperty({ description: "Dataset description" })
+  //@ApiProperty({ description: "Dataset description" })
   @IsOptional()
   @IsString()
   readonly description: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsString()
   readonly datasetName: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly classification: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly license: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsOptional()
   @IsString()
   readonly version: string;
 
-  @ApiProperty()
+  //@ApiProperty()
   @IsBoolean()
   readonly isPublished: boolean;
 
-  @ApiProperty()
+  /* @ApiProperty()
   @IsString()
   readonly ownerGroup: string;
 
@@ -120,7 +120,7 @@ export class CreateDatasetDto extends OwnableDto {
   @IsString({
     each: true,
   })
-  readonly accessGroups: string[];
+  readonly accessGroups: string[]; */
 
   /*
    *  @ApiProperty({ type: [Object] })
@@ -137,19 +137,19 @@ export class CreateDatasetDto extends OwnableDto {
    *  readonly updatedAt: Date;
    */
 
-  @ApiProperty({ type: [Technique] })
+  //@ApiProperty({ type: [Technique] })
   @IsOptional()
   @ValidateNested()
   readonly techniques: Technique[];
 
-  @ApiProperty({ type: [String] })
+  //@ApiProperty({ type: [String] })
   @IsOptional()
   @IsString({
     each: true,
   })
   readonly sharedWith: string[];
 
-  @ApiProperty({ type: [Relationship] })
+  //@ApiProperty({ type: [Relationship] })
   @IsOptional()
   @ValidateNested()
   readonly relationships: Relationship[];

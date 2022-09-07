@@ -32,12 +32,21 @@ export class Proposal extends Ownable {
   @Prop({ type: String })
   _id: string;
 
-  @ApiProperty({ type: String, description: "Email of principal investigator" })
-  @Prop({ type: String, index: true })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Email of principal investigator",
+  })
+  @Prop({
+    type: String,
+    required: false,
+    index: true,
+  })
   pi_email: string;
 
   @ApiProperty({
     type: String,
+    required: false,
     description: "First name of principal investigator",
   })
   @Prop()
@@ -45,6 +54,7 @@ export class Proposal extends Ownable {
 
   @ApiProperty({
     type: String,
+    required: false,
     description: "Last name of principal investigator",
   })
   @Prop()
@@ -59,19 +69,23 @@ export class Proposal extends Ownable {
   email: string;
 
   @ApiProperty({ type: String, description: "First name of main proposer" })
-  @Prop()
+  @Prop({ type: String, required: false })
   firstname: string;
 
   @ApiProperty({ type: String, description: "Last name of main proposer" })
-  @Prop()
+  @Prop({ type: String, required: false })
   lastname: string;
 
-  @ApiProperty({ type: String, description: "The title of the proposal" })
-  @Prop()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "The title of the proposal",
+  })
+  @Prop({ type: String, required: true })
   title: string;
 
   @ApiProperty({ type: String, description: "The proposal abstract" })
-  @Prop()
+  @Prop({ type: String, required: false })
   abstract: string;
 
   @ApiProperty({
@@ -93,15 +107,26 @@ export class Proposal extends Ownable {
   @ApiProperty({
     type: "array",
     items: { $ref: getSchemaPath(Attachment) },
+    required: false,
     description:
       "Small less than 16 MB attachments, envisaged for png/jpeg previews",
   })
-  @Prop([AttachmentSchema])
+  @Prop({
+    type: [AttachmentSchema],
+    required: false,
+  })
   attachments: Attachment[];
 
-  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Dataset) } })
-  @Prop([DatasetSchema])
-  datasets: Dataset[];
+  /* @ApiProperty({
+    type: "array",
+    required: false,
+    items: { $ref: getSchemaPath(Dataset) },
+  })
+  @Prop({
+    type: [DatasetSchema],
+    required: false,
+  })
+  datasets: Dataset[]; */
 
   @ApiProperty({
     type: MeasurementPeriod,

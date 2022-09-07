@@ -149,8 +149,6 @@ export class AppModule implements OnApplicationBootstrap {
             abstract: proposalAcceptedMessage.abstract,
             ownerGroup: "ess",
             accessGroups: [],
-            createdBy: "proposalIngestor",
-            updatedBy: "proposalIngestor",
           };
 
           try {

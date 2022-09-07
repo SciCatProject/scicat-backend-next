@@ -9,6 +9,8 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
@@ -31,6 +33,9 @@ import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { MeasurementPeriod } from "./schemas/measurement-period.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -56,6 +61,22 @@ export class ProposalsController {
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<Proposal> {
     return this.proposalsService.create(createProposalDto);
+  }
+
+  @AllowAny()
+  @HttpCode(HttpStatus.OK)
+  @Post("/isValid")
+  async isValid(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body() createProposal: unknown,
+  ): Promise<{ valid: boolean }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoProposal = plainToInstance(CreateProposalDto, createProposal);
+    const errorsProposal = await validate(dtoProposal);
+
+    const valid = errorsProposal.length == 0;
+
+    return { valid: valid };
   }
 
   // GET /proposals
@@ -144,7 +165,12 @@ export class ProposalsController {
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
-    const createAttachment = { ...createAttachmentDto, proposalId: id };
+    console.log("Add attachement to  proposal");
+    const createAttachment = {
+      ...createAttachmentDto,
+      proposalId: id,
+    };
+    console.log(createAttachmentDto);
     return this.attachmentsService.create(createAttachment);
   }
 

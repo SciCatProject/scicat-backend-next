@@ -229,7 +229,7 @@ export class Dataset extends Ownable {
   })
   @Prop({ type: LifecycleSchema })
   datasetlifecycle: Lifecycle;
-
+  /*
   @ApiProperty({ type: Date, description: "Date when dataset was created." })
   @Prop()
   createdAt: Date;
@@ -240,7 +240,7 @@ export class Dataset extends Ownable {
   })
   @Prop()
   updatedAt: Date;
-
+  */
   @ApiProperty({
     type: String,
     required: false,

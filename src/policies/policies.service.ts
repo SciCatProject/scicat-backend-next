@@ -264,8 +264,6 @@ export class PoliciesService implements OnModuleInit {
       archiveEmailsToBeNotified: [],
       retrieveEmailsToBeNotified: [],
       embargoPeriod: 3,
-      createdBy: req.user ? (req.user as JWTUser).username : "",
-      updatedBy: req.user ? (req.user as JWTUser).username : "",
     };
 
     try {
