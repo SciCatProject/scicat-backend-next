@@ -8,7 +8,8 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
-  addCreateFields,
+  addCreatedFields,
+  addUpdatedFields,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
@@ -27,7 +28,7 @@ export class ProposalsService {
     const username = (this.request?.user as JWTUser).username;
     const ts = new Date();
     const createdProposal = new this.proposalModel(
-      addCreateFields(createProposalDto, username, ts),
+      addCreatedFields<CreateProposalDto>(createProposalDto, username, ts),
     );
     return createdProposal.save();
   }

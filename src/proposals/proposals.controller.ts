@@ -165,12 +165,12 @@ export class ProposalsController {
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
-    console.log("Add attachement to  proposal");
+    //console.log("Add attachement to  proposal");
     const createAttachment = {
       ...createAttachmentDto,
       proposalId: id,
     };
-    console.log(createAttachmentDto);
+    //console.log(createAttachmentDto);
     return this.attachmentsService.create(createAttachment);
   }
 
@@ -194,7 +194,7 @@ export class ProposalsController {
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, proposalId },
+      { _id: attachmentId, proposalId: proposalId },
       updateAttachmentDto,
     );
   }
@@ -211,7 +211,7 @@ export class ProposalsController {
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
-      proposalId,
+      proposalId: proposalId,
     });
   }
 

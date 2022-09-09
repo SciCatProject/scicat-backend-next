@@ -260,7 +260,7 @@ export class Dataset extends Ownable {
   @ApiProperty({
     type: "array",
     items: { $ref: getSchemaPath(Relationship) },
-    description: "Stores the metadata information for techniques",
+    description: "Stores the relationships with other datasets",
   })
   @Prop([RelationshipSchema])
   relationships: Relationship[];

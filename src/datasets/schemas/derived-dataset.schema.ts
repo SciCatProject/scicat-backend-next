@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
+import { Dataset } from "./dataset.schema";
 import { Lifecycle } from "./lifecycle.schema";
 import { Technique } from "./technique.schema";
 
@@ -28,7 +29,7 @@ export class DerivedDataset {
   license: string;
   version: string;
   isPublished: boolean;
-  history: Record<string, unknown>;
+  history: Record<string, unknown>[];
   datasetLifeCycle: Lifecycle;
   createdAt: Date;
   updatedAt: Date;

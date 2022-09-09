@@ -590,18 +590,36 @@ export const createFullfacetPipeline = <T, Y>(
   return pipeline as PipelineStage[];
 };
 
-export const addCreateFields = (
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  obj: object,
+export const addCreatedFields = <T>(
+  obj: T,
   username: string,
   ts: Date,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-): object => {
+): T & {
+  createdBy: string;
+  updatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+} => {
   return {
     ...obj,
     createdBy: username,
     updatedBy: username,
     createdAt: ts,
+    updatedAt: ts,
+  };
+};
+
+export const addUpdatedFields = <T>(
+  obj: T,
+  username: string,
+  ts: Date,
+): T & {
+  updatedBy: string;
+  updatedAt: Date;
+} => {
+  return {
+    ...obj,
+    updatedBy: username,
     updatedAt: ts,
   };
 };

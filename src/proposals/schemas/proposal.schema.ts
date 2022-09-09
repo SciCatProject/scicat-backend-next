@@ -104,7 +104,7 @@ export class Proposal extends Ownable {
   @Prop({ type: Date, required: false })
   endTime: Date;
 
-  @ApiProperty({
+  /* @ApiProperty({
     type: "array",
     items: { $ref: getSchemaPath(Attachment) },
     required: false,
@@ -115,7 +115,7 @@ export class Proposal extends Ownable {
     type: [AttachmentSchema],
     required: false,
   })
-  attachments: Attachment[];
+  attachments: Attachment[]; */
 
   /* @ApiProperty({
     type: "array",

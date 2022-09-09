@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
+import { Dataset } from "./dataset.schema";
 import { Lifecycle } from "./lifecycle.schema";
 import { Technique } from "./technique.schema";
 
@@ -19,7 +20,6 @@ export class RawDataset {
   numberOfFiles: number;
   numberOfFilesArchived: number;
   creationTime: Date;
-  type: string;
   validationStatus: string;
   keywords: string[];
   description: string;
@@ -28,11 +28,12 @@ export class RawDataset {
   license: string;
   version: string;
   isPublished: boolean;
-  history: Record<string, unknown>;
+  history: Record<string, unknown>[];
   datasetLifeCycle: Lifecycle;
   createdAt: Date;
   updatedAt: Date;
   techniques: Technique[];
+  type: string;
 
   @ApiProperty({
     type: String,
@@ -93,6 +94,14 @@ export class RawDataset {
   })
   @Prop({ type: String, ref: "Sample", required: false })
   sampleId: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of instrument where the data was created",
+  })
+  @Prop({ type: String, ref: "Instrument", required: false })
+  instrumentId: string;
 }
 
 export const RawDatasetSchema = SchemaFactory.createForClass(RawDataset);

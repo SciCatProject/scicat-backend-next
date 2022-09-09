@@ -124,6 +124,22 @@ const TestData = {
     type: "raw",
   },
 
+  RawWrong: {
+    owner: "Bertram Astor",
+    ownerEmail: "bertram.astor@grumble.com",
+    orcidOfOwner: "unknown",
+    contactEmail: "bertram.astor@grumble.com",
+    sourceFolder: "/iramjet/tif/",
+    creationTime: "2011-09-14T06:08:25.000Z",
+    keywords: ["Cryo", "Calibration"],
+    description: "None",
+    license: "CC BY-SA 4.0",
+    isPublished: false,
+    ownerGroup: "p13388",
+    accessGroups: [],
+    type: "raw",
+  },
+
   DerivedCorrect: {
     investigator: "egon.meier@web.de",
     inputDatasets: ["/data/input/file1.dat"],
