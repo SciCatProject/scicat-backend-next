@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   Headers,
+  HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -57,7 +58,7 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
+import { validate, validateOrReject } from "class-validator";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -90,7 +91,49 @@ export class DatasetsController {
   async create(
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
   ): Promise<Dataset> {
-    return this.datasetsService.create(createDatasetDto);
+    // validate dataset
+    const validatedDatasetDto = await this.validateDataset(createDatasetDto);
+    return this.datasetsService.create(validatedDatasetDto);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  async validateDataset(
+    inputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ): Promise<CreateRawDatasetDto | CreateDerivedDatasetDto> {
+    let errors: Array<unknown> = [];
+    let outputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto;
+    const type = inputDatasetDto.type;
+
+    if (type != "raw" && type != "derived") {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Wrong dataset type!",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (type == "raw") {
+      outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
+      errors = await validate(outputDatasetDto);
+    } else {
+      outputDatasetDto = plainToInstance(
+        CreateDerivedDatasetDto,
+        inputDatasetDto,
+      );
+      errors = await validate(outputDatasetDto);
+    }
+    if (errors.length > 0) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: JSON.stringify(errors),
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return outputDatasetDto;
   }
 
   // POST /datasets
@@ -456,7 +499,7 @@ export class DatasetsController {
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
-  // PATCH /datasets/:id/attachments
+  // PATCH /datasets/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
@@ -468,7 +511,7 @@ export class DatasetsController {
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, datasetId },
+      { _id: attachmentId, datasetId: datasetId },
       updateAttachmentDto,
     );
   }

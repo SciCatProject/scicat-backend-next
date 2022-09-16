@@ -19,7 +19,7 @@ var proposalId = null;
 
 const app = "http://localhost:3000";
 
-describe("RawDatasets", () => {
+describe("Raw Datasets", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

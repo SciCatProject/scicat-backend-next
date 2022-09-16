@@ -6,28 +6,19 @@ const request = require("supertest");
 const should = chai.should();
 const utils = require("./LoginUtils");
 
+const { TestData } = require("./TestData");
+
 chai.use(chaiHttp);
 
 let accessToken = null,
   defaultSampleId = null,
   sampleId = null,
-  attachmentId = null;
-
-const testSample = {
-  owner: "string",
-  description: "string",
-  createdAt: new Date(),
-  sampleCharacteristics: {},
-  ownerGroup: "string",
-  accessGroups: ["string"],
-  createdBy: "string",
-  updatedBy: "string",
-  updatedAt: new Date(),
-};
+  attachmentId = null,
+  datasetId = null;
 
 const app = "http://localhost:3000";
 
-describe("Simple Sample tests", () => {
+describe("Simple Sample", () => {
   beforeEach((done) => {
     utils.getToken(
       app,
@@ -45,7 +36,7 @@ describe("Simple Sample tests", () => {
   it("adds a new sample", async () => {
     return request(app)
       .post("/api/v3/Samples")
-      .send(testSample)
+      .send(TestData.SampleCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -64,24 +55,17 @@ describe("Simple Sample tests", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("sampleId").and.be.string;
+      });
   });
 
   it("should add a new attachment to this sample", async () => {
-    const testAttachment = {
-      thumbnail: "data/abc123",
-      caption: "Some caption",
-      sampleId: defaultSampleId,
-      ownerGroup: "ess",
-      accessGroups: ["loki", "odin"],
-      createdBy: "Bertram Astor",
-      updatedBy: "anonymous",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
     return request(app)
       .post("/api/v3/Samples/" + sampleId + "/attachments")
-      .send(testAttachment)
+      .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(201)
@@ -89,21 +73,32 @@ describe("Simple Sample tests", () => {
       .then((res) => {
         res.body.should.have
           .property("thumbnail")
-          .and.equal(testAttachment.thumbnail);
+          .and.equal(TestData.AttachmentCorrect.thumbnail);
         res.body.should.have
           .property("caption")
-          .and.equal(testAttachment.caption);
+          .and.equal(TestData.AttachmentCorrect.caption);
         res.body.should.have
           .property("ownerGroup")
-          .and.equal(testAttachment.ownerGroup);
+          .and.equal(TestData.AttachmentCorrect.ownerGroup);
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
         res.body.should.have.property("id").and.be.string;
-        res.body.should.have
-          .property("sampleId")
-          .and.equal(testAttachment.sampleId);
+        res.body.should.have.property("sampleId").and.equal(sampleId);
         attachmentId = encodeURIComponent(res.body["id"]);
+      });
+  });
+
+  it("should fetch all attachments of this sample", async () => {
+    return request(app)
+      .get("/api/v3/Samples/" + sampleId + "/attachments/")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        console.log(res.body);
+        res.body.should.be.instanceof(Array);
       });
   });
 
@@ -123,6 +118,64 @@ describe("Simple Sample tests", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200);
+  });
+
+  it("should return no datasets", async () => {
+    return request(app)
+      .get("/api/v3/Samples/" + sampleId + "/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body.length.should.be.equal(0);
+      });
+  });
+
+  it("insert dataset using this sample", async () => {
+    let dataset = TestData.RawCorrect;
+    dataset.sampleId = sampleId;
+    return request(app)
+      .post("/api/v3/Datasets")
+      .send(dataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("pid").and.be.string;
+        datasetId = encodeURIComponent(res.body["pid"]);
+      });
+  });
+
+  it("should retrieve dataset for sample", async () => {
+    return request(app)
+      .get("api/v3/Samples/" + sampleId + "/Datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+        res.body.length().should.be.equal(1);
+        res.body[0].pid.should.be.equal(datasetId);
+      });
+  });
+
+  it("should delete the dataset linked to sample", function (done) {
+    request(app)
+      .delete("/api/v3/Datasets/" + datasetId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        done();
+      });
   });
 
   it("should delete this sample", async () => {

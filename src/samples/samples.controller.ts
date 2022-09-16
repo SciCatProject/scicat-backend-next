@@ -177,9 +177,17 @@ export class SamplesController {
   async createAttachments(
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<Attachment> {
-    const createAttachment = { ...createAttachmentDto, sampleId: id };
-    return this.attachmentsService.create(createAttachment);
+  ): Promise<Attachment | null> {
+    const sample = await this.samplesService.findOne({ sampleId: id });
+    if (sample) {
+      const createAttachment: CreateAttachmentDto = {
+        ...createAttachmentDto,
+        sampleId: id,
+        ownerGroup: sample.ownerGroup,
+      };
+      return this.attachmentsService.create(createAttachment);
+    }
+    return null;
   }
 
   // GET /samples/:id/attachments
@@ -202,7 +210,7 @@ export class SamplesController {
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, sampleId },
+      { id: attachmentId, sampleId: sampleId },
       updateAttachmentDto,
     );
   }
@@ -219,12 +227,12 @@ export class SamplesController {
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
-      sampleId,
+      sampleId: sampleId,
     });
   }
 
   // POST /samples/:id/datasets
-  @UseGuards(PoliciesGuard)
+  /*   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @Post("/:id/datasets")
   async createDataset(
@@ -234,6 +242,7 @@ export class SamplesController {
     const createDataset = { ...createRawDatasetDto, sampleId: id };
     return this.datasetsService.create(createDataset);
   }
+ */
 
   // GET /samples/:id/datasets
   @UseGuards(PoliciesGuard)
@@ -242,11 +251,11 @@ export class SamplesController {
   async findAllDatasets(
     @Param("id") sampleId: string,
   ): Promise<Dataset[] | null> {
-    return this.datasetsService.findAll({ where: { sampleId } });
+    return this.datasetsService.findAll({ where: { sampleId: sampleId } });
   }
 
   // PATCH /samples/:id/datasets/:fk
-  @UseGuards(PoliciesGuard)
+  /* @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Patch("/:id/datasets/:fk")
   async findOneDatasetAndUpdate(
@@ -258,10 +267,10 @@ export class SamplesController {
       datasetId,
       updateRawDatasetDto,
     );
-  }
+  } */
 
   // DELETE /samples/:id/datasets/:fk
-  @UseGuards(PoliciesGuard)
+  /*   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
   @Delete("/:id/datasets/:fk")
   async findOneDatasetAndRemove(
@@ -270,4 +279,5 @@ export class SamplesController {
   ): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(datasetId);
   }
+ */
 }

@@ -183,6 +183,25 @@ const TestData = {
     ownerGroup: "p34123",
     type: "derived",
   },
+
+  SampleCorrect: {
+    owner: "Max Novelli",
+    description: "This is a very important sample",
+    sampleCharacteristics: {
+      chemical_formula: "H2O",
+    },
+    ownerGroup: "ess",
+    accessGroups: ["data scientist", "instrument scientist"],
+  },
+
+  SampleWrong: {
+    owner: "Max Novelli",
+    sampleCharacteristics: {
+      chemical_formula: "H2O",
+    },
+    ownerGroup: "ess",
+    accessGroups: ["data scientist", "instrument scientist"],
+  },
 };
 
 module.exports = { TestData };

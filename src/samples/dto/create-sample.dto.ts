@@ -1,25 +1,24 @@
-import { ApiProperty } from "@nestjs/swagger";
+//import { ApiProperty } from "@nestjs/swagger";
+import { IsString, IsBoolean, IsObject, IsOptional } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 
 export class CreateSampleDto extends OwnableDto {
-  @ApiProperty()
-  readonly ownerGroup: string;
+  @IsString()
+  @IsOptional()
+  readonly sampleId?: string;
 
-  @ApiProperty()
-  readonly accessGroups: string[];
+  @IsString()
+  @IsOptional()
+  readonly owner?: string;
 
-  @ApiProperty()
-  readonly owner: string;
-
-  @ApiProperty()
+  @IsString()
   readonly description: string;
 
-  @ApiProperty()
-  readonly createdAt: Date;
+  @IsObject()
+  @IsOptional()
+  readonly sampleCharacteristics?: Record<string, unknown>;
 
-  @ApiProperty()
-  readonly sampleCharacteristics: Record<string, unknown>;
-
-  @ApiProperty()
-  readonly isPublished: boolean;
+  @IsBoolean()
+  @IsOptional()
+  readonly isPublished?: boolean;
 }
