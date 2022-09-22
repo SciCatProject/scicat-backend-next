@@ -27,11 +27,11 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
       {
         name: Dataset.name,
         //schema: DatasetSchema,
-        discriminators: [
+        /* discriminators: [
           { name: RawDataset.name, schema: RawDatasetSchema },
           { name: DerivedDataset.name, schema: DerivedDatasetSchema },
         ],
-
+ */
         //schema: DatasetSchema,
         useFactory: () => {
           const schema = DatasetSchema;

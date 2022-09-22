@@ -50,12 +50,12 @@ import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+//import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { DerivedDataset } from "./schemas/derived-dataset.schema";
+//import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
 import { validate, validateOrReject } from "class-validator";
@@ -81,10 +81,8 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
   )
   @HttpCode(HttpStatus.OK)
   @Post()
@@ -184,7 +182,7 @@ export class DatasetsController {
   async findAll(
     @Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
-  ): Promise<(Dataset | RawDataset | DerivedDataset)[] | null> {
+  ): Promise<Dataset[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter
         ? JSON.parse(filter.filter)
@@ -392,10 +390,8 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
   )
   @Patch("/:id")
   async findByIdAndUpdate(
@@ -411,10 +407,8 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
   )
   @Put("/:id")
   async findByIdReplaceOrCreate(

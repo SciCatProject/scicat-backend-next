@@ -27,11 +27,12 @@ import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
-import {
+/* import {
   DerivedDataset,
   DerivedDatasetDocument,
 } from "./schemas/derived-dataset.schema";
 import { RawDataset, RawDatasetDocument } from "./schemas/raw-dataset.schema";
+ */
 
 @Injectable()
 export class DatasetsService {
@@ -49,7 +50,7 @@ export class DatasetsService {
 
   async findAll(
     filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<(RawDataset | DerivedDataset | Dataset)[]> {
+  ): Promise<Dataset[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -289,8 +290,8 @@ export class DatasetsService {
 
     const datasets = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys<RawDataset | DerivedDataset>(
-      datasets as unknown as (RawDataset | DerivedDataset)[],
+    const metadataKeys = extractMetadataKeys<Dataset>(
+      datasets as unknown as Dataset[],
       "scientificMetadata",
     ).filter((key) => !blacklist.some((regex) => regex.test(key)));
 
@@ -398,7 +399,7 @@ export class DatasetsService {
         const datasetPid = dataset.pid;
         const proposalId =
           dataset.type === DatasetType.Raw
-            ? (dataset as unknown as RawDataset).proposalId
+            ? (dataset as unknown as Dataset).proposalId
             : undefined;
         if (proposalId) {
           await Promise.all(
