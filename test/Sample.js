@@ -11,6 +11,7 @@ const { TestData } = require("./TestData");
 chai.use(chaiHttp);
 
 let accessToken = null,
+  accessTokenArchiveManager = null,
   defaultSampleId = null,
   sampleId = null,
   attachmentId = null,
@@ -28,7 +29,17 @@ describe("Simple Sample", () => {
       },
       (tokenVal) => {
         accessToken = tokenVal;
-        done();
+        utils.getToken(
+          app,
+          {
+            username: "archiveManager",
+            password: "aman",
+          },
+          (tokenVal) => {
+            accessTokenArchiveManager = tokenVal;
+            done();
+          },
+        );
       },
     );
   });
@@ -152,14 +163,14 @@ describe("Simple Sample", () => {
 
   it("should retrieve dataset for sample", async () => {
     return request(app)
-      .get("api/v3/Samples/" + sampleId + "/datasets")
+      .get("/api/v3/Samples/" + sampleId + "/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
-        res.body.length().should.be.equal(1);
+        res.body.length.should.be.equal(1);
         res.body[0].pid.should.be.equal(datasetId);
       });
   });

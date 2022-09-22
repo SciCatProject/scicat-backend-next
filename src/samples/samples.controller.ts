@@ -272,7 +272,7 @@ export class SamplesController {
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") sampleId: string,
-  ): Promise<(Dataset | RawDataset | DerivedDataset)[] | null> {
+  ): Promise<Dataset[] | null> {
     const cond = { where: { sampleId: sampleId } };
     return this.datasetsService.findAll(cond);
   }
