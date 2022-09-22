@@ -184,7 +184,7 @@ export class DatasetsController {
   async findAll(
     @Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
-  ): Promise<Dataset[] | null> {
+  ): Promise<(Dataset | RawDataset | DerivedDataset)[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter
         ? JSON.parse(filter.filter)

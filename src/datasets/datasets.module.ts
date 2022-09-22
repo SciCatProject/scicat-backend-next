@@ -3,8 +3,11 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Dataset, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
-import { RawDatasetSchema } from "./schemas/raw-dataset.schema";
-import { DerivedDatasetSchema } from "./schemas/derived-dataset.schema";
+import { RawDataset, RawDatasetSchema } from "./schemas/raw-dataset.schema";
+import {
+  DerivedDataset,
+  DerivedDatasetSchema,
+} from "./schemas/derived-dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { ConfigModule } from "@nestjs/config";
@@ -23,9 +26,10 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
     MongooseModule.forFeatureAsync([
       {
         name: Dataset.name,
+        //schema: DatasetSchema,
         discriminators: [
-          { name: "raw", schema: RawDatasetSchema },
-          { name: "derived", schema: DerivedDatasetSchema },
+          { name: RawDataset.name, schema: RawDatasetSchema },
+          { name: DerivedDataset.name, schema: DerivedDatasetSchema },
         ],
 
         //schema: DatasetSchema,

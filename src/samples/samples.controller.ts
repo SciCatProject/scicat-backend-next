@@ -32,6 +32,8 @@ import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
+import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
+import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -126,7 +128,7 @@ export class SamplesController {
                 where: { sampleId: sample.sampleId },
               });
               if (datasets) {
-                sample.datasets = datasets;
+                sample.datasets = datasets as Dataset[];
               }
               break;
             }
@@ -198,6 +200,7 @@ export class SamplesController {
     return this.attachmentsService.findAll({ sampleId: id });
   }
 
+  /*
   // PATCH /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -209,10 +212,29 @@ export class SamplesController {
     @Param("fk") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
+    console.log("SampleId: ", sampleId);
+    console.log("AttachmentIs: ", attachmentId);
     return this.attachmentsService.findOneAndUpdate(
       { id: attachmentId, sampleId: sampleId },
       updateAttachmentDto,
     );
+  }
+  */
+
+  // GET /samples/:id/attachments/:fk
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @Get("/:id/attachments/:fk")
+  async findOneAttachment(
+    @Param("id") sampleId: string,
+    @Param("fk") attachmentId: string,
+  ): Promise<Attachment | null> {
+    console.log("SampleId: ", sampleId);
+    console.log("AttachmentIs: ", attachmentId);
+    return this.attachmentsService.findOne({
+      id: attachmentId,
+      sampleId: sampleId,
+    });
   }
 
   // DELETE /samples/:id/attachments/:fk
@@ -250,8 +272,9 @@ export class SamplesController {
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") sampleId: string,
-  ): Promise<Dataset[] | null> {
-    return this.datasetsService.findAll({ where: { sampleId: sampleId } });
+  ): Promise<(Dataset | RawDataset | DerivedDataset)[] | null> {
+    const cond = { where: { sampleId: sampleId } };
+    return this.datasetsService.findAll(cond);
   }
 
   // PATCH /samples/:id/datasets/:fk

@@ -27,8 +27,11 @@ import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
-import { DerivedDataset } from "./schemas/derived-dataset.schema";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+import {
+  DerivedDataset,
+  DerivedDatasetDocument,
+} from "./schemas/derived-dataset.schema";
+import { RawDataset, RawDatasetDocument } from "./schemas/raw-dataset.schema";
 
 @Injectable()
 export class DatasetsService {
@@ -46,16 +49,26 @@ export class DatasetsService {
 
   async findAll(
     filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<Dataset[]> {
+  ): Promise<(RawDataset | DerivedDataset | Dataset)[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
-    return this.datasetModel
-      .find(whereFilter)
+    /* const t2 = await this.datasetModel
+      .find()
       .limit(limit)
       .skip(skip)
       .sort(sort)
       .exec();
+ */
+    const t1 = this.datasetModel
+      .find(whereFilter)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort);
+
+    const t3 = await t1.exec();
+
+    return t3;
   }
 
   async fullquery(
@@ -330,9 +343,9 @@ export class DatasetsService {
 
             if (!initialDataset) {
               await this.initialDatasetsService.create(dataset);
-              await this.updateHistory(req, dataset, dataCopy);
+              await this.updateHistory(req, dataset as Dataset, dataCopy);
             } else {
-              await this.updateHistory(req, dataset, dataCopy);
+              await this.updateHistory(req, dataset as Dataset, dataCopy);
             }
           }
         }),

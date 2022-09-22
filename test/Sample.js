@@ -97,7 +97,6 @@ describe("Simple Sample", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log(res.body);
         res.body.should.be.instanceof(Array);
       });
   });
@@ -153,7 +152,7 @@ describe("Simple Sample", () => {
 
   it("should retrieve dataset for sample", async () => {
     return request(app)
-      .get("api/v3/Samples/" + sampleId + "/Datasets")
+      .get("api/v3/Samples/" + sampleId + "/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)

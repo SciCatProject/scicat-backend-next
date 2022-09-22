@@ -36,6 +36,8 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
+import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
+import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -233,7 +235,7 @@ export class ProposalsController {
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") proposalId: string,
-  ): Promise<Dataset[] | null> {
+  ): Promise<(Dataset | RawDataset | DerivedDataset)[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
   }
 

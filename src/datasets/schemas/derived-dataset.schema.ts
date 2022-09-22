@@ -1,40 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
+import { BaseDatasetForSchema } from "./baseDatasetClassForSchema";
 import { Dataset } from "./dataset.schema";
 import { Lifecycle } from "./lifecycle.schema";
 import { Technique } from "./technique.schema";
 
+export type DerivedDatasetDocument = DerivedDataset & Document;
+
 @Schema({
   minimize: false,
 })
-export class DerivedDataset {
-  pid: string;
-  owner: string;
-  ownerEmail: string;
-  orcidOfOwner: string;
-  contactEmail: string;
-  sourceFolder: string;
-  sourceFolderHost: string;
-  size: number;
-  packedSize: number;
-  numberOfFiles: number;
-  numberOfFilesArchived: number;
-  creationTime: Date;
-  type: string;
-  validationStatus: string;
-  keywords: string[];
-  description: string;
-  datasetName: string;
-  classification: string;
-  license: string;
-  version: string;
-  isPublished: boolean;
-  history: Record<string, unknown>[];
-  datasetLifeCycle: Lifecycle;
-  createdAt: Date;
-  updatedAt: Date;
-  techniques: Technique[];
-
+export class DerivedDataset extends BaseDatasetForSchema {
   @ApiProperty({
     type: String,
     description:

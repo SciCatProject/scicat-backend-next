@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import {
   Attachment,
   AttachmentSchema,
@@ -26,6 +26,8 @@ export type DatasetDocument = Dataset & Document;
   collection: "Dataset",
   discriminatorKey: "type",
   minimize: false,
+  strict: true,
+  //strictQuery: false,
   toJSON: {
     getters: true,
   },
@@ -301,5 +303,62 @@ export class Dataset extends Ownable {
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
+/* export const DatasetSchema = new mongoose.Schema(
+  {
+    pid: {
+      type: String,
+      unique: true,
+      required: true,
+      default: function genUUID(): string {
+        return process.env.PID_PREFIX + uuidv4();
+      },
+    },
+    _id: String,
+    owner: { type: String, required: true, index: true },
+    ownerEmail: String,
+    orcidOfOwner: String,
+    contactEmail: { type: String, required: true, index: true },
+    sourceFolder: { type: String, required: true, index: true },
+    sourceFolderHost: { type: String, index: true },
+    size: { type: Number, index: true },
+    packedSize: { type: Number, required: false },
+    numberOfFiles: Number,
+    numberOfFilesArchived: { type: Number, required: false },
+    creationTime: { type: Date, required: true, index: true },
+    type: {
+      type: String,
+      required: true,
+      enum: [DatasetType.Raw, DatasetType.Derived],
+      index: true,
+    },
+    validationStatus: String,
+    keywords: [String],
+    description: String,
+    datasetName: String,
+    classification: String,
+    license: String,
+    version: String,
+    isPublished: { type: Boolean, default: false },
+    history: [Object],
+    datasetlifecycle: LifecycleSchema,
+    instrumentId: { type: String, ref: "Instrument", required: false },
+    techniques: [TechniqueSchema],
+    relationships: [RelationshipSchema],
+    sharedWith: [String],
+    attachments: [AttachmentSchema],
+    origdatablocks: [OrigDatablockSchema],
+    datablocks: [DatablockSchema],
+  },
+  {
+    collection: "Dataset",
+    discriminatorKey: "type",
+    minimize: false,
+    strict: false,
+    //strictQuery: false,
+    toJSON: {
+      getters: true,
+    },
+  },
+); */
 
 DatasetSchema.index({ "$**": "text" });
