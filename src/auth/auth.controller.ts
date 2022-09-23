@@ -43,7 +43,9 @@ export class AuthController {
   @AllowAny()
   @UseGuards(OidcAuthGuard)
   @Get("/oidc")
-  async oidcLogin() {}
+  async oidcLogin() {
+    // this function is invoked when the oidc is set as an auth method. It's behaviour comes from the oidc strategy
+  }
 
   @AllowAny()
   @UseGuards(OidcAuthGuard)
