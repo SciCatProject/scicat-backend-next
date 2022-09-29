@@ -11,6 +11,7 @@ import {
   IsBoolean,
   ValidateNested,
 } from "class-validator";
+import { Lifecycle } from "../schemas/lifecycle.schema";
 
 export class CreateDatasetDto extends OwnableDto {
   @IsOptional()
@@ -44,6 +45,7 @@ export class CreateDatasetDto extends OwnableDto {
   @IsInt()
   readonly packedSize: number;
 
+  @IsOptional()
   @IsInt()
   readonly numberOfFiles: number;
 
@@ -71,6 +73,7 @@ export class CreateDatasetDto extends OwnableDto {
   @IsString()
   readonly description: string;
 
+  @IsOptional()
   @IsString()
   readonly datasetName: string;
 
@@ -102,4 +105,7 @@ export class CreateDatasetDto extends OwnableDto {
   @IsOptional()
   @ValidateNested()
   readonly relationships: Relationship[];
+
+  @IsOptional()
+  readonly datasetlifecycle: Lifecycle;
 }

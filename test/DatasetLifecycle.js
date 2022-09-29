@@ -132,7 +132,7 @@ describe("Test facet and filter queries", () => {
 
   it("adds another new raw dataset", async () => {
     // modify owner
-    testraw.ownerGroup = "p12345";
+    testRaw.ownerGroup = "p12345";
     return request(app)
       .post("/api/v3/Datasets")
       .send(testRaw)
@@ -164,7 +164,10 @@ describe("Test facet and filter queries", () => {
     };
 
     return request(app)
-      .get("/api/v3/Datasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)))
+      .get(
+        "/api/v3/Datasets/fullquery?fields=" +
+          encodeURIComponent(JSON.stringify(fields)),
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -174,26 +177,6 @@ describe("Test facet and filter queries", () => {
         res.body[0]["datasetlifecycle"].should.have
           .property("archiveStatusMessage")
           .and.equal("datasetCreated");
-      });
-  });
-
-  it("Should return datasets with ordered results", async () => {
-    var fields = {
-      ownerGroup: ["p12345", "p10029"],
-    };
-    var limits = {
-      order: "creationTime:desc",
-      skip: 0,
-    };
-
-    return request(app)
-      .get("/api/v3/RawDatasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.be.instanceof(Array);
       });
   });
 
@@ -207,7 +190,12 @@ describe("Test facet and filter queries", () => {
     };
 
     return request(app)
-      .get("/api/v3/Datasets/fullquery?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
+      .get(
+        "/api/v3/Datasets/fullquery?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -235,7 +223,12 @@ describe("Test facet and filter queries", () => {
       "keywords",
     ];
     return request(app)
-      .get("/api/v3/Datasets/fullfacet?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&facets=" + encodeURIComponent(JSON.stringify(facets)))
+      .get(
+        "/api/v3/Datasets/fullfacet?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&facets=" +
+          encodeURIComponent(JSON.stringify(facets)),
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -245,14 +238,14 @@ describe("Test facet and filter queries", () => {
   // Note: make the tests with PUT instead of patch as long as replaceOnPut false
   it("Should update archive status message from archiveManager account", async () => {
     return request(app)
-      .put("/api/v3/Datasets/" + pid)
+      .put("/api/v3/Datasets/" + pidRaw1)
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "dataArchivedOnTape",
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -262,25 +255,33 @@ describe("Test facet and filter queries", () => {
       });
   });
 
+  // PUT /datasets without specifying the id does not exist anymore
   it("Should update the datasetLifecycle information for multiple datasets", async () => {
     var filter = {
-      pid: {
-        inq: [pidRaw1, pidRaw2],
-      },
+      pid: pidRaw1,
     };
     return request(app)
-      .put("/api/v3/Datasets/?where=" + JSON.stringify(filter))
+      .put("/api/v3/Datasets/" + pidRaw1 + "?where=" + JSON.stringify(filter))
       .send({
         datasetlifecycle: {
           archiveStatusMessage: "justAnotherTestMessage",
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("count").and.equal(2);
+        res.body.should.have.nested
+          .property(
+            "history[0].datasetlifecycle.previousValue.archiveStatusMessage",
+          )
+          .and.equal("dataArchivedOnTape");
+        res.body.should.have.nested
+          .property(
+            "history[0].datasetlifecycle.currentValue.archiveStatusMessage",
+          )
+          .and.equal("justAnotherTestMessage");
       });
   });
 
@@ -294,30 +295,9 @@ describe("Test facet and filter queries", () => {
       .then((res) => {
         res.body.should.have.nested
           .property(
-            "history[1].datasetlifecycle.previousValue.archiveStatusMessage",
-          )
-          .and.equal("dataArchivedOnTape");
-        res.body.should.have.nested
-          .property(
-            "history[1].datasetlifecycle.currentValue.archiveStatusMessage",
-          )
-          .and.equal("justAnotherTestMessage");
-      });
-  });
-
-  it("The history status should now include the last change for second raw dataset", async () => {
-    return request(app)
-      .get("/api/v3/Datasets/" + pidRaw2)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.nested
-          .property(
             "history[0].datasetlifecycle.previousValue.archiveStatusMessage",
           )
-          .and.equal("datasetCreated");
+          .and.equal("dataArchivedOnTape");
         res.body.should.have.nested
           .property(
             "history[0].datasetlifecycle.currentValue.archiveStatusMessage",
@@ -326,34 +306,36 @@ describe("Test facet and filter queries", () => {
       });
   });
 
-  it("Should update the datasetLifecycle information directly via embedded model API", async () => {
-    return request(app)
-      .put("/api/v3/Datasets/" + pidRaw1 + "/datasetLifecycle")
-      .send({
-        archiveStatusMessage: "Testing embedded case",
-      })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have
-          .property("archiveStatusMessage")
-          .and.equal("Testing embedded case");
-      });
-  });
+  // endpoint doesn't exist anymore
+  // it("Should update the datasetLifecycle information directly via embedded model API", async () => {
+  //   return request(app)
+  //     .put("/api/v3/Datasets/" + pidRaw1 + "/datasetLifecycle")
+  //     .send({
+  //       archiveStatusMessage: "Testing embedded case",
+  //     })
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .expect(200)
+  //     .expect("Content-Type", /json/)
+  //     .then((res) => {
+  //       res.body.should.have
+  //         .property("archiveStatusMessage")
+  //         .and.equal("Testing embedded case");
+  //     });
+  // });
 
-  it("Should reset the embedded DatasetLifecycle status and delete Datablocks", async () => {
-    return request(app)
-      .put("/api/v3/Datasets/resetArchiveStatus")
-      .send({
-        datasetId: pidRaw1,
-      })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
-      .expect("Content-Type", /json/);
-  });
+  // endpoint doesn't exist anymore
+  // it("Should reset the embedded DatasetLifecycle status and delete Datablocks", async () => {
+  //   return request(app)
+  //     .put("/api/v3/Datasets/resetArchiveStatus")
+  //     .send({
+  //       datasetId: pidRaw1,
+  //     })
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .expect(200)
+  //     .expect("Content-Type", /json/);
+  // });
 
   it("should delete the newly created dataset", async () => {
     return request(app)

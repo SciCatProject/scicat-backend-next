@@ -16,6 +16,7 @@ import {
 } from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
+import { History, HistorySchema } from "./history.schema";
 import { Lifecycle, LifecycleSchema } from "./lifecycle.schema";
 import { Relationship, RelationshipSchema } from "./relationship.schema";
 import { Technique, TechniqueSchema } from "./technique.schema";
@@ -218,18 +219,19 @@ export class Dataset extends Ownable {
   isPublished: boolean;
 
   @ApiProperty({
-    type: [Object],
+    type: History,
     description: "List of objects containing old value and new value",
   })
-  @Prop([Object])
-  history: Record<string, unknown>[];
+  @Prop([HistorySchema])
+  history: History[];
 
   @ApiProperty({
     type: Lifecycle,
+    required: false,
     description:
       "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
   })
-  @Prop({ type: LifecycleSchema })
+  @Prop({ type: LifecycleSchema, default: {}, required: false })
   datasetlifecycle: Lifecycle;
   /*
   @ApiProperty({ type: Date, description: "Date when dataset was created." })

@@ -59,6 +59,7 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
 import { validate, validateOrReject } from "class-validator";
+import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -409,6 +410,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
     new UTCTimeInterceptor<Dataset>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+    HistoryInterceptor,
   )
   @Put("/:id")
   async findByIdReplaceOrCreate(
