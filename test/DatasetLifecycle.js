@@ -13,6 +13,7 @@ var accessTokenArchiveManager = null;
 
 var pidRaw1 = null;
 var pidRaw2 = null;
+var policyIds = null;
 
 var testRaw = {
   principalInvestigator: "bertram.astor@grumble.com",
@@ -148,8 +149,6 @@ describe("Test facet and filter queries", () => {
         pidRaw2 = res.body["pid"];
       });
   });
-
-  // TODO add test for derived dataset queries as well
 
   it("Should return datasets with complex join query fulfilled", async () => {
     var fields = {
@@ -336,6 +335,29 @@ describe("Test facet and filter queries", () => {
   //     .expect(200)
   //     .expect("Content-Type", /json/);
   // });
+
+  it("check for the 2 default policies to have been created", async () => {
+    return request(app)
+      .get("/api/v3/Policies")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        policyIds = res.body.map((x) => x["_id"]);
+      });
+  });
+
+  it("should delete the two policies", async () => {
+    return policyIds.map((i) =>
+      request(app)
+        .delete("/api/v3/Policies/" + i)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .expect(200),
+    );
+  });
 
   it("should delete the newly created dataset", async () => {
     return request(app)

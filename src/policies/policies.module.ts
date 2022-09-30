@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { PoliciesService } from "./policies.service";
 import { PoliciesController } from "./policies.controller";
 import { ConfigModule } from "@nestjs/config";
@@ -14,7 +14,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
   imports: [
     AuthModule,
     ConfigModule,
-    DatasetsModule,
+    forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {
         name: Policy.name,
