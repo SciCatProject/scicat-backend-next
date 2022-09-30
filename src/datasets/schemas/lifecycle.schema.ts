@@ -51,7 +51,18 @@ export class Lifecycle {
     description:
       "Day when the dataset's future fate will be evaluated again, e.g. to decide if the dataset can be deleted from archive.",
   })
-  @Prop({ type: Date, default: Date.now(), required: false })
+  @Prop({
+    type: Date,
+    default: function retentionTime() {
+      const now = new Date();
+      return new Date(
+        now.getFullYear() + Number(process.env.POLICY_RETENTION_SHIFT || 0),
+        now.getMonth(),
+        now.getDay(),
+      );
+    },
+    required: false,
+  })
   archiveRetentionTime?: Date;
 
   @ApiProperty({
@@ -60,7 +71,18 @@ export class Lifecycle {
     description:
       "Day when dataset is supposed to become public according to data policy",
   })
-  @Prop({ type: Date, default: Date.now(), required: false })
+  @Prop({
+    type: Date,
+    default: function publishingDate() {
+      const now = new Date();
+      return new Date(
+        now.getFullYear() + Number(process.env.POLICY_PUBLICATION_SHIFT || 0),
+        now.getMonth(),
+        now.getDay(),
+      );
+    },
+    required: false,
+  })
   dateOfPublishing?: Date;
 
   @ApiProperty({

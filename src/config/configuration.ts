@@ -82,4 +82,8 @@ export default () => ({
     port: process.env.SMTP_PORT,
     secure: process.env.SMTP_SECURE,
   },
+  policyTimes: {
+    policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT,
+    policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT,
+  },
 });
