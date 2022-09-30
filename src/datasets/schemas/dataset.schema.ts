@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
-import mongoose, { Document } from "mongoose";
+import { Document } from "mongoose";
 import {
   Attachment,
   AttachmentSchema,
@@ -94,7 +94,15 @@ export class Dataset extends Ownable {
     description:
       "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed.",
   })
-  @Prop({ type: String, required: true, index: true })
+  @Prop({
+    type: String,
+    required: true,
+    index: true,
+    set: function stripSlash(v: string): string {
+      if (v === "/") return v;
+      return v.replace(/\/$/, "");
+    },
+  })
   sourceFolder: string;
 
   @ApiProperty({
@@ -186,7 +194,15 @@ export class Dataset extends Ownable {
     description:
       "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder",
   })
-  @Prop()
+  @Prop({
+    default: function datasetName() {
+      const sourceFolder = (this as DatasetDocument).sourceFolder;
+      if (!sourceFolder) return "";
+      const arr = sourceFolder.split("/");
+      if (arr.length == 1) return arr[0];
+      else return arr[arr.length - 2] + "/" + arr[arr.length - 1];
+    },
+  })
   datasetName: string;
 
   @ApiProperty({
