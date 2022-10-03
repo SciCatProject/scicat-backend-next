@@ -1,6 +1,6 @@
 import { PartialType } from "@nestjs/swagger";
-import { CreateOrigdatablockDto } from "./create-origdatablock.dto";
+import { CreateOrigDatablockDto } from "./create-origdatablock.dto";
 
-export class UpdateOrigdatablockDto extends PartialType(
-  CreateOrigdatablockDto,
+export class UpdateOrigDatablockDto extends PartialType(
+  CreateOrigDatablockDto,
 ) {}

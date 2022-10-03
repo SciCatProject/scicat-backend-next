@@ -51,3 +51,19 @@ export interface IFacets<T> {
   fields?: T;
   facets?: string[];
 }
+
+export interface IDatafileFilter {
+  path?: string;
+  size?: {
+    min?: number;
+    max?: number;
+  };
+  time?: {
+    min?: string;
+    max?: string;
+  };
+  chk?: string;
+  uid?: string;
+  gid?: string;
+  perm?: string;
+}

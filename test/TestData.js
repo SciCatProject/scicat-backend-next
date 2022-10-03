@@ -202,6 +202,108 @@ const TestData = {
     ownerGroup: "ess",
     accessGroups: ["data scientist", "instrument scientist"],
   },
+
+  DataBlockCorrect = {
+    archiveId:
+      "1oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
+    size: 41780190,
+    packedSize: 20890095,
+    chkAlg: "sha1",
+    version: "0.6.0",
+    dataFileList: [
+      {
+        path: "N1039__B410489.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:30.000Z",
+        chk: "652810fb470a0c90456912c0a3351e2f6d7325e4",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039__B410613.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:35.000Z",
+        chk: "9fc6640a4cdb97c8389aa9613f4aeabe8ef681ef",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039__B410729.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:41.000Z",
+        chk: "908fe1a942aabf63d5dfa3d0a5088eeaf02c79cf",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039__B410200.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:18.000Z",
+        chk: "ee86aafec6258ff95961563435338e79a1ccb04d",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039__B410377.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:25.000Z",
+        chk: "44cae8b9cb4bc732f04225371203af884af621d7",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
+  };
+
+  OrigDataBlockCorrect = {
+    size: 41780189,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-2.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:35.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-3.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:41.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410200.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:18.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410377.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:25.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
+  }, 
 };
 
 module.exports = { TestData };

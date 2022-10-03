@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Ownable } from "src/common/schemas/ownable.schema";
 import { DataFile } from "../../common/schemas/datafile.schema";
 
-export class CreateOrigdatablockDto extends Ownable {
+export class CreateOrigDatablockDto extends Ownable {
   @ApiProperty()
   readonly datasetId: string;
 

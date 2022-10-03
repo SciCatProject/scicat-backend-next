@@ -9,7 +9,7 @@ import {
 } from "./schemas/origdatablock.schema";
 
 @Injectable()
-export class OrigdatablocksService {
+export class OrigDatablocksService {
   constructor(
     @InjectModel(OrigDatablock.name)
     private origDatablockModel: Model<OrigDatablockDocument>,
