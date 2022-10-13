@@ -8,8 +8,9 @@ import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LdapStrategy } from "./strategies/ldap.strategy";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
 import { UsersService } from "src/users/users.service";
+import { OidcConfig } from "src/config/configuration";
+import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
 
 const OidcStrategyFactory = {
   provide: "OidcStrategy",
@@ -18,8 +19,9 @@ const OidcStrategyFactory = {
     configService: ConfigService,
     userService: UsersService,
   ) => {
-    if (!configService.get<Record<string, unknown>>("oidc")?.issuer)
+    if (!configService.get<OidcConfig>("oidc")?.issuer) {
       return null;
+    }
     const clientBuilder = new BuildOpenIdClient(configService);
     const client = await clientBuilder.build();
     const strategy = new OidcStrategy(
