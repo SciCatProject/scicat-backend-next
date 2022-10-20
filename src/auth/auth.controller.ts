@@ -10,6 +10,7 @@ import { User } from "src/users/schemas/user.schema";
 import { OidcAuthGuard } from "./guards/oidc.guard";
 import { Response } from "express";
 import { ConfigService } from "@nestjs/config";
+import { OidcConfig } from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -53,8 +54,7 @@ export class AuthController {
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
     const url = new URL(
-      this.configService.get<Record<string, unknown>>("oidc")
-        ?.successURL as string,
+      this.configService.get<OidcConfig>("oidc")?.successURL || "",
     );
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);

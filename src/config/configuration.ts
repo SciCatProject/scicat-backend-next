@@ -1,4 +1,4 @@
-export default () => ({
+const configuration = () => ({
   doiPrefix: process.env.DOI_PREFIX,
   expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
   functionalAccounts: [
@@ -48,7 +48,6 @@ export default () => ({
   },
   oidc: {
     issuer: process.env.OIDC_ISSUER,
-    authorizationURL: process.env.OIDC_AUTHORIZATION_URL,
     clientID: process.env.OIDC_CLIENT_ID,
     clientSecret: process.env.OIDC_CLIENT_SECRET,
     callbackURL: process.env.OIDC_CALLBACK_URL,
@@ -93,3 +92,7 @@ export default () => ({
     secure: process.env.SMTP_SECURE,
   },
 });
+
+export type OidcConfig = ReturnType<typeof configuration>["oidc"];
+
+export default configuration;

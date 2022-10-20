@@ -16,11 +16,12 @@ import {
 import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
+import { OidcConfig } from "src/config/configuration";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
   async build() {
-    const oidcConfig = this.configService.get<Record<string, unknown>>("oidc");
+    const oidcConfig = this.configService.get<OidcConfig>("oidc");
     const trustIssuer = await Issuer.discover(
       `${oidcConfig?.issuer}/.well-known/openid-configuration`,
     );
@@ -43,17 +44,17 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-    const oidcConfig = configService.get<Record<string, unknown>>("oidc");
+    const oidcConfig = configService.get<OidcConfig>("oidc");
     super({
       client: client,
       params: {
         redirect_uri: oidcConfig?.callbackURL,
         scope: oidcConfig?.scope,
-        authorization_endpoint: oidcConfig?.authorizationURL,
       },
       passReqToCallback: false,
       usePKCE: false,
     });
+
     this.client = client;
   }
 
@@ -103,38 +104,49 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     return user;
   }
 
+  getUserPhoto(userinfo: UserinfoResponse) {
+    return userinfo.thumbnailPhoto
+      ? "data:image/jpeg;base64," +
+          Buffer.from(userinfo.thumbnailPhoto as string, "binary").toString(
+            "base64",
+          )
+      : "no photo";
+  }
+
+  getAccessGroups(userinfo: UserinfoResponse): string[] {
+    const defaultAccessGroups: string[] = [];
+    const configs = this.configService.get<OidcConfig>("oidc");
+    const userInfoResponseObjectAccessGroupKey = configs?.accessGroups;
+
+    if (!userInfoResponseObjectAccessGroupKey) {
+      return defaultAccessGroups;
+    }
+    if (!Array.isArray(userinfo[userInfoResponseObjectAccessGroupKey])) {
+      return defaultAccessGroups;
+    }
+
+    return userinfo[userInfoResponseObjectAccessGroupKey] as string[];
+  }
+
   parseUserInfo(userinfo: UserinfoResponse) {
     type OidcProfile = Profile & UserProfile;
     const profile = {} as OidcProfile;
-    profile.id = userinfo.sub;
+
     // Prior to OpenID Connect Basic Client Profile 1.0 - draft 22, the "sub"
     // claim was named "user_id".  Many providers still use the old name, so
     // fallback to that.
-    if (!profile.id) {
-      profile.id = userinfo.user_id as string;
+    const userId = userinfo.sub || (userinfo.user_id as string);
+    if (!userId) {
+      throw new Error("Could not find sub or user_id in userinfo response");
     }
 
-    profile.thumbnailPhoto = userinfo.thumbnailPhoto
-      ? "data:image/jpeg;base64," +
-        Buffer.from(userinfo.thumbnailPhoto as string, "binary").toString(
-          "base64",
-        )
-      : "error: no photo found";
-
-    if (userinfo.name) {
-      profile.displayName = userinfo.name;
-    }
-    if (userinfo.preferred_username) {
-      profile.username = userinfo.preferred_username;
-    }
-    if (userinfo.email) {
-      profile.emails = [{ value: userinfo.email }];
-      profile.email = userinfo.email;
-    }
-
-    profile.accessGroups = userinfo[
-      this.configService.get("oidc").accessGroups
-    ] as string[];
+    profile.id = userId;
+    profile.username = userinfo.preferred_username ?? userinfo.name ?? "";
+    profile.displayName = userinfo.name ?? "";
+    profile.emails = userinfo.email ? [{ value: userinfo.email }] : [];
+    profile.email = userinfo.email ?? "";
+    profile.thumbnailPhoto = this.getUserPhoto(userinfo);
+    profile.accessGroups = this.getAccessGroups(userinfo);
 
     return profile;
   }
