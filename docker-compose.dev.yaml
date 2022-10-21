@@ -27,7 +27,6 @@ services:
       DOI_PREFIX: DOI.SAMPLE.PREFIX
       METADATA_KEYS_RETURN_LIMIT: 100
       METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-    command: /bin/sh -c "while true; do sleep 600; done"
 
 volumes:
   mongodb_data:
