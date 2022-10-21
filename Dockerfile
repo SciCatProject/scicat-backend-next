@@ -1,31 +1,48 @@
-FROM --platform=amd64 node:16-alpine AS dev
+FROM node:16-alpine AS builder
+
+# Prepare app directory
+WORKDIR /usr/src/app
+COPY package*.json ./
+
+# Install dependencies
+RUN apk add --no-cache python3 make g++
+RUN npm install glob rimraf
+RUN npm install
+
+COPY . .
+
+# Build app
+RUN npm run build
+
+
+FROM node:16-alpine AS cleaner
+
+# Prepare app directory
+WORKDIR /usr/src/app
+
+# Copy files from builder image
+COPY --from=builder /usr/src/app .
+
+# Remove development dependencies
+RUN npm prune --production
+
+
+FROM --platform=amd64 node:16-alpine as dev
 
 # Prepare app directory
 WORKDIR /home/node/app
-COPY . .
 
 # Set up local user
 RUN chown -R node:node /home/node/app
 USER node
 
-# Install dependencies
-RUN npm install glob rimraf
-RUN npm install
+# Copy files from builder image
+COPY --from=builder --chown=node:node /usr/src/app .
 
-FROM node:16-alpine AS builder 
+EXPOSE 3000
 
-# Prepare app directory
-WORKDIR /usr/src/app
+CMD ["npm", "run", "start:dev"]
 
-# Set up local user
-# Copy files from dev image
-COPY --from=dev /home/node/app .
-
-# Build app
-RUN npm run build
-
-# Remove development dependencies
-RUN npm prune --production
 
 FROM node:16-alpine
 
@@ -36,9 +53,9 @@ WORKDIR /home/node/app
 RUN chown -R node:node /home/node/app
 USER node
 
-# Copy files from builder image
-COPY --from=builder --chown=node:node /usr/src/app/dist ./dist
-COPY --from=builder --chown=node:node /usr/src/app/node_modules ./node_modules
+# Copy files from cleaner image
+COPY --from=cleaner --chown=node:node /usr/src/app/dist ./dist
+COPY --from=cleaner --chown=node:node /usr/src/app/node_modules ./node_modules
 
 EXPOSE 3000
 
