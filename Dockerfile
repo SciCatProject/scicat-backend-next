@@ -32,12 +32,8 @@ FROM node:16-alpine as dev
 # Prepare app directory
 WORKDIR /home/node/app
 
-# Set up local user
-RUN chown -R node:node /home/node/app
-USER node
-
 # Copy files from builder image
-COPY --from=builder --chown=node:node /usr/src/app .
+COPY --from=builder /usr/src/app .
 
 EXPOSE 3000
 
