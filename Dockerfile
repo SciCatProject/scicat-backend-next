@@ -27,7 +27,7 @@ COPY --from=builder /usr/src/app .
 RUN npm prune --production
 
 
-FROM --platform=amd64 node:16-alpine as dev
+FROM node:16-alpine as dev
 
 # Prepare app directory
 WORKDIR /home/node/app
