@@ -24,9 +24,7 @@
 2. docker-compose -f docker-compose.dev.yaml up -d
 3. *Optional* Mount *functionalAccounts.json* file to a volume in the container. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
 4. *Optional* change the container env variables
-5. Attach to the container
-6. `npm run start:dev`
-7. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
+5. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
