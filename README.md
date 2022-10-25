@@ -18,6 +18,14 @@
 6. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
 7. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
+## Develop in a container using the docker-compose.dev file
+
+1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
+2. docker-compose -f docker-compose.dev.yaml up -d
+3. *Optional* Mount *functionalAccounts.json* file to a volume in the container. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
+4. *Optional* change the container env variables
+5. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
+
 ## Test the app
 
 1. **Running the unit tests:** `npm run test`
