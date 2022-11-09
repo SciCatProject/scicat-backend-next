@@ -16,7 +16,7 @@ var pid = null;
 
 const app = "http://localhost:3000";
 
-describe("Derived Datasets", () => {
+describe("DerivedDataset: Derived Datasets", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

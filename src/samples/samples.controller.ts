@@ -229,8 +229,8 @@ export class SamplesController {
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
   ): Promise<Attachment | null> {
-    console.log("SampleId: ", sampleId);
-    console.log("AttachmentIs: ", attachmentId);
+    //console.log("SampleId: ", sampleId);
+    //console.log("AttachmentIs: ", attachmentId);
     return this.attachmentsService.findOne({
       id: attachmentId,
       sampleId: sampleId,

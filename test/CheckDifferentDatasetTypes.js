@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 
 const app = "http://localhost:3000";
 
-describe("Check different dataset types and their inheritance", () => {
+describe("CheckDifferentDatasetTypes: Check different dataset types and their inheritance", () => {
   let countDataset = 0;
   let countRawDataset = 0;
   let countDerivedDataset = 0;

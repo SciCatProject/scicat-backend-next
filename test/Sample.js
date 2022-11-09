@@ -19,7 +19,7 @@ let accessToken = null,
 
 const app = "http://localhost:3000";
 
-describe("Simple Sample", () => {
+describe("Sample: Simple Sample", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

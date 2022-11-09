@@ -25,6 +25,9 @@ import {
 } from "./schemas/origdatablock.schema";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { plainToInstance } from "class-transformer";
+import { validate, ValidationError } from "class-validator";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -43,6 +46,27 @@ export class OrigDatablocksController {
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
     return this.origDatablocksService.create(createOrigDatablockDto);
+  }
+
+  
+  @AllowAny()
+  @HttpCode(HttpStatus.OK)
+  @Post("/isValid")
+  async isValid(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body() createOrigDatablock: unknown,
+  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoTestOrigDatablock = plainToInstance(
+      CreateOrigDatablockDto,
+      createOrigDatablock,
+    );
+    const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
+
+    const valid =
+      errorsTestOrigDatablock.length == 0;
+
+    return { valid: valid, errors: errorsTestOrigDatablock };
   }
 
   // GET /origdatablock
@@ -68,9 +92,14 @@ export class OrigDatablocksController {
     ability.can(Action.Read, OrigDatablock),
   )
   @Get("/fullquery")
+  @ApiQuery({
+    name: "filters",
+    description: "Database query and filters to apply when retrieve all origdatablocks",
+    required: false,
+  })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<OrigDatablock[]> {
+  ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),

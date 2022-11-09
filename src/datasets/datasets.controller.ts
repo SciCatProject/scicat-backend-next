@@ -40,9 +40,9 @@ import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { CreateOrigdatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
-import { OrigdatablocksService } from "src/origdatablocks/origdatablocks.service";
-import { UpdateOrigdatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
+import { CreateOrigDatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { UpdateOrigDatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
 import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
@@ -58,8 +58,9 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 //import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import { validate, validateOrReject } from "class-validator";
+import { validate, validateOrReject, ValidationError } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
+import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -74,7 +75,7 @@ export class DatasetsController {
     private attachmentsService: AttachmentsService,
     private datablocksService: DatablocksService,
     private datasetsService: DatasetsService,
-    private origDatablocksService: OrigdatablocksService,
+    private origDatablocksService: OrigDatablocksService,
   ) {}
 
   // POST /datasets
@@ -530,9 +531,10 @@ export class DatasetsController {
 
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, OrigDatablock),
-  )
+  @CheckPolicies((ability: AppAbility) => {
+    //console.log('dataset/<id>/origdatablock', ability.can(Action.Create, OrigDatablock));
+    return ability.can(Action.Create, OrigDatablock);
+})
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",
@@ -541,22 +543,24 @@ export class DatasetsController {
   @Post("/:id/origdatablocks")
   async createOrigDatablock(
     @Param("id") id: string,
-    @Body() createOrigdatablockDto: CreateOrigdatablockDto,
+    @Body() createDatasetOrigDatablockDto: unknown,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
-      const createOrigDatablock: CreateOrigdatablockDto = {
-        ...createOrigdatablockDto,
+      const createOrigDatablock: CreateOrigDatablockDto = {
+        ...(createDatasetOrigDatablockDto as CreateDatasetOrigDatablockDto),
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
+        accessGroups: dataset.accessGroups,
+        instrumentGroup: dataset.instrumentGroup
       };
       const datablock = await this.origDatablocksService.create(
         createOrigDatablock,
       );
 
       const updateDatasetDto: UpdateDatasetDto = {
-        size: datablock.size,
-        numberOfFiles: datablock.dataFileList.length,
+        size: dataset.size + datablock.size,
+        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       };
       await this.datasetsService.findByIdAndUpdate(
         dataset.pid,
@@ -565,6 +569,26 @@ export class DatasetsController {
       return datablock;
     }
     return null;
+  }
+
+  // POST /datasets/:id/origdatablocks/isValid
+  @AllowAny()
+  @HttpCode(HttpStatus.OK)
+  @Post("/:id/origdatablocks/isValid")
+  async origDatablockIsValid(
+    @Body() createOrigDatablock: unknown,
+  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoTestOrigDatablock = plainToInstance(
+      CreateDatasetOrigDatablockDto,
+      createOrigDatablock,
+    );
+    const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
+
+    const valid =
+      errorsTestOrigDatablock.length == 0;
+
+    return { valid: valid, errors: errorsTestOrigDatablock };
   }
 
   // GET /datasets/:id/origdatablocks
@@ -593,7 +617,7 @@ export class DatasetsController {
   async findOneOrigDatablockAndUpdate(
     @Param("id") datasetId: string,
     @Param("fk") origDatablockId: string,
-    @Body() updateOrigdatablockDto: UpdateOrigdatablockDto,
+    @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     return this.origDatablocksService.update(
       { _id: origDatablockId, datasetId },

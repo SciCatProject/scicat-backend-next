@@ -108,6 +108,10 @@ export class CaslAbilityFactory {
       cannot(Action.Create, Dataset);
       cannot(Action.Update, Dataset);
       can(Action.Delete, Dataset);
+      cannot(Action.Manage, OrigDatablock);
+      cannot(Action.Create, OrigDatablock);
+      cannot(Action.Update, OrigDatablock);
+      can(Action.Delete, OrigDatablock);
     }
     if (user.currentGroups.includes(Role.GlobalAccess)) {
       can(Action.Read, "all");

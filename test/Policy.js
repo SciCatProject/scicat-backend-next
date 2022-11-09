@@ -27,7 +27,7 @@ var testdataset = {
 
 const app = "http://localhost:3000";
 
-describe("Simple Policy tests", () => {
+describe("Policy: Simple Policy tests", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

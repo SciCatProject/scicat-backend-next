@@ -25,7 +25,7 @@ let accessToken = null,
 
 const app = "http://localhost:3000";
 
-describe("Simple Proposal", () => {
+describe("Proposal: Simple Proposal", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

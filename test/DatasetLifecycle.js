@@ -88,7 +88,7 @@ var testRaw = {
 
 const app = "http://localhost:3000";
 
-describe("Test facet and filter queries", () => {
+describe("DatasetLifecycle: Test facet and filter queries", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

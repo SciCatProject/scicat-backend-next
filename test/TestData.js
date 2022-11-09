@@ -203,7 +203,7 @@ const TestData = {
     accessGroups: ["data scientist", "instrument scientist"],
   },
 
-  DataBlockCorrect = {
+  DataBlockCorrect : {
     archiveId:
       "1oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     size: 41780190,
@@ -257,9 +257,10 @@ const TestData = {
         perm: "-rw-rw-r--",
       },
     ],
-  };
+  },
 
-  OrigDataBlockCorrect = {
+  OrigDataBlockCorrect1 : {
+    datasetId: "datasetId",
     size: 41780189,
     dataFileList: [
       {
@@ -303,7 +304,70 @@ const TestData = {
         perm: "-rw-rw-r--",
       },
     ],
+    ownerGroup: "ess",
+    accessGroups: ["data scientist", "instrument scientist"]
   }, 
+
+  OrigDataBlockCorrect2 : {
+    datasetId: "datasetId",
+    size: 41780289,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-2.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:35.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-3.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:41.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410200.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:18.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "N1039-B410377.tif",
+        size: 8356038,
+        time: "2017-07-24T13:56:25.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+      {
+        path: "this_unique_file.txt",
+        size: 100,
+        time: "2017-07-24T13:56:25.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738+1",
+        perm: "-rw-rw-r--",
+      },
+    ],
+    ownerGroup: "ess",
+    accessGroups: ["data scientist", "instrument scientist"]
+  }, 
+
+  OrigDataBlockWrong : {
+    size: "This is wrong",
+  },
 };
 
 module.exports = { TestData };
