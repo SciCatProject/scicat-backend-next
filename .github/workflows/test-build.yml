@@ -37,7 +37,6 @@ jobs:
       - name: Checkout frontend repo
         uses: actions/checkout@v3
         with:
-          ref: test/fixing-and-improving-e2e-tests
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1

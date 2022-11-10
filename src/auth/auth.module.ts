@@ -8,6 +8,32 @@ import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LdapStrategy } from "./strategies/ldap.strategy";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { UsersService } from "src/users/users.service";
+import { OidcConfig } from "src/config/configuration";
+import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
+
+const OidcStrategyFactory = {
+  provide: "OidcStrategy",
+  useFactory: async (
+    authService: AuthService,
+    configService: ConfigService,
+    userService: UsersService,
+  ) => {
+    if (!configService.get<OidcConfig>("oidc")?.issuer) {
+      return null;
+    }
+    const clientBuilder = new BuildOpenIdClient(configService);
+    const client = await clientBuilder.build();
+    const strategy = new OidcStrategy(
+      authService,
+      client,
+      configService,
+      userService,
+    );
+    return strategy;
+  },
+  inject: [AuthService, ConfigService, UsersService],
+};
 
 @Module({
   imports: [
@@ -27,7 +53,13 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     }),
     UsersModule,
   ],
-  providers: [AuthService, JwtStrategy, LdapStrategy, LocalStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    LdapStrategy,
+    LocalStrategy,
+    OidcStrategyFactory,
+  ],
   controllers: [AuthController],
   exports: [AuthService, JwtModule, PassportModule],
 })
