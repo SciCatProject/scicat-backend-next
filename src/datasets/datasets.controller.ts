@@ -635,10 +635,28 @@ export class DatasetsController {
     @Param("id") datasetId: string,
     @Param("fk") origDatablockId: string,
   ): Promise<unknown> {
-    return this.origDatablocksService.remove({
-      _id: origDatablockId,
-      datasetId,
-    });
+    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    if (dataset) {
+      // remove origdatablock
+      const res = await this.origDatablocksService.remove({
+        _id: origDatablockId,
+        datasetId,
+      });
+      // all the remaing orig datablocks for this dataset
+      const odb = await this.origDatablocksService.findAll({ datasetId: datasetId });
+      // update dataset size and files number
+      const updateDatasetDto: UpdateDatasetDto = {
+        size: odb.reduce((a , b) => a + b.size, 0),
+        numberOfFiles: odb.reduce((a,b) => a + b.dataFileList.length, 0),
+      };
+      await this.datasetsService.findByIdAndUpdate(
+        dataset.pid,
+        updateDatasetDto,
+      );
+      return res;
+    }
+    return null;
+
   }
 
   // POST /datasets/:id/datablocks
