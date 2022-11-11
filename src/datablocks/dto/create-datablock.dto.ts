@@ -1,32 +1,25 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsInt, IsOptional, IsString, ValidateNested } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 import { DataFile } from "src/common/schemas/datafile.schema";
 
 export class CreateDatablockDto extends OwnableDto {
-  @ApiProperty()
-  readonly ownerGroup: string;
-
-  @ApiProperty({ type: [String] })
-  readonly accessGroups: string[];
-
-  @ApiProperty()
+  @IsString()
   readonly datasetId: string;
 
-  @ApiProperty()
+  @IsString()
   readonly archiveId: string;
 
-  @ApiProperty()
+  @IsInt()
   readonly size: number;
 
-  @ApiProperty()
+  @IsInt()
   readonly packedSize: number;
 
-  @ApiProperty()
+  @IsOptional()
+  @IsString()
   readonly chkAlg: string;
 
-  @ApiProperty()
-  readonly version: string;
-
-  @ApiProperty({ type: [DataFile] })
+  @ValidateNested()
   readonly dataFileList: DataFile[];
 }

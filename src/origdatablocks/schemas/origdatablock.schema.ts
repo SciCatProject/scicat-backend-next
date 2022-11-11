@@ -54,7 +54,7 @@ export class OrigDatablock extends Ownable {
     type: Number,
     required: false,
   })
-  chkAlgorithm: string;
+  chkAlg: string;
 
   @ApiProperty({
     description:
