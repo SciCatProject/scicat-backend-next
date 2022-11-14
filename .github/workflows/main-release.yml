@@ -1,0 +1,35 @@
+name: Main Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  test:
+    name: Publish image to ghcr on release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+          #      - name: test
+          #        run: |
+          #          cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
+          #          docker-compose down --remove-orphans
+          #          docker-compose pull
+          #          docker-compose up --build --exit-code-from scicat-backend
+          #          docker-compose down
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/scicatproject/backend-next:${{ github.event.release.tag_name }},ghcr.io/scicatproject/backend-next:latest-release,ghcr.io/scicatproject/backend-next:alfa-stable

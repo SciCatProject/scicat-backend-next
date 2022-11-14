@@ -1,14 +1,25 @@
-FROM node:16-alpine AS builder
+FROM --platform=amd64 node:16-alpine AS dev
 
 # Prepare app directory
-WORKDIR /usr/src/app
-COPY package*.json ./
+WORKDIR /home/node/app
+COPY . .
+
+# Set up local user
+RUN chown -R node:node /home/node/app
+USER node
 
 # Install dependencies
 RUN npm install glob rimraf
 RUN npm install
 
-COPY . .
+FROM node:16-alpine AS builder 
+
+# Prepare app directory
+WORKDIR /usr/src/app
+
+# Set up local user
+# Copy files from dev image
+COPY --from=dev /home/node/app .
 
 # Build app
 RUN npm run build
