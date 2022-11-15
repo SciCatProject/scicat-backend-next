@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  UseInterceptors,
   Query,
   HttpCode,
   HttpStatus,
@@ -24,6 +25,7 @@ import { Action } from "src/casl/action.enum";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
+import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("policies")
@@ -73,6 +75,7 @@ export class PoliciesController {
   })
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
+  @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
   async updateWhere(

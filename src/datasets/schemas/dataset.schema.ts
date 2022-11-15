@@ -16,15 +16,19 @@ import {
 } from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
+import { History, HistorySchema } from "./history.schema";
 import { Lifecycle, LifecycleSchema } from "./lifecycle.schema";
+import { Relationship, RelationshipSchema } from "./relationship.schema";
 import { Technique, TechniqueSchema } from "./technique.schema";
 
 export type DatasetDocument = Dataset & Document;
 
 @Schema({
   collection: "Dataset",
-  discriminatorKey: "type",
+  //discriminatorKey: "type",
   minimize: false,
+  //strict: true,
+  //strictQuery: false,
   toJSON: {
     getters: true,
   },
@@ -90,7 +94,15 @@ export class Dataset extends Ownable {
     description:
       "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed.",
   })
-  @Prop({ type: String, required: true, index: true })
+  @Prop({
+    type: String,
+    required: true,
+    index: true,
+    set: function stripSlash(v: string): string {
+      if (v === "/") return v;
+      return v.replace(/\/$/, "");
+    },
+  })
   sourceFolder: string;
 
   @ApiProperty({
@@ -182,7 +194,15 @@ export class Dataset extends Ownable {
     description:
       "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder",
   })
-  @Prop()
+  @Prop({
+    default: function datasetName() {
+      const sourceFolder = (this as DatasetDocument).sourceFolder;
+      if (!sourceFolder) return "";
+      const arr = sourceFolder.split("/");
+      if (arr.length == 1) return arr[0];
+      else return arr[arr.length - 2] + "/" + arr[arr.length - 1];
+    },
+  })
   datasetName: string;
 
   @ApiProperty({
@@ -215,20 +235,21 @@ export class Dataset extends Ownable {
   isPublished: boolean;
 
   @ApiProperty({
-    type: [Object],
+    type: History,
     description: "List of objects containing old value and new value",
   })
-  @Prop([Object])
-  history: Record<string, unknown>[];
+  @Prop([HistorySchema])
+  history: History[];
 
   @ApiProperty({
     type: Lifecycle,
+    required: false,
     description:
       "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
   })
-  @Prop({ type: LifecycleSchema })
+  @Prop({ type: LifecycleSchema, default: {}, required: false })
   datasetlifecycle: Lifecycle;
-
+  /*
   @ApiProperty({ type: Date, description: "Date when dataset was created." })
   @Prop()
   createdAt: Date;
@@ -239,15 +260,15 @@ export class Dataset extends Ownable {
   })
   @Prop()
   updatedAt: Date;
-
-  @ApiProperty({
+  */
+  /* @ApiProperty({
     type: String,
     required: false,
     description: "ID of instrument where the data was created",
   })
   @Prop({ type: String, ref: "Instrument", required: false })
   instrumentId: string;
-
+ */
   @ApiProperty({
     type: "array",
     items: { $ref: getSchemaPath(Technique) },
@@ -255,6 +276,14 @@ export class Dataset extends Ownable {
   })
   @Prop([TechniqueSchema])
   techniques: Technique[];
+
+  @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(Relationship) },
+    description: "Stores the relationships with other datasets",
+  })
+  @Prop([RelationshipSchema])
+  relationships: Relationship[];
 
   @ApiProperty({
     type: [String],
@@ -289,8 +318,179 @@ export class Dataset extends Ownable {
   })
   @Prop([DatablockSchema])
   datablocks: Datablock[];
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the scientific metadata",
+  })
+  @Prop({ type: Object, required: false, default: {} })
+  scientificMetadata!: Record<string, unknown>;
+
+  /*
+   * fields related to Raw Datasets
+   */
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Email of principal investigator",
+  })
+  @Prop({ type: String, required: false })
+  principalInvestigator!: string;
+
+  @ApiProperty({
+    type: Date,
+    required: false,
+    description:
+      "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server",
+  })
+  @Prop({ type: Date, required: false })
+  endTime!: Date;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name",
+  })
+  @Prop({ type: String, required: false, index: true })
+  creationLocation!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Defines format of subsequent scientific meta data, e.g Nexus Version x.y",
+  })
+  @Prop({ type: String, required: false })
+  dataFormat!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The ID of the proposal to which the dataset belongs.",
+  })
+  @Prop({ type: String, ref: "Proposal", required: false })
+  proposalId!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of the sample used when collecting the data.",
+  })
+  @Prop({ type: String, ref: "Sample", required: false })
+  sampleId!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of instrument where the data was created",
+  })
+  @Prop({ type: String, ref: "Instrument", required: false })
+  instrumentId!: string;
+
+  /*
+   * Derived Dataset
+   */
+  @ApiProperty({
+    type: String,
+    description:
+      "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons",
+  })
+  @Prop({ type: String, required: false, index: true })
+  investigator!: string;
+
+  @ApiProperty({
+    type: [String],
+    description:
+      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs",
+  })
+  @Prop({ type: [String], required: false })
+  inputDatasets!: string[];
+
+  @ApiProperty({
+    type: [String],
+    description:
+      "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data",
+  })
+  @Prop({ type: [String], required: false })
+  usedSoftware!: string[];
+
+  @ApiProperty({
+    type: Object,
+    description:
+      "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here",
+  })
+  @Prop({ type: Object, required: false })
+  jobParameters!: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    description:
+      "The output job logfile. Keep the size of this log data well below 15 MB ",
+  })
+  @Prop({ type: String, required: false })
+  jobLogData!: string;
 }
 
 export const DatasetSchema = SchemaFactory.createForClass(Dataset);
+/* export const DatasetSchema = new mongoose.Schema(
+  {
+    pid: {
+      type: String,
+      unique: true,
+      required: true,
+      default: function genUUID(): string {
+        return process.env.PID_PREFIX + uuidv4();
+      },
+    },
+    _id: String,
+    owner: { type: String, required: true, index: true },
+    ownerEmail: String,
+    orcidOfOwner: String,
+    contactEmail: { type: String, required: true, index: true },
+    sourceFolder: { type: String, required: true, index: true },
+    sourceFolderHost: { type: String, index: true },
+    size: { type: Number, index: true },
+    packedSize: { type: Number, required: false },
+    numberOfFiles: Number,
+    numberOfFilesArchived: { type: Number, required: false },
+    creationTime: { type: Date, required: true, index: true },
+    type: {
+      type: String,
+      required: true,
+      enum: [DatasetType.Raw, DatasetType.Derived],
+      index: true,
+    },
+    validationStatus: String,
+    keywords: [String],
+    description: String,
+    datasetName: String,
+    classification: String,
+    license: String,
+    version: String,
+    isPublished: { type: Boolean, default: false },
+    history: [Object],
+    datasetlifecycle: LifecycleSchema,
+    instrumentId: { type: String, ref: "Instrument", required: false },
+    techniques: [TechniqueSchema],
+    relationships: [RelationshipSchema],
+    sharedWith: [String],
+    attachments: [AttachmentSchema],
+    origdatablocks: [OrigDatablockSchema],
+    datablocks: [DatablockSchema],
+  },
+  {
+    collection: "Dataset",
+    discriminatorKey: "type",
+    minimize: false,
+    strict: false,
+    //strictQuery: false,
+    toJSON: {
+      getters: true,
+    },
+  },
+); */
 
 DatasetSchema.index({ "$**": "text" });

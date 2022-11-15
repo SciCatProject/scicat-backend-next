@@ -33,7 +33,7 @@ export class Lifecycle {
     description:
       "Flag which is true, if dataset can be published. Usually requires a longterm storage option on tape or similar.",
   })
-  @Prop({ default: true, required: false, index: true })
+  @Prop({ default: false, required: false, index: true })
   publishable?: boolean;
 
   @ApiProperty({
@@ -51,7 +51,18 @@ export class Lifecycle {
     description:
       "Day when the dataset's future fate will be evaluated again, e.g. to decide if the dataset can be deleted from archive.",
   })
-  @Prop({ type: Date, default: Date.now(), required: false })
+  @Prop({
+    type: Date,
+    default: function retentionTime() {
+      const now = new Date();
+      return new Date(
+        now.getFullYear() + Number(process.env.POLICY_RETENTION_SHIFT || 0),
+        now.getMonth(),
+        now.getDay(),
+      );
+    },
+    required: false,
+  })
   archiveRetentionTime?: Date;
 
   @ApiProperty({
@@ -60,7 +71,18 @@ export class Lifecycle {
     description:
       "Day when dataset is supposed to become public according to data policy",
   })
-  @Prop({ type: Date, default: Date.now(), required: false })
+  @Prop({
+    type: Date,
+    default: function publishingDate() {
+      const now = new Date();
+      return new Date(
+        now.getFullYear() + Number(process.env.POLICY_PUBLICATION_SHIFT || 0),
+        now.getMonth(),
+        now.getDay(),
+      );
+    },
+    required: false,
+  })
   dateOfPublishing?: Date;
 
   @ApiProperty({
@@ -86,7 +108,7 @@ export class Lifecycle {
     description:
       "Short string defining current status of Dataset with respect to storage on disk/tape.",
   })
-  @Prop({ required: false, index: true })
+  @Prop({ default: "datasetCreated", required: false, index: true })
   archiveStatusMessage?: string;
 
   @ApiProperty({
@@ -95,7 +117,7 @@ export class Lifecycle {
     description:
       "Latest message for this dataset concerning retrieve from archive system.",
   })
-  @Prop({ required: false, index: true })
+  @Prop({ required: false, index: true, default: "" })
   retrieveStatusMessage?: string;
 
   @ApiProperty({
@@ -130,7 +152,7 @@ export class Lifecycle {
     description:
       "Set to true when checksum tests after retrieve of datasets were successful",
   })
-  @Prop({ default: true, required: false })
+  @Prop({ default: false, required: false })
   retrieveIntegrityCheck?: boolean;
 }
 

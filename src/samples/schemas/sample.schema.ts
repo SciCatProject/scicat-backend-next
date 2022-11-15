@@ -25,18 +25,26 @@ export class Sample extends Ownable {
     type: String,
     default: () => uuidv4(),
   })
-  @Prop({ type: String, unique: true, default: () => uuidv4() })
+  @Prop({ type: String, unique: true, required: true, default: () => uuidv4() })
   sampleId: string;
 
-  @ApiProperty({ type: String, description: "The owner of the sample" })
-  @Prop()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The owner of the sample",
+  })
+  @Prop({ type: String, required: false })
   owner: string;
 
-  @ApiProperty({ type: String, description: "A description of the sample" })
-  @Prop()
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "A description of the sample",
+  })
+  @Prop({ type: String, required: true })
   description: string;
 
-  @ApiProperty({ type: Date, description: "Date when the sample was created" })
+  /*   @ApiProperty({ type: Date, description: "Date when the sample was created" })
   @Prop({ type: Date })
   createdAt: Date;
 
@@ -46,7 +54,7 @@ export class Sample extends Ownable {
   })
   @Prop({ type: Date })
   updatedAt: Date;
-
+ */
   @ApiProperty({
     type: Object,
     default: {},
@@ -63,12 +71,16 @@ export class Sample extends Ownable {
   @Prop({ type: Boolean, default: false })
   isPublished: boolean;
 
+  /*
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Attachment) } })
-  @Prop([AttachmentSchema])
+  @Prop([AttachmentSchema])*/
+  // this property should not be present in the database model
   attachments: Attachment[];
 
+  /*
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Dataset) } })
-  @Prop([DatasetSchema])
+  @Prop([DatasetSchema])*/
+  // this property should not be present in the database model
   datasets: Dataset[];
 }
 

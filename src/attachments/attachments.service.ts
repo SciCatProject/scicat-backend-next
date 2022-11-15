@@ -1,18 +1,27 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { CreateAttachmentDto } from "./dto/create-attachment.dto";
 import { UpdateAttachmentDto } from "./dto/update-attachment.dto";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { addCreatedFields, addUpdatedFields } from "src/common/utils";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {
   constructor(
     @InjectModel(Attachment.name) private attachmentModel: Model<Attachment>,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createAttachmentDto: CreateAttachmentDto): Promise<Attachment> {
-    const createdAttachment = new this.attachmentModel(createAttachmentDto);
+    const username = (this.request?.user as JWTUser).username;
+    const ts = new Date();
+    const createdAttachment = new this.attachmentModel(
+      addCreatedFields(createAttachmentDto, username, ts),
+    );
     return createdAttachment.save();
   }
 
@@ -33,8 +42,14 @@ export class AttachmentsService {
     filter: FilterQuery<AttachmentDocument>,
     updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
+    const username = (this.request?.user as JWTUser).username;
+    const ts = new Date();
     return this.attachmentModel
-      .findOneAndUpdate(filter, updateAttachmentDto, { new: true })
+      .findOneAndUpdate(
+        filter,
+        addUpdatedFields(updateAttachmentDto, username, ts),
+        { new: true },
+      )
       .exec();
   }
 

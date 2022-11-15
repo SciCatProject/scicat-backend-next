@@ -120,7 +120,7 @@ var testorigDataBlock = {
 
 const app = "http://localhost:3000";
 
-describe("Test of access to published data", () => {
+describe("PublishedData: Test of access to published data", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

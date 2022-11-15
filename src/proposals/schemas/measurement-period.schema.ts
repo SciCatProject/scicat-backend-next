@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import { Queryable } from "src/common/schemas/queryable.schema";
 
 export type MeasurementPeriodDocument = MeasurementPeriod & Document;
 
 @Schema()
-export class MeasurementPeriod {
+export class MeasurementPeriod extends Queryable {
   @ApiProperty({
     type: String,
     required: true,
@@ -38,18 +39,6 @@ export class MeasurementPeriod {
   })
   @Prop({ type: String })
   comment: string;
-
-  @Prop({ type: String })
-  createdBy: string;
-
-  @Prop({ type: String })
-  updatedBy: string;
-
-  @Prop({ type: Date })
-  createdAt: Date;
-
-  @Prop({ type: Date })
-  updatedAt: Date;
 }
 
 export const MeasurementPeriodSchema =

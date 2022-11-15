@@ -14,21 +14,21 @@ const configuration = () => ({
       email: "scicatingestor@your.site",
       password: "aman",
       role: "ingestor",
-      global: true,
+      global: false,
     },
     {
       username: "archiveManager",
       email: "scicatarchivemanager@your.site",
       password: "aman",
       role: "archivemanager",
-      global: true,
+      global: false,
     },
     {
       username: "proposalIngestor",
       email: "scicatproposalingestor@your.site",
       password: "aman",
       role: "proposalingestor",
-      global: true,
+      global: false,
     },
   ],
   httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
@@ -90,6 +90,10 @@ const configuration = () => ({
     messageFrom: process.env.SMTP_MESSAGE_FROM,
     port: process.env.SMTP_PORT,
     secure: process.env.SMTP_SECURE,
+  },
+  policyTimes: {
+    policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT,
+    policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT,
   },
 });
 

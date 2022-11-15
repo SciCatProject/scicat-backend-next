@@ -27,8 +27,11 @@ export class PoliciesGuard implements CanActivate {
   }
 
   private execPolicyHandler(handler: PolicyHandler, ability: AppAbility) {
+    //console.log('PoliciesGuard:execPolicyHandler ', handler, ability)
     if (typeof handler === "function") {
-      return handler(ability);
+      const res = handler(ability);
+      //console.log("PoliciesGuard:execPolicyHandler ", res);
+      return res
     }
     return handler.handle(ability);
   }

@@ -1,34 +1,27 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsString } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 
 export class CreateAttachmentDto extends OwnableDto {
-  @ApiProperty({
-    type: String,
-    required: true,
-    description:
-      "Contains a thumbnail preview in base64 encoded png format for a given dataset",
-  })
-  readonly thumbnail: string;
+  @IsOptional()
+  @IsString()
+  readonly id?: string;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "Attachment caption to show in catanie",
-  })
+  @IsOptional()
+  @IsString()
+  readonly thumbnail?: string;
+
+  @IsString()
   readonly caption: string;
 
-  @ApiProperty({ type: String })
-  readonly createdBy: string;
+  @IsOptional()
+  @IsString()
+  readonly datasetId?: string;
 
-  @ApiProperty({ type: String })
-  readonly updatedBy: string;
+  @IsOptional()
+  @IsString()
+  readonly proposalId?: string;
 
-  @ApiProperty({ type: String, required: false })
-  readonly datasetId: string;
-
-  @ApiProperty({ type: String, required: false })
-  readonly proposalId: string;
-
-  @ApiProperty({ type: String, required: false })
-  readonly sampleId: string;
+  @IsOptional()
+  @IsString()
+  readonly sampleId?: string;
 }

@@ -1,39 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
+import { BaseDatasetForSchema } from "./baseDatasetClassForSchema";
+import { Dataset } from "./dataset.schema";
 import { Lifecycle } from "./lifecycle.schema";
 import { Technique } from "./technique.schema";
+
+export type RawDatasetDocument = RawDataset & Document;
 
 @Schema({
   minimize: false,
 })
-export class RawDataset {
-  pid: string;
-  owner: string;
-  ownerEmail: string;
-  orcidOfOwner: string;
-  contactEmail: string;
-  sourceFolder: string;
-  sourceFolderHost: string;
-  size: number;
-  packedSize: number;
-  numberOfFiles: number;
-  numberOfFilesArchived: number;
-  creationTime: Date;
-  type: string;
-  validationStatus: string;
-  keywords: string[];
-  description: string;
-  datasetName: string;
-  classification: string;
-  license: string;
-  version: string;
-  isPublished: boolean;
-  history: Record<string, unknown>;
-  datasetLifeCycle: Lifecycle;
-  createdAt: Date;
-  updatedAt: Date;
-  techniques: Technique[];
-
+export class RawDataset extends BaseDatasetForSchema {
   @ApiProperty({
     type: String,
     required: true,
@@ -93,6 +70,14 @@ export class RawDataset {
   })
   @Prop({ type: String, ref: "Sample", required: false })
   sampleId: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of instrument where the data was created",
+  })
+  @Prop({ type: String, ref: "Instrument", required: false })
+  instrumentId: string;
 }
 
 export const RawDatasetSchema = SchemaFactory.createForClass(RawDataset);

@@ -1,7 +1,8 @@
 import { Prop } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
+import { Queryable } from "./queryable.schema";
 
-export class Ownable {
+export class Ownable extends Queryable {
   @ApiProperty({
     type: String,
     description:
@@ -25,13 +26,5 @@ export class Ownable {
       "Optional additional groups which have read and write access to the data. Users which are member in one of the groups listed here are allowed to access this data.",
   })
   @Prop({ type: String, required: false })
-  instrumentGroup: string;
-
-  @ApiProperty()
-  @Prop({ type: String, index: true })
-  createdBy: string;
-
-  @ApiProperty()
-  @Prop({ type: String })
-  updatedBy: string;
+  instrumentGroup?: string;
 }

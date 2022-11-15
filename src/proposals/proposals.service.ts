@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
@@ -6,20 +8,28 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
+  addCreatedFields,
+  addUpdatedFields,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class ProposalsService {
   constructor(
     @InjectModel(Proposal.name) private proposalModel: Model<ProposalDocument>,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createProposalDto: CreateProposalDto): Promise<Proposal> {
-    const createdProposal = new this.proposalModel(createProposalDto);
+    const username = (this.request?.user as JWTUser).username;
+    const ts = new Date();
+    const createdProposal = new this.proposalModel(
+      addCreatedFields<CreateProposalDto>(createProposalDto, username, ts),
+    );
     return createdProposal.save();
   }
 

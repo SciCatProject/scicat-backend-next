@@ -1,6 +1,5 @@
 import {
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
@@ -27,8 +26,12 @@ import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
-import { DerivedDataset } from "./schemas/derived-dataset.schema";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+/* import {
+  DerivedDataset,
+  DerivedDatasetDocument,
+} from "./schemas/derived-dataset.schema";
+import { RawDataset, RawDatasetDocument } from "./schemas/raw-dataset.schema";
+ */
 
 @Injectable()
 export class DatasetsService {
@@ -50,25 +53,27 @@ export class DatasetsService {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
-    return this.datasetModel
-      .find(whereFilter)
+    /* const t2 = await this.datasetModel
+      .find()
       .limit(limit)
       .skip(skip)
       .sort(sort)
       .exec();
+ */
+    const t1 = this.datasetModel
+      .find(whereFilter)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort);
+
+    const t3 = await t1.exec();
+
+    return t3;
   }
 
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<Dataset[] | null> {
-    if (!this.datasetModel.discriminators) {
-      throw new InternalServerErrorException();
-    }
-
-    const derivedDatasetModel =
-      this.datasetModel.discriminators[DatasetType.Derived];
-    const rawDatasetModel = this.datasetModel.discriminators[DatasetType.Raw];
-
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
@@ -77,46 +82,11 @@ export class DatasetsService {
       );
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    if (filterQuery.type) {
-      switch (filterQuery.type) {
-        case DatasetType.Derived: {
-          return derivedDatasetModel.find(filterQuery, null, modifiers).exec();
-        }
-        case DatasetType.Raw: {
-          return rawDatasetModel.find(filterQuery, null, modifiers).exec();
-        }
-      }
-    }
-
-    const derivedDatasets = await derivedDatasetModel
+    const datasets = await this.datasetModel
       .find(filterQuery, null, modifiers)
       .exec();
-    const rawDatasets = await rawDatasetModel
-      .find(filterQuery, null, modifiers)
-      .exec();
-    let datasets = ([] as Dataset[]).concat(derivedDatasets, rawDatasets);
 
-    if (modifiers.sort) {
-      const sortField = Object.keys(modifiers.sort)[0] as keyof Dataset;
-      const order = modifiers.sort[sortField];
-      datasets = datasets.sort((a, b) => {
-        if (order === "asc") {
-          return a[sortField] < b[sortField]
-            ? 1
-            : a[sortField] > b[sortField]
-            ? -1
-            : 0;
-        } else {
-          return a[sortField] < b[sortField]
-            ? -1
-            : a[sortField] > b[sortField]
-            ? 1
-            : 0;
-        }
-      });
-    }
-
-    return datasets.slice(0, modifiers.limit);
+    return datasets;
   }
 
   async fullFacet(
@@ -202,14 +172,7 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
-    if (!this.datasetModel.discriminators) {
-      throw new InternalServerErrorException();
-    }
-
-    const typedDatasetModel =
-      this.datasetModel.discriminators[existingDataset.type];
-
-    const patchedDataset = typedDatasetModel
+    const patchedDataset = this.datasetModel
       .findOneAndUpdate(
         { pid: id },
         updateDatasetDto as UpdateQuery<DatasetDocument>,
@@ -268,8 +231,8 @@ export class DatasetsService {
 
     const datasets = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys<RawDataset | DerivedDataset>(
-      datasets as unknown as (RawDataset | DerivedDataset)[],
+    const metadataKeys = extractMetadataKeys<Dataset>(
+      datasets as unknown as Dataset[],
       "scientificMetadata",
     ).filter((key) => !blacklist.some((regex) => regex.test(key)));
 
@@ -291,29 +254,31 @@ export class DatasetsService {
   // this should update the history in all affected documents
   async keepHistory(req: Request) {
     // 4 different cases: (ctx.where:single/multiple instances)*(ctx.data: update of data/replacement of data)
-    if (req.query.where && req.body.data) {
+    if (req.query.where && req.body) {
       // do not keep history for status updates from jobs, because this can take much too long for large jobs
-      if (req.body.data.$set) {
+      if (req.body.$set) {
         return;
       }
 
       const datasets = await this.findAll({
-        where: req.query.where as FilterQuery<DatasetDocument>,
+        where: JSON.parse(
+          req.query.where as string,
+        ) as FilterQuery<DatasetDocument>,
       });
 
-      const dataCopy = JSON.parse(JSON.stringify(req.body.data));
+      const dataCopy = JSON.parse(JSON.stringify(req.body));
       await Promise.all(
         datasets.map(async (dataset) => {
-          req.body.data = JSON.parse(JSON.stringify(dataCopy));
-          if (req.body.data && req.body.data.datasetlifecycle) {
+          req.body = JSON.parse(JSON.stringify(dataCopy));
+          if (req.body && req.body.datasetlifecycle) {
             const changes = JSON.parse(
-              JSON.stringify(req.body.data.datasetlifecycle),
+              JSON.stringify(req.body.datasetlifecycle),
             );
-            req.body.data.datasetlifecycle = JSON.parse(
+            req.body.datasetlifecycle = JSON.parse(
               JSON.stringify(dataset.datasetlifecycle),
             );
             for (const k in changes) {
-              req.body.data.datasetlifecycle[k] = changes[k];
+              req.body.datasetlifecycle[k] = changes[k];
             }
 
             const initialDataset = await this.initialDatasetsService.findById(
@@ -321,10 +286,10 @@ export class DatasetsService {
             );
 
             if (!initialDataset) {
-              await this.initialDatasetsService.create(dataset);
-              await this.updateHistory(req, dataset, dataCopy);
+              await this.initialDatasetsService.create({ _id: dataset.pid });
+              await this.updateHistory(req, dataset as Dataset, dataCopy);
             } else {
-              await this.updateHistory(req, dataset, dataCopy);
+              await this.updateHistory(req, dataset as Dataset, dataCopy);
             }
           }
         }),
@@ -353,11 +318,11 @@ export class DatasetsService {
   }
 
   async updateHistory(req: Request, dataset: Dataset, data: UpdateDatasetDto) {
-    if (req.body.data.history) {
-      delete req.body.data.history;
+    if (req.body.history) {
+      delete req.body.history;
     }
 
-    if (!req.body.data.size && !req.body.data.packedSize) {
+    if (!req.body.size && !req.body.packedSize) {
       const updatedFields: Omit<UpdateDatasetDto, "updatedAt" | "updatedBy"> =
         data;
       const historyItem: Record<string, unknown> = {};
@@ -367,9 +332,10 @@ export class DatasetsService {
           previousValue: dataset[updatedField as keyof UpdateDatasetDto],
         };
       });
-      dataset.history.push(
-        JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
-      );
+      dataset.history.push({
+        updatedBy: (req.user as JWTUser).username,
+        ...JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
+      });
       await this.findByIdAndUpdate(dataset.pid, { history: dataset.history });
       const logbookEnabled = this.configService.get<boolean>("logbook.enabled");
       if (logbookEnabled) {
@@ -377,7 +343,7 @@ export class DatasetsService {
         const datasetPid = dataset.pid;
         const proposalId =
           dataset.type === DatasetType.Raw
-            ? (dataset as unknown as RawDataset).proposalId
+            ? (dataset as unknown as Dataset).proposalId
             : undefined;
         if (proposalId) {
           await Promise.all(

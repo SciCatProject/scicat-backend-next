@@ -19,6 +19,7 @@ export class OrigDatablock extends Ownable {
   })
   @Prop({
     type: String,
+    //unique: true,
     required: true,
     default: () => uuidv4(),
   })
@@ -43,6 +44,17 @@ export class OrigDatablock extends Ownable {
     required: true,
   })
   size: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Algorithm used to compute the file chksum"
+  })
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  chkAlg: string;
 
   @ApiProperty({
     description:

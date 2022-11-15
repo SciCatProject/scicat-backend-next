@@ -15,14 +15,12 @@ import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
-import { DatasetsService } from "src/datasets/datasets.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
 
 @Injectable()
 export class PoliciesService implements OnModuleInit {
   constructor(
     private configService: ConfigService,
-    private datasetsService: DatasetsService,
     @InjectModel(Policy.name) private policyModel: Model<PolicyDocument>,
     private usersService: UsersService,
   ) {}
@@ -193,7 +191,7 @@ export class PoliciesService implements OnModuleInit {
         const email = userIdentity ? userIdentity.profile.email : user.email;
 
         try {
-          await this.addDefaultPolicy(ownerGroup, [], email, "low", req);
+          await this.addDefaultPolicy(ownerGroup, [], email, "low");
         } catch (error) {
           throw new InternalServerErrorException();
         }
@@ -237,7 +235,6 @@ export class PoliciesService implements OnModuleInit {
     accessGroups: string[],
     ownerEmail: string,
     tapeRedundancy: string,
-    req: Request,
   ) {
     const policy = await this.policyModel.findOne({ ownerGroup }).exec();
 
@@ -264,8 +261,6 @@ export class PoliciesService implements OnModuleInit {
       archiveEmailsToBeNotified: [],
       retrieveEmailsToBeNotified: [],
       embargoPeriod: 3,
-      createdBy: req.user ? (req.user as JWTUser).username : "",
-      updatedBy: req.user ? (req.user as JWTUser).username : "",
     };
 
     try {
@@ -276,8 +271,6 @@ export class PoliciesService implements OnModuleInit {
         "Error when creating default policy",
       );
     }
-
-    await this.datasetsService.keepHistory(req);
   }
 
   async validatePermission(

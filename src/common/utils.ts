@@ -218,7 +218,11 @@ export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
 export const updateAllTimesToUTC = <T>(
   dateKeys: (keyof T)[],
   instances: T[],
-): T[] => instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance));
+): T[] => {
+  return instances
+    ? instances.map((instance) => updateTimesToUTC<T>(dateKeys, instance))
+    : [];
+};
 
 export const parseLimitFilters = (
   limits: ILimitsFilter | undefined,
@@ -584,4 +588,38 @@ export const createFullfacetPipeline = <T, Y>(
   pipeline.push({ $facet: facetObject });
 
   return pipeline as PipelineStage[];
+};
+
+export const addCreatedFields = <T>(
+  obj: T,
+  username: string,
+  ts: Date,
+): T & {
+  createdBy: string;
+  updatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+} => {
+  return {
+    ...obj,
+    createdBy: username,
+    updatedBy: username,
+    createdAt: ts,
+    updatedAt: ts,
+  };
+};
+
+export const addUpdatedFields = <T>(
+  obj: T,
+  username: string,
+  ts: Date,
+): T & {
+  updatedBy: string;
+  updatedAt: Date;
+} => {
+  return {
+    ...obj,
+    updatedBy: username,
+    updatedAt: ts,
+  };
 };

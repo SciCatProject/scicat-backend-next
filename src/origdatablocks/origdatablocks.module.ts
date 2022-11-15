@@ -1,10 +1,12 @@
 import { Module } from "@nestjs/common";
-import { OrigdatablocksService } from "./origdatablocks.service";
+import { OrigDatablocksService } from "./origdatablocks.service";
 import { MongooseModule } from "@nestjs/mongoose";
 import {
   OrigDatablock,
   OrigDatablockSchema,
 } from "./schemas/origdatablock.schema";
+import { OrigDatablocksController } from "./origdatablocks.controller";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   imports: [
@@ -15,7 +17,8 @@ import {
       },
     ]),
   ],
-  providers: [OrigdatablocksService],
-  exports: [OrigdatablocksService],
+  controllers: [OrigDatablocksController],
+  exports: [OrigDatablocksService],
+  providers: [OrigDatablocksService,CaslAbilityFactory],
 })
-export class OrigdatablocksModule {}
+export class OrigDatablocksModule {}

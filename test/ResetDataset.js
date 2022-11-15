@@ -155,7 +155,7 @@ var foundId2 = null;
 
 const app = "http://localhost:3000";
 
-describe("Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
+describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
   beforeEach((done) => {
     utils.getToken(
       app,

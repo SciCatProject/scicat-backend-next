@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 
 const app = "http://localhost:3000";
 
-describe("Login with functional accounts", () => {
+describe("Users: Login with functional accounts", () => {
   it("Ingestor login fails with incorrect credentials", async () => {
     return request(app)
       .post("/api/v3/Users/Login?include=user")

@@ -9,7 +9,7 @@ import configuration from "./config/configuration";
 import { APP_GUARD, Reflector } from "@nestjs/core";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { AttachmentsModule } from "./attachments/attachments.module";
-import { OrigdatablocksModule } from "./origdatablocks/origdatablocks.module";
+import { OrigDatablocksModule } from "./origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "./datablocks/datablocks.module";
 import { ProposalsModule } from "./proposals/proposals.module";
 import { SamplesModule } from "./samples/samples.module";
@@ -80,7 +80,7 @@ import { CommonModule } from "./common/common.module";
       }),
       inject: [ConfigService],
     }),
-    OrigdatablocksModule,
+    OrigDatablocksModule,
     PoliciesModule,
     ProposalsModule,
     PublishedDataModule,
@@ -149,8 +149,6 @@ export class AppModule implements OnApplicationBootstrap {
             abstract: proposalAcceptedMessage.abstract,
             ownerGroup: "ess",
             accessGroups: [],
-            createdBy: "proposalIngestor",
-            updatedBy: "proposalIngestor",
           };
 
           try {

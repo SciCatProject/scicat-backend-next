@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   Headers,
+  HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -39,9 +40,9 @@ import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { CreateOrigdatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
-import { OrigdatablocksService } from "src/origdatablocks/origdatablocks.service";
-import { UpdateOrigdatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
+import { CreateOrigDatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { UpdateOrigDatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
 import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
@@ -49,13 +50,17 @@ import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+//import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { DerivedDataset } from "./schemas/derived-dataset.schema";
+//import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { plainToInstance } from "class-transformer";
+import { validate, validateOrReject, ValidationError } from "class-validator";
+import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
+import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -70,7 +75,7 @@ export class DatasetsController {
     private attachmentsService: AttachmentsService,
     private datablocksService: DatablocksService,
     private datasetsService: DatasetsService,
-    private origDatablocksService: OrigdatablocksService,
+    private origDatablocksService: OrigDatablocksService,
   ) {}
 
   // POST /datasets
@@ -78,15 +83,93 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+  )
+  @HttpCode(HttpStatus.OK)
+  @Post()
+  async create(
+    @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ): Promise<Dataset> {
+    // validate dataset
+    const validatedDatasetDto = await this.validateDataset(createDatasetDto);
+    return this.datasetsService.create(validatedDatasetDto);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  async validateDataset(
+    inputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ): Promise<CreateRawDatasetDto | CreateDerivedDatasetDto> {
+    let errors: Array<unknown> = [];
+    let outputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto;
+    const type = inputDatasetDto.type;
+
+    if (type != "raw" && type != "derived") {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Wrong dataset type!",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (type == "raw") {
+      outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
+      errors = await validate(outputDatasetDto);
+    } else {
+      outputDatasetDto = plainToInstance(
+        CreateDerivedDatasetDto,
+        inputDatasetDto,
+      );
+      errors = await validate(outputDatasetDto);
+    }
+    if (errors.length > 0) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: JSON.stringify(errors),
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return outputDatasetDto;
+  }
+
+  // POST /datasets
+  /*  @UseGuards(PoliciesGuard)
+  @UseInterceptors(
+    new UTCTimeInterceptor<Dataset>(["creationTime"]),
     new UTCTimeInterceptor<RawDataset>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
       "scientificMetadata",
     ),
   )
+*/
+  @AllowAny()
   @HttpCode(HttpStatus.OK)
-  @Post()
-  async create(@Body() createDatasetDto: CreateDatasetDto): Promise<Dataset> {
-    return this.datasetsService.create(createDatasetDto);
+  @Post("/isValid")
+  async isValid(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body() createDataset: unknown,
+  ): Promise<{ valid: boolean }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoTestRawCorrect = plainToInstance(
+      CreateRawDatasetDto,
+      createDataset,
+    );
+    const errorsTestRawCorrect = await validate(dtoTestRawCorrect);
+
+    const dtoTestDerivedCorrect = plainToInstance(
+      CreateDerivedDatasetDto,
+      createDataset,
+    );
+    const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
+
+    const valid =
+      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0;
+
+    return { valid: valid };
   }
 
   // GET /datasets
@@ -277,11 +360,21 @@ export class DatasetsController {
   // GET /count
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @ApiQuery({
+    name: "where",
+    description: "Database where condition to apply when counting Datasets",
+    required: false,
+  })
   @Get("/count")
   async count(
-    @Query("where") where: FilterQuery<DatasetDocument>,
+    @Query("where") where: string, //FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
-    return this.datasetsService.count(where);
+    const whereFilters =
+      typeof where === "string" || (where as unknown) instanceof String
+        ? JSON.parse(where)
+        : where;
+    //console.log("Where : " + JSON.stringify(whereFilters));
+    return this.datasetsService.count(whereFilters);
   }
 
   // GET /datasets/:id
@@ -299,10 +392,8 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
   )
   @Patch("/:id")
   async findByIdAndUpdate(
@@ -318,10 +409,9 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
   @UseInterceptors(
     new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<Dataset>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+    HistoryInterceptor,
   )
   @Put("/:id")
   async findByIdReplaceOrCreate(
@@ -406,7 +496,7 @@ export class DatasetsController {
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
-  // PATCH /datasets/:id/attachments
+  // PATCH /datasets/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
@@ -418,7 +508,7 @@ export class DatasetsController {
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, datasetId },
+      { _id: attachmentId, datasetId: datasetId },
       updateAttachmentDto,
     );
   }
@@ -441,9 +531,10 @@ export class DatasetsController {
 
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, OrigDatablock),
-  )
+  @CheckPolicies((ability: AppAbility) => {
+    //console.log('dataset/<id>/origdatablock', ability.can(Action.Create, OrigDatablock));
+    return ability.can(Action.Create, OrigDatablock);
+})
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",
@@ -452,22 +543,24 @@ export class DatasetsController {
   @Post("/:id/origdatablocks")
   async createOrigDatablock(
     @Param("id") id: string,
-    @Body() createOrigdatablockDto: CreateOrigdatablockDto,
+    @Body() createDatasetOrigDatablockDto: unknown,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
-      const createOrigDatablock: CreateOrigdatablockDto = {
-        ...createOrigdatablockDto,
+      const createOrigDatablock: CreateOrigDatablockDto = {
+        ...(createDatasetOrigDatablockDto as CreateDatasetOrigDatablockDto),
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
+        accessGroups: dataset.accessGroups,
+        instrumentGroup: dataset.instrumentGroup
       };
       const datablock = await this.origDatablocksService.create(
         createOrigDatablock,
       );
 
       const updateDatasetDto: UpdateDatasetDto = {
-        size: datablock.size,
-        numberOfFiles: datablock.dataFileList.length,
+        size: dataset.size + datablock.size,
+        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       };
       await this.datasetsService.findByIdAndUpdate(
         dataset.pid,
@@ -476,6 +569,26 @@ export class DatasetsController {
       return datablock;
     }
     return null;
+  }
+
+  // POST /datasets/:id/origdatablocks/isValid
+  @AllowAny()
+  @HttpCode(HttpStatus.OK)
+  @Post("/:id/origdatablocks/isValid")
+  async origDatablockIsValid(
+    @Body() createOrigDatablock: unknown,
+  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
+    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const dtoTestOrigDatablock = plainToInstance(
+      CreateDatasetOrigDatablockDto,
+      createOrigDatablock,
+    );
+    const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
+
+    const valid =
+      errorsTestOrigDatablock.length == 0;
+
+    return { valid: valid, errors: errorsTestOrigDatablock };
   }
 
   // GET /datasets/:id/origdatablocks
@@ -504,7 +617,7 @@ export class DatasetsController {
   async findOneOrigDatablockAndUpdate(
     @Param("id") datasetId: string,
     @Param("fk") origDatablockId: string,
-    @Body() updateOrigdatablockDto: UpdateOrigdatablockDto,
+    @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     return this.origDatablocksService.update(
       { _id: origDatablockId, datasetId },
@@ -522,10 +635,28 @@ export class DatasetsController {
     @Param("id") datasetId: string,
     @Param("fk") origDatablockId: string,
   ): Promise<unknown> {
-    return this.origDatablocksService.remove({
-      _id: origDatablockId,
-      datasetId,
-    });
+    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    if (dataset) {
+      // remove origdatablock
+      const res = await this.origDatablocksService.remove({
+        _id: origDatablockId,
+        datasetId,
+      });
+      // all the remaing orig datablocks for this dataset
+      const odb = await this.origDatablocksService.findAll({ datasetId: datasetId });
+      // update dataset size and files number
+      const updateDatasetDto: UpdateDatasetDto = {
+        size: odb.reduce((a , b) => a + b.size, 0),
+        numberOfFiles: odb.reduce((a,b) => a + b.dataFileList.length, 0),
+      };
+      await this.datasetsService.findByIdAndUpdate(
+        dataset.pid,
+        updateDatasetDto,
+      );
+      return res;
+    }
+    return null;
+
   }
 
   // POST /datasets/:id/datablocks

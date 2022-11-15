@@ -173,7 +173,7 @@ var testPublicJob = {
 
 const app = "http://localhost:3000";
 
-describe("Test New Job Model", () => {
+describe("Jobs: Test New Job Model", () => {
   beforeEach((done) => {
     utils.getToken(
       app,
