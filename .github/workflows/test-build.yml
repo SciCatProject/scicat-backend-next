@@ -37,7 +37,6 @@ jobs:
       - name: Checkout frontend repo
         uses: actions/checkout@v3
         with:
-          ref: test/fixing-and-improving-e2e-tests
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1
@@ -50,13 +49,13 @@ jobs:
           install-command: npm install --omit peer
           browser: chrome
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: cypress-screenshots
           path: frontend/cypress/screenshots/
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: cypress-videos
