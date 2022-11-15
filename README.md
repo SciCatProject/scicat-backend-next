@@ -78,6 +78,11 @@ sh ./migrateIdFields.sh
 
 For the full documentation please go to the [SciCat home page](https://scicatproject.github.io/) and follow the [documentation link](https://scicatproject.github.io/documentation)
 
+## Migration documentation
+Following are the post that I found useful working on the migration:
+- https://betterprogramming.pub/how-to-use-data-transfer-objects-dto-for-validation-in-nest-js-7ff95309f650
+
+
 ## License
 
 This project is licensed under the GPL License - see the [LICENSE](LICENSE) file for details
