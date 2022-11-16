@@ -48,14 +48,13 @@ export class OrigDatablocksController {
     return this.origDatablocksService.create(createOrigDatablockDto);
   }
 
-  
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createOrigDatablock: unknown,
-  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
+  ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
@@ -63,8 +62,7 @@ export class OrigDatablocksController {
     );
     const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
 
-    const valid =
-      errorsTestOrigDatablock.length == 0;
+    const valid = errorsTestOrigDatablock.length == 0;
 
     return { valid: valid, errors: errorsTestOrigDatablock };
   }
@@ -94,7 +92,8 @@ export class OrigDatablocksController {
   @Get("/fullquery")
   @ApiQuery({
     name: "filters",
-    description: "Database query and filters to apply when retrieve all origdatablocks",
+    description:
+      "Database query and filters to apply when retrieve all origdatablocks",
     required: false,
   })
   async fullquery(

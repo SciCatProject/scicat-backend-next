@@ -61,6 +61,7 @@ import { plainToInstance } from "class-transformer";
 import { validate, validateOrReject, ValidationError } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
+import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -534,7 +535,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) => {
     //console.log('dataset/<id>/origdatablock', ability.can(Action.Create, OrigDatablock));
     return ability.can(Action.Create, OrigDatablock);
-})
+  })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",
@@ -543,16 +544,16 @@ export class DatasetsController {
   @Post("/:id/origdatablocks")
   async createOrigDatablock(
     @Param("id") id: string,
-    @Body() createDatasetOrigDatablockDto: unknown,
+    @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
-        ...(createDatasetOrigDatablockDto as CreateDatasetOrigDatablockDto),
+        ...createDatasetOrigDatablockDto,
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
         accessGroups: dataset.accessGroups,
-        instrumentGroup: dataset.instrumentGroup
+        instrumentGroup: dataset.instrumentGroup,
       };
       const datablock = await this.origDatablocksService.create(
         createOrigDatablock,
@@ -577,7 +578,7 @@ export class DatasetsController {
   @Post("/:id/origdatablocks/isValid")
   async origDatablockIsValid(
     @Body() createOrigDatablock: unknown,
-  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
+  ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestOrigDatablock = plainToInstance(
       CreateDatasetOrigDatablockDto,
@@ -585,8 +586,7 @@ export class DatasetsController {
     );
     const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
 
-    const valid =
-      errorsTestOrigDatablock.length == 0;
+    const valid = errorsTestOrigDatablock.length == 0;
 
     return { valid: valid, errors: errorsTestOrigDatablock };
   }
@@ -643,11 +643,13 @@ export class DatasetsController {
         datasetId,
       });
       // all the remaing orig datablocks for this dataset
-      const odb = await this.origDatablocksService.findAll({ datasetId: datasetId });
+      const odb = await this.origDatablocksService.findAll({
+        datasetId: datasetId,
+      });
       // update dataset size and files number
       const updateDatasetDto: UpdateDatasetDto = {
-        size: odb.reduce((a , b) => a + b.size, 0),
-        numberOfFiles: odb.reduce((a,b) => a + b.dataFileList.length, 0),
+        size: odb.reduce((a, b) => a + b.size, 0),
+        numberOfFiles: odb.reduce((a, b) => a + b.dataFileList.length, 0),
       };
       await this.datasetsService.findByIdAndUpdate(
         dataset.pid,
@@ -656,7 +658,6 @@ export class DatasetsController {
       return res;
     }
     return null;
-
   }
 
   // POST /datasets/:id/datablocks
@@ -668,7 +669,7 @@ export class DatasetsController {
   @Post("/:id/datablocks")
   async createDatablock(
     @Param("id") id: string,
-    @Body() createDatablockDto: CreateDatablockDto,
+    @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
@@ -676,6 +677,8 @@ export class DatasetsController {
         ...createDatablockDto,
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
+        accessGroups: dataset.accessGroups,
+        instrumentGroup: dataset.instrumentGroup,
       };
       const datablock = await this.datablocksService.create(createDatablock);
       await this.datasetsService.findByIdAndUpdate(id, {

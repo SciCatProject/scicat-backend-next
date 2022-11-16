@@ -45,7 +45,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   it("adds a new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testraw)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -59,18 +59,18 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("adds a new datablock", () => {
+  it("adds a new datablock to the existing raw dataset", () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.OrigDataBlockCorrect.size);
+          .and.equal(TestData.DataBlockCorrect.size);
         res.body.should.have.property("id").and.be.string;
         datablockId = encodeURIComponent(res.body["id"]);
       });
@@ -81,7 +81,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(500)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -94,8 +94,8 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(401)
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
@@ -105,11 +105,12 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   it("adds a second datablock for same dataset", async () => {
     let testdata = TestData.DataBlockCorrect;
     testdata.archiveId = "some-other-id-that-is-different";
+
     return request(app)
-      .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
+      .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(testdata)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -121,7 +122,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("Should fetch all datablocks belonging to the new dataset", async () => {
     return request(app)
-      .get("/api/v3/Datasets/" + pid + "/datablocks")
+      .get(`/api/v3/datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -164,9 +165,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
         res.body.datablocks[0].should.have
           .property("dataFileList")
           .and.be.instanceof(Array)
-          .and.to.have.length(
-            TestData.OrigDataBlockCorrect.dataFileList.length,
-          );
+          .and.to.have.length(TestData.DataBlockCorrect.dataFileList.length);
       });
   });
 
@@ -181,7 +180,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
     };
     return request(app)
       .get(
-        "/api/v3/OrigDatablocks/findFilesByName?fields=" +
+        "/api/v3/datasets/fullquery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
           "&limits=" +
           encodeURIComponent(JSON.stringify(limits)),
@@ -205,13 +204,13 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.OrigDataBlockCorrect.size * 2);
+          .and.equal(TestData.DataBlockCorrect.size * 2);
         res.body.should.have
           .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.size * 2);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(TestData.OrigDataBlockCorrect.numberOfFiles * 2);
+          .and.equal(TestData.DataBlockCorrect.numberOfFiles * 2);
         res.body.should.have
           .property("numberOfFilesArchived")
           .and.equal(TestData.DataBlockCorrect.numberOfFiles * 2);
@@ -220,7 +219,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("should delete first datablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetId}/Datablocks/${datablockId}`)
+      .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -229,7 +228,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("should delete second datablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetId}/Datablocks/${datablockId2}`)
+      .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -238,7 +237,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("should delete the newly created dataset", async () => {
     return request(app)
-      .delete("/api/v3/Datasets/" + pid)
+      .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
