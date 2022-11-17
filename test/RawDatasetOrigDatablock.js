@@ -76,7 +76,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = encodeURIComponent(res.body["pid"]);
+        datasetPid = res.body["pid"];
       });
   });
 

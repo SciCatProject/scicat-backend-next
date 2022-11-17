@@ -131,19 +131,18 @@ describe("RawDataset: Raw Datasets", () => {
       limit: 2,
     };
 
-    return (
-      request(app)
-        // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .query(JSON.stringify(filter))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(200)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.instanceof(Array);
-        })
-    );
+    return request(app)
+      .get(
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
+      .query(JSON.stringify(filter))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+      });
   });
 
   it("should fetch this raw dataset", async () => {
@@ -156,7 +155,11 @@ describe("RawDataset: Raw Datasets", () => {
     return (
       request(app)
         // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/Datasets/findOne?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+        .get(
+          `/api/v3/Datasets/findOne?filter=${encodeURIComponent(
+            JSON.stringify(filter),
+          )}`,
+        )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect(200)
@@ -175,7 +178,11 @@ describe("RawDataset: Raw Datasets", () => {
     return (
       request(app)
         // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/datasets/fullfacet?filter=${encodeURIComponent(JSON.stringify(filter))}`)
+        .get(
+          `/api/v3/datasets/fullfacet?filter=${encodeURIComponent(
+            JSON.stringify(filter),
+          )}`,
+        )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect(200)
