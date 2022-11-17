@@ -26,7 +26,7 @@
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml up -d && cp functionalAccounts.json.example functionalAccounts.json"
   },
   "dependencies": {
-    "@casl/ability": "^5.4.4",
+    "@casl/ability": "^6.3.2",
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/axios": "0.1.0",
     "@nestjs/common": "^8.4.7",
