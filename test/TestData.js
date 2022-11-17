@@ -25,6 +25,22 @@ const TestData = {
     MeasurementPeriodList: [],
   },
 
+  ProposalWring_1: {
+    proposalId: "20170267",
+    pi_email: "pi@uni.edu",
+    pi_firstname: "principal",
+    pi_lastname: "investigator",
+    email: "proposer@uni.edu",
+    firstname: "proposal",
+    lastname: "proposer",
+    title: "A complete test proposal with an extra field",
+    abstract: "Abstract of test proposal",
+    ownerGroup: "20170251-group",
+    accessGroups: [],
+    MeasurementPeriodList: [],
+    createdBy: "This should not be here",
+  },
+
   AttachmentCorrect: {
     thumbnail: "data/abc123",
     caption: "Some caption",
@@ -105,7 +121,7 @@ const TestData = {
         "Number of inter-flats": 0,
       },
     },
-    owner: "Bertram Astor",
+    owner: "Bertram Astor first",
     ownerEmail: "bertram.astor@grumble.com",
     orcidOfOwner: "unknown",
     contactEmail: "bertram.astor@grumble.com",
@@ -124,8 +140,8 @@ const TestData = {
     type: "raw",
   },
 
-  RawWrong: {
-    owner: "Bertram Astor",
+  RawWrong_1: {
+    owner: "Bertram Astor second",
     ownerEmail: "bertram.astor@grumble.com",
     orcidOfOwner: "unknown",
     contactEmail: "bertram.astor@grumble.com",
@@ -138,6 +154,82 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     type: "raw",
+  },
+
+  RawWrong_2: {
+    principalInvestigator: "bertram.astor@grumble.com",
+    endTime: "2011-09-14T06:31:25.000Z",
+    creationLocation: "/SU/XQX/RAMJET",
+    dataFormat: "Upchuck pre 2017",
+    scientificMetadata: {
+      beamlineParameters: {
+        Monostripe: "Ru/C",
+        "Ring current": {
+          v: 0.402246,
+          u: "A",
+        },
+        "Beam energy": {
+          v: 22595,
+          u: "eV",
+        },
+      },
+      detectorParameters: {
+        Objective: 20,
+        Scintillator: "LAG 20um",
+        "Exposure time": {
+          v: 0.4,
+          u: "s",
+        },
+      },
+      scanParameters: {
+        "Number of projections": 1801,
+        "Rot Y min position": {
+          v: 0,
+          u: "deg",
+        },
+        "Inner scan flag": 0,
+        "File Prefix": "817b_B2_",
+        "Sample In": {
+          v: 0,
+          u: "m",
+        },
+        "Sample folder": "/ramjet/817b_B2_",
+        "Number of darks": 10,
+        "Rot Y max position": {
+          v: 180,
+          u: "deg",
+        },
+        "Angular step": {
+          v: 0.1,
+          u: "deg",
+        },
+        "Number of flats": 120,
+        "Sample Out": {
+          v: -0.005,
+          u: "m",
+        },
+        "Flat frequency": 0,
+        "Number of inter-flats": 0,
+      },
+    },
+    owner: "Bertram Astor third",
+    ownerEmail: "bertram.astor@grumble.com",
+    orcidOfOwner: "unknown",
+    contactEmail: "bertram.astor@grumble.com",
+    sourceFolder: "/iramjet/tif/",
+    size: 0,
+    numberOfFiles: 0,
+    creationTime: "2011-09-14T06:08:25.000Z",
+    description: "None",
+    datasetName: "Test raw dataset",
+    classification: "AV=medium,CO=low",
+    license: "CC BY-SA 4.0",
+    isPublished: false,
+    ownerGroup: "p13388",
+    accessGroups: [],
+    proposalId: "10.540.16635/20110123",
+    type: "raw",
+    history: {},
   },
 
   DerivedCorrect: {

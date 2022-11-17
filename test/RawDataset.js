@@ -102,7 +102,7 @@ describe("RawDataset: Raw Datasets", () => {
   it("check if invalid raw dataset is valid", async () => {
     return request(app)
       .post("/api/v3/Datasets/isValid")
-      .send(TestData.RawWrong)
+      .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
       .expect(200)
       .expect("Content-Type", /json/)
@@ -114,12 +114,25 @@ describe("RawDataset: Raw Datasets", () => {
   it("tries to add an incomplete raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(TestData.RawWrong)
+      .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
+      });
+  });
+
+  it("tries to add a raw dataset with history field", async () => {
+    return request(app)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawWrong_2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        print(res.statusCode);
       });
   });
 

@@ -19,8 +19,10 @@ import {
 import {
   ApiBearerAuth,
   ApiExtraModels,
+  ApiProperty,
   ApiQuery,
   ApiTags,
+  getSchemaPath,
 } from "@nestjs/swagger";
 import { DatasetsService } from "./datasets.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
@@ -58,7 +60,7 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 //import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import { validate, validateOrReject, ValidationError } from "class-validator";
+import { validate, validateOrReject, ValidationError, ValidatorOptions } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 
@@ -79,6 +81,16 @@ export class DatasetsController {
   ) {}
 
   // POST /datasets
+  
+  // overwrites
+  async create(
+    createDatasetDto: CreateRawDatasetDto,
+  ): Promise<Dataset>
+  async create(
+    createDatasetDto: CreateDerivedDatasetDto,
+  ): Promise<Dataset>
+  //
+  // main implementation
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
   @UseInterceptors(
@@ -103,6 +115,11 @@ export class DatasetsController {
     let errors: Array<unknown> = [];
     let outputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto;
     const type = inputDatasetDto.type;
+    const validateOptions: ValidatorOptions = {
+      skipMissingProperties: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }
 
     if (type != "raw" && type != "derived") {
       throw new HttpException(
@@ -116,13 +133,17 @@ export class DatasetsController {
 
     if (type == "raw") {
       outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
-      errors = await validate(outputDatasetDto);
+      errors = await validate(outputDatasetDto,validateOptions);
+      console.log("Found ", errors.length ," errors");
+      console.log(errors);
+      console.log(inputDatasetDto)
+      console.log(outputDatasetDto);
     } else {
       outputDatasetDto = plainToInstance(
         CreateDerivedDatasetDto,
         inputDatasetDto,
       );
-      errors = await validate(outputDatasetDto);
+      errors = await validate(outputDatasetDto, validateOptions);
     }
     if (errors.length > 0) {
       throw new HttpException(

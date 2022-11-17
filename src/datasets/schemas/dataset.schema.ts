@@ -70,7 +70,9 @@ export class Dataset extends Ownable {
     description:
       "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
-  @Prop()
+  @Prop({
+    type: String,
+  })
   ownerEmail: string;
 
   @ApiProperty({

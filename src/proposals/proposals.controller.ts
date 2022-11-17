@@ -35,7 +35,7 @@ import { MeasurementPeriod } from "./schemas/measurement-period.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
+import { validate, ValidatorOptions } from "class-validator";
 import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 
@@ -72,9 +72,14 @@ export class ProposalsController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createProposal: unknown,
   ): Promise<{ valid: boolean }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
+    const validatorOptions: ValidatorOptions = {
+      skipMissingProperties: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }
+
     const dtoProposal = plainToInstance(CreateProposalDto, createProposal);
-    const errorsProposal = await validate(dtoProposal);
+    const errorsProposal = await validate(dtoProposal,validatorOptions);
 
     const valid = errorsProposal.length == 0;
 

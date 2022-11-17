@@ -137,6 +137,33 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
+    // check if proposal with additional field is valid
+    it("check if complete proposal with extra field is valid", async () => {
+      return request(app)
+        .post("/api/v3/Proposals/isValid")
+        .send(TestData.ProposalWring_1)
+        .set("Accept", "application/json")
+        .expect(200)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("valid").and.equal(false);
+        });
+    });
+  
+    it("adds a new complete proposal with an extra field, which should fail", async () => {
+      return request(app)
+        .post("/api/v3/Proposals")
+        .send(TestData.ProposalWring_1)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .expect(400)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.statusCode.should.not.equal(200);
+          //console.log(res.statusCode);
+        });
+    });
+  
   it("should fetch this new proposal", async () => {
     return request(app)
       .get("/api/v3/Proposals/" + proposalId)
