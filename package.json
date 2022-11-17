@@ -34,7 +34,7 @@
     "@nestjs/core": "^8.4.4",
     "@nestjs/jwt": "^8.0.1",
     "@nestjs/mongoose": "^9.2.0",
-    "@nestjs/passport": "^8.2.2",
+    "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^8.4.4",
     "@nestjs/swagger": "^5.2.1",
     "@user-office-software/duo-message-broker": "^1.4.0",
