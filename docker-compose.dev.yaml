@@ -14,6 +14,7 @@ services:
     volumes:
       - .:/home/node/app
       - /home/node/app/node_modules
+      - /home/node/app/dist
     environment:
       MONGODB_URI: mongodb://mongodb:27017/scicat
       EXPRESS_SESSION_SECRET: a_scicat_secret

@@ -1,10 +1,11 @@
-FROM --platform=amd64 node:16-alpine AS dev
+FROM node:16-alpine AS dev
 
 # Prepare app directory
 WORKDIR /home/node/app
 COPY . .
 
 # Set up local user
+RUN mkdir /home/node/app/dist
 RUN chown -R node:node /home/node/app
 USER node
 
