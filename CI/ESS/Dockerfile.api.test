@@ -22,4 +22,4 @@ COPY --chown=node:node . /home/node/app
 COPY --chown=node:node CI/ESS/wait-api.sh /home/node/app/
 
 # Start the app
-CMD ["./wait-api.sh"]
+CMD ["./wait.api.sh"]
