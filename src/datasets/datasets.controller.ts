@@ -154,7 +154,6 @@ export class DatasetsController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createDataset: unknown,
   ): Promise<{ valid: boolean }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
       createDataset,
@@ -578,7 +577,6 @@ export class DatasetsController {
   async origDatablockIsValid(
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestOrigDatablock = plainToInstance(
       CreateDatasetOrigDatablockDto,
       createOrigDatablock,

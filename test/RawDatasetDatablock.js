@@ -168,33 +168,6 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  // NOTE: Currently fullquery on dataset does not allow/support searching for fields on a related datablock.
-  // This is left from the old backend and might not be relevant anymore. Because in the old backend we had /datablocks/fullquery endpoint that allows this.
-  // it("Should fetch some filenames from the new dataset", async () => {
-  //   var fields = {
-  //     datasetId: datasetPid,
-  //     filenameExp: "B410",
-  //   };
-  //   var limits = {
-  //     skip: 0,
-  //     limit: 20,
-  //   };
-  //   return request(app)
-  //     .get(
-  //       "/api/v3/datasets/fullquery?fields=" +
-  //         encodeURIComponent(JSON.stringify(fields)) +
-  //         "&limits=" +
-  //         encodeURIComponent(JSON.stringify(limits)),
-  //     )
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
-  //     });
-  // });
-
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(app)
       .get("/api/v3/Datasets/" + datasetPid)

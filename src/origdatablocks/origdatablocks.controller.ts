@@ -55,7 +55,6 @@ export class OrigDatablocksController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
       createOrigDatablock,
