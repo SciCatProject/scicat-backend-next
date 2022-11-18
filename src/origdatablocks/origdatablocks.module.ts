@@ -19,6 +19,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
   ],
   controllers: [OrigDatablocksController],
   exports: [OrigDatablocksService],
-  providers: [OrigDatablocksService,CaslAbilityFactory],
+  providers: [OrigDatablocksService, CaslAbilityFactory],
 })
 export class OrigDatablocksModule {}

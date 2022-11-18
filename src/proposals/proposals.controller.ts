@@ -72,7 +72,6 @@ export class ProposalsController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createProposal: unknown,
   ): Promise<{ valid: boolean }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoProposal = plainToInstance(CreateProposalDto, createProposal);
     const errorsProposal = await validate(dtoProposal);
 

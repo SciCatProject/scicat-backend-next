@@ -61,6 +61,7 @@ import { plainToInstance } from "class-transformer";
 import { validate, validateOrReject, ValidationError } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
+import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -153,7 +154,6 @@ export class DatasetsController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createDataset: unknown,
   ): Promise<{ valid: boolean }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
       createDataset,
@@ -373,7 +373,7 @@ export class DatasetsController {
       typeof where === "string" || (where as unknown) instanceof String
         ? JSON.parse(where)
         : where;
-    //console.log("Where : " + JSON.stringify(whereFilters));
+
     return this.datasetsService.count(whereFilters);
   }
 
@@ -532,9 +532,8 @@ export class DatasetsController {
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    //console.log('dataset/<id>/origdatablock', ability.can(Action.Create, OrigDatablock));
     return ability.can(Action.Create, OrigDatablock);
-})
+  })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",
@@ -543,16 +542,16 @@ export class DatasetsController {
   @Post("/:id/origdatablocks")
   async createOrigDatablock(
     @Param("id") id: string,
-    @Body() createDatasetOrigDatablockDto: unknown,
+    @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
-        ...(createDatasetOrigDatablockDto as CreateDatasetOrigDatablockDto),
+        ...createDatasetOrigDatablockDto,
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
         accessGroups: dataset.accessGroups,
-        instrumentGroup: dataset.instrumentGroup
+        instrumentGroup: dataset.instrumentGroup,
       };
       const datablock = await this.origDatablocksService.create(
         createOrigDatablock,
@@ -577,16 +576,14 @@ export class DatasetsController {
   @Post("/:id/origdatablocks/isValid")
   async origDatablockIsValid(
     @Body() createOrigDatablock: unknown,
-  ): Promise<{ valid: boolean, errors: ValidationError[] }> {
-    // CreateRawDatasetDto | CreateDerivedDatasetDto
+  ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     const dtoTestOrigDatablock = plainToInstance(
       CreateDatasetOrigDatablockDto,
       createOrigDatablock,
     );
     const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
 
-    const valid =
-      errorsTestOrigDatablock.length == 0;
+    const valid = errorsTestOrigDatablock.length == 0;
 
     return { valid: valid, errors: errorsTestOrigDatablock };
   }
@@ -619,10 +616,28 @@ export class DatasetsController {
     @Param("fk") origDatablockId: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.update(
-      { _id: origDatablockId, datasetId },
-      updateOrigdatablockDto,
-    );
+    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
+      _id: origDatablockId,
+    });
+    if (dataset && origDatablockBeforeUpdate) {
+      const origDatablock = await this.origDatablocksService.update(
+        { _id: origDatablockId, datasetId },
+        updateOrigdatablockDto,
+      );
+      if (origDatablock) {
+        await this.datasetsService.findByIdAndUpdate(datasetId, {
+          size:
+            dataset.size - origDatablockBeforeUpdate.size + origDatablock.size,
+          numberOfFiles:
+            dataset.numberOfFiles -
+            origDatablockBeforeUpdate.dataFileList.length +
+            origDatablock.dataFileList.length,
+        });
+        return origDatablock;
+      }
+    }
+    return null;
   }
 
   // DELETE /datasets/:id/origdatablocks/:fk
@@ -643,11 +658,13 @@ export class DatasetsController {
         datasetId,
       });
       // all the remaing orig datablocks for this dataset
-      const odb = await this.origDatablocksService.findAll({ datasetId: datasetId });
+      const odb = await this.origDatablocksService.findAll({
+        datasetId: datasetId,
+      });
       // update dataset size and files number
       const updateDatasetDto: UpdateDatasetDto = {
-        size: odb.reduce((a , b) => a + b.size, 0),
-        numberOfFiles: odb.reduce((a,b) => a + b.dataFileList.length, 0),
+        size: odb.reduce((a, b) => a + b.size, 0),
+        numberOfFiles: odb.reduce((a, b) => a + b.dataFileList.length, 0),
       };
       await this.datasetsService.findByIdAndUpdate(
         dataset.pid,
@@ -656,7 +673,6 @@ export class DatasetsController {
       return res;
     }
     return null;
-
   }
 
   // POST /datasets/:id/datablocks
@@ -668,7 +684,7 @@ export class DatasetsController {
   @Post("/:id/datablocks")
   async createDatablock(
     @Param("id") id: string,
-    @Body() createDatablockDto: CreateDatablockDto,
+    @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
     if (dataset) {
@@ -676,11 +692,16 @@ export class DatasetsController {
         ...createDatablockDto,
         datasetId: id,
         ownerGroup: dataset.ownerGroup,
+        accessGroups: dataset.accessGroups,
+        instrumentGroup: dataset.instrumentGroup,
       };
       const datablock = await this.datablocksService.create(createDatablock);
       await this.datasetsService.findByIdAndUpdate(id, {
-        packedSize: datablock.packedSize,
-        numberOfFilesArchived: datablock.dataFileList.length,
+        packedSize: dataset.packedSize + datablock.packedSize,
+        numberOfFilesArchived:
+          dataset.numberOfFilesArchived + datablock.dataFileList.length,
+        size: dataset.size + datablock.size,
+        numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       });
       return datablock;
     }
@@ -707,16 +728,33 @@ export class DatasetsController {
     @Param("fk") datablockId: string,
     @Body() updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
-    const datablock = await this.datablocksService.update(
-      { _id: datablockId, datasetId },
-      updateDatablockDto,
-    );
-    if (datablock) {
-      await this.datasetsService.findByIdAndUpdate(datasetId, {
-        packedSize: datablock.packedSize,
-        numberOfFilesArchived: datablock.dataFileList.length,
-      });
-      return datablock;
+    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const datablockBeforeUpdate = await this.datablocksService.findOne({
+      _id: datablockId,
+    });
+    if (dataset && datablockBeforeUpdate) {
+      const datablock = await this.datablocksService.update(
+        { _id: datablockId, datasetId },
+        updateDatablockDto,
+      );
+      if (datablock) {
+        await this.datasetsService.findByIdAndUpdate(datasetId, {
+          packedSize:
+            dataset.packedSize -
+            datablockBeforeUpdate.packedSize +
+            datablock.packedSize,
+          numberOfFilesArchived:
+            dataset.numberOfFilesArchived -
+            datablockBeforeUpdate.dataFileList.length +
+            datablock.dataFileList.length,
+          size: dataset.size - datablockBeforeUpdate.size + datablock.size,
+          numberOfFiles:
+            dataset.numberOfFiles -
+            datablockBeforeUpdate.dataFileList.length +
+            datablock.dataFileList.length,
+        });
+        return datablock;
+      }
     }
     return null;
   }
@@ -729,9 +767,36 @@ export class DatasetsController {
     @Param("id") datasetId: string,
     @Param("fk") datablockId: string,
   ): Promise<unknown> {
-    return this.datablocksService.remove({
-      _id: datablockId,
-      datasetId,
-    });
+    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    if (dataset) {
+      // remove datablock
+      const res = await this.datablocksService.remove({
+        _id: datablockId,
+        datasetId,
+      });
+      // all the remaining datablocks for this dataset
+      const remainingDatablocks = await this.datablocksService.findAll({
+        datasetId: datasetId,
+      });
+      // update dataset size and files number
+      const updateDatasetDto: UpdateDatasetDto = {
+        packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
+        numberOfFilesArchived: remainingDatablocks.reduce(
+          (a, b) => a + b.dataFileList.length,
+          0,
+        ),
+        size: remainingDatablocks.reduce((a, b) => a + b.size, 0),
+        numberOfFiles: remainingDatablocks.reduce(
+          (a, b) => a + b.dataFileList.length,
+          0,
+        ),
+      };
+      await this.datasetsService.findByIdAndUpdate(
+        dataset.pid,
+        updateDatasetDto,
+      );
+      return res;
+    }
+    return null;
   }
 }

@@ -15,7 +15,7 @@ RUN chown -R node:node /home/node/app
 USER node
 
 # Install our packages
-RUN npm ci --no-optional
+RUN npm ci --omit=optional
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY --chown=node:node . /home/node/app

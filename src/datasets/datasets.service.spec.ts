@@ -13,9 +13,11 @@ class InitialDatasetsServiceMock {}
 class LogbooksServiceMock {}
 
 const mockDataset: RawDataset = {
+  _id: "testId",
   pid: "testPid",
   owner: "testOwner",
   ownerEmail: "testOwner@email.com",
+  instrumentId: "testInstrumentId",
   orcidOfOwner: "https://0000.0000.0000.0001",
   contactEmail: "testContact@email.com",
   sourceFolder: "/nfs/groups/beamlines/test/123456",
@@ -34,8 +36,8 @@ const mockDataset: RawDataset = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: {},
-  datasetLifeCycle: {
+  history: [],
+  datasetlifecycle: {
     id: "testId",
     archivable: true,
     retrievable: false,
@@ -62,6 +64,16 @@ const mockDataset: RawDataset = {
   scientificMetadata: {},
   proposalId: "ABCDEF",
   sampleId: "testSampleId",
+  attachments: [],
+  accessGroups: [],
+  createdBy: "test user",
+  datablocks: [],
+  origdatablocks: [],
+  ownerGroup: "test",
+  relationships: [],
+  sharedWith: [],
+  updatedBy: "test",
+  instrumentGroup: "test",
 };
 
 describe("DatasetsService", () => {

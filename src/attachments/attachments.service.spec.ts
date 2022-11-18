@@ -6,6 +6,7 @@ import { Attachment } from "./schemas/attachment.schema";
 
 const mockAttachment: Attachment = {
   _id: "testId",
+  id: "testId",
   thumbnail: "testThumbnail",
   caption: "Test caption",
   datasetId: "testDatasetId",
@@ -16,10 +17,12 @@ const mockAttachment: Attachment = {
   instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe("AttachmentsService", () => {
-  let service: AttachmentsService;
+  let service: Promise<AttachmentsService>;
   let attachmentModel: Model<Attachment>;
 
   beforeEach(async () => {
@@ -39,7 +42,7 @@ describe("AttachmentsService", () => {
       ],
     }).compile();
 
-    service = module.get<AttachmentsService>(AttachmentsService);
+    service = module.resolve<AttachmentsService>(AttachmentsService);
     attachmentModel = module.get<Model<Attachment>>(
       getModelToken("Attachment"),
     );

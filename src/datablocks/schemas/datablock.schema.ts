@@ -37,34 +37,33 @@ export class Datablock extends Ownable {
     description:
       "Unique identifier given bey archive system to the stored datablock. This id is used when data is retrieved back.",
   })
-  @Prop({ 
-    type: String, 
-    required: true, 
-    unique: true, 
-    sparse: true 
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    sparse: true,
   })
   archiveId: string;
 
   @ApiProperty({
     type: Number,
     required: true,
-    description: 
-      "Total size in bytes of all files in datablock when unpacked",
+    description: "Total size in bytes of all files in datablock when unpacked",
   })
-  @Prop({ 
-    type: Number, 
-    required: true 
+  @Prop({
+    type: Number,
+    required: true,
   })
   size: number;
 
-  @ApiProperty({ 
-    type: Number, 
+  @ApiProperty({
+    type: Number,
     required: true,
-    description: "Size of datablock package file" 
+    description: "Size of datablock package file",
   })
   @Prop({
-    type: Number, 
-    required: true 
+    type: Number,
+    required: true,
   })
   packedSize: number;
 
@@ -73,8 +72,8 @@ export class Datablock extends Ownable {
     description: "Algoritm used for calculation of checksums, e.g. sha2",
   })
   @Prop({
-    type: Number,
-    required: false,   
+    type: String,
+    required: false,
   })
   chkAlg: string;
 
@@ -83,9 +82,9 @@ export class Datablock extends Ownable {
     description:
       "Version string defining format of how data is packed and stored in archive",
   })
-  @Prop({ 
-    type: String, 
-    required: true 
+  @Prop({
+    type: String,
+    required: true,
   })
   version: string;
 
