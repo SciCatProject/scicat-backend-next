@@ -20,7 +20,7 @@
 
 - in a second terminal run the tests and save results in temporary file
   ```bash
-  > npm run test:e2e:mocha >>~/scicat-backend-nestjs-tests.txt 2>&1
+  > npm run test:api:mocha >>~/scicat-backend-nestjs-tests.txt 2>&1
   ```
 
 - run awk script on results file
