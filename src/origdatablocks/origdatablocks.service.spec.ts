@@ -1,7 +1,7 @@
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
-import { OrigdatablocksService } from "./origdatablocks.service";
+import { OrigDatablocksService } from "./origdatablocks.service";
 import { OrigDatablock } from "./schemas/origdatablock.schema";
 
 const mockOrigDatablock: OrigDatablock = {
@@ -13,6 +13,9 @@ const mockOrigDatablock: OrigDatablock = {
   instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
+  chkAlg: "sha1",
+  createdAt: new Date(),
+  updatedAt: new Date(),
   dataFileList: [
     {
       path: "testFile.hdf5",
@@ -27,13 +30,13 @@ const mockOrigDatablock: OrigDatablock = {
 };
 
 describe("OrigdatablocksService", () => {
-  let service: OrigdatablocksService;
+  let service: OrigDatablocksService;
   let model: Model<OrigDatablock>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        OrigdatablocksService,
+        OrigDatablocksService,
         {
           provide: getModelToken("OrigDatablock"),
           useValue: {
@@ -47,7 +50,7 @@ describe("OrigdatablocksService", () => {
       ],
     }).compile();
 
-    service = module.get<OrigdatablocksService>(OrigdatablocksService);
+    service = module.get<OrigDatablocksService>(OrigDatablocksService);
     model = module.get<Model<OrigDatablock>>(getModelToken("OrigDatablock"));
   });
 

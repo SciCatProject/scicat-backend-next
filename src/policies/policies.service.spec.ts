@@ -26,6 +26,8 @@ const mockPolicy: Policy = {
   instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe("PoliciesService", () => {

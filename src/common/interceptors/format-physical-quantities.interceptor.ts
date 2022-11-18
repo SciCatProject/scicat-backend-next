@@ -23,8 +23,9 @@ export class FormatPhysicalQuantitiesInterceptor<T> implements NestInterceptor {
     const instance = (req.body as T)[this.propName];
 
     if (req.body[this.propName]) {
-      req.body[this.propName] =
-        appendSIUnitToPhysicalQuantity<T[keyof T]>(instance);
+      req.body[this.propName] = appendSIUnitToPhysicalQuantity(
+        instance as object,
+      );
     }
 
     return next.handle();

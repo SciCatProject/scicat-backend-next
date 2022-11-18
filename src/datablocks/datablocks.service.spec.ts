@@ -17,6 +17,8 @@ const mockDatablock: Datablock = {
   instrumentGroup: "testInstrument",
   createdBy: "testUser",
   updatedBy: "testUser",
+  createdAt: new Date(),
+  updatedAt: new Date(),
   dataFileList: [
     {
       path: "testFile.hdf5",
@@ -31,7 +33,7 @@ const mockDatablock: Datablock = {
 };
 
 describe("DatablocksService", () => {
-  let service: DatablocksService;
+  let service: Promise<DatablocksService>;
   let model: Model<Datablock>;
 
   beforeEach(async () => {
@@ -51,7 +53,7 @@ describe("DatablocksService", () => {
       ],
     }).compile();
 
-    service = module.get<DatablocksService>(DatablocksService);
+    service = module.resolve<DatablocksService>(DatablocksService);
     model = module.get<Model<Datablock>>(getModelToken("Datablock"));
   });
 

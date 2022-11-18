@@ -48,7 +48,7 @@ export class OrigDatablock extends Ownable {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Algorithm used to compute the file chksum"
+    description: "Algorithm used to compute the file chksum",
   })
   @Prop({
     type: Number,
