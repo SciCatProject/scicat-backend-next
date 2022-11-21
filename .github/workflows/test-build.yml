@@ -41,7 +41,9 @@ jobs:
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
-          docker-compose up -d
+          docker-compose down --remove-orphans
+          docker-compose pull
+          docker-compose up --build -d
           npm install
           npm run api:after:start
 
