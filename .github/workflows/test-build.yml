@@ -17,7 +17,6 @@ jobs:
           npm install
           npm run test
 
-
   apitests:
     name: API tests
     runs-on: ubuntu-latest
@@ -27,7 +26,7 @@ jobs:
 
       - name: API tests
         env:
-          MONGODB_URI: mongodb://mongodb:27017/scicat
+          MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
           PORT: 3000
@@ -41,11 +40,8 @@ jobs:
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
-          docker-compose down --remove-orphans
-          docker-compose pull
           docker-compose up --build -d
           npm install
-          docker ps
           npm run api:after:start
 
   e2etests:
