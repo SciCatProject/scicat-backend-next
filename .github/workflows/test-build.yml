@@ -5,31 +5,34 @@ on:
     branches: [master]
 
 jobs:
-  unit_tests:
-    name: Unit Tests
+  test:
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Unit tests
-        run: npm run test
-  api_tests:
-    name: API Tests
+        run: |
+          npm run test
+
+
+  apitests:
+    name: API tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: test
+      - name: API tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           docker-compose down --remove-orphans
           docker-compose pull
           docker-compose up --build -d
-          npm run api:after:start 
+          npm run api:after:start
 
-  e2e_tests:
+  e2etests:
     name: E2E Tests
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +76,7 @@ jobs:
   build:
     name: Build and push Docker image with branch tag
     runs-on: ubuntu-latest
-    needs: [unit_test, e2e_tests]
+    needs: [test, e2etests]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
