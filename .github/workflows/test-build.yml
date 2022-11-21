@@ -45,6 +45,7 @@ jobs:
           docker-compose pull
           docker-compose up --build -d
           npm install
+          docker ps
           npm run api:after:start
 
   e2etests:
