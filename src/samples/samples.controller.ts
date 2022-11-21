@@ -25,15 +25,15 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
-import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
-import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
+//import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
+//import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -128,7 +128,7 @@ export class SamplesController {
                 where: { sampleId: sample.sampleId },
               });
               if (datasets) {
-                sample.datasets = datasets as Dataset[];
+                sample.datasets = datasets as DatasetClass[];
               }
               break;
             }
@@ -268,11 +268,11 @@ export class SamplesController {
 
   // GET /samples/:id/datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, DatasetClass))
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") sampleId: string,
-  ): Promise<Dataset[] | null> {
+  ): Promise<DatasetClass[] | null> {
     const cond = { where: { sampleId: sampleId } };
     return this.datasetsService.findAll(cond);
   }

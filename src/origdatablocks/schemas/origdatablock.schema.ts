@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
-import { Ownable } from "src/common/schemas/ownable.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DataFile, DataFileSchema } from "../../common/schemas/datafile.schema";
 
@@ -12,7 +12,7 @@ export type OrigDatablockDocument = OrigDatablock & Document;
     getters: true,
   },
 })
-export class OrigDatablock extends Ownable {
+export class OrigDatablock extends OwnableClass {
   @ApiProperty({
     type: String,
     default: () => uuidv4(),

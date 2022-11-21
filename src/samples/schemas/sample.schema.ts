@@ -5,8 +5,8 @@ import {
   Attachment,
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
-import { Ownable } from "src/common/schemas/ownable.schema";
-import { Dataset, DatasetSchema } from "src/datasets/schemas/dataset.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { DatasetClass, DatasetSchema } from "src/datasets/schemas/dataset.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type SampleDocument = Sample & Document;
@@ -17,7 +17,7 @@ export type SampleDocument = Sample & Document;
     getters: true,
   },
 })
-export class Sample extends Ownable {
+export class Sample extends OwnableClass {
   @Prop({ type: String })
   _id: string;
 
@@ -81,7 +81,7 @@ export class Sample extends Ownable {
   @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Dataset) } })
   @Prop([DatasetSchema])*/
   // this property should not be present in the database model
-  datasets: Dataset[];
+  datasets: DatasetClass[];
 }
 
 export const SampleSchema = SchemaFactory.createForClass(Sample);

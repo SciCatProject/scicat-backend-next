@@ -132,7 +132,7 @@ describe("RawDataset: Raw Datasets", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
-        print(res.statusCode);
+        console.log(res.statusCode);
       });
   });
 

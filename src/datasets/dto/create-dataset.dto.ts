@@ -16,7 +16,7 @@ import { Lifecycle } from "../schemas/lifecycle.schema";
 export class CreateDatasetDto extends OwnableDto {
   @IsOptional()
   @IsString()
-  readonly pid: string;
+  readonly pid?: string;
 
   @IsString()
   readonly owner: string;
@@ -89,6 +89,7 @@ export class CreateDatasetDto extends OwnableDto {
   @IsString()
   readonly version: string;
 
+  // it needs to be discussed if this fields is managed by the user or by the system
   @IsBoolean()
   readonly isPublished: boolean;
 
@@ -96,16 +97,19 @@ export class CreateDatasetDto extends OwnableDto {
   @ValidateNested()
   readonly techniques: Technique[];
 
+  // it needs to be discussed if this fields is managed by the user or by the system
   @IsOptional()
   @IsString({
     each: true,
   })
   readonly sharedWith: string[];
 
+  // it needs to be discussed if this fields is managed by the user or by the system
   @IsOptional()
   @ValidateNested()
   readonly relationships: Relationship[];
 
+  // it needs to be discussed if this fields is managed by the user or by the system
   @IsOptional()
   readonly datasetlifecycle: Lifecycle;
 }

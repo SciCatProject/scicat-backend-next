@@ -1,6 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Dataset, DatasetSchema } from "./schemas/dataset.schema";
+import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -22,12 +22,12 @@ import { PoliciesModule } from "src/policies/policies.module";
     forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([
       {
-        name: Dataset.name,
+        name: DatasetClass.name,
         imports: [PoliciesModule],
         useFactory: (policyService: PoliciesService) => {
           const schema = DatasetSchema;
 
-          schema.pre<Dataset>("save", async function (next) {
+          schema.pre<DatasetClass>("save", async function (next) {
             // if _id is empty or differnet than pid,
             // set _id to pid
             if (!this._id) {

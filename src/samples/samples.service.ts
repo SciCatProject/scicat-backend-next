@@ -1,7 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import {
   extractMetadataKeys,
@@ -14,15 +17,24 @@ import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { SampleField } from "./sample-field.enum";
 import { Sample, SampleDocument } from "./schemas/sample.schema";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class SamplesService {
   constructor(
     @InjectModel(Sample.name) private sampleModel: Model<SampleDocument>,
     private configService: ConfigService,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createSampleDto: CreateSampleDto): Promise<Sample> {
-    const createdSample = new this.sampleModel(createSampleDto);
+    const createdSample = new this.sampleModel({
+      ...createSampleDto,
+      ...{
+        createdBy: (this.request.user as JWTUser).username,
+        createdAt: new Date(),
+        updatedBy: (this.request.user as JWTUser).username,
+        updatedAt: new Date()
+      }
+    });
     return createdSample.save();
   }
 

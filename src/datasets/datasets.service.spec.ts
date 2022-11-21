@@ -5,14 +5,14 @@ import { Model } from "mongoose";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetsService } from "./datasets.service";
-import { Dataset } from "./schemas/dataset.schema";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+import { DatasetClass } from "./schemas/dataset.schema";
+//import { RawDataset } from "./schemas/raw-dataset.schema";
 
 class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
-const mockDataset: RawDataset = {
+const mockDataset: DatasetClass = {
   pid: "testPid",
   owner: "testOwner",
   ownerEmail: "testOwner@email.com",
@@ -66,7 +66,7 @@ const mockDataset: RawDataset = {
 
 describe("DatasetsService", () => {
   let service: DatasetsService;
-  let model: Model<Dataset>;
+  let model: Model<DatasetClass>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -92,7 +92,7 @@ describe("DatasetsService", () => {
     }).compile();
 
     service = module.get<DatasetsService>(DatasetsService);
-    model = module.get<Model<Dataset>>(getModelToken("Dataset"));
+    model = module.get<Model<DatasetClass>>(getModelToken("Dataset"));
   });
 
   it("should be defined", () => {

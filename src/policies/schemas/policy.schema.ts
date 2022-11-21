@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Ownable } from "src/common/schemas/ownable.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type PolicyDocument = Policy & Document;
@@ -12,7 +12,7 @@ export type PolicyDocument = Policy & Document;
     getters: true,
   },
 })
-export class Policy extends Ownable {
+export class Policy extends OwnableClass {
   @ApiProperty()
   @Prop({ type: String, default: () => uuidv4() })
   _id: string;

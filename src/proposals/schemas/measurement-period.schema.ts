@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Queryable } from "src/common/schemas/queryable.schema";
+import { QueryableClass } from "src/common/schemas/queryable.schema";
 
 export type MeasurementPeriodDocument = MeasurementPeriod & Document;
 
 @Schema()
-export class MeasurementPeriod extends Queryable {
+export class MeasurementPeriod extends QueryableClass {
   @ApiProperty({
     type: String,
     required: true,

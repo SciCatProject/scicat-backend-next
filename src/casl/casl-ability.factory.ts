@@ -10,7 +10,7 @@ import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
@@ -28,7 +28,7 @@ type Subjects =
   | InferSubjects<
       | typeof Attachment
       | typeof Datablock
-      | typeof Dataset
+      | typeof DatasetClass
       | typeof Instrument
       | typeof Job
       | typeof Logbook
@@ -52,22 +52,22 @@ export class CaslAbilityFactory {
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
-    can(Action.Read, Dataset, { isPublished: true });
-    can(Action.Read, Dataset, {
+    can(Action.Read, DatasetClass, { isPublished: true });
+    can(Action.Read, DatasetClass, {
       isPublished: false,
       ownerGroup: { $in: user.currentGroups },
     });
-    can(Action.Read, Dataset, {
+    can(Action.Read, DatasetClass, {
       isPublished: false,
       accessGroups: { $in: user.currentGroups },
     });
-    can(Action.Read, Dataset, {
+    can(Action.Read, DatasetClass, {
       sharedWith: user.email,
     });
 
     can(
       Action.Update,
-      Dataset,
+      DatasetClass,
       ["isPublished", "keywords", "scientificMetadata"],
       {
         ownerGroup: { $in: user.currentGroups },
@@ -105,9 +105,9 @@ export class CaslAbilityFactory {
       can(Action.Manage, "all");
     }
     if (user.currentGroups.includes(Role.ArchiveManager)) {
-      cannot(Action.Create, Dataset);
-      cannot(Action.Update, Dataset);
-      can(Action.Delete, Dataset);
+      cannot(Action.Create, DatasetClass);
+      cannot(Action.Update, DatasetClass);
+      can(Action.Delete, DatasetClass);
       cannot(Action.Manage, OrigDatablock);
       cannot(Action.Create, OrigDatablock);
       cannot(Action.Update, OrigDatablock);
@@ -119,9 +119,9 @@ export class CaslAbilityFactory {
     if (user.currentGroups.includes(Role.Ingestor)) {
       can(Action.Create, Attachment);
 
-      cannot(Action.Delete, Dataset);
-      can(Action.Create, Dataset);
-      can(Action.Update, Dataset);
+      cannot(Action.Delete, DatasetClass);
+      can(Action.Create, DatasetClass);
+      can(Action.Update, DatasetClass);
 
       can(Action.Create, Instrument);
       can(Action.Update, Instrument);

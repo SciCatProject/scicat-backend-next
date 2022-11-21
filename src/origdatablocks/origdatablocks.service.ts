@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
@@ -10,20 +12,28 @@ import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class OrigDatablocksService {
   constructor(
     @InjectModel(OrigDatablock.name)
     private origDatablockModel: Model<OrigDatablockDocument>,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(
     createOrigdatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
-    const createdOrigDatablock = new this.origDatablockModel(
-      createOrigdatablockDto,
-    );
+    const createdOrigDatablock = new this.origDatablockModel({
+      ...createOrigdatablockDto,
+      ...{
+        createdBy: (this.request.user as JWTUser).username,
+        createdAt: new Date(),
+        updatedBy: (this.request.user as JWTUser).username,
+        updatedAt: new Date()
+      }      
+    });
     return createdOrigDatablock.save();
   }
 
