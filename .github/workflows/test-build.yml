@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Unit and API Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,22 +15,6 @@ jobs:
       - name: test
         run: |
           cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
-          docker-compose down --remove-orphans
-          docker-compose pull
-          docker-compose up --build --exit-code-from scicat-backend
-          docker-compose down
-
-
-  apitests:
-    name: API tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: API tests
-        run: |
-          cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           docker-compose down --remove-orphans
           docker-compose pull
           docker-compose up --build --exit-code-from scicat-backend
