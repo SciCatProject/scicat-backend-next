@@ -40,7 +40,7 @@ services:
       - "traefik.http.routers.backend-next.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend-next.entrypoints=web"
   frontend:
-    image: ghcr.io/scicatproject/frontend:test_fixing-and-improving-e2e-tests
+    image: ghcr.io/scicatproject/frontend:latest
     volumes:
       - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
     depends_on:
