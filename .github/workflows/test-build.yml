@@ -26,6 +26,19 @@ jobs:
         uses: actions/checkout@v3
 
       - name: API tests
+        env:
+          MONGODB_URI: mongodb://mongodb:27017/scicat
+          EXPRESS_SESSION_SECRET: a_scicat_secret
+          JWT_SECRET: a_scicat_secret
+          PORT: 3000
+          HTTP_MAX_REDIRECTS: 5
+          HTTP_TIMEOUT: 5000
+          JWT_EXPIRES_IN: 3600
+          SITE: SAMPLE-SITE
+          PID_PREFIX: PID.SAMPLE.PREFIX
+          DOI_PREFIX: DOI.SAMPLE.PREFIX
+          METADATA_KEYS_RETURN_LIMIT: 100
+          METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
         run: |
           npm install
           npm run api:after:start
