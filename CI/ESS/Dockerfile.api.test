@@ -19,7 +19,7 @@ RUN npm ci --omit=optional
 
 # Copy the rest of our application, node_modules is ignored via .dockerignore
 COPY --chown=node:node . /home/node/app
-COPY --chown=node:node CI/ESS/wait-api.sh /home/node/app/
+COPY --chown=node:node CI/ESS/wait.api.sh /home/node/app/
 
 # Start the app
 CMD ["./wait.api.sh"]
