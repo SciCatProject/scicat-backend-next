@@ -38,6 +38,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: scicatproject/frontend
+          # NOTE: Change this to default branch later
           ref: SWAP-2894-fix-for-e2e-tests-after-migration
           path: frontend
           fetch-depth: 1
@@ -75,7 +76,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/scicatproject/scicat-backend-next
+            ghcr.io/scicatproject/backend-next
           flavor: |
             latest=false
           tags: |

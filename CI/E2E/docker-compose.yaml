@@ -40,6 +40,7 @@ services:
       - "traefik.http.routers.backend-next.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend-next.entrypoints=web"
   frontend:
+    # NOTE: Change this to default branch later
     image: ghcr.io/scicatproject/frontend:SWAP-2894-fix-for-e2e-tests-after-migration
     volumes:
       - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
