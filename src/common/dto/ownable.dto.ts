@@ -1,4 +1,3 @@
-import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 export class OwnableDto {
@@ -15,6 +14,7 @@ export class OwnableDto {
     description:
       "Optional additional groups which have read access to the data. Users which are member in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users",
   }) */
+  @IsOptional()
   @IsString({
     each: true,
   })
