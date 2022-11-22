@@ -41,6 +41,7 @@ import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
+import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-created-updated-at.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -61,6 +62,10 @@ export class PublishedDataController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
+  )
+  @UseInterceptors(
+    new SetCreatedUpdatedAtInterceptor<PublishedData>("createdAt"),
+    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
   )
   @Post()
   async create(
@@ -177,6 +182,9 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @UseInterceptors(
+    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
+  )
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -202,6 +210,9 @@ export class PublishedDataController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
+  )
+  @UseInterceptors(
+    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
   )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
@@ -359,6 +370,9 @@ export class PublishedDataController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
+  )
+  @UseInterceptors(
+    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
   )
   @Post("/:id/resync")
   async resync(

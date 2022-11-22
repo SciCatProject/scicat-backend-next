@@ -1,14 +1,7 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
+import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Request } from "express";
 import { FilterQuery, Model } from "mongoose";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import {
-  addCreatedFields,
-  addUpdatedFields,
-  parseLimitFilters,
-} from "src/common/utils";
+import { parseLimitFilters } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
@@ -20,11 +13,9 @@ import {
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class PublishedDataService {
   constructor(
-    @Inject(REQUEST)
-    private request: Request,
     @InjectModel(PublishedData.name)
     private publishedDataModel: Model<PublishedDataDocument>,
   ) {}
@@ -32,10 +23,8 @@ export class PublishedDataService {
   async create(
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    const username = (this.request?.user as JWTUser).username;
-    const ts = new Date();
     const createdPublishedData = new this.publishedDataModel(
-      addCreatedFields(createPublishedDataDto, username, ts),
+      createPublishedDataDto,
     );
     return createdPublishedData.save();
   }
@@ -67,15 +56,8 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     updatePublishedDataDto: UpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
-    const username = (this.request?.user as JWTUser).username;
-    const ts = new Date();
-    const updatePublishedData = addUpdatedFields(
-      updatePublishedDataDto,
-      username,
-      ts,
-    );
     return this.publishedDataModel
-      .findOneAndUpdate(filter, updatePublishedData, { new: true })
+      .findOneAndUpdate(filter, updatePublishedDataDto, { new: true })
       .exec();
   }
 

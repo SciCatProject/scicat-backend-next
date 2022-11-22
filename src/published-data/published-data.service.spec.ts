@@ -31,7 +31,7 @@ const mockPublishedData: PublishedData = {
 };
 
 describe("PublishedDataService", () => {
-  let service: Promise<PublishedDataService>;
+  let service: PublishedDataService;
   let model: Model<PublishedData>;
 
   beforeEach(async () => {
@@ -51,7 +51,7 @@ describe("PublishedDataService", () => {
       ],
     }).compile();
 
-    service = module.resolve<PublishedDataService>(PublishedDataService);
+    service = module.get<PublishedDataService>(PublishedDataService);
     model = module.get<Model<PublishedData>>(getModelToken("PublishedData"));
   });
 
