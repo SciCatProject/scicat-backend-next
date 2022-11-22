@@ -29,8 +29,8 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Install root dependencies
-        if: steps.cached-node-modules-root.outputs.cache-hit != 'true'
+      - name: Install dependencies
+        if: steps.cached-node-modules.outputs.cache-hit != 'true'
         run: npm install
 
   unit_tests:
