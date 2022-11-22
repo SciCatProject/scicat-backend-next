@@ -14,8 +14,11 @@ jobs:
 
       - name: test
         run: |
-          npm install
-          npm run test
+          cp CI/ESS/docker-compose.gitlab.yaml docker-compose.yaml
+          docker-compose down --remove-orphans
+          docker-compose pull
+          docker-compose up --build --exit-code-from scicat-backend
+          docker-compose down
 
   e2etests:
     name: E2E Tests
