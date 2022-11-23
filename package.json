@@ -33,7 +33,7 @@
     "@nestjs/common": "^8.4.7",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^8.4.4",
-    "@nestjs/jwt": "^8.0.1",
+    "@nestjs/jwt": "^9.0.0",
     "@nestjs/mongoose": "^9.2.0",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^8.4.4",
@@ -46,7 +46,7 @@
     "handlebars": "^4.7.7",
     "lodash": "^4.17.21",
     "luxon": "^2.5.0",
-    "mathjs": "^9.5.2",
+    "mathjs": "^11.4.0",
     "mongoose": "^6.5.1",
     "nodemailer": "^6.7.8",
     "openid-client": "^5.1.8",
@@ -58,7 +58,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.7",
     "swagger-ui-express": "^4.5.0",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.1.4",
@@ -71,7 +71,7 @@
     "@types/jest": "^27.0.2",
     "@types/lodash": "^4.14.180",
     "@types/luxon": "^2.3.0",
-    "@types/mocha": "^9.1.1",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
     "@types/nodemailer": "^6.4.4",
     "@types/passport-jwt": "^3.0.6",
