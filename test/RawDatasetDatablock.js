@@ -104,7 +104,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("adds a second datablock for same dataset", async () => {
     let testdata = TestData.DataBlockCorrect;
-    testdata.archiveId = "some-other-id-that-is-different";
+    testdata.archiveId = "some-other-archive-id-that-is-different";
 
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)

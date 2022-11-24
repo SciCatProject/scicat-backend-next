@@ -12,7 +12,6 @@ chai.use(chaiHttp);
 
 let accessToken = null,
   accessTokenArchiveManager = null,
-  defaultSampleId = null,
   sampleId = null,
   attachmentId = null,
   datasetId = null;
@@ -55,8 +54,7 @@ describe("Sample: Simple Sample", () => {
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("sampleId").and.be.string;
-        defaultSampleId = res.body["sampleId"];
-        sampleId = encodeURIComponent(res.body["sampleId"]);
+        sampleId = res.body["sampleId"];
       });
   });
 
@@ -96,7 +94,7 @@ describe("Sample: Simple Sample", () => {
         res.body.should.have.property("updatedBy").and.be.string;
         res.body.should.have.property("id").and.be.string;
         res.body.should.have.property("sampleId").and.equal(sampleId);
-        attachmentId = encodeURIComponent(res.body["id"]);
+        attachmentId = res.body["id"];
       });
   });
 
@@ -157,7 +155,7 @@ describe("Sample: Simple Sample", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-        datasetId = encodeURIComponent(res.body["pid"]);
+        datasetId = res.body["pid"];
       });
   });
 
@@ -182,7 +180,7 @@ describe("Sample: Simple Sample", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err) => {
         if (err) return done(err);
         done();
       });
