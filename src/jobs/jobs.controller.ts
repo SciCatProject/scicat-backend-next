@@ -40,8 +40,6 @@ export class JobsController {
    * @param {List of dataset id} ids
    */
   async checkDatasetsExistence(ids: string[]) {
-    const e = new Error();
-    // e.statusCode = 404;
     if (ids.length === 0) {
       throw new HttpException(
         {
