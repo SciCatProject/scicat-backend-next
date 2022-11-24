@@ -127,7 +127,9 @@ const TestData = {
     contactEmail: "bertram.astor@grumble.com",
     sourceFolder: "/iramjet/tif/",
     size: 0,
+    packedSize: 0,
     numberOfFiles: 0,
+    numberOfFilesArchived: 0,
     creationTime: "2011-09-14T06:08:25.000Z",
     description: "None",
     datasetName: "Test raw dataset",
@@ -295,7 +297,7 @@ const TestData = {
     accessGroups: ["data scientist", "instrument scientist"],
   },
 
-  DataBlockCorrect : {
+  DataBlockCorrect: {
     archiveId:
       "1oneCopyBig/p10029/raw/2018/01/23/20.500.11935/07e8a14c-f496-42fe-b4b4-9ff41061695e_1_2018-01-23-03-11-34.tar",
     size: 41780190,
@@ -351,8 +353,7 @@ const TestData = {
     ],
   },
 
-  OrigDataBlockCorrect1 : {
-    datasetId: "datasetId",
+  OrigDataBlockCorrect1: {
     size: 41780189,
     dataFileList: [
       {
@@ -396,12 +397,9 @@ const TestData = {
         perm: "-rw-rw-r--",
       },
     ],
-    ownerGroup: "ess",
-    accessGroups: ["data scientist", "instrument scientist"]
-  }, 
+  },
 
-  OrigDataBlockCorrect2 : {
-    datasetId: "datasetId",
+  OrigDataBlockCorrect2: {
     size: 41780289,
     dataFileList: [
       {
@@ -453,11 +451,9 @@ const TestData = {
         perm: "-rw-rw-r--",
       },
     ],
-    ownerGroup: "ess",
-    accessGroups: ["data scientist", "instrument scientist"]
-  }, 
+  },
 
-  OrigDataBlockWrong : {
+  OrigDataBlockWrong: {
     size: "This is wrong",
   },
 };

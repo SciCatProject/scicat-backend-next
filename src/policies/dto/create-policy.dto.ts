@@ -1,31 +1,46 @@
-import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 
 export class CreatePolicyDto extends OwnableDto {
-  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
   readonly manager: string[];
 
-  @ApiProperty()
+  @IsString()
+  @IsOptional()
   readonly tapeRedundancy: string;
 
-  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
   readonly autoArchive: boolean;
 
-  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
   readonly autoArchiveDelay: number;
 
-  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
   readonly archiveEmailNotification: boolean;
 
-  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
   readonly archiveEmailsToBeNotified: string[];
 
-  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
   readonly retrieveEmailNotification: boolean;
 
-  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
   readonly retrieveEmailsToBeNotified: string[];
 
-  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
   readonly embargoPeriod: number;
 }

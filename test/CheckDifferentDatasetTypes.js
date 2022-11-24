@@ -1,13 +1,8 @@
-const { expect } = require("chai");
 var chai = require("chai");
 var should = chai.should();
 var chaiHttp = require("chai-http");
-const { plainToInstance } = require("class-transformer");
-const { validate } = require("class-validator");
 var request = require("supertest");
 var utils = require("./LoginUtils");
-
-//let CreateRawDatasetDto = import("../src/datasets/dto/create-raw-dataset.dto");
 
 const { TestData } = require("./TestData");
 
@@ -24,6 +19,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   let pidDerived1 = null;
   let accessToken = null;
   let accessTokenArchiveManager = null;
+  let policyIds = [];
 
   beforeEach((done) => {
     utils.getToken(
@@ -76,7 +72,6 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
         res.body.should.have.property("count").and.be.a("number");
         countRawDataset = res.body.count;
       });
-    //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
   it("should get count of derived datasets", async () => {
@@ -91,7 +86,6 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
         res.body.should.have.property("count").and.be.a("number");
         countDerivedDataset = res.body.count;
       });
-    //.get("/api/v3/Datasets/count?where=" + encodeURIComponent("{\"type\":\"raw\"}"))
   });
 
   // check if dataset is valid
@@ -363,6 +357,29 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
         if (err) return done(err);
         done();
       });
+  });
+
+  it("check for the default policies to have been created", async () => {
+    return request(app)
+      .get("/api/v3/Policies")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        policyIds = res.body.map((x) => x["_id"]);
+      });
+  });
+
+  it("should delete the default policies created with datasets", async () => {
+    for (const item of policyIds) {
+      await request(app)
+        .delete("/api/v3/policies/" + item)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .expect(200);
+    }
   });
 
   it("new dataset count should be back to old count", function (done) {

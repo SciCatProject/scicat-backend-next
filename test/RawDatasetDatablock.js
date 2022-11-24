@@ -45,7 +45,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   it("adds a new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
-      .send(testraw)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -55,24 +55,24 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = encodeURIComponent(res.body["pid"]);
+        datasetPid = res.body["pid"];
       });
   });
 
-  it("adds a new datablock", () => {
+  it("adds a new datablock to the existing raw dataset", () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.OrigDataBlockCorrect.size);
+          .and.equal(TestData.DataBlockCorrect.size);
         res.body.should.have.property("id").and.be.string;
-        datablockId = encodeURIComponent(res.body["id"]);
+        datablockId = res.body["id"];
       });
   });
 
@@ -81,7 +81,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(500)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -94,8 +94,8 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(401)
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
@@ -104,24 +104,25 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   it("adds a second datablock for same dataset", async () => {
     let testdata = TestData.DataBlockCorrect;
-    testdata.archiveId = "some-other-id-that-is-different";
+    testdata.archiveId = "some-other-archive-id-that-is-different";
+
     return request(app)
-      .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
+      .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(testdata)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size");
         res.body.should.have.property("id").and.be.string;
-        datablockId2 = encodeURIComponent(res.body["id"]);
+        datablockId2 = res.body["id"];
       });
   });
 
   it("Should fetch all datablocks belonging to the new dataset", async () => {
     return request(app)
-      .get("/api/v3/Datasets/" + pid + "/datablocks")
+      .get(`/api/v3/datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -149,10 +150,9 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
     return request(app)
       .get(
-        "/api/v3/Datasets/findOne?filter=" +
-          encodeURIComponent(JSON.stringify(filter)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
+        `/api/v3/Datasets/findOne?filter=
+          ${encodeURIComponent(JSON.stringify(filter))}
+          &limits=${encodeURIComponent(JSON.stringify(limits))}`,
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -164,34 +164,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
         res.body.datablocks[0].should.have
           .property("dataFileList")
           .and.be.instanceof(Array)
-          .and.to.have.length(
-            TestData.OrigDataBlockCorrect.dataFileList.length,
-          );
-      });
-  });
-
-  it("Should fetch some filenames from the new dataset", async () => {
-    var fields = {
-      datasetId: datasetPid,
-      filenameExp: "B410",
-    };
-    var limits = {
-      skip: 0,
-      limit: 20,
-    };
-    return request(app)
-      .get(
-        "/api/v3/OrigDatablocks/findFilesByName?fields=" +
-          encodeURIComponent(JSON.stringify(fields)) +
-          "&limits=" +
-          encodeURIComponent(JSON.stringify(limits)),
-      )
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.be.instanceof(Array).and.to.have.lengthOf.above(0);
+          .and.to.have.length(TestData.DataBlockCorrect.dataFileList.length);
       });
   });
 
@@ -205,40 +178,78 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.OrigDataBlockCorrect.size * 2);
-        res.body.should.have
-          .property("packedSize")
           .and.equal(TestData.DataBlockCorrect.size * 2);
         res.body.should.have
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize * 2);
+        res.body.should.have
           .property("numberOfFiles")
-          .and.equal(TestData.OrigDataBlockCorrect.numberOfFiles * 2);
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
         res.body.should.have
           .property("numberOfFilesArchived")
-          .and.equal(TestData.DataBlockCorrect.numberOfFiles * 2);
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length * 2);
       });
   });
 
   it("should delete first datablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetId}/Datablocks/${datablockId}`)
+      .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
+  });
+
+  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+    return request(app)
+      .get("/api/v3/Datasets/" + datasetPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(TestData.DataBlockCorrect.size);
+        res.body.should.have
+          .property("packedSize")
+          .and.equal(TestData.DataBlockCorrect.packedSize);
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
+        res.body.should.have
+          .property("numberOfFilesArchived")
+          .and.equal(TestData.DataBlockCorrect.dataFileList.length);
+      });
   });
 
   it("should delete second datablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetId}/Datablocks/${datablockId2}`)
+      .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
 
+  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+    return request(app)
+      .get("/api/v3/Datasets/" + datasetPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("size").and.equal(0);
+        res.body.should.have.property("packedSize").and.equal(0);
+        res.body.should.have.property("numberOfFiles").and.equal(0);
+        res.body.should.have.property("numberOfFilesArchived").and.equal(0);
+      });
+  });
+
   it("should delete the newly created dataset", async () => {
     return request(app)
-      .delete("/api/v3/Datasets/" + pid)
+      .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)

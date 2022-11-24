@@ -10,6 +10,7 @@ import {
   IsDateString,
   IsBoolean,
   ValidateNested,
+  IsObject,
 } from "class-validator";
 import { Lifecycle } from "../schemas/lifecycle.schema";
 
@@ -112,4 +113,8 @@ export class CreateDatasetDto extends OwnableDto {
   // it needs to be discussed if this fields is managed by the user or by the system
   @IsOptional()
   readonly datasetlifecycle: Lifecycle;
+
+  @IsOptional()
+  @IsObject()
+  readonly scientificMetadata: Record<string, unknown>;
 }

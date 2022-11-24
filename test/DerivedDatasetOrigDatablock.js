@@ -11,16 +11,13 @@ chai.use(chaiHttp);
 const app = "http://localhost:3000";
 
 describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to derived Datasets", () => {
-  var accessTokenIngestor = null;
-  var accessTokenArchiveManager = null;
+  let accessTokenIngestor = null;
+  let accessTokenArchiveManager = null;
 
-  var datasetPid = null;
+  let datasetPid = null;
 
-  var origDatablockId1 = null;
-  var origDatablockId2 = null;
-
-  var origDatablockData1 = null;
-  var origDatablockData2 = null;
+  let origDatablockId1 = null;
+  let origDatablockId2 = null;
 
   beforeEach((done) => {
     utils.getToken(
@@ -44,22 +41,6 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
         );
       },
     );
-
-    let {
-      datasetId1, 
-      ownerGroup1, 
-      accessGroups1, 
-      instrumentGroup1,
-      ...localOrigDatablockData1} = TestData.OrigDataBlockCorrect1;
-    origDatablockData1 = localOrigDatablockData1;
-    let {
-      datasetId2, 
-      ownerGroup2, 
-      accessGroups2, 
-      instrumentGroup2, 
-      ...localOrigDatablockData2} = TestData.OrigDataBlockCorrect2;
-    origDatablockData2 = localOrigDatablockData2;
-
   });
 
   it("adds a new derived dataset", async () => {
@@ -75,27 +56,28 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = encodeURIComponent(res.body["pid"]);
+        datasetPid = res.body["pid"];
       });
   });
 
-  it("validate correct origDatablock data used later", async () =>{
+  it("validate correct origDatablock data used later", async () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
-      .send(origDatablockData1)
+      .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
-        res.body.should.have.property("errors")
+        res.body.should.have
+          .property("errors")
           .and.be.instanceof(Array)
           .and.to.have.lengthOf(0);
       });
   });
 
-  it("validate wrong origDatablock and expect false", async () =>{
+  it("validate wrong origDatablock and expect false", async () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockWrong)
@@ -105,16 +87,17 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(false);
-        res.body.should.have.property("errors")
+        res.body.should.have
+          .property("errors")
           .and.be.instanceof(Array)
           .and.to.have.lengthOf.above(0);
-    });
+      });
   });
 
   it("adds a new origDatablock with wrong account which should fail", async () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
-      .send(origDatablockData1)
+      .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(403)
@@ -124,7 +107,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   it("adds a new origDatablock with correct account", async () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
-      .send(origDatablockData1)
+      .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
@@ -134,14 +117,14 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
           .property("size")
           .and.equal(TestData.OrigDataBlockCorrect1.size);
         res.body.should.have.property("id").and.be.string;
-        origDatablockId1 = encodeURIComponent(res.body["id"]);
+        origDatablockId1 = res.body["id"];
       });
   });
 
   it("adds a second origDatablock", async () => {
     return request(app)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
-      .send(origDatablockData2)
+      .send(TestData.OrigDataBlockCorrect2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
@@ -151,7 +134,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
           .property("size")
           .and.equal(TestData.OrigDataBlockCorrect2.size);
         res.body.should.have.property("id").and.be.string;
-        origDatablockId2 = encodeURIComponent(res.body["id"]);
+        origDatablockId2 = res.body["id"];
       });
   });
 
@@ -164,14 +147,8 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
-        res.body[0]["id"].should.be.oneOf([
-          origDatablockId1,
-          origDatablockId2,
-        ]);
-        res.body[1]["id"].should.be.oneOf([
-          origDatablockId1,
-          origDatablockId2,
-        ]);
+        res.body[0]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
+        res.body[1]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
       });
   });
 
@@ -184,17 +161,18 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["size"].should.be.equal(
-          TestData.OrigDataBlockCorrect1.size + TestData.OrigDataBlockCorrect2.size,
+          TestData.OrigDataBlockCorrect1.size +
+            TestData.OrigDataBlockCorrect2.size,
         );
       });
   });
 
   it("should fetch one dataset including related data", async () => {
-    var limits = {
+    const limits = {
       skip: 0,
       limit: 10,
     };
-    var filter = {
+    const filter = {
       where: {
         pid: datasetPid,
       },
@@ -231,11 +209,11 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch some origDatablock by the full filename and dataset pid", async () => {
-    var fields = {
+    const fields = {
       datasetId: datasetPid,
       "dataFileList.path": "N1039-B410377.tif",
     };
-    var limits = {
+    const limits = {
       skip: 0,
       limit: 20,
     };
@@ -256,11 +234,11 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch some origDatablock by the partial filename and dataset pid", async () => {
-    var fields = {
+    const fields = {
       datasetId: datasetPid,
-      "dataFileList.path": {"$regex" : "B410"},
+      "dataFileList.path": { $regex: "B410" },
     };
-    var limits = {
+    const limits = {
       skip: 0,
       limit: 20,
     };
@@ -281,11 +259,11 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch no origDatablock using a non existing filename", async () => {
-    var fields = {
+    const fields = {
       datasetId: datasetPid,
       "dataFileList.path": "this_file_does_not_exists.txt",
     };
-    var limits = {
+    const limits = {
       skip: 0,
       limit: 20,
     };
@@ -306,11 +284,11 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch one origDatablock using a specific filename and dataset id", async () => {
-    var fields = {
+    const fields = {
       datasetId: datasetPid,
       "dataFileList.path": "this_unique_file.txt",
     };
-    var limits = {
+    const limits = {
       skip: 0,
       limit: 20,
     };
@@ -330,7 +308,6 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       });
   });
 
-
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(app)
       .get("/api/v3/Datasets/" + datasetPid)
@@ -341,16 +318,24 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(TestData.OrigDataBlockCorrect1.size + TestData.OrigDataBlockCorrect2.size);
+          .and.equal(
+            TestData.OrigDataBlockCorrect1.size +
+              TestData.OrigDataBlockCorrect2.size,
+          );
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(TestData.OrigDataBlockCorrect1.dataFileList.length + TestData.OrigDataBlockCorrect2.dataFileList.length);
+          .and.equal(
+            TestData.OrigDataBlockCorrect1.dataFileList.length +
+              TestData.OrigDataBlockCorrect2.dataFileList.length,
+          );
       });
   });
 
   it("should delete first OrigDatablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId1}`)
+      .delete(
+        `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId1}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
@@ -358,7 +343,9 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
 
   it("should delete second OrigDatablock", async () => {
     return request(app)
-      .delete(`/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId2}`)
+      .delete(
+        `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId2}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
@@ -384,12 +371,8 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
+        res.body.should.have.property("size").and.equal(0);
+        res.body.should.have.property("numberOfFiles").and.equal(0);
       });
   });
 

@@ -23,7 +23,7 @@ export const convertToSI = (
   }
 };
 
-export const appendSIUnitToPhysicalQuantity = <T>(object: T) => {
+export const appendSIUnitToPhysicalQuantity = <T extends object>(object: T) => {
   let updatedObject = {} as T;
   Object.keys(object).forEach((key) => {
     const instance = object[key as keyof T] as T[keyof T];
@@ -429,7 +429,7 @@ export const createFullqueryFilter = <T>(
   return filterQuery;
 };
 
-export const createFullfacetPipeline = <T, Y>(
+export const createFullfacetPipeline = <T, Y extends object>(
   model: Model<
     T,
     Record<string, never>,

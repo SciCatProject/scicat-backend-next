@@ -124,7 +124,7 @@ export class DatasetClass extends OwnableClass {
     description:
       "Total size of all source files contained in source folder on disk when unpacked",
   })
-  @Prop({ type: Number, index: true })
+  @Prop({ type: Number, index: true, default: 0 })
   size: number;
 
   @ApiProperty({
@@ -132,7 +132,7 @@ export class DatasetClass extends OwnableClass {
     description:
       "Total size of all datablock package files created for this dataset",
   })
-  @Prop()
+  @Prop({ default: 0 })
   packedSize: number;
 
   @ApiProperty({
@@ -140,7 +140,7 @@ export class DatasetClass extends OwnableClass {
     description:
       "Total number of lines in filelisting of all OrigDatablocks for this dataset",
   })
-  @Prop()
+  @Prop({ default: 0 })
   numberOfFiles: number;
 
   @ApiProperty({
@@ -148,7 +148,7 @@ export class DatasetClass extends OwnableClass {
     description:
       "Total number of lines in filelisting of all Datablocks for this dataset",
   })
-  @Prop()
+  @Prop({ default: 0 })
   numberOfFilesArchived: number;
 
   @ApiProperty({

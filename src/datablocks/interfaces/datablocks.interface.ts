@@ -10,6 +10,6 @@ export interface IDatablockFields {
   packedSize?: {
     min?: string;
     max?: string;
-  }
+  };
   dataFilelist: IDatafileFilter[];
 }

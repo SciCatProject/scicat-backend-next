@@ -87,6 +87,7 @@ export class CaslAbilityFactory {
 
     can(Action.Read, PublishedData);
     can(Action.Update, PublishedData);
+    can(Action.Create, PublishedData);
 
     can(Action.Create, Sample);
     can(Action.Read, Sample, { ownerGroup: { $in: user.currentGroups } });
@@ -112,6 +113,10 @@ export class CaslAbilityFactory {
       cannot(Action.Create, OrigDatablock);
       cannot(Action.Update, OrigDatablock);
       can(Action.Delete, OrigDatablock);
+      cannot(Action.Manage, Datablock);
+      cannot(Action.Create, Datablock);
+      cannot(Action.Update, Datablock);
+      can(Action.Delete, Datablock);
     }
     if (user.currentGroups.includes(Role.GlobalAccess)) {
       can(Action.Read, "all");

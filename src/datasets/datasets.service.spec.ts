@@ -1,6 +1,7 @@
 import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
+import { string } from "mathjs";
 import { Model } from "mongoose";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -12,10 +13,13 @@ class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
+//const mockDataset: DatasetClass = {
 const mockDataset: DatasetClass = {
+  _id: "testId",
   pid: "testPid",
   owner: "testOwner",
   ownerEmail: "testOwner@email.com",
+  instrumentId: "testInstrumentId",
   orcidOfOwner: "https://0000.0000.0000.0001",
   contactEmail: "testContact@email.com",
   sourceFolder: "/nfs/groups/beamlines/test/123456",
@@ -34,8 +38,8 @@ const mockDataset: DatasetClass = {
   license: "string",
   version: "string",
   isPublished: false,
-  history: {},
-  datasetLifeCycle: {
+  history: [],
+  datasetlifecycle: {
     id: "testId",
     archivable: true,
     retrievable: false,
@@ -62,6 +66,21 @@ const mockDataset: DatasetClass = {
   scientificMetadata: {},
   proposalId: "ABCDEF",
   sampleId: "testSampleId",
+  attachments: [],
+  accessGroups: [],
+  createdBy: "test user",
+  datablocks: [],
+  origdatablocks: [],
+  ownerGroup: "test",
+  relationships: [],
+  sharedWith: [],
+  updatedBy: "test",
+  instrumentGroup: "test",
+  investigator: "test",
+  inputDatasets: [],
+  usedSoftware: [],
+  jobParameters: {},
+  jobLogData: ""
 };
 
 describe("DatasetsService", () => {

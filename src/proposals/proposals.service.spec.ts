@@ -22,13 +22,13 @@ const mockProposal: Proposal = {
   instrumentGroup: "testInstrument",
   createdBy: "proposalIngestor",
   updatedBy: "proposalIngestor",
-  attachments: [],
-  datasets: [],
   MeasurementPeriodList: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe("ProposalsService", () => {
-  let service: ProposalsService;
+  let service: Promise<ProposalsService>;
   let model: Model<Proposal>;
 
   beforeEach(async () => {
@@ -48,7 +48,7 @@ describe("ProposalsService", () => {
       ],
     }).compile();
 
-    service = module.get<ProposalsService>(ProposalsService);
+    service = module.resolve<ProposalsService>(ProposalsService);
     model = module.get<Model<Proposal>>(getModelToken("Proposal"));
   });
 

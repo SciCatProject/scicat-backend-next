@@ -14,15 +14,6 @@ let accessToken = null,
   proposalId = null,
   attachmentId = null;
 
-/* const testproposal = {
-  proposalId: "20170266",
-  email: "proposer%40uni.edu",
-  title: "A test proposal",
-  abstract: "Abstract of test proposal",
-  ownerGroup: "20170251-group",
-  MeasurementPeriodList: [],
-}; */
-
 const app = "http://localhost:3000";
 
 describe("Proposal: Simple Proposal", () => {
@@ -59,13 +50,6 @@ describe("Proposal: Simple Proposal", () => {
   }
 
   it("remove potentially existing proposals to guarantee uniqueness", async () => {
-    /*     let filter =
-      // eslint-disable-next-line @typescript-eslint/quotes
-      '{"where": {"proposalId": "' +
-      TestData.ProposalCorrect.proposalId +
-      // eslint-disable-next-line @typescript-eslint/quotes
-      '"}}';
-    */
     return request(app)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
@@ -76,7 +60,6 @@ describe("Proposal: Simple Proposal", () => {
         // now remove all these entries
         processArray(res.body);
       });
-    //.get("/api/v3/Proposals?filter=" + encodeURIComponent(filter))
   });
 
   // check if proposal is valid
