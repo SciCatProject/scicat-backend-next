@@ -50,8 +50,6 @@ export class JobsController {
         },
         HttpStatus.BAD_REQUEST,
       );
-
-      throw e;
     }
     const filter = {
       fields: {
