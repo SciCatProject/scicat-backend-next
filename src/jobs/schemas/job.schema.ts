@@ -33,6 +33,7 @@ export class Job {
   })
   type: string;
 
+  // TODO: Maybe this should be createdAt instead to follow all other schemas. Try to use timestamps from mongoose.
   @ApiProperty({
     description:
       "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339",
