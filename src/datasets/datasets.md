@@ -9,8 +9,8 @@ So here is the description of how Datasets are currently setup:
 ```mermaid
 flowchart TD
     A[CreateDatasetDto] -- PartialType --> B[UpdateDatasetDto]
-    A --> Extended By --> C[CreateRawDatasetDto]
-    A --> Extended By --> D[CreateDerivedDatasetDto]
+    A -- ExtendedBy --> C[CreateRawDatasetDto]
+    A -- ExtendedBy --> D[CreateDerivedDatasetDto]
     C[CreateDatasetDto] -- PartialType --> E[UpdateRawDatasetDto]
     D[CreateDatasetDto] -- PartialType --> F[UpdateDerivedDatasetDto]
 ```
