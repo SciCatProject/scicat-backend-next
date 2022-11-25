@@ -25,6 +25,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-created-updated-at.interceptor";
 import { DatasetsService } from "src/datasets/datasets.service";
+import { JobType, DatasetState } from "./job-type.enum";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -75,13 +76,81 @@ export class JobsController {
   }
 
   /**
+   * Check that datasets is in state which the job can be performed
+   * For retrieve jobs all datasets must be in state retrievable
+   * For archive jobs all datasets must be in state archivable
+   *      * For copy jobs no need to check only need to filter out datasets that have already been copied when submitting to job queue
+   * ownerGroup is tested implicitly via Ownable
+   */
+  async checkDatasetsState(type: string, ids: string[]) {
+    switch (type) {
+      case JobType.Retrieve: //Intentional fall through
+      case JobType.Archive:
+        {
+          const filter = {
+            fields: {
+              pid: true,
+            },
+            where: {
+              [`datasetlifecycle.${DatasetState[type]}`]: false,
+              pid: {
+                $in: ids,
+              },
+            },
+          };
+          const result = await this.datasetsService.findAll(filter);
+          if (result.length > 0) {
+            throw new HttpException(
+              {
+                status: HttpStatus.CONFLICT,
+                message: `The following datasets are not in ${DatasetState[type]} state - no ${type} job sent:\n`,
+                error: JSON.stringify(result),
+              },
+              HttpStatus.CONFLICT,
+            );
+          }
+        }
+        break;
+      case JobType.Public:
+        {
+          const filter = {
+            fields: {
+              pid: true,
+            },
+            where: {
+              [DatasetState.public]: true,
+              pid: {
+                $in: ids,
+              },
+            },
+          };
+          const result = await this.datasetsService.findAll(filter);
+          if (result.length !== ids.length) {
+            throw new HttpException(
+              {
+                status: HttpStatus.CONFLICT,
+                message: "The following datasets are not public - no job sent",
+                error: JSON.stringify(result),
+              },
+              HttpStatus.CONFLICT,
+            );
+          }
+        }
+        break;
+      default:
+        //Not check other job types
+        break;
+    }
+  }
+
+  /**
    * Validate if the job is performable
    */
   async validateJob(createJobDto: CreateJobDto) {
     const ids = createJobDto.datasetList.map((x) => x.pid);
     // checkPermission(ctx, ids);
     await this.checkDatasetsExistence(ids);
-    // await checkDatasetsState(ctx, ids);
+    await this.checkDatasetsState(createJobDto.type, ids);
     // await checkFilesExistence(ctx, ids);
   }
 

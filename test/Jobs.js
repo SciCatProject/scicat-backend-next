@@ -1,14 +1,7 @@
 "use strict";
 
-// process.env.NODE_ENV = 'test';
-
-var chai = require("chai");
-var chaiHttp = require("chai-http");
 var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
 
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
@@ -219,6 +212,7 @@ describe("Jobs: Test New Job Model", () => {
         pid1 = res.body["pid"];
       });
   });
+
   it("adds another new raw dataset", async () => {
     return request(app)
       .post("/api/v3/Datasets")
@@ -240,7 +234,7 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Adds a new archive job request without authentication, which should fails", async () => {
+  it("Adds a new archive job request without authentication, which should fail", async () => {
     return request(app)
       .post("/api/v3/Jobs")
       .send(testArchiveJob)
