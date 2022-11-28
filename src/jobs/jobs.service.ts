@@ -44,6 +44,11 @@ export class JobsService implements OnModuleInit {
     this.jobModel.addListener("jobUpdated", this.sendFinishJobEmail);
   }
 
+  // @OnEvent("jobCreated")
+  // onJobCreatedEvent(msg: string) {
+  //   this.sendStartJobEmail;
+  // }
+
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
     return createdJob.save();
@@ -104,7 +109,7 @@ export class JobsService implements OnModuleInit {
     return this.jobModel.findOneAndRemove(filter).exec();
   }
 
-  async sendStartJobEmail(context: { instance: Job }) {
+  sendStartJobEmail = async (context: { instance: Job }) => {
     const ids: string[] = context.instance.datasetList.map(
       (dataset) => dataset.pid as string,
     );
@@ -115,7 +120,7 @@ export class JobsService implements OnModuleInit {
     const filter: IFilters<DatasetDocument, IDatasetFields> = {
       where: {
         pid: {
-          inq: ids,
+          $in: ids,
         },
       },
     };
@@ -143,13 +148,13 @@ export class JobsService implements OnModuleInit {
 
     const policy = await this.getPolicy(ids[0]);
     await this.applyPolicyAndSendEmail(jobType, policy, emailContext, to);
-  }
+  };
 
   // Populate email context for finished job notification
-  async sendFinishJobEmail(context: {
+  sendFinishJobEmail = async (context: {
     instance: Job;
     hookState: { oldData: Job[] };
-  }) {
+  }) => {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job
     context.hookState.oldData.forEach(async (oldData) => {
@@ -174,7 +179,7 @@ export class JobsService implements OnModuleInit {
         const filter = {
           where: {
             pid: {
-              inq: ids,
+              $in: ids,
             },
           },
         };
@@ -241,7 +246,7 @@ export class JobsService implements OnModuleInit {
         );
       }
     });
-  }
+  };
 
   async markDatasetsAsScheduled(ids: string[], jobType: string) {
     const statusMessage = {
@@ -250,7 +255,7 @@ export class JobsService implements OnModuleInit {
     };
     const filter = {
       pid: {
-        inq: ids,
+        $in: ids,
       },
     };
 

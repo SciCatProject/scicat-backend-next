@@ -302,132 +302,131 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   // TODO: Continue fixing the logic and the tests for jobs.
-  // it("Check if dataset 1 was updated by job request", async () => {
-  //   return request(app)
-  //     .get("/api/v3/Datasets/" + pid1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.archivable")
-  //         .and.equal(false);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.retrievable")
-  //         .and.equal(false);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.archiveStatusMessage")
-  //         .and.equal("scheduledForArchiving");
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.publishable")
-  //         .and.equal(false);
-  //     });
-  // });
-  // it("Check if dataset 2 was updated by job request", async () => {
-  //   return request(app)
-  //     .get("/api/v3/Datasets/" + pid2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.archivable")
-  //         .and.equal(false);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.retrievable")
-  //         .and.equal(false);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.archiveStatusMessage")
-  //         .and.equal("scheduledForArchiving");
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.publishable")
-  //         .and.equal(false);
-  //     });
-  // });
+  it("Check if dataset 1 was updated by job request", async () => {
+    return request(app)
+      .get("/api/v3/Datasets/" + pid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.nested
+          .property("datasetlifecycle.archivable")
+          .and.equal(false);
+        res.body.should.have.nested
+          .property("datasetlifecycle.retrievable")
+          .and.equal(false);
+        res.body.should.have.nested
+          .property("datasetlifecycle.archiveStatusMessage")
+          .and.equal("scheduledForArchiving");
+        res.body.should.have.nested
+          .property("datasetlifecycle.publishable")
+          .and.equal(false);
+      });
+  });
+  it("Check if dataset 2 was updated by job request", async () => {
+    return request(app)
+      .get("/api/v3/Datasets/" + pid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.nested
+          .property("datasetlifecycle.archivable")
+          .and.equal(false);
+        res.body.should.have.nested
+          .property("datasetlifecycle.retrievable")
+          .and.equal(false);
+        res.body.should.have.nested
+          .property("datasetlifecycle.archiveStatusMessage")
+          .and.equal("scheduledForArchiving");
+        res.body.should.have.nested
+          .property("datasetlifecycle.publishable")
+          .and.equal(false);
+      });
+  });
 
-  // it("Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
-  //   return request(app)
-  //     .post("/api/v3/Jobs")
-  //     .send(testRetrieveJob)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(409)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       if (err) {
-  //         return done(err);
-  //       }
-  //       res.body.should.have.property("error");
-  //     });
-  // });
+  it("Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
+    return request(app)
+      .post("/api/v3/Jobs")
+      .send(testRetrieveJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(409)
+      .expect("Content-Type", /json/)
+      .then((res, err) => {
+        if (err) {
+          return done(err);
+        }
+        res.body.should.have.property("error");
+      });
+  });
 
-  // it("Send an update status to dataset 1, simulating the archive system response", async () => {
-  //   return request(app)
-  //     .put("/api/v3/Datasets/" + pid1)
-  //     .send({
-  //       datasetlifecycle: {
-  //         retrievable: true,
-  //         archiveStatusMessage: "datasetOnArchiveDisk",
-  //       },
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.retrievable")
-  //         .and.equal(true);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.publishable")
-  //         .and.equal(false);
-  //     });
-  // });
-  // it("Send an update status to dataset 2, simulating the archive system response", async () => {
-  //   return request(app)
-  //     .put("/api/v3/Datasets/" + pid2)
-  //     .send({
-  //       datasetlifecycle: {
-  //         retrievable: true,
-  //         archiveStatusMessage: "datasetOnArchiveDisk",
-  //       },
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.retrievable")
-  //         .and.equal(true);
-  //       res.body.should.have.nested
-  //         .property("datasetlifecycle.publishable")
-  //         .and.equal(false);
-  //     });
-  // });
+  it("Send an update status to dataset 1, simulating the archive system response", async () => {
+    return request(app)
+      .put("/api/v3/Datasets/" + pid1)
+      .send({
+        datasetlifecycle: {
+          retrievable: true,
+          archiveStatusMessage: "datasetOnArchiveDisk",
+        },
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.nested
+          .property("datasetlifecycle.retrievable")
+          .and.equal(true);
+        res.body.should.have.nested
+          .property("datasetlifecycle.publishable")
+          .and.equal(false);
+      });
+  });
+  it("Send an update status to dataset 2, simulating the archive system response", async () => {
+    return request(app)
+      .put("/api/v3/Datasets/" + pid2)
+      .send({
+        datasetlifecycle: {
+          retrievable: true,
+          archiveStatusMessage: "datasetOnArchiveDisk",
+        },
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.nested
+          .property("datasetlifecycle.retrievable")
+          .and.equal(true);
+        res.body.should.have.nested
+          .property("datasetlifecycle.publishable")
+          .and.equal(false);
+      });
+  });
 
-  // // change policy to suppress emails
-
-  // it("Disable notification bt email", async () => {
-  //   return request(app)
-  //     .post("/api/v3/Policies/updatewhere")
-  //     .send({
-  //       ownerGroupList: "p10029",
-  //       data: {
-  //         archiveEmailNotification: false,
-  //         retrieveEmailNotification: false,
-  //       },
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .set("Content-Type", "application/x-www-form-urlencoded")
-  //     .expect(200)
-  //     .then((res) => {
-  //       console.log("Result policy update:", res.body);
-  //     });
-  // });
+  // change policy to suppress emails
+  it("Disable notification by email", async () => {
+    return request(app)
+      .post("/api/v3/Policies/updateWhere")
+      .send({
+        ownerGroupList: testraw.ownerGroup,
+        data: {
+          archiveEmailNotification: false,
+          retrieveEmailNotification: false,
+        },
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set("Content-Type", "application/x-www-form-urlencoded")
+      .expect(200)
+      .then((res) => {
+        console.log("Result policy update:", res.body);
+      });
+  });
 
   // it("Adds a new archive job request for same data which should fail", async () => {
   //   return request(app)
@@ -437,7 +436,7 @@ describe("Jobs: Test New Job Model", () => {
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
   //     .expect(409)
   //     .expect("Content-Type", /json/)
-  //     .then((res) => {
+  //     .then((res, err) => {
   //       if (err) {
   //         return done(err);
   //       }
@@ -859,22 +858,22 @@ describe("Jobs: Test New Job Model", () => {
   //     });
   // });
 
-  // it("should delete the archive Job", async () => {
-  //   return request(app)
-  //     .delete("/api/v3/Jobs/" + archiveJobId)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("should delete the archive Job", async () => {
+    return request(app)
+      .delete("/api/v3/Jobs/" + archiveJobId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("should delete the retrieve Job", async () => {
-  //   return request(app)
-  //     .delete("/api/v3/Jobs/" + retrieveJobId)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200);
-  // });
+  it("should delete the retrieve Job", async () => {
+    return request(app)
+      .delete("/api/v3/Jobs/" + retrieveJobId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200);
+  });
 
   // publicJobIds.forEach((jobId) => {
   //   it("should delete the public Job" + jobId, async () => {

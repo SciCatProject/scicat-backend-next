@@ -12,7 +12,7 @@ import {
   HttpStatus,
   HttpException,
 } from "@nestjs/common";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
@@ -26,6 +26,8 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-created-updated-at.interceptor";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
+import configuration from "src/config/configuration";
+import { InjectModel } from "@nestjs/mongoose";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -34,7 +36,16 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly datasetsService: DatasetsService,
+    @InjectModel(Job.name) private jobModel: Model<JobDocument>, // private eventEmitter: EventEmitter2,
   ) {}
+
+  publishJob() {
+    if (configuration().rabbitMq.enabled) {
+      // TODO: This should publish the job to the message broker.
+      // job.publishJob(ctx.instance, "jobqueue");
+      console.log("Saved Job %s#%s and published to message broker");
+    }
+  }
 
   /**
    * Check that all dataset exists
@@ -62,7 +73,6 @@ export class JobsController {
     };
 
     const datasets = await this.datasetsService.findAll(filter);
-
     if (datasets.length != ids.length) {
       throw new HttpException(
         {
@@ -232,7 +242,13 @@ export class JobsController {
   async create(@Body() createJobDto: CreateJobDto): Promise<Job> {
     await this.validateJob(createJobDto);
 
-    return this.jobsService.create(createJobDto);
+    const createdJob = await this.jobsService.create(createJobDto);
+
+    // Emit event so facilities can trigger custom code
+    this.publishJob();
+    this.jobModel.emit("jobCreated", { instance: createdJob });
+
+    return createdJob;
   }
 
   @UseGuards(PoliciesGuard)
@@ -291,7 +307,13 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<Job | null> {
-    return this.jobsService.update({ _id: id }, updateJobDto);
+    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
+
+    if (updatedJob) {
+      this.jobModel.emit("jobUpdated", { instance: updatedJob });
+    }
+
+    return updatedJob;
   }
 
   @UseGuards(PoliciesGuard)
