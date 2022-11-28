@@ -301,7 +301,6 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
-  // TODO: Continue fixing the logic and the tests for jobs.
   it("Check if dataset 1 was updated by job request", async () => {
     return request(app)
       .get("/api/v3/Datasets/" + pid1)
@@ -428,6 +427,7 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
+  // TODO: Continue fixing the logic and the tests for jobs.
   // it("Adds a new archive job request for same data which should fail", async () => {
   //   return request(app)
   //     .post("/api/v3/Jobs")
