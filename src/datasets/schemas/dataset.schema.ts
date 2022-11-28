@@ -62,10 +62,10 @@ export class DatasetClass extends OwnableClass {
     description:
       "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons.",
   })
-  @Prop({ 
-    type: String, 
-    required: true, 
-    index: true 
+  @Prop({
+    type: String,
+    required: true,
+    index: true,
   })
   owner: string;
 

@@ -19,7 +19,7 @@ export class FullQueryInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<unknown> | Promise<Observable<unknown>> {
     return next.handle().pipe(
-      map((data: (DatasetClass)[]) => {
+      map((data: DatasetClass[]) => {
         const req = context.switchToHttp().getRequest();
         const fields: IDatasetFields = JSON.parse(req.query.fields);
         if (fields.scientific) {

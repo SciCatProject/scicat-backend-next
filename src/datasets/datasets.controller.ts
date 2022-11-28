@@ -61,7 +61,12 @@ import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/for
 //import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import { validate, validateOrReject, ValidationError, ValidatorOptions } from "class-validator";
+import {
+  validate,
+  validateOrReject,
+  ValidationError,
+  ValidatorOptions,
+} from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
@@ -86,7 +91,9 @@ export class DatasetsController {
 
   // POST /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, DatasetClass),
+  )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
@@ -94,7 +101,7 @@ export class DatasetsController {
   )
   @HttpCode(HttpStatus.OK)
   @Post()
-  @ApiExtraModels(CreateRawDatasetDto,CreateDerivedDatasetDto)
+  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
   @ApiBody({
     description: "Input fields for the dataset to be create",
     required: true,
@@ -103,8 +110,8 @@ export class DatasetsController {
       oneOf: [
         { $ref: getSchemaPath(CreateRawDatasetDto) },
         { $ref: getSchemaPath(CreateDerivedDatasetDto) },
-      ] 
-    }
+      ],
+    },
   })
   async create(
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
@@ -128,7 +135,7 @@ export class DatasetsController {
       validationError: {
         value: false,
       },
-    }
+    };
 
     if (type != "raw" && type != "derived") {
       throw new HttpException(
@@ -143,7 +150,7 @@ export class DatasetsController {
     if (type == "raw") {
       //console.log(" - Raw");
       outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
-      errors = await validate(outputDatasetDto,validateOptions);
+      errors = await validate(outputDatasetDto, validateOptions);
       //console.log("Found ", errors.length ," errors");
       //console.log(errors);
       //console.log(inputDatasetDto)
@@ -171,9 +178,7 @@ export class DatasetsController {
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<DatasetClass>(
-      "scientificMetadata",
-    ),
+    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
   @AllowAny()
   @HttpCode(HttpStatus.OK)
@@ -387,7 +392,9 @@ export class DatasetsController {
 
   // GET /count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @ApiQuery({
     name: "where",
     description: "Database where condition to apply when counting Datasets",
@@ -407,7 +414,9 @@ export class DatasetsController {
 
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @Get("/:id")
   async findById(@Param("id") id: string): Promise<DatasetClass | null> {
     Logger.log("Finding dataset with pid : " + id);
@@ -417,7 +426,9 @@ export class DatasetsController {
   // PATCH /datasets/:id
   // body: modified fields
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
@@ -434,7 +445,9 @@ export class DatasetsController {
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
@@ -452,14 +465,18 @@ export class DatasetsController {
 
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, DatasetClass),
+  )
   @Delete("/:id")
   async findByIdAndDelete(@Param("id") id: string): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @Post("/:id/appendToArrayField")
   async appendToArrayField(
     @Param("id") id: string,

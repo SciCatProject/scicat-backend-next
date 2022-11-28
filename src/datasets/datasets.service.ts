@@ -3,7 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  Scope
+  Scope,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
@@ -30,12 +30,12 @@ import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
-
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
   constructor(
     private configService: ConfigService,
-    @InjectModel(DatasetClass.name) private datasetModel: Model<DatasetDocument>,
+    @InjectModel(DatasetClass.name)
+    private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
     @Inject(REQUEST) private request: Request,
@@ -48,8 +48,8 @@ export class DatasetsService {
         createdBy: (this.request.user as JWTUser).username,
         createdAt: new Date(),
         updatedBy: (this.request.user as JWTUser).username,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
     // insert created and updated fields
     return createdDataset.save();
@@ -325,7 +325,11 @@ export class DatasetsService {
     }
   }
 
-  async updateHistory(req: Request, dataset: DatasetClass, data: UpdateDatasetDto) {
+  async updateHistory(
+    req: Request,
+    dataset: DatasetClass,
+    data: UpdateDatasetDto,
+  ) {
     if (req.body.history) {
       delete req.body.history;
     }

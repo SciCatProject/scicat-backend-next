@@ -15,7 +15,14 @@ import {
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiQuery, ApiTags, getSchemaPath } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiExtraModels,
+  ApiQuery,
+  ApiTags,
+  getSchemaPath,
+} from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -61,7 +68,7 @@ export class ProposalsController {
   @Post()
   @ApiExtraModels(CreateProposalDto)
   @ApiBody({
-    type: CreateProposalDto
+    type: CreateProposalDto,
     //schema: { $ref: getSchemaPath(CreateProposalDto) },
   })
   async create(
@@ -81,10 +88,10 @@ export class ProposalsController {
       skipMissingProperties: true,
       whitelist: true,
       forbidNonWhitelisted: true,
-    }
+    };
 
     const dtoProposal = plainToInstance(CreateProposalDto, createProposal);
-    const errorsProposal = await validate(dtoProposal,validatorOptions);
+    const errorsProposal = await validate(dtoProposal, validatorOptions);
 
     const valid = errorsProposal.length == 0;
 
@@ -229,7 +236,9 @@ export class ProposalsController {
 
   // POST /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, DatasetClass),
+  )
   @Post("/:id/datasets")
   async createDataset(
     @Param("id") id: string,
@@ -237,22 +246,25 @@ export class ProposalsController {
   ): Promise<DatasetClass> {
     const createRawDataset = { ...createRawDatasetDto, proposalId: id };
     return await this.datasetsService.create(createRawDataset);
-
   }
 
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") proposalId: string,
-  ): Promise<(DatasetClass)[] | null> {
+  ): Promise<DatasetClass[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
   }
 
   // PATCH /proposals/:id/datasets/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @Patch("/:id/datasets/:fk")
   async findOneDatasetAndUpdate(
     @Param("id") proposalId: string,
@@ -267,7 +279,9 @@ export class ProposalsController {
 
   // DELETE /proposals/:id/datasets/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, DatasetClass),
+  )
   @Delete("/:id/datasets/:fk")
   async findOneDatasetAndRemove(
     @Param("id") proposalId: string,

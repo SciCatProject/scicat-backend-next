@@ -32,8 +32,8 @@ export class SamplesService {
         createdBy: (this.request.user as JWTUser).username,
         createdAt: new Date(),
         updatedBy: (this.request.user as JWTUser).username,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
     return createdSample.save();
   }

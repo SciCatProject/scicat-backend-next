@@ -31,8 +31,8 @@ export class OrigDatablocksService {
         createdBy: (this.request.user as JWTUser).username,
         createdAt: new Date(),
         updatedBy: (this.request.user as JWTUser).username,
-        updatedAt: new Date()
-      }      
+        updatedAt: new Date(),
+      },
     });
     return createdOrigDatablock.save();
   }

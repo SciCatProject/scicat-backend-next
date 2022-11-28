@@ -9,7 +9,7 @@ import {
 import { OwnableDto } from "src/common/dto/ownable.dto";
 import { Proposal } from "../schemas/proposal.schema";
 
-@ApiTags('Proposal')
+@ApiTags("Proposal")
 export class CreateProposalDto extends OwnableDto {
   @IsString()
   readonly proposalId: string;

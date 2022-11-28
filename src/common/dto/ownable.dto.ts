@@ -1,7 +1,6 @@
 import { IsOptional, IsString } from "class-validator";
 
 export class OwnableDto {
-
   @IsString()
   readonly ownerGroup: string;
 
@@ -14,5 +13,4 @@ export class OwnableDto {
   @IsOptional()
   @IsString()
   readonly instrumentGroup?: string;
-
 }

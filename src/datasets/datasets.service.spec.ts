@@ -80,7 +80,7 @@ const mockDataset: DatasetClass = {
   inputDatasets: [],
   usedSoftware: [],
   jobParameters: {},
-  jobLogData: ""
+  jobLogData: "",
 };
 
 describe("DatasetsService", () => {

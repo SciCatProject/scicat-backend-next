@@ -268,7 +268,9 @@ export class SamplesController {
 
   // GET /samples/:id/datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, DatasetClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @Get("/:id/datasets")
   async findAllDatasets(
     @Param("id") sampleId: string,

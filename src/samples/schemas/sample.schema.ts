@@ -6,7 +6,10 @@ import {
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
-import { DatasetClass, DatasetSchema } from "src/datasets/schemas/dataset.schema";
+import {
+  DatasetClass,
+  DatasetSchema,
+} from "src/datasets/schemas/dataset.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type SampleDocument = Sample & Document;
