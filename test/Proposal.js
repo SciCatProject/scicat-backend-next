@@ -143,7 +143,6 @@ describe("Proposal: Simple Proposal", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.statusCode.should.not.equal(200);
-          //console.log(res.statusCode);
         });
     });
   

@@ -43,8 +43,6 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
-//import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
-//import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -69,7 +67,6 @@ export class ProposalsController {
   @ApiExtraModels(CreateProposalDto)
   @ApiBody({
     type: CreateProposalDto,
-    //schema: { $ref: getSchemaPath(CreateProposalDto) },
   })
   async create(
     @Body() createProposalDto: CreateProposalDto,

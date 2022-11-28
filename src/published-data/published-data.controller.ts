@@ -33,7 +33,6 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
 import { FilterQuery } from "mongoose";
 import { DatasetsService } from "src/datasets/datasets.service";
-//import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { existsSync, readFileSync } from "fs";

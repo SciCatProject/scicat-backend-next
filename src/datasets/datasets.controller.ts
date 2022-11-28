@@ -53,12 +53,10 @@ import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-//import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-//import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
 import {
@@ -148,13 +146,8 @@ export class DatasetsController {
     }
 
     if (type == "raw") {
-      //console.log(" - Raw");
       outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
       errors = await validate(outputDatasetDto, validateOptions);
-      //console.log("Found ", errors.length ," errors");
-      //console.log(errors);
-      //console.log(inputDatasetDto)
-      //console.log(outputDatasetDto);
     } else {
       outputDatasetDto = plainToInstance(
         CreateDerivedDatasetDto,
@@ -163,7 +156,6 @@ export class DatasetsController {
       errors = await validate(outputDatasetDto, validateOptions);
     }
     if (errors.length > 0) {
-      //console.log("Throwing error");
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,

@@ -7,13 +7,11 @@ import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.se
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
-//import { RawDataset } from "./schemas/raw-dataset.schema";
 
 class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
-//const mockDataset: DatasetClass = {
 const mockDataset: DatasetClass = {
   _id: "testId",
   pid: "testPid",

@@ -7,7 +7,6 @@ import {
   ValidateNested,
 } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
-import { Proposal } from "../schemas/proposal.schema";
 
 @ApiTags("Proposal")
 export class CreateProposalDto extends OwnableDto {
