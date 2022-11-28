@@ -13,6 +13,7 @@ import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addCreatedFields,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
@@ -42,15 +43,13 @@ export class DatasetsService {
   ) {}
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
-    const createdDataset = new this.datasetModel({
-      ...createDatasetDto,
-      ...{
-        createdBy: (this.request.user as JWTUser).username,
-        createdAt: new Date(),
-        updatedBy: (this.request.user as JWTUser).username,
-        updatedAt: new Date(),
-      },
-    });
+    const createdDataset = new this.datasetModel(
+      addCreatedFields<CreateDatasetDto>(
+        createDatasetDto, 
+        (this.request.user as JWTUser).username, 
+        new Date()
+      ),
+    );
     // insert created and updated fields
     return createdDataset.save();
   }
