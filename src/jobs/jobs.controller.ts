@@ -143,6 +143,77 @@ export class JobsController {
     }
   }
 
+  async checkFilesExistence(crateJobDto: CreateJobDto) {
+    const datasetsToCheck = crateJobDto.datasetList.filter(
+      (x) => x.files.length > 0,
+    );
+    const ids = datasetsToCheck.map((x) => x.pid);
+    switch (crateJobDto.type) {
+      case JobType.Public:
+        if (ids.length > 0) {
+          const filter = {
+            fields: {
+              pid: true,
+              datasetId: true,
+              dataFileList: true,
+            },
+            where: {
+              pid: {
+                $in: ids,
+              },
+            },
+            include: [{ relation: "origdatablocks" }],
+          };
+          // Indexing originDataBlock with pid and create set of files for each dataset
+          const datasets = await this.datasetsService.findAll(filter);
+          const result: Record<string, Set<string>> = datasets.reduce(
+            (acc: Record<string, Set<string>>, dataset) => {
+              // Using Set make searching more efficient
+              const files = dataset.origdatablocks.reduce((acc, block) => {
+                block.dataFileList.forEach((file) => {
+                  acc.add(file.path);
+                });
+                return acc;
+              }, new Set<string>());
+              acc[dataset.pid] = files;
+              return acc;
+            },
+            {},
+          );
+          // Get a list of requested files that is not in originDataBlocks
+          const checkResults = datasetsToCheck.reduce(
+            (acc: { pid: string; nonExistFiles: string[] }[], x) => {
+              const pid = x.pid;
+              const referenceFiles = result[pid];
+              const nonExistFiles = x.files.filter(
+                (f) => !referenceFiles.has(f),
+              );
+              if (nonExistFiles.length > 0) {
+                acc.push({ pid, nonExistFiles });
+              }
+              return acc;
+            },
+            [],
+          );
+
+          if (checkResults.length > 0) {
+            throw new HttpException(
+              {
+                status: HttpStatus.BAD_REQUEST,
+                message:
+                  "At least one requested file could not be found - no job created",
+              },
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+        }
+        break;
+      default:
+        // Not check for other job
+        break;
+    }
+  }
+
   /**
    * Validate if the job is performable
    */
@@ -151,7 +222,7 @@ export class JobsController {
     // checkPermission(ctx, ids);
     await this.checkDatasetsExistence(ids);
     await this.checkDatasetsState(createJobDto.type, ids);
-    // await checkFilesExistence(ctx, ids);
+    await this.checkFilesExistence(createJobDto);
   }
 
   @UseGuards(PoliciesGuard)
