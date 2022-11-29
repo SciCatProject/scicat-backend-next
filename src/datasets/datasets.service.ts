@@ -45,9 +45,9 @@ export class DatasetsService {
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const createdDataset = new this.datasetModel(
       addCreatedFields<CreateDatasetDto>(
-        createDatasetDto, 
-        (this.request.user as JWTUser).username, 
-        new Date()
+        createDatasetDto,
+        (this.request.user as JWTUser).username,
+        new Date(),
       ),
     );
     // insert created and updated fields

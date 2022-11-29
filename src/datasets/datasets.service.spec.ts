@@ -1,7 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
-import { string } from "mathjs";
 import { Model } from "mongoose";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -82,7 +81,7 @@ const mockDataset: DatasetClass = {
 };
 
 describe("DatasetsService", () => {
-  let service: DatasetsService;
+  let service: Promise<DatasetsService>;
   let model: Model<DatasetClass>;
 
   beforeEach(async () => {
@@ -90,7 +89,7 @@ describe("DatasetsService", () => {
       providers: [
         ConfigService,
         {
-          provide: getModelToken("Dataset"),
+          provide: getModelToken("DatasetClass"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockDataset),
             constructor: jest.fn().mockResolvedValue(mockDataset),
@@ -108,8 +107,8 @@ describe("DatasetsService", () => {
       ],
     }).compile();
 
-    service = module.get<DatasetsService>(DatasetsService);
-    model = module.get<Model<DatasetClass>>(getModelToken("Dataset"));
+    service = module.resolve<DatasetsService>(DatasetsService);
+    model = module.get<Model<DatasetClass>>(getModelToken("DatasetClass"));
   });
 
   it("should be defined", () => {

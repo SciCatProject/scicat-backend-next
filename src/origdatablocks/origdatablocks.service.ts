@@ -4,7 +4,11 @@ import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
-import { addCreatedFields, createFullqueryFilter, parseLimitFilters } from "src/common/utils";
+import {
+  addCreatedFields,
+  createFullqueryFilter,
+  parseLimitFilters,
+} from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
@@ -27,9 +31,9 @@ export class OrigDatablocksService {
   ): Promise<OrigDatablock> {
     const createdOrigDatablock = new this.origDatablockModel(
       addCreatedFields<CreateOrigDatablockDto>(
-        createOrigdatablockDto, 
-        (this.request.user as JWTUser).username, 
-        new Date()
+        createOrigdatablockDto,
+        (this.request.user as JWTUser).username,
+        new Date(),
       ),
     );
     return createdOrigDatablock.save();

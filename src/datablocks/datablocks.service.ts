@@ -20,9 +20,9 @@ export class DatablocksService {
   async create(createDatablockDto: CreateDatablockDto): Promise<Datablock> {
     const createdDatablock = new this.datablockModel(
       addCreatedFields<CreateDatablockDto>(
-        createDatablockDto, 
-        (this.request.user as JWTUser).username, 
-        new Date()
+        createDatablockDto,
+        (this.request.user as JWTUser).username,
+        new Date(),
       ),
     );
     return createdDatablock.save();
