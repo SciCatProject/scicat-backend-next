@@ -7,5 +7,5 @@ export enum JobType {
 export enum DatasetState {
   retrieve = "retrievable",
   archive = "archivable",
-  public = "publishable",
+  public = "isPublished",
 }

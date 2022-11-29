@@ -11,8 +11,10 @@ import {
   UseInterceptors,
   HttpStatus,
   HttpException,
+  Req,
 } from "@nestjs/common";
-import { FilterQuery, Model } from "mongoose";
+import { Request } from "express";
+import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
@@ -27,7 +29,7 @@ import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-crea
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
 import configuration from "src/config/configuration";
-import { InjectModel } from "@nestjs/mongoose";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -36,7 +38,7 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly datasetsService: DatasetsService,
-    @InjectModel(Job.name) private jobModel: Model<JobDocument>, // private eventEmitter: EventEmitter2,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   publishJob() {
@@ -225,28 +227,49 @@ export class JobsController {
   }
 
   /**
+   * Check the the user is authenticated when requesting other job types than public job
+   */
+  checkPermission = (request: Request, type: string) => {
+    const unauthenticated = request.user === null;
+    if (unauthenticated && type !== JobType.Public) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  };
+
+  /**
    * Validate if the job is performable
    */
-  async validateJob(createJobDto: CreateJobDto) {
+  async validateJob(createJobDto: CreateJobDto, request: Request) {
     const ids = createJobDto.datasetList.map((x) => x.pid);
-    // checkPermission(ctx, ids);
+    this.checkPermission(request, createJobDto.type);
     await this.checkDatasetsExistence(ids);
     await this.checkDatasetsState(createJobDto.type, ids);
     await this.checkFilesExistence(createJobDto);
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Job))
+  // @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Job))
   @UseInterceptors(new SetCreatedUpdatedAtInterceptor<Job>("creationTime"))
   @Post()
-  async create(@Body() createJobDto: CreateJobDto): Promise<Job> {
-    await this.validateJob(createJobDto);
+  async create(
+    @Req() request: Request,
+    @Body() createJobDto: CreateJobDto,
+  ): Promise<Job> {
+    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
+    await this.validateJob(jobToCreate, request);
 
-    const createdJob = await this.jobsService.create(createJobDto);
+    const createdJob = await this.jobsService.create(jobToCreate);
 
-    // Emit event so facilities can trigger custom code
-    this.publishJob();
-    this.jobModel.emit("jobCreated", { instance: createdJob });
+    if (createdJob) {
+      // Emit event so facilities can trigger custom code
+      this.publishJob();
+      this.eventEmitter.emit("jobCreated", { instance: createdJob });
+    }
 
     return createdJob;
   }
@@ -310,7 +333,10 @@ export class JobsController {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 
     if (updatedJob) {
-      this.jobModel.emit("jobUpdated", { instance: updatedJob });
+      this.eventEmitter.emit("jobUpdated", {
+        instance: updatedJob,
+        hookState: { oldData: [updatedJob] },
+      });
     }
 
     return updatedJob;

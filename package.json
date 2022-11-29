@@ -23,7 +23,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:api": "jest --config ./test/jest-e2e.json",
     "api:after:start": "concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
-    "test:api:mocha": "mocha --timeout=60000 --reporter spec --exit",
+    "test:api:mocha": "mocha --timeout=60000 --reporter spec --exit --grep 'Jobs'",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml up -d && cp functionalAccounts.json.example functionalAccounts.json"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "@nestjs/common": "^8.4.7",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^8.4.4",
+    "@nestjs/event-emitter": "^1.3.1",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/mongoose": "^9.2.0",
     "@nestjs/passport": "^9.0.0",

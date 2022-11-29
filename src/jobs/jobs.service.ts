@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnModuleInit,
-} from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { OnEvent } from "@nestjs/event-emitter";
 import { InjectModel } from "@nestjs/mongoose";
 import { readFileSync } from "fs";
 import { compile } from "handlebars";
@@ -27,7 +23,7 @@ import { JobType } from "./job-type.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
 
 @Injectable()
-export class JobsService implements OnModuleInit {
+export class JobsService {
   private domainName = process.env.HOST;
   private smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
 
@@ -38,11 +34,6 @@ export class JobsService implements OnModuleInit {
     private mailService: MailService,
     private policiesService: PoliciesService,
   ) {}
-
-  onModuleInit() {
-    this.jobModel.addListener("jobCreated", this.sendStartJobEmail);
-    this.jobModel.addListener("jobUpdated", this.sendFinishJobEmail);
-  }
 
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
@@ -104,7 +95,8 @@ export class JobsService implements OnModuleInit {
     return this.jobModel.findOneAndRemove(filter).exec();
   }
 
-  sendStartJobEmail = async (context: { instance: Job }) => {
+  @OnEvent("jobCreated")
+  async sendStartJobEmail(context: { instance: Job }) {
     const ids: string[] = context.instance.datasetList.map(
       (dataset) => dataset.pid as string,
     );
@@ -143,13 +135,14 @@ export class JobsService implements OnModuleInit {
 
     const policy = await this.getPolicy(ids[0]);
     await this.applyPolicyAndSendEmail(jobType, policy, emailContext, to);
-  };
+  }
 
   // Populate email context for finished job notification
-  sendFinishJobEmail = async (context: {
+  @OnEvent("jobUpdated")
+  async sendFinishJobEmail(context: {
     instance: Job;
     hookState: { oldData: Job[] };
-  }) => {
+  }) {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job
     context.hookState.oldData.forEach(async (oldData) => {
@@ -241,7 +234,7 @@ export class JobsService implements OnModuleInit {
         );
       }
     });
-  };
+  }
 
   async markDatasetsAsScheduled(ids: string[], jobType: string) {
     const statusMessage = {
