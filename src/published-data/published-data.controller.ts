@@ -33,7 +33,6 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
 import { FilterQuery } from "mongoose";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { existsSync, readFileSync } from "fs";
@@ -42,6 +41,7 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-created-updated-at.interceptor";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -67,7 +67,10 @@ export class PublishedDataController {
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    return this.publishedDataService.create(createPublishedDataDto);
+    return this.publishedDataService.create({
+      ...createPublishedDataDto,
+      status: "pending_registration",
+    });
   }
 
   // GET /publisheddata
@@ -139,7 +142,7 @@ export class PublishedDataController {
     if (dataset) {
       formData.resourceType = dataset.type;
       formData.description = dataset.description;
-      proposalId = (dataset as unknown as RawDataset).proposalId;
+      proposalId = (dataset as unknown as DatasetClass).proposalId;
     }
 
     let proposal;

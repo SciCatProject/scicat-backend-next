@@ -7,7 +7,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
 
   @IsOptional()
   @IsDateString()
-  readonly endTime: Date;
+  readonly endTime?: Date;
 
   @IsString()
   readonly creationLocation: string;

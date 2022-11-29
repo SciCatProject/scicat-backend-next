@@ -160,7 +160,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("publisher").and.be.string;
-        doi = encodeURIComponent(res.body["doi"]);
+        doi = res.body["doi"];
       });
   });
 

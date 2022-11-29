@@ -9,7 +9,8 @@ import {
 } from "class-validator";
 
 export class CreatePublishedDataDto {
-  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
   readonly _id?: string;
 
   @IsOptional()
@@ -88,4 +89,12 @@ export class CreatePublishedDataDto {
   @IsOptional()
   @IsString()
   readonly downloadLink: string;
+
+  @IsDateString()
+  @IsOptional()
+  readonly createdAt?: Date;
+
+  @IsDateString()
+  @IsOptional()
+  readonly updatedAt?: Date;
 }

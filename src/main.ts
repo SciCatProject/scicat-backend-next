@@ -11,10 +11,9 @@ async function bootstrap() {
   app.enableCors();
   app.setGlobalPrefix("api/v3");
   const config = new DocumentBuilder()
-    .setTitle("Dacat API")
-    .setDescription("SciCat backend API")
+    .setTitle("SciCat backend API")
+    .setDescription("This is the API for the SciCat Backend")
     .setVersion("4.0.0")
-    .addTag("scicat")
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

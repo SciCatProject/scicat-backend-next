@@ -18,14 +18,17 @@ import {
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiExtraModels,
+  ApiProperty,
   ApiQuery,
   ApiTags,
+  getSchemaPath,
 } from "@nestjs/swagger";
 import { DatasetsService } from "./datasets.service";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
-import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -50,17 +53,22 @@ import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
-//import { RawDataset } from "./schemas/raw-dataset.schema";
 import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-//import { DerivedDataset } from "./schemas/derived-dataset.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import { validate, validateOrReject, ValidationError } from "class-validator";
+import {
+  validate,
+  validateOrReject,
+  ValidationError,
+  ValidatorOptions,
+} from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
+import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
+import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 
 @ApiBearerAuth()
@@ -81,17 +89,31 @@ export class DatasetsController {
 
   // POST /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, DatasetClass),
+  )
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<Dataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
   @HttpCode(HttpStatus.OK)
   @Post()
+  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiBody({
+    description: "Input fields for the dataset to be create",
+    required: true,
+    //type: [CreateRawDatasetDto],
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(CreateRawDatasetDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+      ],
+    },
+  })
   async create(
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
-  ): Promise<Dataset> {
+  ): Promise<DatasetClass> {
     // validate dataset
     const validatedDatasetDto = await this.validateDataset(createDatasetDto);
     return this.datasetsService.create(validatedDatasetDto);
@@ -104,6 +126,14 @@ export class DatasetsController {
     let errors: Array<unknown> = [];
     let outputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto;
     const type = inputDatasetDto.type;
+    const validateOptions: ValidatorOptions = {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      validationError: {
+        value: false,
+      },
+    };
 
     if (type != "raw" && type != "derived") {
       throw new HttpException(
@@ -117,13 +147,13 @@ export class DatasetsController {
 
     if (type == "raw") {
       outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
-      errors = await validate(outputDatasetDto);
+      errors = await validate(outputDatasetDto, validateOptions);
     } else {
       outputDatasetDto = plainToInstance(
         CreateDerivedDatasetDto,
         inputDatasetDto,
       );
-      errors = await validate(outputDatasetDto);
+      errors = await validate(outputDatasetDto, validateOptions);
     }
     if (errors.length > 0) {
       throw new HttpException(
@@ -137,16 +167,11 @@ export class DatasetsController {
     return outputDatasetDto;
   }
 
-  // POST /datasets
-  /*  @UseGuards(PoliciesGuard)
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<RawDataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<RawDataset | DerivedDataset>(
-      "scientificMetadata",
-    ),
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
-*/
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
@@ -184,7 +209,7 @@ export class DatasetsController {
   async findAll(
     @Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
-  ): Promise<Dataset[] | null> {
+  ): Promise<DatasetClass[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter
         ? JSON.parse(filter.filter)
@@ -262,7 +287,7 @@ export class DatasetsController {
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<Dataset[] | null> {
+  ): Promise<DatasetClass[] | null> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -319,7 +344,7 @@ export class DatasetsController {
   async findOne(
     @Query("filter") queryFilters?: string,
     @Headers("filter") headerFilters?: string,
-  ): Promise<Dataset | null> {
+  ): Promise<DatasetClass | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
       ? JSON.parse(queryFilters)
       : headerFilters
@@ -359,7 +384,9 @@ export class DatasetsController {
 
   // GET /count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @ApiQuery({
     name: "where",
     description: "Database where condition to apply when counting Datasets",
@@ -379,9 +406,11 @@ export class DatasetsController {
 
   // GET /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, DatasetClass),
+  )
   @Get("/:id")
-  async findById(@Param("id") id: string): Promise<Dataset | null> {
+  async findById(@Param("id") id: string): Promise<DatasetClass | null> {
     Logger.log("Finding dataset with pid : " + id);
     return this.datasetsService.findOne({ pid: id });
   }
@@ -389,55 +418,63 @@ export class DatasetsController {
   // PATCH /datasets/:id
   // body: modified fields
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<Dataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
   @Patch("/:id")
   async findByIdAndUpdate(
     @Param("id") id: string,
     @Body()
     updateDatasetDto: UpdateDatasetDto,
-  ): Promise<Dataset | null> {
+  ): Promise<DatasetClass | null> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @UseInterceptors(
-    new UTCTimeInterceptor<Dataset>(["creationTime"]),
-    new UTCTimeInterceptor<Dataset>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<Dataset>("scientificMetadata"),
+    new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
+    new UTCTimeInterceptor<DatasetClass>(["endTime"]),
+    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
     HistoryInterceptor,
   )
   @Put("/:id")
   async findByIdReplaceOrCreate(
     @Param("id") id: string,
     @Body()
-    updateDatasetDto: UpdateDatasetDto,
-  ): Promise<Dataset | null> {
+    updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+  ): Promise<DatasetClass | null> {
     return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, DatasetClass),
+  )
   @Delete("/:id")
   async findByIdAndDelete(@Param("id") id: string): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, DatasetClass),
+  )
   @Post("/:id/appendToArrayField")
   async appendToArrayField(
     @Param("id") id: string,
     @Query("fieldName") fieldName: string,
     data: unknown[],
-  ): Promise<Dataset | null> {
+  ): Promise<DatasetClass | null> {
     // $addToSet is necessary to append to the field and not overwrite
     // $each is necessary as data is an array of values
     const updateQuery: UpdateQuery<DatasetDocument> = {

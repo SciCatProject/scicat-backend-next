@@ -1,10 +1,11 @@
-version: "3"
 services:
-    mongodb:
-        image: "bitnami/mongodb:4.0"
-    scicat-backend:
-        build:
-            context: .
-            dockerfile: CI/ESS/Dockerfile.api.test
-        depends_on:
-            - mongodb
+  mongodb:
+    image: bitnami/mongodb:4.2
+    volumes:
+      - mongodb_data:/bitnami
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongodb_data:
+    driver: local
