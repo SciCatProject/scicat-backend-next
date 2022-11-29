@@ -25,7 +25,7 @@ export class ProposalsService {
   ) {}
 
   async create(createProposalDto: CreateProposalDto): Promise<Proposal> {
-    const username = (this.request?.user as JWTUser).username;
+    const username = (this.request.user as JWTUser).username;
     const ts = new Date();
     const createdProposal = new this.proposalModel(
       addCreatedFields<CreateProposalDto>(createProposalDto, username, ts),

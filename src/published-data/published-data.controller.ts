@@ -63,10 +63,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
-  @UseInterceptors(
-    new SetCreatedUpdatedAtInterceptor<PublishedData>("createdAt"),
-    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  )
   @Post()
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,

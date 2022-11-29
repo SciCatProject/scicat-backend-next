@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
-import { parseLimitFilters } from "src/common/utils";
+import { parseLimitFilters, addCreatedFields } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
@@ -12,8 +14,9 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
   constructor(
     @InjectModel(PublishedData.name)
@@ -23,10 +26,16 @@ export class PublishedDataService {
   async create(
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    const createdPublishedData = new this.publishedDataModel(
-      createPublishedDataDto,
+    const username = "Frebol";
+    const ts = new Date();
+    const createdPublished = new this.publishedDataModel(
+      addCreatedFields<CreatePublishedDataDto>(
+        createPublishedDataDto,
+        username,
+        ts,
+      ),
     );
-    return createdPublishedData.save();
+    return createdPublished.save();
   }
 
   async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {

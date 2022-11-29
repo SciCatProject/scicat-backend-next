@@ -1,66 +1,91 @@
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsDateString,
+  IsEmail,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  IsNumber,
+} from "class-validator";
 
 export class CreatePublishedDataDto {
   @ApiProperty({ required: false })
   readonly _id?: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly doi?: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly affiliation: string;
 
-  @ApiProperty({ required: true })
+  @IsString({
+    each: true,
+  })
   readonly creator: string[];
 
-  @ApiProperty({ required: true })
+  @IsString()
   readonly publisher: string;
 
-  @ApiProperty({ required: true })
+  @IsNumber()
   readonly publicationYear: number;
 
-  @ApiProperty({ required: true })
+  @IsString()
   readonly title: string;
 
-  @ApiProperty({ required: false })
+  @IsString()
   readonly url: string;
 
-  @ApiProperty({ required: true })
+  @IsString()
   readonly abstract: string;
 
-  @ApiProperty({ required: true })
+  @IsString()
   readonly dataDescription: string;
 
-  @ApiProperty({ required: true })
+  @IsString()
   readonly resourceType: string;
 
-  @ApiProperty({ required: false })
+  @IsNumber()
   readonly numberOfFiles: number;
 
-  @ApiProperty({ required: false })
+  @IsNumber()
   readonly sizeOfArchive: number;
 
-  @ApiProperty({ required: true })
+  @IsString({
+    each: true,
+  })
   readonly pidArray: string[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({
+    each: true,
+  })
   readonly authors: string[];
 
-  @ApiProperty()
+  @IsOptional()
+  @IsDateString()
   readonly registeredTime: Date;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly status: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly scicatUser: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly thumbnail: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({
+    each: true,
+  })
   readonly relatedPublications: string[];
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   readonly downloadLink: string;
 }
