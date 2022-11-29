@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Dataset } from "src/datasets/schemas/dataset.schema";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type InstrumentDocument = Instrument & Document;
@@ -51,9 +51,9 @@ export class Instrument {
   @Prop({ type: Object, required: false, default: {} })
   customMetadata: Record<string, unknown>;
 
-  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Dataset) } })
-  @Prop([Dataset])
-  datasets: Dataset[];
+  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(DatasetClass) } })
+  @Prop([DatasetClass])
+  datasets: DatasetClass[];
 }
 
 export const InstrumentSchema = SchemaFactory.createForClass(Instrument);

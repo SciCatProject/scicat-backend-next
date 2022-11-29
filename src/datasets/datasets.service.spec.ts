@@ -5,14 +5,13 @@ import { Model } from "mongoose";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetsService } from "./datasets.service";
-import { Dataset } from "./schemas/dataset.schema";
-import { RawDataset } from "./schemas/raw-dataset.schema";
+import { DatasetClass } from "./schemas/dataset.schema";
 
 class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
-const mockDataset: RawDataset = {
+const mockDataset: DatasetClass = {
   _id: "testId",
   pid: "testPid",
   owner: "testOwner",
@@ -74,18 +73,23 @@ const mockDataset: RawDataset = {
   sharedWith: [],
   updatedBy: "test",
   instrumentGroup: "test",
+  investigator: "test",
+  inputDatasets: [],
+  usedSoftware: [],
+  jobParameters: {},
+  jobLogData: "",
 };
 
 describe("DatasetsService", () => {
-  let service: DatasetsService;
-  let model: Model<Dataset>;
+  let service: Promise<DatasetsService>;
+  let model: Model<DatasetClass>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConfigService,
         {
-          provide: getModelToken("Dataset"),
+          provide: getModelToken("DatasetClass"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockDataset),
             constructor: jest.fn().mockResolvedValue(mockDataset),
@@ -103,8 +107,8 @@ describe("DatasetsService", () => {
       ],
     }).compile();
 
-    service = module.get<DatasetsService>(DatasetsService);
-    model = module.get<Model<Dataset>>(getModelToken("Dataset"));
+    service = module.resolve<DatasetsService>(DatasetsService);
+    model = module.get<Model<DatasetClass>>(getModelToken("DatasetClass"));
   });
 
   it("should be defined", () => {

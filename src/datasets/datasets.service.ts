@@ -1,11 +1,19 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
 import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addCreatedFields,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
@@ -21,31 +29,34 @@ import { UpdateDatasetDto } from "./dto/update-dataset.dto";
 import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import { Dataset, DatasetDocument } from "./schemas/dataset.schema";
-/* import {
-  DerivedDataset,
-  DerivedDatasetDocument,
-} from "./schemas/derived-dataset.schema";
-import { RawDataset, RawDatasetDocument } from "./schemas/raw-dataset.schema";
- */
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
   constructor(
     private configService: ConfigService,
-    @InjectModel(Dataset.name) private datasetModel: Model<DatasetDocument>,
+    @InjectModel(DatasetClass.name)
+    private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createDatasetDto: CreateDatasetDto): Promise<Dataset> {
-    const createdDataset = new this.datasetModel(createDatasetDto);
+  async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
+    const createdDataset = new this.datasetModel(
+      addCreatedFields<CreateDatasetDto>(
+        createDatasetDto,
+        (this.request.user as JWTUser).username,
+        new Date(),
+      ),
+    );
+    // insert created and updated fields
     return createdDataset.save();
   }
 
   async findAll(
     filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<Dataset[]> {
+  ): Promise<DatasetClass[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -69,7 +80,7 @@ export class DatasetsService {
 
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<Dataset[] | null> {
+  ): Promise<DatasetClass[] | null> {
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
@@ -112,7 +123,7 @@ export class DatasetsService {
 
   async findOne(
     filters: FilterQuery<DatasetDocument>,
-  ): Promise<Dataset | null> {
+  ): Promise<DatasetClass | null> {
     return this.datasetModel.findOne(filters).exec();
   }
 
@@ -129,7 +140,7 @@ export class DatasetsService {
       | CreateDatasetDto
       | CreateRawDatasetDto
       | CreateDerivedDatasetDto,
-  ): Promise<Dataset> {
+  ): Promise<DatasetClass> {
     const existingDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
@@ -159,7 +170,7 @@ export class DatasetsService {
       | UpdateRawDatasetDto
       | UpdateDerivedDatasetDto
       | UpdateQuery<DatasetDocument>,
-  ): Promise<Dataset | null> {
+  ): Promise<DatasetClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 
     // check if we were able to find the dataset
@@ -181,7 +192,7 @@ export class DatasetsService {
   }
 
   // DELETE dataset
-  async findByIdAndDelete(id: string): Promise<Dataset | null> {
+  async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
 
@@ -227,8 +238,8 @@ export class DatasetsService {
 
     const datasets = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys<Dataset>(
-      datasets as unknown as Dataset[],
+    const metadataKeys = extractMetadataKeys<DatasetClass>(
+      datasets as unknown as DatasetClass[],
       "scientificMetadata",
     ).filter((key) => !blacklist.some((regex) => regex.test(key)));
 
@@ -283,9 +294,9 @@ export class DatasetsService {
 
             if (!initialDataset) {
               await this.initialDatasetsService.create({ _id: dataset.pid });
-              await this.updateHistory(req, dataset as Dataset, dataCopy);
+              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
             } else {
-              await this.updateHistory(req, dataset as Dataset, dataCopy);
+              await this.updateHistory(req, dataset as DatasetClass, dataCopy);
             }
           }
         }),
@@ -313,7 +324,11 @@ export class DatasetsService {
     }
   }
 
-  async updateHistory(req: Request, dataset: Dataset, data: UpdateDatasetDto) {
+  async updateHistory(
+    req: Request,
+    dataset: DatasetClass,
+    data: UpdateDatasetDto,
+  ) {
     if (req.body.history) {
       delete req.body.history;
     }
@@ -339,7 +354,7 @@ export class DatasetsService {
         const datasetPid = dataset.pid;
         const proposalId =
           dataset.type === DatasetType.Raw
-            ? (dataset as unknown as Dataset).proposalId
+            ? (dataset as unknown as DatasetClass).proposalId
             : undefined;
         if (proposalId) {
           await Promise.all(

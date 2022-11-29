@@ -5,8 +5,7 @@ import {
   Attachment,
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
-import { Ownable } from "src/common/schemas/ownable.schema";
-import { Dataset, DatasetSchema } from "src/datasets/schemas/dataset.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
   MeasurementPeriod,
   MeasurementPeriodSchema,
@@ -19,7 +18,7 @@ export type ProposalDocument = Proposal & Document;
     getters: true,
   },
 })
-export class Proposal extends Ownable {
+export class Proposal extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,

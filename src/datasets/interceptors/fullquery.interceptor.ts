@@ -8,8 +8,9 @@ import lodash from "lodash";
 import { map, Observable } from "rxjs";
 import { convertToRequestedUnit } from "src/common/utils";
 import { IDatasetFields } from "../interfaces/dataset-filters.interface";
-import { DerivedDataset } from "../schemas/derived-dataset.schema";
-import { RawDataset } from "../schemas/raw-dataset.schema";
+import { DatasetClass } from "../schemas/dataset.schema";
+//import { DerivedDataset } from "../schemas/derived-dataset.schema";
+//import { RawDataset } from "../schemas/raw-dataset.schema";
 
 @Injectable()
 export class FullQueryInterceptor implements NestInterceptor {
@@ -18,7 +19,7 @@ export class FullQueryInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<unknown> | Promise<Observable<unknown>> {
     return next.handle().pipe(
-      map((data: (RawDataset | DerivedDataset)[]) => {
+      map((data: DatasetClass[]) => {
         const req = context.switchToHttp().getRequest();
         const fields: IDatasetFields = JSON.parse(req.query.fields);
         if (fields.scientific) {
