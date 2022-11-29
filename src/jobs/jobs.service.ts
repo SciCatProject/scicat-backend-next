@@ -44,11 +44,6 @@ export class JobsService implements OnModuleInit {
     this.jobModel.addListener("jobUpdated", this.sendFinishJobEmail);
   }
 
-  // @OnEvent("jobCreated")
-  // onJobCreatedEvent(msg: string) {
-  //   this.sendStartJobEmail;
-  // }
-
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
     return createdJob.save();
