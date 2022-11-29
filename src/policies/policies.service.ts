@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -16,6 +17,8 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
+import { addCreatedFields } from "src/common/utils";
+import { REQUEST } from "@nestjs/core";
 
 @Injectable()
 export class PoliciesService implements OnModuleInit {
@@ -23,6 +26,7 @@ export class PoliciesService implements OnModuleInit {
     private configService: ConfigService,
     @InjectModel(Policy.name) private policyModel: Model<PolicyDocument>,
     private usersService: UsersService,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -109,7 +113,11 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
-    const createdPolicy = new this.policyModel(createPolicyDto);
+    const username = (this.request?.user as JWTUser).username;
+    const ts = new Date();
+    const createdPolicy = new this.policyModel(
+      addCreatedFields<CreatePolicyDto>(createPolicyDto, username, ts),
+    );
     return createdPolicy.save();
   }
 

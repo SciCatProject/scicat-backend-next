@@ -24,7 +24,7 @@ const mockSample: Sample = {
 };
 
 describe("SamplesService", () => {
-  let service: SamplesService;
+  let service: Promise<SamplesService>;
   let sampleModel: Model<Sample>;
 
   beforeEach(async () => {
@@ -45,7 +45,7 @@ describe("SamplesService", () => {
       ],
     }).compile();
 
-    service = module.get<SamplesService>(SamplesService);
+    service = module.resolve<SamplesService>(SamplesService);
     sampleModel = module.get<Model<Sample>>(getModelToken("Sample"));
   });
 

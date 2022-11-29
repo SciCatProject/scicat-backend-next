@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import {
   IsDateString,
   IsEmail,
@@ -8,6 +8,7 @@ import {
 } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 
+@ApiTags("Proposal")
 export class CreateProposalDto extends OwnableDto {
   @IsString()
   readonly proposalId: string;

@@ -88,6 +88,23 @@ sh ./migrateIdFields.sh
 
 For the full documentation please go to the [SciCat home page](https://scicatproject.github.io/) and follow the [documentation link](https://scicatproject.github.io/documentation)
 
+## Migration documentation and NestJs resources
+Following are the post that I found useful working on the migration:
+- Schema and DTOs: https://betterprogramming.pub/how-to-use-data-transfer-objects-dto-for-validation-in-nest-js-7ff95309f650
+- Validation: 
+  - [Official documentation](https://docs.nestjs.com/techniques/validation)
+  - [Custom validation with datasbase in NestJs](https://dev.to/avantar/custom-validation-with-database-in-nestjs-gao)
+  - [Validating nested objects with class-validator in NestJs](https://dev.to/avantar/validating-nested-objects-with-class-validator-in-nestjs-1gn8) 
+  - [Validating numeric query parameters in NestJS](https://dev.to/avantar/validating-numeric-query-parameters-in-nestjs-gk9)
+  - [Injecting request object to a custom validation class in NestJS](https://dev.to/avantar/injecting-request-object-to-a-custom-validation-class-in-nestjs-5dal)
+- Swagger and OpenAPI:
+  - https://docs.nestjs.com/openapi/introduction
+  - https://docs.nestjs.com/openapi/types-and-parameters
+  - https://docs.nestjs.com/openapi/decorators
+
+
+
+
 ## License
 
 This project is licensed under the GPL License - see the [LICENSE](LICENSE) file for details
