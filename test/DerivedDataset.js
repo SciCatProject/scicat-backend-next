@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 var chai = require("chai");
 var chaiHttp = require("chai-http");
 var request = require("supertest");
-var should = chai.should();
+chai.should();
 var utils = require("./LoginUtils");
 
 chai.use(chaiHttp);
@@ -103,19 +104,18 @@ describe("DerivedDataset: Derived Datasets", () => {
       limit: 2,
     };
 
-    return (
-      request(app)
-        // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .query(JSON.stringify(filter))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(200)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.instanceof(Array);
-        })
-    );
+    return request(app)
+      .get(
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
+      .query(JSON.stringify(filter))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+      });
   });
 
   it("should fetch this derived dataset", async () => {
@@ -125,17 +125,18 @@ describe("DerivedDataset: Derived Datasets", () => {
       },
     };
 
-    return (
-      request(app)
-        // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/datasets/findOne?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(200)
-        .then((res) => {
-          res.body.should.have.property("pid").and.equal(pid);
-        })
-    );
+    return request(app)
+      .get(
+        `/api/v3/datasets/findOne?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(pid);
+      });
   });
 
   it("should fetch all derived datasets", async () => {

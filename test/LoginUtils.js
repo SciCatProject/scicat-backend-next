@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var request = require("supertest");
 
 exports.getToken = function (app, user, cb) {

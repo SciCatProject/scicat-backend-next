@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var chai = require("chai");
-var should = chai.should();
+chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");
 var utils = require("./LoginUtils");

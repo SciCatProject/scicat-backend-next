@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var chai = require("chai");
-var should = chai.should();
+chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");
 var utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
 
 chai.use(chaiHttp);
@@ -45,22 +45,8 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       },
     );
 
-    let {
-      datasetId1,
-      ownerGroup1,
-      accessGroups1,
-      instrumentGroup1,
-      ...localOrigDatablockData1
-    } = TestData.OrigDataBlockCorrect1;
-    origDatablockData1 = localOrigDatablockData1;
-    let {
-      datasetId2,
-      ownerGroup2,
-      accessGroups2,
-      instrumentGroup2,
-      ...localOrigDatablockData2
-    } = TestData.OrigDataBlockCorrect2;
-    origDatablockData2 = localOrigDatablockData2;
+    origDatablockData1 = TestData.OrigDataBlockCorrect1;
+    origDatablockData2 = TestData.OrigDataBlockCorrect2;
   });
 
   it("adds a new raw dataset", async () => {

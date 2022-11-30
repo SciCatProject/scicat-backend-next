@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var chai = require("chai");
-var should = chai.should();
+chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");
 var utils = require("./LoginUtils");
@@ -327,7 +328,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err) => {
         if (err) return done(err);
         done();
       });
@@ -340,7 +341,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
+      .end((err) => {
         if (err) return done(err);
         done();
       });
@@ -353,7 +354,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .end((err, _res) => {
+      .end((err) => {
         if (err) return done(err);
         done();
       });

@@ -1,11 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var chai = require("chai");
-var should = chai.should();
+chai.should();
 var chaiHttp = require("chai-http");
 var request = require("supertest");
-var utils = require("./LoginUtils");
-
 chai.use(chaiHttp);
-
 const app = "http://localhost:3000";
 
 describe("Users: Login with functional accounts", () => {

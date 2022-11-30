@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 var chai = require("chai");
 var chaiHttp = require("chai-http");
 var request = require("supertest");
-var should = chai.should();
+chai.should();
 var utils = require("./LoginUtils");
 
 chai.use(chaiHttp);
@@ -153,7 +154,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   it("Should return datasets with complex join query fulfilled", async () => {
     var fields = {
       ownerGroup: ["p12345", "p10029"],
-      text: '"ultimate test"',
+      text: "'ultimate test'",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
@@ -207,7 +208,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   it("Should return facets with complex join query fulfilled", async () => {
     var fields = {
       ownerGroup: ["p12345", "p10029"],
-      text: '"ultimate test"',
+      text: "'ultimate test'",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",

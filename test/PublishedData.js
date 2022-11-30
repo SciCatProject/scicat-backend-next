@@ -1,11 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-// process.env.NODE_ENV = 'test';
-
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const request = require("supertest");
-const should = chai.should();
+chai.should();
 const utils = require("./LoginUtils");
 const nock = require("nock");
 const sandbox = require("sinon").createSandbox();

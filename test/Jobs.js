@@ -1,11 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
-// process.env.NODE_ENV = 'test';
 
 var chai = require("chai");
 var chaiHttp = require("chai-http");
+chai.should();
 var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
 
 chai.use(chaiHttp);
