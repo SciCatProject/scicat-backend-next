@@ -23,7 +23,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:api": "jest --config ./test/jest-e2e.json",
     "api:after:start": "concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
-    "test:api:mocha": "mocha --timeout=60000 --reporter spec --exit --grep 'Jobs'",
+    "test:api:mocha": "mocha --timeout=60000 --reporter spec --exit",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml up -d && cp functionalAccounts.json.example functionalAccounts.json"
   },
   "dependencies": {

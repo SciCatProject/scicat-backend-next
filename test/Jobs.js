@@ -597,7 +597,7 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
-  // NOTE: Missing endpoint!!! /api/v3/Jobs/update?where
+  // NOTE: Missing endpoint!!! /api/v3/Jobs/update?where. Do we need one???
   // it("Bulk update Job status prepare to trigger sending email mechanism", async () => {
   //   const filter = {
   //     id: {
@@ -619,7 +619,7 @@ describe("Jobs: Test New Job Model", () => {
   //     });
   // });
 
-  // NOTE: Missing endpoint!!! /api/v3/Jobs/update?where
+  // NOTE: Missing endpoint!!! /api/v3/Jobs/update?where. Do we need one???
   // it("Bulk update Job status, should send out email", async () => {
   //   var filter = {
   //     id: {
@@ -715,7 +715,6 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
-  // TODO: Fix this one
   it("Adds a new public job request without authentication", async () => {
     return request(app)
       .post("/api/v3/Jobs")
@@ -743,94 +742,93 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
 
-  // TODO: Continue fixing the logic and the tests for jobs.
-  // it("Send an update status to the public job request, signal finished job with partial failure", async () => {
-  //   return request(app)
-  //     .put("/api/v3/Jobs/" + publicJobIds[0])
-  //     .send({
-  //       jobStatusMessage: "finishedUnsuccessful",
-  //       jobResultObject: {
-  //         good: [
-  //           {
-  //             pid: decodeURIComponent(pid1),
-  //             downloadLink: "Globus link",
-  //           },
-  //         ],
-  //         bad: [
-  //           {
-  //             pid: decodeURIComponent(pid2),
-  //             downloadLink: "Globus link",
-  //             availableFiles: [
-  //               {
-  //                 file: "file1.txt",
-  //                 reason: "ok",
-  //               },
-  //               {
-  //                 file: "file2.txt",
-  //                 reason: "ok",
-  //               },
-  //             ],
-  //             unavailableFiles: [
-  //               {
-  //                 file: "file3.txt",
-  //                 reason: "no space in destination",
-  //               },
-  //             ],
-  //           },
-  //         ],
-  //       },
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("Send an update status to the public job request, signal finished job with partial failure", async () => {
+    return request(app)
+      .patch("/api/v3/Jobs/" + publicJobIds[0])
+      .send({
+        jobStatusMessage: "finishedUnsuccessful",
+        jobResultObject: {
+          good: [
+            {
+              pid: decodeURIComponent(pid1),
+              downloadLink: "Globus link",
+            },
+          ],
+          bad: [
+            {
+              pid: decodeURIComponent(pid2),
+              downloadLink: "Globus link",
+              availableFiles: [
+                {
+                  file: "N1039-1.tif",
+                  reason: "ok",
+                },
+                {
+                  file: "N1039-2.tif",
+                  reason: "ok",
+                },
+              ],
+              unavailableFiles: [
+                {
+                  file: "N1039-3.tif",
+                  reason: "no space in destination",
+                },
+              ],
+            },
+          ],
+        },
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("Adds a new public job request to download some selected files", async () => {
-  //   testPublicJob.datasetList[0].files = ["file1.txt", "file2.txt"];
-  //   return request(app)
-  //     .post("/api/v3/Jobs")
-  //     .send(testPublicJob)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       //reset
-  //       testPublicJob.datasetList[0].files = [];
+  it("Adds a new public job request to download some selected files", async () => {
+    testPublicJob.datasetList[0].files = ["N1039-1.tif", "N1039-2.tif"];
+    return request(app)
+      .post("/api/v3/Jobs")
+      .send(testPublicJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        //reset
+        testPublicJob.datasetList[0].files = [];
 
-  //       res.body.should.have.property("type").and.be.string;
-  //       publicJobIds.push(res.body["id"]);
+        res.body.should.have.property("type").and.be.string;
+        publicJobIds.push(res.body["id"]);
+      });
+  });
 
-  //       // setTimeout(done, 3000);
-  //     });
-  // });
+  it("Send an update status to the public job request, signal successful job", async () => {
+    return request(app)
+      .patch("/api/v3/Jobs/" + publicJobIds[1])
+      .send({
+        jobStatusMessage: "finishedSuccessful",
+        jobResultObject: {
+          good: [
+            {
+              pid: pid1,
+              downloadLink: "Globus link 1",
+            },
+            {
+              pid: pid2,
+              downloadLink: "Globus link 2",
+            },
+          ],
+          bad: [],
+        },
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("Send an update status to the public job request, signal successful job", async () => {
-  //   return request(app)
-  //     .put("/api/v3/Jobs/" + publicJobIds[1])
-  //     .send({
-  //       jobStatusMessage: "finishedSuccessful",
-  //       jobResultObject: {
-  //         good: [
-  //           {
-  //             pid: decodeURIComponent(pid1),
-  //             downloadLink: "Globus link 1",
-  //           },
-  //           {
-  //             pid: decodeURIComponent(pid2),
-  //             downloadLink: "Globus link 2",
-  //           },
-  //         ],
-  //         bad: [],
-  //       },
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
-
+  // NOTE: We don't have put endpoint on the jobs here, only patch.
+  // Patch without id is returning 404 nor found. Maybe this will be valid one if we need and add put endpoint later?
   // it("Add new job using put, which should fails. Ensure that adding new job without authentication using put is not possible ", async () => {
   //   return request(app)
   //     .put("/api/v3/Jobs/")
@@ -840,22 +838,22 @@ describe("Jobs: Test New Job Model", () => {
   //     .expect("Content-Type", /json/);
   // });
 
-  // it("Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
-  //   testPublicJob.datasetList[0].files = ["file1.txt", "file100.txt"];
-  //   return request(app)
-  //     .post("/api/v3/Jobs")
-  //     .send(testPublicJob)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(404)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       //reset
-  //       testPublicJob.datasetList[0].files = [];
+  it("Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
+    testPublicJob.datasetList[0].files = ["N1039-1.tif", "N1039-101.tif"];
+    return request(app)
+      .post("/api/v3/Jobs")
+      .send(testPublicJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        //reset
+        testPublicJob.datasetList[0].files = [];
 
-  //       res.body.should.have.property("error").and.be.string;
-  //     });
-  // });
+        res.should.have.property("error").and.be.string;
+      });
+  });
 
   it("should delete the archive Job", async () => {
     return request(app)

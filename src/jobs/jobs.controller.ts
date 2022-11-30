@@ -30,6 +30,8 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
 import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -38,6 +40,7 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly datasetsService: DatasetsService,
+    private readonly origDatablocksService: OrigDatablocksService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -174,10 +177,19 @@ export class JobsController {
                 $in: ids,
               },
             },
-            include: [{ relation: "origdatablocks" }],
           };
           // Indexing originDataBlock with pid and create set of files for each dataset
           const datasets = await this.datasetsService.findAll(filter);
+          // Include origdatablocks
+          await Promise.all(
+            datasets.map(async (dataset) => {
+              dataset.origdatablocks = await this.origDatablocksService.findAll(
+                {
+                  datasetId: dataset.pid,
+                },
+              );
+            }),
+          );
           const result: Record<string, Set<string>> = datasets.reduce(
             (acc: Record<string, Set<string>>, dataset) => {
               // Using Set make searching more efficient
@@ -236,7 +248,7 @@ export class JobsController {
         {
           status: HttpStatus.UNAUTHORIZED,
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
       );
     }
   };
@@ -252,8 +264,7 @@ export class JobsController {
     await this.checkFilesExistence(createJobDto);
   }
 
-  @UseGuards(PoliciesGuard)
-  // @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Job))
+  @AllowAny()
   @UseInterceptors(new SetCreatedUpdatedAtInterceptor<Job>("creationTime"))
   @Post()
   async create(

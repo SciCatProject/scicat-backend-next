@@ -1,5 +1,4 @@
-import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsNotEmpty, IsString } from "class-validator";
 
 export class DatasetListDto {
   @IsString()
@@ -7,7 +6,6 @@ export class DatasetListDto {
   readonly pid: string;
 
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => String)
+  @IsString({ each: true })
   readonly files: string[];
 }
