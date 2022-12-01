@@ -26,6 +26,7 @@ import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
+import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
 
 @ApiBearerAuth()
 @ApiTags("policies")
@@ -63,28 +64,18 @@ export class PoliciesController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
-  @ApiQuery({
-    name: "ownerGrouplist",
-    description: "Stringified array of owner groups",
-    required: true,
-  })
-  @ApiQuery({
-    name: "data",
-    description: "Policy JSON object",
-    required: true,
-  })
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
   @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
   async updateWhere(
-    @Query("ownerGroupList") ownerGroupList: string,
-    @Query("data") data: string,
+    @Body() updateWherePolicyDto: UpdateWherePolicyDto,
     @Req() req: Request,
   ) {
-    const parsedData: UpdatePolicyDto = JSON.parse(data);
-    return this.policiesService.updateWhere(ownerGroupList, parsedData, req);
+    return this.policiesService.updateWhere(
+      updateWherePolicyDto.ownerGroupList,
+      updateWherePolicyDto.data,
+      req,
+    );
   }
 
   @UseGuards(PoliciesGuard)
