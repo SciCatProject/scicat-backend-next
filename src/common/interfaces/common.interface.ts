@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+//import { ApiProperty } from "@nestjs/swagger";
 import { FilterQuery } from "mongoose";
 import { ScientificRelation } from "../scientific-relation.enum";
 

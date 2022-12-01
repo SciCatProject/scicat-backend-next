@@ -37,15 +37,15 @@ import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
-import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
-import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
+//import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
+//import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
-import { string } from "mathjs";
+//import { string } from "mathjs";
 import { filterDescription, filterExample, fullQueryDescription, fullQueryExample } from "src/common/utils";
 
 @ApiBearerAuth()
