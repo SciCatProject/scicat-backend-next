@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { FilterQuery } from "mongoose";
 import { ScientificRelation } from "../scientific-relation.enum";
 
@@ -37,6 +38,30 @@ export interface IProposalAcceptedMessage {
 export interface ILimitsFilter {
   limit: number;
   skip: number;
+  order: string;
+}
+
+export class ILimitsFilterDto implements ILimitsFilter {
+/*   @ApiProperty({
+    type: Number,
+    required: true,
+    description: "Number of items returned"
+  })
+ */  limit: number;
+
+/*   @ApiProperty({
+    type: Number,
+    required: true,
+    description: "Number of element to skip at the beginning of the list"
+  }) */
+  skip: number;
+
+/*   @ApiProperty({
+    type: String,
+    required: true,
+    description: "Order of the elements: Ascending or Descending"
+  })
+ */
   order: string;
 }
 

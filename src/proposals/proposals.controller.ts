@@ -19,7 +19,9 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiExtraModels,
+  ApiParam,
   ApiQuery,
+  ApiResponse,
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
@@ -43,6 +45,8 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
+import { string } from "mathjs";
+import { filterDescription, filterExample, fullQueryDescription, fullQueryExample } from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -68,6 +72,11 @@ export class ProposalsController {
   @ApiBody({
     type: CreateProposalDto,
   })
+  @ApiResponse({
+    status: 201,
+    type: Proposal,
+    description: "Create a new proposal and return its representation in SciCat"
+  })
   async create(
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<Proposal> {
@@ -77,6 +86,14 @@ export class ProposalsController {
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
+  @ApiBody({
+    type: CreateProposalDto,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Boolean,
+    description: "Check if the proposal provided pass validation. It return true if the validation is passed"
+  })
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createProposal: unknown,
@@ -99,10 +116,22 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get()
+  //@ApiExtraModels(IProposalFilterDto)
   @ApiQuery({
     name: "filters",
-    description: "Database filters to apply when retrieve all proposals",
+    description: "Database filters to apply when retrieve proposals\n" + filterDescription,
     required: false,
+    //schema: {
+    //  $ref: getSchemaPath(IProposalFilterDto),
+    //}
+    type: String,
+    example: filterExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Proposal,
+    isArray: true,
+    description: "Return the proposals requested"
   })
   async findAll(@Query("filters") filters?: string): Promise<Proposal[]> {
     const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
@@ -114,6 +143,19 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get("/fullquery")
+  @ApiQuery({
+    name: "filters",
+    description: "Full query filters to apply when retrieve proposals\n" + fullQueryDescription,
+    required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Proposal,
+    isArray: true,
+    description: "Return proposals requested"
+  })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<Proposal[]> {
@@ -128,6 +170,19 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
   @Get("/fullfacet")
+  @ApiQuery({
+    name: "filters",
+    description: "Full facet query filters to apply when retrieve proposals\n" + fullQueryDescription,
+    required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Proposal,
+    isArray: true,
+    description: "Return proposals requested"
+  })
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
@@ -141,12 +196,23 @@ export class ProposalsController {
   // GET /proposals/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
-  @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<Proposal | null> {
-    return this.proposalsService.findOne({ proposalId: id });
+  @Get("/:pid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Proposal,
+    isArray: false,
+    description: "Return proposal with pid specified"
+  })
+  async findOne(@Param("pid") proposalId: string): Promise<Proposal | null> {
+    return this.proposalsService.findOne({ proposalId: proposalId });
   }
 
-  // PATCH /proposals/:id
+  // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Proposal))
   @UseInterceptors(
@@ -155,20 +221,43 @@ export class ProposalsController {
       ["start", "end"],
     ),
   )
-  @Patch("/:id")
+  @Patch("/:pid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal to modify",
+    type: String,
+  })
+  @ApiExtraModels(UpdateProposalDto)
+  @ApiBody({
+    type: UpdateProposalDto,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Proposal,
+    description: "Update an existing proposal and return its representation in SciCat"
+  })
   async update(
-    @Param("id") id: string,
+    @Param("pid") proposalId: string,
     @Body() updateProposalDto: UpdateProposalDto,
   ): Promise<Proposal | null> {
-    return this.proposalsService.update({ proposalId: id }, updateProposalDto);
+    return this.proposalsService.update({ proposalId: proposalId }, updateProposalDto);
   }
 
   // DELETE /proposals/:id
   @UseGuards()
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Proposal))
-  @Delete("/:id")
-  async remove(@Param("id") id: string): Promise<unknown> {
-    return this.proposalsService.remove({ proposalId: id });
+  @Delete("/:pid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned"
+  })
+  async remove(@Param("pid") proposalId: string): Promise<unknown> {
+    return this.proposalsService.remove({ proposalId: proposalId });
   }
 
   // POST /proposals/:id/attachments
@@ -177,36 +266,76 @@ export class ProposalsController {
     ability.can(Action.Create, Attachment),
   )
   @Post("/:id/attachments")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal we would like to create a new attachement for",
+    type: String,
+  })
+  @ApiExtraModels(CreateAttachmentDto)
+  @ApiBody({
+    type: CreateAttachmentDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: Attachment,
+    description: "Create a new attachment for the proposal identified by the pid specified"
+  })
   async createAttachment(
-    @Param("id") id: string,
+    @Param("pid") proposalId: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
     //console.log("Add attachement to  proposal");
     const createAttachment = {
       ...createAttachmentDto,
-      proposalId: id,
+      proposalId: proposalId,
     };
-    //console.log(createAttachmentDto);
     return this.attachmentsService.create(createAttachment);
   }
 
-  // GET /proposals/:id/attachments
+  // GET /proposals/:pid/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
-  @Get("/:id/attachments")
-  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
-    return this.attachmentsService.findAll({ proposalId: id });
+  @Get("/:pid/attachments")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal for which we would like to retrieve all the attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Attachment,
+    isArray: true,
+    description: "Array with all the attachments associated with the proposal with the pid specified"
+  })
+  async findAllAttachments(@Param("pid") proposalId: string): Promise<Attachment[]> {
+    return this.attachmentsService.findAll({ proposalId: proposalId });
   }
 
-  // PATCH /proposals/:id/attachments/:fk
+  // PATCH /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
   )
-  @Patch("/:id/attachments/:fk")
+  @Patch("/:pid/attachments/:aid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal for which we would like to update the attachment specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description: "Id of the attachment of this proposal that we would like to patch",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Attachment,
+    isArray: false,
+    description: "Update values of the attachment with id specified associated with the proposal with the pid specified"
+  })
   async findOneAttachmentAndUpdate(
-    @Param("id") proposalId: string,
-    @Param("fk") attachmentId: string,
+    @Param("pid") proposalId: string,
+    @Param("aid") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
@@ -215,15 +344,29 @@ export class ProposalsController {
     );
   }
 
-  // DELETE /proposals/:id/attachments/:fk
+  // DELETE /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, Attachment),
   )
-  @Delete("/:id/attachments/:fk")
+  @Delete("/:pid/attachments/:aid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal for which we would like to delete the attachment specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description: "Id of the attachment of this proposal that we would like to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Remove the attachment with id specified associated with the proposal with the pid specified"
+  })
   async findOneAttachmentAndRemove(
-    @Param("id") proposalId: string,
-    @Param("fk") attachmentId: string,
+    @Param("pid") proposalId: string,
+    @Param("aid") attachmentId: string,
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
@@ -231,33 +374,56 @@ export class ProposalsController {
     });
   }
 
-  // POST /proposals/:id/datasets
-  @UseGuards(PoliciesGuard)
+  // POST /proposals/:pid/datasets
+/*   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, DatasetClass),
   )
-  @Post("/:id/datasets")
+  @Post("/:pid/datasets")
+  @ApiParam({
+    name: "id",
+    description: "Id of the proposal for which we would like to retrieve all the datasets",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Array with all the datasets associated with the proposal with the pid specified"
+  })
   async createDataset(
-    @Param("id") id: string,
+    @Param("pid") id: string,
     createRawDatasetDto: CreateRawDatasetDto,
   ): Promise<DatasetClass> {
     const createRawDataset = { ...createRawDatasetDto, proposalId: id };
     return await this.datasetsService.create(createRawDataset);
   }
+ */
 
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
-  @Get("/:id/datasets")
+  @Get("/:pid/datasets")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the proposal for which we would like to retrieve all the datasets",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Array with all the datasets associated with the proposal with the pid specified"
+  })
   async findAllDatasets(
-    @Param("id") proposalId: string,
+    @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
   }
 
-  // PATCH /proposals/:id/datasets/:fk
+/*   // PATCH /proposals/:id/datasets/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, DatasetClass),
@@ -273,8 +439,9 @@ export class ProposalsController {
       updateRawDatasetDto,
     );
   }
+ */
 
-  // DELETE /proposals/:id/datasets/:fk
+/*   // DELETE /proposals/:id/datasets/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, DatasetClass),
@@ -286,4 +453,10 @@ export class ProposalsController {
   ): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(datasetId);
   }
+}
+function ApiResponseModelProperty() {
+  throw new Error("Function not implemented.");
+}
+*/
+
 }
