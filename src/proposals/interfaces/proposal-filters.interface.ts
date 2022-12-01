@@ -1,8 +1,8 @@
-import { Proposal, ProposalDocument } from "../schemas/proposal.schema";
-import { IFilters, ILimitsFilterDto } from "src/common/interfaces/common.interface";
-import { FilterQuery } from "mongoose";
-import { ApiProperty } from "@nestjs/swagger";
-import { string } from "mathjs";
+//import { ProposalClass, ProposalDocument } from "../schemas/proposal.schema";
+//import { IFilters, ILimitsFilterDto } from "src/common/interfaces/common.interface";
+//import { FilterQuery } from "mongoose";
+//import { ApiProperty } from "@nestjs/swagger";
+//import { string } from "mathjs";
 
 interface IProposalFieldObject {
   $regex: string;

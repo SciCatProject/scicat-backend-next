@@ -7,18 +7,18 @@ import {
 } from "src/attachments/schemas/attachment.schema";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
-  MeasurementPeriod,
+  MeasurementPeriodClass,
   MeasurementPeriodSchema,
 } from "./measurement-period.schema";
 
-export type ProposalDocument = Proposal & Document;
+export type ProposalDocument = ProposalClass & Document;
 @Schema({
   collection: "Proposal",
   toJSON: {
     getters: true,
   },
 })
-export class Proposal extends OwnableClass {
+export class ProposalClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,
@@ -150,7 +150,8 @@ export class Proposal extends OwnableClass {
 
 
   @ApiProperty({
-    type: MeasurementPeriod,
+    type: MeasurementPeriodClass,
+    isArray: true,
     required: false,
     description:
       "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
@@ -159,9 +160,9 @@ export class Proposal extends OwnableClass {
     type: [MeasurementPeriodSchema],
     required: false,
   })
-  MeasurementPeriodList?: MeasurementPeriod[];
+  MeasurementPeriodList?: MeasurementPeriodClass[];
 }
 
-export const ProposalSchema = SchemaFactory.createForClass(Proposal);
+export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
 
 ProposalSchema.index({ "$**": "text" });

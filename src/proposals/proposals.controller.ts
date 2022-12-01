@@ -29,7 +29,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
+import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
@@ -40,7 +40,7 @@ import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
-import { MeasurementPeriod } from "./schemas/measurement-period.schema";
+import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
@@ -60,9 +60,9 @@ export class ProposalsController {
 
   // POST /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, ProposalClass))
   @UseInterceptors(
-    new MultiUTCTimeInterceptor<Proposal, MeasurementPeriod>(
+    new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
       "MeasurementPeriodList",
       ["start", "end"],
     ),
@@ -74,12 +74,12 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 201,
-    type: Proposal,
+    type: ProposalClass,
     description: "Create a new proposal and return its representation in SciCat"
   })
   async create(
     @Body() createProposalDto: CreateProposalDto,
-  ): Promise<Proposal> {
+  ): Promise<ProposalClass> {
     return this.proposalsService.create(createProposalDto);
   }
 
@@ -114,7 +114,7 @@ export class ProposalsController {
 
   // GET /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get()
   //@ApiExtraModels(IProposalFilterDto)
   @ApiQuery({
@@ -129,11 +129,11 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: Proposal,
+    type: ProposalClass,
     isArray: true,
     description: "Return the proposals requested"
   })
-  async findAll(@Query("filters") filters?: string): Promise<Proposal[]> {
+  async findAll(@Query("filters") filters?: string): Promise<ProposalClass[]> {
     const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
       JSON.parse(filters ?? "{}");
     return this.proposalsService.findAll(proposalFilters);
@@ -141,7 +141,7 @@ export class ProposalsController {
 
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/fullquery")
   @ApiQuery({
     name: "filters",
@@ -152,13 +152,13 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: Proposal,
+    type: ProposalClass,
     isArray: true,
     description: "Return proposals requested"
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<Proposal[]> {
+  ): Promise<ProposalClass[]> {
     const parsedFilters: IFilters<ProposalDocument, IProposalFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -168,7 +168,7 @@ export class ProposalsController {
 
   // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/fullfacet")
   @ApiQuery({
     name: "filters",
@@ -179,7 +179,7 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: Proposal,
+    type: ProposalClass,
     isArray: true,
     description: "Return proposals requested"
   })
@@ -195,7 +195,7 @@ export class ProposalsController {
 
   // GET /proposals/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/:pid")
   @ApiParam({
     name: "pid",
@@ -204,19 +204,19 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: Proposal,
+    type: ProposalClass,
     isArray: false,
     description: "Return proposal with pid specified"
   })
-  async findOne(@Param("pid") proposalId: string): Promise<Proposal | null> {
+  async findOne(@Param("pid") proposalId: string): Promise<ProposalClass | null> {
     return this.proposalsService.findOne({ proposalId: proposalId });
   }
 
   // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, ProposalClass))
   @UseInterceptors(
-    new MultiUTCTimeInterceptor<Proposal, MeasurementPeriod>(
+    new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
       "MeasurementPeriodList",
       ["start", "end"],
     ),
@@ -233,19 +233,19 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: Proposal,
+    type: ProposalClass,
     description: "Update an existing proposal and return its representation in SciCat"
   })
   async update(
     @Param("pid") proposalId: string,
     @Body() updateProposalDto: UpdateProposalDto,
-  ): Promise<Proposal | null> {
+  ): Promise<ProposalClass | null> {
     return this.proposalsService.update({ proposalId: proposalId }, updateProposalDto);
   }
 
   // DELETE /proposals/:id
   @UseGuards()
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Proposal))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, ProposalClass))
   @Delete("/:pid")
   @ApiParam({
     name: "pid",
