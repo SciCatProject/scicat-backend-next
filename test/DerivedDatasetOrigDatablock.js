@@ -1,14 +1,6 @@
-var chai = require("chai");
-var should = chai.should();
-var chaiHttp = require("chai-http");
-var request = require("supertest");
+/* eslint-disable @typescript-eslint/no-var-requires */
 var utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
-
-const app = "http://localhost:3000";
 
 describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to derived Datasets", () => {
   let accessTokenIngestor = null;
@@ -21,7 +13,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
 
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -29,7 +21,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -44,7 +36,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("adds a new derived dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -61,7 +53,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("validate correct origDatablock data used later", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
@@ -78,7 +70,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("validate wrong origDatablock and expect false", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockWrong)
       .set("Accept", "application/json")
@@ -95,7 +87,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("adds a new origDatablock with wrong account which should fail", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
@@ -105,7 +97,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("adds a new origDatablock with correct account", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
@@ -122,7 +114,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("adds a second origDatablock", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(TestData.OrigDataBlockCorrect2)
       .set("Accept", "application/json")
@@ -139,7 +131,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch all origdatablocks belonging to the new dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/OrigDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -153,7 +145,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("The new dataset should be the sum of the size of the origDatablocks", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -183,7 +175,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       ],
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne?filter=" +
           encodeURIComponent(JSON.stringify(filter)) +
@@ -217,7 +209,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       skip: 0,
       limit: 20,
     };
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -242,7 +234,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       skip: 0,
       limit: 20,
     };
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -267,7 +259,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       skip: 0,
       limit: 20,
     };
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -292,7 +284,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       skip: 0,
       limit: 20,
     };
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/OrigDatablocks/fullQuery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -309,7 +301,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -332,7 +324,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("should delete first OrigDatablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId1}`,
       )
@@ -342,7 +334,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("should delete second OrigDatablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId2}`,
       )
@@ -352,7 +344,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("Should fetch no origdatablocks belonging to the new dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/OrigDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -364,7 +356,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("The size and numFiles fields in the dataset should be zero", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -377,7 +369,7 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
   });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })

@@ -178,7 +178,9 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
-    const patchedDataset = this.datasetModel
+    // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
+    // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
+    const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
         updateDatasetDto as UpdateQuery<DatasetDocument>,

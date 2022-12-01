@@ -1,6 +1,5 @@
 import { Type } from "class-transformer";
 import {
-  ArrayNotEmpty,
   IsArray,
   IsDateString,
   IsEmail,
@@ -21,7 +20,7 @@ export class CreateJobDto {
 
   @IsDateString()
   @IsOptional()
-  readonly creationTime: Date;
+  readonly creationTime?: Date;
 
   @IsDateString()
   @IsOptional()
@@ -36,7 +35,7 @@ export class CreateJobDto {
   readonly jobStatusMessage?: string;
 
   @IsArray()
-  @ArrayNotEmpty()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => DatasetListDto)
   readonly datasetList: IDatasetList[];

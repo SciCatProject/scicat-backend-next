@@ -28,6 +28,7 @@ import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CommonModule } from "./common/common.module";
     InstrumentsModule,
     JobsModule,
     LogbooksModule,
+    EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {

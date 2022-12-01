@@ -1,14 +1,6 @@
-var chai = require("chai");
-var should = chai.should();
-var chaiHttp = require("chai-http");
-var request = require("supertest");
+/* eslint-disable @typescript-eslint/no-var-requires */
 var utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
-
-const app = "http://localhost:3000";
 
 describe("RawDatasetDatablock: Test Datablocks and their relation to raw Datasets", () => {
   var accessTokenIngestor = null;
@@ -20,7 +12,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
 
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -28,7 +20,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -43,7 +35,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("adds a new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -60,7 +52,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("adds a new datablock to the existing raw dataset", () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -77,7 +69,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("adds the same datablock again which should fail because it is already stored", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -90,7 +82,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("adds a new datablock which should fail because wrong functional account", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -106,7 +98,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
     let testdata = TestData.DataBlockCorrect;
     testdata.archiveId = "some-other-archive-id-that-is-different";
 
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(testdata)
       .set("Accept", "application/json")
@@ -121,7 +113,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("Should fetch all datablocks belonging to the new dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -148,7 +140,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       ],
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         `/api/v3/Datasets/findOne?filter=
           ${encodeURIComponent(JSON.stringify(filter))}
@@ -169,7 +161,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -192,7 +184,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("should delete first datablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -201,7 +193,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -224,7 +216,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("should delete second datablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -233,7 +225,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -248,7 +240,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
   });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
