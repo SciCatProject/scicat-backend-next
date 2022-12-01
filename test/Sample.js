@@ -1,14 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const request = require("supertest");
-const should = chai.should();
 const utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
 
 let accessToken = null,
   accessTokenArchiveManager = null,
@@ -16,12 +10,10 @@ let accessToken = null,
   attachmentId = null,
   datasetId = null;
 
-const app = "http://localhost:3000";
-
 describe("Sample: Simple Sample", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -29,7 +21,7 @@ describe("Sample: Simple Sample", () => {
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -44,7 +36,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("adds a new sample", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Samples")
       .send(TestData.SampleCorrect)
       .set("Accept", "application/json")
@@ -59,7 +51,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should fetch this new sample", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Samples/" + sampleId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -72,7 +64,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should add a new attachment to this sample", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Samples/" + sampleId + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
@@ -99,7 +91,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should fetch all attachments of this sample", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Samples/" + sampleId + "/attachments/")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -112,7 +104,7 @@ describe("Sample: Simple Sample", () => {
 
   // NOTE: Not sure if this one is still needed because this endpoint is not present in the swagger documentation. We are not able to fetch specific attachment under samples.
   it("should fetch this sample attachment", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -121,7 +113,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should delete this sample attachment", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -129,7 +121,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should return no datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Samples/" + sampleId + "/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -144,7 +136,7 @@ describe("Sample: Simple Sample", () => {
   it("insert dataset using this sample", async () => {
     let dataset = TestData.RawCorrect;
     dataset.sampleId = sampleId;
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset)
       .set("Accept", "application/json")
@@ -160,7 +152,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should retrieve dataset for sample", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Samples/" + sampleId + "/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -174,7 +166,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should delete the dataset linked to sample", function (done) {
-    request(app)
+    request(appUrl)
       .delete("/api/v3/Datasets/" + datasetId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -187,7 +179,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("should delete this sample", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Samples/" + sampleId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })

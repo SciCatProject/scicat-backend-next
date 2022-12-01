@@ -1,16 +1,8 @@
-var chai = require("chai");
-var should = chai.should();
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
-
-const app = "http://localhost:3000";
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 describe("Users: Login with functional accounts", () => {
   it("Ingestor login fails with incorrect credentials", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Users/Login?include=user")
       .send({
         username: "ingestor",
@@ -23,7 +15,7 @@ describe("Users: Login with functional accounts", () => {
   });
 
   it("Login should succeed with correct credentials", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Users/Login?include=user")
       .send({
         username: "ingestor",

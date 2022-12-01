@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 var request = require("supertest");
 
-exports.getToken = function (app, user, cb) {
-  request(app)
+exports.getToken = function (appUrl, user, cb) {
+  request(appUrl)
     .post("/api/v3/Users/Login?include=user")
     .send(user)
     .set("Accept", "application/json")
@@ -14,8 +15,8 @@ exports.getToken = function (app, user, cb) {
     });
 };
 
-exports.getTokenAD = function (app, user, cb) {
-  request(app)
+exports.getTokenAD = function (appUrl, user, cb) {
+  request(appUrl)
     .post("/auth/msad")
     .send(user)
     .set("Accept", "application/json")

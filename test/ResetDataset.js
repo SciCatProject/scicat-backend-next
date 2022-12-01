@@ -1,12 +1,7 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
 
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
@@ -153,12 +148,10 @@ var testArchiveId2 =
 var foundId1 = null;
 var foundId2 = null;
 
-const app = "http://localhost:3000";
-
 describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -166,7 +159,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -185,7 +178,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // TODO: Check all the tests here and fix if they are needed.
   // NOTE: Not sure if this one is still needed because we don't have a way to do this in the new backend.
   // it("should retrieve existing Datablocks with specific archiveId, if any", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/datasets//Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" +
   //         encodeURIComponent(testDataBlock.archiveId) +
@@ -202,7 +195,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
 
   // // NOTE: Not sure if this one is still needed because we don't have a way to do this in the new backend.
   // it("should retrieve existing Datablocks with 2nd specific archiveId, if any", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/Datablocks?filter=%7B%22where%22%3A%7B%22archiveId%22%3A%22" +
   //         encodeURIComponent(testArchiveId2) +
@@ -219,7 +212,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
 
   // it("should delete existing Datablocks (usually none) with specific archiveId", async () => {
   //   if (foundId1) {
-  //     return request(app)
+  //     return request(appUrl)
   //       .delete("/api/v3/Datablocks/" + foundId1)
   //       .set("Accept", "application/json")
   //       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -232,7 +225,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
 
   // it("should delete existing Datablocks (usually none) with 2nd specific archiveId", async () => {
   //   if (foundId2) {
-  //     return request(app)
+  //     return request(appUrl)
   //       .delete("/api/v3/Datablocks/" + foundId2)
   //       .set("Accept", "application/json")
   //       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -244,7 +237,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("adds a new raw dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/RawDatasets")
   //     .send(testraw)
   //     .set("Accept", "application/json")
@@ -263,7 +256,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("adds a new datablock", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datablocks")
   //     .send(testDataBlock)
   //     .set("Accept", "application/json")
@@ -279,7 +272,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
 
   // it("adds a second datablock for same dataset", async () => {
   //   testDataBlock.archiveId = testArchiveId2;
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datablocks")
   //     .send(testDataBlock)
   //     .set("Accept", "application/json")
@@ -293,7 +286,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("Should fetch all datablocks belonging to the new dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -305,7 +298,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("should reset the archive information from the newly created dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/resetArchiveStatus")
   //     .send({
   //       datasetId: testDataBlock.datasetId,
@@ -317,7 +310,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("The archive Status Message should now be reset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -335,7 +328,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("There should be no datablocks any more for this dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid + "/datablocks/count")
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -348,7 +341,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("should check createdBy and updatedBy fields of the newly created dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -362,7 +355,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   // });
 
   // it("should delete the newly created dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })

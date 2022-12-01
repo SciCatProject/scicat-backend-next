@@ -1,12 +1,7 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
 
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
@@ -87,12 +82,10 @@ var testRaw = {
   type: "raw",
 };
 
-const app = "http://localhost:3000";
-
 describe("DatasetLifecycle: Test facet and filter queries", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -100,7 +93,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -115,7 +108,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("adds a new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(testRaw)
       .set("Accept", "application/json")
@@ -134,7 +127,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   it("adds another new raw dataset", async () => {
     // modify owner
     testRaw.ownerGroup = "p12345";
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(testRaw)
       .set("Accept", "application/json")
@@ -153,7 +146,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   it("Should return datasets with complex join query fulfilled", async () => {
     var fields = {
       ownerGroup: ["p12345", "p10029"],
-      text: '"ultimate test"',
+      text: "'ultimate test'",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
@@ -162,7 +155,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       keywords: ["energy", "protein"],
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(JSON.stringify(fields)),
@@ -188,7 +181,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       skip: 1000,
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -207,7 +200,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   it("Should return facets with complex join query fulfilled", async () => {
     var fields = {
       ownerGroup: ["p12345", "p10029"],
-      text: '"ultimate test"',
+      text: "'ultimate test'",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
@@ -221,7 +214,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       "ownerGroup",
       "keywords",
     ];
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets/fullfacet?fields=" +
           encodeURIComponent(JSON.stringify(fields)) +
@@ -236,7 +229,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   // Note: make the tests with PUT instead of patch as long as replaceOnPut false
   it("Should update archive status message from archiveManager account", async () => {
-    return request(app)
+    return request(appUrl)
       .put("/api/v3/Datasets/" + pidRaw1)
       .send({
         datasetlifecycle: {
@@ -259,7 +252,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     var filter = {
       pid: pidRaw1,
     };
-    return request(app)
+    return request(appUrl)
       .put("/api/v3/Datasets/" + pidRaw1 + "?where=" + JSON.stringify(filter))
       .send({
         datasetlifecycle: {
@@ -285,7 +278,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("The history status should now include the last change for the first raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -307,7 +300,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   // endpoint doesn't exist anymore
   // it("Should update the datasetLifecycle information directly via embedded model API", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pidRaw1 + "/datasetLifecycle")
   //     .send({
   //       archiveStatusMessage: "Testing embedded case",
@@ -325,7 +318,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   // endpoint doesn't exist anymore
   // it("Should reset the embedded DatasetLifecycle status and delete Datablocks", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/resetArchiveStatus")
   //     .send({
   //       datasetId: pidRaw1,
@@ -337,7 +330,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   // });
 
   it("check for the 2 default policies to have been created", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Policies")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -351,7 +344,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   it("should delete the two policies", async () => {
     return policyIds.map((i) =>
-      request(app)
+      request(appUrl)
         .delete("/api/v3/Policies/" + i)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -360,7 +353,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -368,7 +361,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })

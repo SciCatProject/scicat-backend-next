@@ -1,25 +1,17 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
-
 const { TestData } = require("./TestData");
 
 var accessToken = null;
 var accessTokenArchiveManager = null;
 var pid = null;
 
-const app = "http://localhost:3000";
-
 describe("DerivedDataset: Derived Datasets", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -27,7 +19,7 @@ describe("DerivedDataset: Derived Datasets", () => {
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -43,7 +35,7 @@ describe("DerivedDataset: Derived Datasets", () => {
 
   // check if dataset is valid
   it("check if valid derived dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -55,7 +47,7 @@ describe("DerivedDataset: Derived Datasets", () => {
   });
 
   it("adds a new derived dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -72,7 +64,7 @@ describe("DerivedDataset: Derived Datasets", () => {
 
   // check if dataset is valid
   it("check if invalid derived dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
@@ -84,7 +76,7 @@ describe("DerivedDataset: Derived Datasets", () => {
   });
 
   it("tries to add an incomplete derived dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
@@ -103,19 +95,18 @@ describe("DerivedDataset: Derived Datasets", () => {
       limit: 2,
     };
 
-    return (
-      request(app)
-        // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .query(JSON.stringify(filter))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(200)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.instanceof(Array);
-        })
-    );
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
+      .query(JSON.stringify(filter))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array);
+      });
   });
 
   it("should fetch this derived dataset", async () => {
@@ -125,17 +116,18 @@ describe("DerivedDataset: Derived Datasets", () => {
       },
     };
 
-    return (
-      request(app)
-        // eslint-disable-next-line prettier/prettier
-        .get(`/api/v3/datasets/findOne?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(200)
-        .then((res) => {
-          res.body.should.have.property("pid").and.equal(pid);
-        })
-    );
+    return request(appUrl)
+      .get(
+        `/api/v3/datasets/findOne?filter=${encodeURIComponent(
+          JSON.stringify(filter),
+        )}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(pid);
+      });
   });
 
   it("should fetch all derived datasets", async () => {
@@ -145,7 +137,7 @@ describe("DerivedDataset: Derived Datasets", () => {
       },
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)),
       )
@@ -165,7 +157,7 @@ describe("DerivedDataset: Derived Datasets", () => {
       },
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)),
       )
@@ -179,7 +171,7 @@ describe("DerivedDataset: Derived Datasets", () => {
   });
 
   it("should delete a derived dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
