@@ -265,7 +265,7 @@ export class ProposalsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Attachment),
   )
-  @Post("/:id/attachments")
+  @Post("/:pid/attachments")
   @ApiParam({
     name: "pid",
     description: "Id of the proposal we would like to create a new attachement for",
