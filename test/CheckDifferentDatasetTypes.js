@@ -1,15 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-var chai = require("chai");
-chai.should();
-var chaiHttp = require("chai-http");
-var request = require("supertest");
 var utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
-
-const app = "http://localhost:3000";
 
 describe("CheckDifferentDatasetTypes: Check different dataset types and their inheritance", () => {
   let countDataset = 0;
@@ -24,7 +15,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
 
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -32,7 +23,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -49,7 +40,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   // get counts
 
   it("should get count of datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -62,7 +53,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should get count of raw datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -76,7 +67,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should get count of derived datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -91,7 +82,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
 
   // check if dataset is valid
   it("check if raw dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -103,7 +94,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check if derived dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -115,7 +106,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check if wrong derived dataset is recognized as invalid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
@@ -127,7 +118,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check if wrong typed dataset is recognized as invalid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DatasetWrong)
       .set("Accept", "application/json")
@@ -140,7 +131,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
 
   // add dataset and check what happened to counts
   it("adds a new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -160,7 +151,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
 
   // get counts again
   it("check for correct new count of datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -173,7 +164,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for count of raw datasets which should be 1", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -187,7 +178,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for unchanged count of derived datasets", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -201,7 +192,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should add a second raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -218,7 +209,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new dataset count should be incremented", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -231,7 +222,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new raw dataset count should be incremented", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -245,7 +236,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new derived dataset count should be unchanged", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -259,7 +250,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("adds a new derived dataset", async () => {
-    request(app)
+    request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -275,7 +266,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new dataset count should be incremented", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -290,7 +281,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new raw dataset count should be unchanged", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -306,7 +297,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new derived dataset count should be incremented", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -322,7 +313,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should delete the first raw dataset", function (done) {
-    request(app)
+    request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -335,7 +326,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should delete the second raw dataset", function (done) {
-    request(app)
+    request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -348,7 +339,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("should delete the derived dataset", function (done) {
-    request(app)
+    request(appUrl)
       .delete("/api/v3/Datasets/" + pidDerived1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -361,7 +352,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for the default policies to have been created", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Policies")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -375,7 +366,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
 
   it("should delete the default policies created with datasets", async () => {
     for (const item of policyIds) {
-      await request(app)
+      await request(appUrl)
         .delete("/api/v3/policies/" + item)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -384,7 +375,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new dataset count should be back to old count", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -399,7 +390,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new raw dataset count should be back to old count", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -415,7 +406,7 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new derived dataset count should be back to old count", function (done) {
-    request(app)
+    request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })

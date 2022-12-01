@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-chai.should();
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
 
 var accessToken = null;
 var pid = null;
@@ -17,12 +11,10 @@ var accessTokenArchiveManager = null;
 
 var proposalId = null;
 
-const app = "http://localhost:3000";
-
 describe("RawDataset: Raw Datasets", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -30,7 +22,7 @@ describe("RawDataset: Raw Datasets", () => {
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "proposalIngestor",
             password: "aman",
@@ -38,7 +30,7 @@ describe("RawDataset: Raw Datasets", () => {
           (tokenVal) => {
             accessProposalToken = tokenVal;
             utils.getToken(
-              app,
+              appUrl,
               {
                 username: "archiveManager",
                 password: "aman",
@@ -55,7 +47,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("adds a new proposal", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Proposals")
       .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
@@ -71,7 +63,7 @@ describe("RawDataset: Raw Datasets", () => {
 
   // check if dataset is valid
   it("check if valid raw dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -83,7 +75,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("adds a new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
@@ -100,7 +92,7 @@ describe("RawDataset: Raw Datasets", () => {
 
   // check if dataset is valid
   it("check if invalid raw dataset is valid", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
@@ -112,7 +104,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("tries to add an incomplete raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
@@ -124,7 +116,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("tries to add a raw dataset with history field", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawWrong_2)
       .set("Accept", "application/json")
@@ -143,7 +135,7 @@ describe("RawDataset: Raw Datasets", () => {
       limit: 2,
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         `/api/v3/Datasets?filter=${encodeURIComponent(JSON.stringify(filter))}`,
       )
@@ -165,7 +157,7 @@ describe("RawDataset: Raw Datasets", () => {
     };
 
     return (
-      request(app)
+      request(appUrl)
         // eslint-disable-next-line prettier/prettier
         .get(
           `/api/v3/Datasets/findOne?filter=${encodeURIComponent(
@@ -188,7 +180,7 @@ describe("RawDataset: Raw Datasets", () => {
     };
 
     return (
-      request(app)
+      request(appUrl)
         // eslint-disable-next-line prettier/prettier
         .get(
           `/api/v3/datasets/fullfacet?filter=${encodeURIComponent(
@@ -206,7 +198,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("should delete this raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/datasets/" + pid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -215,7 +207,7 @@ describe("RawDataset: Raw Datasets", () => {
   });
 
   it("should delete this proposal", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessProposalToken}` })

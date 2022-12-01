@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-chai.should();
-var request = require("supertest");
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
 
 var accessTokenIngestor = null;
 var accessTokenArchiveManager = null;
@@ -170,12 +164,10 @@ var testPublicJob = {
   ],
 };
 
-const app = "http://localhost:3000";
-
 describe("Jobs: Test New Job Model", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -183,7 +175,7 @@ describe("Jobs: Test New Job Model", () => {
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -198,7 +190,7 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("adds a new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
@@ -219,7 +211,7 @@ describe("Jobs: Test New Job Model", () => {
       });
   });
   it("adds another new raw dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(testraw)
       .set("Accept", "application/json")
@@ -240,7 +232,7 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("Adds a new archive job request without authentication, which should fails", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Jobs")
       .send(testArchiveJob)
       .set("Accept", "application/json")
@@ -252,7 +244,7 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("Adds a new archive job request", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Jobs")
       .send(testArchiveJob)
       .set("Accept", "application/json")
@@ -268,7 +260,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new archive job request contains empty datasetList, which should fail", async () => {
     const empty = { ...testArchiveJob };
     empty.datasetList = [];
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Jobs")
       .send(empty)
       .set("Accept", "application/json")
@@ -291,7 +283,7 @@ describe("Jobs: Test New Job Model", () => {
       ],
     };
 
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Jobs")
       .send(nonExistDataset)
       .set("Accept", "application/json")
@@ -308,7 +300,7 @@ describe("Jobs: Test New Job Model", () => {
 
   // TODO: Continue fixing the logic and the tests for jobs.
   // it("Check if dataset 1 was updated by job request", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid1)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -330,7 +322,7 @@ describe("Jobs: Test New Job Model", () => {
   //     });
   // });
   // it("Check if dataset 2 was updated by job request", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid2)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -353,7 +345,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testRetrieveJob)
   //     .set("Accept", "application/json")
@@ -369,7 +361,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to dataset 1, simulating the archive system response", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pid1)
   //     .send({
   //       datasetlifecycle: {
@@ -391,7 +383,7 @@ describe("Jobs: Test New Job Model", () => {
   //     });
   // });
   // it("Send an update status to dataset 2, simulating the archive system response", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pid2)
   //     .send({
   //       datasetlifecycle: {
@@ -416,7 +408,7 @@ describe("Jobs: Test New Job Model", () => {
   // // change policy to suppress emails
 
   // it("Disable notification bt email", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Policies/updatewhere")
   //     .send({
   //       ownerGroupList: "p10029",
@@ -435,7 +427,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new archive job request for same data which should fail", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testArchiveJob)
   //     .set("Accept", "application/json")
@@ -451,7 +443,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to the archive job request, signal successful archiving", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/" + archiveJobId)
   //     .send({
   //       jobStatusMessage: "finishedSuccessful",
@@ -467,7 +459,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new retrieve job request on same dataset, which should succeed now", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testRetrieveJob)
   //     .set("Accept", "application/json")
@@ -485,7 +477,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Read contents of dataset 1 after retrieve job and make sure that still retrievable", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid1)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -499,7 +491,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to the dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pid1)
   //     .send({
   //       datasetlifecycle: {
@@ -520,7 +512,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to the dataset, simulating the archive system response of finished job with partial failure", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pid1)
   //     .send({
   //       datasetlifecycle: {
@@ -543,7 +535,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status message to the Job", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/" + retrieveJobId)
   //     .send({
   //       jobStatusMessage: "finishedUnsuccessful",
@@ -569,7 +561,7 @@ describe("Jobs: Test New Job Model", () => {
   //       inq: [pid1, pid2],
   //     },
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datasets/update?where=" + JSON.stringify(filter))
   //     .send({
   //       datasetlifecycle: {
@@ -587,7 +579,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status message to the Job", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/" + retrieveJobId)
   //     .send({
   //       jobStatusMessage: "finishedSuccessful",
@@ -613,7 +605,7 @@ describe("Jobs: Test New Job Model", () => {
   //       inq: [archiveJobId, retrieveJobId],
   //     },
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs/update?where=" + JSON.stringify(filter))
   //     .send({
   //       jobStatusMessage: "test",
@@ -634,7 +626,7 @@ describe("Jobs: Test New Job Model", () => {
   //       inq: [archiveJobId, retrieveJobId],
   //     },
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs/update?where=" + JSON.stringify(filter))
   //     .send({
   //       jobStatusMessage: "finishedSuccessful",
@@ -651,7 +643,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("adds a new origDatablock", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/OrigDatablocks")
   //     .send(testOriginDataBlock)
   //     .set("Accept", "application/json")
@@ -666,7 +658,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new public job request on private datasets, which should fails", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -678,7 +670,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Set to true for one of the dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Datasets/" + pid1)
   //     .send({
   //       isPublished: true,
@@ -693,7 +685,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new public job request on one public and one private dataset, which should fails", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -710,7 +702,7 @@ describe("Jobs: Test New Job Model", () => {
   //       inq: [pid1, pid2],
   //     },
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datasets/update?where=" + JSON.stringify(filter))
   //     .send({
   //       isPublished: true,
@@ -725,7 +717,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new public job request without authentication", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -738,7 +730,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Adds a new public job request with authentication", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -752,7 +744,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to the public job request, signal finished job with partial failure", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/" + publicJobIds[0])
   //     .send({
   //       jobStatusMessage: "finishedUnsuccessful",
@@ -795,7 +787,7 @@ describe("Jobs: Test New Job Model", () => {
 
   // it("Adds a new public job request to download some selected files", async () => {
   //   testPublicJob.datasetList[0].files = ["file1.txt", "file2.txt"];
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -814,7 +806,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Send an update status to the public job request, signal successful job", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/" + publicJobIds[1])
   //     .send({
   //       jobStatusMessage: "finishedSuccessful",
@@ -839,7 +831,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("Add new job using put, which should fails. Ensure that adding new job without authentication using put is not possible ", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/Jobs/")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -849,7 +841,7 @@ describe("Jobs: Test New Job Model", () => {
 
   // it("Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
   //   testPublicJob.datasetList[0].files = ["file1.txt", "file100.txt"];
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Jobs")
   //     .send(testPublicJob)
   //     .set("Accept", "application/json")
@@ -865,7 +857,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("should delete the archive Job", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Jobs/" + archiveJobId)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -874,7 +866,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("should delete the retrieve Job", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Jobs/" + retrieveJobId)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -883,7 +875,7 @@ describe("Jobs: Test New Job Model", () => {
 
   // publicJobIds.forEach((jobId) => {
   //   it("should delete the public Job" + jobId, async () => {
-  //     return request(app)
+  //     return request(appUrl)
   //       .delete("/api/v3/Jobs/" + jobId)
   //       .set("Accept", "application/json")
   //       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -893,7 +885,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   // it("should delete the originDataBlock", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete(`/api/v3/datasets/${pid1}/OrigDatablocks/` + origDatablockId)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -901,7 +893,7 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -910,7 +902,7 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("should delete the second newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
