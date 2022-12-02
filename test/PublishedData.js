@@ -3,6 +3,7 @@
 
 const utils = require("./LoginUtils");
 const nock = require("nock");
+const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
 var accessTokenArchiveManager = null;
@@ -25,7 +26,7 @@ const testPublishedData = {
   resourceType: "raw",
   numberOfFiles: 1,
   sizeOfArchive: 1,
-  pidArray: ["ESS9991d73c-327b-4c6c-a474-1de96357b4ec"],
+  pidArray: [],
   status: "pending_registration",
 };
 
@@ -34,21 +35,22 @@ const modifiedPublishedData = {
   abstract: "a new abstract",
 };
 
-const testdataset = {
-  owner: "Bertram Astor",
-  ownerEmail: "bertram.astor@grumble.com",
-  orcidOfOwner: "unknown",
-  contactEmail: "bertram.astor@grumble.com",
-  sourceFolder: "/iramjet/tif/",
-  creationTime: "2011-09-14T06:08:25.000Z",
-  keywords: ["Cryo", "Calibration"],
-  description: "None",
-  type: "raw",
-  license: "CC BY-SA 4.0",
-  isPublished: true,
-  ownerGroup: "p13388",
-  accessGroups: [],
-};
+// const testdataset = {
+//   owner: "Bertram Astor",
+//   ownerEmail: "bertram.astor@grumble.com",
+//   orcidOfOwner: "unknown",
+//   contactEmail: "bertram.astor@grumble.com",
+//   sourceFolder: "/iramjet/tif/",
+//   creationTime: "2011-09-14T06:08:25.000Z",
+//   keywords: ["Cryo", "Calibration"],
+//   description: "None",
+//   type: "raw",
+//   license: "CC BY-SA 4.0",
+//   isPublished: true,
+//   size: 10,
+//   ownerGroup: "p13388",
+//   accessGroups: [],
+// };
 
 const nonpublictestdataset = {
   owner: "Bertram Astor",
@@ -170,52 +172,82 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should register this new published data", async () => {
-    nock("http://127.0.0.1:3000", {
-      reqheaders: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .post("/api/v3/PublishedData/" + doi + "/register")
-      .reply(200);
-  });
-
-  it("should register this new published data", async () => {
-    // const config = require("../src/config/configuration.ts");
-    // sandbox.stub(config, "site").value("PSI");
-    // if (config.oaiProviderRoute)
-    //   sandbox.stub(config, "oaiProviderRoute").value(null);
+  // NOTE: This is added because we need dataset for registering published data
+  it("adds a new raw dataset", async () => {
     return request(appUrl)
-      .post("/api/v3/PublishedData/" + doi + "/register/")
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawCorrect, isPublished: true })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(201)
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        // store link to this dataset in datablocks
+        pid = res.body["pid"];
+        testPublishedData.pidArray.push(pid);
+      });
+  });
+
+  // it("should register this new published data", async () => {
+  //   nock(appUrl, {
+  //     reqheaders: {
+  //       Authorization: `Bearer ${accessToken}`,
+  //     },
+  //   })
+  //     .post("/api/v3/PublishedData/" + doi + "/register")
+  //     .reply(200);
+  // });
+
+  it("should register this new published data", async () => {
+    return request(appUrl)
+      .post("/api/v3/PublishedData/" + doi + "/register")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
       .expect("Content-Type", /json/);
   });
 
-  // it("should fetch this new published data", async () => {
+  it("should fetch this new published data", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/" + doi)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("status").and.equal("registered");
+      });
+  });
+
+  // TODO: Double-check this one
+  // it("should resync this new published data", async (done) => {
   //   return request(appUrl)
-  //     .get("/api/v3/PublishedData/" + doi)
-  //     .set("Accept", "application/json")
+  //     .post("/api/v3/PublishedData/" + doi + "/resync")
+  //     .send(modifiedPublishedData)
   //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
+  //     .set("Accept", "application/json")
+  //     .expect(201)
   //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("status").and.equal("registered");
+  //     .then((res, err) => {
+  //       if (err) {
+  //         return done(err);
+  //       }
+
+  //       done();
   //     });
   // });
 
-  it("should resync this new published data", async () => {
-    nock("http://127.0.0.1:3000", {
-      reqheaders: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .post("/api/v3/PublishedData/" + doi + "/resync", {
-        data: modifiedPublishedData,
-      })
-      .reply(200);
-  });
+  // it("should resync this new published data", async () => {
+  //   nock("http://127.0.0.1:3000", {
+  //     reqheaders: {
+  //       Authorization: `Bearer ${accessToken}`,
+  //     },
+  //   })
+  //     .post("/api/v3/PublishedData/" + doi + "/resync", {
+  //       data: modifiedPublishedData,
+  //     })
+  //     .reply(200);
+  // });
 
   // it("should fetch this new published data", async () => {
   //   return request(appUrl)
@@ -227,43 +259,45 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("adds a new dataset", async () => {
-  //   return request(appUrl)
-  //     .post("/api/v3/Datasets")
-  //     .send(testdataset)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("version").and.be.string;
-  //       res.body.should.have.property("type").and.equal("raw");
-  //       res.body.should.have.property("pid").and.be.string;
-  //       res.body.should.have.property("datasetName").and.be.string;
-  //       //res.body.should.not.have.property('history')
-  //       defaultPid = res.body["pid"];
-  //       pid = encodeURIComponent(res.body["pid"]);
-  //       testorigDataBlock.datasetId = res.body["pid"];
-  //     });
+  //   return (
+  //     request(appUrl)
+  //       .post("/api/v3/Datasets")
+  //       .send(testdataset)
+  //       .set("Accept", "application/json")
+  //       .set({ Authorization: `Bearer ${accessToken}` })
+  //       // .expect(200)
+  //       .expect("Content-Type", /json/)
+  //       .then((res) => {
+  //         console.log(res.body);
+  //         res.body.should.have.property("version").and.be.string;
+  //         res.body.should.have.property("type").and.equal("raw");
+  //         res.body.should.have.property("pid").and.be.string;
+  //         res.body.should.have.property("datasetName").and.be.string;
+  //         //res.body.should.not.have.property('history')
+  //         defaultPid = res.body["pid"];
+  //         pid = encodeURIComponent(res.body["pid"]);
+  //         testorigDataBlock.datasetId = res.body["pid"];
+  //       })
+  //   );
   // });
 
-  // it("adds a new nonpublic dataset", async () => {
-  //   return request(appUrl)
-  //     .post("/api/v3/Datasets")
-  //     .send(nonpublictestdataset)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("version").and.be.string;
-  //       res.body.should.have.property("isPublished").and.equal(false);
-  //       res.body.should.have.property("pid").and.be.string;
-  //       res.body.should.have.property("datasetName").and.be.string;
-  //       //res.body.should.not.have.property('history')
-  //       pidnonpublic = encodeURIComponent(res.body["pid"]);
-  //     });
-  // });
+  it("adds a new nonpublic dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("isPublished").and.equal(false);
+        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("datasetName").and.be.string;
+        pidnonpublic = res.body["pid"];
+      });
+  });
 
+  // NOTE: Missing endpoint
   // it("should create one publisheddata to dataset relation", async () => {
   //   return request(appUrl)
   //     .put("/api/v3/PublishedData/" + doi + "/datasets/rel/" + pid)
@@ -304,29 +338,29 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/);
   });
 
-  // it("should fetch this new dataset", async () => {
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/" + pid)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("isPublished").and.equal(true);
-  //     });
-  // });
+  it("should fetch this new dataset", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + pid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("isPublished").and.equal(true);
+      });
+  });
 
-  // it("should fetch the non public dataset as ingestor", async () => {
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/" + pidnonpublic)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("isPublished").and.equal(false);
-  //     });
-  // });
+  it("should fetch the non public dataset as ingestor", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + pidnonpublic)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("isPublished").and.equal(false);
+      });
+  });
 
   // it("adds a new origDatablock", async () => {
   //   return request(appUrl)
