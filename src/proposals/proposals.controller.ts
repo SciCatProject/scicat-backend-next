@@ -19,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiExtraModels,
+  ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -68,6 +69,10 @@ export class ProposalsController {
     ),
   )
   @Post()
+  @ApiOperation({
+    summary: "It creates a new proposal.",
+    description: "It creates a new proposal and returnes it completed with systems fields."
+  })
   @ApiExtraModels(CreateProposalDto)
   @ApiBody({
     type: CreateProposalDto,
@@ -86,6 +91,10 @@ export class ProposalsController {
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
+  @ApiOperation({
+    summary: "It validates the proposal provided as input.",
+    description: "It validates the proposal provided as input, and returns true if the information is a valid proposal"
+  })
   @ApiBody({
     type: CreateProposalDto,
   })
@@ -116,14 +125,14 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get()
-  //@ApiExtraModels(IProposalFilterDto)
+  @ApiOperation({
+    summary: "It returns a list of proposals.",
+    description: "It returns a list of proposals. The list returned can be modified by providing a filter."
+  })
   @ApiQuery({
     name: "filters",
     description: "Database filters to apply when retrieve proposals\n" + filterDescription,
     required: false,
-    //schema: {
-    //  $ref: getSchemaPath(IProposalFilterDto),
-    //}
     type: String,
     example: filterExample,
   })
@@ -143,6 +152,10 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/fullquery")
+  @ApiOperation({
+    summary: "It returns a list of proposals matching the query provided.",
+    description: "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification."
+  })
   @ApiQuery({
     name: "filters",
     description: "Full query filters to apply when retrieve proposals\n" + fullQueryDescription,
@@ -170,6 +183,10 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/fullfacet")
+  @ApiOperation({
+    summary: "It returns a list of proposal facets matching the filter provided.",
+    description: "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification."
+  })
   @ApiQuery({
     name: "filters",
     description: "Full facet query filters to apply when retrieve proposals\n" + fullQueryDescription,
@@ -197,6 +214,10 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
   @Get("/:pid")
+  @ApiOperation({
+    summary: "It returns the proposal requested.",
+    description: "It returns the proposal requested through the pid specified."
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal to return",
@@ -222,6 +243,10 @@ export class ProposalsController {
     ),
   )
   @Patch("/:pid")
+  @ApiOperation({
+    summary: "It updates the proposal.",
+    description: "It updates the proposal specified through the pid specified. it updates only the specified fields."
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal to modify",
@@ -247,6 +272,10 @@ export class ProposalsController {
   @UseGuards()
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, ProposalClass))
   @Delete("/:pid")
+  @ApiOperation({
+    summary: "It deletes the proposal.",
+    description: "It delete the proposal specified through the pid specified."
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal to delete",
@@ -266,6 +295,10 @@ export class ProposalsController {
     ability.can(Action.Create, Attachment),
   )
   @Post("/:pid/attachments")
+  @ApiOperation({
+    summary: "It creates a new attachement for the proposal specified.",
+    description: "It creates a new attachement for the proposal specified by the pid passed."
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal we would like to create a new attachement for",
@@ -296,6 +329,10 @@ export class ProposalsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:pid/attachments")
+  @ApiOperation({
+    summary: "It returns all the attachements for the proposal specified.",
+    description: "It returns all the attachements for the proposal specified by the pid passed."
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal for which we would like to retrieve all the attachments",
@@ -317,6 +354,10 @@ export class ProposalsController {
     ability.can(Action.Update, Attachment),
   )
   @Patch("/:pid/attachments/:aid")
+  @ApiOperation({
+    summary: "It updates the attachment specified for the proposal indicated.",
+    description: "It updates the attachment specified by the aid parameter for the proposal indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Attachements can be updated from the attachment endpoint.",
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal for which we would like to update the attachment specified",
@@ -350,6 +391,10 @@ export class ProposalsController {
     ability.can(Action.Delete, Attachment),
   )
   @Delete("/:pid/attachments/:aid")
+  @ApiOperation({
+    summary: "It deletes the attachment from the proposal.",
+    description: "It deletes the attachment from the proposal.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be done only from the attachements endpoint.",
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal for which we would like to delete the attachment specified",
@@ -374,38 +419,16 @@ export class ProposalsController {
     });
   }
 
-  // POST /proposals/:pid/datasets
-/*   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, DatasetClass),
-  )
-  @Post("/:pid/datasets")
-  @ApiParam({
-    name: "id",
-    description: "Id of the proposal for which we would like to retrieve all the datasets",
-    type: String,
-  })
-  @ApiResponse({
-    status: 200,
-    type: DatasetClass,
-    isArray: true,
-    description: "Array with all the datasets associated with the proposal with the pid specified"
-  })
-  async createDataset(
-    @Param("pid") id: string,
-    createRawDatasetDto: CreateRawDatasetDto,
-  ): Promise<DatasetClass> {
-    const createRawDataset = { ...createRawDatasetDto, proposalId: id };
-    return await this.datasetsService.create(createRawDataset);
-  }
- */
-
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
   @Get("/:pid/datasets")
+  @ApiOperation({
+    summary: "It returns all the datasets associated with the proposal indicated.",
+    description: "It returns all the datasets associated with the proposal indicated by the pid parameter.<br>Changes to the related datasets must be performed through the dataset endpoint.",
+  })
   @ApiParam({
     name: "pid",
     description: "Id of the proposal for which we would like to retrieve all the datasets",
@@ -422,41 +445,5 @@ export class ProposalsController {
   ): Promise<DatasetClass[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
   }
-
-/*   // PATCH /proposals/:id/datasets/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, DatasetClass),
-  )
-  @Patch("/:id/datasets/:fk")
-  async findOneDatasetAndUpdate(
-    @Param("id") proposalId: string,
-    @Param("fk") datasetId: string,
-    @Body() updateRawDatasetDto: UpdateRawDatasetDto,
-  ): Promise<DatasetClass | null> {
-    return this.datasetsService.findByIdAndUpdate(
-      datasetId,
-      updateRawDatasetDto,
-    );
-  }
- */
-
-/*   // DELETE /proposals/:id/datasets/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, DatasetClass),
-  )
-  @Delete("/:id/datasets/:fk")
-  async findOneDatasetAndRemove(
-    @Param("id") proposalId: string,
-    @Param("fk") datasetId: string,
-  ): Promise<unknown> {
-    return this.datasetsService.findByIdAndDelete(datasetId);
-  }
-}
-function ApiResponseModelProperty() {
-  throw new Error("Function not implemented.");
-}
-*/
 
 }
