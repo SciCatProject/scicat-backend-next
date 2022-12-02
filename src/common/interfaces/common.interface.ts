@@ -42,26 +42,8 @@ export interface ILimitsFilter {
 }
 
 export class ILimitsFilterDto implements ILimitsFilter {
-/*   @ApiProperty({
-    type: Number,
-    required: true,
-    description: "Number of items returned"
-  })
- */  limit: number;
-
-/*   @ApiProperty({
-    type: Number,
-    required: true,
-    description: "Number of element to skip at the beginning of the list"
-  }) */
+  limit: number;
   skip: number;
-
-/*   @ApiProperty({
-    type: String,
-    required: true,
-    description: "Order of the elements: Ascending or Descending"
-  })
- */
   order: string;
 }
 
