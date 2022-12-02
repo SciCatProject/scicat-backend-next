@@ -1,14 +1,6 @@
-var chai = require("chai");
-var should = chai.should();
-var chaiHttp = require("chai-http");
-var request = require("supertest");
+/* eslint-disable @typescript-eslint/no-var-requires */
 var utils = require("./LoginUtils");
-
 const { TestData } = require("./TestData");
-
-chai.use(chaiHttp);
-
-const app = "http://localhost:3000";
 
 describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived Datasets", () => {
   let accessTokenIngestor = null;
@@ -21,7 +13,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
 
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -29,7 +21,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
       (tokenVal) => {
         accessTokenIngestor = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -44,7 +36,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("adds a new derived dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -61,7 +53,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("adds a new datablock with wrong account which should fail", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -71,7 +63,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("adds a new datablock with correct account", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -88,7 +80,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("adds the same datablock again which should fail because it is already stored", async () => {
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
@@ -103,7 +95,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   it("adds a second datablock", async () => {
     let testdata = TestData.DataBlockCorrect;
     testdata.archiveId = "some-other-id-that-is-different";
-    return request(app)
+    return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(testdata)
       .set("Accept", "application/json")
@@ -118,7 +110,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("Should fetch all datablocks belonging to the new dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -132,7 +124,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("The new dataset should be the sum of the size of the datablocks", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -159,7 +151,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
       ],
     };
 
-    return request(app)
+    return request(appUrl)
       .get(
         "/api/v3/Datasets/findOne?filter=" +
           encodeURIComponent(JSON.stringify(filter)) +
@@ -181,7 +173,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -198,7 +190,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("should delete first datablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/datablocks/${datablockId1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -206,7 +198,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("should delete second datablock", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/datablocks/${datablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -214,7 +206,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("Should fetch no datablocks belonging to the new dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -226,7 +218,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("The size and numFiles fields in the dataset should be zero", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -239,7 +231,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
   });
 
   it("should delete the newly created dataset", async () => {
-    return request(app)
+    return request(appUrl)
       .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })

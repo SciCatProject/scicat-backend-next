@@ -8,6 +8,7 @@ import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
 import { CommonModule } from "src/common/common.module";
 import { ConfigModule } from "@nestjs/config";
+import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 
 @Module({
   controllers: [JobsController],
@@ -22,6 +23,7 @@ import { ConfigModule } from "@nestjs/config";
       },
     ]),
     PoliciesModule,
+    OrigDatablocksModule,
   ],
   providers: [JobsService, CaslAbilityFactory],
 })

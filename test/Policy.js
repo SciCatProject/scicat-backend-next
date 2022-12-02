@@ -1,12 +1,7 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-var request = require("supertest");
-var should = chai.should();
 var utils = require("./LoginUtils");
-
-chai.use(chaiHttp);
 
 var accessTokenArchiveManager = null;
 var accessToken = null,
@@ -25,12 +20,10 @@ var testdataset = {
   accessGroups: [],
 };
 
-const app = "http://localhost:3000";
-
 describe("Policy: Simple Policy tests", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -38,7 +31,7 @@ describe("Policy: Simple Policy tests", () => {
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -53,7 +46,7 @@ describe("Policy: Simple Policy tests", () => {
   });
 
   it("adds a new policy", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/Policies")
       .send(testdataset)
       .set("Accept", "application/json")
@@ -68,7 +61,7 @@ describe("Policy: Simple Policy tests", () => {
   });
 
   it("should fetch this new policy", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/Policies/" + id)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -77,7 +70,7 @@ describe("Policy: Simple Policy tests", () => {
   });
 
   it("updates this existing policy", async () => {
-    return request(app)
+    return request(appUrl)
       .patch("/api/v3/Policies/" + id)
       .send({ ownerGroup: "test_test" })
       .set("Accept", "application/json")
@@ -87,7 +80,7 @@ describe("Policy: Simple Policy tests", () => {
   });
 
   it("should delete this policy", async () => {
-    return request(app)
+    return request(appUrl)
       .delete("/api/v3/Policies/" + id)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })

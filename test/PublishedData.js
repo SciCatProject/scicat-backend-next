@@ -1,16 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-// process.env.NODE_ENV = 'test';
-
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const request = require("supertest");
-const should = chai.should();
 const utils = require("./LoginUtils");
 const nock = require("nock");
 const sandbox = require("sinon").createSandbox();
-
-chai.use(chaiHttp);
 
 var accessTokenArchiveManager = null;
 var idOrigDatablock = null;
@@ -118,12 +111,10 @@ var testorigDataBlock = {
   ],
 };
 
-const app = "http://localhost:3000";
-
 describe("PublishedData: Test of access to published data", () => {
   beforeEach((done) => {
     utils.getToken(
-      app,
+      appUrl,
       {
         username: "ingestor",
         password: "aman",
@@ -131,7 +122,7 @@ describe("PublishedData: Test of access to published data", () => {
       (tokenVal) => {
         accessToken = tokenVal;
         utils.getToken(
-          app,
+          appUrl,
           {
             username: "archiveManager",
             password: "aman",
@@ -151,7 +142,7 @@ describe("PublishedData: Test of access to published data", () => {
   });
 
   it("adds a published data", async () => {
-    return request(app)
+    return request(appUrl)
       .post("/api/v3/PublishedData")
       .send(testPublishedData)
       .set("Accept", "application/json")
@@ -165,7 +156,7 @@ describe("PublishedData: Test of access to published data", () => {
   });
 
   it("should fetch this new published data", async () => {
-    return request(app)
+    return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
@@ -192,7 +183,7 @@ describe("PublishedData: Test of access to published data", () => {
   //   sandbox.stub(config, "site").value("PSI");
   //   if (config.oaiProviderRoute)
   //     sandbox.stub(config, "oaiProviderRoute").value(null);
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/PublishedData/" + doi + "/register/")
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -201,7 +192,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch this new published data", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/PublishedData/" + doi)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -222,7 +213,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch this new published data", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/PublishedData/" + doi)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -231,7 +222,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("adds a new dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datasets")
   //     .send(testdataset)
   //     .set("Accept", "application/json")
@@ -251,7 +242,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("adds a new nonpublic dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datasets")
   //     .send(nonpublictestdataset)
   //     .set("Accept", "application/json")
@@ -269,7 +260,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should create one publisheddata to dataset relation", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .put("/api/v3/PublishedData/" + doi + "/datasets/rel/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -286,7 +277,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch publisheddata with non empty dataset relation", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/PublishedData/" +
   //         doi +
@@ -304,7 +295,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should delete this published data", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/PublishedData/" + doi)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -313,7 +304,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch this new dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -325,7 +316,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch the non public dataset as ingestor", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pidnonpublic)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -337,7 +328,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("adds a new origDatablock", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/OrigDatablocks")
   //     .send(testorigDataBlock)
   //     .set("Accept", "application/json")
@@ -363,7 +354,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     createdAt: new Date(),
   //     updatedAt: new Date(),
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .post("/api/v3/Datasets/" + pid + "/attachments")
   //     .send(testAttachment)
   //     .set("Accept", "application/json")
@@ -393,7 +384,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should fetch this dataset attachment", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -409,7 +400,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     skip: 0,
   //     limit: 2,
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/Datasets/fullquery" +
   //         "?fields=" +
@@ -433,7 +424,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     skip: 0,
   //     limit: 2,
   //   };
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/Datasets/fullquery" +
   //         "?fields=" +
@@ -471,7 +462,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     ],
   //   };
 
-  //   return request(app)
+  //   return request(appUrl)
   //     .get(
   //       "/api/v3/Datasets/findOne" +
   //         "?filter=" +
@@ -490,7 +481,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should delete this dataset attachment", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessToken}` })
@@ -498,7 +489,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should delete a OrigDatablock", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/OrigDatablocks/" + idOrigDatablock)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -510,7 +501,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should delete the nonpublic dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Datasets/" + pidnonpublic)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -519,7 +510,7 @@ describe("PublishedData: Test of access to published data", () => {
   // });
 
   // it("should delete this dataset", async () => {
-  //   return request(app)
+  //   return request(appUrl)
   //     .delete("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
