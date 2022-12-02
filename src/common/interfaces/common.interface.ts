@@ -1,4 +1,3 @@
-//import { ApiProperty } from "@nestjs/swagger";
 import { FilterQuery } from "mongoose";
 import { ScientificRelation } from "../scientific-relation.enum";
 
@@ -36,12 +35,6 @@ export interface IProposalAcceptedMessage {
 }
 
 export interface ILimitsFilter {
-  limit: number;
-  skip: number;
-  order: string;
-}
-
-export class ILimitsFilterDto implements ILimitsFilter {
   limit: number;
   skip: number;
   order: string;

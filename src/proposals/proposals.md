@@ -360,15 +360,22 @@ model:
     schema: MeasurementPeriodSchema
   extends: QueryableClass
 legacy:
-  file: common/models/proposal.json
+  file: common/models/measurement-period.json
 fields:
-  - name: proposalId
-    type: string
+  - name: id
     legacy:
       type: string
       id: true
       required: true
-      description: "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended"
+      description: "id currently needed by limitation in embedsmany"
+      defaultFn: "uuidv4"
+  - name: instrument
+    type: string
+    legacy:
+      type: string
+      index: true
+      required: true
+      description: "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT"
     dto:
       type: string
       readonly: true
@@ -377,14 +384,82 @@ fields:
       swagger:
         type: String
         required: true
-        description: "Globally unique identifier of a proposal, eg. PID-prefix/nternal-proposal-number. PID prefix is auto prepended" 
+        description: "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT", 
     schema:
       type: string
       swagger:
         type: String
         required: true
-        description: "Globally unique identifier of a proposal, eg. PID-prefix/nternal-proposal-number. PID prefix is auto prepended"
+        description: "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT",
       database:
         type: String
-        unique: true
+        index: true
         required: true
+  - name: start
+    type: Date
+    legacy:
+      type: "Date"
+      index: true
+      description: "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    dto:
+      type: Date
+      readonly: true
+      validation: 
+        IsDateString: true
+      swagger:
+        type: Date
+        description: "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    schema:
+      type: Date
+      swagger:
+        type: Date
+        description: "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+      database:
+        type: Date
+        index: true
+  - name: end
+    type: Date
+    legacy:
+      type: "Date"
+      index: true
+      description: "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    dto:
+      type: Date
+      readonly: true
+      validation: 
+        IsDateString: true
+      swagger:
+        type: Date
+        description: "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+    schema:
+      type: Date
+      swagger:
+        type: Date
+        description: "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+      database:
+        type: Date
+        index: true
+  - name: comment
+    type: string
+    optional: true
+    legacy:
+      type: string
+      description: "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking"
+    dto:
+      type: string
+      readonly: true
+      optional: true
+      validation: 
+        IsString: true
+        IsOptional: true
+      swagger:
+        type: String
+        description: "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking"
+    schema:
+      type: string
+      swagger:
+        type: String
+        description: "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking"
+      database:
+        type: String
+```
