@@ -5,12 +5,12 @@ export class CreatePublishedDataDto {
   @IsOptional()
   readonly _id?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly doi?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly affiliation: string;
 
   @IsString({
@@ -28,6 +28,7 @@ export class CreatePublishedDataDto {
   readonly title: string;
 
   @IsString()
+  @IsOptional()
   readonly url: string;
 
   @IsString()
@@ -40,9 +41,11 @@ export class CreatePublishedDataDto {
   readonly resourceType: string;
 
   @IsNumber()
+  @IsOptional()
   readonly numberOfFiles: number;
 
   @IsNumber()
+  @IsOptional()
   readonly sizeOfArchive: number;
 
   @IsString({
@@ -50,36 +53,36 @@ export class CreatePublishedDataDto {
   })
   readonly pidArray: string[];
 
-  @IsOptional()
   @IsString({
     each: true,
   })
+  @IsOptional()
   readonly authors: string[];
 
-  @IsOptional()
   @IsDateString()
+  @IsOptional()
   readonly registeredTime: Date;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly status: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly scicatUser: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly thumbnail: string;
 
-  @IsOptional()
   @IsString({
     each: true,
   })
+  @IsOptional()
   readonly relatedPublications: string[];
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   readonly downloadLink: string;
 
   @IsDateString()
