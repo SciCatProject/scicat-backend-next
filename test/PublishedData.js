@@ -517,21 +517,21 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
-  // it("should delete the nonpublic dataset", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + pidnonpublic)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("should delete the nonpublic dataset", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + pidnonpublic)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("should delete this dataset", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + pid)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("should delete this dataset", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + pid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 });

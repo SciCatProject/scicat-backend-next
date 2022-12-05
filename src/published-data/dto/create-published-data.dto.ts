@@ -1,12 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import {
-  IsDateString,
-  IsEmail,
-  IsOptional,
-  IsString,
-  ValidateNested,
-  IsNumber,
-} from "class-validator";
+import { IsDateString, IsOptional, IsString, IsNumber } from "class-validator";
 
 export class CreatePublishedDataDto {
   @IsString()

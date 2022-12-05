@@ -21,12 +21,14 @@ export class PublishedDataService {
   constructor(
     @InjectModel(PublishedData.name)
     private publishedDataModel: Model<PublishedDataDocument>,
+    @Inject(REQUEST)
+    private request: Request,
   ) {}
 
   async create(
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    const username = "Frebol";
+    const username = (this.request.user as JWTUser).username;
     const ts = new Date();
     const createdPublished = new this.publishedDataModel(
       addCreatedFields<CreatePublishedDataDto>(

@@ -9,7 +9,6 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
-  InternalServerErrorException,
   HttpException,
   HttpStatus,
 } from "@nestjs/common";
