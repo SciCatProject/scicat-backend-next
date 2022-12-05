@@ -185,6 +185,8 @@ describe("PublishedData: Test of access to published data", () => {
         // store link to this dataset in datablocks
         pid = res.body["pid"];
         testPublishedData.pidArray.push(pid);
+        testorigDataBlock.datasetId = pid;
+        testorigDataBlock.ownerGroup = res.body.ownerGroup;
       });
   });
 
@@ -258,33 +260,13 @@ describe("PublishedData: Test of access to published data", () => {
   //     .expect("Content-Type", /json/);
   // });
 
-  // it("adds a new dataset", async () => {
-  //   return (
-  //     request(appUrl)
-  //       .post("/api/v3/Datasets")
-  //       .send(testdataset)
-  //       .set("Accept", "application/json")
-  //       .set({ Authorization: `Bearer ${accessToken}` })
-  //       // .expect(200)
-  //       .expect("Content-Type", /json/)
-  //       .then((res) => {
-  //         console.log(res.body);
-  //         res.body.should.have.property("version").and.be.string;
-  //         res.body.should.have.property("type").and.equal("raw");
-  //         res.body.should.have.property("pid").and.be.string;
-  //         res.body.should.have.property("datasetName").and.be.string;
-  //         //res.body.should.not.have.property('history')
-  //         defaultPid = res.body["pid"];
-  //         pid = encodeURIComponent(res.body["pid"]);
-  //         testorigDataBlock.datasetId = res.body["pid"];
-  //       })
-  //   );
-  // });
-
   it("adds a new nonpublic dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(TestData.RawCorrect)
+      .send({
+        ...TestData.RawCorrect,
+        ownerGroup: nonpublictestdataset.ownerGroup,
+      })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -362,160 +344,179 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  // it("adds a new origDatablock", async () => {
-  //   return request(appUrl)
-  //     .post("/api/v3/OrigDatablocks")
-  //     .send(testorigDataBlock)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("size").and.equal(41780189);
-  //       res.body.should.have.property("id").and.be.string;
-  //       idOrigDatablock = encodeURIComponent(res.body["id"]);
-  //     });
-  // });
+  it("adds a new origDatablock", async () => {
+    return request(appUrl)
+      .post("/api/v3/OrigDatablocks")
+      .send(testorigDataBlock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("size").and.equal(41780189);
+        res.body.should.have.property("id").and.be.string;
+        idOrigDatablock = res.body["id"];
+      });
+  });
 
-  // it("should add a new attachment to this dataset", async () => {
-  //   const testAttachment = {
-  //     thumbnail: "data/abc123",
-  //     caption: "Some caption",
-  //     datasetId: defaultPid,
-  //     ownerGroup: "ess",
-  //     accessGroups: ["loki", "odin"],
-  //     createdBy: "Bertram Astor",
-  //     updatedBy: "anonymous",
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //   };
-  //   return request(appUrl)
-  //     .post("/api/v3/Datasets/" + pid + "/attachments")
-  //     .send(testAttachment)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("thumbnail")
-  //         .and.equal(testAttachment.thumbnail);
-  //       res.body.should.have
-  //         .property("caption")
-  //         .and.equal(testAttachment.caption);
-  //       res.body.should.have
-  //         .property("ownerGroup")
-  //         .and.equal(testAttachment.ownerGroup);
-  //       res.body.should.have.property("accessGroups");
-  //       res.body.should.have.property("createdBy");
-  //       res.body.should.have.property("updatedBy").and.be.string;
-  //       res.body.should.have.property("createdAt");
-  //       res.body.should.have.property("id").and.be.string;
-  //       res.body.should.have
-  //         .property("datasetId")
-  //         .and.equal(testAttachment.datasetId);
-  //       attachmentId = encodeURIComponent(res.body["id"]);
-  //     });
-  // });
+  it("should add a new attachment to this dataset", async () => {
+    const testAttachment = {
+      thumbnail: "data/abc123",
+      caption: "Some caption",
+      datasetId: pid,
+      ownerGroup: TestData.RawCorrect.ownerGroup,
+      accessGroups: ["loki", "odin"],
+    };
+    return request(appUrl)
+      .post("/api/v3/Datasets/" + pid + "/attachments")
+      .send(testAttachment)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("thumbnail")
+          .and.equal(testAttachment.thumbnail);
+        res.body.should.have
+          .property("caption")
+          .and.equal(testAttachment.caption);
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(testAttachment.ownerGroup);
+        res.body.should.have.property("accessGroups");
+        res.body.should.have.property("createdBy");
+        res.body.should.have.property("updatedBy").and.be.string;
+        res.body.should.have.property("createdAt");
+        res.body.should.have.property("id").and.be.string;
+        res.body.should.have
+          .property("datasetId")
+          .and.equal(testAttachment.datasetId);
+        attachmentId = res.body["id"];
+      });
+  });
 
-  // it("should fetch this dataset attachment", async () => {
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  // NOTE: Getting dataset attachment by id is missing but we modify the test little bit and check if created attachment is part of the array of attachments returned by /datasets/{id}/attachments
+  it("should fetch this dataset attachment", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + pid + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.length(1);
+        res.body[0].should.have.property("id").and.equal(attachmentId);
+      });
+  });
 
-  // it("should fetch some published datasets anonymously", async () => {
-  //   var fields = {
-  //     ownerGroup: ["p13388"],
-  //   };
-  //   var limits = {
-  //     skip: 0,
-  //     limit: 2,
-  //   };
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/fullquery" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
-  //     .set("Accept", "application/json")
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body[0].should.have.property("isPublished").and.equal(true);
-  //     });
-  // });
+  it("should fetch some published datasets anonymously", async () => {
+    var fields = {
+      ownerGroup: ["p13388"],
+    };
+    var limits = {
+      skip: 0,
+      limit: 2,
+    };
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/fullquery" +
+          "?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body[0].should.have.property("isPublished").and.equal(true);
+      });
+  });
 
-  // it("should fail to fetch non-public dataset anonymously", async () => {
-  //   var fields = {
-  //     ownerGroup: ["examplenonpublicgroup"],
-  //   };
-  //   var limits = {
-  //     skip: 0,
-  //     limit: 2,
-  //   };
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/fullquery" + "?fields=" + encodeURIComponent(JSON.stringify(fields)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
-  //     .set("Accept", "application/json")
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.be.instanceof(Array).and.to.have.length(0);
-  //     });
-  // });
+  it("should fail to fetch non-public dataset anonymously", async () => {
+    var fields = {
+      ownerGroup: [nonpublictestdataset.ownerGroup],
+    };
+    var limits = {
+      skip: 0,
+      limit: 2,
+    };
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/fullquery" +
+          "?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.instanceof(Array).and.to.have.length(0);
+      });
+  });
 
-  // it("should fetch one dataset including related data anonymously", async () => {
-  //   var limits = {
-  //     skip: 0,
-  //     limit: 2,
-  //   };
-  //   var filter = {
-  //     where: {
-  //       ownerGroup: "p13388",
-  //     },
-  //     include: [
-  //       {
-  //         relation: "origdatablocks",
-  //       },
-  //       {
-  //         relation: "datablocks",
-  //       },
-  //       {
-  //         relation: "attachments",
-  //       },
-  //     ],
-  //   };
+  it("should fetch one dataset including related data anonymously", async () => {
+    var limits = {
+      skip: 0,
+      limit: 2,
+    };
+    var filter = {
+      where: {
+        ownerGroup: "p13388",
+      },
+      include: [
+        {
+          relation: "origdatablocks",
+        },
+        {
+          relation: "datablocks",
+        },
+        {
+          relation: "attachments",
+        },
+      ],
+    };
 
-  //   return request(appUrl)
-  //     .get("/api/v3/Datasets/findOne" + "?filter=" + encodeURIComponent(JSON.stringify(filter)) + "&limits=" + encodeURIComponent(JSON.stringify(limits)))
-  //     .set("Accept", "application/json")
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.origdatablocks[0].should.have
-  //         .property("ownerGroup")
-  //         .and.equal("p13388");
-  //     });
-  // });
+    return request(appUrl)
+      .get(
+        "/api/v3/Datasets/findOne" +
+          "?filter=" +
+          encodeURIComponent(JSON.stringify(filter)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.origdatablocks[0].should.have
+          .property("ownerGroup")
+          .and.equal("p13388");
+      });
+  });
 
-  // it("should delete this dataset attachment", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(204);
-  // });
+  it("should delete this dataset attachment", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200);
+  });
 
-  // it("should delete a OrigDatablock", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/OrigDatablocks/" + idOrigDatablock)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("count").and.equal(1);
-  //     });
-  // });
+  it("should delete a OrigDatablock", async () => {
+    return request(appUrl)
+      .delete("/api/v3/OrigDatablocks/" + idOrigDatablock)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id").and.equal(idOrigDatablock);
+      });
+  });
 
   it("should delete the nonpublic dataset", async () => {
     return request(appUrl)

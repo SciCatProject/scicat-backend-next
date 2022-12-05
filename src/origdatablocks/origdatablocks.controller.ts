@@ -78,9 +78,9 @@ export class OrigDatablocksController {
     required: false,
   })
   async findAll(@Query("filters") filters?: string): Promise<OrigDatablock[]> {
-    const sampleFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
+    const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       JSON.parse(filters ?? "{}");
-    return this.origDatablocksService.findAll(sampleFilters);
+    return this.origDatablocksService.findAll(parsedFilters);
   }
 
   // GET /origdatablocks/fullquery
@@ -112,7 +112,7 @@ export class OrigDatablocksController {
   )
   @Get("/:id")
   async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.findOne({ sampleId: id });
+    return this.origDatablocksService.findOne({ _id: id });
   }
 
   // PATCH /origdatablocks/:id
@@ -126,7 +126,7 @@ export class OrigDatablocksController {
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     return this.origDatablocksService.update(
-      { sampleId: id },
+      { _id: id },
       updateOrigDatablockDto,
     );
   }
@@ -138,6 +138,6 @@ export class OrigDatablocksController {
   )
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.origDatablocksService.remove({ sampleId: id });
+    return this.origDatablocksService.remove({ _id: id });
   }
 }
