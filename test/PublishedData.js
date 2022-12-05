@@ -35,37 +35,14 @@ const modifiedPublishedData = {
   abstract: "a new abstract",
 };
 
-// const testdataset = {
-//   owner: "Bertram Astor",
-//   ownerEmail: "bertram.astor@grumble.com",
-//   orcidOfOwner: "unknown",
-//   contactEmail: "bertram.astor@grumble.com",
-//   sourceFolder: "/iramjet/tif/",
-//   creationTime: "2011-09-14T06:08:25.000Z",
-//   keywords: ["Cryo", "Calibration"],
-//   description: "None",
-//   type: "raw",
-//   license: "CC BY-SA 4.0",
-//   isPublished: true,
-//   size: 10,
-//   ownerGroup: "p13388",
-//   accessGroups: [],
-// };
+const testdataset = {
+  ...TestData.RawCorrect,
+  isPublished: true,
+};
 
 const nonpublictestdataset = {
-  owner: "Bertram Astor",
-  ownerEmail: "bertram.astor@grumble.com",
-  orcidOfOwner: "unknown",
-  contactEmail: "bertram.astor@grumble.com",
-  sourceFolder: "/iramjet/tif/",
-  creationTime: "2011-09-14T06:08:25.000Z",
-  keywords: ["Cryo", "Calibration"],
-  description: "None",
-  type: "raw",
-  license: "CC BY-SA 4.0",
-  isPublished: false,
+  ...TestData.RawCorrect,
   ownerGroup: "examplenonpublicgroup",
-  accessGroups: [],
 };
 
 var testorigDataBlock = {
@@ -176,7 +153,7 @@ describe("PublishedData: Test of access to published data", () => {
   it("adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send({ ...TestData.RawCorrect, isPublished: true })
+      .send(testdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -190,15 +167,16 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  // it("should register this new published data", async () => {
-  //   nock(appUrl, {
-  //     reqheaders: {
-  //       Authorization: `Bearer ${accessToken}`,
-  //     },
-  //   })
-  //     .post("/api/v3/PublishedData/" + doi + "/register")
-  //     .reply(200);
-  // });
+  it("should register this new published data", async (done) => {
+    nock("http://127.0.0.1:3000", {
+      reqheaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .post("/api/v3/PublishedData/" + doi + "/register")
+      .reply(200);
+    done();
+  });
 
   it("should register this new published data", async () => {
     return request(appUrl)
@@ -221,7 +199,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  // TODO: Double-check this one
+  // NOTE: This one was commented in the old backend as well
   // it("should resync this new published data", async (done) => {
   //   return request(appUrl)
   //     .post("/api/v3/PublishedData/" + doi + "/resync")
@@ -239,34 +217,32 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
-  // it("should resync this new published data", async () => {
-  //   nock("http://127.0.0.1:3000", {
-  //     reqheaders: {
-  //       Authorization: `Bearer ${accessToken}`,
-  //     },
-  //   })
-  //     .post("/api/v3/PublishedData/" + doi + "/resync", {
-  //       data: modifiedPublishedData,
-  //     })
-  //     .reply(200);
-  // });
+  it("should resync this new published data", async (done) => {
+    nock("http://127.0.0.1:3000", {
+      reqheaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .post("/api/v3/PublishedData/" + doi + "/resync", {
+        data: modifiedPublishedData,
+      })
+      .reply(200);
+    done();
+  });
 
-  // it("should fetch this new published data", async () => {
-  //   return request(appUrl)
-  //     .get("/api/v3/PublishedData/" + doi)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("should fetch this new published data", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/" + doi)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
 
   it("adds a new nonpublic dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send({
-        ...TestData.RawCorrect,
-        ownerGroup: nonpublictestdataset.ownerGroup,
-      })
+      .send(nonpublictestdataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
@@ -364,7 +340,7 @@ describe("PublishedData: Test of access to published data", () => {
       thumbnail: "data/abc123",
       caption: "Some caption",
       datasetId: pid,
-      ownerGroup: TestData.RawCorrect.ownerGroup,
+      ownerGroup: testdataset.ownerGroup,
       accessGroups: ["loki", "odin"],
     };
     return request(appUrl)
