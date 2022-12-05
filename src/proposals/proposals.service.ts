@@ -9,22 +9,22 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
   addCreatedFields,
-  addUpdatedFields,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
-import { Proposal, ProposalDocument } from "./schemas/proposal.schema";
+import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProposalsService {
   constructor(
-    @InjectModel(Proposal.name) private proposalModel: Model<ProposalDocument>,
+    @InjectModel(ProposalClass.name)
+    private proposalModel: Model<ProposalDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createProposalDto: CreateProposalDto): Promise<Proposal> {
+  async create(createProposalDto: CreateProposalDto): Promise<ProposalClass> {
     const username = (this.request.user as JWTUser).username;
     const ts = new Date();
     const createdProposal = new this.proposalModel(
@@ -35,7 +35,7 @@ export class ProposalsService {
 
   async findAll(
     filter: IFilters<ProposalDocument, IProposalFields>,
-  ): Promise<Proposal[]> {
+  ): Promise<ProposalClass[]> {
     const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -49,7 +49,7 @@ export class ProposalsService {
 
   async fullquery(
     filter: IFilters<ProposalDocument, IProposalFields>,
-  ): Promise<Proposal[]> {
+  ): Promise<ProposalClass[]> {
     const filterQuery: FilterQuery<ProposalDocument> =
       createFullqueryFilter<ProposalDocument>(
         this.proposalModel,
@@ -77,14 +77,14 @@ export class ProposalsService {
 
   async findOne(
     filter: FilterQuery<ProposalDocument>,
-  ): Promise<Proposal | null> {
+  ): Promise<ProposalClass | null> {
     return this.proposalModel.findOne(filter).exec();
   }
 
   async update(
     filter: FilterQuery<ProposalDocument>,
     updateProposalDto: UpdateProposalDto,
-  ): Promise<Proposal | null> {
+  ): Promise<ProposalClass | null> {
     return this.proposalModel
       .findOneAndUpdate(filter, updateProposalDto, {
         new: true,

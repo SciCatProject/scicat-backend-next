@@ -3,10 +3,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { QueryableClass } from "src/common/schemas/queryable.schema";
 
-export type MeasurementPeriodDocument = MeasurementPeriod & Document;
+export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 
 @Schema()
-export class MeasurementPeriod extends QueryableClass {
+export class MeasurementPeriodClass extends QueryableClass {
   @ApiProperty({
     type: String,
     required: true,
@@ -42,4 +42,4 @@ export class MeasurementPeriod extends QueryableClass {
 }
 
 export const MeasurementPeriodSchema =
-  SchemaFactory.createForClass(MeasurementPeriod);
+  SchemaFactory.createForClass(MeasurementPeriodClass);

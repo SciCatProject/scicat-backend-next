@@ -623,3 +623,40 @@ export const addUpdatedFields = <T>(
     updatedAt: ts,
   };
 };
+
+export const filterExample: string = "{ \"where\": { \"field\": \"value\" }, \"include\": [ { \"relation\": \"target\", [ \"where\" : <where_condition> ]}], \"fields\": [\"field1\", \"field2\", ...], \"limits\": {\"limit\": number, \"skip\": number, \"order\": [ascending, descending]}}";
+
+export const filterDescription: string = '<pre>\n \
+{\n \
+  "where?": {\n \
+    "field": "value"\n \
+  },\n \
+  "include?": [\n \
+    {\n \
+      "relation": "target",\n \
+      "scope": {\n \
+        "where" : <where_condition>\n \
+      ]\n \
+    }\n \
+  ],\n \
+  "fields?": [ "field1", "field2", ...],\n \
+  "limits?": {\n \
+    "limit": number,\n \
+    "skip": number,\n \
+    "order": [ascending, descending]\n \
+  }\n \
+}\n \
+</pre>';
+
+export const fullQueryExample = "{ \"fields\": [\"field1\", \"field2\", ...], \"limits\": {\"limit\": number, \"skip\": number, \"order\": [ascending, descending]}}";
+
+export const fullQueryDescription = '<pre>\n \
+{\n \
+  "fields?": [ "field1", "field2", ...],\n \
+  "limits?": {\n \
+    "limit": number,\n \
+    "skip": number,\n \
+    "order": [ascending, descending]\n \
+  }\n \
+}\n \
+</pre>';;

@@ -16,7 +16,7 @@ import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
-import { Proposal } from "src/proposals/schemas/proposal.schema";
+import { ProposalClass } from "src/proposals/schemas/proposal.schema";
 import { PublishedData } from "src/published-data/schemas/published-data.schema";
 import { Sample } from "src/samples/schemas/sample.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
@@ -34,7 +34,7 @@ type Subjects =
       | typeof Logbook
       | typeof OrigDatablock
       | typeof Policy
-      | typeof Proposal
+      | typeof ProposalClass
       | typeof PublishedData
       | typeof Sample
       | typeof User
@@ -82,8 +82,8 @@ export class CaslAbilityFactory {
 
     can(Action.Manage, Policy, { ownerGroup: { $in: user.currentGroups } });
 
-    can(Action.Read, Proposal, { ownerGroup: { $in: user.currentGroups } });
-    can(Action.Read, Proposal, { accessGroups: { $in: user.currentGroups } });
+    can(Action.Read, ProposalClass, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Read, ProposalClass, { accessGroups: { $in: user.currentGroups } });
 
     can(Action.Read, PublishedData);
     can(Action.Update, PublishedData);
@@ -133,9 +133,9 @@ export class CaslAbilityFactory {
       can(Action.Update, Instrument);
     }
     if (user.currentGroups.includes(Role.ProposalIngestor)) {
-      cannot(Action.Delete, Proposal);
-      can(Action.Create, Proposal);
-      can(Action.Update, Proposal);
+      cannot(Action.Delete, ProposalClass);
+      can(Action.Create, ProposalClass);
+      can(Action.Update, ProposalClass);
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });
