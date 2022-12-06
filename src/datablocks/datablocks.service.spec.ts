@@ -33,7 +33,7 @@ const mockDatablock: Datablock = {
 };
 
 describe("DatablocksService", () => {
-  let service: Promise<DatablocksService>;
+  let service: DatablocksService;
   let model: Model<Datablock>;
 
   beforeEach(async () => {
@@ -53,7 +53,7 @@ describe("DatablocksService", () => {
       ],
     }).compile();
 
-    service = module.resolve<DatablocksService>(DatablocksService);
+    service = await module.resolve<DatablocksService>(DatablocksService);
     model = module.get<Model<Datablock>>(getModelToken("Datablock"));
   });
 

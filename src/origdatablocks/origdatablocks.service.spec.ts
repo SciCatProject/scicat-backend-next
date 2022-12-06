@@ -30,7 +30,7 @@ const mockOrigDatablock: OrigDatablock = {
 };
 
 describe("OrigdatablocksService", () => {
-  let service: Promise<OrigDatablocksService>;
+  let service: OrigDatablocksService;
   let model: Model<OrigDatablock>;
 
   beforeEach(async () => {
@@ -50,7 +50,9 @@ describe("OrigdatablocksService", () => {
       ],
     }).compile();
 
-    service = module.resolve<OrigDatablocksService>(OrigDatablocksService);
+    service = await module.resolve<OrigDatablocksService>(
+      OrigDatablocksService,
+    );
     model = module.get<Model<OrigDatablock>>(getModelToken("OrigDatablock"));
   });
 

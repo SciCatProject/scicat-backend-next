@@ -81,7 +81,7 @@ const mockDataset: DatasetClass = {
 };
 
 describe("DatasetsService", () => {
-  let service: Promise<DatasetsService>;
+  let service: DatasetsService;
   let model: Model<DatasetClass>;
 
   beforeEach(async () => {
@@ -107,7 +107,7 @@ describe("DatasetsService", () => {
       ],
     }).compile();
 
-    service = module.resolve<DatasetsService>(DatasetsService);
+    service = await module.resolve<DatasetsService>(DatasetsService);
     model = module.get<Model<DatasetClass>>(getModelToken("DatasetClass"));
   });
 

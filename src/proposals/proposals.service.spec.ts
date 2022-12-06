@@ -28,7 +28,7 @@ const mockProposal: ProposalClass = {
 };
 
 describe("ProposalsService", () => {
-  let service: Promise<ProposalsService>;
+  let service: ProposalsService;
   let model: Model<ProposalClass>;
 
   beforeEach(async () => {
@@ -48,7 +48,7 @@ describe("ProposalsService", () => {
       ],
     }).compile();
 
-    service = module.resolve<ProposalsService>(ProposalsService);
+    service = await module.resolve<ProposalsService>(ProposalsService);
     model = module.get<Model<ProposalClass>>(getModelToken("ProposalClass"));
   });
 
