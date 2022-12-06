@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/scicatproject/backend-next
           flavor: latest=true # adds :latest tag to outputs.tags
           tags: type=sha,format=long,prefix= # adds :<sha> tag to outputs.tags
         
