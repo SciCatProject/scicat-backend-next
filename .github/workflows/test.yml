@@ -128,7 +128,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Build and push
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Build
         uses: docker/build-push-action@v3
         with:
           context: .
