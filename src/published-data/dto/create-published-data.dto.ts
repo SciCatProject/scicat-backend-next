@@ -11,7 +11,7 @@ export class CreatePublishedDataDto {
 
   @IsString()
   @IsOptional()
-  readonly affiliation: string;
+  readonly affiliation?: string;
 
   @IsString({
     each: true,
@@ -29,7 +29,7 @@ export class CreatePublishedDataDto {
 
   @IsString()
   @IsOptional()
-  readonly url: string;
+  readonly url?: string;
 
   @IsString()
   readonly abstract: string;
@@ -42,11 +42,11 @@ export class CreatePublishedDataDto {
 
   @IsNumber()
   @IsOptional()
-  readonly numberOfFiles: number;
+  readonly numberOfFiles?: number;
 
   @IsNumber()
   @IsOptional()
-  readonly sizeOfArchive: number;
+  readonly sizeOfArchive?: number;
 
   @IsString({
     each: true,
@@ -57,33 +57,33 @@ export class CreatePublishedDataDto {
     each: true,
   })
   @IsOptional()
-  readonly authors: string[];
+  readonly authors?: string[];
 
   @IsDateString()
   @IsOptional()
-  readonly registeredTime: Date;
+  readonly registeredTime?: Date;
 
   @IsString()
   @IsOptional()
-  readonly status: string;
+  readonly status?: string;
 
   @IsString()
   @IsOptional()
-  readonly scicatUser: string;
+  readonly scicatUser?: string;
 
   @IsString()
   @IsOptional()
-  readonly thumbnail: string;
+  readonly thumbnail?: string;
 
   @IsString({
     each: true,
   })
   @IsOptional()
-  readonly relatedPublications: string[];
+  readonly relatedPublications?: string[];
 
   @IsString()
   @IsOptional()
-  readonly downloadLink: string;
+  readonly downloadLink?: string;
 
   @IsDateString()
   @IsOptional()
