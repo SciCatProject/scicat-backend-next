@@ -47,7 +47,12 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
 //import { string } from "mathjs";
-import { filterDescription, filterExample, fullQueryDescription, fullQueryExample } from "src/common/utils";
+import {
+  filterDescription,
+  filterExample,
+  fullQueryDescription,
+  fullQueryExample,
+} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -61,7 +66,9 @@ export class ProposalsController {
 
   // POST /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, ProposalClass),
+  )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
       "MeasurementPeriodList",
@@ -71,7 +78,8 @@ export class ProposalsController {
   @Post()
   @ApiOperation({
     summary: "It creates a new proposal.",
-    description: "It creates a new proposal and returnes it completed with systems fields."
+    description:
+      "It creates a new proposal and returnes it completed with systems fields.",
   })
   @ApiExtraModels(CreateProposalDto)
   @ApiBody({
@@ -80,7 +88,8 @@ export class ProposalsController {
   @ApiResponse({
     status: 201,
     type: ProposalClass,
-    description: "Create a new proposal and return its representation in SciCat"
+    description:
+      "Create a new proposal and return its representation in SciCat",
   })
   async create(
     @Body() createProposalDto: CreateProposalDto,
@@ -93,7 +102,8 @@ export class ProposalsController {
   @Post("/isValid")
   @ApiOperation({
     summary: "It validates the proposal provided as input.",
-    description: "It validates the proposal provided as input, and returns true if the information is a valid proposal"
+    description:
+      "It validates the proposal provided as input, and returns true if the information is a valid proposal",
   })
   @ApiBody({
     type: CreateProposalDto,
@@ -101,7 +111,8 @@ export class ProposalsController {
   @ApiResponse({
     status: 200,
     type: Boolean,
-    description: "Check if the proposal provided pass validation. It return true if the validation is passed"
+    description:
+      "Check if the proposal provided pass validation. It return true if the validation is passed",
   })
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -123,15 +134,19 @@ export class ProposalsController {
 
   // GET /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, ProposalClass),
+  )
   @Get()
   @ApiOperation({
     summary: "It returns a list of proposals.",
-    description: "It returns a list of proposals. The list returned can be modified by providing a filter."
+    description:
+      "It returns a list of proposals. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
     name: "filters",
-    description: "Database filters to apply when retrieve proposals\n" + filterDescription,
+    description:
+      "Database filters to apply when retrieve proposals\n" + filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -140,7 +155,7 @@ export class ProposalsController {
     status: 200,
     type: ProposalClass,
     isArray: true,
-    description: "Return the proposals requested"
+    description: "Return the proposals requested",
   })
   async findAll(@Query("filters") filters?: string): Promise<ProposalClass[]> {
     const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
@@ -150,15 +165,20 @@ export class ProposalsController {
 
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, ProposalClass),
+  )
   @Get("/fullquery")
   @ApiOperation({
     summary: "It returns a list of proposals matching the query provided.",
-    description: "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification."
+    description:
+      "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
     name: "filters",
-    description: "Full query filters to apply when retrieve proposals\n" + fullQueryDescription,
+    description:
+      "Full query filters to apply when retrieve proposals\n" +
+      fullQueryDescription,
     required: false,
     type: String,
     example: fullQueryExample,
@@ -167,7 +187,7 @@ export class ProposalsController {
     status: 200,
     type: ProposalClass,
     isArray: true,
-    description: "Return proposals requested"
+    description: "Return proposals requested",
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
@@ -181,15 +201,21 @@ export class ProposalsController {
 
   // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, ProposalClass),
+  )
   @Get("/fullfacet")
   @ApiOperation({
-    summary: "It returns a list of proposal facets matching the filter provided.",
-    description: "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification."
+    summary:
+      "It returns a list of proposal facets matching the filter provided.",
+    description:
+      "It returns a list of proposal facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
   })
   @ApiQuery({
     name: "filters",
-    description: "Full facet query filters to apply when retrieve proposals\n" + fullQueryDescription,
+    description:
+      "Full facet query filters to apply when retrieve proposals\n" +
+      fullQueryDescription,
     required: false,
     type: String,
     example: fullQueryExample,
@@ -198,7 +224,7 @@ export class ProposalsController {
     status: 200,
     type: ProposalClass,
     isArray: true,
-    description: "Return proposals requested"
+    description: "Return proposals requested",
   })
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -212,11 +238,13 @@ export class ProposalsController {
 
   // GET /proposals/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, ProposalClass),
+  )
   @Get("/:pid")
   @ApiOperation({
     summary: "It returns the proposal requested.",
-    description: "It returns the proposal requested through the pid specified."
+    description: "It returns the proposal requested through the pid specified.",
   })
   @ApiParam({
     name: "pid",
@@ -227,15 +255,19 @@ export class ProposalsController {
     status: 200,
     type: ProposalClass,
     isArray: false,
-    description: "Return proposal with pid specified"
+    description: "Return proposal with pid specified",
   })
-  async findOne(@Param("pid") proposalId: string): Promise<ProposalClass | null> {
+  async findOne(
+    @Param("pid") proposalId: string,
+  ): Promise<ProposalClass | null> {
     return this.proposalsService.findOne({ proposalId: proposalId });
   }
 
   // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, ProposalClass),
+  )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
       "MeasurementPeriodList",
@@ -245,7 +277,8 @@ export class ProposalsController {
   @Patch("/:pid")
   @ApiOperation({
     summary: "It updates the proposal.",
-    description: "It updates the proposal specified through the pid specified. it updates only the specified fields."
+    description:
+      "It updates the proposal specified through the pid specified. it updates only the specified fields.",
   })
   @ApiParam({
     name: "pid",
@@ -259,22 +292,28 @@ export class ProposalsController {
   @ApiResponse({
     status: 200,
     type: ProposalClass,
-    description: "Update an existing proposal and return its representation in SciCat"
+    description:
+      "Update an existing proposal and return its representation in SciCat",
   })
   async update(
     @Param("pid") proposalId: string,
     @Body() updateProposalDto: UpdateProposalDto,
   ): Promise<ProposalClass | null> {
-    return this.proposalsService.update({ proposalId: proposalId }, updateProposalDto);
+    return this.proposalsService.update(
+      { proposalId: proposalId },
+      updateProposalDto,
+    );
   }
 
   // DELETE /proposals/:id
   @UseGuards()
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, ProposalClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, ProposalClass),
+  )
   @Delete("/:pid")
   @ApiOperation({
     summary: "It deletes the proposal.",
-    description: "It delete the proposal specified through the pid specified."
+    description: "It delete the proposal specified through the pid specified.",
   })
   @ApiParam({
     name: "pid",
@@ -283,7 +322,7 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    description: "No value is returned"
+    description: "No value is returned",
   })
   async remove(@Param("pid") proposalId: string): Promise<unknown> {
     return this.proposalsService.remove({ proposalId: proposalId });
@@ -297,11 +336,13 @@ export class ProposalsController {
   @Post("/:pid/attachments")
   @ApiOperation({
     summary: "It creates a new attachement for the proposal specified.",
-    description: "It creates a new attachement for the proposal specified by the pid passed."
+    description:
+      "It creates a new attachement for the proposal specified by the pid passed.",
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the proposal we would like to create a new attachement for",
+    description:
+      "Id of the proposal we would like to create a new attachement for",
     type: String,
   })
   @ApiExtraModels(CreateAttachmentDto)
@@ -311,7 +352,8 @@ export class ProposalsController {
   @ApiResponse({
     status: 201,
     type: Attachment,
-    description: "Create a new attachment for the proposal identified by the pid specified"
+    description:
+      "Create a new attachment for the proposal identified by the pid specified",
   })
   async createAttachment(
     @Param("pid") proposalId: string,
@@ -331,20 +373,25 @@ export class ProposalsController {
   @Get("/:pid/attachments")
   @ApiOperation({
     summary: "It returns all the attachements for the proposal specified.",
-    description: "It returns all the attachements for the proposal specified by the pid passed."
+    description:
+      "It returns all the attachements for the proposal specified by the pid passed.",
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the proposal for which we would like to retrieve all the attachments",
+    description:
+      "Id of the proposal for which we would like to retrieve all the attachments",
     type: String,
   })
   @ApiResponse({
     status: 200,
     type: Attachment,
     isArray: true,
-    description: "Array with all the attachments associated with the proposal with the pid specified"
+    description:
+      "Array with all the attachments associated with the proposal with the pid specified",
   })
-  async findAllAttachments(@Param("pid") proposalId: string): Promise<Attachment[]> {
+  async findAllAttachments(
+    @Param("pid") proposalId: string,
+  ): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ proposalId: proposalId });
   }
 
@@ -356,23 +403,27 @@ export class ProposalsController {
   @Patch("/:pid/attachments/:aid")
   @ApiOperation({
     summary: "It updates the attachment specified for the proposal indicated.",
-    description: "It updates the attachment specified by the aid parameter for the proposal indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Attachements can be updated from the attachment endpoint.",
+    description:
+      "It updates the attachment specified by the aid parameter for the proposal indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Attachements can be updated from the attachment endpoint.",
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the proposal for which we would like to update the attachment specified",
+    description:
+      "Id of the proposal for which we would like to update the attachment specified",
     type: String,
   })
   @ApiParam({
     name: "aid",
-    description: "Id of the attachment of this proposal that we would like to patch",
+    description:
+      "Id of the attachment of this proposal that we would like to patch",
     type: String,
   })
   @ApiResponse({
     status: 200,
     type: Attachment,
     isArray: false,
-    description: "Update values of the attachment with id specified associated with the proposal with the pid specified"
+    description:
+      "Update values of the attachment with id specified associated with the proposal with the pid specified",
   })
   async findOneAttachmentAndUpdate(
     @Param("pid") proposalId: string,
@@ -393,21 +444,25 @@ export class ProposalsController {
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
     summary: "It deletes the attachment from the proposal.",
-    description: "It deletes the attachment from the proposal.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be done only from the attachements endpoint.",
+    description:
+      "It deletes the attachment from the proposal.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be done only from the attachements endpoint.",
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the proposal for which we would like to delete the attachment specified",
+    description:
+      "Id of the proposal for which we would like to delete the attachment specified",
     type: String,
   })
   @ApiParam({
     name: "aid",
-    description: "Id of the attachment of this proposal that we would like to delete",
+    description:
+      "Id of the attachment of this proposal that we would like to delete",
     type: String,
   })
   @ApiResponse({
     status: 200,
-    description: "Remove the attachment with id specified associated with the proposal with the pid specified"
+    description:
+      "Remove the attachment with id specified associated with the proposal with the pid specified",
   })
   async findOneAttachmentAndRemove(
     @Param("pid") proposalId: string,
@@ -426,24 +481,27 @@ export class ProposalsController {
   )
   @Get("/:pid/datasets")
   @ApiOperation({
-    summary: "It returns all the datasets associated with the proposal indicated.",
-    description: "It returns all the datasets associated with the proposal indicated by the pid parameter.<br>Changes to the related datasets must be performed through the dataset endpoint.",
+    summary:
+      "It returns all the datasets associated with the proposal indicated.",
+    description:
+      "It returns all the datasets associated with the proposal indicated by the pid parameter.<br>Changes to the related datasets must be performed through the dataset endpoint.",
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the proposal for which we would like to retrieve all the datasets",
+    description:
+      "Id of the proposal for which we would like to retrieve all the datasets",
     type: String,
   })
   @ApiResponse({
     status: 200,
     type: DatasetClass,
     isArray: true,
-    description: "Array with all the datasets associated with the proposal with the pid specified"
+    description:
+      "Array with all the datasets associated with the proposal with the pid specified",
   })
   async findAllDatasets(
     @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
     return this.datasetsService.findAll({ where: { proposalId } });
   }
-
 }

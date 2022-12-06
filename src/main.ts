@@ -1,7 +1,11 @@
 import * as session from "express-session";
 import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, ExpressSwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger";
+import {
+  DocumentBuilder,
+  ExpressSwaggerCustomOptions,
+  SwaggerModule,
+} from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -17,12 +21,12 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  const swaggerOptions : ExpressSwaggerCustomOptions = {
+  const swaggerOptions: ExpressSwaggerCustomOptions = {
     swaggerOptions: {
       docExpansion: "none",
     },
-  }
-  
+  };
+
   SwaggerModule.setup("explorer", app, document, swaggerOptions);
 
   app.useGlobalPipes(

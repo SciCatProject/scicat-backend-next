@@ -51,7 +51,7 @@ describe("PublishedDataService", () => {
       ],
     }).compile();
 
-    service = module.get<PublishedDataService>(PublishedDataService);
+    service = await module.resolve<PublishedDataService>(PublishedDataService);
     model = module.get<Model<PublishedData>>(getModelToken("PublishedData"));
   });
 

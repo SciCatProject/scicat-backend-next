@@ -25,15 +25,15 @@ export class ProposalClass extends OwnableClass {
     description:
       "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended",
   })
-  @Prop({ 
-    type: String, 
-    unique: true, 
-    required: true 
+  @Prop({
+    type: String,
+    unique: true,
+    required: true,
   })
   proposalId: string;
 
-  @Prop({ 
-    type: String 
+  @Prop({
+    type: String,
   })
   _id: string;
 
@@ -56,7 +56,7 @@ export class ProposalClass extends OwnableClass {
   })
   @Prop({
     type: String,
-    required: false
+    required: false,
   })
   pi_firstname?: string;
 
@@ -76,31 +76,31 @@ export class ProposalClass extends OwnableClass {
     required: true,
     description: "Email of main proposer",
   })
-  @Prop({ 
-    type: String, 
-    required: true 
+  @Prop({
+    type: String,
+    required: true,
   })
   email: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: String,
-    required: false, 
-    description: "First name of main proposer" 
+    required: false,
+    description: "First name of main proposer",
   })
-  @Prop({ 
-    type: String, 
-    required: false 
+  @Prop({
+    type: String,
+    required: false,
   })
   firstname?: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "Last name of main proposer" 
+    description: "Last name of main proposer",
   })
-  @Prop({ 
-    type: String, 
-    required: false 
+  @Prop({
+    type: String,
+    required: false,
   })
   lastname?: string;
 
@@ -109,20 +109,20 @@ export class ProposalClass extends OwnableClass {
     required: true,
     description: "The title of the proposal",
   })
-  @Prop({ 
-    type: String, 
-    required: true 
+  @Prop({
+    type: String,
+    required: true,
   })
   title: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "The proposal abstract" 
+    description: "The proposal abstract",
   })
-  @Prop({ 
-    type: String, 
-    required: false 
+  @Prop({
+    type: String,
+    required: false,
   })
   abstract?: string;
 
@@ -131,9 +131,9 @@ export class ProposalClass extends OwnableClass {
     required: false,
     description: "The date when the data collection starts",
   })
-  @Prop({ 
-    type: Date, 
-    required: false 
+  @Prop({
+    type: Date,
+    required: false,
   })
   startTime?: Date;
 
@@ -142,12 +142,11 @@ export class ProposalClass extends OwnableClass {
     required: false,
     description: "The date when data collection finishes",
   })
-  @Prop({ 
-    type: Date, 
-    required: false 
+  @Prop({
+    type: Date,
+    required: false,
   })
   endTime?: Date;
-
 
   @ApiProperty({
     type: MeasurementPeriodClass,

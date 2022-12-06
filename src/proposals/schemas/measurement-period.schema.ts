@@ -41,5 +41,6 @@ export class MeasurementPeriodClass extends QueryableClass {
   comment: string;
 }
 
-export const MeasurementPeriodSchema =
-  SchemaFactory.createForClass(MeasurementPeriodClass);
+export const MeasurementPeriodSchema = SchemaFactory.createForClass(
+  MeasurementPeriodClass,
+);

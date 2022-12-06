@@ -9,7 +9,6 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
   addCreatedFields,
-  addUpdatedFields,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
@@ -20,12 +19,13 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 @Injectable({ scope: Scope.REQUEST })
 export class ProposalsService {
   constructor(
-    @InjectModel(ProposalClass.name) private proposalModel: Model<ProposalDocument>,
+    @InjectModel(ProposalClass.name)
+    private proposalModel: Model<ProposalDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createProposalDto: CreateProposalDto): Promise<ProposalClass> {
-    const username = (this.request?.user as JWTUser).username;
+    const username = (this.request.user as JWTUser).username;
     const ts = new Date();
     const createdProposal = new this.proposalModel(
       addCreatedFields<CreateProposalDto>(createProposalDto, username, ts),

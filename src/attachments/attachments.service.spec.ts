@@ -22,7 +22,7 @@ const mockAttachment: Attachment = {
 };
 
 describe("AttachmentsService", () => {
-  let service: Promise<AttachmentsService>;
+  let service: AttachmentsService;
   let attachmentModel: Model<Attachment>;
 
   beforeEach(async () => {
@@ -42,7 +42,7 @@ describe("AttachmentsService", () => {
       ],
     }).compile();
 
-    service = module.resolve<AttachmentsService>(AttachmentsService);
+    service = await module.resolve<AttachmentsService>(AttachmentsService);
     attachmentModel = module.get<Model<Attachment>>(
       getModelToken("Attachment"),
     );

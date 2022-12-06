@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 import { Logger } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
@@ -624,9 +625,11 @@ export const addUpdatedFields = <T>(
   };
 };
 
-export const filterExample: string = "{ \"where\": { \"field\": \"value\" }, \"include\": [ { \"relation\": \"target\", [ \"where\" : <where_condition> ]}], \"fields\": [\"field1\", \"field2\", ...], \"limits\": {\"limit\": number, \"skip\": number, \"order\": [ascending, descending]}}";
+export const filterExample =
+  '{ "where": { "field": "value" }, "include": [ { "relation": "target", [ "where" : <where_condition> ]}], "fields": ["field1", "field2", ...], "limits": {"limit": number, "skip": number, "order": [ascending, descending]}}';
 
-export const filterDescription: string = '<pre>\n \
+export const filterDescription =
+  '<pre>\n \
 {\n \
   "where?": {\n \
     "field": "value"\n \
@@ -648,9 +651,11 @@ export const filterDescription: string = '<pre>\n \
 }\n \
 </pre>';
 
-export const fullQueryExample = "{ \"fields\": [\"field1\", \"field2\", ...], \"limits\": {\"limit\": number, \"skip\": number, \"order\": [ascending, descending]}}";
+export const fullQueryExample =
+  '{ "fields": ["field1", "field2", ...], "limits": {"limit": number, "skip": number, "order": [ascending, descending]}}';
 
-export const fullQueryDescription = '<pre>\n \
+export const fullQueryDescription =
+  '<pre>\n \
 {\n \
   "fields?": [ "field1", "field2", ...],\n \
   "limits?": {\n \
@@ -659,4 +664,4 @@ export const fullQueryDescription = '<pre>\n \
     "order": [ascending, descending]\n \
   }\n \
 }\n \
-</pre>';;
+</pre>';
