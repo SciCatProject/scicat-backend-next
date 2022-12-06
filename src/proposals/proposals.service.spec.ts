@@ -2,9 +2,9 @@ import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
 import { ProposalsService } from "./proposals.service";
-import { Proposal } from "./schemas/proposal.schema";
+import { ProposalClass } from "./schemas/proposal.schema";
 
-const mockProposal: Proposal = {
+const mockProposal: ProposalClass = {
   proposalId: "ABCDEF",
   _id: "ABCDEF",
   pi_email: "testPi@email.com",
@@ -28,15 +28,15 @@ const mockProposal: Proposal = {
 };
 
 describe("ProposalsService", () => {
-  let service: Promise<ProposalsService>;
-  let model: Model<Proposal>;
+  let service: ProposalsService;
+  let model: Model<ProposalClass>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProposalsService,
         {
-          provide: getModelToken("Proposal"),
+          provide: getModelToken("ProposalClass"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockProposal),
             constructor: jest.fn().mockResolvedValue(mockProposal),
@@ -48,8 +48,8 @@ describe("ProposalsService", () => {
       ],
     }).compile();
 
-    service = module.resolve<ProposalsService>(ProposalsService);
-    model = module.get<Model<Proposal>>(getModelToken("Proposal"));
+    service = await module.resolve<ProposalsService>(ProposalsService);
+    model = module.get<Model<ProposalClass>>(getModelToken("ProposalClass"));
   });
 
   it("should be defined", () => {

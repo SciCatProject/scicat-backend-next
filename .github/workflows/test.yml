@@ -72,7 +72,10 @@ jobs:
           HTTP_MAX_REDIRECTS: 5
           HTTP_TIMEOUT: 5000
           JWT_EXPIRES_IN: 3600
-          SITE: SAMPLE-SITE
+          # NOTE: The SITE variable is set to PSI because of the PublishedData test.
+          # Testing /register endpoint expects to have it as PSI for that specific scenario.
+          # Old backend was modifying this at runtime but with NestJS we need to investigate little bit more if there is a bit better and more elegant solution.
+          SITE: PSI
           PID_PREFIX: PID.SAMPLE.PREFIX
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100

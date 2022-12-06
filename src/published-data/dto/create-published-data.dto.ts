@@ -1,11 +1,4 @@
-import {
-  ArrayNotEmpty,
-  IsArray,
-  IsDateString,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from "class-validator";
+import { IsDateString, IsOptional, IsString, IsNumber } from "class-validator";
 
 export class CreatePublishedDataDto {
   @IsString()
@@ -20,8 +13,9 @@ export class CreatePublishedDataDto {
   @IsOptional()
   readonly affiliation?: string;
 
-  @IsArray()
-  @ArrayNotEmpty()
+  @IsString({
+    each: true,
+  })
   readonly creator: string[];
 
   @IsString()
@@ -35,7 +29,7 @@ export class CreatePublishedDataDto {
 
   @IsString()
   @IsOptional()
-  readonly url: string;
+  readonly url?: string;
 
   @IsString()
   readonly abstract: string;
@@ -48,43 +42,48 @@ export class CreatePublishedDataDto {
 
   @IsNumber()
   @IsOptional()
-  readonly numberOfFiles: number;
+  readonly numberOfFiles?: number;
 
   @IsNumber()
   @IsOptional()
-  readonly sizeOfArchive: number;
+  readonly sizeOfArchive?: number;
 
-  @IsArray()
-  @ArrayNotEmpty()
+  @IsString({
+    each: true,
+  })
   readonly pidArray: string[];
 
-  @IsArray()
+  @IsString({
+    each: true,
+  })
   @IsOptional()
-  readonly authors: string[];
+  readonly authors?: string[];
 
   @IsDateString()
   @IsOptional()
-  readonly registeredTime: Date;
+  readonly registeredTime?: Date;
 
   @IsString()
   @IsOptional()
-  readonly status: string;
+  readonly status?: string;
 
   @IsString()
   @IsOptional()
-  readonly scicatUser: string;
+  readonly scicatUser?: string;
 
   @IsString()
   @IsOptional()
-  readonly thumbnail: string;
+  readonly thumbnail?: string;
 
-  @IsArray()
+  @IsString({
+    each: true,
+  })
   @IsOptional()
-  readonly relatedPublications: string[];
+  readonly relatedPublications?: string[];
 
   @IsString()
   @IsOptional()
-  readonly downloadLink: string;
+  readonly downloadLink?: string;
 
   @IsDateString()
   @IsOptional()

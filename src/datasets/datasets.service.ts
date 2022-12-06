@@ -172,7 +172,6 @@ export class DatasetsService {
       | UpdateQuery<DatasetDocument>,
   ): Promise<DatasetClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
-
     // check if we were able to find the dataset
     if (!existingDataset) {
       // no luck. we need to create a new dataset

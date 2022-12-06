@@ -58,19 +58,19 @@ export class CreateProposalDto extends OwnableDto {
   @IsEmail()
   readonly email: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "First name of main proposer" 
+    description: "First name of main proposer",
   })
   @IsOptional()
   @IsString()
   readonly firstname?: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "Last name of main proposer" 
+    description: "Last name of main proposer",
   })
   @IsOptional()
   @IsString()
@@ -84,10 +84,10 @@ export class CreateProposalDto extends OwnableDto {
   @IsString()
   readonly title: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "The proposal abstract" 
+    description: "The proposal abstract",
   })
   @IsOptional()
   @IsString()
@@ -120,7 +120,7 @@ export class CreateProposalDto extends OwnableDto {
   })
   @IsArray()
   @IsOptional()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
   readonly MeasurementPeriodList?: Record<string, unknown>;
 }

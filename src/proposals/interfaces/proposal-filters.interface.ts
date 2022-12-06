@@ -1,4 +1,3 @@
-
 interface IProposalFieldObject {
   $regex: string;
   $options: string;
@@ -17,5 +16,4 @@ export interface IProposalFields {
   firstname?: IProposalFieldObject;
   lastname?: IProposalFieldObject;
   endTime?: IDateRange;
-};
-
+}

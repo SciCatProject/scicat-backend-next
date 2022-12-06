@@ -9,7 +9,8 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
-  InternalServerErrorException,
+  HttpException,
+  HttpStatus,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -62,10 +63,6 @@ export class PublishedDataController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
-  )
-  @UseInterceptors(
-    new SetCreatedUpdatedAtInterceptor<PublishedData>("createdAt"),
-    new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
   )
   @Post()
   async create(
@@ -337,8 +334,22 @@ export class PublishedDataController {
 
         return res ? res.data : null;
       } else if (!this.configService.get<string>("oaiProviderRoute")) {
-        throw new InternalServerErrorException(
-          "oaiProviderRoute not specified in config",
+        try {
+          await this.publishedDataService.update(
+            { doi: publishedData.doi },
+            data,
+          );
+        } catch (error) {
+          console.error(error);
+        }
+
+        console.warn(
+          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
+        );
+
+        throw new HttpException(
+          "results not pushed to oaiProvider as oaiProviderRoute route is not specified in the env variables",
+          HttpStatus.OK,
         );
       } else {
         let res;
