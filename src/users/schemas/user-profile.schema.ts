@@ -6,7 +6,7 @@ export type UserProfileDocument = UserProfile & Document;
 @Schema()
 export class UserProfile {
   @Prop()
-  displayName: string;
+  displayName?: string;
 
   @Prop()
   email: string;
@@ -15,13 +15,13 @@ export class UserProfile {
   username: string;
 
   @Prop()
-  thumbnailPhoto: string;
+  thumbnailPhoto?: string;
 
   @Prop()
-  id: string;
+  id?: string;
 
   @Prop({ type: [Object] })
-  emails: Record<string, string>[];
+  emails?: Record<string, string>[];
 
   @Prop({ type: [String] })
   accessGroups: string[];

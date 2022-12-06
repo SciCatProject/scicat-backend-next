@@ -3,25 +3,25 @@ import { UserProfile } from "../schemas/user-profile.schema";
 
 export class CreateUserIdentityDto {
   @ApiProperty()
-  readonly authScheme: string;
+  readonly authScheme?: string;
 
   @ApiProperty()
-  readonly created: Date;
+  readonly created?: Date;
 
   @ApiProperty()
-  readonly credentials: Record<string, unknown>;
+  readonly credentials?: Record<string, unknown>;
 
   @ApiProperty()
-  readonly externalId: string;
+  readonly externalId?: string;
 
   @ApiProperty()
-  readonly modified: Date;
+  readonly modified?: Date;
 
   @ApiProperty()
   readonly profile: UserProfile;
 
   @ApiProperty()
-  readonly provider: string;
+  readonly provider?: string;
 
   @ApiProperty()
   readonly userId: string;
