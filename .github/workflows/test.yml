@@ -47,6 +47,24 @@ jobs:
 
       - name: Unit tests
         run: npm run test
+        
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [install-and-cache]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Restore node_modules
+        id: cached-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+        
+      - name: Build
+        run: npm run build
 
   api_tests:
     name: API tests
@@ -126,16 +144,3 @@ jobs:
         with:
           name: cypress-videos
           path: frontend/cypress/videos/
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        
-      - name: Build
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: false
