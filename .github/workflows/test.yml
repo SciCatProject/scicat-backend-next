@@ -102,7 +102,7 @@ jobs:
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           docker-compose up --build -d
-          npm run api:after:start
+          npm run test:api
 
   e2e_tests:
     name: E2E Tests

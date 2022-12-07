@@ -33,8 +33,9 @@
 1. **Running the unit tests:** `npm run test`
 2. **Running the e2e(api) tests:**
   - First of all run `npm run prepare:local` to prepare the local environment for starting
-  - After that run `npm run start` or `npm run start:dev` for starting the backend locally
-  - And in the end start the e2e/api tests with running `npm run test:e2e:mocha`
+  - After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests.
+  - [Optional] If you want to run only the mocha tests you will need to start the backend locally with `npm run start` and then use `npm run test:api:mocha`
+  - [Optional] If you want to run only the jest tests you can use `npm run test:api:jest`
 
 ## Environment variables
 

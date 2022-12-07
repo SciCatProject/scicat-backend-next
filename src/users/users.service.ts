@@ -158,6 +158,15 @@ export class UsersService implements OnModuleInit {
     return createdUserIdentity.save();
   }
 
+  // NOTE: This is just for testing purposes inside accessGroups.e2e-spec.ts
+  async removeUserIdentity(userId: string): Promise<UserIdentity | null> {
+    const removedUserIdentity = await this.userIdentityModel
+      .findOneAndDelete({ userId })
+      .exec();
+
+    return removedUserIdentity;
+  }
+
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
     return this.userIdentityModel.findOne({ userId }).exec();
   }
