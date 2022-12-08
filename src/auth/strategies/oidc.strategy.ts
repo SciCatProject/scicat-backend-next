@@ -85,10 +85,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
       const createUserIdentity: CreateUserIdentityDto = {
         authScheme: "oidc",
-        created: new Date(),
         credentials: {},
         externalId: userProfile.id,
-        modified: new Date(),
         profile: userProfile,
         provider: "oidc",
         userId: user._id,

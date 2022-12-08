@@ -4,12 +4,12 @@ import { v4 as uuidv4 } from "uuid";
 
 export type HistoryDocument = History & Document;
 
-@Schema({ strict: false })
+@Schema({ strict: false, timestamps: { createdAt: false, updatedAt: true } })
 export class History {
   @Prop({ type: String, required: true, default: uuidv4() })
   _id: string;
 
-  @Prop({ type: Date, required: true, default: Date.now() })
+  @Prop({ type: Date })
   updatedAt: Date;
 
   @Prop({ type: String, required: true })

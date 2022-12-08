@@ -7,6 +7,8 @@ import { FilterQuery, Model, QueryOptions } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFilters } from "src/common/interfaces/common.interface";
 import {
+  addCreatedFields,
+  addUpdatedField,
   extractMetadataKeys,
   mapScientificQuery,
   parseLimitFilters,
@@ -26,15 +28,10 @@ export class SamplesService {
   ) {}
 
   async create(createSampleDto: CreateSampleDto): Promise<Sample> {
-    const createdSample = new this.sampleModel({
-      ...createSampleDto,
-      ...{
-        createdBy: (this.request.user as JWTUser).username,
-        createdAt: new Date(),
-        updatedBy: (this.request.user as JWTUser).username,
-        updatedAt: new Date(),
-      },
-    });
+    const username = (this.request.user as JWTUser).username;
+    const createdSample = new this.sampleModel(
+      addCreatedFields(createSampleDto, username),
+    );
     return createdSample.save();
   }
 
@@ -146,8 +143,12 @@ export class SamplesService {
     filter: FilterQuery<SampleDocument>,
     updateSampleDto: UpdateSampleDto,
   ): Promise<Sample | null> {
+    const username = (this.request.user as JWTUser).username;
+
     return this.sampleModel
-      .findOneAndUpdate(filter, updateSampleDto, { new: true })
+      .findOneAndUpdate(filter, addUpdatedField(updateSampleDto, username), {
+        new: true,
+      })
       .exec();
   }
 

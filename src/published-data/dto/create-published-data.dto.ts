@@ -84,12 +84,4 @@ export class CreatePublishedDataDto {
   @IsString()
   @IsOptional()
   readonly downloadLink?: string;
-
-  @IsDateString()
-  @IsOptional()
-  readonly createdAt?: Date;
-
-  @IsDateString()
-  @IsOptional()
-  readonly updatedAt?: Date;
 }

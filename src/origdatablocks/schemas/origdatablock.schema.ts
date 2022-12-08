@@ -11,6 +11,7 @@ export type OrigDatablockDocument = OrigDatablock & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class OrigDatablock extends OwnableClass {
   @ApiProperty({

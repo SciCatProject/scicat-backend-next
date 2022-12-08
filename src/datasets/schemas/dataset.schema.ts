@@ -29,6 +29,7 @@ export type DatasetDocument = DatasetClass & Document;
   minimize: false,
   //strict: true,
   //strictQuery: false,
+  timestamps: true,
   toJSON: {
     getters: true,
   },

@@ -14,6 +14,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedFields,
+  addUpdatedField,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
@@ -43,14 +44,12 @@ export class DatasetsService {
   ) {}
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
+    const username = (this.request.user as JWTUser).username;
     const createdDataset = new this.datasetModel(
-      addCreatedFields<CreateDatasetDto>(
-        createDatasetDto,
-        (this.request.user as JWTUser).username,
-        new Date(),
-      ),
+      // insert created and updated fields
+      addCreatedFields(createDatasetDto, username),
     );
-    // insert created and updated fields
+
     return createdDataset.save();
   }
 
@@ -141,10 +140,14 @@ export class DatasetsService {
       | CreateRawDatasetDto
       | CreateDerivedDatasetDto,
   ): Promise<DatasetClass> {
+    const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
-        createDatasetDto as UpdateQuery<DatasetDocument>,
+        addUpdatedField(
+          createDatasetDto as UpdateQuery<DatasetDocument>,
+          username,
+        ),
         { new: true },
       )
       .exec();
@@ -152,7 +155,9 @@ export class DatasetsService {
     // check if we were able to find the dataset and update it
     if (!existingDataset) {
       // no luck. we need to create a new dataset with the provided id
-      const createdDataset = new this.datasetModel(createDatasetDto);
+      const createdDataset = new this.datasetModel(
+        addCreatedFields(createDatasetDto, username),
+      );
       createdDataset.set("pid", id);
       return await createdDataset.save();
     }
@@ -178,12 +183,17 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
+    const username = (this.request.user as JWTUser).username;
+
     // NOTE: When doing findByIdAndUpdate in mongoose it does reset the subdocuments to default values if no value is provided
     // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
     const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
-        updateDatasetDto as UpdateQuery<DatasetDocument>,
+        addUpdatedField(
+          updateDatasetDto as UpdateQuery<DatasetDocument>,
+          username,
+        ),
         { new: true },
       )
       .exec();

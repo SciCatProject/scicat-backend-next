@@ -17,7 +17,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { addCreatedFields } from "src/common/utils";
+import { addCreatedFields, addUpdatedField } from "src/common/utils";
 import { REQUEST } from "@nestjs/core";
 
 @Injectable()
@@ -114,9 +114,8 @@ export class PoliciesService implements OnModuleInit {
 
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
     const username = (this.request?.user as JWTUser).username;
-    const ts = new Date();
     const createdPolicy = new this.policyModel(
-      addCreatedFields<CreatePolicyDto>(createPolicyDto, username, ts),
+      addCreatedFields(createPolicyDto, username),
     );
     return createdPolicy.save();
   }
@@ -157,8 +156,11 @@ export class PoliciesService implements OnModuleInit {
     filter: FilterQuery<PolicyDocument>,
     updatePolicyDto: UpdatePolicyDto,
   ): Promise<Policy | null> {
+    const username = (this.request?.user as JWTUser).username;
     return this.policyModel
-      .findOneAndUpdate(filter, updatePolicyDto, { new: true })
+      .findOneAndUpdate(filter, addUpdatedField(updatePolicyDto, username), {
+        new: true,
+      })
       .exec();
   }
 
@@ -166,11 +168,7 @@ export class PoliciesService implements OnModuleInit {
     return this.policyModel.findOneAndRemove(filter).exec();
   }
 
-  async updateWhere(
-    ownerGroupList: string,
-    data: UpdatePolicyDto,
-    req: Request,
-  ) {
+  async updateWhere(ownerGroupList: string, data: UpdatePolicyDto) {
     if (!ownerGroupList) {
       throw new InternalServerErrorException(
         "Invalid ownerGroupList parameter",
@@ -187,7 +185,7 @@ export class PoliciesService implements OnModuleInit {
       );
     }
 
-    const userId = (req.user as JWTUser)._id;
+    const userId = (this.request.user as JWTUser)._id;
     const userIdentity = await this.usersService.findByIdUserIdentity(userId);
     const user = await this.usersService.findById(userId);
     if (!user) {

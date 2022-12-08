@@ -6,6 +6,7 @@ import { FilterQuery, Model, QueryOptions } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedFields,
+  addUpdatedField,
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
@@ -29,12 +30,9 @@ export class OrigDatablocksService {
   async create(
     createOrigdatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
+    const username = (this.request.user as JWTUser).username;
     const createdOrigDatablock = new this.origDatablockModel(
-      addCreatedFields<CreateOrigDatablockDto>(
-        createOrigdatablockDto,
-        (this.request.user as JWTUser).username,
-        new Date(),
-      ),
+      addCreatedFields(createOrigdatablockDto, username),
     );
     return createdOrigDatablock.save();
   }
@@ -73,8 +71,13 @@ export class OrigDatablocksService {
     filter: FilterQuery<OrigDatablockDocument>,
     updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
+    const username = (this.request.user as JWTUser).username;
     return this.origDatablockModel
-      .findOneAndUpdate(filter, updateOrigdatablockDto, { new: true })
+      .findOneAndUpdate(
+        filter,
+        addUpdatedField(updateOrigdatablockDto, username),
+        { new: true },
+      )
       .exec();
   }
 

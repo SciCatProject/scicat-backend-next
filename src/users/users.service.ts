@@ -56,8 +56,6 @@ export class UsersService implements OnModuleInit {
           if (role) {
             const createRole: CreateRoleDto = {
               name: role,
-              created: new Date(),
-              modified: new Date(),
             };
             const createdRole = await this.rolesService.findOrCreate(
               createRole,
@@ -73,8 +71,6 @@ export class UsersService implements OnModuleInit {
           if (global) {
             const createRole: CreateRoleDto = {
               name: "globalaccess",
-              created: new Date(),
-              modified: new Date(),
             };
             const createdRole = await this.rolesService.findOrCreate(
               createRole,
