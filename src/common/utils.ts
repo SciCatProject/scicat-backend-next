@@ -618,7 +618,7 @@ export const addUpdatedByField = <T>(
 };
 
 export const filterExample =
-  '{ "where": { "field": "value" }, "include": [ { "relation": "target", [ "where" : <where_condition> ]}], "fields": ["field1", "field2", ...], "limits": {"limit": number, "skip": number, "order": [ascending, descending]}}';
+  '{ "where": { "field": "value" }, "include": [ { "relation": "target" } ], "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
 
 export const filterDescription =
   '<pre>\n \
@@ -630,7 +630,7 @@ export const filterDescription =
     {\n \
       "relation": "target",\n \
       "scope": {\n \
-        "where" : <where_condition>\n \
+        "where" : "<where_condition>"\n \
       ]\n \
     }\n \
   ],\n \
@@ -644,7 +644,7 @@ export const filterDescription =
 </pre>';
 
 export const fullQueryExample =
-  '{ "fields": ["field1", "field2", ...], "limits": {"limit": number, "skip": number, "order": [ascending, descending]}}';
+  '{ "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
 
 export const fullQueryDescription =
   '<pre>\n \

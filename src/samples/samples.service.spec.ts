@@ -3,9 +3,9 @@ import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
 import { SamplesService } from "./samples.service";
-import { Sample } from "./schemas/sample.schema";
+import { SampleClass } from "./schemas/sample.schema";
 
-const mockSample: Sample = {
+const mockSample: SampleClass = {
   _id: "testId",
   sampleId: "testId",
   owner: "Test Owner",
@@ -14,8 +14,6 @@ const mockSample: Sample = {
   updatedAt: new Date(),
   sampleCharacteristics: {},
   isPublished: false,
-  attachments: [],
-  datasets: [],
   ownerGroup: "testOwnerGroup",
   accessGroups: ["testAccessGroup"],
   instrumentGroup: "testInstrument",
@@ -25,7 +23,7 @@ const mockSample: Sample = {
 
 describe("SamplesService", () => {
   let service: SamplesService;
-  let sampleModel: Model<Sample>;
+  let sampleModel: Model<SampleClass>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -33,7 +31,7 @@ describe("SamplesService", () => {
         ConfigService,
         SamplesService,
         {
-          provide: getModelToken("Sample"),
+          provide: getModelToken("SampleClass"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockSample),
             constructor: jest.fn().mockResolvedValue(mockSample),
@@ -46,7 +44,7 @@ describe("SamplesService", () => {
     }).compile();
 
     service = await module.resolve<SamplesService>(SamplesService);
-    sampleModel = module.get<Model<Sample>>(getModelToken("Sample"));
+    sampleModel = module.get<Model<SampleClass>>(getModelToken("SampleClass"));
   });
 
   it("should be defined", () => {

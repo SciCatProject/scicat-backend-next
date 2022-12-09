@@ -309,7 +309,8 @@ export class DatasetClass extends OwnableClass {
   attachments: Attachment[];
 
   @ApiProperty({
-    type: "array",
+    isArray: true,
+    type: OrigDatablock,
     items: { $ref: getSchemaPath(OrigDatablock) },
     description:
       "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
@@ -318,7 +319,8 @@ export class DatasetClass extends OwnableClass {
   origdatablocks: OrigDatablock[];
 
   @ApiProperty({
-    type: "array",
+    isArray: true,
+    type: Datablock,
     items: { $ref: getSchemaPath(Datablock) },
     description:
       "When archiving a dataset all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a dataset consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",

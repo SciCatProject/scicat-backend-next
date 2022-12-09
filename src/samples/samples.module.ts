@@ -4,7 +4,7 @@ import { SamplesController } from "./samples.controller";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Sample, SampleSchema } from "./schemas/sample.schema";
+import { SampleClass, SampleSchema } from "./schemas/sample.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ConfigModule } from "@nestjs/config";
 
@@ -15,11 +15,11 @@ import { ConfigModule } from "@nestjs/config";
     DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
-        name: Sample.name,
+        name: SampleClass.name,
         useFactory: () => {
           const schema = SampleSchema;
 
-          schema.pre<Sample>("save", function (next) {
+          schema.pre<SampleClass>("save", function (next) {
             // if _id is empty or different than sampleId,
             // set _id to sampleId
             if (!this._id) {

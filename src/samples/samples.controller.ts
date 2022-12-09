@@ -15,12 +15,25 @@ import {
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiExtraModels,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Sample, SampleDocument } from "./schemas/sample.schema";
+import {
+  SampleClass,
+  SampleDocument,
+  SampleWithAttachmentsAndDatasets,
+} from "./schemas/sample.schema";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -29,6 +42,12 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
+import {
+  filterDescription,
+  filterExample,
+  fullQueryDescription,
+  fullQueryExample,
+} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -42,26 +61,58 @@ export class SamplesController {
 
   // POST /samples
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Sample))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, SampleClass),
+  )
   @UseInterceptors(
-    new FormatPhysicalQuantitiesInterceptor<Sample>("sampleCharacteristics"),
+    new FormatPhysicalQuantitiesInterceptor<SampleClass>(
+      "sampleCharacteristics",
+    ),
   )
   @HttpCode(HttpStatus.OK)
   @Post()
-  async create(@Body() createSampleDto: CreateSampleDto): Promise<Sample> {
+  @ApiOperation({
+    summary: "It creates a new sample.",
+    description:
+      "It creates a new sample and returns it completed with systems fields.",
+  })
+  @ApiExtraModels(CreateSampleDto)
+  @ApiBody({
+    type: CreateSampleDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: SampleClass,
+    description: "Create a new sample and return its representation in SciCat",
+  })
+  async create(@Body() createSampleDto: CreateSampleDto): Promise<SampleClass> {
     return this.samplesService.create(createSampleDto);
   }
 
   // GET /samples
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
   @Get()
+  @ApiOperation({
+    summary: "It returns a list of samples",
+    description:
+      "It returns a list of samples. The list returned can be modified by providing a filter.",
+  })
   @ApiQuery({
     name: "filters",
-    description: "Database filters to apply when retrieve all samples",
+    description:
+      "Database filters to apply when retrieve samples\n" + filterDescription,
     required: false,
+    type: String,
+    example: filterExample,
   })
-  async findAll(@Query("filters") filters?: string): Promise<Sample[]> {
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SampleClass,
+    isArray: true,
+    description: "Return the samples requested",
+  })
+  async findAll(@Query("filters") filters?: string): Promise<SampleClass[]> {
     const sampleFilters: IFilters<SampleDocument, ISampleFields> = JSON.parse(
       filters ?? "{}",
     );
@@ -70,11 +121,31 @@ export class SamplesController {
 
   // GET /samples/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
   @Get("/fullquery")
+  @ApiOperation({
+    summary: "It returns a list of samples matching the query provided.",
+    description:
+      "It returns a list of samples matching the query provided.<br>This endpoint still needs some work on the query specification.",
+  })
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Full query filters to apply when retrieve samples\n" +
+      fullQueryDescription,
+    required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SampleClass,
+    isArray: true,
+    description: "Return samples requested",
+  })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<Sample[]> {
+  ): Promise<SampleClass[]> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -84,28 +155,74 @@ export class SamplesController {
 
   // GET /samples/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
   @Get("/metadataKeys")
+  @ApiOperation({
+    summary:
+      "It returns a list of sample metadata keys matching the query provided.",
+    description:
+      "It returns a list of sample metadata keys matching the query provided.",
+  })
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Full query filters to apply when retrieve sample metadata keys",
+    required: false,
+    type: String,
+    // NOTE: This is custom example because the service function metadataKeys expects input like the following.
+    // eslint-disable-next-line @typescript-eslint/quotes
+    example: '{ "fields": { "metadataKey": "chemical_formula" } }',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: String,
+    isArray: true,
+    description: "Return sample metadata keys requested",
+  })
   async metadataKeys(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() { filters }: { filters: string },
   ): Promise<string[]> {
+    const parsedInput = JSON.parse(filters ?? "{}");
+
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+      fields: parsedInput.fields ?? {},
+      limits: parsedInput.limits ?? {},
     };
+
     return this.samplesService.metadataKeys(parsedFilters);
   }
 
   // GET /samples/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
   @Get("/findOne")
-  async findOne(@Query("filter") filters?: string): Promise<Sample | null> {
+  @ApiOperation({
+    summary: "It returns a sample matching the query provided.",
+    description: "It returns sample matching the query provided.",
+  })
+  @ApiQuery({
+    name: "filters",
+    description: "Filters to apply when retrieve sample\n" + filterDescription,
+    required: false,
+    type: String,
+    example: filterExample,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SampleWithAttachmentsAndDatasets,
+    description: "Return sample requested",
+  })
+  async findOne(
+    @Query() { filters }: { filters: string },
+  ): Promise<SampleWithAttachmentsAndDatasets | null> {
     const jsonFilters: IFilters<SampleDocument, ISampleFields> = filters
       ? JSON.parse(filters)
       : {};
     const whereFilters = jsonFilters.where ?? {};
-    const sample = await this.samplesService.findOne(whereFilters);
+
+    const sample = (
+      await this.samplesService.findOne(whereFilters)
+    )?.toObject() as SampleWithAttachmentsAndDatasets;
 
     if (sample) {
       const includeFilters = jsonFilters.include ?? [];
@@ -119,12 +236,9 @@ export class SamplesController {
               break;
             }
             case "datasets": {
-              const datasets = await this.datasetsService.findAll({
+              sample.datasets = await this.datasetsService.findAll({
                 where: { sampleId: sample.sampleId },
               });
-              if (datasets) {
-                sample.datasets = datasets as DatasetClass[];
-              }
               break;
             }
           }
@@ -137,30 +251,83 @@ export class SamplesController {
 
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Sample))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
   @Get("/:id")
-  async findById(@Param("id") id: string): Promise<Sample | null> {
+  @ApiOperation({
+    summary: "It returns the sample requested.",
+    description: "It returns the sample requested through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SampleClass,
+    description: "Return sample with id specified",
+  })
+  async findById(@Param("id") id: string): Promise<SampleClass | null> {
     return this.samplesService.findOne({ sampleId: id });
   }
 
   // PATCH /samples/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Sample))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, SampleClass),
+  )
   @UseInterceptors(
-    new FormatPhysicalQuantitiesInterceptor<Sample>("sampleCharacteristics"),
+    new FormatPhysicalQuantitiesInterceptor<SampleClass>(
+      "sampleCharacteristics",
+    ),
   )
   @Patch("/:id")
+  @ApiOperation({
+    summary: "It updates the sample.",
+    description:
+      "It updates the sample specified through the id specified. it updates only the specified fields.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to modify",
+    type: String,
+  })
+  @ApiExtraModels(UpdateSampleDto)
+  @ApiBody({
+    type: UpdateSampleDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SampleClass,
+    description:
+      "Update an existing sample and return its representation in SciCat",
+  })
   async update(
     @Param("id") id: string,
     @Body() updateSampleDto: UpdateSampleDto,
-  ): Promise<Sample | null> {
+  ): Promise<SampleClass | null> {
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
 
   // DELETE /samples/:id
   @UseGuards()
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Sample))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, SampleClass),
+  )
   @Delete("/:id")
+  @ApiOperation({
+    summary: "It deletes the sample.",
+    description: "It delete the sample specified through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned",
+  })
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.samplesService.remove({ sampleId: id });
   }
@@ -224,8 +391,6 @@ export class SamplesController {
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
   ): Promise<Attachment | null> {
-    //console.log("SampleId: ", sampleId);
-    //console.log("AttachmentIs: ", attachmentId);
     return this.attachmentsService.findOne({
       id: attachmentId,
       sampleId: sampleId,

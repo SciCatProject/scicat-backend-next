@@ -18,7 +18,7 @@ import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
 import { ProposalClass } from "src/proposals/schemas/proposal.schema";
 import { PublishedData } from "src/published-data/schemas/published-data.schema";
-import { Sample } from "src/samples/schemas/sample.schema";
+import { SampleClass } from "src/samples/schemas/sample.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
@@ -36,7 +36,7 @@ type Subjects =
       | typeof Policy
       | typeof ProposalClass
       | typeof PublishedData
-      | typeof Sample
+      | typeof SampleClass
       | typeof User
       | typeof UserIdentity
       | typeof UserSettings
@@ -93,9 +93,11 @@ export class CaslAbilityFactory {
     can(Action.Update, PublishedData);
     can(Action.Create, PublishedData);
 
-    can(Action.Create, Sample);
-    can(Action.Read, Sample, { ownerGroup: { $in: user.currentGroups } });
-    can(Action.Read, Sample, { accessGroups: { $in: user.currentGroups } });
+    can(Action.Create, SampleClass);
+    can(Action.Read, SampleClass, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Read, SampleClass, {
+      accessGroups: { $in: user.currentGroups },
+    });
 
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
