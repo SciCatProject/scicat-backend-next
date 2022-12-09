@@ -113,7 +113,7 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
-    const username = (this.request?.user as JWTUser).username;
+    const username = (this.request.user as JWTUser).username;
     const createdPolicy = new this.policyModel(
       addCreatedFields(createPolicyDto, username),
     );
@@ -156,7 +156,7 @@ export class PoliciesService implements OnModuleInit {
     filter: FilterQuery<PolicyDocument>,
     updatePolicyDto: UpdatePolicyDto,
   ): Promise<Policy | null> {
-    const username = (this.request?.user as JWTUser).username;
+    const username = (this.request.user as JWTUser).username;
     return this.policyModel
       .findOneAndUpdate(filter, addUpdatedField(updatePolicyDto, username), {
         new: true,
