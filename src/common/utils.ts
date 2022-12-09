@@ -591,7 +591,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline as PipelineStage[];
 };
 
-export const addCreatedFields = <T>(
+export const addCreatedByFields = <T>(
   obj: T,
   username: string,
 ): T & {
@@ -605,7 +605,7 @@ export const addCreatedFields = <T>(
   };
 };
 
-export const addUpdatedField = <T>(
+export const addUpdatedByField = <T>(
   obj: T,
   username: string,
 ): T & {

@@ -7,7 +7,7 @@ import { CreateAttachmentDto } from "./dto/create-attachment.dto";
 import { UpdateAttachmentDto } from "./dto/update-attachment.dto";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { addCreatedFields, addUpdatedField } from "src/common/utils";
+import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {
@@ -19,7 +19,7 @@ export class AttachmentsService {
   async create(createAttachmentDto: CreateAttachmentDto): Promise<Attachment> {
     const username = (this.request?.user as JWTUser).username;
     const createdAttachment = new this.attachmentModel(
-      addCreatedFields(createAttachmentDto, username),
+      addCreatedByFields(createAttachmentDto, username),
     );
     return createdAttachment.save();
   }
@@ -45,7 +45,7 @@ export class AttachmentsService {
     return this.attachmentModel
       .findOneAndUpdate(
         filter,
-        addUpdatedField(updateAttachmentDto, username),
+        addUpdatedByField(updateAttachmentDto, username),
         { new: true },
       )
       .exec();

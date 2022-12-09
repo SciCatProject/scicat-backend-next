@@ -5,8 +5,8 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import {
   parseLimitFilters,
-  addCreatedFields,
-  addUpdatedField,
+  addCreatedByFields,
+  addUpdatedByField,
 } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
@@ -34,7 +34,7 @@ export class PublishedDataService {
   ): Promise<PublishedData> {
     const username = (this.request.user as JWTUser).username;
     const createdPublished = new this.publishedDataModel(
-      addCreatedFields<CreatePublishedDataDto>(
+      addCreatedByFields<CreatePublishedDataDto>(
         createPublishedDataDto,
         username,
       ),
@@ -73,7 +73,7 @@ export class PublishedDataService {
     return this.publishedDataModel
       .findOneAndUpdate(
         filter,
-        addUpdatedField(updatePublishedDataDto, username),
+        addUpdatedByField(updatePublishedDataDto, username),
         {
           new: true,
         },

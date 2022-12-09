@@ -17,7 +17,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { addCreatedFields, addUpdatedField } from "src/common/utils";
+import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
 import { REQUEST } from "@nestjs/core";
 
 @Injectable()
@@ -115,7 +115,7 @@ export class PoliciesService implements OnModuleInit {
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
     const username = (this.request.user as JWTUser).username;
     const createdPolicy = new this.policyModel(
-      addCreatedFields(createPolicyDto, username),
+      addCreatedByFields(createPolicyDto, username),
     );
     return createdPolicy.save();
   }
@@ -158,7 +158,7 @@ export class PoliciesService implements OnModuleInit {
   ): Promise<Policy | null> {
     const username = (this.request.user as JWTUser).username;
     return this.policyModel
-      .findOneAndUpdate(filter, addUpdatedField(updatePolicyDto, username), {
+      .findOneAndUpdate(filter, addUpdatedByField(updatePolicyDto, username), {
         new: true,
       })
       .exec();

@@ -5,8 +5,8 @@ import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
 import {
-  addCreatedFields,
-  addUpdatedField,
+  addCreatedByFields,
+  addUpdatedByField,
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
@@ -32,7 +32,7 @@ export class OrigDatablocksService {
   ): Promise<OrigDatablock> {
     const username = (this.request.user as JWTUser).username;
     const createdOrigDatablock = new this.origDatablockModel(
-      addCreatedFields(createOrigdatablockDto, username),
+      addCreatedByFields(createOrigdatablockDto, username),
     );
     return createdOrigDatablock.save();
   }
@@ -75,7 +75,7 @@ export class OrigDatablocksService {
     return this.origDatablockModel
       .findOneAndUpdate(
         filter,
-        addUpdatedField(updateOrigdatablockDto, username),
+        addUpdatedByField(updateOrigdatablockDto, username),
         { new: true },
       )
       .exec();

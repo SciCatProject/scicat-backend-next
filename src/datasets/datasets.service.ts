@@ -13,8 +13,8 @@ import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
-  addCreatedFields,
-  addUpdatedField,
+  addCreatedByFields,
+  addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
@@ -47,7 +47,7 @@ export class DatasetsService {
     const username = (this.request.user as JWTUser).username;
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
-      addCreatedFields(createDatasetDto, username),
+      addCreatedByFields(createDatasetDto, username),
     );
 
     return createdDataset.save();
@@ -144,7 +144,7 @@ export class DatasetsService {
     const existingDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
-        addUpdatedField(
+        addUpdatedByField(
           createDatasetDto as UpdateQuery<DatasetDocument>,
           username,
         ),
@@ -156,7 +156,7 @@ export class DatasetsService {
     if (!existingDataset) {
       // no luck. we need to create a new dataset with the provided id
       const createdDataset = new this.datasetModel(
-        addCreatedFields(createDatasetDto, username),
+        addCreatedByFields(createDatasetDto, username),
       );
       createdDataset.set("pid", id);
       return await createdDataset.save();
@@ -190,7 +190,7 @@ export class DatasetsService {
     const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
         { pid: id },
-        addUpdatedField(
+        addUpdatedByField(
           updateDatasetDto as UpdateQuery<DatasetDocument>,
           username,
         ),
