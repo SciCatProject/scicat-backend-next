@@ -38,12 +38,12 @@ export class FullQueryInterceptor implements NestInterceptor {
                 const { valueRequested, unitRequested } =
                   convertToRequestedUnit(currentValue, currentUnit, unit);
                 lodash.update(
-                  scientificMetadata,
+                  scientificMetadata as Object,
                   `${lhs}.unit`,
                   () => unitRequested,
                 );
                 lodash.update(
-                  scientificMetadata,
+                  scientificMetadata as Object,
                   `${lhs}.value`,
                   () => valueRequested,
                 );

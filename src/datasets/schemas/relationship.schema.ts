@@ -2,10 +2,10 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
-export type RelationshipDocument = Relationship & Document;
+export type RelationshipDocument = RelationshipClass & Document;
 
 @Schema()
-export class Relationship {
+export class RelationshipClass {
   @ApiProperty({
     type: String,
     required: true,
@@ -23,4 +23,4 @@ export class Relationship {
   relationship: string;
 }
 
-export const RelationshipSchema = SchemaFactory.createForClass(Relationship);
+export const RelationshipSchema = SchemaFactory.createForClass(RelationshipClass);

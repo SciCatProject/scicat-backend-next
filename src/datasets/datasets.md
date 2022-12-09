@@ -11,8 +11,8 @@ flowchart TD
     A[CreateDatasetDto] -- PartialType --> B[UpdateDatasetDto]
     A -- ExtendedBy --> C[CreateRawDatasetDto]
     A -- ExtendedBy --> D[CreateDerivedDatasetDto]
-    C[CreateDatasetDto] -- PartialType --> E[UpdateRawDatasetDto]
-    D[CreateDatasetDto] -- PartialType --> F[UpdateDerivedDatasetDto]
+    C[CreateRawDatasetDto] -- PartialType --> E[UpdateRawDatasetDto]
+    D[CreateDerivedDatasetDto] -- PartialType --> F[UpdateDerivedDatasetDto]
 ```
 
 Teh Model definition is not ideal, but it works at this time. It will be addressed after the backend migration to V4.
@@ -25,277 +25,561 @@ This object is the base class for dataset and it is extended by the Raw and Deri
 __Definition__
 
 ```yaml
-name: DatasetClass
+name: Dataset
 dto: 
-  file: dto/Dataset.dto.ts
-  name: DatasetDto
+  file: datasets/dto/create-dataset.dto.ts
+  name: CreateDatasetDto
+  extendes: OwnableDto
 class:
-  file: schemas/dataset.schema.ts
-  name: DatasetClass
+  file: datasets/schemas/dataset.schema.ts
+  names:
+    class: DatasetClass
+    schema: DatasetSchema
   extends: OwnableClass
-  model:
+  database:
     collection: Dataset
     minimize: false
     toJson:
       getters: true
-schema:
-  name: DatasetSchema
+legacy:
+  files: 
+    dataset: https://github.com/SciCatProject/backend/blob/master/common/models/dataset.json
+    raw-dataset: https://github.com/SciCatProject/backend/blob/master/common/models/raw-dataset.json
+    derived-dataset: https://github.com/SciCatProject/backend/blob/master/common/models/derived-dataset.json
 fields:
   - name: pid
     type: string
+    legacy:
+      type: string
+      id: true
+      description: "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/"
+      defaultFn: uuidv4
+      file: dataset
     dto:
       type: string
-      validation: IsString
-    swagger:
-      type: String
-      default: "function genUUID(): string { return process.env.PID_PREFIX + uuidv4(); }"
-      description: "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/"
-    model:
-      type: String
-      unique: true
-      required: true
-      default: "function genUUID(): string { return process.env.PID_PREFIX + uuidv4(); }"
+      readonly: true
+      validation: 
+        IsString: true
+      swagger:
+        type: String
+        default: "function genUUID(): string { return process.env.PID_PREFIX + uuidv4(); }"
+        description: "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/"
+    schema:
+      type: string
+      swagger:
+        type: String
+        default: "function genUUID(): string { return process.env.PID_PREFIX + uuidv4(); }"
+        description: "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/"
+      database:
+        type: String
+        unique: true
+        required: true
+        default: "function genUUID(): string { return process.env.PID_PREFIX + uuidv4(); }"
   - name: _id
     type: string
-    model: 
+    schema: 
       type: string
-  - name: onwer
+      database:
+        type: String
+  - name: owner
     type: string
-    swagger:
-      type: String,
-      description: "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
-    model:
-      type: String
+    legacy:
+      type: string
       required: true
-      index: true 
+      index: true
+      description: "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String,
+        description: "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
+      database:
+        type: String
+        required: true
+        index: true 
   - name: ownerEmail
     type: string
-    swagger: 
-      type: String
+    legacy:
+      type: string
       description: "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons."
-    model:
-      type: String
+      file: dataset
+    schema:
+      type: string
+      swagger: 
+        type: String
+        required: false
+        description: "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons."
+      database:
+        type: String
+        required: false
   - name: orcidOfOwner
     type: string
-    swagger:
-      type: String,
+    legacy:
+      type: string
       description: "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons."
-    model:
-      type: String
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons."
+      database:
+        type: String
+        required: false
   - name: contactEmail
     type: string
-    swagger:
-      type: String,
-      description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
-    model:
-      type: String
+    legacy:
+      type: string
       required: true
       index: true
+      description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+      file: dataset
+    schema:
+      swagger:
+        type: String,
+        required: true,
+        description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+      database:
+        type: String
+        required: true
+        index: true
   - name: sourceFolder
     type: string
-    swagger: 
-      type: String
-      description: "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
-    model:
-      type: String
+    legacy:
+      type: string
       required: true
       index: true
-      set: "function stripSlash(v: string): string { if (v === "/") return v; return v.replace(/\/$/, "");"
+      description: "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
+      file: dataset
+    schema:
+      type: string
+      swagger: 
+        type: String
+        required: true,
+        description: "Absolute file path on file server containing the files of this dataset, e.g. /some/path/to/sourcefolder. In case of a single file dataset, e.g. HDF5 data, it contains the path up to, but excluding the filename. Trailing slashes are removed."
+      database:
+        type: String
+        required: true
+        index: true
+        set: "function stripSlash(v: string): string { if (v === "/") return v; return v.replace(/\/$/, "");"
   - name: sourceFolderHost
     type: string
-    swagger:
-      type: String
-      description: "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
-    model:
-      type: String
+    legacy:
+      type: string
+      required: false
       index: true
+      description: "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
+      database:
+        type: String
+        required: false
+        index: true
   - name: size
     type: number
-    swagger:
-      type: Number,
-      description: "Total size of all source files contained in source folder on disk when unpacked"
-    model:
-      type: Number, 
+    legacy:
+      type: number
       index: true
+      description: "Total size of all source files contained in source folder on disk when unpacked"
+      file: dataset
+    schema:
+      type: number
+      swagger:
+        type: Number
+        default: 0
+        required: true
+        description: "Total size of all source files contained in source folder on disk when unpacked"
+      database:
+        type: Number, 
+        required: true
+        index: true,
+        default: 0
   - name: packedSize
     type: number
-    swagger:
-      type: Number,
+    legacy:
+      type: number
       description: "Total size of all datablock package files created for this dataset"
-    model:
-      type: Number
+      file: dataset
+    schema:
+      type: number
+      swagger:
+        type: Number
+        default: 0
+        required: true
+        description: "Total size of all datablock package files created for this dataset"
+      database:
+        type: Number
+        rewuired: true
+        default: 0
   - name: numberOfFiles
     type: number
-    swagger:
-      type: Number,
+    legacy:
+      type: number
       description: "Total number of lines in filelisting of all OrigDatablocks for this dataset"
-    model:
-      type: Number
+      file: dataset
+    schema: 
+      type: number
+      swagger:
+        type: Number
+        required: true
+        default: 0
+        description: "Total number of lines in filelisting of all OrigDatablocks for this dataset"
+      database:
+        type: Number
+        required: true
+        default: 0
   - name: numberOfFilesArchived
     type: number
-    swagger:
-      type: Number,
+    legacy:
+      type: number
       description: "Total number of lines in filelisting of all Datablocks for this dataset"
-    model:
-      type: Number
+      file: dataset
+    schema:
+      type: number
+      swagger:
+        type: Number
+        default: 0
+        required: true
+        description: "Total number of lines in filelisting of all Datablocks for this dataset"
+      database:
+        type: Number
+        default: 0
+        required: true
   - name: creationTime
-    type: Date;
-    swagger:
-      type: Date,
+    type: Date
+    legacy:
+      type: date
+      required: true
+      index: true
       description: "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
-    model:
+      file: dataset
+    schema:
+      type: Date
+      swagger:
+        type: Date,
+        required: true
+        description: "Time when dataset became fully available on disk, i.e. all containing files have been written. Format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server."
+    database:
       type: Date
       required: true
       index: true
   - name: type
     type: string
-    swagger:
-      type: String,
-      description: "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models"
-    model:
-      type: String
+    legacy:
+      type: string
       required: true
-      enum: [ DatasetType.Raw, DatasetType.Derived ]
       index: true
+      description: "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models"
+      file: dataset
+    model:
+      swagger:
+        type: String,
+        required: true
+        description: "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models"
+      model:
+        type: String
+        required: true
+        enum: [ DatasetType.Raw, DatasetType.Derived ]
+        index: true
   - name: validationStatus
     type: string
-    swagger:
-      type: String,
+    legacy:
+      type: string
       description: "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
+      file: dataset
     model:
-      type: String
+      swagger:
+        type: String,
+        required: false
+        description: "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons"
+      database:
+        type: String
+        required: false
   - name: keywords
     type: string[]
-    swagger: 
-      type: [String],
+    legacy:
+      type: [string]
       description: "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
-    model: 
-      type: [String]
+      file: dataset
+    schema:
+      type: string[]
+      swagger: 
+        type: [String],
+        required: false,
+        description: "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs"
+      database: 
+        type: [String]
+        required: false
   - name: description
     type: string
-    swagger:
-      type: String,
-      description: "Free text explanation of contents of dataset",
-    model:
-      type: String
+    legacy:
+      type: string
+      description: "Free text explanation of contents of dataset"
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "Free text explanation of contents of dataset",
+      database:
+        type: String
+        required: false
   - name: datasetName
     type: string;
-    swagger:
-      type: String,
+    legacy:
+      type: string
+      index: true
       description: "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder"
-    model:
-      default: |
-        function datasetName() { 
+      file: dataset
+    schema:
+      swagger:
+        type: String
+        required: false
+        description: "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder"
+      database:
+        type: String
+        required: false
+        default: |
+          function datasetName() { 
             const sourceFolder = (this as DatasetDocument).sourceFolder; 
             if (!sourceFolder) return ""; 
             const arr = sourceFolder.split("/");
             if (arr.length == 1) return arr[0];
             else return arr[arr.length - 2] + "/" + arr[arr.length - 1];
-        },
+          },
   - name: classification
-    type: string;
-    swagger:
-      type: String,
-      description: "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'",
-    model:
-      type: String
+    type: string
+    legacy:
+      type: string
+      description: "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'"
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String,
+        required: false
+        description: "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'",
+      database:
+        type: String
+        required: false
   - name: license
     type: string;
-    swagger:
-      type: String
+    legacy:
+      type: string
       description: "Name of license under which data can be used"
-    model:
-      type: String
+      file: dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "Name of license under which data can be used"
+      database:
+        type: String
+        required: false
   - name: version
-    type: string;
-    swagger: 
-      type: String
+    type: string
+    legacy:
+      type: string
       description: "Version of API used in creation of dataset"
-    model:
-      type: String
+      file: dataset
+    schema:
+      type: string
+      swagger: 
+        type: String
+        required: false
+        description: "Version of API used in creation of dataset"
+      database:
+        type: String
+        required: false
   - name: isPublished
     type: boolean
-    swagger:
-      type: Boolean
+    legacy:
+      type: boolean
+      index: true,
       description: "Flag is true when data are made publically available"
-    model:
-      type: Boolean
-      default: false
+      file: dataset
+    schema:
+      type: boolean
+      swagger:
+        type: Boolean
+        required: true
+        description: "Flag is true when data are made publically available"
+      database:
+        type: Boolean
+        required: true
+        default: false
   - name: history
     type: History[]
-    swagger:
-      type: History
-      description: "List of objects containing old value and new value"
-    model:
-      type: [HistorySchema]
+    legacy:
+      type: embedsMany
+      model: Message
+      property: history
+      options:
+        validate: false
+        forceId: false
+        persistent: true
+      file: dataset
+    schema:
+      type: History[]
+      swagger:
+        type: History
+        required: false
+        default: {}
+        description: "List of objects containing old value and new value"
+      database:
+        type: [HistorySchema]
+        required: false
+        default: {}
   - name: datasetlifecycle
     type: Lifecycle
-    swagger:
+    legacy:
+      type: embedsOne
+      model: DatasetLifecycle
+      property: datasetlifecycle
+      options:
+        validate: true
+        forceId: false
+      file: dataset
+    schema:
       type: Lifecycle
-      required: false
-      description: "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems"
-    model:
-      type: LifecycleSchema
-      default: {}
-      required: false
+      swagger:
+        type: Lifecycle
+        required: false
+        default: {}
+        description: "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems"
+      database:
+        type: LifecycleSchema
+        default: {}
+        required: false
   - name: techniques
     type: Technique[]
-    swagger:
-      type: "array"
-      items_ref_schema: Technique
-      description: "Stores the metadata information for techniques"
-    model: 
-      type: [TechniqueSchema]
+    legacy:
+      type: embedsMany
+      model: Technique
+      property: techniques
+      file: dataset
+    schema:
+      type: Technique[]
+      swagger:
+        type: "array"
+        items_ref_schema: Technique
+        required: false
+        default: []
+        description: "Stores the metadata information for techniques"
+      database: 
+        type: [TechniqueSchema]
+        required: false
+        default: []
   - name: relationships
     type: Relationship[]
-    swagger: 
-      type: "array"
-      items_ref_schema: Relationship
-      description: "Stores the relationships with other datasets"
-    model:
-      type: [RelationshipSchema]
+    schema:
+      type: Relationship[]
+      swagger: 
+        type: "array"
+        items_ref_schema: Relationship
+        required: false
+        default: []
+        description: "Stores the relationships with other datasets"
+      database:
+        type: [RelationshipSchema]
+        required: false
+        default: []
   - name: sharedWith
     type: string[]
-    swagger:
-      type: [String]
+    legacy: 
+      type: [string],
       description: "List of users that the dataset has been shared with"
-    model:
-      type: [String]
+      file: dataset
+    schema:
+      type: string[]
+      swagger:
+        type: [String]
+        required: false
+        default: []
+        description: "List of users that the dataset has been shared with"
+      database:
+        type: [String]
+        required: false
+        default: []
   - name: attachments
     type: Attachment[]
-    swagger:
-      type: "array"
-      items_ref_schema: Attachment
-      description: "Small less than 16 MB attachments, envisaged for png/jpeg previews"
-    model:
-      type: [AttachmentSchema]
+    legacy:
+      type: hasMany
+      model: Attachment
+      foreignKey: ""
+      file: dataset
+    schema:
+      type: Attachment[]
+      swagger:
+        type: "array"
+        items_ref_schema: Attachment
+        description: "Small less than 16 MB attachments, envisaged for png/jpeg previews"
+      database:
+        type: [AttachmentSchema]
   - name: origdatablocks
     type: OrigDatablock[]
-    swagger:
-      type: "array"
-      items_ref_schema: OrigDatablock
-      description: "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets."
-    model:
-      type: [OrigDatablockSchema]
+    legacy:
+      type: hasMany
+      model: OrigDatablock
+      foreignKey: ""
+      file: dataset
+    schema:
+      type: OrigDatablock[]
+      swagger:
+        type: "array"
+        items_ref_schema: OrigDatablock
+        description: "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets."
+      database:
+        type: [OrigDatablockSchema]
   - name: datablocks
     type: Datablock[]
-    swagger:
-      type: "array",
-      items_ref_schema: Datablock
-      description: "When archiving a dataset all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a dataset consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
-    model:
-      type: [DatablockSchema]
+    legacy:
+      type: hasMany
+      model: Datablock
+      foreignKey: ""
+      file: dataset
+    schema:
+      type: Datablock[]
+      swagger:
+        type: "array",
+        items_ref_schema: Datablock
+        description: "When archiving a dataset all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a dataset consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
+      database:
+        type: [DatablockSchema]
   - name: scientificMetadata
     type: Record<string, unknown>
-    swagger:
-      type: Object
-      required: false
-      default: {}
-      description: "JSON object containing the scientific metadata"
-    model:
-      type: Object
-      required: false
-      default: {}
+    schema:
+      type: Record<string, unknown>
+      swagger:
+        type: Object
+        required: false
+        default: {}
+        description: "JSON object containing the scientific metadata"
+      detabase:
+        type: Object
+        required: false
+        default: {}
+  - name: dataQualityMetrics
+    legacy:
+      type: number
+      description: "Rate the quality of a dataset. The field is only relevant for user working on a given proposal and know what type of data quality this rating refer to. A number between 1-3 that the user could use to rate a dataset. 1 means bad, 2 means good, 3 means very good"
+  - name: comments
+    legacy: 
+      type: string
+      description: "Comment the user has about a given dataset."
+  - name: publisheddata
+    legacy:
+      type: hasAndBelongsToMany
+      model: PublishedData
   
   #
   # fields related to Raw Datasets
@@ -303,71 +587,120 @@ fields:
   #
   - name: principalInvestigator
     type: string
-    swagger:
-      type: String
-      required: false
-      description: "Email of principal investigator. This field is required if the dataset is a Raw dataset."
-    model:
-      type: String
-      required: false
+    legacy:
+      type: string
+      required: true
+      description: "Email of principal investigator"
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "Email of principal investigator. This field is required if the dataset is a Raw dataset."
+      database:
+        type: String
+        required: false
   - name: endTime
     type: Date
-    swagger:
+    legacy:
+      type: date
+      description: "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server"
+      file: raw-dataset
+    schema:
       type: Date
-      required: false
-      description: "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset."
-    model:
-      type: Date
-      required: false
+      swagger:
+        type: Date
+        required: false
+        description: "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset."
+      dataset:
+        type: Date
+        required: false
   - name: creationLocation
     type: string
-    swagger:
-      type: String
-      required: false
-      description: "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset."
-    model:
-      type: String
-      required: false
+    legacy:
+      type: string
+      required: true
       index: true
+      description": "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name"
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset."
+      model:
+        type: String
+        required: false
+        index: true
   - name: dataFormat
     type: string
-    swagger:
-      type: String
-      required: false
+    legacy:
+      type: string
       description: "Defines format of subsequent scientific meta data, e.g Nexus Version x.y"
-    model:
-      type: String
-      required: false
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "Defines format of subsequent scientific meta data, e.g Nexus Version x.y."
+      database:
+        type: String
+        required: false
   - name: proposalId
     type: string
-    swagger:
-      type: String
-      required: false
-      description: "The ID of the proposal to which the dataset belongs."
-    model:
-      type: String
-      ref: "Proposal"
-      required: false
+    legacy:
+      proposal":
+      type: belongsTo
+      model: Proposal
+      foreignKey: "" 
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "The ID of the proposal to which the dataset belongs."
+      database:
+        type: String
+        ref: "Proposal"
+        required: false
   - name: sampleId
     type: string
-    swagger:
-      type: String
-      required: false
-      description: "ID of the sample used when collecting the data."
-    model:
-      type: String
-      ref: "Sample"
-      required: false
+    legacy:
+      type: belongsTo
+      model: Sample
+      foreignKey": ""
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "ID of the sample used when collecting the data."
+      database:
+        type: String
+        ref: "Sample"
+        required: false
   - name: instrumentId
     type: string
-    swagger:
-      type: String
-      required: false
-      description: "ID of instrument where the data was created"
-    model:
-      type: String
-      ref: "Instrument"
-      required: false
+    legacy:
+      type: belongsTo
+      model: Instrument
+      foreignKey: ""
+      file: raw-dataset
+    schema:
+      type: string
+      swagger:
+        type: String
+        required: false
+        description: "ID of instrument where the data was created"
+      database:
+        type: String
+        ref: "Instrument"
+        required: false
 
   #
   # Derived Dataset
@@ -375,47 +708,84 @@ fields:
   # 
   - name: investigator
     type: string
-    swagger:
-      type: String,
-      required: false
-      description: "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons. This field is required if the dataset is a Derived dataset."
-    model:
-      type: String
-      required: false
-      index: true
+    legacy:
+      type: string
+      required: true
+      index: true,
+      description: "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons"
+      file: derived-dataset
+    schema:
+      type: string
+      swagger:
+        type: String,
+        required: false
+        description: "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons. This field is required if the dataset is a Derived dataset. This file is required if the dataset is a Derived dataset"
+      database:
+        type: String
+        required: false
+        index: true
   - name: inputDatasets
     type: string[]
-    swagger:
-      type: [String],
-      required: false
+    legacy:
+      type: [string]
+      required: true
       description: "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs"
-    model: 
-      type: [String]
-      required: false
+      file: derived-dataset
+    schema:
+      type: string[]
+      swagger:
+        type: [String]
+        required: false
+        description: "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs. This file is required if the dataset is a Derived dataset"
+      database: 
+        type: [String]
+        required: false
   - name: usedSoftware
     type: string[]
-    swagger:
-      type: [String],
+    legacy:
+      type: [string]
+      required: true
       description: "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data"
-    model:
-      type: [String]
-      required: false
+      file: derived-dataset
+    schema:
+      type: string[]
+      swagger:
+        type: [String]
+        required: false
+        description: "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data. This file is required if the dataset is a Derived dataset"
+      database:
+        type: [String]
+        required: false
   - name: jobParameters
     type: Record<string, unknown>
-    swagger:
-      type: Object,
+    legacy:
+      type: object
       description: "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here"
-    model:
-      type: Object
-      required: false
+      file: derived-dataset
+    schema:
+      type: Record<string, unknown>
+      swagger:
+        type: Object
+        required: false
+        description: "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here"
+      database:
+        type: Object
+        required: false
   - name: jobLogData
     type: string
-    swagger:
-      type: String,
-      description: "The output job logfile. Keep the size of this log data well below 15 MB "
-    model: 
+    legacy:
+      type: string
+      description: "The output job logfile. Keep the size of this log data well below 15 MB"
+      file: derived-dataset
+    schema:
       type: String
-      required: false
+      swagger:
+        type: String,
+        required: false
+        description: "The output job logfile. Keep the size of this log data well below 15 MB."
+      database: 
+        type: String
+        required: false
 ```
 
   
