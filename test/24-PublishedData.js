@@ -110,6 +110,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
+/*
   it("should register this new published data", async (done) => {
     nock("http://127.0.0.1:3000", {
       reqheaders: {
@@ -120,6 +121,7 @@ describe("PublishedData: Test of access to published data", () => {
       .reply(200);
     done();
   });
+  */
 
   it("should register this new published data", async () => {
     return request(appUrl)
@@ -160,6 +162,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
+  /*
   it("should resync this new published data", async (done) => {
     nock("http://127.0.0.1:3000", {
       reqheaders: {
@@ -172,6 +175,7 @@ describe("PublishedData: Test of access to published data", () => {
       .reply(200);
     done();
   });
+  */
 
   it("should fetch this new published data", async () => {
     return request(appUrl)
