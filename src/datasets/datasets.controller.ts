@@ -10,10 +10,8 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  Logger,
   HttpCode,
   HttpStatus,
-  Headers,
   HttpException,
 } from "@nestjs/common";
 import {
@@ -22,7 +20,6 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiParam,
-  ApiProperty,
   ApiQuery,
   ApiResponse,
   ApiTags,

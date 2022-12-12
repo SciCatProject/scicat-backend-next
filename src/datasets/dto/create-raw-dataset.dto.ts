@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsObject, IsOptional, IsString } from "class-validator";
+import { IsDateString, IsOptional, IsString } from "class-validator";
 import { CreateDatasetDto } from "./create-dataset.dto";
 
 export class CreateRawDatasetDto extends CreateDatasetDto {
