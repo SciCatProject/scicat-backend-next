@@ -118,8 +118,8 @@ export class JobsService {
           ownerGroup: dataset.ownerGroup,
           sourceFolder: dataset.sourceFolder,
           size: dataset.size,
-          archivable: dataset.datasetlifecycle.archivable,
-          retrievable: dataset.datasetlifecycle.retrievable,
+          archivable: dataset.datasetlifecycle?.archivable,
+          retrievable: dataset.datasetlifecycle?.retrievable,
         }))
       : [];
 
@@ -178,13 +178,13 @@ export class JobsService {
             ownerGroup: dataset.ownerGroup,
             sourceFolder: dataset.sourceFolder,
             size: dataset.size,
-            archiveStatusMessage: dataset.datasetlifecycle.archiveStatusMessage,
+            archiveStatusMessage: dataset.datasetlifecycle?.archiveStatusMessage,
             retrieveStatusMessage:
-              dataset.datasetlifecycle.retrieveStatusMessage,
-            archiveReturnMessage: dataset.datasetlifecycle.archiveReturnMessage,
+              dataset.datasetlifecycle?.retrieveStatusMessage,
+            archiveReturnMessage: dataset.datasetlifecycle?.archiveReturnMessage,
             retrieveReturnMessage:
-              dataset.datasetlifecycle.retrieveReturnMessage,
-            retrievable: dataset.datasetlifecycle.retrievable,
+              dataset.datasetlifecycle?.retrieveReturnMessage,
+            retrievable: dataset.datasetlifecycle?.retrievable,
           }),
         );
 

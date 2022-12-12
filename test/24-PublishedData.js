@@ -15,20 +15,9 @@ let accessToken = null,
   attachmentId = null,
   doi = null;
 
-const testPublishedData = {
-  creator: ["ESS"],
-  publisher: "ESS",
-  publicationYear: 2020,
-  title: "dd",
-  url: "",
-  abstract: "dd",
-  dataDescription: "dd",
-  resourceType: "raw",
-  numberOfFiles: 1,
-  sizeOfArchive: 1,
-  pidArray: [],
-  status: "pending_registration",
-};
+const publishedData = TestData.PublishedData;
+
+const origDataBlock = TestData.OrigDataBlockCorrect1;
 
 const modifiedPublishedData = {
   publisher: "PSI",
@@ -43,52 +32,6 @@ const testdataset = {
 const nonpublictestdataset = {
   ...TestData.RawCorrect,
   ownerGroup: "examplenonpublicgroup",
-};
-
-var testorigDataBlock = {
-  size: 41780189,
-  dataFileList: [
-    {
-      path: "N1039__B410489.tif",
-      size: 8356037,
-      time: "2017-07-24T13:56:30.000Z",
-      uid: "egon.meiera@psi.ch",
-      gid: "p16738",
-      perm: "-rw-rw-r--",
-    },
-    {
-      path: "N1039__B410613.tif",
-      size: 8356038,
-      time: "2017-07-24T13:56:35.000Z",
-      uid: "egon.meiera@psi.ch",
-      gid: "p16738",
-      perm: "-rw-rw-r--",
-    },
-    {
-      path: "N1039__B410729.tif",
-      size: 8356038,
-      time: "2017-07-24T13:56:41.000Z",
-      uid: "egon.meiera@psi.ch",
-      gid: "p16738",
-      perm: "-rw-rw-r--",
-    },
-    {
-      path: "N1039__B410200.tif",
-      size: 8356038,
-      time: "2017-07-24T13:56:18.000Z",
-      uid: "egon.meiera@psi.ch",
-      gid: "p16738",
-      perm: "-rw-rw-r--",
-    },
-    {
-      path: "N1039__B410377.tif",
-      size: 8356038,
-      time: "2017-07-24T13:56:25.000Z",
-      uid: "egon.meiera@psi.ch",
-      gid: "p16738",
-      perm: "-rw-rw-r--",
-    },
-  ],
 };
 
 describe("PublishedData: Test of access to published data", () => {
@@ -124,7 +67,7 @@ describe("PublishedData: Test of access to published data", () => {
   it("adds a published data", async () => {
     return request(appUrl)
       .post("/api/v3/PublishedData")
-      .send(testPublishedData)
+      .send(publishedData)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect("Content-Type", /json/)
@@ -161,12 +104,13 @@ describe("PublishedData: Test of access to published data", () => {
       .then((res) => {
         // store link to this dataset in datablocks
         pid = res.body["pid"];
-        testPublishedData.pidArray.push(pid);
-        testorigDataBlock.datasetId = pid;
-        testorigDataBlock.ownerGroup = res.body.ownerGroup;
+        publishedData.pidArray.push(pid);
+        origDataBlock.datasetId = pid;
+        origDataBlock.ownerGroup = res.body.ownerGroup;
       });
   });
 
+/*
   it("should register this new published data", async (done) => {
     nock("http://127.0.0.1:3000", {
       reqheaders: {
@@ -177,6 +121,7 @@ describe("PublishedData: Test of access to published data", () => {
       .reply(200);
     done();
   });
+  */
 
   it("should register this new published data", async () => {
     return request(appUrl)
@@ -217,6 +162,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
+  /*
   it("should resync this new published data", async (done) => {
     nock("http://127.0.0.1:3000", {
       reqheaders: {
@@ -229,6 +175,7 @@ describe("PublishedData: Test of access to published data", () => {
       .reply(200);
     done();
   });
+  */
 
   it("should fetch this new published data", async () => {
     return request(appUrl)
@@ -323,7 +270,7 @@ describe("PublishedData: Test of access to published data", () => {
   it("adds a new origDatablock", async () => {
     return request(appUrl)
       .post("/api/v3/OrigDatablocks")
-      .send(testorigDataBlock)
+      .send(origDataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
