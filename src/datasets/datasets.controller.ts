@@ -329,7 +329,7 @@ export class DatasetsController {
     return datasets;
   }
 
-  // GET /fullquery
+  // GET /datasets/fullquery
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
@@ -339,7 +339,7 @@ export class DatasetsController {
       "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
       "Full query filters to apply when retrieving datasets\n" +
       fullQueryDescription,
@@ -354,11 +354,11 @@ export class DatasetsController {
     description: "Return datasets requested",
   })
   async fullquery(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() fields: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+      fields: JSON.parse(fields.fields ?? "{}"),
+      limits: JSON.parse(fields.limits ?? "{}"),
     };
     return this.datasetsService.fullquery(parsedFilters);
   }
@@ -443,7 +443,7 @@ export class DatasetsController {
       "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description:
       "Database filters to apply when retrieving datasets\n" + filterDescription,
     required: false,
@@ -456,7 +456,7 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findOne(
-    @Query("filters") queryFilters?: string,
+    @Query("filter") queryFilters?: string,
     //@Headers("filter") headerFilters?: string,
   ): Promise<DatasetClass | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
@@ -496,7 +496,7 @@ export class DatasetsController {
     return dataset;
   }
 
-  // GET /count
+  // GET /datasets/count
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
@@ -508,7 +508,7 @@ export class DatasetsController {
       "It returns a number of datasets matching the filter if provided.<br> the filter format needs to be reviewed.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "where",
     description:
       "Database filters to apply when retrieving datasets\n" + filterDescription,
     required: false,
@@ -520,7 +520,7 @@ export class DatasetsController {
     description: "Return the number of datasets in the following format: { count: integer }",
   })
   async count(
-    @Query("filters") where: string, //FilterQuery<DatasetDocument>,
+    @Query("where") where: string, //FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
     const whereFilters =
       typeof where === "string" || (where as unknown) instanceof String
@@ -566,6 +566,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
+    HistoryInterceptor,
   )
   @Patch("/:pid")
   @ApiOperation({
@@ -596,11 +597,11 @@ export class DatasetsController {
       "Update an existing dataset and return its representation in SciCat",
   })
   async findByIdAndUpdate(
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
     @Body()
     updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
+    return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
   // PUT /datasets/:id
