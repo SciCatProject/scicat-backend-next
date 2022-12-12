@@ -338,6 +338,26 @@ export class SamplesController {
     ability.can(Action.Create, Attachment),
   )
   @Post("/:id/attachments")
+  @ApiOperation({
+    summary: "It creates a new attachment related with this sample.",
+    description:
+      "It creates a new attachment related to the sample id provided and returns it completed with system fields.",
+  })
+  @ApiExtraModels(CreateAttachmentDto)
+  @ApiBody({
+    type: CreateAttachmentDto,
+  })
+  @ApiParam({
+    name: "id",
+    description: "Sample id that this attachment will be related to.",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: Attachment,
+    description:
+      "Create a new attachment related to sample id provided and return its representation in SciCat",
+  })
   async createAttachments(
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
@@ -358,6 +378,22 @@ export class SamplesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:id/attachments")
+  @ApiOperation({
+    summary: "It returns the attachments related to a specific sample.",
+    description:
+      "It returns the attachments related to a sample through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to get attachments related.",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: true,
+    type: Attachment,
+    description: "Return attachments related with sample id specified",
+  })
   async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ sampleId: id });
   }
@@ -387,6 +423,27 @@ export class SamplesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:id/attachments/:fk")
+  @ApiOperation({
+    summary: "It returns the attachment related to a specific sample.",
+    description:
+      "It returns the attachment related to a sample through the sample and attachment ids specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to get attachments related.",
+    type: String,
+  })
+  @ApiParam({
+    name: "fk",
+    description: "Id of the specific attachment to get.",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Attachment,
+    description:
+      "Return one specific attachment by id(fk) related to specified sample id.",
+  })
   async findOneAttachment(
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
@@ -403,6 +460,26 @@ export class SamplesController {
     ability.can(Action.Delete, Attachment),
   )
   @Delete("/:id/attachments/:fk")
+  @ApiOperation({
+    summary: "It deletes the attachment related to a specific sample.",
+    description:
+      "It deletes the attachment specified through the id(fk) related to specific sample.",
+  })
+  @ApiParam({
+    name: "id",
+    description:
+      "Id of the sample that this specific attachment is related with",
+    type: String,
+  })
+  @ApiParam({
+    name: "fk",
+    description: "Id of the attachment to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "No value is returned",
+  })
   async findOneAttachmentAndRemove(
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
@@ -432,6 +509,22 @@ export class SamplesController {
     ability.can(Action.Read, DatasetClass),
   )
   @Get("/:id/datasets")
+  @ApiOperation({
+    summary: "It returns the datasets related to a specific sample.",
+    description:
+      "It returns the datasets related to a sample through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the sample to get datasets related.",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: true,
+    type: DatasetClass,
+    description: "Return all datasets related with sample id specified",
+  })
   async findAllDatasets(
     @Param("id") sampleId: string,
   ): Promise<DatasetClass[] | null> {
