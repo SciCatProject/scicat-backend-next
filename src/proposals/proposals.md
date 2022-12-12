@@ -13,7 +13,7 @@ __Definition__
 item: Proposal
 dto: 
   file: proposals/dto/create-proposal.dto.ts
-  name: ProposalDto
+  name: CreateProposalDto
   extends: OwnableDto
 model:
   file: proposals/schemas/proposal.schema.ts

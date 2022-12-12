@@ -2,15 +2,16 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
-export type TechniqueDocument = Technique & Document;
+export type TechniqueDocument = TechniqueClass & Document;
 
 @Schema()
-export class Technique {
+export class TechniqueClass {
   @ApiProperty({
     type: String,
-    description: "Persistent Identifier dervied from UUIDv4",
+    required: true,
+    description: "Persistent Identifier of the technique. Usually it is a UUIDv4",
   })
-  @Prop({ type: String, sparse: true })
+  @Prop({ type: String, required: true, sparse: true })
   pid: string;
 
   @ApiProperty({
@@ -22,4 +23,4 @@ export class Technique {
   name: string;
 }
 
-export const TechniqueSchema = SchemaFactory.createForClass(Technique);
+export const TechniqueSchema = SchemaFactory.createForClass(TechniqueClass);

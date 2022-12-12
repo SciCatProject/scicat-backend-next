@@ -354,6 +354,7 @@ export class DatasetsService {
           previousValue: dataset[updatedField as keyof UpdateDatasetDto],
         };
       });
+      dataset.history = dataset.history ?? []
       dataset.history.push({
         updatedBy: (req.user as JWTUser).username,
         ...JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),

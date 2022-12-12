@@ -131,7 +131,7 @@ const TestData = {
     numberOfFiles: 0,
     numberOfFilesArchived: 0,
     creationTime: "2011-09-14T06:08:25.000Z",
-    description: "None",
+    description: "None, The ultimate test",
     datasetName: "Test raw dataset",
     classification: "AV=medium,CO=low",
     license: "CC BY-SA 4.0",
@@ -140,6 +140,7 @@ const TestData = {
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
     type: "raw",
+    keywords: ['sls','protein']
   },
 
   RawWrong_1: {
@@ -398,7 +399,7 @@ const TestData = {
       },
     ],
   },
-
+  
   OrigDataBlockCorrect2: {
     size: 41780289,
     dataFileList: [
@@ -456,6 +457,120 @@ const TestData = {
   OrigDataBlockWrong: {
     size: "This is wrong",
   },
+
+  DatasetLifecycle_query_1: {
+    fields: {
+      ownerGroup: ["p12345", "p10029"],
+      text: "'ultimate test'",
+      creationTime: {
+        begin: "2011-09-13",
+        end: "2011-09-15",
+      },
+      "datasetlifecycle.archiveStatusMessage": "datasetCreated",
+      keywords: ["energy", "protein"],
+    }
+  },
+
+  DatasetLifecycle_query_2: {
+    fields: {
+      ownerGroup: ["p12345"],
+      "datasetlifecycle.archiveStatusMessage": "datasetCreated",
+    },
+    limits: {
+      skip: 1000,
+    }
+  },
+
+  DatasetLifecycle_query_3: {
+    fields: {
+      ownerGroup: ["p12345", "p10029"],
+      text: "'ultimate test'",
+      creationTime: {
+        begin: "2011-09-13",
+        end: "2011-09-15",
+      },
+      keywords: ["energy", "protein"],
+    },
+    facets: [
+      "type",
+      "creationTime",
+      "creationLocation",
+      "ownerGroup",
+      "keywords",
+    ],
+  },
+ 
+  ArchiveJob: {
+    emailJobInitiator: "scicatarchivemanger@psi.ch",
+    type: "archive",
+    jobStatusMessage: "jobForwarded",
+    datasetList: [
+      {
+        pid: "dummy",
+        files: [],
+      },
+      {
+        pid: "dummy",
+        files: [],
+      },
+    ],
+    jobResultObject: {
+      status: "okay",
+      message: "All systems okay",
+    },
+  },
+  
+  RetrieveJob: {
+    emailJobInitiator: "scicatarchivemanger@psi.ch",
+    type: "retrieve",
+    jobStatusMessage: "jobForwarded",
+    datasetList: [
+      {
+        pid: "dummy",
+        files: [],
+      },
+      {
+        pid: "dummy",
+        files: [],
+      },
+    ],
+    jobResultObject: {
+      status: "okay",
+      message: "All systems okay",
+    },
+  },
+  
+  PublicJob: {
+    emailJobInitiator: "firstname.lastname@gmail.com",
+    type: "public",
+    jobStatusMessage: "jobSubmitted",
+    datasetList: [
+      {
+        pid: "dummy",
+        files: [],
+      },
+      {
+        pid: "dummy",
+        files: [],
+      },
+    ],
+  },
+
+  PublishedData: {
+    creator: ["ESS"],
+    publisher: "ESS",
+    publicationYear: 2020,
+    title: "dd",
+    url: "",
+    abstract: "dd",
+    dataDescription: "dd",
+    resourceType: "raw",
+    numberOfFiles: 1,
+    sizeOfArchive: 1,
+    pidArray: [],
+    status: "pending_registration",
+  },
+  
 };
 
 module.exports = { TestData };

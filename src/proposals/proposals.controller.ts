@@ -146,7 +146,7 @@ export class ProposalsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Database filters to apply when retrieve proposals\n" + filterDescription,
+      "Database filters to apply when retrieving proposals\n" + filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -177,7 +177,7 @@ export class ProposalsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Full query filters to apply when retrieve proposals\n" +
+      "Full query filters to apply when retrieving proposals\n" +
       fullQueryDescription,
     required: false,
     type: String,
@@ -214,7 +214,7 @@ export class ProposalsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Full facet query filters to apply when retrieve proposals\n" +
+      "Full facet query filters to apply when retrieving proposals\n" +
       fullQueryDescription,
     required: false,
     type: String,
@@ -342,7 +342,7 @@ export class ProposalsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the proposal we would like to create a new attachement for",
+      "Id of the proposal we would like to create a new attachment for",
     type: String,
   })
   @ApiExtraModels(CreateAttachmentDto)
@@ -372,9 +372,9 @@ export class ProposalsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:pid/attachments")
   @ApiOperation({
-    summary: "It returns all the attachements for the proposal specified.",
+    summary: "It returns all the attachments for the proposal specified.",
     description:
-      "It returns all the attachements for the proposal specified by the pid passed.",
+      "It returns all the attachments for the proposal specified by the pid passed.",
   })
   @ApiParam({
     name: "pid",

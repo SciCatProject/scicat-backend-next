@@ -11,139 +11,23 @@ var pid1 = null;
 var pid2 = null;
 var datasetLiveCycle1 = {};
 var datasetLiveCycle2 = {};
+var archiveJob = null;
+var retrieveJob = null;
+var publicJob = null;
+
 var archiveJobId = null;
 var retrieveJobId = null;
 var publicJobIds = [];
 var origDatablockId = null;
-var testraw = {
-  principalInvestigator: "bertram.astor@grumble.com",
-  endTime: "2011-09-14T06:31:25.000Z",
-  creationLocation: "/SU/XQX/RAMJET",
-  dataFormat: "Upchuck pre 2017",
-  scientificMetadata: {
-    beamlineParameters: {
-      Monostripe: "Ru/C",
-      "Ring current": {
-        v: 0.402246,
-        u: "A",
-      },
-      "Beam energy": {
-        v: 22595,
-        u: "eV",
-      },
-    },
-    detectorParameters: {
-      Objective: 20,
-      Scintillator: "LAG 20um",
-      "Exposure time": {
-        v: 0.4,
-        u: "s",
-      },
-    },
-    scanParameters: {
-      "Number of projections": 1801,
-      "Rot Y min position": {
-        v: 0,
-        u: "deg",
-      },
-      "Inner scan flag": 0,
-      "File Prefix": "817b_B2_",
-      "Sample In": {
-        v: 0,
-        u: "m",
-      },
-      "Sample folder": "/ramjet/817b_B2_",
-      "Number of darks": 10,
-      "Rot Y max position": {
-        v: 180,
-        u: "deg",
-      },
-      "Angular step": {
-        v: 0.1,
-        u: "deg",
-      },
-      "Number of flats": 120,
-      "Sample Out": {
-        v: -0.005,
-        u: "m",
-      },
-      "Flat frequency": 0,
-      "Number of inter-flats": 0,
-    },
-  },
-  owner: "Bertram Astor",
-  ownerEmail: "bertram.astor@grumble.com",
-  orcidOfOwner: "unknown",
-  contactEmail: "bertram.astor@grumble.com",
-  sourceFolder: "/iramjet/tif/",
-  size: 0,
-  creationTime: "2011-09-14T06:08:25.000Z",
-  description: "The ultimate test",
-  isPublished: false,
-  ownerGroup: "p10029",
-  accessGroups: [],
-  proposalId: "10.540.16635/20110123",
-  keywords: ["sls", "protein"],
-  type: "raw",
-};
-
-var testArchiveJob = {
-  emailJobInitiator: "scicatarchivemanger@psi.ch",
-  type: "archive",
-  jobStatusMessage: "jobForwarded",
-  datasetList: [
-    {
-      pid: "dummy",
-      files: [],
-    },
-    {
-      pid: "dummy",
-      files: [],
-    },
-  ],
-  jobResultObject: {
-    status: "okay",
-    message: "All systems okay",
-  },
-};
-
-var testRetrieveJob = {
-  emailJobInitiator: "scicatarchivemanger@psi.ch",
-  type: "retrieve",
-  jobStatusMessage: "jobForwarded",
-  datasetList: [
-    {
-      pid: "dummy",
-      files: [],
-    },
-    {
-      pid: "dummy",
-      files: [],
-    },
-  ],
-  jobResultObject: {
-    status: "okay",
-    message: "All systems okay",
-  },
-};
-
-var testPublicJob = {
-  emailJobInitiator: "firstname.lastname@gmail.com",
-  type: "public",
-  jobStatusMessage: "jobSubmitted",
-  datasetList: [
-    {
-      pid: "dummy",
-      files: [],
-    },
-    {
-      pid: "dummy",
-      files: [],
-    },
-  ],
-};
 
 describe("Jobs: Test New Job Model", () => {
+  before((done) => {
+    archiveJob = TestData.ArchiveJob;
+    retrieveJob = TestData.RetrieveJob;
+    publicJob = TestData.PublicJob;
+    done()
+  });
+
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -171,7 +55,7 @@ describe("Jobs: Test New Job Model", () => {
   it("adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(testraw)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -182,9 +66,9 @@ describe("Jobs: Test New Job Model", () => {
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
         var pidtest = res.body["pid"];
-        testArchiveJob.datasetList[0].pid = pidtest;
-        testRetrieveJob.datasetList[0].pid = pidtest;
-        testPublicJob.datasetList[0].pid = pidtest;
+        archiveJob.datasetList[0].pid = pidtest;
+        retrieveJob.datasetList[0].pid = pidtest;
+        publicJob.datasetList[0].pid = pidtest;
         pid1 = res.body["pid"];
       });
   });
@@ -192,7 +76,7 @@ describe("Jobs: Test New Job Model", () => {
   it("adds another new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
-      .send(testraw)
+      .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -203,9 +87,9 @@ describe("Jobs: Test New Job Model", () => {
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
         var pidtest = res.body["pid"];
-        testArchiveJob.datasetList[1].pid = pidtest;
-        testRetrieveJob.datasetList[1].pid = pidtest;
-        testPublicJob.datasetList[1].pid = pidtest;
+        archiveJob.datasetList[1].pid = pidtest;
+        retrieveJob.datasetList[1].pid = pidtest;
+        publicJob.datasetList[1].pid = pidtest;
         pid2 = res.body["pid"];
       });
   });
@@ -213,7 +97,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new archive job request without authentication, which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testArchiveJob)
+      .send(archiveJob)
       .set("Accept", "application/json")
       .expect(401)
       .expect("Content-Type", /json/)
@@ -225,7 +109,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new archive job request", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testArchiveJob)
+      .send(archiveJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
@@ -237,7 +121,7 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("Adds a new archive job request contains empty datasetList, which should fail", async () => {
-    const empty = { ...testArchiveJob };
+    const empty = { ...TestData.ArchiveJob };
     empty.datasetList = [];
     return request(appUrl)
       .post("/api/v3/Jobs")
@@ -253,7 +137,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Adds a new archive job request on non exist dataset which should fail", async () => {
     let nonExistDataset = {
-      ...testArchiveJob,
+      ...TestData.ArchiveJob,
       datasetList: [
         {
           pid: "dummy",
@@ -328,7 +212,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testRetrieveJob)
+      .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(409)
@@ -343,7 +227,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Send an update status to dataset 1, simulating the archive system response", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid1)
+      .patch("/api/v3/Datasets/" + pid1)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle1,
@@ -366,7 +250,7 @@ describe("Jobs: Test New Job Model", () => {
   });
   it("Send an update status to dataset 2, simulating the archive system response", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid2)
+      .patch("/api/v3/Datasets/" + pid2)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle2,
@@ -393,7 +277,7 @@ describe("Jobs: Test New Job Model", () => {
     return request(appUrl)
       .post("/api/v3/Policies/updateWhere")
       .send({
-        ownerGroupList: testraw.ownerGroup,
+        ownerGroupList: TestData.RawCorrect.ownerGroup,
         data: {
           archiveEmailNotification: false,
           retrieveEmailNotification: false,
@@ -405,13 +289,14 @@ describe("Jobs: Test New Job Model", () => {
       .expect(200)
       .then((res) => {
         console.log("Result policy update:", res.body);
+        //res.body.not.equal({});
       });
   });
 
   it("Adds a new archive job request for same data which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testArchiveJob)
+      .send(TestData.ArchiveJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(409)
@@ -443,7 +328,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new retrieve job request on same dataset, which should succeed now", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testRetrieveJob)
+      .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
@@ -473,7 +358,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Send an update status to the dataset", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid1)
+      .patch("/api/v3/Datasets/" + pid1)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle1,
@@ -495,7 +380,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Send an update status to the dataset, simulating the archive system response of finished job with partial failure", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid1)
+      .patch("/api/v3/Datasets/" + pid1)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle1,
@@ -538,7 +423,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Send an update status to the datasets, simulating the archive system response of successful job", async () => {
     await request(appUrl)
-      .put("/api/v3/Datasets/" + pid1)
+      .patch("/api/v3/Datasets/" + pid1)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle1,
@@ -557,7 +442,7 @@ describe("Jobs: Test New Job Model", () => {
       });
 
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid2)
+      .patch("/api/v3/Datasets/" + pid2)
       .send({
         datasetlifecycle: {
           ...datasetLiveCycle2,
@@ -660,7 +545,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new public job request on private datasets, which should fails", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(409)
@@ -672,7 +557,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Set to true for one of the dataset", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid1)
+      .patch("/api/v3/Datasets/" + pid1)
       .send({
         isPublished: true,
       })
@@ -688,7 +573,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new public job request on one public and one private dataset, which should fails", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(409)
@@ -700,7 +585,7 @@ describe("Jobs: Test New Job Model", () => {
 
   it("Update isPublished to true on second dataset", async () => {
     return request(appUrl)
-      .put("/api/v3/Datasets/" + pid2)
+      .patch("/api/v3/Datasets/" + pid2)
       .send({
         isPublished: true,
       })
@@ -716,7 +601,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new public job request without authentication", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .expect(201)
       .expect("Content-Type", /json/)
@@ -729,7 +614,7 @@ describe("Jobs: Test New Job Model", () => {
   it("Adds a new public job request with authentication", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
@@ -783,17 +668,17 @@ describe("Jobs: Test New Job Model", () => {
   });
 
   it("Adds a new public job request to download some selected files", async () => {
-    testPublicJob.datasetList[0].files = ["N1039-1.tif", "N1039-2.tif"];
+    publicJob.datasetList[0].files = ["N1039-1.tif", "N1039-2.tif"];
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         //reset
-        testPublicJob.datasetList[0].files = [];
+        publicJob.datasetList[0].files = [];
 
         res.body.should.have.property("type").and.be.string;
         publicJobIds.push(res.body["id"]);
@@ -837,17 +722,17 @@ describe("Jobs: Test New Job Model", () => {
   // });
 
   it("Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
-    testPublicJob.datasetList[0].files = ["N1039-1.tif", "N1039-101.tif"];
+    publicJob.datasetList[0].files = ["N1039-1.tif", "N1039-101.tif"];
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(testPublicJob)
+      .send(publicJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
         //reset
-        testPublicJob.datasetList[0].files = [];
+        publicJob.datasetList[0].files = [];
 
         res.should.have.property("error").and.be.string;
       });

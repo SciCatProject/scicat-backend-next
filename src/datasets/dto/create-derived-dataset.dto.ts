@@ -3,28 +3,54 @@ import { IsObject, IsOptional, IsString } from "class-validator";
 import { CreateDatasetDto } from "./create-dataset.dto";
 
 export class CreateDerivedDatasetDto extends CreateDatasetDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons",
+  })
   @IsString()
   readonly investigator: string;
 
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description:
+      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs",
+  })
   @IsString({
     each: true,
   })
   readonly inputDatasets: string[];
 
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description:
+      "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data",
+  })
   @IsString({
     each: true,
   })
   readonly usedSoftware: string[];
 
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+      "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here",
+  })
   @IsOptional()
   @IsObject()
-  readonly jobParameters: Record<string, unknown>;
+  readonly jobParameters?: Record<string, unknown>;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "The output job logfile. Keep the size of this log data well below 15 MB ",
+  })
   @IsOptional()
   @IsString()
-  readonly jobLogData: string;
-
-  @IsOptional()
-  @IsObject()
-  readonly scientificMetadata: Record<string, unknown>;
+  readonly jobLogData?: string;
 }

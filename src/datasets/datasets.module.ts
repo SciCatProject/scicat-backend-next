@@ -41,11 +41,11 @@ import { PoliciesModule } from "src/policies/policies.module";
               av = policy.tapeRedundancy || "low";
             } else {
               const regexLiteral = /(?<=AV\=)(.*?)(?=\,)/g;
-              av = (regexLiteral.exec(this.classification) || ["low"])[0];
+              av = (regexLiteral.exec(this.classification ?? "") || ["low"])[0];
               policyService.addDefaultPolicy(
                 this.ownerGroup,
                 this.accessGroups,
-                this.ownerEmail,
+                this.ownerEmail ?? "",
                 av,
               );
             }

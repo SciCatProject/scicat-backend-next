@@ -10,23 +10,22 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  Logger,
   HttpCode,
   HttpStatus,
-  Headers,
   HttpException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiExtraModels,
-  ApiProperty,
+  ApiOperation,
+  ApiParam,
   ApiQuery,
+  ApiResponse,
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
 import { DatasetsService } from "./datasets.service";
-import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { UpdateDatasetDto } from "./dto/update-dataset.dto";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
@@ -70,12 +69,22 @@ import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dat
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
+import {
+  filterDescription,
+  filterExample,
+  fullQueryDescription,
+  fullQueryExample,
+} from "src/common/utils";
+import { TechniqueClass } from "./schemas/technique.schema";
+import { RelationshipClass } from "./schemas/relationship.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
   CreateAttachmentDto,
   CreateDerivedDatasetDto,
   CreateRawDatasetDto,
+  TechniqueClass,
+  RelationshipClass,
 )
 @ApiTags("datasets")
 @Controller("datasets")
@@ -99,17 +108,27 @@ export class DatasetsController {
   )
   @HttpCode(HttpStatus.OK)
   @Post()
+  @ApiOperation({
+    summary: "It creates a new dataset which can be a raw or derived one.",
+    description:
+      "It creates a new proposal and returnes it completed with systems fields.",
+  })
   @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
   @ApiBody({
-    description: "Input fields for the dataset to be create",
+    description: "Input fields for the dataset to be created",
     required: true,
-    //type: [CreateRawDatasetDto],
     schema: {
       oneOf: [
         { $ref: getSchemaPath(CreateRawDatasetDto) },
         { $ref: getSchemaPath(CreateDerivedDatasetDto) },
       ],
     },
+  })
+  @ApiResponse({
+    status: 201,
+    type: DatasetClass,
+    description:
+      "Create a new proposal and return its representation in SciCat",
   })
   async create(
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
@@ -175,6 +194,28 @@ export class DatasetsController {
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
+  @ApiOperation({
+    summary: "It validates the dataset provided as input.",
+    description:
+      "It validates the dataset provided as input, and returns true if the information is a valid dataset",
+  })
+  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiBody({
+    description: "Input fields for the dataset to be created",
+    required: true,
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(CreateRawDatasetDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    type: Boolean,
+    description:
+      "Check if the proposal provided pass validation. It return true if the validation is passed",
+  })
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createDataset: unknown,
@@ -201,21 +242,36 @@ export class DatasetsController {
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
   @Get()
+  @ApiOperation({
+    summary: "It returns a list of datasets.",
+    description:
+      "It returns a list of datasets. The list returned can be modified by providing a filter.",
+  })
   @ApiQuery({
-    name: "filter",
-    description: "Database filters to apply when retrieve all datasets",
+    name: "filters",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
+    type: String,
+    example: filterExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Return the datasets requested",
   })
   async findAll(
-    @Headers() headers: Record<string, unknown>,
+    //@Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<DatasetClass[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter
         ? JSON.parse(filter.filter)
-        : headers.filter
-        ? JSON.parse(headers.filter as string)
-        : {};
+        : //: headers.filter
+          //? JSON.parse(headers.filter as string)
+          {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> =
@@ -276,21 +332,36 @@ export class DatasetsController {
     return datasets;
   }
 
-  // GET /fullquery
+  // GET /datasets/fullquery
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
+  @ApiOperation({
+    summary: "It returns a list of datasets matching the query provided.",
+    description:
+      "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
+  })
   @ApiQuery({
-    name: "filters",
-    description: "Database filter to apply when retrieve all datasets",
+    name: "fields",
+    description:
+      "Full query filters to apply when retrieving datasets\n" +
+      fullQueryDescription,
     required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Return datasets requested",
   })
   async fullquery(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() fields: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+      fields: JSON.parse(fields.fields ?? "{}"),
+      limits: JSON.parse(fields.limits ?? "{}"),
     };
     return this.datasetsService.fullquery(parsedFilters);
   }
@@ -299,10 +370,26 @@ export class DatasetsController {
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
   @Get("/fullfacet")
+  @ApiOperation({
+    summary:
+      "It returns a list of dataset facets matching the filter provided.",
+    description:
+      "It returns a list of dataset facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
+  })
   @ApiQuery({
     name: "filters",
-    description: "Database filter to apply when retrieve all datasets",
+    description:
+      "Full facet query filters to apply when retrieving datasets\n" +
+      fullQueryDescription,
     required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Return proposals requested",
   })
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -318,13 +405,28 @@ export class DatasetsController {
   @AllowAny()
   @UseInterceptors(PublicDatasetsInterceptor)
   @Get("/metadataKeys")
+  @ApiOperation({
+    summary:
+      "It returns a list of metadata keys contained in the datasets matching the filter provided.",
+    description:
+      "It returns a list of metadata keys contained in the datasets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
+  })
   @ApiQuery({
     name: "filters",
-    description: "Database filter to apply when retrieve all metadata keys",
+    description:
+      "Query filters to apply when selecting datasets\n" + fullQueryDescription,
     required: false,
+    type: String,
+    example: fullQueryExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: true,
+    description: "Return metadata keys list of datasets selected",
   })
   async metadataKeys(
-    @Query("fields") filters: { fields?: string; limits?: string },
+    @Query("filters") filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -336,20 +438,34 @@ export class DatasetsController {
   // GET /datasets/findOne
   @AllowAny()
   @Get("/findOne")
+  @ApiOperation({
+    summary: "It returns the first dataset found.",
+    description:
+      "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+  })
   @ApiQuery({
     name: "filter",
-    description: "Database filter to apply when finding a Dataset",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
+    type: String,
+    example: filterExample,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    description: "Return the datasets requested",
   })
   async findOne(
     @Query("filter") queryFilters?: string,
-    @Headers("filter") headerFilters?: string,
+    //@Headers("filter") headerFilters?: string,
   ): Promise<DatasetClass | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
       ? JSON.parse(queryFilters)
-      : headerFilters
-      ? JSON.parse(headerFilters)
-      : {};
+      : //: headerFilters
+        //? JSON.parse(headerFilters)
+        {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
     if (dataset) {
@@ -382,17 +498,31 @@ export class DatasetsController {
     return dataset;
   }
 
-  // GET /count
+  // GET /datasets/count
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
+  @Get("/count")
+  @ApiOperation({
+    summary: "It returns the number of datasets.",
+    description:
+      "It returns a number of datasets matching the filter if provided.<br> the filter format needs to be reviewed.",
+  })
   @ApiQuery({
     name: "where",
-    description: "Database where condition to apply when counting Datasets",
+    description:
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
+    type: String,
+    example: filterExample,
   })
-  @Get("/count")
+  @ApiResponse({
+    status: 200,
+    description:
+      "Return the number of datasets in the following format: { count: integer }",
+  })
   async count(
     @Query("where") where: string, //FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
@@ -409,9 +539,24 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
-  @Get("/:id")
-  async findById(@Param("id") id: string): Promise<DatasetClass | null> {
-    Logger.log("Finding dataset with pid : " + id);
+  @Get("/:pid")
+  @ApiOperation({
+    summary: "It returns the dataset requested.",
+    description: "It returns the dataset requested through the pid specified.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    isArray: false,
+    description: "Return dataset with pid specified",
+  })
+  async findById(@Param("pid") id: string): Promise<DatasetClass | null> {
+    //Logger.log("Finding dataset with pid : " + id);
     return this.datasetsService.findOne({ pid: id });
   }
 
@@ -425,14 +570,43 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
+    HistoryInterceptor,
   )
-  @Patch("/:id")
+  @Patch("/:pid")
+  @ApiOperation({
+    summary: "It updates the dataset.",
+    description:
+      "It updates the dataset specified through the pid specified. It updates only the specified fields.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to modify",
+    type: String,
+  })
+  @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
+  @ApiBody({
+    description:
+      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to passed in.",
+    required: true,
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(UpdateRawDatasetDto) },
+        { $ref: getSchemaPath(UpdateDerivedDatasetDto) },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    description:
+      "Update an existing dataset and return its representation in SciCat",
+  })
   async findByIdAndUpdate(
-    @Param("id") id: string,
+    @Param("pid") pid: string,
     @Body()
-    updateDatasetDto: UpdateDatasetDto,
+    updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
+    return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
   // PUT /datasets/:id
@@ -446,13 +620,42 @@ export class DatasetsController {
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
     HistoryInterceptor,
   )
-  @Put("/:id")
+  @Put("/:pid")
+  @ApiOperation({
+    summary: "It updates the dataset.",
+    description:
+      "It updates the dataset specified through the pid specified. The full dataset is updated.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to modify",
+    type: String,
+  })
+  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiBody({
+    description:
+      "Complete dataset definition with new values to replace current ones. The complete dataset structure needs to be specified.",
+    required: true,
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(CreateRawDatasetDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    description:
+      "Completely update an existing dataset and return its representation in SciCat",
+  })
   async findByIdReplaceOrCreate(
-    @Param("id") id: string,
-    @Body()
-    updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+    @Param("pid") id: string,
+    @Body() replaceDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
+    // validate dataset
+    const validatedDatasetDto = await this.validateDataset(replaceDatasetDto);
+    return this.datasetsService.findByIdAndUpdate(id, validatedDatasetDto);
   }
 
   // DELETE /datasets/:id
@@ -460,8 +663,21 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, DatasetClass),
   )
-  @Delete("/:id")
-  async findByIdAndDelete(@Param("id") id: string): Promise<unknown> {
+  @Delete("/:pid")
+  @ApiOperation({
+    summary: "It deletes the dataset.",
+    description: "It delete the dataset specified through the pid specified.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to be deleted",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned",
+  })
+  async findByIdAndDelete(@Param("pid") id: string): Promise<unknown> {
     return this.datasetsService.findByIdAndDelete(id);
   }
 
@@ -469,11 +685,36 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, DatasetClass),
   )
-  @Post("/:id/appendToArrayField")
+  @Post("/:pid/appendToArrayField")
+  @ApiOperation({
+    summary: "It appends a new value to the specific field.",
+    description:
+      "It appends a new value to the specified field of the dataset with provided pid.<br>The SciCat project is reviewing the purpose of this function and will decide if it will be dropped or changed",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset to be modified",
+    type: String,
+  })
+  @ApiParam({
+    name: "fieldName",
+    description: "Name of the field to be updated",
+    type: String,
+  })
+  @ApiBody({
+    description: "Json object with the fields to be updated and their values",
+    required: true,
+    type: Array,
+  })
+  @ApiResponse({
+    status: 200,
+    type: DatasetClass,
+    description: "Return new value of the dataset",
+  })
   async appendToArrayField(
-    @Param("id") id: string,
+    @Param("pid") id: string,
     @Query("fieldName") fieldName: string,
-    data: unknown[],
+    @Body() data: unknown[],
   ): Promise<DatasetClass | null> {
     // $addToSet is necessary to append to the field and not overwrite
     // $each is necessary as data is an array of values
@@ -488,8 +729,23 @@ export class DatasetsController {
 
   // GET /datasets/:id/thumbnail
   @AllowAny()
-  @Get("/:id/thumbnail")
-  async thumbnail(@Param("id") id: string): Promise<Partial<Attachment>> {
+  @Get("/:pid/thumbnail")
+  @ApiOperation({
+    summary: "It returns the thumbnail associated with the dataset.",
+    description:
+      "It returns the thumbnail associated with the dataset with the provided pid.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "Id of the dataset",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Attachment,
+    description: "Return new value of the dataset",
+  })
+  async thumbnail(@Param("pid") id: string): Promise<Partial<Attachment>> {
     const attachment = await this.attachmentsService.findOne(
       { datasetId: id },
       { _id: false, thumbnail: true },
@@ -508,9 +764,30 @@ export class DatasetsController {
     ability.can(Action.Create, Attachment),
   )
   @HttpCode(HttpStatus.OK)
-  @Post("/:id/attachments")
+  @Post("/:pid/attachments")
+  @ApiOperation({
+    summary: "It creates a new attachement for the dataset specified.",
+    description:
+      "It creates a new attachement for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset we would like to create a new attachment for",
+    type: String,
+  })
+  @ApiExtraModels(CreateAttachmentDto)
+  @ApiBody({
+    type: CreateAttachmentDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: Attachment,
+    description:
+      "Returns the new attachment for the dataset identified by the pid specified",
+  })
   async createAttachment(
-    @Param("id") id: string,
+    @Param("pid") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
@@ -528,8 +805,26 @@ export class DatasetsController {
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
-  @Get("/:id/attachments")
-  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
+  @Get("/:pid/attachments")
+  @ApiOperation({
+    summary: "It returns all the attachments for the dataset specified.",
+    description:
+      "It returns all the attachments for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to retrieve all the attachments",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Attachment,
+    isArray: true,
+    description:
+      "Array with all the attachments associated with the dataset with the pid specified",
+  })
+  async findAllAttachments(@Param("pid") id: string): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
@@ -538,10 +833,33 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
   )
-  @Patch("/:id/attachments/:fk")
+  @Patch("/:pid/attachments/:aid")
+  @ApiOperation({
+    summary: "It updates the attachment specified for the dataset indicated.",
+    description:
+      "It updates the dataset specified by the aid parameter for the dataset indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Attachments can be updated from the attachment endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to update the attachment specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description:
+      "Id of the attachment of this dataset that we would like to patch",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Attachment,
+    isArray: false,
+    description: "Returns the attachment updated.",
+  })
   async findOneAttachmentAndUpdate(
-    @Param("id") datasetId: string,
-    @Param("fk") attachmentId: string,
+    @Param("pid") datasetId: string,
+    @Param("aid") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
@@ -550,15 +868,36 @@ export class DatasetsController {
     );
   }
 
-  // DELETE /datasets/:id/attachments/:fk
+  // DELETE /datasets/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, Attachment),
   )
-  @Delete("/:id/attachments/:fk")
+  @Delete("/:pid/attachments/:aid")
+  @ApiOperation({
+    summary: "It deletes the attachment from the dataset.",
+    description:
+      "It deletes the attachment from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting attachments will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to delete the attachment specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description:
+      "Id of the attachment of this dataset that we would like to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned.",
+  })
   async findOneAttachmentAndRemove(
-    @Param("id") datasetId: string,
-    @Param("fk") attachmentId: string,
+    @Param("pid") datasetId: string,
+    @Param("aid") attachmentId: string,
   ): Promise<unknown> {
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
@@ -576,9 +915,29 @@ export class DatasetsController {
       "time",
     ]),
   )
-  @Post("/:id/origdatablocks")
+  @Post("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It creates a new origDatablock for the dataset specified.",
+    description:
+      "It creates a new original datablock for the dataset specified by the pid passed.<br>This endpoint is obsolete and will be dropped in future versions.<br>Creatign new origDatablocks will be allowed only from the attachments endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset we would like to create a new original datablock for",
+    type: String,
+  })
+  @ApiExtraModels(CreateDatasetOrigDatablockDto)
+  @ApiBody({
+    type: CreateDatasetOrigDatablockDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: OrigDatablock,
+    description: "It returns the new original datablock created",
+  })
   async createOrigDatablock(
-    @Param("id") id: string,
+    @Param("pid") id: string,
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
@@ -610,7 +969,27 @@ export class DatasetsController {
   // POST /datasets/:id/origdatablocks/isValid
   @AllowAny()
   @HttpCode(HttpStatus.OK)
-  @Post("/:id/origdatablocks/isValid")
+  @Post("/:pid/origdatablocks/isValid")
+  @ApiOperation({
+    summary: "It validates the origDatablock values passed.",
+    description:
+      "It validates the original datablock values pased as input.<br>This endpoint is obsolete and will be dropped in future versions.<br>Validating orginal datablocks will be allowed only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset we would like to create a new original datablock for",
+    type: String,
+  })
+  @ApiExtraModels(CreateDatasetOrigDatablockDto)
+  @ApiBody({
+    type: CreateDatasetOrigDatablockDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description:
+      "IT returns true if the values passed in are a valid original datablock",
+  })
   async origDatablockIsValid(
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
@@ -630,9 +1009,27 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, OrigDatablock),
   )
-  @Get("/:id/origdatablocks")
+  @Get("/:pid/origdatablocks")
+  @ApiOperation({
+    summary: "It returns all the origDatablock for the dataset specified.",
+    description:
+      "It returns all the original datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to retrieve all the original datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: OrigDatablock,
+    isArray: true,
+    description:
+      "Array with all the original datablocks associated with the dataset with the pid specified",
+  })
   async findAllOrigDatablocks(
-    @Param("id") id: string,
+    @Param("pid") id: string,
   ): Promise<OrigDatablock[]> {
     return this.origDatablocksService.findAll({ datasetId: id });
   }
@@ -647,10 +1044,35 @@ export class DatasetsController {
       "time",
     ]),
   )
-  @Patch("/:id/origdatablocks/:fk")
+  @Patch("/:pid/origdatablocks/:oid")
+  @ApiOperation({
+    summary:
+      "It updates the origDatablocks specified for the dataset indicated.",
+    description:
+      "It updates the original datablock specified by the aid parameter for the dataset indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Original datablocks can be updated from the origdatablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to update the original datablocks specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "oid",
+    description:
+      "Id of the original datablock of this dataset that we would like to patch",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: OrigDatablock,
+    isArray: false,
+    description:
+      "Updated values of the original datablock with id specified associated with the dataset with the pid specified",
+  })
   async findOneOrigDatablockAndUpdate(
-    @Param("id") datasetId: string,
-    @Param("fk") origDatablockId: string,
+    @Param("pid") datasetId: string,
+    @Param("oid") origDatablockId: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: datasetId });
@@ -682,10 +1104,31 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, OrigDatablock),
   )
-  @Delete("/:id/origdatablocks/:fk")
+  @Delete("/:pid/origdatablocks/:oid")
+  @ApiOperation({
+    summary: "It deletes the origdatablock from the dataset.",
+    description:
+      "It deletes the original datablock from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting original datablocks will be done only from the origdatablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to delete the original datablock specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description:
+      "Id of the original datablock of this dataset that we would like to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned",
+  })
   async findOneOrigDatablockAndRemove(
-    @Param("id") datasetId: string,
-    @Param("fk") origDatablockId: string,
+    @Param("pid") datasetId: string,
+    @Param("oid") origDatablockId: string,
   ): Promise<unknown> {
     const dataset = await this.datasetsService.findOne({ pid: datasetId });
     if (dataset) {
@@ -718,9 +1161,29 @@ export class DatasetsController {
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
   )
-  @Post("/:id/datablocks")
+  @Post("/:pid/datablocks")
+  @ApiOperation({
+    summary: "It creates a new datablock for the dataset specified.",
+    description:
+      "It creates a new datablock for the dataset specified by the pid passed.<br>This endpoint is obsolete and will be dropped in future versions.<br>Creating new datablock will be allowed only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset we would like to create a new datablock for",
+    type: String,
+  })
+  @ApiExtraModels(CreateDatasetDatablockDto)
+  @ApiBody({
+    type: CreateDatasetDatablockDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: Datablock,
+    description: "It returns the new datablock created",
+  })
   async createDatablock(
-    @Param("id") id: string,
+    @Param("pid") id: string,
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: id });
@@ -734,7 +1197,7 @@ export class DatasetsController {
       };
       const datablock = await this.datablocksService.create(createDatablock);
       await this.datasetsService.findByIdAndUpdate(id, {
-        packedSize: dataset.packedSize + datablock.packedSize,
+        packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
         numberOfFilesArchived:
           dataset.numberOfFilesArchived + datablock.dataFileList.length,
         size: dataset.size + datablock.size,
@@ -748,8 +1211,26 @@ export class DatasetsController {
   // GET /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Datablock))
-  @Get("/:id/datablocks")
-  async findAllDatablocks(@Param("id") id: string): Promise<Datablock[]> {
+  @Get("/:pid/datablocks")
+  @ApiOperation({
+    summary: "It returns all the datablock for the dataset specified.",
+    description:
+      "It returns all the datablocks for the dataset specified by the pid passed.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to retrieve all the datablocks",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Datablock,
+    isArray: true,
+    description:
+      "Array with all the datablocks associated with the dataset with the pid specified",
+  })
+  async findAllDatablocks(@Param("pid") id: string): Promise<Datablock[]> {
     return this.datablocksService.findAll({ datasetId: id });
   }
 
@@ -759,10 +1240,34 @@ export class DatasetsController {
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
   )
-  @Patch("/:id/datablocks/:fk")
+  @Patch("/:pid/datablocks/:did")
+  @ApiOperation({
+    summary: "It updates the datablocks specified for the dataset indicated.",
+    description:
+      "It updates the datablock specified by the did parameter for the dataset indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Datablock can be updated from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to update the datablocks specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "oid",
+    description:
+      "Id of the datablock of this dataset that we would like to patch",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Datablock,
+    isArray: false,
+    description:
+      "Updated values of the datablock with id specified associated with the dataset with the pid specified",
+  })
   async findOneDatablockAndUpdate(
-    @Param("id") datasetId: string,
-    @Param("fk") datablockId: string,
+    @Param("pid") datasetId: string,
+    @Param("did") datablockId: string,
     @Body() updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.datasetsService.findOne({ pid: datasetId });
@@ -777,18 +1282,20 @@ export class DatasetsController {
       if (datablock) {
         await this.datasetsService.findByIdAndUpdate(datasetId, {
           packedSize:
-            dataset.packedSize -
+            (dataset.packedSize ?? 0) -
             datablockBeforeUpdate.packedSize +
             datablock.packedSize,
           numberOfFilesArchived:
             dataset.numberOfFilesArchived -
             datablockBeforeUpdate.dataFileList.length +
             datablock.dataFileList.length,
+          /*
           size: dataset.size - datablockBeforeUpdate.size + datablock.size,
           numberOfFiles:
             dataset.numberOfFiles -
             datablockBeforeUpdate.dataFileList.length +
             datablock.dataFileList.length,
+          */
         });
         return datablock;
       }
@@ -799,10 +1306,31 @@ export class DatasetsController {
   // DELETE /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Datablock))
-  @Delete("/:id/datablocks/:fk")
+  @Delete("/:pid/datablocks/:did")
+  @ApiOperation({
+    summary: "It deletes the datablock from the dataset.",
+    description:
+      "It deletes the datablock from the dataset.<br>This endpoint is obsolete and will be dropped in future versions.<br>Deleting datablocks will be done only from the datablocks endpoint.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to delete the datablock specified",
+    type: String,
+  })
+  @ApiParam({
+    name: "aid",
+    description:
+      "Id of the datablock of this dataset that we would like to delete",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned",
+  })
   async findOneDatablockAndRemove(
-    @Param("id") datasetId: string,
-    @Param("fk") datablockId: string,
+    @Param("pid") datasetId: string,
+    @Param("did") datablockId: string,
   ): Promise<unknown> {
     const dataset = await this.datasetsService.findOne({ pid: datasetId });
     if (dataset) {
