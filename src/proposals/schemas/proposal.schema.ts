@@ -17,6 +17,7 @@ export type ProposalDocument = ProposalClass & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class ProposalClass extends OwnableClass {
   @ApiProperty({

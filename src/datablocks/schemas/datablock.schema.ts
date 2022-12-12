@@ -11,6 +11,7 @@ export type DatablockDocument = Datablock & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class Datablock extends OwnableClass {
   @ApiProperty({

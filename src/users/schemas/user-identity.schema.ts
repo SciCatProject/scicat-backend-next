@@ -10,12 +10,13 @@ export type UserIdentityDocument = UserIdentity & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: { createdAt: "created", updatedAt: "modified" },
 })
 export class UserIdentity {
   @Prop()
   authScheme: string;
 
-  @Prop()
+  @Prop({ type: Date })
   created: Date;
 
   @Prop({ type: Object })
@@ -24,7 +25,7 @@ export class UserIdentity {
   @Prop()
   externalId: string;
 
-  @Prop()
+  @Prop({ type: Date })
   modified: Date;
 
   @Prop({ type: UserProfile })

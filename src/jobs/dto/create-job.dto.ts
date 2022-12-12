@@ -20,10 +20,6 @@ export class CreateJobDto {
 
   @IsDateString()
   @IsOptional()
-  readonly creationTime?: Date;
-
-  @IsDateString()
-  @IsOptional()
   readonly executionTime?: Date;
 
   @IsObject()

@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
-import { string } from "mathjs";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
@@ -12,6 +11,7 @@ export type AttachmentDocument = Attachment & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class Attachment extends OwnableClass {
   @ApiProperty({ type: String, default: () => uuidv4() })

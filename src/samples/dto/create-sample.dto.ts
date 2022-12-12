@@ -1,4 +1,3 @@
-//import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsBoolean, IsObject, IsOptional } from "class-validator";
 import { OwnableDto } from "src/common/dto/ownable.dto";
 

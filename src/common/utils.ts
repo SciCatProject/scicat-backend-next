@@ -591,37 +591,29 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline as PipelineStage[];
 };
 
-export const addCreatedFields = <T>(
+export const addCreatedByFields = <T>(
   obj: T,
   username: string,
-  ts: Date,
 ): T & {
   createdBy: string;
   updatedBy: string;
-  createdAt: Date;
-  updatedAt: Date;
 } => {
   return {
     ...obj,
     createdBy: username,
     updatedBy: username,
-    createdAt: ts,
-    updatedAt: ts,
   };
 };
 
-export const addUpdatedFields = <T>(
+export const addUpdatedByField = <T>(
   obj: T,
   username: string,
-  ts: Date,
 ): T & {
   updatedBy: string;
-  updatedAt: Date;
 } => {
   return {
     ...obj,
     updatedBy: username,
-    updatedAt: ts,
   };
 };
 

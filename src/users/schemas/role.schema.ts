@@ -9,6 +9,7 @@ export type RoleDocument = Role & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: { createdAt: "created", updatedAt: "modified" },
 })
 export class Role {
   _id: string;
@@ -19,14 +20,16 @@ export class Role {
 
   @ApiProperty({
     type: Date,
-    description: "The date when the role was created",
+    description:
+      "The date when the role was created. This is handled automatically by mongoose",
   })
   @Prop({ type: Date })
   created: Date;
 
   @ApiProperty({
     type: Date,
-    description: "The date when the role was last modified",
+    description:
+      "The date when the role was last modified. This is handled automatically by mongoose",
   })
   @Prop({ type: Date })
   modified: Date;

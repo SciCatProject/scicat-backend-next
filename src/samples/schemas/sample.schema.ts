@@ -19,6 +19,7 @@ export type SampleDocument = Sample & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class Sample extends OwnableClass {
   @Prop({ type: String })
@@ -47,17 +48,6 @@ export class Sample extends OwnableClass {
   @Prop({ type: String, required: true })
   description: string;
 
-  /*   @ApiProperty({ type: Date, description: "Date when the sample was created" })
-  @Prop({ type: Date })
-  createdAt: Date;
-
-  @ApiProperty({
-    type: Date,
-    description: "Date when the sample was last modified",
-  })
-  @Prop({ type: Date })
-  updatedAt: Date;
- */
   @ApiProperty({
     type: Object,
     default: {},

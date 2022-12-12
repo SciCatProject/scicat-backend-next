@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Req,
   UseGuards,
   UseInterceptors,
   Query,
@@ -17,7 +16,6 @@ import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
 import { UpdatePolicyDto } from "./dto/update-policy.dto";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { Request } from "express";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -67,14 +65,10 @@ export class PoliciesController {
   @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
-  async updateWhere(
-    @Body() updateWherePolicyDto: UpdateWherePolicyDto,
-    @Req() req: Request,
-  ) {
+  async updateWhere(@Body() updateWherePolicyDto: UpdateWherePolicyDto) {
     return this.policiesService.updateWhere(
       updateWherePolicyDto.ownerGroupList,
       updateWherePolicyDto.data,
-      req,
     );
   }
 

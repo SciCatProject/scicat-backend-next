@@ -3,7 +3,7 @@ import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
-import { addCreatedFields } from "src/common/utils";
+import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
 import { CreateDatablockDto } from "./dto/create-datablock.dto";
 import { UpdateDatablockDto } from "./dto/update-datablock.dto";
 import { Datablock, DatablockDocument } from "./schemas/datablock.schema";
@@ -18,12 +18,9 @@ export class DatablocksService {
   ) {}
 
   async create(createDatablockDto: CreateDatablockDto): Promise<Datablock> {
+    const username = (this.request.user as JWTUser).username;
     const createdDatablock = new this.datablockModel(
-      addCreatedFields<CreateDatablockDto>(
-        createDatablockDto,
-        (this.request.user as JWTUser).username,
-        new Date(),
-      ),
+      addCreatedByFields<CreateDatablockDto>(createDatablockDto, username),
     );
     return createdDatablock.save();
   }
@@ -42,10 +39,15 @@ export class DatablocksService {
     filter: FilterQuery<DatablockDocument>,
     updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
+    const username = (this.request.user as JWTUser).username;
     return this.datablockModel
-      .findOneAndUpdate(filter, updateDatablockDto, {
-        new: true,
-      })
+      .findOneAndUpdate(
+        filter,
+        addUpdatedByField(updateDatablockDto, username),
+        {
+          new: true,
+        },
+      )
       .exec();
   }
 
