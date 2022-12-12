@@ -126,7 +126,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/PublishedData/" + doi + "/register")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(201)
+      .expect(200)
       .expect("Content-Type", /json/);
   });
 

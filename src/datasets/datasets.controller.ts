@@ -72,7 +72,12 @@ import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dat
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
-import { filterDescription, filterExample, fullQueryDescription, fullQueryExample } from "src/common/utils";
+import {
+  filterDescription,
+  filterExample,
+  fullQueryDescription,
+  fullQueryExample,
+} from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 
@@ -248,7 +253,8 @@ export class DatasetsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Database filters to apply when retrieving datasets\n" + filterDescription,
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -266,9 +272,9 @@ export class DatasetsController {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
       filter && filter.filter
         ? JSON.parse(filter.filter)
-        //: headers.filter
-        //? JSON.parse(headers.filter as string)
-        : {};
+        : //: headers.filter
+          //? JSON.parse(headers.filter as string)
+          {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> =
@@ -388,7 +394,6 @@ export class DatasetsController {
     isArray: true,
     description: "Return proposals requested",
   })
-
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
@@ -412,8 +417,7 @@ export class DatasetsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Query filters to apply when selecting datasets\n" +
-      fullQueryDescription,
+      "Query filters to apply when selecting datasets\n" + fullQueryDescription,
     required: false,
     type: String,
     example: fullQueryExample,
@@ -445,7 +449,8 @@ export class DatasetsController {
   @ApiQuery({
     name: "filter",
     description:
-      "Database filters to apply when retrieving datasets\n" + filterDescription,
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -461,9 +466,9 @@ export class DatasetsController {
   ): Promise<DatasetClass | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
       ? JSON.parse(queryFilters)
-      //: headerFilters
-      //? JSON.parse(headerFilters)
-      : {};
+      : //: headerFilters
+        //? JSON.parse(headerFilters)
+        {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
     if (dataset) {
@@ -510,14 +515,16 @@ export class DatasetsController {
   @ApiQuery({
     name: "where",
     description:
-      "Database filters to apply when retrieving datasets\n" + filterDescription,
+      "Database filters to apply when retrieving datasets\n" +
+      filterDescription,
     required: false,
     type: String,
     example: filterExample,
   })
   @ApiResponse({
     status: 200,
-    description: "Return the number of datasets in the following format: { count: integer }",
+    description:
+      "Return the number of datasets in the following format: { count: integer }",
   })
   async count(
     @Query("where") where: string, //FilterQuery<DatasetDocument>,
@@ -581,7 +588,8 @@ export class DatasetsController {
   })
   @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
   @ApiBody({
-    description: "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to passed in.",
+    description:
+      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to passed in.",
     required: true,
     schema: {
       oneOf: [
@@ -628,7 +636,8 @@ export class DatasetsController {
   })
   @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
   @ApiBody({
-    description: "Complete dataset definition with new values to replace current ones. The complete dataset structure needs to be specified.",
+    description:
+      "Complete dataset definition with new values to replace current ones. The complete dataset structure needs to be specified.",
     required: true,
     schema: {
       oneOf: [
@@ -703,8 +712,7 @@ export class DatasetsController {
   @ApiResponse({
     status: 200,
     type: DatasetClass,
-    description:
-      "Return new value of the dataset",
+    description: "Return new value of the dataset",
   })
   async appendToArrayField(
     @Param("pid") id: string,
@@ -738,8 +746,7 @@ export class DatasetsController {
   @ApiResponse({
     status: 200,
     type: Attachment,
-    description:
-      "Return new value of the dataset",
+    description: "Return new value of the dataset",
   })
   async thumbnail(@Param("pid") id: string): Promise<Partial<Attachment>> {
     const attachment = await this.attachmentsService.findOne(
@@ -820,7 +827,7 @@ export class DatasetsController {
     description:
       "Array with all the attachments associated with the dataset with the pid specified",
   })
-  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
+  async findAllAttachments(@Param("pid") id: string): Promise<Attachment[]> {
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
@@ -851,8 +858,7 @@ export class DatasetsController {
     status: 200,
     type: Attachment,
     isArray: false,
-    description:
-      "Returns the attachment updated.",
+    description: "Returns the attachment updated.",
   })
   async findOneAttachmentAndUpdate(
     @Param("pid") datasetId: string,
@@ -890,8 +896,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    description:
-      "No value is returned.",
+    description: "No value is returned.",
   })
   async findOneAttachmentAndRemove(
     @Param("pid") datasetId: string,
@@ -932,8 +937,7 @@ export class DatasetsController {
   @ApiResponse({
     status: 201,
     type: OrigDatablock,
-    description:
-      "It returns the new original datablock created",
+    description: "It returns the new original datablock created",
   })
   async createOrigDatablock(
     @Param("pid") id: string,
@@ -1045,7 +1049,8 @@ export class DatasetsController {
   )
   @Patch("/:pid/origdatablocks/:oid")
   @ApiOperation({
-    summary: "It updates the origDatablocks specified for the dataset indicated.",
+    summary:
+      "It updates the origDatablocks specified for the dataset indicated.",
     description:
       "It updates the original datablock specified by the aid parameter for the dataset indicated by the pid parameter.<br>This endpoint is obsolete and it will removed in future version.<br>Original datablocks can be updated from the origdatablocks endpoint.",
   })
@@ -1122,8 +1127,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    description:
-      "No value is returned",
+    description: "No value is returned",
   })
   async findOneOrigDatablockAndRemove(
     @Param("pid") datasetId: string,
@@ -1179,8 +1183,7 @@ export class DatasetsController {
   @ApiResponse({
     status: 201,
     type: Datablock,
-    description:
-      "It returns the new datablock created",
+    description: "It returns the new datablock created",
   })
   async createDatablock(
     @Param("pid") id: string,
@@ -1326,8 +1329,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    description:
-      "No value is returned",
+    description: "No value is returned",
   })
   async findOneDatablockAndRemove(
     @Param("pid") datasetId: string,
