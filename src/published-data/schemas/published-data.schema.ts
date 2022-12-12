@@ -10,6 +10,7 @@ export type PublishedDataDocument = PublishedData & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class PublishedData {
   @Prop({
@@ -182,18 +183,18 @@ export class PublishedData {
 
   @ApiProperty({
     type: Date,
-    required: true,
-    description: "Date when the published data was created",
+    description:
+      "Date when the published data was created. This property is added and maintained by the system",
   })
-  @Prop({ type: Date, required: true })
+  @Prop({ type: Date })
   createdAt: Date;
 
   @ApiProperty({
     type: Date,
-    required: true,
-    description: "Date when the published data was last updated",
+    description:
+      "Date when the published data was last updated. This property is added and maintained by the system",
   })
-  @Prop({ type: Date, required: true })
+  @Prop({ type: Date })
   updatedAt: Date;
 }
 

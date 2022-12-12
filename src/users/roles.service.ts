@@ -16,8 +16,6 @@ export class RolesService implements OnModuleInit {
   async onModuleInit() {
     const createRole: CreateRoleDto = {
       name: "globalaccess",
-      created: new Date(),
-      modified: new Date(),
     };
     await this.findOrCreate(createRole);
   }

@@ -31,6 +31,7 @@ export type DatasetDocument = DatasetClass & Document;
 @Schema({
   collection: "Dataset",
   minimize: false,
+  timestamps: true,
   toJSON: {
     getters: true,
   },

@@ -3,7 +3,11 @@ import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
-import { parseLimitFilters, addCreatedFields } from "src/common/utils";
+import {
+  parseLimitFilters,
+  addCreatedByFields,
+  addUpdatedByField,
+} from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
@@ -29,12 +33,10 @@ export class PublishedDataService {
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
     const username = (this.request.user as JWTUser).username;
-    const ts = new Date();
     const createdPublished = new this.publishedDataModel(
-      addCreatedFields<CreatePublishedDataDto>(
+      addCreatedByFields<CreatePublishedDataDto>(
         createPublishedDataDto,
         username,
-        ts,
       ),
     );
     return createdPublished.save();
@@ -67,8 +69,15 @@ export class PublishedDataService {
     filter: FilterQuery<PublishedDataDocument>,
     updatePublishedDataDto: UpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
+    const username = (this.request.user as JWTUser).username;
     return this.publishedDataModel
-      .findOneAndUpdate(filter, updatePublishedDataDto, { new: true })
+      .findOneAndUpdate(
+        filter,
+        addUpdatedByField(updatePublishedDataDto, username),
+        {
+          new: true,
+        },
+      )
       .exec();
   }
 

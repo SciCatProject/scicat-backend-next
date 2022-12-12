@@ -8,7 +8,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseInterceptors,
   HttpStatus,
   HttpException,
   Req,
@@ -23,9 +22,8 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { SetCreatedUpdatedAtInterceptor } from "src/common/interceptors/set-created-updated-at.interceptor";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
 import configuration from "src/config/configuration";
@@ -265,8 +263,12 @@ export class JobsController {
   }
 
   @AllowAny()
-  @UseInterceptors(new SetCreatedUpdatedAtInterceptor<Job>("creationTime"))
   @Post()
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: Job,
+    description: "Created job",
+  })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,

@@ -5,7 +5,13 @@ import { v4 as uuidv4 } from "uuid";
 
 export type HistoryDocument = HistoryClass & Document;
 
-@Schema({ strict: false })
+@Schema({ 
+  strict: false, 
+  timestamps: { 
+    createdAt: false, 
+    updatedAt: true 
+  }
+})
 export class HistoryClass {
 
   @ApiProperty({

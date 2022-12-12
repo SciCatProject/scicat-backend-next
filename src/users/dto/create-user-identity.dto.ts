@@ -6,16 +6,10 @@ export class CreateUserIdentityDto {
   readonly authScheme?: string;
 
   @ApiProperty()
-  readonly created?: Date;
-
-  @ApiProperty()
   readonly credentials?: Record<string, unknown>;
 
   @ApiProperty()
   readonly externalId?: string;
-
-  @ApiProperty()
-  readonly modified?: Date;
 
   @ApiProperty()
   readonly profile: UserProfile;

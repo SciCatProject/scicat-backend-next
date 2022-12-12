@@ -24,16 +24,11 @@ import { Sample, SampleDocument } from "./schemas/sample.schema";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
-import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
-import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-//import { RawDataset } from "src/datasets/schemas/raw-dataset.schema";
-//import { DerivedDataset } from "src/datasets/schemas/derived-dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")

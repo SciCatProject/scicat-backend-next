@@ -8,7 +8,8 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
-  addCreatedFields,
+  addCreatedByFields,
+  addUpdatedByField,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
@@ -26,9 +27,8 @@ export class ProposalsService {
 
   async create(createProposalDto: CreateProposalDto): Promise<ProposalClass> {
     const username = (this.request.user as JWTUser).username;
-    const ts = new Date();
     const createdProposal = new this.proposalModel(
-      addCreatedFields<CreateProposalDto>(createProposalDto, username, ts),
+      addCreatedByFields<CreateProposalDto>(createProposalDto, username),
     );
     return createdProposal.save();
   }
@@ -85,10 +85,16 @@ export class ProposalsService {
     filter: FilterQuery<ProposalDocument>,
     updateProposalDto: UpdateProposalDto,
   ): Promise<ProposalClass | null> {
+    const username = (this.request.user as JWTUser).username;
+
     return this.proposalModel
-      .findOneAndUpdate(filter, updateProposalDto, {
-        new: true,
-      })
+      .findOneAndUpdate(
+        filter,
+        addUpdatedByField(updateProposalDto, username),
+        {
+          new: true,
+        },
+      )
       .exec();
   }
 
