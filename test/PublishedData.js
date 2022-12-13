@@ -2,7 +2,6 @@
 "use strict";
 
 const utils = require("./LoginUtils");
-const nock = require("nock");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
@@ -110,19 +109,6 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  /*
-  it("should register this new published data", async (done) => {
-    nock("http://127.0.0.1:3000", {
-      reqheaders: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .post("/api/v3/PublishedData/" + doi + "/register")
-      .reply(200);
-    done();
-  });
-  */
-
   it("should register this new published data", async () => {
     return request(appUrl)
       .post("/api/v3/PublishedData/" + doi + "/register")
@@ -161,21 +147,6 @@ describe("PublishedData: Test of access to published data", () => {
   //       done();
   //     });
   // });
-
-  /*
-  it("should resync this new published data", async (done) => {
-    nock("http://127.0.0.1:3000", {
-      reqheaders: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .post("/api/v3/PublishedData/" + doi + "/resync", {
-        data: modifiedPublishedData,
-      })
-      .reply(200);
-    done();
-  });
-  */
 
   it("should fetch this new published data", async () => {
     return request(appUrl)
