@@ -18,6 +18,7 @@ import { DatasetType } from "../dataset-type.enum";
 import { Type } from "class-transformer";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { CreateTechniqueDto } from "./create-technique.dto";
+import { LifecycleClass } from "../schemas/lifecycle.schema";
 
 @ApiTags("datasets")
 export class CreateDatasetDto extends OwnableDto {
@@ -272,6 +273,16 @@ export class CreateDatasetDto extends OwnableDto {
   @ValidateNested({ each: true })
   @Type(() => CreateRelationshipDto)
   readonly relationships?: RelationshipClass[];
+
+  @ApiProperty({
+    type: LifecycleClass,
+    required: false,
+    default: {},
+    description:
+      "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
+  })
+  @IsOptional()
+  readonly datasetlifecycle: LifecycleClass;
 
   @ApiProperty({
     type: Object,
