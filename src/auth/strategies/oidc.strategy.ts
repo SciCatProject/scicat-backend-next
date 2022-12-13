@@ -17,6 +17,7 @@ import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
+import { ApiCallAccessGroupService } from "../access-group-provider/api-call-access-group.service";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -43,6 +44,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     client: Client,
     private configService: ConfigService,
     private usersService: UsersService,
+    private accessGroupService: ApiCallAccessGroupService,
   ) {
     const oidcConfig = configService.get<OidcConfig>("oidc");
     super({
@@ -111,8 +113,10 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       : "no photo";
   }
 
-  getAccessGroups(userinfo: UserinfoResponse): string[] {
-    const defaultAccessGroups: string[] = [];
+  async getAccessGroups(userinfo: UserinfoResponse): Promise<string[]> {
+    const defaultAccessGroups: string[] =
+      await this.accessGroupService.getAccessGroups(userinfo);
+
     const configs = this.configService.get<OidcConfig>("oidc");
     const userInfoResponseObjectAccessGroupKey = configs?.accessGroups;
 
@@ -144,7 +148,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     profile.emails = userinfo.email ? [{ value: userinfo.email }] : [];
     profile.email = userinfo.email ?? "";
     profile.thumbnailPhoto = this.getUserPhoto(userinfo);
-    profile.accessGroups = this.getAccessGroups(userinfo);
 
     return profile;
   }
