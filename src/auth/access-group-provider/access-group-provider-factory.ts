@@ -1,14 +1,15 @@
 import { ConfigService } from "@nestjs/config";
+import { AccessGroupFromApiCallService } from "./access-group-from-api-call.service";
+import { AccessGroupFromPayloadService } from "./access-group-from-payload.service copy";
 import { AccessGroupService } from "./access-group.service";
-import { ApiCallAccessGroupService } from "./api-call-access-group.service";
 
 export const getAccessGroupsServiceFactory = {
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
     if (configService.get<string>("site") === "ESS") {
-      return new ApiCallAccessGroupService();
+      return new AccessGroupFromApiCallService();
     } else {
-      throw new Error("Not implemented");
+      return new AccessGroupFromPayloadService();
     }
   },
 };

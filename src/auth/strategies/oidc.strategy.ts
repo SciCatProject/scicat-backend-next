@@ -17,7 +17,7 @@ import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
-import { ApiCallAccessGroupService } from "../access-group-provider/api-call-access-group.service";
+import { AccessGroupFromApiCallService } from "../access-group-provider/access-group-from-api-call.service";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -44,7 +44,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     client: Client,
     private configService: ConfigService,
     private usersService: UsersService,
-    private accessGroupService: ApiCallAccessGroupService,
+    private accessGroupService: AccessGroupFromApiCallService,
   ) {
     const oidcConfig = configService.get<OidcConfig>("oidc");
     super({
