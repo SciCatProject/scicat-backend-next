@@ -34,16 +34,21 @@ export class FullQueryInterceptor implements NestInterceptor {
                 scientificMetadata,
                 `${lhs}.value`,
               ) as number;
-              if (unit && currentUnit && currentUnit !== unit) {
+              if (
+                unit &&
+                currentUnit &&
+                currentUnit !== unit &&
+                scientificMetadata
+              ) {
                 const { valueRequested, unitRequested } =
                   convertToRequestedUnit(currentValue, currentUnit, unit);
                 lodash.update(
-                  scientificMetadata as Object,
+                  scientificMetadata,
                   `${lhs}.unit`,
                   () => unitRequested,
                 );
                 lodash.update(
-                  scientificMetadata as Object,
+                  scientificMetadata,
                   `${lhs}.value`,
                   () => valueRequested,
                 );

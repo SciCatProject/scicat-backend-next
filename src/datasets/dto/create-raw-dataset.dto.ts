@@ -7,7 +7,8 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
+    description:
+      "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
   })
   @IsString()
   readonly principalInvestigator: string;
@@ -17,7 +18,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
     required: false,
     description:
       "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset",
-  })  
+  })
   @IsOptional()
   @IsDateString()
   readonly endTime?: Date;

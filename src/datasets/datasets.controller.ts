@@ -111,7 +111,7 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It creates a new dataset which can be a raw or derived one.",
     description:
-      "It creates a new proposal and returnes it completed with systems fields.",
+      "It creates a new dataset and returns it completed with systems fields.",
   })
   @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
   @ApiBody({
@@ -127,8 +127,7 @@ export class DatasetsController {
   @ApiResponse({
     status: 201,
     type: DatasetClass,
-    description:
-      "Create a new proposal and return its representation in SciCat",
+    description: "Create a new dataset and return its representation in SciCat",
   })
   async create(
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
@@ -214,7 +213,7 @@ export class DatasetsController {
     status: 200,
     type: Boolean,
     description:
-      "Check if the proposal provided pass validation. It return true if the validation is passed",
+      "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -389,7 +388,7 @@ export class DatasetsController {
     status: 200,
     type: DatasetClass,
     isArray: true,
-    description: "Return proposals requested",
+    description: "Return datasets requested",
   })
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -586,7 +585,7 @@ export class DatasetsController {
   @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
   @ApiBody({
     description:
-      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to passed in.",
+      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
     schema: {
       oneOf: [
@@ -609,6 +608,12 @@ export class DatasetsController {
     return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
+  /**
+   * NOTE: PUT and PATCH functionality is exactly the same and behaves as a PATCH. They update only the fields that are passed in.
+   * In literature, the PUT method should replace completely the object requested with the values passed in.
+   * Here is an example of a proper implementation: https://wanago.io/2021/09/27/api-nestjs-put-patch-mongodb-mongoose/
+   * There is a ticket open for discussion where we decide how to move forward: https://jira.esss.lu.se/browse/SWAP-2942
+   */
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -624,22 +629,22 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It updates the dataset.",
     description:
-      "It updates the dataset specified through the pid specified. The full dataset is updated.",
+      "It updates the dataset specified through the pid provided. Only the specified fields are updated(at the moment put and patch behavior is completely the same).",
   })
   @ApiParam({
     name: "pid",
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
   @ApiBody({
     description:
-      "Complete dataset definition with new values to replace current ones. The complete dataset structure needs to be specified.",
+      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(CreateRawDatasetDto) },
-        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+        { $ref: getSchemaPath(UpdateRawDatasetDto) },
+        { $ref: getSchemaPath(UpdateDerivedDatasetDto) },
       ],
     },
   })
@@ -647,15 +652,13 @@ export class DatasetsController {
     status: 200,
     type: DatasetClass,
     description:
-      "Completely update an existing dataset and return its representation in SciCat",
+      "Update an existing dataset and return its representation in SciCat",
   })
   async findByIdReplaceOrCreate(
     @Param("pid") id: string,
-    @Body() replaceDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+    @Body() updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    // validate dataset
-    const validatedDatasetDto = await this.validateDataset(replaceDatasetDto);
-    return this.datasetsService.findByIdAndUpdate(id, validatedDatasetDto);
+    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
   }
 
   // DELETE /datasets/:id

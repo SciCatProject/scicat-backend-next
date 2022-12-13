@@ -5,15 +5,14 @@ import { v4 as uuidv4 } from "uuid";
 
 export type HistoryDocument = HistoryClass & Document;
 
-@Schema({ 
-  strict: false, 
-  timestamps: { 
-    createdAt: false, 
-    updatedAt: true 
-  }
+@Schema({
+  strict: false,
+  timestamps: {
+    createdAt: false,
+    updatedAt: true,
+  },
 })
 export class HistoryClass {
-
   @ApiProperty({
     type: String,
     required: true,
@@ -25,7 +24,7 @@ export class HistoryClass {
     type: String,
     //unique: true,
     required: true,
-    default: uuidv4()
+    default: uuidv4(),
   })
   /*
   id: string;
@@ -51,13 +50,12 @@ export class HistoryClass {
     type: Date,
     required: true,
     default: Date.now(),
-    description:
-      "Time when update was performed.",
-  })  
-  @Prop({ 
-    type: Date, 
-    required: true, 
-    default: Date.now() 
+    description: "Time when update was performed.",
+  })
+  @Prop({
+    type: Date,
+    required: true,
+    default: Date.now(),
   })
   updatedAt: Date;
 
@@ -65,12 +63,11 @@ export class HistoryClass {
     type: Date,
     required: true,
     default: Date.now(),
-    description:
-      "Username of the user that performed the update.",
-  })  
-  @Prop({ 
-    type: String, 
-    required: true 
+    description: "Username of the user that performed the update.",
+  })
+  @Prop({
+    type: String,
+    required: true,
   })
   updatedBy: string;
 }
