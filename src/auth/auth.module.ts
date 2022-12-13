@@ -11,7 +11,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UsersService } from "src/users/users.service";
 import { OidcConfig } from "src/config/configuration";
 import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
-import { AccessGroupFromApiCallService } from "./access-group-provider/access-group-from-api-call.service";
+import { accessGroupServiceFactory } from "./access-group-provider/access-group-service-factory";
+import { AccessGroupService } from "./access-group-provider/access-group.service";
 
 const OidcStrategyFactory = {
   provide: "OidcStrategy",
@@ -19,7 +20,7 @@ const OidcStrategyFactory = {
     authService: AuthService,
     configService: ConfigService,
     userService: UsersService,
-    accessGroupService: AccessGroupFromApiCallService,
+    accessGroupService: AccessGroupService,
   ) => {
     if (!configService.get<OidcConfig>("oidc")?.issuer) {
       return null;
@@ -35,12 +36,7 @@ const OidcStrategyFactory = {
     );
     return strategy;
   },
-  inject: [
-    AuthService,
-    ConfigService,
-    UsersService,
-    AccessGroupFromApiCallService,
-  ],
+  inject: [AuthService, ConfigService, UsersService, AccessGroupService],
 };
 
 @Module({
@@ -67,7 +63,7 @@ const OidcStrategyFactory = {
     LdapStrategy,
     LocalStrategy,
     OidcStrategyFactory,
-    AccessGroupFromApiCallService,
+    accessGroupServiceFactory,
   ],
   controllers: [AuthController],
   exports: [AuthService, JwtModule, PassportModule],

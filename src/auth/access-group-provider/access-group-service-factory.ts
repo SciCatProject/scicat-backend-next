@@ -3,13 +3,14 @@ import { AccessGroupFromApiCallService } from "./access-group-from-api-call.serv
 import { AccessGroupFromPayloadService } from "./access-group-from-payload.service copy";
 import { AccessGroupService } from "./access-group.service";
 
-export const getAccessGroupsServiceFactory = {
+export const accessGroupServiceFactory = {
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
     if (configService.get<string>("site") === "ESS") {
       return new AccessGroupFromApiCallService();
     } else {
-      return new AccessGroupFromPayloadService();
+      return new AccessGroupFromPayloadService(configService);
     }
   },
+  inject: [ConfigService],
 };
