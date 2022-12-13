@@ -23,4 +23,5 @@ export class RelationshipClass {
   relationship: string;
 }
 
-export const RelationshipSchema = SchemaFactory.createForClass(RelationshipClass);
+export const RelationshipSchema =
+  SchemaFactory.createForClass(RelationshipClass);

@@ -17,7 +17,7 @@ import { ApiProperty, ApiTags, getSchemaPath } from "@nestjs/swagger";
 import { DatasetType } from "../dataset-type.enum";
 import { Type } from "class-transformer";
 import { CreateRelationshipDto } from "./create-relationship.dto";
-import { CreateTechniqueDto } from "./create-technique.dto"
+import { CreateTechniqueDto } from "./create-technique.dto";
 
 @ApiTags("datasets")
 export class CreateDatasetDto extends OwnableDto {
@@ -82,14 +82,14 @@ export class CreateDatasetDto extends OwnableDto {
     required: false,
     description:
       "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com",
-  })  
+  })
   @IsOptional()
   @IsFQDN()
   readonly sourceFolderHost?: string;
 
   /*
    * size and number of files fields should be managed by the system
-   */ 
+   */
   @ApiProperty({
     type: Number,
     default: 0,
@@ -107,7 +107,7 @@ export class CreateDatasetDto extends OwnableDto {
     required: false,
     description:
       "Total size of all datablock package files created for this dataset",
-  })  
+  })
   @IsOptional()
   @IsInt()
   readonly packedSize?: number = 0;
@@ -283,4 +283,3 @@ export class CreateDatasetDto extends OwnableDto {
   @IsObject()
   readonly scientificMetadata?: Record<string, unknown>;
 }
-

@@ -146,7 +146,8 @@ export class ProposalsController {
   @ApiQuery({
     name: "filters",
     description:
-      "Database filters to apply when retrieving proposals\n" + filterDescription,
+      "Database filters to apply when retrieving proposals\n" +
+      filterDescription,
     required: false,
     type: String,
     example: filterExample,

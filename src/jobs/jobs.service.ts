@@ -178,10 +178,12 @@ export class JobsService {
             ownerGroup: dataset.ownerGroup,
             sourceFolder: dataset.sourceFolder,
             size: dataset.size,
-            archiveStatusMessage: dataset.datasetlifecycle?.archiveStatusMessage,
+            archiveStatusMessage:
+              dataset.datasetlifecycle?.archiveStatusMessage,
             retrieveStatusMessage:
               dataset.datasetlifecycle?.retrieveStatusMessage,
-            archiveReturnMessage: dataset.datasetlifecycle?.archiveReturnMessage,
+            archiveReturnMessage:
+              dataset.datasetlifecycle?.archiveReturnMessage,
             retrieveReturnMessage:
               dataset.datasetlifecycle?.retrieveReturnMessage,
             retrievable: dataset.datasetlifecycle?.retrievable,

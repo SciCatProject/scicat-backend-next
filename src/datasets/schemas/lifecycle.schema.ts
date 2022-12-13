@@ -6,6 +6,9 @@ export type LifecycleDocument = LifecycleClass & Document;
 
 @Schema()
 export class LifecycleClass {
+  @Prop({ required: false })
+  id?: string;
+
   @ApiProperty({
     type: Boolean,
     required: false,

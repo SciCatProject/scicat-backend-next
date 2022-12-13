@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { Attachment, AttachmentSchema } from "src/attachments/schemas/attachment.schema";
-/*
 import {
   Attachment,
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
   Datablock,
   DatablockSchema,
@@ -15,10 +14,6 @@ import {
   OrigDatablock,
   OrigDatablockSchema,
 } from "src/origdatablocks/schemas/origdatablock.schema";
-*/
-import { OwnableClass } from "src/common/schemas/ownable.schema";
-import { Datablock, DatablockSchema } from "src/datablocks/schemas/datablock.schema";
-import { OrigDatablock, OrigDatablockSchema } from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
 import { HistoryClass, HistorySchema } from "./history.schema";
@@ -104,10 +99,10 @@ export class DatasetClass extends OwnableClass {
     description:
       "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
-  @Prop({ 
-    type: String, 
-    required: true, 
-    index: true 
+  @Prop({
+    type: String,
+    required: true,
+    index: true,
   })
   contactEmail: string;
 
@@ -134,10 +129,10 @@ export class DatasetClass extends OwnableClass {
     description:
       "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com",
   })
-  @Prop({ 
-    type: String, 
+  @Prop({
+    type: String,
     required: false,
-    index: true 
+    index: true,
   })
   sourceFolderHost?: string;
 
@@ -148,11 +143,11 @@ export class DatasetClass extends OwnableClass {
     description:
       "Total size of all source files contained in source folder on disk when unpacked",
   })
-  @Prop({ 
+  @Prop({
     type: Number,
-    required: true, 
-    index: true, 
-    default: 0
+    required: true,
+    index: true,
+    default: 0,
   })
   size: number;
 
@@ -333,10 +328,10 @@ export class DatasetClass extends OwnableClass {
     default: [],
     description: "List of users that the dataset has been shared with",
   })
-  @Prop({ 
+  @Prop({
     type: [String],
     required: false,
-    default: []
+    default: [],
   })
   sharedWith?: string[];
 
@@ -371,7 +366,7 @@ export class DatasetClass extends OwnableClass {
   })
   @Prop({ type: [DatablockSchema], default: [] })
   datablocks: Datablock[];
-  
+
   @ApiProperty({
     type: Object,
     required: false,
@@ -387,7 +382,8 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
+    description:
+      "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
   })
   @Prop({ type: String, required: false })
   principalInvestigator?: string;
