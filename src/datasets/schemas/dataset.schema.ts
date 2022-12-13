@@ -351,7 +351,8 @@ export class DatasetClass extends OwnableClass {
   attachments?: Attachment[];
 
   @ApiProperty({
-    type: "array",
+    isArray: true,
+    type: OrigDatablock,
     items: { $ref: getSchemaPath(OrigDatablock) },
     required: false,
     description:
@@ -361,7 +362,8 @@ export class DatasetClass extends OwnableClass {
   origdatablocks: OrigDatablock[];
 
   @ApiProperty({
-    type: "array",
+    isArray: true,
+    type: Datablock,
     items: { $ref: getSchemaPath(Datablock) },
     required: false,
     description:

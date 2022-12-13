@@ -17,17 +17,17 @@ import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { SampleField } from "./sample-field.enum";
-import { Sample, SampleDocument } from "./schemas/sample.schema";
+import { SampleClass, SampleDocument } from "./schemas/sample.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class SamplesService {
   constructor(
-    @InjectModel(Sample.name) private sampleModel: Model<SampleDocument>,
+    @InjectModel(SampleClass.name) private sampleModel: Model<SampleDocument>,
     private configService: ConfigService,
     @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createSampleDto: CreateSampleDto): Promise<Sample> {
+  async create(createSampleDto: CreateSampleDto): Promise<SampleClass> {
     const username = (this.request.user as JWTUser).username;
     const createdSample = new this.sampleModel(
       addCreatedByFields(createSampleDto, username),
@@ -37,7 +37,7 @@ export class SamplesService {
 
   async findAll(
     filter: IFilters<SampleDocument, ISampleFields>,
-  ): Promise<Sample[]> {
+  ): Promise<SampleClass[]> {
     const whereFilter: FilterQuery<SampleDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -51,7 +51,7 @@ export class SamplesService {
 
   async fullquery(
     filter: IFilters<SampleDocument, ISampleFields>,
-  ): Promise<Sample[]> {
+  ): Promise<SampleClass[]> {
     const modifiers: QueryOptions = {};
     let filterQuery: FilterQuery<SampleDocument> = {};
 
@@ -113,7 +113,7 @@ export class SamplesService {
 
     const samples = await this.findAll(filters);
 
-    const metadataKeys = extractMetadataKeys<Sample>(
+    const metadataKeys = extractMetadataKeys<SampleClass>(
       samples,
       "sampleCharacteristics",
     ).filter((key) => !blacklist.some((regex) => regex.test(key)));
@@ -135,14 +135,14 @@ export class SamplesService {
     }
   }
 
-  async findOne(filter: FilterQuery<SampleDocument>): Promise<Sample | null> {
+  async findOne(filter: FilterQuery<SampleDocument>) {
     return this.sampleModel.findOne(filter).exec();
   }
 
   async update(
     filter: FilterQuery<SampleDocument>,
     updateSampleDto: UpdateSampleDto,
-  ): Promise<Sample | null> {
+  ): Promise<SampleClass | null> {
     const username = (this.request.user as JWTUser).username;
 
     return this.sampleModel

@@ -25,10 +25,14 @@ export class QueryableClass {
   })
   updatedBy: string;
 
+  /**
+   * NOTE: createdAt and updatedAt properties are handled automatically by mongoose when timestamps flag is set to true on a schema(https://mongoosejs.com/docs/guide.html#timestamps).
+   * We still need to keep the fields available here because of the response model and swagger documentation. They are not required so we don't need to provide them manually on create/update.
+   */
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was created. This property is added and maintained by the system",
+      "Date and time when this record was created. This property is added and maintained by mongoose",
   })
   @Prop({
     type: Date,
@@ -38,7 +42,7 @@ export class QueryableClass {
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was updated last. This property is added and maintained by the system",
+      "Date and time when this record was updated last. This property is added and maintained by mongoose",
   })
   @Prop({
     type: Date,
