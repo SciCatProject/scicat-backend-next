@@ -134,7 +134,7 @@ describe("Sample: Simple Sample", () => {
   });
 
   it("insert dataset using this sample", async () => {
-    let dataset = TestData.RawCorrect;
+    let dataset = { ...TestData.RawCorrect };
     dataset.sampleId = sampleId;
     return request(appUrl)
       .post("/api/v3/Datasets")

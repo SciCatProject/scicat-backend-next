@@ -55,7 +55,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   it("adds another new raw dataset", async () => {
     // modify owner
-    let raw2 = TestData.RawCorrect;
+    let raw2 = { ...TestData.RawCorrect };
     raw2.ownerGroup = "p12345";
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -74,11 +74,12 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("Should return datasets with complex join query fulfilled", async () => {
-
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
-          encodeURIComponent(JSON.stringify(TestData.DatasetLifecycle_query_1.fields)),
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_1.fields),
+          ),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -93,13 +94,16 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("Should return no datasets, because number of hits exhausted", async () => {
-
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
-          encodeURIComponent(JSON.stringify(TestData.DatasetLifecycle_query_2.fields)) +
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_2.fields),
+          ) +
           "&limits=" +
-          encodeURIComponent(JSON.stringify(TestData.DatasetLifecycle_query_2.limits)),
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_2.limits),
+          ),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -114,9 +118,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullfacet?fields=" +
-          encodeURIComponent(JSON.stringify(TestData.DatasetLifecycle_query_3.fields)) +
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_3.fields),
+          ) +
           "&facets=" +
-          encodeURIComponent(JSON.stringify(TestData.DatasetLifecycle_query_3.facets)),
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_3.facets),
+          ),
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
