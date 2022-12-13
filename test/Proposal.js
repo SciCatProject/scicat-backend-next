@@ -153,7 +153,7 @@ describe("Proposal: Simple Proposal", () => {
   });
 
   it("should add a new attachment to this proposal", async () => {
-    let testAttachment = TestData.AttachmentCorrect;
+    let testAttachment = { ...TestData.AttachmentCorrect };
     testAttachment.proposalId = defaultProposalId;
     return request(appUrl)
       .post("/api/v3/Proposals/" + proposalId + "/attachments")

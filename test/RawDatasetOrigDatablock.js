@@ -37,8 +37,8 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       },
     );
 
-    origDatablockData1 = TestData.OrigDataBlockCorrect1;
-    origDatablockData2 = TestData.OrigDataBlockCorrect2;
+    origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
+    origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
   });
 
   it("adds a new raw dataset", async () => {

@@ -22,10 +22,10 @@ var origDatablockId = null;
 
 describe("Jobs: Test New Job Model", () => {
   before((done) => {
-    archiveJob = TestData.ArchiveJob;
-    retrieveJob = TestData.RetrieveJob;
-    publicJob = TestData.PublicJob;
-    done()
+    archiveJob = { ...TestData.ArchiveJob };
+    retrieveJob = { ...TestData.RetrieveJob };
+    publicJob = { ...TestData.PublicJob };
+    done();
   });
 
   beforeEach((done) => {

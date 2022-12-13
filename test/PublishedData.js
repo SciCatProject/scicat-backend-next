@@ -15,9 +15,9 @@ let accessToken = null,
   attachmentId = null,
   doi = null;
 
-const publishedData = TestData.PublishedData;
+const publishedData = { ...TestData.PublishedData };
 
-const origDataBlock = TestData.OrigDataBlockCorrect1;
+const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
 
 const modifiedPublishedData = {
   publisher: "PSI",
@@ -110,7 +110,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-/*
+  /*
   it("should register this new published data", async (done) => {
     nock("http://127.0.0.1:3000", {
       reqheaders: {
