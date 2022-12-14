@@ -20,11 +20,7 @@ export const accessGroupServiceFactory = {
 
 function getEssAccessGroupService(configService: ConfigService) {
   const fromApi = getEssAccessGroupFromGQLApiService(configService);
-  const fromStatic = new AccessGroupFromStaticValuesService([
-    "ess",
-    "loki",
-    "odin",
-  ]);
+  const fromStatic = new AccessGroupFromStaticValuesService([]);
 
   const fromMultiple = new AccessGroupFromMultipleProvidersService([
     fromApi,
