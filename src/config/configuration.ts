@@ -1,4 +1,8 @@
 const configuration = () => ({
+  accessGroupService: {
+    token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
+    apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
+  },
   doiPrefix: process.env.DOI_PREFIX,
   expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
   functionalAccounts: [

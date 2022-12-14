@@ -14,16 +14,16 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
   ): Promise<string[]> {
     const defaultAccessGroups: string[] = [];
 
-    const configs = this.configService.get<OidcConfig>("oidc");
-    const userInfoResponseObjectAccessGroupKey = configs?.accessGroups;
+    const oidcConfig = this.configService.get<OidcConfig>("oidc");
+    const accessGroupsProperty = oidcConfig?.accessGroups;
 
-    if (!userInfoResponseObjectAccessGroupKey) {
+    if (!accessGroupsProperty) {
       return defaultAccessGroups;
     }
-    if (!Array.isArray(idpPayload[userInfoResponseObjectAccessGroupKey])) {
+    if (!Array.isArray(idpPayload[accessGroupsProperty])) {
       return defaultAccessGroups;
     }
 
-    return idpPayload[userInfoResponseObjectAccessGroupKey] as string[];
+    return idpPayload[accessGroupsProperty] as string[];
   }
 }

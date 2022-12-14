@@ -1,16 +1,16 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { AccessGroupFromApiCallService } from "./access-group-from-api-call.service";
+import { AccessGroupFromGraphQLApiService } from "./access-group-from-graphql-api-call.service";
 
 describe("AccessGroupProviderService", () => {
-  let service: AccessGroupFromApiCallService;
+  let service: AccessGroupFromGraphQLApiService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AccessGroupFromApiCallService],
+      providers: [AccessGroupFromGraphQLApiService],
     }).compile();
 
-    service = module.get<AccessGroupFromApiCallService>(
-      AccessGroupFromApiCallService,
+    service = module.get<AccessGroupFromGraphQLApiService>(
+      AccessGroupFromGraphQLApiService,
     );
   });
 

@@ -17,7 +17,6 @@ import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
-import { AccessGroupFromApiCallService } from "../access-group-provider/access-group-from-api-call.service";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
 
 export class BuildOpenIdClient {
@@ -115,23 +114,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
             "base64",
           )
       : "no photo";
-  }
-
-  async getAccessGroups(userinfo: UserinfoResponse): Promise<string[]> {
-    const defaultAccessGroups: string[] =
-      await this.accessGroupService.getAccessGroups(userinfo);
-
-    const configs = this.configService.get<OidcConfig>("oidc");
-    const userInfoResponseObjectAccessGroupKey = configs?.accessGroups;
-
-    if (!userInfoResponseObjectAccessGroupKey) {
-      return defaultAccessGroups;
-    }
-    if (!Array.isArray(userinfo[userInfoResponseObjectAccessGroupKey])) {
-      return defaultAccessGroups;
-    }
-
-    return userinfo[userInfoResponseObjectAccessGroupKey] as string[];
   }
 
   parseUserInfo(userinfo: UserinfoResponse) {
