@@ -3,6 +3,9 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
 
+/**
+ * This service is used to get the access groups from the payload of the IDP.
+ */
 @Injectable()
 export class AccessGroupFromPayloadService extends AccessGroupService {
   constructor(private configService: ConfigService) {

@@ -2,6 +2,9 @@ import { AccessGroupService as AccessGroupService } from "./access-group.service
 import { Injectable } from "@nestjs/common";
 import fetch from "node-fetch";
 
+/**
+ * This service is used to fetch access groups from a GraphQL API.
+ */
 @Injectable()
 export class AccessGroupFromGraphQLApiService extends AccessGroupService {
   constructor(

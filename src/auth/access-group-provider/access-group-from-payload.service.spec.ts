@@ -5,12 +5,19 @@ import { AccessGroupFromPayloadService } from "./access-group-from-payload.servi
 describe("AccessGroupFromPayloadService", () => {
   let service: AccessGroupFromPayloadService;
 
-  beforeEach(async () => {
-    process.env.accessGroupsProperty = "accessGroups";
+  const mockConfigService = {
+    get: () => ({
+      accessGroups: "accessGroups",
+    }),
+  };
 
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AccessGroupFromPayloadService, ConfigService],
-    }).compile();
+    })
+      .overrideProvider(ConfigService)
+      .useValue(mockConfigService)
+      .compile();
 
     service = module.get<AccessGroupFromPayloadService>(
       AccessGroupFromPayloadService,
@@ -19,5 +26,13 @@ describe("AccessGroupFromPayloadService", () => {
 
   it("should be defined", () => {
     expect(service).toBeDefined();
+  });
+
+  it("Should resolve access groups", async () => {
+    const expected = ["AAA", "BBB"];
+    const actual = await service.getAccessGroups({
+      accessGroups: ["AAA", "BBB"],
+    });
+    expect(actual).toEqual(expected);
   });
 });
