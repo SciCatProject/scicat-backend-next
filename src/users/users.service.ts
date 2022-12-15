@@ -23,6 +23,7 @@ import {
 } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -152,6 +153,15 @@ export class UsersService implements OnModuleInit {
       createUserIdentityDto,
     );
     return createdUserIdentity.save();
+  }
+
+  async updateUserIdentity(
+    updateUserIdentityDto: UpdateUserIdentityDto,
+    userId: string,
+  ): Promise<UserIdentity | null> {
+    return this.userIdentityModel
+      .findOneAndUpdate({ userId }, updateUserIdentityDto, { new: true })
+      .exec();
   }
 
   // NOTE: This is just for testing purposes inside accessGroups.e2e-spec.ts

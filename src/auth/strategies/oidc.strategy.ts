@@ -1,3 +1,4 @@
+import { UpdateUserIdentityDto } from "./../../users/dto/update-user-identity.dto";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
@@ -74,15 +75,15 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
         { email: userProfile.email as string },
       ],
     };
-    const userExists = await this.usersService.userExists(userFilter);
-    if (!userExists) {
+    let user = await this.usersService.findOne(userFilter);
+    if (!user) {
       const createUser: CreateUserDto = {
         username: `oidc.${userProfile.username}`,
         email: userProfile.email as string,
       };
 
-      const user = await this.usersService.create(createUser);
-      if (!user) {
+      const newUser = await this.usersService.create(createUser);
+      if (!newUser) {
         throw new InternalServerErrorException(
           "Could not create User from OIDC response.",
         );
@@ -94,17 +95,26 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
         externalId: userProfile.id,
         profile: userProfile,
         provider: "oidc",
-        userId: user._id,
+        userId: newUser._id,
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-    }
-    const foundUser = await this.usersService.findOne(userFilter);
-    const jsonUser = JSON.parse(JSON.stringify(foundUser));
-    const { password, ...user } = jsonUser;
-    user.userId = user._id;
 
-    return user;
+      user = newUser;
+    } else {
+      await this.usersService.updateUserIdentity(
+        {
+          profile: userProfile,
+        },
+        user._id,
+      );
+    }
+
+    const jsonUser = JSON.parse(JSON.stringify(user));
+    const { password, ...returnUser } = jsonUser;
+    returnUser.userId = returnUser._id;
+
+    return returnUser;
   }
 
   getUserPhoto(userinfo: UserinfoResponse) {
