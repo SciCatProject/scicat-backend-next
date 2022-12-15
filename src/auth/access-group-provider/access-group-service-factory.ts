@@ -47,12 +47,18 @@ function getEssAccessGroupFromGQLApiService(configService: ConfigService) {
       }
     }`;
 
-  const responseProcessor = (response: {
+  type ResponseType = {
     data: {
-      userByOIDCSub?: { proposals?: Array<{ proposalId: string }> };
+      userByOIDCSub: {
+        proposals: {
+          proposalId: string;
+        }[];
+      };
     };
-  }) => {
-    const proposals = response.data.userByOIDCSub?.proposals;
+  };
+
+  const responseProcessor = (response: Record<string, unknown>) => {
+    const proposals = (response as ResponseType).data.userByOIDCSub?.proposals;
     if (!proposals) return [];
     return proposals.map((proposal) => proposal.proposalId);
   };

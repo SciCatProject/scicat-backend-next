@@ -11,7 +11,7 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     private graphqlTemplateQuery: string, // e.g. `userByOIDCSub(oidcSub: "{{oidcSub}}"){ proposals { proposalId } }`
     private apiUrl: string,
     private headers: Record<string, string>,
-    private responseProcessor: (response: any) => string[],
+    private responseProcessor: (response: Record<string, unknown>) => string[],
   ) {
     super();
   }

@@ -11,7 +11,7 @@ describe("AccessGroupFromGraphQLApiService", () => {
     "",
     "",
     {},
-    (result: typeof mockResponse) => result.data.map(({ id }) => id),
+    (result) => (result as typeof mockResponse).data.map(({ id }) => id),
   );
 
   beforeEach(async () => {
