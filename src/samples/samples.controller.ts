@@ -99,7 +99,7 @@ export class SamplesController {
       "It returns a list of samples. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description:
       "Database filters to apply when retrieve samples\n" + filterDescription,
     required: false,
@@ -112,7 +112,7 @@ export class SamplesController {
     isArray: true,
     description: "Return the samples requested",
   })
-  async findAll(@Query("filters") filters?: string): Promise<SampleClass[]> {
+  async findAll(@Query("filter") filters?: string): Promise<SampleClass[]> {
     const sampleFilters: IFilters<SampleDocument, ISampleFields> = JSON.parse(
       filters ?? "{}",
     );
@@ -201,7 +201,7 @@ export class SamplesController {
     description: "It returns sample matching the query provided.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description: "Filters to apply when retrieve sample\n" + filterDescription,
     required: false,
     type: String,
@@ -213,10 +213,10 @@ export class SamplesController {
     description: "Return sample requested",
   })
   async findOne(
-    @Query() { filters }: { filters: string },
+    @Query("filter") queryFilters?: string,
   ): Promise<SampleWithAttachmentsAndDatasets | null> {
-    const jsonFilters: IFilters<SampleDocument, ISampleFields> = filters
-      ? JSON.parse(filters)
+    const jsonFilters: IFilters<SampleDocument, ISampleFields> = queryFilters
+      ? JSON.parse(queryFilters)
       : {};
     const whereFilters = jsonFilters.where ?? {};
 
