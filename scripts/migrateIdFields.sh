@@ -9,5 +9,5 @@ echo
 read -p "Are you sure you want to run the script? [y/N]" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    mongo -u "dacatDBAdmin" -p "...."  --authenticationDatabase "dacat" HOSTNAME/dacat  migrateIdFields.js
+    mongosh -u "dacatDBAdmin" -p "...."  --authenticationDatabase "dacat" HOSTNAME/dacat  migrateIdFields.js
 fi

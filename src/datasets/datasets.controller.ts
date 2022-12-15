@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 import {
   Body,
   Controller,
@@ -58,23 +59,13 @@ import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { plainToInstance } from "class-transformer";
-import {
-  validate,
-  validateOrReject,
-  ValidationError,
-  ValidatorOptions,
-} from "class-validator";
+import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
 import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
-import {
-  filterDescription,
-  filterExample,
-  fullQueryDescription,
-  fullQueryExample,
-} from "src/common/utils";
+import { filterDescription, filterExample } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 
@@ -262,15 +253,10 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findAll(
-    //@Headers() headers: Record<string, unknown>,
     @Query(new FilterPipe()) filter?: { filter: string; fields: string },
   ): Promise<DatasetClass[] | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
-      filter && filter.filter
-        ? JSON.parse(filter.filter)
-        : //: headers.filter
-          //? JSON.parse(headers.filter as string)
-          {};
+      filter && filter.filter ? JSON.parse(filter.filter) : {};
     const jsonFields: FilterQuery<DatasetDocument> =
       filter && filter.fields ? JSON.parse(filter.fields) : {};
     const whereFilters: FilterQuery<DatasetDocument> =
@@ -343,11 +329,17 @@ export class DatasetsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Full query filters to apply when retrieving datasets\n" +
-      fullQueryDescription,
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ skip: 0, limit: 25, order: "creationTime:desc" }',
   })
   @ApiResponse({
     status: 200,
@@ -356,11 +348,11 @@ export class DatasetsController {
     description: "Return datasets requested",
   })
   async fullquery(
-    @Query() fields: { fields?: string; limits?: string },
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(fields.fields ?? "{}"),
-      limits: JSON.parse(fields.limits ?? "{}"),
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.datasetsService.fullquery(parsedFilters);
   }
@@ -376,13 +368,20 @@ export class DatasetsController {
       "It returns a list of dataset facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Full facet query filters to apply when retrieving datasets\n" +
-      fullQueryDescription,
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: {},
+  })
+  @ApiQuery({
+    name: "facets",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: String,
+    example: '["type","creationLocation","ownerGroup","keywords"]',
   })
   @ApiResponse({
     status: 200,
@@ -411,12 +410,19 @@ export class DatasetsController {
       "It returns a list of metadata keys contained in the datasets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Query filters to apply when selecting datasets\n" + fullQueryDescription,
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ skip: 0, limit: 25, order: "creationTime:desc" }',
   })
   @ApiResponse({
     status: 200,
@@ -425,7 +431,7 @@ export class DatasetsController {
     description: "Return metadata keys list of datasets selected",
   })
   async metadataKeys(
-    @Query("filters") filters: { fields?: string; limits?: string },
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -458,13 +464,10 @@ export class DatasetsController {
   })
   async findOne(
     @Query("filter") queryFilters?: string,
-    //@Headers("filter") headerFilters?: string,
   ): Promise<DatasetClass | null> {
     const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
       ? JSON.parse(queryFilters)
-      : //: headerFilters
-        //? JSON.parse(headerFilters)
-        {};
+      : {};
     const whereFilters = jsonFilters.where ?? {};
     const dataset = await this.datasetsService.findOne(whereFilters);
     if (dataset) {
@@ -506,16 +509,15 @@ export class DatasetsController {
   @ApiOperation({
     summary: "It returns the number of datasets.",
     description:
-      "It returns a number of datasets matching the filter if provided.<br> the filter format needs to be reviewed.",
+      "It returns a number of datasets matching the where filter if provided.",
   })
   @ApiQuery({
     name: "where",
     description:
-      "Database filters to apply when retrieving datasets\n" +
-      filterDescription,
+      "Database where filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    example: filterExample,
+    example: '{"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}',
   })
   @ApiResponse({
     status: 200,
@@ -555,7 +557,6 @@ export class DatasetsController {
     description: "Return dataset with pid specified",
   })
   async findById(@Param("pid") id: string): Promise<DatasetClass | null> {
-    //Logger.log("Finding dataset with pid : " + id);
     return this.datasetsService.findOne({ pid: id });
   }
 
@@ -1292,13 +1293,6 @@ export class DatasetsController {
             dataset.numberOfFilesArchived -
             datablockBeforeUpdate.dataFileList.length +
             datablock.dataFileList.length,
-          /*
-          size: dataset.size - datablockBeforeUpdate.size + datablock.size,
-          numberOfFiles:
-            dataset.numberOfFiles -
-            datablockBeforeUpdate.dataFileList.length +
-            datablock.dataFileList.length,
-          */
         });
         return datablock;
       }

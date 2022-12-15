@@ -16,7 +16,7 @@ for (var i = 0; i < collections.length; i++) {
       printjson("   Migrate _id field to " + idField);
       collection.update(
         { _id: document._id },
-        { $set: { [idField]: document._id } }
+        { $set: { [idField]: document._id } },
       );
     }
   });
