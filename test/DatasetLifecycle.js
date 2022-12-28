@@ -235,8 +235,15 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   // });
 
   it("check for the 2 default policies to have been created", async () => {
+    // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
+    const start = new Date();
+    start.setHours(start.getHours(), 0, 0, 0);
+    const filter = { where: { createdAt: { $gte: start } } };
+
     return request(appUrl)
-      .get("/api/v3/Policies")
+      .get(
+        `/api/v3/Policies?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
