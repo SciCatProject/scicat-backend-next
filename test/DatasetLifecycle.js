@@ -49,7 +49,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        pidRaw1 = res.body["pid"];
+        // NOTE: Encoding the pid because it might contain some special characters.
+        pidRaw1 = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -69,7 +70,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        pidRaw2 = res.body["pid"];
+        // NOTE: Encoding the pid because it might contain some special characters.
+        pidRaw2 = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -155,7 +157,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   // PUT /datasets without specifying the id does not exist anymore
   it("Should update the datasetLifecycle information for multiple datasets", async () => {
     var filter = {
-      pid: pidRaw1,
+      pid: decodeURIComponent(pidRaw1),
     };
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pidRaw1 + "?where=" + JSON.stringify(filter))
@@ -255,13 +257,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   it("should delete the two policies", async () => {
-    return policyIds.map((i) =>
-      request(appUrl)
-        .delete("/api/v3/Policies/" + i)
+    for (const item of policyIds) {
+      await request(appUrl)
+        .delete("/api/v3/policies/" + item)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200),
-    );
+        .expect(200);
+    }
   });
 
   it("should delete the newly created dataset", async () => {
