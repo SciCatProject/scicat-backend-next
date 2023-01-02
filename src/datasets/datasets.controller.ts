@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   HttpException,
+  NotFoundException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -168,7 +169,7 @@ export class DatasetsController {
       },
     };
 
-    if (type != "raw" && type != "derived") {
+    if (type !== "raw" && type !== "derived") {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -623,10 +624,19 @@ export class DatasetsController {
       | PartialUpdateRawDatasetDto
       | PartialUpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
+    const foundDataset = await this.datasetsService.findOne({ pid });
+
+    if (!foundDataset) {
+      throw new NotFoundException();
+    }
+
+    // NOTE: Type is a must have because validation is based on it
+    const datasetType = updateDatasetDto.type ?? foundDataset.type;
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     await this.validateDataset(
-      updateDatasetDto,
-      updateDatasetDto.type === "raw"
+      { ...updateDatasetDto, type: datasetType },
+      datasetType === "raw"
         ? PartialUpdateRawDatasetDto
         : PartialUpdateDerivedDatasetDto,
     );
