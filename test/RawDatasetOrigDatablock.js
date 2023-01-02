@@ -54,7 +54,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = res.body["pid"];
+        datasetPid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -172,7 +172,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     };
     var filter = {
       where: {
-        pid: datasetPid,
+        pid: decodeURIComponent(datasetPid),
       },
       include: [
         {
@@ -193,7 +193,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["pid"].should.be.equal(datasetPid);
+        res.body["pid"].should.be.equal(decodeURIComponent(datasetPid));
         res.body.origdatablocks.should.be
           .instanceof(Array)
           .and.to.have.length(2);
@@ -208,7 +208,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
 
   it("Should fetch some origDatablock by the full filename and dataset pid", async () => {
     var fields = {
-      datasetId: datasetPid,
+      datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "N1039-B410377.tif",
     };
     var limits = {
@@ -233,7 +233,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
 
   it("Should fetch some origDatablock by the partial filename and dataset pid", async () => {
     var fields = {
-      datasetId: datasetPid,
+      datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": { $regex: "B410" },
     };
     var limits = {
@@ -258,7 +258,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
 
   it("Should fetch no origDatablock using a non existing filename", async () => {
     var fields = {
-      datasetId: datasetPid,
+      datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "this_file_does_not_exists.txt",
     };
     var limits = {
@@ -283,7 +283,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
 
   it("Should fetch one origDatablock using a specific filename and dataset id", async () => {
     var fields = {
-      datasetId: datasetPid,
+      datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "this_unique_file.txt",
     };
     var limits = {
