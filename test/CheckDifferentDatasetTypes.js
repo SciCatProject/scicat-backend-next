@@ -352,8 +352,15 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for the default policies to have been created", async () => {
+    // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
+    const start = new Date();
+    start.setHours(start.getHours(), 0, 0, 0);
+    const filter = { where: { createdAt: { $gte: start } } };
+
     return request(appUrl)
-      .get("/api/v3/Policies")
+      .get(
+        `/api/v3/Policies?filter=${encodeURIComponent(JSON.stringify(filter))}`,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)

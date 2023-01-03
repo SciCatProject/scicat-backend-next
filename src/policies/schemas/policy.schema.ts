@@ -11,6 +11,7 @@ export type PolicyDocument = Policy & Document;
   toJSON: {
     getters: true,
   },
+  timestamps: true,
 })
 export class Policy extends OwnableClass {
   @ApiProperty()

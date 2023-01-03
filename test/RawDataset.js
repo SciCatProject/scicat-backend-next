@@ -86,7 +86,7 @@ describe("RawDataset: Raw Datasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-        pid = res.body["pid"];
+        pid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -152,7 +152,7 @@ describe("RawDataset: Raw Datasets", () => {
   it("should fetch this raw dataset", async () => {
     const filter = {
       where: {
-        pid: pid,
+        pid: decodeURIComponent(pid),
       },
     };
 
@@ -169,7 +169,9 @@ describe("RawDataset: Raw Datasets", () => {
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have.property("pid").and.equal(pid);
+          res.body.should.have
+            .property("pid")
+            .and.equal(decodeURIComponent(pid));
         })
     );
   });
