@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   HttpException,
+  NotFoundException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -27,7 +28,7 @@ import {
   getSchemaPath,
 } from "@nestjs/swagger";
 import { DatasetsService } from "./datasets.service";
-import { UpdateDatasetDto } from "./dto/update-dataset.dto";
+import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
@@ -58,12 +59,18 @@ import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { plainToInstance } from "class-transformer";
+import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
-import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
-import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
+import {
+  PartialUpdateRawDatasetDto,
+  UpdateRawDatasetDto,
+} from "./dto/update-raw-dataset.dto";
+import {
+  PartialUpdateDerivedDatasetDto,
+  UpdateDerivedDatasetDto,
+} from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import { filterDescription, filterExample } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
@@ -124,16 +131,33 @@ export class DatasetsController {
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
   ): Promise<DatasetClass> {
     // validate dataset
-    const validatedDatasetDto = await this.validateDataset(createDatasetDto);
-    return this.datasetsService.create(validatedDatasetDto);
+    await this.validateDataset(
+      createDatasetDto,
+      createDatasetDto.type === "raw"
+        ? CreateRawDatasetDto
+        : CreateDerivedDatasetDto,
+    );
+
+    return this.datasetsService.create(createDatasetDto);
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   async validateDataset(
-    inputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
-  ): Promise<CreateRawDatasetDto | CreateDerivedDatasetDto> {
-    let errors: Array<unknown> = [];
-    let outputDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto;
+    inputDatasetDto:
+      | CreateRawDatasetDto
+      | CreateDerivedDatasetDto
+      | PartialUpdateRawDatasetDto
+      | PartialUpdateDerivedDatasetDto
+      | UpdateRawDatasetDto
+      | UpdateDerivedDatasetDto,
+    dto: ClassConstructor<
+      | CreateRawDatasetDto
+      | CreateDerivedDatasetDto
+      | PartialUpdateRawDatasetDto
+      | PartialUpdateDerivedDatasetDto
+      | UpdateRawDatasetDto
+      | UpdateDerivedDatasetDto
+    >,
+  ) {
     const type = inputDatasetDto.type;
     const validateOptions: ValidatorOptions = {
       whitelist: true,
@@ -141,10 +165,11 @@ export class DatasetsController {
       forbidUnknownValues: true,
       validationError: {
         value: false,
+        target: false,
       },
     };
 
-    if (type != "raw" && type != "derived") {
+    if (type !== "raw" && type !== "derived") {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -154,16 +179,9 @@ export class DatasetsController {
       );
     }
 
-    if (type == "raw") {
-      outputDatasetDto = plainToInstance(CreateRawDatasetDto, inputDatasetDto);
-      errors = await validate(outputDatasetDto, validateOptions);
-    } else {
-      outputDatasetDto = plainToInstance(
-        CreateDerivedDatasetDto,
-        inputDatasetDto,
-      );
-      errors = await validate(outputDatasetDto, validateOptions);
-    }
+    const outputDatasetDto = plainToInstance(dto, inputDatasetDto);
+    const errors = await validate(outputDatasetDto, validateOptions);
+
     if (errors.length > 0) {
       throw new HttpException(
         {
@@ -173,6 +191,7 @@ export class DatasetsController {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     return outputDatasetDto;
   }
 
@@ -206,10 +225,7 @@ export class DatasetsController {
     description:
       "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
-  async isValid(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    @Body() createDataset: unknown,
-  ): Promise<{ valid: boolean }> {
+  async isValid(@Body() createDataset: unknown): Promise<{ valid: boolean }> {
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
       createDataset,
@@ -574,24 +590,24 @@ export class DatasetsController {
   )
   @Patch("/:pid")
   @ApiOperation({
-    summary: "It updates the dataset.",
+    summary: "It partially updates the dataset.",
     description:
-      "It updates the dataset specified through the pid specified. It updates only the specified fields.",
+      "It updates the dataset through the pid specified. It updates only the specified fields.",
   })
   @ApiParam({
     name: "pid",
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
+  @ApiExtraModels(PartialUpdateRawDatasetDto, PartialUpdateDerivedDatasetDto)
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(UpdateRawDatasetDto) },
-        { $ref: getSchemaPath(UpdateDerivedDatasetDto) },
+        { $ref: getSchemaPath(PartialUpdateRawDatasetDto) },
+        { $ref: getSchemaPath(PartialUpdateDerivedDatasetDto) },
       ],
     },
   })
@@ -604,17 +620,30 @@ export class DatasetsController {
   async findByIdAndUpdate(
     @Param("pid") pid: string,
     @Body()
-    updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+    updateDatasetDto:
+      | PartialUpdateRawDatasetDto
+      | PartialUpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
+    const foundDataset = await this.datasetsService.findOne({ pid });
+
+    if (!foundDataset) {
+      throw new NotFoundException();
+    }
+
+    // NOTE: Type is a must have because validation is based on it
+    const datasetType = updateDatasetDto.type ?? foundDataset.type;
+
+    // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    await this.validateDataset(
+      { ...updateDatasetDto, type: datasetType },
+      datasetType === "raw"
+        ? PartialUpdateRawDatasetDto
+        : PartialUpdateDerivedDatasetDto,
+    );
+
     return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
-  /**
-   * NOTE: PUT and PATCH functionality is exactly the same and behaves as a PATCH. They update only the fields that are passed in.
-   * In literature, the PUT method should replace completely the object requested with the values passed in.
-   * Here is an example of a proper implementation: https://wanago.io/2021/09/27/api-nestjs-put-patch-mongodb-mongoose/
-   * There is a ticket open for discussion where we decide how to move forward: https://jira.esss.lu.se/browse/SWAP-2942
-   */
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -629,8 +658,10 @@ export class DatasetsController {
   @Put("/:pid")
   @ApiOperation({
     summary: "It updates the dataset.",
-    description:
-      "It updates the dataset specified through the pid provided. Only the specified fields are updated(at the moment put and patch behavior is completely the same).",
+    description: `It updates(replaces) the dataset specified through the pid provided. If optional fields are not provided they will be removed.
+      The PUT method is responsible for modifying an existing entity. The crucial part about it is that it is supposed to replace an entity.
+      Therefore, if we don’t send a field of an entity when performing a PUT request, the missing field should be removed from the document.
+      (Caution: This operation could result with data loss if all the dataset fields are not provided)`,
   })
   @ApiParam({
     name: "pid",
@@ -640,7 +671,7 @@ export class DatasetsController {
   @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
   @ApiBody({
     description:
-      "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
+      "Dataset object that needs to be updated. The whole dataset object with updated fields have to be passed in.",
     required: true,
     schema: {
       oneOf: [
@@ -655,11 +686,22 @@ export class DatasetsController {
     description:
       "Update an existing dataset and return its representation in SciCat",
   })
-  async findByIdReplaceOrCreate(
+  async findByIdAndReplace(
     @Param("pid") id: string,
     @Body() updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    return this.datasetsService.findByIdAndUpdate(id, updateDatasetDto);
+    // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    const outputDto = await this.validateDataset(
+      updateDatasetDto,
+      updateDatasetDto.type === "raw"
+        ? UpdateRawDatasetDto
+        : UpdateDerivedDatasetDto,
+    );
+
+    return this.datasetsService.findByIdAndReplace(
+      id,
+      outputDto as UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+    );
   }
 
   // DELETE /datasets/:id
@@ -957,7 +999,7 @@ export class DatasetsController {
         createOrigDatablock,
       );
 
-      const updateDatasetDto: UpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetDto = {
         size: dataset.size + datablock.size,
         numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       };
@@ -1146,7 +1188,7 @@ export class DatasetsController {
         datasetId: datasetId,
       });
       // update dataset size and files number
-      const updateDatasetDto: UpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetDto = {
         size: odb.reduce((a, b) => a + b.size, 0),
         numberOfFiles: odb.reduce((a, b) => a + b.dataFileList.length, 0),
       };
@@ -1341,7 +1383,7 @@ export class DatasetsController {
         datasetId: datasetId,
       });
       // update dataset size and files number
-      const updateDatasetDto: UpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetDto = {
         packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
         numberOfFilesArchived: remainingDatablocks.reduce(
           (a, b) => a + b.dataFileList.length,
