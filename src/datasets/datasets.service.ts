@@ -24,11 +24,18 @@ import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.se
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
-import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
-import { UpdateDatasetDto } from "./dto/update-dataset.dto";
-import { UpdateDerivedDatasetDto } from "./dto/update-derived-dataset.dto";
-import { UpdateRawDatasetDto } from "./dto/update-raw-dataset.dto";
+import {
+  PartialUpdateDatasetDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
+import {
+  PartialUpdateDerivedDatasetDto,
+  UpdateDerivedDatasetDto,
+} from "./dto/update-derived-dataset.dto";
+import {
+  PartialUpdateRawDatasetDto,
+  UpdateRawDatasetDto,
+} from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
@@ -133,37 +140,44 @@ export class DatasetsService {
 
   // PUT dataset
   // we update the full dataset if exist or create a new one if it does not
-  async findByIdAndReplaceOrCreate(
+  async findByIdAndReplace(
     id: string,
-    createDatasetDto:
-      | CreateDatasetDto
-      | CreateRawDatasetDto
-      | CreateDerivedDatasetDto,
+    updateDatasetDto:
+      | UpdateDatasetDto
+      | UpdateRawDatasetDto
+      | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
-    const existingDataset = await this.datasetModel
-      .findOneAndUpdate(
+    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
+    if (!existingDataset) {
+      throw new NotFoundException();
+    }
+    // TODO: This might need a discussion.
+    // NOTE: _id, pid and some other fields should not be touched in any case.
+    const updatedDatasetInput = {
+      pid: existingDataset.pid,
+      createdBy: existingDataset.createdBy,
+      createdAt: existingDataset.createdAt,
+      history: existingDataset.history,
+      ...updateDatasetDto,
+    };
+    const updatedDataset = await this.datasetModel
+      .findOneAndReplace(
         { pid: id },
-        addUpdatedByField(
-          createDatasetDto as UpdateQuery<DatasetDocument>,
-          username,
-        ),
-        { new: true },
+        addUpdatedByField(updatedDatasetInput, username),
+        {
+          new: true,
+        },
       )
       .exec();
 
     // check if we were able to find the dataset and update it
-    if (!existingDataset) {
-      // no luck. we need to create a new dataset with the provided id
-      const createdDataset = new this.datasetModel(
-        addCreatedByFields(createDatasetDto, username),
-      );
-      createdDataset.set("pid", id);
-      return await createdDataset.save();
+    if (!updatedDataset) {
+      throw new NotFoundException(`Dataset #${id} not found`);
     }
 
     // we were able to find the dataset and update it
-    return existingDataset;
+    return updatedDataset;
   }
 
   // PATCH dataset
@@ -171,9 +185,9 @@ export class DatasetsService {
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto:
-      | UpdateDatasetDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto
+      | PartialUpdateDatasetDto
+      | PartialUpdateRawDatasetDto
+      | PartialUpdateDerivedDatasetDto
       | UpdateQuery<DatasetDocument>,
   ): Promise<DatasetClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
