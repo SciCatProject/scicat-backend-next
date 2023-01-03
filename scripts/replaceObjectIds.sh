@@ -13,5 +13,5 @@ read -p "Are you sure you want to run the script ? This action can not be undone
 echo    
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    mongo -u "dacatDBAdmin" -p "...."  --authenticationDatabase "dacat" HOSTNAME/dacat  replaceObjectIds.js
+    mongosh -u "dacatDBAdmin" -p "...."  --authenticationDatabase "dacat" HOSTNAME/dacat  replaceObjectIds.js
 fi

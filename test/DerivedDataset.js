@@ -172,7 +172,7 @@ describe("DerivedDataset: Derived Datasets", () => {
 
   it("should delete a derived dataset", async () => {
     return request(appUrl)
-      .delete("/api/v3/Datasets/" + pid)
+      .delete("/api/v3/Datasets/" + encodeURIComponent(pid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)

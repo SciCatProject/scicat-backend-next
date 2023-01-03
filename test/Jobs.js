@@ -69,7 +69,7 @@ describe("Jobs: Test New Job Model", () => {
         archiveJob.datasetList[0].pid = pidtest;
         retrieveJob.datasetList[0].pid = pidtest;
         publicJob.datasetList[0].pid = pidtest;
-        pid1 = res.body["pid"];
+        pid1 = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -90,7 +90,7 @@ describe("Jobs: Test New Job Model", () => {
         archiveJob.datasetList[1].pid = pidtest;
         retrieveJob.datasetList[1].pid = pidtest;
         publicJob.datasetList[1].pid = pidtest;
-        pid2 = res.body["pid"];
+        pid2 = encodeURIComponent(res.body["pid"]);
       });
   });
 

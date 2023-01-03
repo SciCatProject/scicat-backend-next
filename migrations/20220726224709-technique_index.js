@@ -11,5 +11,5 @@ module.exports = {
     await db
       .collection("Dataset")
       .createIndex({ "techniques.pid": 1 }, { unique: true, sparse: true });
-  }
+  },
 };

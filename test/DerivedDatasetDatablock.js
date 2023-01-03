@@ -48,7 +48,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = res.body["pid"];
+        datasetPid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -142,7 +142,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
     };
     const filter = {
       where: {
-        pid: datasetPid,
+        pid: decodeURIComponent(datasetPid),
       },
       include: [
         {
@@ -163,7 +163,7 @@ describe("DerivedDatasetDatablock: Test Datablocks and their relation to derived
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["pid"].should.be.equal(datasetPid);
+        res.body["pid"].should.be.equal(decodeURIComponent(datasetPid));
         res.body.datablocks.should.be.instanceof(Array).and.to.have.length(2);
         res.body.datablocks[0].should.have
           .property("dataFileList")

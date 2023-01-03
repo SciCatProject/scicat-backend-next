@@ -147,7 +147,7 @@ describe("Sample: Simple Sample", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
-        datasetId = res.body["pid"];
+        datasetId = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -161,7 +161,7 @@ describe("Sample: Simple Sample", () => {
       .then((res) => {
         res.body.should.be.instanceof(Array);
         res.body.length.should.be.equal(1);
-        res.body[0].pid.should.be.equal(datasetId);
+        res.body[0].pid.should.be.equal(decodeURIComponent(datasetId));
       });
   });
 

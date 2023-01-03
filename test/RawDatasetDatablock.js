@@ -47,7 +47,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
         // store link to this dataset in datablocks
-        datasetPid = res.body["pid"];
+        datasetPid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -131,7 +131,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
     };
     var filter = {
       where: {
-        pid: datasetPid,
+        pid: decodeURIComponent(datasetPid),
       },
       include: [
         {
@@ -151,7 +151,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["pid"].should.be.equal(datasetPid);
+        res.body["pid"].should.be.equal(decodeURIComponent(datasetPid));
         res.body.datablocks.should.be.instanceof(Array).and.to.have.length(2);
         res.body.datablocks[0].should.have
           .property("dataFileList")

@@ -72,7 +72,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("publisher").and.be.string;
-        doi = res.body["doi"];
+        doi = encodeURIComponent(res.body["doi"]);
       });
   });
 
@@ -102,9 +102,9 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         // store link to this dataset in datablocks
-        pid = res.body["pid"];
-        publishedData.pidArray.push(pid);
-        origDataBlock.datasetId = pid;
+        pid = encodeURIComponent(res.body["pid"]);
+        publishedData.pidArray.push(res.body["pid"]);
+        origDataBlock.datasetId = res.body["pid"];
         origDataBlock.ownerGroup = res.body.ownerGroup;
       });
   });
@@ -169,7 +169,7 @@ describe("PublishedData: Test of access to published data", () => {
         res.body.should.have.property("isPublished").and.equal(false);
         res.body.should.have.property("pid").and.be.string;
         res.body.should.have.property("datasetName").and.be.string;
-        pidnonpublic = res.body["pid"];
+        pidnonpublic = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -257,7 +257,7 @@ describe("PublishedData: Test of access to published data", () => {
     const testAttachment = {
       thumbnail: "data/abc123",
       caption: "Some caption",
-      datasetId: pid,
+      datasetId: decodeURIComponent(pid),
       ownerGroup: testdataset.ownerGroup,
       accessGroups: ["loki", "odin"],
     };
