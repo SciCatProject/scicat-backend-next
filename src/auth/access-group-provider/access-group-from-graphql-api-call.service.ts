@@ -39,6 +39,6 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
       }),
     });
     const json = await response.json();
-    return json;
+    return json as Record<string, unknown>;
   }
 }

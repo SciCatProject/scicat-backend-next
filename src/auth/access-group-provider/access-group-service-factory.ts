@@ -8,8 +8,8 @@ import { AccessGroupService } from "./access-group.service";
 export const accessGroupServiceFactory = {
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
-    const site = configService.get<string>("site");
-    return new AccessGroupFromStaticValuesService([]);
+    const accessGroupsStaticValues = configService.get("accessGroupsStaticValues");
+    return new AccessGroupFromStaticValuesService(accessGroupsStaticValues);
   },
   inject: [ConfigService],
 };
