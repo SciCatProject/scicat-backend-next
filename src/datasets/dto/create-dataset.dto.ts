@@ -12,6 +12,7 @@ import {
   ValidateNested,
   IsObject,
   IsArray,
+  IsEnum,
 } from "class-validator";
 import { ApiProperty, ApiTags, getSchemaPath } from "@nestjs/swagger";
 import { DatasetType } from "../dataset-type.enum";
@@ -22,16 +23,6 @@ import { LifecycleClass } from "../schemas/lifecycle.schema";
 
 @ApiTags("datasets")
 export class CreateDatasetDto extends OwnableDto {
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
-  })
-  @IsOptional()
-  @IsString()
-  readonly pid?: string;
-
   @ApiProperty({
     type: String,
     required: true,
@@ -151,7 +142,7 @@ export class CreateDatasetDto extends OwnableDto {
     description:
       "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models",
   })
-  @IsString()
+  @IsEnum(DatasetType)
   readonly type: string;
 
   @ApiProperty({
