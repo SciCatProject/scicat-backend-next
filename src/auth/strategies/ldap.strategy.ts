@@ -7,12 +7,15 @@ import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
 import { FilterQuery } from "mongoose";
 import { User, UserDocument } from "src/users/schemas/user.schema";
+import { AccessGroupService } from "../access-group-provider/access-group.service";
+import { UserPayload } from "../interfaces/userPayload.interface";
 
 @Injectable()
 export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
+    private accessGroupService: AccessGroupService
   ) {
     super(configService.get<Record<string, unknown>>("ldap"));
   }
@@ -40,6 +43,13 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
           "Could not create User from LDAP response.",
         );
       }
+
+      const userPayload: UserPayload = {
+        userId : user.id as string,
+        username : user.username,
+        email: user.email
+      }
+      const accessGroups = await this.accessGroupService.getAccessGroups(userPayload)
 
       const createUserIdentity: CreateUserIdentityDto = {
         authScheme: "ldap",
