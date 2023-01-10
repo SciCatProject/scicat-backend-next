@@ -1,7 +1,6 @@
 import { AccessGroupService as AccessGroupService } from "./access-group.service";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { OidcConfig } from "src/config/configuration";
 import { UserPayload } from "../interfaces/userPayload.interface";
 
 /**
@@ -14,22 +13,23 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
   }
 
   async getAccessGroups(
-    //idpPayload: Record<string, unknown>,
     userPayload: UserPayload
   ): Promise<string[]> {
     const defaultAccessGroups: string[] = [];
 
-    //const oidcConfig = this.configService.get<OidcConfig>("oidc");
-    //const accessGroupsProperty = oidcConfig?.accessGroups;
     const accessGroupsProperty = userPayload?.accessGroupProperty;
 
     if (!accessGroupsProperty) {
       return defaultAccessGroups;
     }
-    if (!Array.isArray(userPayload.payload?[accessGroupsProperty] : [])) {
-      return defaultAccessGroups;
-    }
+    const payload : Record<string, unknown> | undefined = userPayload.payload;
+    if ( payload !== undefined ) {
+      if (!Array.isArray(payload[accessGroupsProperty])) {
+        return defaultAccessGroups;
+      }
 
-    return userPayload.payload?[accessGroupsProperty] as string[] : [];
+      return userPayload.payload?[accessGroupsProperty] as string[] : [];
+    }
+    return [];
   }
 }

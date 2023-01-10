@@ -66,7 +66,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
               )
             : "error: no photo found",
           emails: [{ value: payload.mail as string }],
-          accessGroups: [],
+          accessGroups: accessGroups,
           id: payload.sAMAccountName as string,
         },
         provider: "ldap",
