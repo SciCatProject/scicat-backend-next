@@ -3,14 +3,11 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "../auth.service";
 import { User } from "src/users/schemas/user.schema";
-import { ConfigService } from "@nestjs/config";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { UsersService } from "src/users/users.service";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
 import { RolesService } from "src/users/roles.service";
-import { Role, RoleDocument } from "src/users/schemas/role.schema";
-import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
+import { Role } from "src/users/schemas/role.schema";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { UserRole } from "src/users/schemas/user-role.schema";
 
@@ -37,7 +34,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
     const userRoles = await this.rolesService.findAllUserRoles({ userId: user._id}) as UserRole[];
     const roles: Role[] = await Promise.all(
-      userRoles?.map( r => {
+      userRoles.map( r => {
         return this.rolesService.findOne({ _id: r.roleId });
       })
     ) as Role[];
@@ -54,7 +51,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     const accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
 
     const userIdentity = await this.usersService.findByIdUserIdentity(user._id);
-    let userProfile = userIdentity?.profile as UserProfile;
+    if ( userIdentity === null ) {
+      throw new Error("User identity does not exists!!!");
+    }
+    let userProfile = userIdentity.profile;
     userProfile.accessGroups = [...accessGroups, ...roleGroups];  
 
     await this.usersService.updateUserIdentity(

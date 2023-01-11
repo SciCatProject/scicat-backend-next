@@ -28,7 +28,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
         return defaultAccessGroups;
       }
 
-      return userPayload.payload?[accessGroupsProperty] as string[] : [];
+      return userPayload.payload !== undefined ? userPayload.payload[accessGroupsProperty] as string[] : [];
     }
     return [];
   }

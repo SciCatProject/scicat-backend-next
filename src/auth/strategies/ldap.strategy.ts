@@ -91,7 +91,10 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
         email: user.email
       }
       const userIdentity = await this.usersService.findByIdUserIdentity(user._id);
-      let userProfile = userIdentity?.profile as UserProfile;
+      if ( userIdentity === null ) {
+        throw new Error("User identity does not exists!!!");
+      }  
+      let userProfile = userIdentity.profile;
       userProfile.accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
       await this.usersService.updateUserIdentity(
         {

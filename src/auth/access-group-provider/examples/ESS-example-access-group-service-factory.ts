@@ -1,14 +1,13 @@
 import { ConfigService } from "@nestjs/config";
 import { AccessGroupFromGraphQLApiService } from "./access-group-from-graphql-api-call.service";
 import { AccessGroupFromMultipleProvidersService } from "./access-group-from-multiple-providers.service";
-import { AccessGroupFromPayloadService } from "./access-group-from-payload.service";
+//import { AccessGroupFromPayloadService } from "./access-group-from-payload.service";
 import { AccessGroupFromStaticValuesService } from "./access-group-from-static-values.service";
 import { AccessGroupService } from "./access-group.service";
 
 export const accessGroupServiceFactory = {
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
-    const site = configService.get<string>("site");
     return getEssAccessGroupService(configService);
   },
   inject: [ConfigService],
