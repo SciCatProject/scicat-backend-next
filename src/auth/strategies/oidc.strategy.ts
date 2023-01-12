@@ -19,6 +19,7 @@ import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
+import { UserPayload } from "../interfaces/userPayload.interface";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -65,8 +66,13 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const userinfo: UserinfoResponse = await this.client.userinfo(tokenset);
 
     const userProfile = this.parseUserInfo(userinfo);
+    const userPayload: UserPayload = {
+      userId: userProfile.id,
+      username: userProfile.username,
+      email: userProfile.email
+    }
     userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
-      userinfo,
+      userPayload,
     );
 
     const userFilter: FilterQuery<UserDocument> = {

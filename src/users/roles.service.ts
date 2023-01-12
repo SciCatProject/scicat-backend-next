@@ -89,6 +89,12 @@ export class RolesService implements OnModuleInit {
     return this.userRoleModel.findOne(filter).exec();
   }
 
+  async findAllUserRoles(
+    filter: FilterQuery<UserRoleDocument>,
+  ): Promise<UserRole[] | null> {
+    return this.userRoleModel.find(filter).exec();
+  }
+
   async find(filter: FilterQuery<UserRoleDocument>): Promise<(Role | null)[]> {
     const userRoles = await this.userRoleModel.find(filter).exec();
 

@@ -24,6 +24,8 @@ import {
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
+import { UserPayload } from "src/auth/interfaces/userPayload.interface";
+import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -36,6 +38,8 @@ export class UsersService implements OnModuleInit {
     private userIdentityModel: Model<UserIdentityDocument>,
     @InjectModel(UserSettings.name)
     private userSettingsModel: Model<UserSettingsDocument>,
+    private usersService: UsersService,
+    private accessGroupService: AccessGroupService
   ) {}
 
   async onModuleInit() {
@@ -54,7 +58,17 @@ export class UsersService implements OnModuleInit {
         const user = await this.findOrCreate(createAccount);
 
         if (user) {
+
+          const userPayload: UserPayload = {
+            userId : user.id as string,
+            username : user.username,
+            email: user.email
+          }    
+          const accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
+
           if (role) {
+            // add role as access group
+            accessGroups.push(role);
             const createRole: CreateRoleDto = {
               name: role,
             };
@@ -70,6 +84,7 @@ export class UsersService implements OnModuleInit {
             }
           }
           if (global) {
+            accessGroups.push('globalaccess')
             const createRole: CreateRoleDto = {
               name: "globalaccess",
             };
@@ -84,6 +99,27 @@ export class UsersService implements OnModuleInit {
               await this.rolesService.findOrCreateUserRole(createUserRole);
             }
           }
+
+          // creates user identity to store access groups
+          const createUserIdentity: CreateUserIdentityDto = {
+            authScheme: "local",
+            credentials: {},
+            externalId: "",
+            profile: {
+              displayName: account.username as string,
+              email: account.email as string,
+              username: account.username as string,
+              thumbnailPhoto: "error: no photo found",
+              emails: [{ value: account.email as string }],
+              accessGroups: [ role as string, ...accessGroups ],
+              id: user.id as string,
+            },
+            provider: "ldap",
+            userId: user._id
+          };
+  
+          await this.usersService.createUserIdentity(createUserIdentity);
+
         }
       });
     }
