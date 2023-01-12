@@ -8,7 +8,6 @@ import { UsersService } from "src/users/users.service";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
 import { RolesService } from "src/users/roles.service";
 import { Role } from "src/users/schemas/role.schema";
-import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { UserRole } from "src/users/schemas/user-role.schema";
 
 @Injectable()
