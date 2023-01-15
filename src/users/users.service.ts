@@ -38,7 +38,6 @@ export class UsersService implements OnModuleInit {
     private userIdentityModel: Model<UserIdentityDocument>,
     @InjectModel(UserSettings.name)
     private userSettingsModel: Model<UserSettingsDocument>,
-    private usersService: UsersService,
     private accessGroupService: AccessGroupService
   ) {}
 
@@ -55,17 +54,18 @@ export class UsersService implements OnModuleInit {
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
+        createAccount.provider = 'local';
         const user = await this.findOrCreate(createAccount);
 
         if (user) {
-
           const userPayload: UserPayload = {
             userId : user.id as string,
             username : user.username,
             email: user.email
           }    
-          const accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
-
+          const accessGroupsOrig = await this.accessGroupService.getAccessGroups(userPayload);
+          const accessGroups = [...accessGroupsOrig];
+          
           if (role) {
             // add role as access group
             accessGroups.push(role);
@@ -114,12 +114,16 @@ export class UsersService implements OnModuleInit {
               accessGroups: [ role as string, ...accessGroups ],
               id: user.id as string,
             },
-            provider: "ldap",
+            provider: "local",
             userId: user._id
           };
   
-          await this.usersService.createUserIdentity(createUserIdentity);
-
+          const tempUserIdentity = await this.findByIdUserIdentity(user._id);
+          if (tempUserIdentity) {
+            await this.updateUserIdentity(createUserIdentity,user._id);
+          } else {
+            await this.createUserIdentity(createUserIdentity);
+          }
         }
       });
     }

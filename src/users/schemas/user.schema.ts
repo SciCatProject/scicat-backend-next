@@ -39,6 +39,10 @@ export class User {
   @ApiProperty()
   @Prop({ type: UserSettingsSchema })
   userSettings: UserSettings;
+
+  @ApiProperty()
+  @Prop({ type: String, required: false })
+  provider: String;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

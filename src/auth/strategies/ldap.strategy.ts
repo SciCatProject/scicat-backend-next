@@ -25,6 +25,8 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
   async validate(
     payload: Record<string, unknown>,
   ): Promise<Omit<User, "password">> {
+    // add exception if displayName is empty
+
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: `ldap.${payload.displayName}` },
@@ -35,8 +37,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
 
     if (!userExists) {
       const createUser: CreateUserDto = {
-        username: `ldap.${payload.displayName}`,
+        username: payload.displayName as string, //`ldap.${payload.displayName}`,
         email: payload.mail as string,
+        provider: 'ldap',
       };
       const user = await this.usersService.create(createUser);
 

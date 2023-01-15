@@ -84,8 +84,9 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     let user = await this.usersService.findOne(userFilter);
     if (!user) {
       const createUser: CreateUserDto = {
-        username: `oidc.${userProfile.username}`,
+        username: userProfile.username,
         email: userProfile.email as string,
+        provider: 'oidc',
       };
 
       const newUser = await this.usersService.create(createUser);
