@@ -1,4 +1,3 @@
-import { UpdateUserIdentityDto } from "./../../users/dto/update-user-identity.dto";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
@@ -69,8 +68,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const userPayload: UserPayload = {
       userId: userProfile.id,
       username: userProfile.username,
-      email: userProfile.email
-    }
+      email: userProfile.email,
+    };
     userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
       userPayload,
     );

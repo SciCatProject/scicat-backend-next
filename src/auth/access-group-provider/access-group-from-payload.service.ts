@@ -12,9 +12,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
     super();
   }
 
-  async getAccessGroups(
-    userPayload: UserPayload
-  ): Promise<string[]> {
+  async getAccessGroups(userPayload: UserPayload): Promise<string[]> {
     const defaultAccessGroups: string[] = [];
 
     const accessGroupsProperty = userPayload?.accessGroupProperty;
@@ -22,13 +20,15 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
     if (!accessGroupsProperty) {
       return defaultAccessGroups;
     }
-    const payload : Record<string, unknown> | undefined = userPayload.payload;
-    if ( payload !== undefined ) {
+    const payload: Record<string, unknown> | undefined = userPayload.payload;
+    if (payload !== undefined) {
       if (!Array.isArray(payload[accessGroupsProperty])) {
         return defaultAccessGroups;
       }
 
-      return payload[accessGroupsProperty] !== undefined ? payload[accessGroupsProperty] as string[] : [];
+      return payload[accessGroupsProperty] !== undefined
+        ? (payload[accessGroupsProperty] as string[])
+        : [];
     }
     return [];
   }

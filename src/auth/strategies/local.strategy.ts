@@ -17,7 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     private rolesService: RolesService,
     //private configService: ConfigService,
     private usersService: UsersService,
-    private accessGroupService: AccessGroupService
+    private accessGroupService: AccessGroupService,
   ) {
     super();
   }
@@ -31,30 +31,36 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    const userRoles = await this.rolesService.findAllUserRoles({ userId: user._id}) as UserRole[];
-    const roles: Role[] = await Promise.all(
-      userRoles.map( r => {
+    const userRoles = (await this.rolesService.findAllUserRoles({
+      userId: user._id,
+    })) as UserRole[];
+    const roles: Role[] = (await Promise.all(
+      userRoles.map((r) => {
         return this.rolesService.findOne({ _id: r.roleId });
-      })
-    ) as Role[];
-    const roleGroups: string[] = roles.filter( r => r ).map(r => {
-      return r.name as string;
-    });
+      }),
+    )) as Role[];
+    const roleGroups: string[] = roles
+      .filter((r) => r)
+      .map((r) => {
+        return r.name as string;
+      });
 
     // updates accessGroups
     const userPayload: UserPayload = {
-      userId : user.id as string,
-      username : user.username,
-      email: user.email
-    }    
-    const accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
+      userId: user.id as string,
+      username: user.username,
+      email: user.email,
+    };
+    const accessGroups = await this.accessGroupService.getAccessGroups(
+      userPayload,
+    );
 
     const userIdentity = await this.usersService.findByIdUserIdentity(user._id);
-    if ( userIdentity === null ) {
+    if (userIdentity === null) {
       throw new Error("User identity does not exists!!!");
     }
-    let userProfile = userIdentity.profile;
-    userProfile.accessGroups = [...accessGroups, ...roleGroups];  
+    const userProfile = userIdentity.profile;
+    userProfile.accessGroups = [...accessGroups, ...roleGroups];
 
     await this.usersService.updateUserIdentity(
       {
