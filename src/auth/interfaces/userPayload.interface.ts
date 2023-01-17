@@ -3,5 +3,5 @@ export interface UserPayload {
   username?: string;
   email?: string;
   accessGroupProperty?: string;
-  payload?: Record<string,unknown>
+  payload?: Record<string, unknown>;
 }

@@ -17,7 +17,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
-    private accessGroupService: AccessGroupService
+    private accessGroupService: AccessGroupService,
   ) {
     super(configService.get<Record<string, unknown>>("ldap"));
   }
@@ -39,7 +39,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       const createUser: CreateUserDto = {
         username: payload.displayName as string, //`ldap.${payload.displayName}`,
         email: payload.mail as string,
-        provider: 'ldap',
+        provider: "ldap",
       };
       const user = await this.usersService.create(createUser);
 
@@ -50,11 +50,13 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       }
 
       const userPayload: UserPayload = {
-        userId : user.id as string,
-        username : user.username,
-        email: user.email
-      }
-      const accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
+        userId: user.id as string,
+        username: user.username,
+        email: user.email,
+      };
+      const accessGroups = await this.accessGroupService.getAccessGroups(
+        userPayload,
+      );
 
       const createUserIdentity: CreateUserIdentityDto = {
         authScheme: "ldap",
@@ -79,7 +81,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-    } 
+    }
 
     const foundUser = await this.usersService.findOne(userFilter);
     const jsonUser = JSON.parse(JSON.stringify(foundUser));
@@ -89,16 +91,20 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     // update user identity if needed
     if (userExists) {
       const userPayload: UserPayload = {
-        userId : user.id as string,
-        username : user.username,
-        email: user.email
-      }
-      const userIdentity = await this.usersService.findByIdUserIdentity(user._id);
-      if ( userIdentity === null ) {
+        userId: user.id as string,
+        username: user.username,
+        email: user.email,
+      };
+      const userIdentity = await this.usersService.findByIdUserIdentity(
+        user._id,
+      );
+      if (userIdentity === null) {
         throw new Error("User identity does not exists!!!");
-      }  
-      let userProfile = userIdentity.profile;
-      userProfile.accessGroups = await this.accessGroupService.getAccessGroups(userPayload);
+      }
+      const userProfile = userIdentity.profile;
+      userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
+        userPayload,
+      );
       await this.usersService.updateUserIdentity(
         {
           profile: userProfile,
@@ -125,5 +131,5 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       : "error: no photo found";
     profile.emails = [{ value: payload.mail as string }];
     profile.id = payload.sAMAccountName as string;
-  };
+  }
 }

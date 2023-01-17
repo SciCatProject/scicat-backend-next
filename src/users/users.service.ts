@@ -38,7 +38,7 @@ export class UsersService implements OnModuleInit {
     private userIdentityModel: Model<UserIdentityDocument>,
     @InjectModel(UserSettings.name)
     private userSettingsModel: Model<UserSettingsDocument>,
-    private accessGroupService: AccessGroupService
+    private accessGroupService: AccessGroupService,
   ) {}
 
   async onModuleInit() {
@@ -54,18 +54,19 @@ export class UsersService implements OnModuleInit {
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
-        createAccount.provider = 'local';
+        createAccount.provider = "local";
         const user = await this.findOrCreate(createAccount);
 
         if (user) {
           const userPayload: UserPayload = {
-            userId : user.id as string,
-            username : user.username,
-            email: user.email
-          }    
-          const accessGroupsOrig = await this.accessGroupService.getAccessGroups(userPayload);
+            userId: user.id as string,
+            username: user.username,
+            email: user.email,
+          };
+          const accessGroupsOrig =
+            await this.accessGroupService.getAccessGroups(userPayload);
           const accessGroups = [...accessGroupsOrig];
-          
+
           if (role) {
             // add role as access group
             accessGroups.push(role);
@@ -84,7 +85,7 @@ export class UsersService implements OnModuleInit {
             }
           }
           if (global) {
-            accessGroups.push('globalaccess')
+            accessGroups.push("globalaccess");
             const createRole: CreateRoleDto = {
               name: "globalaccess",
             };
@@ -111,16 +112,16 @@ export class UsersService implements OnModuleInit {
               username: account.username as string,
               thumbnailPhoto: "error: no photo found",
               emails: [{ value: account.email as string }],
-              accessGroups: [ role as string, ...accessGroups ],
+              accessGroups: [role as string, ...accessGroups],
               id: user.id as string,
             },
             provider: "local",
-            userId: user._id
+            userId: user._id,
           };
-  
+
           const tempUserIdentity = await this.findByIdUserIdentity(user._id);
           if (tempUserIdentity) {
-            await this.updateUserIdentity(createUserIdentity,user._id);
+            await this.updateUserIdentity(createUserIdentity, user._id);
           } else {
             await this.createUserIdentity(createUserIdentity);
           }

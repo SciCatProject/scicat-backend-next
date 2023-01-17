@@ -69,8 +69,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const userPayload: UserPayload = {
       userId: userProfile.id,
       username: userProfile.username,
-      email: userProfile.email
-    }
+      email: userProfile.email,
+    };
     userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
       userPayload,
     );
@@ -86,7 +86,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       const createUser: CreateUserDto = {
         username: userProfile.username,
         email: userProfile.email as string,
-        provider: 'oidc',
+        provider: "oidc",
       };
 
       const newUser = await this.usersService.create(createUser);
