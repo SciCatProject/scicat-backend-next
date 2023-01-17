@@ -1,4 +1,3 @@
-import { UpdateUserIdentityDto } from "./../../users/dto/update-user-identity.dto";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
