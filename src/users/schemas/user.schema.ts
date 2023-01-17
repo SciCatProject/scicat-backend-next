@@ -42,7 +42,7 @@ export class User {
 
   @ApiProperty()
   @Prop({ type: String, required: false })
-  provider: String;
+  authStrategy: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

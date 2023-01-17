@@ -19,6 +19,7 @@ const mockUser: User = {
   password: "testPassword",
   email: "test@email.com",
   emailVerified: true,
+  authStrategy: 'local',
   userSettings: {
     _id: "testId",
     id: "testId",

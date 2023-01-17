@@ -17,5 +17,5 @@ export class CreateUserDto {
   readonly global?: boolean;
 
   @ApiProperty({ required: false })
-  readonly provider?: string;
+  readonly authStrategy?: string;
 }

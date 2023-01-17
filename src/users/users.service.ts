@@ -54,7 +54,7 @@ export class UsersService implements OnModuleInit {
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
-        createAccount.provider = 'local';
+        createAccount.authStrategy = 'local';
         const user = await this.findOrCreate(createAccount);
 
         if (user) {

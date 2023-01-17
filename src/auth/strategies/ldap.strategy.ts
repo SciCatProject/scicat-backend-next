@@ -39,7 +39,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       const createUser: CreateUserDto = {
         username: payload.displayName as string, //`ldap.${payload.displayName}`,
         email: payload.mail as string,
-        provider: 'ldap',
+        authStrategy: 'ldap',
       };
       const user = await this.usersService.create(createUser);
 
