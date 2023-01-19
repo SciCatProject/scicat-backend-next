@@ -1,7 +1,10 @@
 import { AccessGroupService as AccessGroupService } from "./access-group.service";
 import { Injectable } from "@nestjs/common";
-import fetch from "node-fetch";
+///import fetch from "node-fetch";
+
 import { UserPayload } from "../interfaces/userPayload.interface";
+import { HttpService } from "@nestjs/axios";
+import { firstValueFrom } from "rxjs";
 
 /**
  * This service is used to fetch access groups from a GraphQL API.
@@ -13,6 +16,7 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     private apiUrl: string,
     private headers: Record<string, string>,
     private responseProcessor: (response: Record<string, unknown>) => string[],
+    private readonly httpService: HttpService,
   ) {
     super();
   }
@@ -30,7 +34,20 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
   }
 
   async callGraphQLApi(query: string): Promise<Record<string, unknown>> {
-    const response = await fetch(this.apiUrl, {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        this.apiUrl,
+        { query: { query }},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...this.headers,
+          },  
+        }
+      )
+    );
+    return response.data;
+    /* const response = await fetch(this.apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,5 +59,6 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     });
     const json = await response.json();
     return json as Record<string, unknown>;
+    */
   }
 }

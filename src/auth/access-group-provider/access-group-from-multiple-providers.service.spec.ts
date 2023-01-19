@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { UserPayload } from "../interfaces/userPayload.interface";
 import { AccessGroupFromMultipleProvidersService } from "./access-group-from-multiple-providers.service";
 
 describe("AccessGroupFromMultipleProvidersService", () => {
@@ -36,7 +37,7 @@ describe("AccessGroupFromMultipleProvidersService", () => {
 
   it("Should resolve access groups", async () => {
     const expected = ["AAA", "BBB", "CCC", "DDD"];
-    const actual = await service.getAccessGroups({});
+    const actual = await service.getAccessGroups({} as UserPayload);
     expect(actual).toEqual(expected);
   });
 });

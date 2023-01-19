@@ -1,4 +1,6 @@
+import { HttpService } from "@nestjs/axios";
 import { Test, TestingModule } from "@nestjs/testing";
+import { UserPayload } from "../interfaces/userPayload.interface";
 import { AccessGroupFromGraphQLApiService } from "./access-group-from-graphql-api-call.service";
 
 describe("AccessGroupFromGraphQLApiService", () => {
@@ -12,6 +14,7 @@ describe("AccessGroupFromGraphQLApiService", () => {
     "",
     {},
     (result) => (result as typeof mockResponse).data.map(({ id }) => id),
+    new HttpService(),
   );
 
   beforeEach(async () => {
@@ -37,7 +40,7 @@ describe("AccessGroupFromGraphQLApiService", () => {
 
   it("Should resolve access groups", async () => {
     const expected = ["AAA", "BBB"];
-    const actual = await service.getAccessGroups({});
+    const actual = await service.getAccessGroups({} as UserPayload);
     expect(actual).toEqual(expected);
   });
 });
