@@ -136,24 +136,19 @@ export class UsersService implements OnModuleInit {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {
-    Logger.log(`Creating user ${createUserDto.username}`, "UsersService");
+    Logger.log(`Creating user ${createUserDto.username} ( Strategy : ${createUserDto.authStrategy} )`, "UsersService");
 
-    if (
-      !createUserDto.password &&
-      ["ldap", "oidc"].some((word) => createUserDto.username.startsWith(word))
-    ) {
-      const createdUser = new this.userModel(createUserDto);
+    if (createUserDto.authStrategy !== 'local') {
+      const {password, ...sanitizedCreateUserDto} = createUserDto;
+      const createdUser = new this.userModel(sanitizedCreateUserDto);
       return createdUser.save();
+    } else if (createUserDto.password) {
+      const hashedPassword = await hash(createUserDto.password, await genSalt());
+      const createUser = { ...createUserDto, password: hashedPassword };
+      const createdUser = new this.userModel(createUser);
+      return createdUser.save();  
     }
-
-    if (!createUserDto.password) {
-      return null;
-    }
-
-    const hashedPassword = await hash(createUserDto.password, await genSalt());
-    const createUser = { ...createUserDto, password: hashedPassword };
-    const createdUser = new this.userModel(createUser);
-    return createdUser.save();
+    return null;
   }
 
   async findOrCreate(
