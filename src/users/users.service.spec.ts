@@ -9,7 +9,6 @@ import { UsersService } from "./users.service";
 import { JwtService } from "@nestjs/jwt";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
-import { accessGroupServiceFactory } from "src/auth/access-group-provider/access-group-service-factory";
 import { AccessGroupFromStaticValuesService } from "src/auth/access-group-provider/access-group-from-static-values.service";
 
 class RolesServiceMock {}
