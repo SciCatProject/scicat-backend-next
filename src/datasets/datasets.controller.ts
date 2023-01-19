@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   Post,
   Patch,
@@ -51,7 +52,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { FilterQuery, UpdateQuery } from "mongoose";
+import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
@@ -93,6 +94,22 @@ export class DatasetsController {
     private datasetsService: DatasetsService,
     private origDatablocksService: OrigDatablocksService,
   ) {}
+
+  getFilters(
+    headers: Record<string, string>,
+    queryFilter: { filter?: string },
+  ) {
+    const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
+      JSON.parse(queryFilter?.filter || "{}");
+    const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
+      JSON.parse(headers?.filter || "{}");
+    const mergedFilters = {
+      ...jsonQueryFilters,
+      ...jsonHeadersFilters,
+    };
+
+    return mergedFilters;
+  }
 
   // POST /datasets
   @UseGuards(PoliciesGuard)
@@ -254,7 +271,7 @@ export class DatasetsController {
       "It returns a list of datasets. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description:
       "Database filters to apply when retrieving datasets\n" +
       filterDescription,
@@ -269,31 +286,14 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findAll(
-    @Query(new FilterPipe()) filter?: { filter: string; fields: string },
+    @Headers() headers: Record<string, string>,
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass[] | null> {
-    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> =
-      filter && filter.filter ? JSON.parse(filter.filter) : {};
-    const jsonFields: FilterQuery<DatasetDocument> =
-      filter && filter.fields ? JSON.parse(filter.fields) : {};
-    const whereFilters: FilterQuery<DatasetDocument> =
-      jsonFilters && jsonFilters.where
-        ? {
-            ...jsonFilters.where,
-            ...jsonFields,
-          }
-        : {
-            ...jsonFields,
-          };
-    const datasetFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      where: whereFilters,
-    };
-    if (jsonFilters && jsonFilters.limits) {
-      datasetFilters.limits = jsonFilters.limits;
-    }
-    const datasets = await this.datasetsService.findAll(datasetFilters);
+    const mergedFilters = this.getFilters(headers, queryFilter);
+
+    const datasets = await this.datasetsService.findAll(mergedFilters);
     if (datasets && datasets.length > 0) {
-      const includeFilters =
-        jsonFilters && jsonFilters.include ? jsonFilters.include : [];
+      const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
         datasets.map(async (dataset) => {
           if (includeFilters) {
@@ -479,15 +479,14 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findOne(
-    @Query("filter") queryFilters?: string,
+    @Headers() headers: Record<string, string>,
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
-    const jsonFilters: IFilters<DatasetDocument, IDatasetFields> = queryFilters
-      ? JSON.parse(queryFilters)
-      : {};
-    const whereFilters = jsonFilters.where ?? {};
-    const dataset = await this.datasetsService.findOne(whereFilters);
+    const mergedFilters = this.getFilters(headers, queryFilter);
+
+    const dataset = await this.datasetsService.findOne(mergedFilters);
     if (dataset) {
-      const includeFilters = jsonFilters.include ?? [];
+      const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
         includeFilters.map(async ({ relation }) => {
           switch (relation) {
@@ -528,12 +527,12 @@ export class DatasetsController {
       "It returns a number of datasets matching the where filter if provided.",
   })
   @ApiQuery({
-    name: "where",
-    description:
-      "Database where filters to apply when retrieving count for datasets",
+    name: "filter",
+    description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    example: '{"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}',
+    example:
+      '{"where": {"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}}',
   })
   @ApiResponse({
     status: 200,
@@ -541,14 +540,17 @@ export class DatasetsController {
       "Return the number of datasets in the following format: { count: integer }",
   })
   async count(
-    @Query("where") where: string, //FilterQuery<DatasetDocument>,
+    @Headers() headers: Record<string, string>,
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<{ count: number }> {
-    const whereFilters =
-      typeof where === "string" || (where as unknown) instanceof String
-        ? JSON.parse(where)
-        : where;
+    const mergedFilters = this.getFilters(headers, queryFilter);
 
-    return this.datasetsService.count(whereFilters);
+    // const whereFilters =
+    //   typeof where === "string" || (where as unknown) instanceof String
+    //     ? JSON.parse(where)
+    //     : where;
+
+    return this.datasetsService.count(mergedFilters);
   }
 
   // GET /datasets/:id
