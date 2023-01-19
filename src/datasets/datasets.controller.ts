@@ -545,11 +545,6 @@ export class DatasetsController {
   ): Promise<{ count: number }> {
     const mergedFilters = this.getFilters(headers, queryFilter);
 
-    // const whereFilters =
-    //   typeof where === "string" || (where as unknown) instanceof String
-    //     ? JSON.parse(where)
-    //     : where;
-
     return this.datasetsService.count(mergedFilters);
   }
 
