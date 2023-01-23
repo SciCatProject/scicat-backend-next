@@ -21,7 +21,7 @@ const mockUser: User = {
   password: "testPassword",
   email: "test@email.com",
   emailVerified: true,
-  authStrategy: 'local',
+  authStrategy: "local",
   userSettings: {
     _id: "testId",
     id: "testId",
@@ -103,8 +103,11 @@ describe("UsersService", () => {
           },
         },
         UsersService,
-        { provide: AccessGroupService, useValue: () =>new AccessGroupFromStaticValuesService(["AAA", "BBB"]) },
-
+        {
+          provide: AccessGroupService,
+          useValue: () =>
+            new AccessGroupFromStaticValuesService(["AAA", "BBB"]),
+        },
       ],
     }).compile();
 

@@ -35,8 +35,8 @@ describe("AccessGroupFromPayloadService", () => {
       userId: "test_user",
       accessGroupProperty: "access_group_property",
       payload: {
-        "access_group_property" : expected,
-      }
+        access_group_property: expected,
+      },
     } as UserPayload);
     expect(actual).toEqual(expected);
   });

@@ -54,7 +54,7 @@ export class UsersService implements OnModuleInit {
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
-        createAccount.authStrategy = 'local';
+        createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
 
         if (user) {
@@ -136,17 +136,23 @@ export class UsersService implements OnModuleInit {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {
-    Logger.log(`Creating user ${createUserDto.username} ( Strategy : ${createUserDto.authStrategy} )`, "UsersService");
+    Logger.log(
+      `Creating user ${createUserDto.username} ( Strategy : ${createUserDto.authStrategy} )`,
+      "UsersService",
+    );
 
-    if (createUserDto.authStrategy !== 'local') {
-      const {password, ...sanitizedCreateUserDto} = createUserDto;
+    if (createUserDto.authStrategy !== "local") {
+      const { password, ...sanitizedCreateUserDto } = createUserDto;
       const createdUser = new this.userModel(sanitizedCreateUserDto);
       return createdUser.save();
     } else if (createUserDto.password) {
-      const hashedPassword = await hash(createUserDto.password, await genSalt());
+      const hashedPassword = await hash(
+        createUserDto.password,
+        await genSalt(),
+      );
       const createUser = { ...createUserDto, password: hashedPassword };
       const createdUser = new this.userModel(createUser);
-      return createdUser.save();  
+      return createdUser.save();
     }
     return null;
   }

@@ -37,14 +37,14 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     const response = await firstValueFrom(
       this.httpService.post(
         this.apiUrl,
-        { query: { query }},
+        { query: { query } },
         {
           headers: {
             "Content-Type": "application/json",
             ...this.headers,
-          },  
-        }
-      )
+          },
+        },
+      ),
     );
     return response.data;
     /* const response = await fetch(this.apiUrl, {
