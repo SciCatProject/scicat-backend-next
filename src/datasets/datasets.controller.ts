@@ -450,8 +450,8 @@ export class DatasetsController {
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+      fields: JSON.parse(filters?.fields ?? "{}"),
+      limits: JSON.parse(filters?.limits ?? "{}"),
     };
     return this.datasetsService.metadataKeys(parsedFilters);
   }

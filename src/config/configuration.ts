@@ -1,4 +1,11 @@
+const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
+
 const configuration = () => ({
+  accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
+  accessGroupService: {
+    token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
+    apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
+  },
   doiPrefix: process.env.DOI_PREFIX,
   expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
   functionalAccounts: [
@@ -47,13 +54,13 @@ const configuration = () => ({
     },
   },
   oidc: {
-    issuer: process.env.OIDC_ISSUER,
-    clientID: process.env.OIDC_CLIENT_ID,
-    clientSecret: process.env.OIDC_CLIENT_SECRET,
-    callbackURL: process.env.OIDC_CALLBACK_URL,
-    scope: process.env.OIDC_SCOPE,
-    successURL: process.env.OIDC_SUCCESS_URL,
-    accessGroups: process.env.OIDC_ACCESS_GROUPS,
+    issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
+    clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
+    clientSecret: process.env.OIDC_CLIENT_SECRET, // Example: Aa1JIw3kv3mQlGFWrE3gOdkH6xreAwro
+    callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/oidc/callback
+    scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
+    successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
+    accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
   },
   logbook: {
     enabled:
@@ -92,8 +99,8 @@ const configuration = () => ({
     secure: process.env.SMTP_SECURE,
   },
   policyTimes: {
-    policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT,
-    policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT,
+    policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
+    policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
   },
 });
 

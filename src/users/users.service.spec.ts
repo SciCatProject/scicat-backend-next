@@ -8,6 +8,8 @@ import { User } from "./schemas/user.schema";
 import { UsersService } from "./users.service";
 import { JwtService } from "@nestjs/jwt";
 import { UserSettings } from "./schemas/user-settings.schema";
+import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
+import { AccessGroupFromStaticValuesService } from "src/auth/access-group-provider/access-group-from-static-values.service";
 
 class RolesServiceMock {}
 class JwtServiceMock {}
@@ -19,6 +21,7 @@ const mockUser: User = {
   password: "testPassword",
   email: "test@email.com",
   emailVerified: true,
+  authStrategy: "local",
   userSettings: {
     _id: "testId",
     id: "testId",
@@ -100,6 +103,11 @@ describe("UsersService", () => {
           },
         },
         UsersService,
+        {
+          provide: AccessGroupService,
+          useValue: () =>
+            new AccessGroupFromStaticValuesService(["AAA", "BBB"]),
+        },
       ],
     }).compile();
 

@@ -66,7 +66,7 @@ const TestData = {
   },
 
   RawCorrect: {
-    principalInvestigator: "bertram.astor@grumble.com",
+    principalInvestigator: "scicatingestor@your.site",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
@@ -122,9 +122,9 @@ const TestData = {
       },
     },
     owner: "Bertram Astor first",
-    ownerEmail: "bertram.astor@grumble.com",
+    ownerEmail: "scicatingestor@your.site",
     orcidOfOwner: "unknown",
-    contactEmail: "bertram.astor@grumble.com",
+    contactEmail: "scicatingestor@your.site",
     sourceFolder: "/iramjet/tif/",
     size: 0,
     packedSize: 0,
@@ -140,7 +140,7 @@ const TestData = {
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
     type: "raw",
-    keywords: ['sls','protein']
+    keywords: ["sls", "protein"],
   },
 
   RawWrong_1: {
@@ -399,7 +399,7 @@ const TestData = {
       },
     ],
   },
-  
+
   OrigDataBlockCorrect2: {
     size: 41780289,
     dataFileList: [
@@ -468,7 +468,7 @@ const TestData = {
       },
       "datasetlifecycle.archiveStatusMessage": "datasetCreated",
       keywords: ["energy", "protein"],
-    }
+    },
   },
 
   DatasetLifecycle_query_2: {
@@ -478,7 +478,7 @@ const TestData = {
     },
     limits: {
       skip: 1000,
-    }
+    },
   },
 
   DatasetLifecycle_query_3: {
@@ -499,7 +499,7 @@ const TestData = {
       "keywords",
     ],
   },
- 
+
   ArchiveJob: {
     emailJobInitiator: "scicatarchivemanger@psi.ch",
     type: "archive",
@@ -519,7 +519,7 @@ const TestData = {
       message: "All systems okay",
     },
   },
-  
+
   RetrieveJob: {
     emailJobInitiator: "scicatarchivemanger@psi.ch",
     type: "retrieve",
@@ -539,7 +539,7 @@ const TestData = {
       message: "All systems okay",
     },
   },
-  
+
   PublicJob: {
     emailJobInitiator: "firstname.lastname@gmail.com",
     type: "public",
@@ -570,7 +570,6 @@ const TestData = {
     pidArray: [],
     status: "pending_registration",
   },
-  
 };
 
 module.exports = { TestData };
