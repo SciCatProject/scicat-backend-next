@@ -17,6 +17,8 @@ import { AuthService } from "../auth.service";
 import { Profile } from "passport";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
+import { AccessGroupService } from "../access-group-provider/access-group.service";
+import { UserPayload } from "../interfaces/userPayload.interface";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -43,6 +45,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     client: Client,
     private configService: ConfigService,
     private usersService: UsersService,
+    private accessGroupService: AccessGroupService,
   ) {
     const oidcConfig = configService.get<OidcConfig>("oidc");
     super({
@@ -62,6 +65,14 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const userinfo: UserinfoResponse = await this.client.userinfo(tokenset);
 
     const userProfile = this.parseUserInfo(userinfo);
+    const userPayload: UserPayload = {
+      userId: userProfile.id,
+      username: userProfile.username,
+      email: userProfile.email,
+    };
+    userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
+      userPayload,
+    );
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
@@ -69,15 +80,16 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
         { email: userProfile.email as string },
       ],
     };
-    const userExists = await this.usersService.userExists(userFilter);
-    if (!userExists) {
+    let user = await this.usersService.findOne(userFilter);
+    if (!user) {
       const createUser: CreateUserDto = {
-        username: `oidc.${userProfile.username}`,
+        username: userProfile.username,
         email: userProfile.email as string,
+        authStrategy: "oidc",
       };
 
-      const user = await this.usersService.create(createUser);
-      if (!user) {
+      const newUser = await this.usersService.create(createUser);
+      if (!newUser) {
         throw new InternalServerErrorException(
           "Could not create User from OIDC response.",
         );
@@ -89,17 +101,26 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
         externalId: userProfile.id,
         profile: userProfile,
         provider: "oidc",
-        userId: user._id,
+        userId: newUser._id,
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-    }
-    const foundUser = await this.usersService.findOne(userFilter);
-    const jsonUser = JSON.parse(JSON.stringify(foundUser));
-    const { password, ...user } = jsonUser;
-    user.userId = user._id;
 
-    return user;
+      user = newUser;
+    } else {
+      await this.usersService.updateUserIdentity(
+        {
+          profile: userProfile,
+        },
+        user._id,
+      );
+    }
+
+    const jsonUser = JSON.parse(JSON.stringify(user));
+    const { password, ...returnUser } = jsonUser;
+    returnUser.userId = returnUser._id;
+
+    return returnUser;
   }
 
   getUserPhoto(userinfo: UserinfoResponse) {
@@ -109,21 +130,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
             "base64",
           )
       : "no photo";
-  }
-
-  getAccessGroups(userinfo: UserinfoResponse): string[] {
-    const defaultAccessGroups: string[] = [];
-    const configs = this.configService.get<OidcConfig>("oidc");
-    const userInfoResponseObjectAccessGroupKey = configs?.accessGroups;
-
-    if (!userInfoResponseObjectAccessGroupKey) {
-      return defaultAccessGroups;
-    }
-    if (!Array.isArray(userinfo[userInfoResponseObjectAccessGroupKey])) {
-      return defaultAccessGroups;
-    }
-
-    return userinfo[userInfoResponseObjectAccessGroupKey] as string[];
   }
 
   parseUserInfo(userinfo: UserinfoResponse) {
@@ -144,7 +150,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     profile.emails = userinfo.email ? [{ value: userinfo.email }] : [];
     profile.email = userinfo.email ?? "";
     profile.thumbnailPhoto = this.getUserPhoto(userinfo);
-    profile.accessGroups = this.getAccessGroups(userinfo);
 
     return profile;
   }

@@ -2,7 +2,7 @@ import { Controller, Request, UseGuards, Post, Get, Res } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
 import { AllowAny } from "./decorators/allow-any.decorator";
@@ -32,10 +32,30 @@ export class AuthController {
   }
 
   @ApiBody({ type: CredentialsDto })
+  @ApiOperation({
+    summary: "Legacy endpoint to authenticate users through an ldap service.",
+    description:
+      "This endpoint uses an external ldap service to validate user credentials. It is suggested to migrate to the endpoint /auth/ldap as this one is going to be remove in future releases.",
+  })
   @AllowAny()
   @UseGuards(LdapAuthGuard)
   @Post("msad")
-  async adLogin(
+  async msadLogin(
+    @Request() req: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return await this.authService.login(req.user as Omit<User, "password">);
+  }
+
+  @ApiBody({ type: CredentialsDto })
+  @ApiOperation({
+    summary: "Endpoint to authenticate users through an ldap service.",
+    description:
+      "This endpoint uses an external ldap service to validate user credentials.",
+  })
+  @AllowAny()
+  @UseGuards(LdapAuthGuard)
+  @Post("ldap")
+  async ldapLogin(
     @Request() req: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return await this.authService.login(req.user as Omit<User, "password">);

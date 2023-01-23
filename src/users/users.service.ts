@@ -23,6 +23,9 @@ import {
 } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
+import { UserPayload } from "src/auth/interfaces/userPayload.interface";
+import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -35,6 +38,7 @@ export class UsersService implements OnModuleInit {
     private userIdentityModel: Model<UserIdentityDocument>,
     @InjectModel(UserSettings.name)
     private userSettingsModel: Model<UserSettingsDocument>,
+    private accessGroupService: AccessGroupService,
   ) {}
 
   async onModuleInit() {
@@ -50,10 +54,22 @@ export class UsersService implements OnModuleInit {
     if (functionalAccounts && functionalAccounts.length > 0) {
       functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
+        createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
 
         if (user) {
+          const userPayload: UserPayload = {
+            userId: user.id as string,
+            username: user.username,
+            email: user.email,
+          };
+          const accessGroupsOrig =
+            await this.accessGroupService.getAccessGroups(userPayload);
+          const accessGroups = [...accessGroupsOrig];
+
           if (role) {
+            // add role as access group
+            accessGroups.push(role);
             const createRole: CreateRoleDto = {
               name: role,
             };
@@ -69,6 +85,7 @@ export class UsersService implements OnModuleInit {
             }
           }
           if (global) {
+            accessGroups.push("globalaccess");
             const createRole: CreateRoleDto = {
               name: "globalaccess",
             };
@@ -83,6 +100,31 @@ export class UsersService implements OnModuleInit {
               await this.rolesService.findOrCreateUserRole(createUserRole);
             }
           }
+
+          // creates user identity to store access groups
+          const createUserIdentity: CreateUserIdentityDto = {
+            authScheme: "local",
+            credentials: {},
+            externalId: "",
+            profile: {
+              displayName: account.username as string,
+              email: account.email as string,
+              username: account.username as string,
+              thumbnailPhoto: "error: no photo found",
+              emails: [{ value: account.email as string }],
+              accessGroups: [role as string, ...accessGroups],
+              id: user.id as string,
+            },
+            provider: "local",
+            userId: user._id,
+          };
+
+          const tempUserIdentity = await this.findByIdUserIdentity(user._id);
+          if (tempUserIdentity) {
+            await this.updateUserIdentity(createUserIdentity, user._id);
+          } else {
+            await this.createUserIdentity(createUserIdentity);
+          }
         }
       });
     }
@@ -94,24 +136,25 @@ export class UsersService implements OnModuleInit {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User | null> {
-    Logger.log(`Creating user ${createUserDto.username}`, "UsersService");
+    Logger.log(
+      `Creating user ${createUserDto.username} ( Strategy : ${createUserDto.authStrategy} )`,
+      "UsersService",
+    );
 
-    if (
-      !createUserDto.password &&
-      ["ldap", "oidc"].some((word) => createUserDto.username.startsWith(word))
-    ) {
-      const createdUser = new this.userModel(createUserDto);
+    if (createUserDto.authStrategy !== "local") {
+      const { password, ...sanitizedCreateUserDto } = createUserDto;
+      const createdUser = new this.userModel(sanitizedCreateUserDto);
+      return createdUser.save();
+    } else if (createUserDto.password) {
+      const hashedPassword = await hash(
+        createUserDto.password,
+        await genSalt(),
+      );
+      const createUser = { ...createUserDto, password: hashedPassword };
+      const createdUser = new this.userModel(createUser);
       return createdUser.save();
     }
-
-    if (!createUserDto.password) {
-      return null;
-    }
-
-    const hashedPassword = await hash(createUserDto.password, await genSalt());
-    const createUser = { ...createUserDto, password: hashedPassword };
-    const createdUser = new this.userModel(createUser);
-    return createdUser.save();
+    return null;
   }
 
   async findOrCreate(
@@ -152,6 +195,15 @@ export class UsersService implements OnModuleInit {
       createUserIdentityDto,
     );
     return createdUserIdentity.save();
+  }
+
+  async updateUserIdentity(
+    updateUserIdentityDto: UpdateUserIdentityDto,
+    userId: string,
+  ): Promise<UserIdentity | null> {
+    return this.userIdentityModel
+      .findOneAndUpdate({ userId }, updateUserIdentityDto, { new: true })
+      .exec();
   }
 
   // NOTE: This is just for testing purposes inside accessGroups.e2e-spec.ts

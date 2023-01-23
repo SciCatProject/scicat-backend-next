@@ -20,6 +20,7 @@ import {
 import { UserIdentitiesController } from "./user-identities.controller";
 import { UserIdentitiesService } from "./user-identities.service";
 import { AuthService } from "src/auth/auth.service";
+import { accessGroupServiceFactory } from "src/auth/access-group-provider/access-group-service-factory";
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { AuthService } from "src/auth/auth.service";
     UsersService,
     UserIdentitiesService,
     RolesService,
+    accessGroupServiceFactory,
   ],
   exports: [UsersService, RolesService],
   controllers: [UsersController, UserIdentitiesController],
