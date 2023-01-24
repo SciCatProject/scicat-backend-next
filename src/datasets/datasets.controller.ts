@@ -100,7 +100,7 @@ export class DatasetsController {
     queryFilter: { filter?: string },
   ) {
     // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter.filter && headers.filter) {
+    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -119,6 +119,11 @@ export class DatasetsController {
         JSON.parse(headers.filter);
 
       return jsonHeadersFilters;
+    } else if (headers?.where) {
+      const jsonHeadersWhereFilters: IFilters<DatasetDocument, IDatasetFields> =
+        JSON.parse(headers.where);
+
+      return jsonHeadersWhereFilters;
     }
 
     return {};
@@ -583,7 +588,7 @@ export class DatasetsController {
     description: "Return dataset with pid specified",
   })
   async findById(@Param("pid") id: string): Promise<DatasetClass | null> {
-    return this.datasetsService.findOne({ pid: id });
+    return this.datasetsService.findOne({ where: { pid: id } });
   }
 
   // PATCH /datasets/:id
@@ -634,7 +639,7 @@ export class DatasetsController {
       | PartialUpdateRawDatasetDto
       | PartialUpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    const foundDataset = await this.datasetsService.findOne({ pid });
+    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -846,7 +851,7 @@ export class DatasetsController {
     @Param("pid") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
-    const dataset = await this.datasetsService.findOne({ pid: id });
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     if (dataset) {
       const createAttachment: CreateAttachmentDto = {
         ...createAttachmentDto,
@@ -996,7 +1001,7 @@ export class DatasetsController {
     @Param("pid") id: string,
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.datasetsService.findOne({ pid: id });
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
         ...createDatasetOrigDatablockDto,
@@ -1131,7 +1136,9 @@ export class DatasetsController {
     @Param("oid") origDatablockId: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    });
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
       _id: origDatablockId,
     });
@@ -1186,7 +1193,9 @@ export class DatasetsController {
     @Param("pid") datasetId: string,
     @Param("oid") origDatablockId: string,
   ): Promise<unknown> {
-    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    });
     if (dataset) {
       // remove origdatablock
       const res = await this.origDatablocksService.remove({
@@ -1242,7 +1251,7 @@ export class DatasetsController {
     @Param("pid") id: string,
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.datasetsService.findOne({ pid: id });
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     if (dataset) {
       const createDatablock: CreateDatablockDto = {
         ...createDatablockDto,
@@ -1326,7 +1335,9 @@ export class DatasetsController {
     @Param("did") datablockId: string,
     @Body() updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    });
     const datablockBeforeUpdate = await this.datablocksService.findOne({
       _id: datablockId,
     });
@@ -1381,7 +1392,9 @@ export class DatasetsController {
     @Param("pid") datasetId: string,
     @Param("did") datablockId: string,
   ): Promise<unknown> {
-    const dataset = await this.datasetsService.findOne({ pid: datasetId });
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    });
     if (dataset) {
       // remove datablock
       const res = await this.datablocksService.remove({
