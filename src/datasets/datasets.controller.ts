@@ -99,16 +99,29 @@ export class DatasetsController {
     headers: Record<string, string>,
     queryFilter: { filter?: string },
   ) {
-    const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
-      JSON.parse(queryFilter?.filter || "{}");
-    const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
-      JSON.parse(headers?.filter || "{}");
-    const mergedFilters = {
-      ...jsonQueryFilters,
-      ...jsonHeadersFilters,
-    };
+    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
+    if (queryFilter.filter && headers.filter) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message:
+            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (queryFilter?.filter) {
+      const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
+        JSON.parse(queryFilter.filter);
 
-    return mergedFilters;
+      return jsonQueryFilters;
+    } else if (headers?.filter) {
+      const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
+        JSON.parse(headers.filter);
+
+      return jsonHeadersFilters;
+    }
+
+    return {};
   }
 
   // POST /datasets
