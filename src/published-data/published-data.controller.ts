@@ -136,7 +136,7 @@ export class PublishedDataController {
   })
   async formPopulate(@Query("pid") pid: string) {
     const formData: IFormPopulateData = {};
-    const dataset = await this.datasetsService.findOne({ pid });
+    const dataset = await this.datasetsService.findOne({ where: { pid } });
 
     let proposalId;
     if (dataset) {
