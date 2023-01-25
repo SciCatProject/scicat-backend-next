@@ -164,11 +164,13 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for count of raw datasets which should be 1", async () => {
+    const filter = { where: { type: "raw" } };
+
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "raw" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -178,11 +180,12 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("check for unchanged count of derived datasets", async () => {
+    const filter = { where: { type: "derived" } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "derived" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -222,11 +225,13 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new raw dataset count should be incremented", async () => {
+    const filter = { where: { type: "raw" } };
+
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "raw" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -236,11 +241,13 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new derived dataset count should be unchanged", async () => {
+    const filter = { where: { type: "derived" } };
+
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "derived" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -281,11 +288,13 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new raw dataset count should be unchanged", function (done) {
+    const filter = { where: { type: "raw" } };
+
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "raw" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
@@ -297,11 +306,13 @@ describe("CheckDifferentDatasetTypes: Check different dataset types and their in
   });
 
   it("new derived dataset count should be incremented", function (done) {
+    const filter = { where: { type: "derived" } };
+
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ where: { type: "derived" } })
+      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {

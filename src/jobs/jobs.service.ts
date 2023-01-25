@@ -279,7 +279,9 @@ export class JobsService {
 
   async getPolicy(datasetId: string): Promise<Partial<Policy>> {
     try {
-      const dataset = await this.datasetsService.findOne({ pid: datasetId });
+      const dataset = await this.datasetsService.findOne({
+        where: { pid: datasetId },
+      });
       if (!dataset) {
         throw new NotFoundException(
           "Could not dataset with pid " + datasetId,

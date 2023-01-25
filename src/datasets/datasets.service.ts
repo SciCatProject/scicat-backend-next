@@ -64,6 +64,7 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<DatasetClass[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     /* const t2 = await this.datasetModel
@@ -72,9 +73,9 @@ export class DatasetsService {
       .skip(skip)
       .sort(sort)
       .exec();
- */
+    */
     const t1 = this.datasetModel
-      .find(whereFilter)
+      .find(whereFilter, fieldsProjection)
       .limit(limit)
       .skip(skip)
       .sort(sort);
@@ -128,13 +129,20 @@ export class DatasetsService {
   }
 
   async findOne(
-    filters: FilterQuery<DatasetDocument>,
+    filter: FilterQuery<DatasetDocument>,
   ): Promise<DatasetClass | null> {
-    return this.datasetModel.findOne(filters).exec();
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+
+    return this.datasetModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
-  async count(where: FilterQuery<DatasetDocument>): Promise<{ count: number }> {
-    const count = await this.datasetModel.count(where).exec();
+  async count(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<{ count: number }> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+
+    const count = await this.datasetModel.count(whereFilter).exec();
     return { count };
   }
 
