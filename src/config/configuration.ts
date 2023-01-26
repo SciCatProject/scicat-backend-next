@@ -1,6 +1,7 @@
 const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
 
 const configuration = () => ({
+  logoutURL: process.env.LOGOUT_URL, // Example: http://localhost:3000/
   accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
   accessGroupService: {
     token: process.env.ACCESS_GROUP_SERVICE_TOKEN,

@@ -1,4 +1,4 @@
-import { Controller, Request, UseGuards, Post, Get, Res } from "@nestjs/common";
+import { Controller, UseGuards, Post, Get, Res, Req, HttpStatus } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
@@ -8,9 +8,10 @@ import { LdapAuthGuard } from "./guards/ldap.guard";
 import { AllowAny } from "./decorators/allow-any.decorator";
 import { User } from "src/users/schemas/user.schema";
 import { OidcAuthGuard } from "./guards/oidc.guard";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
+import { Issuer } from "openid-client";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -26,7 +27,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post("login")
   async login(
-    @Request() req: Record<string, unknown>,
+    @Req() req: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
@@ -41,7 +42,7 @@ export class AuthController {
   @UseGuards(LdapAuthGuard)
   @Post("msad")
   async msadLogin(
-    @Request() req: Record<string, unknown>,
+    @Req() req: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
@@ -56,21 +57,21 @@ export class AuthController {
   @UseGuards(LdapAuthGuard)
   @Post("ldap")
   async ldapLogin(
-    @Request() req: Record<string, unknown>,
+    @Req() req: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
   @AllowAny()
   @UseGuards(OidcAuthGuard)
-  @Get("/oidc")
+  @Get("oidc")
   async oidcLogin() {
     // this function is invoked when the oidc is set as an auth method. It's behaviour comes from the oidc strategy
   }
 
   @AllowAny()
   @UseGuards(OidcAuthGuard)
-  @Get("/oidc/callback")
+  @Get("oidc/callback")
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
     const url = new URL(
@@ -84,8 +85,44 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get("whoami")
   async whoami(
-    @Request() req: Record<string, unknown>,
+    @Req() req: Record<string, unknown>,
   ): Promise<Omit<User, "password">> {
     return req.user as Omit<User, "password">;
+  }
+
+  @Get('logout')
+  async logout(
+    @Req() req: Request, 
+    @Res() res: Response,
+  ) {
+    const user = req.user as Omit<User, "password">;
+    const session = req.session;
+    const logoutURL = this.configService.get<string>("logoutURL") || req.baseUrl;
+
+    req.logout((err) => {
+      if (err) {
+        // we should provide a message
+        res.status(HttpStatus.BAD_REQUEST);
+      }
+      if (user.authStrategy == 'oidc') {
+        const oidcConfig = this.configService.get<OidcConfig>("oidc");
+        req.session.destroy(async (error: any) => {
+          const trustIssuer = await Issuer.discover(
+            `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+          );
+          const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
+          if (end_session_endpoint) {
+            res.redirect(end_session_endpoint + 
+              '?post_logout_redirect_uri=' + logoutURL);
+          } else {
+            res.redirect(logoutURL);
+          }
+        })
+      } else {
+        req.session.destroy(async (error: any) => {
+          res.redirect(logoutURL);
+        })
+      }
+    })
   }
 }
