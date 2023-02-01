@@ -657,3 +657,17 @@ export const fullQueryDescription =
   }\n \
 }\n \
 </pre>';
+
+export const parseBoolean = (v : any): boolean => {
+  switch(v) {
+    case true:
+    case "true":
+    case 1:
+    case "1":
+    case "on":
+    case "yes":
+        return true;
+    default: 
+        return false;
+  }
+}

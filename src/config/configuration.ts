@@ -62,6 +62,7 @@ const configuration = () => ({
     scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
     successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
     accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
+    autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
   },
   logbook: {
     enabled:

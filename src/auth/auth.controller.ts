@@ -1,4 +1,13 @@
-import { Controller, UseGuards, Post, Get, Res, Req, HttpStatus } from "@nestjs/common";
+import { 
+  Controller, 
+  UseGuards, 
+  Post, 
+  Get, 
+  Res, 
+  Req, 
+  HttpStatus, 
+  Next
+} from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
@@ -12,6 +21,8 @@ import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
 import { Issuer } from "openid-client";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { parseBoolean } from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -90,39 +101,57 @@ export class AuthController {
     return req.user as Omit<User, "password">;
   }
 
-  @Get('logout')
+  
+  @UseGuards(JwtAuthGuard)
+  @Get("logout")
   async logout(
     @Req() req: Request, 
     @Res() res: Response,
   ) {
+    console.log('Logout');
     const user = req.user as Omit<User, "password">;
     const session = req.session;
-    const logoutURL = this.configService.get<string>("logoutURL") || req.baseUrl;
-
+    const logoutURL = this.configService.get<string>("logoutURL") || 
+      req.originalUrl;
+    
     req.logout((err) => {
       if (err) {
         // we should provide a message
+        console.log("Logout error");
+        console.log(err);
         res.status(HttpStatus.BAD_REQUEST);
       }
-      if (user.authStrategy == 'oidc') {
+      if (user.authStrategy == "oidc") {
         const oidcConfig = this.configService.get<OidcConfig>("oidc");
-        req.session.destroy(async (error: any) => {
-          const trustIssuer = await Issuer.discover(
-            `${oidcConfig?.issuer}/.well-known/openid-configuration`,
-          );
-          const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
-          if (end_session_endpoint) {
-            res.redirect(end_session_endpoint + 
-              '?post_logout_redirect_uri=' + logoutURL);
-          } else {
-            res.redirect(logoutURL);
-          }
-        })
-      } else {
-        req.session.destroy(async (error: any) => {
-          res.redirect(logoutURL);
-        })
+        const autoLogout : boolean = parseBoolean(oidcConfig?.autoLogout || false);
+        if (autoLogout) {
+          req.session.destroy(async (error: any) => {
+            const trustIssuer = await Issuer.discover(
+              `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+            );
+            const end_session_endpoint = trustIssuer.metadata.end_session_endpoint
+            if (end_session_endpoint) {
+              res.redirect(
+                end_session_endpoint + 
+                ( logoutURL ? '?post_logout_redirect_uri=' + logoutURL : "" ));
+            } else {
+              if ( logoutURL) {
+                res.redirect(logoutURL);
+             }
+            }
+          });
+          return;
+        }
       }
-    })
+      req.session.destroy(async (err: any) => {
+        if (err) {
+          console.log("Logout error");
+          console.log(err);
+        }
+        if ( logoutURL) {
+          res.redirect(logoutURL);
+        }
+      });
+    });
   }
 }

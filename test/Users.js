@@ -31,7 +31,7 @@ describe("Users: Login with functional accounts", () => {
 
   it("Logout should succeed", async () => {
     return request(appUrl)
-      .post("/api/v3/Users/Logout?include=user")
+      .post("/api/v3/users/logout")
       .send({
         username: "ingestor",
         password: "aman",

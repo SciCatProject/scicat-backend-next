@@ -18,7 +18,7 @@ describe("Authorization functionalities", () => {
     return request(appUrl)
       .get("/api/v3/auth/logout")
       .set("Accept", "application/json")
-      .expect(400);
+      .expect(401);
   });
 
   it("Login should succeed with correct credentials", async () => {
