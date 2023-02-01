@@ -5,8 +5,7 @@ import {
   Get, 
   Res, 
   Req, 
-  HttpStatus, 
-  Next
+  HttpStatus
 } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
@@ -21,7 +20,6 @@ import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
 import { Issuer } from "openid-client";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { parseBoolean } from "src/common/utils";
 
 @ApiBearerAuth()
@@ -110,7 +108,6 @@ export class AuthController {
   ) {
     console.log('Logout');
     const user = req.user as Omit<User, "password">;
-    const session = req.session;
     const logoutURL = this.configService.get<string>("logoutURL") || 
       req.originalUrl;
     
