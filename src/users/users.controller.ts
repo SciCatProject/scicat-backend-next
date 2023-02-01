@@ -45,6 +45,16 @@ export class UsersController {
     return this.usersService.createUserJWT(request.user as JWTUser);
   }
 
+  @ApiBody({ type: CredentialsDto })
+  @AllowAny()
+  @UseGuards(LocalAuthGuard)
+  @Post("login")
+  async login(
+    @Req() req: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    return await this.authService.login(req.user as Omit<User, "password">);
+  }
+
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
   @UseInterceptors(CreateUserSettingsInterceptor)
