@@ -1,11 +1,11 @@
-import { 
-  Controller, 
-  UseGuards, 
-  Post, 
-  Get, 
-  Res, 
-  Req, 
-  HttpStatus
+import {
+  Controller,
+  UseGuards,
+  Post,
+  Get,
+  Res,
+  Req,
+  HttpStatus,
 } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
@@ -99,18 +99,13 @@ export class AuthController {
     return req.user as Omit<User, "password">;
   }
 
-  
   @UseGuards(JwtAuthGuard)
   @Get("logout")
-  async logout(
-    @Req() req: Request, 
-    @Res() res: Response,
-  ) {
-    console.log('Logout');
+  async logout(@Req() req: Request, @Res() res: Response) {
+    console.log("Logout");
     const user = req.user as Omit<User, "password">;
-    const logoutURL = this.configService.get<string>("logoutURL") || 
-      req.originalUrl;
-    
+    const logoutURL =
+      this.configService.get<string>("logoutURL") || req.originalUrl;
     req.logout((err) => {
       if (err) {
         // we should provide a message
@@ -120,32 +115,36 @@ export class AuthController {
       }
       if (user.authStrategy == "oidc") {
         const oidcConfig = this.configService.get<OidcConfig>("oidc");
-        const autoLogout : boolean = parseBoolean(oidcConfig?.autoLogout || false);
+        const autoLogout: boolean = parseBoolean(
+          oidcConfig?.autoLogout || false,
+        );
         if (autoLogout) {
-          req.session.destroy(async (error: any) => {
+          req.session.destroy(async (error) => {
             const trustIssuer = await Issuer.discover(
               `${oidcConfig?.issuer}/.well-known/openid-configuration`,
             );
-            const end_session_endpoint = trustIssuer.metadata.end_session_endpoint
+            const end_session_endpoint =
+              trustIssuer.metadata.end_session_endpoint;
             if (end_session_endpoint) {
               res.redirect(
-                end_session_endpoint + 
-                ( logoutURL ? '?post_logout_redirect_uri=' + logoutURL : "" ));
+                end_session_endpoint +
+                  (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
+              );
             } else {
-              if ( logoutURL) {
+              if (logoutURL) {
                 res.redirect(logoutURL);
-             }
+              }
             }
           });
           return;
         }
       }
-      req.session.destroy(async (err: any) => {
-        if (err) {
+      req.session.destroy(async (error: unknown) => {
+        if (error) {
           console.log("Logout error");
           console.log(err);
         }
-        if ( logoutURL) {
+        if (logoutURL) {
           res.redirect(logoutURL);
         }
       });

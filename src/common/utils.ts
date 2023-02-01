@@ -658,16 +658,16 @@ export const fullQueryDescription =
 }\n \
 </pre>';
 
-export const parseBoolean = (v : any): boolean => {
-  switch(v) {
+export const parseBoolean = (v: unknown): boolean => {
+  switch (v) {
     case true:
     case "true":
     case 1:
     case "1":
     case "on":
     case "yes":
-        return true;
-    default: 
-        return false;
+      return true;
+    default:
+      return false;
   }
-}
+};

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
+var accessToken = null;
+
 describe("Authorization functionalities", () => {
   it("Ingestor login fails with incorrect credentials", async () => {
     return request(appUrl)
@@ -33,6 +35,7 @@ describe("Authorization functionalities", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("user").and.be.instanceof(Object);
+        accessToken = res.body.id;
       });
   });
 
@@ -40,6 +43,7 @@ describe("Authorization functionalities", () => {
     return request(appUrl)
       .get("/api/v3/auth/logout")
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200);
   });
 });
