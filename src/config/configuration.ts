@@ -1,6 +1,7 @@
 const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
 
 const configuration = () => ({
+  logoutURL: process.env.LOGOUT_URL, // Example: http://localhost:3000/
   accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
   accessGroupService: {
     token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
@@ -61,6 +62,7 @@ const configuration = () => ({
     scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
     successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
     accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
+    autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
   },
   logbook: {
     enabled:

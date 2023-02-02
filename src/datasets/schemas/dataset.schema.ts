@@ -383,7 +383,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
+      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
   })
   @Prop({ type: String, required: false })
   principalInvestigator?: string;
@@ -392,7 +392,7 @@ export class DatasetClass extends OwnableClass {
     type: Date,
     required: false,
     description:
-      "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset",
+      "Time of end of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset",
   })
   @Prop({ type: Date, required: false })
   endTime?: Date;
@@ -446,7 +446,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "Email of person pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons. This field is required if the dataset is a Derived dataset.",
+      "First name and last name of person or people pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons. This field is required if the dataset is a Derived dataset.",
   })
   @Prop({ type: String, required: false, index: true })
   investigator?: string;

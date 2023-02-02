@@ -13,6 +13,7 @@ import { OidcConfig } from "src/config/configuration";
 import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
 import { accessGroupServiceFactory } from "./access-group-provider/access-group-service-factory";
 import { AccessGroupService } from "./access-group-provider/access-group.service";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 const OidcStrategyFactory = {
   provide: "OidcStrategy",
@@ -62,6 +63,7 @@ const OidcStrategyFactory = {
     JwtStrategy,
     LdapStrategy,
     LocalStrategy,
+    CaslAbilityFactory,
     OidcStrategyFactory,
     accessGroupServiceFactory,
   ],
