@@ -37,7 +37,7 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     const response = await firstValueFrom(
       this.httpService.post(
         this.apiUrl,
-        { query: { query } },
+        { query },
         {
           headers: {
             "Content-Type": "application/json",
@@ -47,18 +47,5 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
       ),
     );
     return response.data;
-    /* const response = await fetch(this.apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...this.headers,
-      },
-      body: JSON.stringify({
-        query: `{ ${query} }`,
-      }),
-    });
-    const json = await response.json();
-    return json as Record<string, unknown>;
-    */
   }
 }

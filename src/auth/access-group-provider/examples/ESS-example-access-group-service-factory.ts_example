@@ -1,3 +1,4 @@
+import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { AccessGroupFromGraphQLApiService } from "./access-group-from-graphql-api-call.service";
 import { AccessGroupFromMultipleProvidersService } from "./access-group-from-multiple-providers.service";
@@ -14,9 +15,13 @@ export const accessGroupServiceFactory = {
 };
 
 function getEssAccessGroupService(configService: ConfigService) {
-  const accessGroupsStaticValues = configService.get("accessGroupsStaticValues")
+  const accessGroupsStaticValues = configService.get(
+    "accessGroupsStaticValues",
+  );
   const fromApi = getEssAccessGroupFromGQLApiService(configService);
-  const fromStatic = new AccessGroupFromStaticValuesService(accessGroupsStaticValues);
+  const fromStatic = new AccessGroupFromStaticValuesService(
+    accessGroupsStaticValues,
+  );
 
   const fromMultiple = new AccessGroupFromMultipleProvidersService([
     fromApi,
@@ -35,12 +40,14 @@ function getEssAccessGroupFromGQLApiService(configService: ConfigService) {
 
   const authHeader = `Bearer ${token}`;
   const headers = {
-    authorization: authHeader,
+    Authorization: authHeader,
   };
   const query = `
-    userByOIDCSub(oidcSub: "{{userid}}"){
-      proposals {
-        proposalId
+    {
+      userByOIDCSub(oidcSub: "{{userId}}") {
+        proposals {
+          proposalId
+        }
       }
     }`;
 
@@ -65,5 +72,6 @@ function getEssAccessGroupFromGQLApiService(configService: ConfigService) {
     url,
     headers,
     responseProcessor,
+    new HttpService(),
   );
 }
