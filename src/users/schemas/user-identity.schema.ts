@@ -14,7 +14,7 @@ export type UserIdentityDocument = UserIdentity & Document;
 })
 export class UserIdentity {
   @Prop()
-  authScheme: string;
+  authStrategy: string;
 
   @Prop({ type: Date })
   created: Date;

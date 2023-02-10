@@ -33,7 +33,7 @@ const mockUser: User = {
 };
 
 const mockUserIdentity: UserIdentity = {
-  authScheme: "test",
+  authStrategy: "test",
   created: new Date(),
   credentials: {},
   externalId: "testExternalId",

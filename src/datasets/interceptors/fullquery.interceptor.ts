@@ -21,7 +21,7 @@ export class FullQueryInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data: DatasetClass[]) => {
         const req = context.switchToHttp().getRequest();
-        const fields: IDatasetFields = JSON.parse(req.query.fields);
+        const fields: IDatasetFields = (req.query.fields ? JSON.parse(req.query.fields) : {});
         if (fields.scientific) {
           const { scientific } = fields;
           data.forEach(({ scientificMetadata }) => {

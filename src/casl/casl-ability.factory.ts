@@ -6,9 +6,11 @@ import {
   InferSubjects,
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
+import { config, env } from "process";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
+import configuration from "src/config/configuration";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
@@ -52,6 +54,13 @@ export class CaslAbilityFactory {
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
+    // Datasets permissions
+    if (user.currentGroups.some( g => configuration().adminGroups.includes(g))) {
+      can(Action.ListAll, DatasetClass);
+    }
+    else {
+      can(Action.ListOwn, DatasetClass);
+    }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
@@ -74,6 +83,7 @@ export class CaslAbilityFactory {
       },
     );
 
+    // Instrument permissions
     can(Action.Read, Instrument);
 
     can(Action.Manage, Job);

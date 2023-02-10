@@ -16,6 +16,7 @@ import {
   HttpStatus,
   HttpException,
   NotFoundException,
+  Req,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -28,6 +29,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
+import { Request } from "express";
 import { DatasetsService } from "./datasets.service";
 import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
@@ -35,10 +37,10 @@ import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import { PublicDatasetsInterceptor } from "./interceptors/public-datasets.interceptor";
+import { MainDatasetsPublicInterceptor, SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
@@ -52,7 +54,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { UpdateQuery } from "mongoose";
+import { FilterQuery, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
@@ -76,6 +78,8 @@ import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-dat
 import { filterDescription, filterExample } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -93,6 +97,7 @@ export class DatasetsController {
     private datablocksService: DatablocksService,
     private datasetsService: DatasetsService,
     private origDatablocksService: OrigDatablocksService,
+    private caslAbilityFactory: CaslAbilityFactory
   ) {}
 
   getFilters(
@@ -127,6 +132,30 @@ export class DatasetsController {
     }
 
     return {};
+  }
+
+  updateMergedFiltersForList(
+    request: Request, 
+    mergedFilters: IFilters<DatasetDocument, IDatasetFields>
+  ) : IFilters<DatasetDocument, IDatasetFields> {
+    let user: JWTUser = request.user as JWTUser;
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll,DatasetClass);
+      const canViewHerOwn = ability.can(Action.ListOwn,DatasetClass);
+
+      if (!canViewAll && canViewHerOwn) {
+        if (!mergedFilters.where) {
+          mergedFilters.where = {};
+        }
+        mergedFilters.where['$or'] = [
+          { ownerGroup : {'$in' : user.currentGroups} },
+          { accessGroups : {'$in' : user.currentGroups} }
+        ]
+      }
+    }
+    return mergedFilters
   }
 
   // POST /datasets
@@ -281,7 +310,7 @@ export class DatasetsController {
 
   // GET /datasets
   @AllowAny()
-  @UseInterceptors(PublicDatasetsInterceptor)
+  @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
   @ApiOperation({
     summary: "It returns a list of datasets.",
@@ -304,10 +333,14 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findAll(
+    @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass[] | null> {
-    const mergedFilters = this.getFilters(headers, queryFilter);
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      this.getFilters(headers, queryFilter)
+    );
 
     const datasets = await this.datasetsService.findAll(mergedFilters);
     if (datasets && datasets.length > 0) {
@@ -353,7 +386,7 @@ export class DatasetsController {
 
   // GET /datasets/fullquery
   @AllowAny()
-  @UseInterceptors(PublicDatasetsInterceptor, FullQueryInterceptor)
+  @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
   @ApiOperation({
     summary: "It returns a list of datasets matching the query provided.",
@@ -373,7 +406,7 @@ export class DatasetsController {
     description: "Define further query parameters like skip, limit, order",
     required: false,
     type: String,
-    example: '{ skip: 0, limit: 25, order: "creationTime:desc" }',
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
     status: 200,
@@ -382,18 +415,27 @@ export class DatasetsController {
     description: "Return datasets requested",
   })
   async fullquery(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
+    const user: JWTUser = request.user as JWTUser;
+    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    if (user) {
+      fields.userGroups = fields.userGroups ?? [];
+      fields.userGroups.push(...user.currentGroups);
+    }
+
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
+    
     return this.datasetsService.fullquery(parsedFilters);
   }
 
   // GET /fullfacets
   @AllowAny()
-  @UseInterceptors(PublicDatasetsInterceptor)
+  @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
   @ApiOperation({
     summary:
@@ -424,10 +466,18 @@ export class DatasetsController {
     description: "Return datasets requested",
   })
   async fullfacet(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    if (user) {
+      fields.userGroups = fields.userGroups ?? [];
+      fields.userGroups.push(...user.currentGroups);
+    }
+
     const parsedFilters: IFacets<IDatasetFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       facets: JSON.parse(filters.facets ?? "[]"),
     };
     return this.datasetsService.fullFacet(parsedFilters);
@@ -435,7 +485,7 @@ export class DatasetsController {
 
   // GET /datasets/metadataKeys
   @AllowAny()
-  @UseInterceptors(PublicDatasetsInterceptor)
+  @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/metadataKeys")
   @ApiOperation({
     summary:
@@ -456,7 +506,7 @@ export class DatasetsController {
     description: "Define further query parameters like skip, limit, order",
     required: false,
     type: String,
-    example: '{ skip: 0, limit: 25, order: "creationTime:desc" }',
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
     status: 200,
@@ -465,10 +515,18 @@ export class DatasetsController {
     description: "Return metadata keys list of datasets selected",
   })
   async metadataKeys(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
+    const user: JWTUser = request.user as JWTUser;
+    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    if (user) {
+      fields.userGroups = fields.userGroups ?? [];
+      fields.userGroups.push(...user.currentGroups);
+    }
+      
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
-      fields: JSON.parse(filters?.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters?.limits ?? "{}"),
     };
     return this.datasetsService.metadataKeys(parsedFilters);
@@ -558,10 +616,14 @@ export class DatasetsController {
       "Return the number of datasets in the following format: { count: integer }",
   })
   async count(
+    @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<{ count: number }> {
-    const mergedFilters = this.getFilters(headers, queryFilter);
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      this.getFilters(headers, queryFilter)
+    );
 
     return this.datasetsService.count(mergedFilters);
   }
@@ -789,7 +851,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/thumbnail
-  @AllowAny()
+  //@AllowAny()
+  @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
   @ApiOperation({
     summary: "It returns the thumbnail associated with the dataset.",

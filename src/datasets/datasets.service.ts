@@ -64,29 +64,24 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<DatasetClass[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    console.log(whereFilter);
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
-    /* const t2 = await this.datasetModel
-      .find()
-      .limit(limit)
-      .skip(skip)
-      .sort(sort)
-      .exec();
-    */
-    const t1 = this.datasetModel
+    const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
       .limit(limit)
       .skip(skip)
       .sort(sort);
 
-    const t3 = await t1.exec();
+    const datasets = await datasetPromise.exec();
 
-    return t3;
+    return datasets;
   }
 
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
+    extraWhereClause: FilterQuery<DatasetDocument> = {}
   ): Promise<DatasetClass[] | null> {
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
@@ -94,10 +89,14 @@ export class DatasetsService {
         "pid",
         filter.fields as FilterQuery<DatasetDocument>,
       );
+    const whereClause: FilterQuery<DatasetDocument> = {
+      ...filterQuery,
+      ...extraWhereClause
+    }
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     const datasets = await this.datasetModel
-      .find(filterQuery, null, modifiers)
+      .find(whereClause, null, modifiers)
       .exec();
 
     return datasets;
@@ -269,7 +268,7 @@ export class DatasetsService {
       filters.limits = lm;
     }
 
-    const datasets = await this.findAll(filters);
+    const datasets = await this.fullquery(filters);
 
     const metadataKeys = extractMetadataKeys<DatasetClass>(
       datasets as unknown as DatasetClass[],

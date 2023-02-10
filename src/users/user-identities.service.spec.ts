@@ -5,7 +5,7 @@ import { UserIdentity } from "./schemas/user-identity.schema";
 import { UserIdentitiesService } from "./user-identities.service";
 
 const mockUserIdentity: UserIdentity = {
-  authScheme: "test",
+  authStrategy: "test",
   created: new Date(),
   credentials: {},
   externalId: "testExternalId",

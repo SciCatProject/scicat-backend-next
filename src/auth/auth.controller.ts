@@ -106,7 +106,7 @@ export class AuthController {
     const user = req.user as Omit<User, "password">;
     const logoutURL =
       this.configService.get<string>("logoutURL") || req.originalUrl;
-    req.logout((err) => {
+    await req.logout(async (err) => {
       if (err) {
         // we should provide a message
         console.log("Logout error");
@@ -119,35 +119,23 @@ export class AuthController {
           oidcConfig?.autoLogout || false,
         );
         if (autoLogout) {
-          req.session.destroy(async (error) => {
-            const trustIssuer = await Issuer.discover(
-              `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+          const trustIssuer = await Issuer.discover(
+            `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+          );
+          const end_session_endpoint =
+            trustIssuer.metadata.end_session_endpoint;
+          if (end_session_endpoint) {
+            res.redirect(
+              end_session_endpoint +
+                (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
             );
-            const end_session_endpoint =
-              trustIssuer.metadata.end_session_endpoint;
-            if (end_session_endpoint) {
-              res.redirect(
-                end_session_endpoint +
-                  (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-              );
-            } else {
-              if (logoutURL) {
-                res.redirect(logoutURL);
-              }
-            }
-          });
-          return;
+          }
         }
       }
-      req.session.destroy(async (error: unknown) => {
-        if (error) {
-          console.log("Logout error");
-          console.log(err);
-        }
-        if (logoutURL) {
-          res.redirect(logoutURL);
-        }
-      });
+      if (logoutURL) {
+        res.redirect(logoutURL);
+      }
+      return;
     });
   }
 }
