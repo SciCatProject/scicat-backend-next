@@ -17,6 +17,7 @@ import {
   HttpException,
   NotFoundException,
   Req,
+  UnauthorizedException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -138,7 +139,7 @@ export class DatasetsController {
     request: Request, 
     mergedFilters: IFilters<DatasetDocument, IDatasetFields>
   ) : IFilters<DatasetDocument, IDatasetFields> {
-    let user: JWTUser = request.user as JWTUser;
+    const user: JWTUser = request.user as JWTUser;
 
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
@@ -421,8 +422,13 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
     if (user) {
-      fields.userGroups = fields.userGroups ?? [];
-      fields.userGroups.push(...user.currentGroups);
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll,DatasetClass);
+      
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
     }
 
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
@@ -629,7 +635,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id
-  @UseGuards(PoliciesGuard)
+  //@UseGuards(PoliciesGuard)
+  @AllowAny()
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
@@ -649,8 +656,26 @@ export class DatasetsController {
     isArray: false,
     description: "Return dataset with pid specified",
   })
-  async findById(@Param("pid") id: string): Promise<DatasetClass | null> {
-    return this.datasetsService.findOne({ where: { pid: id } });
+  async findById(
+    @Req() request: Request,
+    @Param("pid") id: string
+  ): Promise<DatasetClass | null> {
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    let user: JWTUser = request.user as JWTUser;
+    if (dataset) {
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canView = ability.can(Action.Manage,dataset) || ability.can(Action.Read,dataset);
+        if (!canView && !dataset?.isPublished) {
+          throw new UnauthorizedException('Unauthorized access');
+        }
+      }
+      else if (!dataset?.isPublished) {
+        throw new UnauthorizedException('Unauthorized access');
+      }
+    }
+
+    return dataset;
   }
 
   // PATCH /datasets/:id

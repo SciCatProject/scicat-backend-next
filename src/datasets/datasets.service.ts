@@ -64,7 +64,6 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
   ): Promise<DatasetClass[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    console.log(whereFilter);
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 

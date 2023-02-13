@@ -6,13 +6,14 @@ import {
   InferSubjects,
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 import { config, env } from "process";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
-import configuration from "src/config/configuration";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { DatasetClass, DatasetDocument } from "src/datasets/schemas/dataset.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
@@ -27,56 +28,71 @@ import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 
 type Subjects =
-  | InferSubjects<
-      | typeof Attachment
-      | typeof Datablock
-      | typeof DatasetClass
-      | typeof Instrument
-      | typeof Job
-      | typeof Logbook
-      | typeof OrigDatablock
-      | typeof Policy
-      | typeof ProposalClass
-      | typeof PublishedData
-      | typeof SampleClass
-      | typeof User
-      | typeof UserIdentity
-      | typeof UserSettings
-    >
+  string |
+  InferSubjects<
+    typeof Attachment |
+      typeof Datablock |
+      typeof DatasetClass |
+      typeof Instrument |
+      typeof Job |
+      typeof Logbook |
+      typeof OrigDatablock |
+      typeof Policy |
+      typeof ProposalClass |
+      typeof PublishedData |
+      typeof SampleClass |
+      typeof User |
+      typeof UserIdentity |
+      typeof UserSettings
+  >
   | "all";
 
 export type AppAbility = Ability<[Action, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Action, Subjects]>
-    >(Ability as AbilityClass<AppAbility>);
+  constructor(
+    @InjectModel(DatasetClass.name) private datasetModel: Model<DatasetDocument>,
+  ) {}
 
+  createForUser(user: JWTUser) {
+    //const { can, cannot, build } = new AbilityBuilder<
+    //  Ability<[Action, Subjects]>
+    //>(Ability as AbilityClass<AppAbility>);
+    const { can, cannot, build } = new AbilityBuilder(
+      Ability as AbilityClass<
+        Ability<[Action, string | InferSubjects<typeof this.datasetModel> | Subjects | 'all']>
+      >,
+    );
+
+    // admin groups
+    const stringAdminGroups = process.env.ADMIN_GROUPS || "" as String
+    const adminGroups: string[] = (stringAdminGroups ? stringAdminGroups.split(',') : []);
     // Datasets permissions
-    if (user.currentGroups.some( g => configuration().adminGroups.includes(g))) {
-      can(Action.ListAll, DatasetClass);
+    if (user.currentGroups.some( g => adminGroups.includes(g))) {
+      can(Action.ListAll, this.datasetModel);
+      can(Action.Manage, this.datasetModel);
     }
     else {
-      can(Action.ListOwn, DatasetClass);
+      can(Action.ListOwn, this.datasetModel);
     }
-    can(Action.Read, DatasetClass, { isPublished: true });
-    can(Action.Read, DatasetClass, {
+    can(Action.Manage,'Dataset');
+    can(Action.Read, this.datasetModel, { isPublished: true });
+    can(Action.Read, this.datasetModel, {
       isPublished: false,
       ownerGroup: { $in: user.currentGroups },
     });
-    can(Action.Read, DatasetClass, {
+    can(Action.Read, this.datasetModel, {
       isPublished: false,
       accessGroups: { $in: user.currentGroups },
     });
-    can(Action.Read, DatasetClass, {
+    can(Action.Read, this.datasetModel, {
       sharedWith: user.email,
     });
 
     can(
       Action.Update,
-      DatasetClass,
+      this.datasetModel,
       ["isPublished", "keywords", "scientificMetadata"],
       {
         ownerGroup: { $in: user.currentGroups },
@@ -122,9 +138,9 @@ export class CaslAbilityFactory {
       can(Action.Manage, "all");
     }
     if (user.currentGroups.includes(Role.ArchiveManager)) {
-      cannot(Action.Create, DatasetClass);
-      cannot(Action.Update, DatasetClass);
-      can(Action.Delete, DatasetClass);
+      cannot(Action.Create, this.datasetModel);
+      cannot(Action.Update, this.datasetModel);
+      can(Action.Delete, this.datasetModel);
       cannot(Action.Manage, OrigDatablock);
       cannot(Action.Create, OrigDatablock);
       cannot(Action.Update, OrigDatablock);
@@ -141,9 +157,9 @@ export class CaslAbilityFactory {
     if (user.currentGroups.includes(Role.Ingestor)) {
       can(Action.Create, Attachment);
 
-      cannot(Action.Delete, DatasetClass);
-      can(Action.Create, DatasetClass);
-      can(Action.Update, DatasetClass);
+      cannot(Action.Delete, this.datasetModel);
+      can(Action.Create, this.datasetModel);
+      can(Action.Update, this.datasetModel);
 
       can(Action.Create, Instrument);
       can(Action.Update, Instrument);
@@ -160,9 +176,16 @@ export class CaslAbilityFactory {
     can(Action.Read, UserSettings, { userId: user._id });
     can(Action.Update, UserSettings, { userId: user._id });
 
+    //console.log(this.datasetModel);
+
+    const thisInstance = this;
+
     return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
+      detectSubjectType: (item) => {
+        return item.constructor as ExtractSubjectType<
+          string | InferSubjects<typeof thisInstance.datasetModel> | Subjects | 'all'
+        >;
+      },
     });
   }
 }

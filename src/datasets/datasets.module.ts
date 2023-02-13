@@ -18,6 +18,7 @@ import { PoliciesModule } from "src/policies/policies.module";
     AttachmentsModule,
     ConfigModule,
     DatablocksModule,
+    OrigDatablocksModule,
     InitialDatasetsModule,
     forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([
@@ -58,7 +59,6 @@ import { PoliciesModule } from "src/policies/policies.module";
         inject: [PoliciesService],
       },
     ]),
-    OrigDatablocksModule,
   ],
   exports: [DatasetsService],
   controllers: [DatasetsController],

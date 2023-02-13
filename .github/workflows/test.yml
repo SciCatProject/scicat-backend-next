@@ -98,6 +98,7 @@ jobs:
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
+          ADMIN_GROUPS: admin,ingestor,archivemanager
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
