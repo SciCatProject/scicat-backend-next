@@ -105,12 +105,18 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 
 ## Migrating from the old SciCat Backend
 
-Where the [current SciCat Backend](https://github.com/SciCatProject/backend) accepts id fields in the database named `pid`, `doi`, or similar, this implementation requires there to be an id field of the form `_id` on every document. It is therefore necessary to run a database migration script in your MongoDB instance before you can connect this backend to it.
+Where the [current SciCat Backend](https://github.com/SciCatProject/backend) accepts id fields in the database named `pid`, `doi`, or similar, this implementation requires there to be an id field of the form `_id` on every document. It is therefore necessary to run a database migration script towards MongoDB instance from a place where you have access to it and can install `migrate-mongo` package.
 
-The scripts [migrateIdFields.js](/scripts/migrateIdFields.js) and [migrateIdFields.sh](/scripts/migrateIdFields.sh) are located in the [/scripts](/scripts/) folder. Copy these to a location were you can access your MongoDB instance, then modify the shell script to run the script on your MongoDB instance. Once modified, start the migration by running
+All database [migration scripts](https://github.com/SciCatProject/scicat-backend-next/tree/master/migrations) located in the [migrations](/migrations/) folder. Copy these together with [`migrate-mongo-config.js`](https://github.com/SciCatProject/scicat-backend-next/blob/master/migrate-mongo-config.js) file to a location were you can access your MongoDB instance and have `migrate-mongo` package installed either globally(which is preferred) or locally if global installation is not possible. Then modify the config file to contain your MongoDB instance details like database name and url. Once modified, start the migration by running
 
 ```sh
-sh ./migrateIdFields.sh
+migrate-mongo up
+```
+
+if `migrate-mongo` is installed globally at the location where you want to run it from or if it is locally installed just run
+
+```sh
+./node_modules/migrate-mongo/bin/migrate-mongo.js up
 ```
 
 ---
