@@ -10,7 +10,6 @@ import { Observable } from "rxjs";
 export class MainDatasetsPublicInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
     if (!request.isAuthenticated()) {
       const stringFilter = request.query.filter ? request.query.filter : "{}";
       const jsonFilter = JSON.parse(stringFilter);
@@ -29,7 +28,6 @@ export class MainDatasetsPublicInterceptor implements NestInterceptor {
 export class SubDatasetsPublicInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
     if (!request.isAuthenticated()) {
       const stringFields = request.query.fields ? request.query.fields : "{}";
       let jsonFields = JSON.parse(stringFields);

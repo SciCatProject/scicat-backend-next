@@ -58,7 +58,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { FilterQuery, UpdateQuery } from "mongoose";
+import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
@@ -535,7 +535,7 @@ export class DatasetsController {
 
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
-      limits: JSON.parse(filters?.limits ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.datasetsService.metadataKeys(parsedFilters);
   }
@@ -681,10 +681,10 @@ export class DatasetsController {
         const canView =
           ability.can(Action.Manage, datasetInstance) ||
           ability.can(Action.Read, datasetInstance);
-        if (!canView && !dataset?.isPublished) {
+        if (!canView && !dataset.isPublished) {
           throw new ForbiddenException("Unauthorized access");
         }
-      } else if (!dataset?.isPublished) {
+      } else if (!dataset.isPublished) {
         throw new ForbiddenException("Unauthorized access");
       }
     }
