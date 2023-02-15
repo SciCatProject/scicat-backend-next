@@ -333,7 +333,7 @@ export const schemaTypeOf = <T>(
   }
 
   if (!property) {
-    if ("begin" in (value as Record<string, unknown>)) {
+    if (value && "begin" in (value as Record<string, unknown>)) {
       return "Date";
     }
     return "String";
