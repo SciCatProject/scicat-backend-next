@@ -10,6 +10,7 @@ var accessTokenArchiveManager = null;
 var pidRaw1 = null;
 var pidRaw2 = null;
 var policyIds = null;
+const raw2 = { ...TestData.RawCorrect };
 
 describe("DatasetLifecycle: Test facet and filter queries", () => {
   beforeEach((done) => {
@@ -56,7 +57,6 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
 
   it("adds another new raw dataset", async () => {
     // modify owner
-    let raw2 = { ...TestData.RawCorrect };
     raw2.ownerGroup = "p12345";
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -240,7 +240,12 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
     const start = new Date();
     start.setHours(start.getHours(), 0, 0, 0);
-    const filter = { where: { createdAt: { $gte: start } } };
+    const filter = {
+      where: {
+        createdAt: { $gte: start },
+        ownerGroup: { $in: [TestData.RawCorrect.ownerGroup, raw2.ownerGroup] },
+      },
+    };
 
     return request(appUrl)
       .get(

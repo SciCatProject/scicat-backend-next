@@ -420,20 +420,12 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery['$or'] = [
+      filterQuery["$or"] = [
         {
-          ownerGroup: searchExpression<T>(
-            model,
-            "ownerGroup",
-            fields[key],
-          ),
+          ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
         },
         {
-          accessGroups: searchExpression<T>(
-            model,
-            "accessGroups",
-            fields[key],
-          ),
+          accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
         },
       ];
     } else {

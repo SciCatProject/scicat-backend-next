@@ -17,7 +17,7 @@ import {
   HttpException,
   NotFoundException,
   Req,
-  UnauthorizedException,
+  ForbiddenException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -41,7 +41,10 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import { MainDatasetsPublicInterceptor, SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
+import {
+  MainDatasetsPublicInterceptor,
+  SubDatasetsPublicInterceptor,
+} from "./interceptors/datasets-public.interceptor";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
@@ -55,7 +58,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { FilterQuery, UpdateQuery } from "mongoose";
+import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
@@ -80,7 +83,6 @@ import { filterDescription, filterExample } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -98,7 +100,7 @@ export class DatasetsController {
     private datablocksService: DatablocksService,
     private datasetsService: DatasetsService,
     private origDatablocksService: OrigDatablocksService,
-    private caslAbilityFactory: CaslAbilityFactory
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
   getFilters(
@@ -136,27 +138,27 @@ export class DatasetsController {
   }
 
   updateMergedFiltersForList(
-    request: Request, 
-    mergedFilters: IFilters<DatasetDocument, IDatasetFields>
-  ) : IFilters<DatasetDocument, IDatasetFields> {
+    request: Request,
+    mergedFilters: IFilters<DatasetDocument, IDatasetFields>,
+  ): IFilters<DatasetDocument, IDatasetFields> {
     const user: JWTUser = request.user as JWTUser;
 
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll,DatasetClass);
-      const canViewHerOwn = ability.can(Action.ListOwn,DatasetClass);
-
-      if (!canViewAll && canViewHerOwn) {
+      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+      const canViewTheirOwn = ability.can(Action.ListOwn, DatasetClass);
+      if (!canViewAll && canViewTheirOwn) {
         if (!mergedFilters.where) {
           mergedFilters.where = {};
         }
-        mergedFilters.where['$or'] = [
-          { ownerGroup : {'$in' : user.currentGroups} },
-          { accessGroups : {'$in' : user.currentGroups} }
-        ]
+        mergedFilters.where["$or"] = [
+          { ownerGroup: { $in: user.currentGroups } },
+          { accessGroups: { $in: user.currentGroups } },
+          { isPublished: true },
+        ];
       }
     }
-    return mergedFilters
+    return mergedFilters;
   }
 
   // POST /datasets
@@ -340,7 +342,7 @@ export class DatasetsController {
   ): Promise<DatasetClass[] | null> {
     const mergedFilters = this.updateMergedFiltersForList(
       request,
-      this.getFilters(headers, queryFilter)
+      this.getFilters(headers, queryFilter),
     );
 
     const datasets = await this.datasetsService.findAll(mergedFilters);
@@ -420,11 +422,11 @@ export class DatasetsController {
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll,DatasetClass);
-      
+      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+
       if (!canViewAll) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
@@ -435,7 +437,7 @@ export class DatasetsController {
       fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
-    
+
     return this.datasetsService.fullquery(parsedFilters);
   }
 
@@ -476,7 +478,7 @@ export class DatasetsController {
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
     const user: JWTUser = request.user as JWTUser;
-    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
     if (user) {
       fields.userGroups = fields.userGroups ?? [];
       fields.userGroups.push(...user.currentGroups);
@@ -525,15 +527,15 @@ export class DatasetsController {
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const user: JWTUser = request.user as JWTUser;
-    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+    const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
     if (user) {
       fields.userGroups = fields.userGroups ?? [];
       fields.userGroups.push(...user.currentGroups);
     }
-      
+
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
-      limits: JSON.parse(filters?.limits ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
     };
     return this.datasetsService.metadataKeys(parsedFilters);
   }
@@ -628,7 +630,7 @@ export class DatasetsController {
   ): Promise<{ count: number }> {
     const mergedFilters = this.updateMergedFiltersForList(
       request,
-      this.getFilters(headers, queryFilter)
+      this.getFilters(headers, queryFilter),
     );
 
     return this.datasetsService.count(mergedFilters);
@@ -658,20 +660,32 @@ export class DatasetsController {
   })
   async findById(
     @Req() request: Request,
-    @Param("pid") id: string
+    @Param("pid") id: string,
   ): Promise<DatasetClass | null> {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    let user: JWTUser = request.user as JWTUser;
+    const user: JWTUser = request.user as JWTUser;
+
     if (dataset) {
+      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+      const datasetInstance = new DatasetClass();
+      datasetInstance._id = dataset._id;
+      datasetInstance.pid = dataset.pid;
+      datasetInstance.accessGroups = dataset.accessGroups;
+      datasetInstance.ownerGroup = dataset.ownerGroup;
+      datasetInstance.sharedWith = dataset.sharedWith;
+      datasetInstance.isPublished = dataset.isPublished;
+      datasetInstance.owner = dataset.owner;
+      datasetInstance.ownerEmail = dataset.ownerEmail;
       if (user) {
         const ability = this.caslAbilityFactory.createForUser(user);
-        const canView = ability.can(Action.Manage,dataset) || ability.can(Action.Read,dataset);
-        if (!canView && !dataset?.isPublished) {
-          throw new UnauthorizedException('Unauthorized access');
+        const canView =
+          ability.can(Action.Manage, datasetInstance) ||
+          ability.can(Action.Read, datasetInstance);
+        if (!canView && !dataset.isPublished) {
+          throw new ForbiddenException("Unauthorized access");
         }
-      }
-      else if (!dataset?.isPublished) {
-        throw new UnauthorizedException('Unauthorized access');
+      } else if (!dataset.isPublished) {
+        throw new ForbiddenException("Unauthorized access");
       }
     }
 
