@@ -41,3 +41,4 @@ lerna-debug.log*
 # Misc
 /mongodb_data
 test-data/*
+.vscode
