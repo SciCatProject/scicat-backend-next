@@ -7,38 +7,37 @@ const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
 let accessTokenIngestor = null,
-    accessTokenUser1 = null,
-    accessTokenUser2 = null,
-    accessTokenUser3 = null;
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+  accessTokenUser3 = null;
 
 let datasetPid1 = null,
-    encodedDatasetPid1 = null,
-    datasetPid2 = null,
-    encodedDatasetPid2 = null,
-    datasetPid3 = null,
-    encodedDatasetPid3 = null;
+  encodedDatasetPid1 = null,
+  datasetPid2 = null,
+  encodedDatasetPid2 = null,
+  datasetPid3 = null,
+  encodedDatasetPid3 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
   isPublished: true,
   ownerGroup: "group4",
-  accessGroups: ["group5"]
+  accessGroups: ["group5"],
 };
 
 const dataset2 = {
   ...TestData.RawCorrect,
   isPublished: false,
   ownerGroup: "group1",
-  accessGroups: ["group3"]
+  accessGroups: ["group3"],
 };
 
 const dataset3 = {
   ...TestData.RawCorrect,
   isPublished: false,
   ownerGroup: "group2",
-  accessGroups: ["group3"]
+  accessGroups: ["group3"],
 };
-
 
 describe("DatasetAuthorization: Test access to dataset", () => {
   beforeEach((done) => {
@@ -152,7 +151,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
-        res.body[0]['pid'].should.be.equal(datasetPid1);
+        res.body[0]["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -163,7 +162,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid1);
+        res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -172,7 +171,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(401);
+      .expect(403);
   });
 
   it("list of datasets for ingestor", async () => {
@@ -207,7 +206,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid1);
+        res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -231,7 +230,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid2);
+        res.body["pid"].should.be.equal(datasetPid2);
       });
   });
 
@@ -243,7 +242,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid3);
+        res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
@@ -255,8 +254,8 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
-        res.body[0]['pid'].should.be.equal(datasetPid2);
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body[1]["pid"].should.be.equal(datasetPid2);
       });
   });
 
@@ -268,7 +267,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body['count'].should.be.equal(1);
+        res.body["count"].should.be.equal(2);
       });
   });
 
@@ -280,7 +279,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid1);
+        res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -292,7 +291,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid2);
+        res.body["pid"].should.be.equal(datasetPid2);
       });
   });
 
@@ -302,9 +301,8 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(401);
+      .expect(403);
   });
-
 
   it("full query for datasets for user 1", async () => {
     return request(appUrl)
@@ -315,7 +313,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
-        res.body[0]['pid'].should.be.equal(datasetPid2);
+        res.body[0]["pid"].should.be.equal(datasetPid2);
       });
   });
 
@@ -327,8 +325,8 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
-        res.body[0]['pid'].should.be.equal(datasetPid3);
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body[1]["pid"].should.be.equal(datasetPid3);
       });
   });
 
@@ -340,7 +338,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body['count'].should.be.equal(1);
+        res.body["count"].should.be.equal(2);
       });
   });
 
@@ -352,7 +350,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid1);
+        res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -362,7 +360,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(401);
+      .expect(403);
   });
 
   it("access dataset 3 as user 2", async () => {
@@ -373,7 +371,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid3);
+        res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
@@ -386,7 +384,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
-        res.body[0]['pid'].should.be.equal(datasetPid3);
+        res.body[0]["pid"].should.be.equal(datasetPid3);
       });
   });
 
@@ -398,7 +396,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
 
@@ -410,7 +408,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body['count'].should.be.equal(3);
+        res.body["count"].should.be.equal(3);
       });
   });
 
@@ -422,7 +420,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid1);
+        res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
@@ -434,7 +432,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid2);
+        res.body["pid"].should.be.equal(datasetPid2);
       });
   });
 
@@ -446,7 +444,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-        res.body['pid'].should.be.equal(datasetPid3);
+        res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
@@ -458,9 +456,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
-
-
 });

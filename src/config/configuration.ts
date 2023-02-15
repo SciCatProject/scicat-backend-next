@@ -61,7 +61,6 @@ const configuration = () => ({
       role: "group3",
       global: false,
     },
-
   ],
   httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
   httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,

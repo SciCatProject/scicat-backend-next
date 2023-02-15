@@ -11,7 +11,6 @@ import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [
-    forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {
         name: OrigDatablock.name,
@@ -21,9 +20,6 @@ import { DatasetsModule } from "src/datasets/datasets.module";
   ],
   controllers: [OrigDatablocksController],
   exports: [OrigDatablocksService],
-  providers: [
-    OrigDatablocksService, 
-    CaslAbilityFactory, 
-  ],
+  providers: [OrigDatablocksService, CaslAbilityFactory],
 })
 export class OrigDatablocksModule {}

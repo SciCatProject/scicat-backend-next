@@ -9,7 +9,6 @@ import { DatasetsModule } from "src/datasets/datasets.module";
 @Module({
   controllers: [InstrumentsController],
   imports: [
-    forwardRef(() => DatasetsModule),
     MongooseModule.forFeatureAsync([
       {
         name: Instrument.name,

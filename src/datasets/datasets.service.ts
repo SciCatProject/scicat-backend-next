@@ -80,7 +80,7 @@ export class DatasetsService {
 
   async fullquery(
     filter: IFilters<DatasetDocument, IDatasetFields>,
-    extraWhereClause: FilterQuery<DatasetDocument> = {}
+    extraWhereClause: FilterQuery<DatasetDocument> = {},
   ): Promise<DatasetClass[] | null> {
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
@@ -90,8 +90,8 @@ export class DatasetsService {
       );
     const whereClause: FilterQuery<DatasetDocument> = {
       ...filterQuery,
-      ...extraWhereClause
-    }
+      ...extraWhereClause,
+    };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     const datasets = await this.datasetModel
