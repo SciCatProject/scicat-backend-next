@@ -563,10 +563,14 @@ export class DatasetsController {
     description: "Return the datasets requested",
   })
   async findOne(
+    @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
-    const mergedFilters = this.getFilters(headers, queryFilter);
+    const mergedFilters = this.updateMergedFiltersForList(
+      request,
+      this.getFilters(headers, queryFilter),
+    );
 
     const dataset = await this.datasetsService.findOne(mergedFilters);
     if (dataset) {
