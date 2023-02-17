@@ -71,6 +71,10 @@ const TestData = {
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
+      approx_file_size_mb: {
+        "value" : 8500,
+        "unit" : ""
+      },
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {

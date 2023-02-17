@@ -1,6 +1,8 @@
 const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
+const adminGroups = process.env.ADMIN_GROUPS;
 
 const configuration = () => ({
+  adminGroups: adminGroups?.split(",") ?? [],
   logoutURL: process.env.LOGOUT_URL, // Example: http://localhost:3000/
   accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
   accessGroupService: {
@@ -36,6 +38,27 @@ const configuration = () => ({
       email: "scicatproposalingestor@your.site",
       password: "aman",
       role: "proposalingestor",
+      global: false,
+    },
+    {
+      username: "user1",
+      email: "user1@your.site",
+      password: "a609316768619f154ef58db4d847b75e",
+      role: "group1",
+      global: false,
+    },
+    {
+      username: "user2",
+      email: "user2@your.site",
+      password: "f522d1d715970073a6413474ca0e0f63",
+      role: "group2",
+      global: false,
+    },
+    {
+      username: "user3",
+      email: "user3@your.site",
+      password: "70dc489e8ee823ae815e18d664424df2",
+      role: "group3",
       global: false,
     },
   ],

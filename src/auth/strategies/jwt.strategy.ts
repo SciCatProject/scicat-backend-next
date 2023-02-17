@@ -41,6 +41,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       currentGroups = currentGroups.concat(userIdentity.profile.accessGroups);
     }
 
+    currentGroups = [...new Set([...currentGroups])];
+
     return {
       _id: payload._id,
       username: payload.username,

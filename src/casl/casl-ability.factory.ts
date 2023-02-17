@@ -25,6 +25,7 @@ import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 
 type Subjects =
+  | string
   | InferSubjects<
       | typeof Attachment
       | typeof Datablock
@@ -52,6 +53,19 @@ export class CaslAbilityFactory {
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
+    // admin groups
+    const stringAdminGroups = process.env.ADMIN_GROUPS || ("" as string);
+    const adminGroups: string[] = stringAdminGroups
+      ? stringAdminGroups.split(",")
+      : [];
+    // Datasets permissions
+    if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      can(Action.ListAll, DatasetClass);
+      can(Action.Manage, DatasetClass);
+    } else {
+      can(Action.ListOwn, DatasetClass);
+    }
+    can(Action.Manage, "Dataset");
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
@@ -74,6 +88,7 @@ export class CaslAbilityFactory {
       },
     );
 
+    // Instrument permissions
     can(Action.Read, Instrument);
 
     can(Action.Manage, Job);

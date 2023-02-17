@@ -38,7 +38,7 @@ export class BuildOpenIdClient {
 @Injectable()
 export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
   client: Client;
-  authScheme = "oidc";
+  authStrategy = "oidc";
 
   constructor(
     private readonly authService: AuthService,
@@ -96,7 +96,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       }
 
       const createUserIdentity: CreateUserIdentityDto = {
-        authScheme: "oidc",
+        authStrategy: "oidc",
         credentials: {},
         externalId: userProfile.id,
         profile: userProfile,

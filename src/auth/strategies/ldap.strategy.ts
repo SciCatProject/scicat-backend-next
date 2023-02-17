@@ -59,7 +59,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       );
 
       const createUserIdentity: CreateUserIdentityDto = {
-        authScheme: "ldap",
+        authStrategy: "ldap",
         credentials: {},
         externalId: payload.sAMAccountName as string,
         profile: {

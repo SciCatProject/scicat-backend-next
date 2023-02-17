@@ -103,7 +103,7 @@ export class UsersService implements OnModuleInit {
 
           // creates user identity to store access groups
           const createUserIdentity: CreateUserIdentityDto = {
-            authScheme: "local",
+            authStrategy: "local",
             credentials: {},
             externalId: "",
             profile: {
@@ -112,7 +112,7 @@ export class UsersService implements OnModuleInit {
               username: account.username as string,
               thumbnailPhoto: "error: no photo found",
               emails: [{ value: account.email as string }],
-              accessGroups: [role as string, ...accessGroups],
+              accessGroups: [...new Set([role as string, ...accessGroups])],
               id: user.id as string,
             },
             provider: "local",
