@@ -11,7 +11,10 @@ import {
   UseInterceptors,
   HttpCode,
   HttpStatus,
+  Req,
+  ForbiddenException,
 } from "@nestjs/common";
+import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
@@ -24,11 +27,10 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
-  getSchemaPath,
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -38,21 +40,19 @@ import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
-//import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
-//import { UpdateRawDatasetDto } from "src/datasets/dto/update-raw-dataset.dto";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
-//import { string } from "mathjs";
 import {
   filterDescription,
   filterExample,
   fullQueryDescription,
   fullQueryExample,
 } from "src/common/utils";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -62,6 +62,7 @@ export class ProposalsController {
     private readonly attachmentsService: AttachmentsService,
     private readonly datasetsService: DatasetsService,
     private readonly proposalsService: ProposalsService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
   // POST /proposals
@@ -258,10 +259,38 @@ export class ProposalsController {
     isArray: false,
     description: "Return proposal with pid specified",
   })
-  async findOne(
+  async findById(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
   ): Promise<ProposalClass | null> {
-    return this.proposalsService.findOne({ proposalId: proposalId });
+    const proposal = await this.proposalsService.findOne({
+      proposalId: proposalId,
+    });
+    const user: JWTUser = request.user as JWTUser;
+
+    if (proposal) {
+      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+      const proposalInstance = new ProposalClass();
+      proposalInstance._id = proposal._id;
+      proposalInstance.accessGroups = proposal.accessGroups;
+      proposalInstance.ownerGroup = proposal.ownerGroup;
+      proposalInstance.proposalId = proposal.proposalId;
+      proposalInstance.email = proposal.email;
+
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canView =
+          ability.can(Action.Manage, proposalInstance) ||
+          ability.can(Action.Read, proposalInstance);
+        if (!canView) {
+          throw new ForbiddenException("Unauthorized access");
+        }
+      } else {
+        throw new ForbiddenException("Unauthorized access");
+      }
+    }
+
+    return proposal;
   }
 
   // PATCH /proposals/:pid

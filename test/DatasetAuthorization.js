@@ -459,4 +459,53 @@ describe("DatasetAuthorization: Test access to dataset", () => {
         res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
+
+  it("update dataset 2 to be published", async () => {
+    return request(appUrl)
+      .patch(`/api/v3/Datasets/${encodedDatasetPid2}`)
+      .send({ isPublished: true })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
+  it("full query for datasets for user 2", async () => {
+    const fields = {
+      isPublished: true,
+    };
+
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
+  });
+
+  it("full facet for datasets for user 2", async () => {
+    const fields = {
+      isPublished: true,
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullfacet?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body[0].all[0].totalSets.should.be.equal(2);
+      });
+  });
 });
