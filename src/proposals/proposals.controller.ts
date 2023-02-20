@@ -42,7 +42,11 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import {
+  IFacets,
+  IFilters,
+  ILimitsFilter,
+} from "src/common/interfaces/common.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
@@ -64,6 +68,30 @@ export class ProposalsController {
     private readonly proposalsService: ProposalsService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+
+  updateFiltersForList(
+    request: Request,
+    mergedFilters: IFilters<ProposalDocument, IProposalFields>,
+  ): IFilters<ProposalDocument, IProposalFields> {
+    const user: JWTUser = request.user as JWTUser;
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, ProposalClass);
+      const canViewTheirOwn = ability.can(Action.ListOwn, ProposalClass);
+
+      if (!canViewAll && canViewTheirOwn) {
+        if (!mergedFilters.where) {
+          mergedFilters.where = {};
+        }
+        mergedFilters.where["$or"] = [
+          { ownerGroup: { $in: user.currentGroups } },
+          { accessGroups: { $in: user.currentGroups } },
+        ];
+      }
+    }
+
+    return mergedFilters;
+  }
 
   // POST /proposals
   @UseGuards(PoliciesGuard)
@@ -159,9 +187,13 @@ export class ProposalsController {
     isArray: true,
     description: "Return the proposals requested",
   })
-  async findAll(@Query("filters") filters?: string): Promise<ProposalClass[]> {
+  async findAll(
+    @Req() request: Request,
+    @Query("filters") filters?: string,
+  ): Promise<ProposalClass[]> {
     const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
-      JSON.parse(filters ?? "{}");
+      this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
+
     return this.proposalsService.findAll(proposalFilters);
   }
 
@@ -192,12 +224,28 @@ export class ProposalsController {
     description: "Return proposals requested",
   })
   async fullquery(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<ProposalClass[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
+    const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+
+      // NOTE: If we have published true we don't add groups at all
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
+
     const parsedFilters: IFilters<ProposalDocument, IProposalFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+      fields,
+      limits,
     };
+
     return this.proposalsService.fullquery(parsedFilters);
   }
 
@@ -229,12 +277,28 @@ export class ProposalsController {
     description: "Return proposals requested",
   })
   async fullfacet(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
+    const facets = JSON.parse(filters.facets ?? "[]");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+
+      // NOTE: If we have published true we don't add groups at all
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
+
     const parsedFilters: IFacets<IProposalFields> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      facets: JSON.parse(filters.facets ?? "[]"),
+      fields,
+      facets,
     };
+
     return this.proposalsService.fullfacet(parsedFilters);
   }
 
@@ -269,7 +333,7 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
 
     if (proposal) {
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+      // NOTE: We need ProposalClass instance because casl module can not recognize the type from proposal mongo database model. If other fields are needed can be added later.
       const proposalInstance = new ProposalClass();
       proposalInstance._id = proposal._id;
       proposalInstance.accessGroups = proposal.accessGroups;
@@ -389,7 +453,6 @@ export class ProposalsController {
     @Param("pid") proposalId: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
-    //console.log("Add attachement to  proposal");
     const createAttachment = {
       ...createAttachmentDto,
       proposalId: proposalId,

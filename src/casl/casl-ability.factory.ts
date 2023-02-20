@@ -61,8 +61,10 @@ export class CaslAbilityFactory {
     // Datasets permissions
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
       can(Action.ListAll, DatasetClass);
+      can(Action.ListAll, ProposalClass);
       can(Action.Manage, DatasetClass);
     } else {
+      can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
     }
     can(Action.Manage, "Dataset");
