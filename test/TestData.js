@@ -21,7 +21,7 @@ const TestData = {
     title: "A complete test proposal",
     abstract: "Abstract of test proposal",
     ownerGroup: "20170251-group",
-    accessGroups: [],
+    accessGroups: ["proposalingestor"],
     MeasurementPeriodList: [],
   },
 

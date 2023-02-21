@@ -332,8 +332,6 @@ export class ProposalsController {
     });
     const user: JWTUser = request.user as JWTUser;
 
-    console.log(user, proposal);
-
     if (proposal) {
       // NOTE: We need ProposalClass instance because casl module can not recognize the type from proposal mongo database model. If other fields are needed can be added later.
       const proposalInstance = new ProposalClass();
@@ -349,7 +347,6 @@ export class ProposalsController {
           ability.can(Action.Manage, proposalInstance) ||
           ability.can(Action.Read, proposalInstance);
 
-        console.log(canView);
         if (!canView) {
           throw new ForbiddenException("Unauthorized access");
         }
