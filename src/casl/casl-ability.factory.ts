@@ -67,7 +67,6 @@ export class CaslAbilityFactory {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
     }
-    can(Action.Manage, "Dataset");
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
