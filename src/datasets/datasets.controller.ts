@@ -158,6 +158,7 @@ export class DatasetsController {
         ];
       }
     }
+
     return mergedFilters;
   }
 
@@ -427,7 +428,8 @@ export class DatasetsController {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.ListAll, DatasetClass);
 
-      if (!canViewAll) {
+      // NOTE: If we have published true we don't add groups at all
+      if (!canViewAll && !fields.isPublished) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
       }
@@ -479,9 +481,16 @@ export class DatasetsController {
   ): Promise<Record<string, unknown>[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+
     if (user) {
-      fields.userGroups = fields.userGroups ?? [];
-      fields.userGroups.push(...user.currentGroups);
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+
+      // NOTE: If we have published true we don't add groups at all
+      if (!canViewAll && !fields.isPublished) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {

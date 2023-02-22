@@ -72,8 +72,8 @@ const TestData = {
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
       approx_file_size_mb: {
-        "value" : 8500,
-        "unit" : ""
+        value: 8500,
+        unit: "",
       },
       beamlineParameters: {
         Monostripe: "Ru/C",

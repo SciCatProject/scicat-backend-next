@@ -61,11 +61,12 @@ export class CaslAbilityFactory {
     // Datasets permissions
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
       can(Action.ListAll, DatasetClass);
+      can(Action.ListAll, ProposalClass);
       can(Action.Manage, DatasetClass);
     } else {
+      can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
     }
-    can(Action.Manage, "Dataset");
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
@@ -157,6 +158,8 @@ export class CaslAbilityFactory {
       cannot(Action.Delete, ProposalClass);
       can(Action.Create, ProposalClass);
       can(Action.Update, ProposalClass);
+      can(Action.Read, ProposalClass);
+      can(Action.ListAll, ProposalClass);
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });
