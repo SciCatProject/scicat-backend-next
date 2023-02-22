@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-const { to } = require("mathjs");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -102,7 +101,6 @@ describe("DatasetAuthorization: Test access to dataset", () => {
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(true);
         res.body.should.have.property("pid").and.be.string;
-        //datasetPid1 = encodeURIComponent(res.body["pid"]);
         datasetPid1 = res.body["pid"];
         encodedDatasetPid1 = encodeURIComponent(datasetPid1);
       });

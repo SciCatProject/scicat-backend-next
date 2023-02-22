@@ -232,7 +232,7 @@ export class ProposalsController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+      const canViewAll = ability.can(Action.ListAll, ProposalClass);
 
       // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {
@@ -285,7 +285,7 @@ export class ProposalsController {
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+      const canViewAll = ability.can(Action.ListAll, ProposalClass);
 
       // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {

@@ -21,7 +21,7 @@ const TestData = {
     title: "A complete test proposal",
     abstract: "Abstract of test proposal",
     ownerGroup: "20170251-group",
-    accessGroups: ["proposalingestor"],
+    accessGroups: [],
     MeasurementPeriodList: [],
   },
 
@@ -72,8 +72,8 @@ const TestData = {
     dataFormat: "Upchuck pre 2017",
     scientificMetadata: {
       approx_file_size_mb: {
-        "value" : 8500,
-        "unit" : ""
+        value: 8500,
+        unit: "",
       },
       beamlineParameters: {
         Monostripe: "Ru/C",

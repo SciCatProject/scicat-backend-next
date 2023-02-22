@@ -158,6 +158,8 @@ export class CaslAbilityFactory {
       cannot(Action.Delete, ProposalClass);
       can(Action.Create, ProposalClass);
       can(Action.Update, ProposalClass);
+      can(Action.Read, ProposalClass);
+      can(Action.ListAll, ProposalClass);
     }
 
     can(Action.Read, UserIdentity, { userId: user._id });

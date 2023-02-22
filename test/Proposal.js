@@ -38,7 +38,7 @@ describe("Proposal: Simple Proposal", () => {
 
   async function processArray(array) {
     for (const item of array) {
-      await deleteProposal(item);
+      deleteProposal(item);
     }
   }
 
@@ -206,12 +206,16 @@ describe("Proposal: Simple Proposal", () => {
       .expect(200);
   });
 
-  it("should delete this proposal", async () => {
+  it("remove all existing proposals", async () => {
     return request(appUrl)
-      .delete("/api/v3/Proposals/" + proposalId)
+      .get("/api/v3/Proposals")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        // now remove all these entries
+        processArray(res.body);
+      });
   });
 });
