@@ -142,6 +142,50 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
+  it("adds a new origDatablock on the published dataset", async () => {
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodedDatasetPid1}/origdatablocks`)
+      .send(TestData.OrigDataBlockCorrect1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(TestData.OrigDataBlockCorrect1.size);
+        res.body.should.have.property("id").and.be.string;
+      });
+  });
+
+  it("adds a new datablock on the published dataset", async () => {
+    const randomArchiveId = Math.random().toString(36).slice(2);
+
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodedDatasetPid1}/datablocks`)
+      .send({ ...TestData.DataBlockCorrect, archiveId: randomArchiveId })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(TestData.DataBlockCorrect.size);
+        res.body.should.have.property("id").and.be.string;
+      });
+  });
+
+  it("adds a new attachment on the published dataset", async () => {
+    return request(appUrl)
+      .post(`/api/v3/datasets/${encodedDatasetPid1}/attachments`)
+      .send(TestData.AttachmentCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(201)
+      .expect("Content-Type", /json/);
+  });
+
   it("list of public datasets, aka as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
@@ -505,5 +549,50 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .then((res) => {
         res.body[0].all[0].totalSets.should.be.equal(2);
       });
+  });
+
+  it("access dataset 1 origdatablocks as user 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/origdatablocks")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
+  it("access dataset 1 datablocks as user 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/datablocks")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
+  it("access dataset 1 attachments as user 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
+  it("access dataset 1 thumbnail as user 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(200);
   });
 });
