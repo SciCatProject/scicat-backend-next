@@ -115,6 +115,67 @@ describe("RawDataset: Raw Datasets", () => {
       });
   });
 
+  it("tries to add an random data raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrectRandom)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        res.body.should.have
+          .property("datasetName")
+          .and.equal(TestData.RawCorrectRandom.datasetName);
+      });
+  });
+  it("tries to add an incomplete raw dataset", async () => {
+    const rawDatasetWithIncorrectEmail = {
+      ...TestData.RawCorrectRandom,
+      ownerEmail: "testIngestor@",
+    };
+
+    request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(rawDatasetWithIncorrectEmail)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect("Content-Type", /json/)
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("ownerEmail");
+      });
+
+    rawDatasetWithIncorrectEmail.contactEmail = "testTest";
+
+    request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(rawDatasetWithIncorrectEmail)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect("Content-Type", /json/)
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("ownerEmail");
+        res.body.message.should.contain("contactEmail");
+      });
+
+    rawDatasetWithIncorrectEmail.creationTime = "testTest";
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(rawDatasetWithIncorrectEmail)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect("Content-Type", /json/)
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("ownerEmail");
+        res.body.message.should.contain("contactEmail");
+        res.body.message.should.contain("creationTime");
+      });
+  });
+
   it("tries to add a raw dataset with history field", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
