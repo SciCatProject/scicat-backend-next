@@ -162,6 +162,37 @@ export class DatasetsController {
     return mergedFilters;
   }
 
+  async checkPermissionsForDataset(request: Request, id: string) {
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const user: JWTUser = request.user as JWTUser;
+
+    if (dataset) {
+      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+      const datasetInstance = new DatasetClass();
+      datasetInstance._id = dataset._id;
+      datasetInstance.pid = dataset.pid;
+      datasetInstance.accessGroups = dataset.accessGroups;
+      datasetInstance.ownerGroup = dataset.ownerGroup;
+      datasetInstance.sharedWith = dataset.sharedWith;
+      datasetInstance.isPublished = dataset.isPublished;
+      datasetInstance.owner = dataset.owner;
+      datasetInstance.ownerEmail = dataset.ownerEmail;
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canView =
+          ability.can(Action.Manage, datasetInstance) ||
+          ability.can(Action.Read, datasetInstance);
+        if (!canView && !dataset.isPublished) {
+          throw new ForbiddenException("Unauthorized access");
+        }
+      } else if (!dataset.isPublished) {
+        throw new ForbiddenException("Unauthorized access");
+      }
+    }
+
+    return dataset;
+  }
+
   // POST /datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -675,32 +706,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") id: string,
   ): Promise<DatasetClass | null> {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (dataset) {
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance = new DatasetClass();
-      datasetInstance._id = dataset._id;
-      datasetInstance.pid = dataset.pid;
-      datasetInstance.accessGroups = dataset.accessGroups;
-      datasetInstance.ownerGroup = dataset.ownerGroup;
-      datasetInstance.sharedWith = dataset.sharedWith;
-      datasetInstance.isPublished = dataset.isPublished;
-      datasetInstance.owner = dataset.owner;
-      datasetInstance.ownerEmail = dataset.ownerEmail;
-      if (user) {
-        const ability = this.caslAbilityFactory.createForUser(user);
-        const canView =
-          ability.can(Action.Manage, datasetInstance) ||
-          ability.can(Action.Read, datasetInstance);
-        if (!canView && !dataset.isPublished) {
-          throw new ForbiddenException("Unauthorized access");
-        }
-      } else if (!dataset.isPublished) {
-        throw new ForbiddenException("Unauthorized access");
-      }
-    }
+    const dataset = await this.checkPermissionsForDataset(request, id);
 
     return dataset;
   }
@@ -903,8 +909,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/thumbnail
-  //@AllowAny()
-  @UseGuards(PoliciesGuard)
+  @AllowAny()
+  // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
   @ApiOperation({
     summary: "It returns the thumbnail associated with the dataset.",
@@ -921,7 +927,12 @@ export class DatasetsController {
     type: Attachment,
     description: "Return new value of the dataset",
   })
-  async thumbnail(@Param("pid") id: string): Promise<Partial<Attachment>> {
+  async thumbnail(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ): Promise<Partial<Attachment>> {
+    await this.checkPermissionsForDataset(request, id);
+
     const attachment = await this.attachmentsService.findOne(
       { datasetId: id },
       { _id: false, thumbnail: true },
@@ -939,7 +950,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, Attachment),
   )
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @Post("/:pid/attachments")
   @ApiOperation({
     summary: "It creates a new attachement for the dataset specified.",
@@ -979,7 +990,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/attachments
-  @UseGuards(PoliciesGuard)
+  // @UseGuards(PoliciesGuard)
+  @AllowAny()
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:pid/attachments")
   @ApiOperation({
@@ -1000,7 +1012,12 @@ export class DatasetsController {
     description:
       "Array with all the attachments associated with the dataset with the pid specified",
   })
-  async findAllAttachments(@Param("pid") id: string): Promise<Attachment[]> {
+  async findAllAttachments(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ): Promise<Attachment[]> {
+    await this.checkPermissionsForDataset(request, id);
+
     return this.attachmentsService.findAll({ datasetId: id });
   }
 
@@ -1181,7 +1198,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/origdatablocks
-  @UseGuards(PoliciesGuard)
+  @AllowAny()
+  // @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, OrigDatablock),
   )
@@ -1205,8 +1223,11 @@ export class DatasetsController {
       "Array with all the original datablocks associated with the dataset with the pid specified",
   })
   async findAllOrigDatablocks(
+    @Req() request: Request,
     @Param("pid") id: string,
   ): Promise<OrigDatablock[]> {
+    await this.checkPermissionsForDataset(request, id);
+
     return this.origDatablocksService.findAll({ datasetId: id });
   }
 
@@ -1389,7 +1410,8 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/datablocks
-  @UseGuards(PoliciesGuard)
+  @AllowAny()
+  // @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Datablock))
   @Get("/:pid/datablocks")
   @ApiOperation({
@@ -1410,7 +1432,12 @@ export class DatasetsController {
     description:
       "Array with all the datablocks associated with the dataset with the pid specified",
   })
-  async findAllDatablocks(@Param("pid") id: string): Promise<Datablock[]> {
+  async findAllDatablocks(
+    @Req() request: Request,
+    @Param("pid") id: string,
+  ): Promise<Datablock[]> {
+    await this.checkPermissionsForDataset(request, id);
+
     return this.datablocksService.findAll({ datasetId: id });
   }
 
