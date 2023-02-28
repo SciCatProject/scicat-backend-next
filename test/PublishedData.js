@@ -266,7 +266,7 @@ describe("PublishedData: Test of access to published data", () => {
       .send(testAttachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
