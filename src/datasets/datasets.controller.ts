@@ -1009,7 +1009,7 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, Attachment),
   )
-  @Patch("/:pid/attachments/:aid")
+  @Put("/:pid/attachments/:aid")
   @ApiOperation({
     summary: "It updates the attachment specified for the dataset indicated.",
     description:
