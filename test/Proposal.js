@@ -84,6 +84,15 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
+  it("cannot add new proposal with same proposal id", async () => {
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(TestData.ProposalCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(409);
+  });
+
   // check if proposal is valid
   it("check if complete proposal is valid", async () => {
     return request(appUrl)

@@ -13,6 +13,7 @@ import {
   HttpStatus,
   Req,
   ForbiddenException,
+  ConflictException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -121,8 +122,20 @@ export class ProposalsController {
       "Create a new proposal and return its representation in SciCat",
   })
   async create(
+    @Req() request: Request,
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<ProposalClass> {
+    const existingProposal = await this.findById(
+      request,
+      createProposalDto.proposalId,
+    );
+
+    if (existingProposal) {
+      throw new ConflictException(
+        `Proposal with ${createProposalDto.proposalId} already exists`,
+      );
+    }
+
     return this.proposalsService.create(createProposalDto);
   }
 

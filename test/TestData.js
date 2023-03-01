@@ -1,4 +1,4 @@
-//export { DatasetData };
+const { faker } = require("@faker-js/faker");
 
 const TestData = {
   ProposalCorrectMin: {
@@ -143,6 +143,90 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
+    type: "raw",
+    keywords: ["sls", "protein"],
+  },
+
+  RawCorrectRandom: {
+    principalInvestigator: faker.internet.email(),
+    endTime: faker.date.past().toISOString(),
+    creationLocation: faker.system.directoryPath(),
+    dataFormat: faker.random.words(3),
+    scientificMetadata: {
+      approx_file_size_mb: {
+        value: faker.random.numeric(5),
+        unit: faker.random.words(2),
+      },
+      beamlineParameters: {
+        Monostripe: "Ru/C",
+        "Ring current": {
+          v: 0.402246,
+          u: "A",
+        },
+        "Beam energy": {
+          v: 22595,
+          u: "eV",
+        },
+      },
+      detectorParameters: {
+        Objective: 20,
+        Scintillator: "LAG 20um",
+        "Exposure time": {
+          v: 0.4,
+          u: "s",
+        },
+      },
+      scanParameters: {
+        "Number of projections": 1801,
+        "Rot Y min position": {
+          v: 0,
+          u: "deg",
+        },
+        "Inner scan flag": 0,
+        "File Prefix": "817b_B2_",
+        "Sample In": {
+          v: 0,
+          u: "m",
+        },
+        "Sample folder": "/ramjet/817b_B2_",
+        "Number of darks": 10,
+        "Rot Y max position": {
+          v: 180,
+          u: "deg",
+        },
+        "Angular step": {
+          v: 0.1,
+          u: "deg",
+        },
+        "Number of flats": 120,
+        "Sample Out": {
+          v: -0.005,
+          u: "m",
+        },
+        "Flat frequency": 0,
+        "Number of inter-flats": 0,
+      },
+    },
+    owner: faker.name.fullName(),
+    ownerEmail: faker.internet.email(),
+    orcidOfOwner: faker.database.mongodbObjectId(),
+    contactEmail: faker.internet.email(),
+    sourceFolder: faker.system.directoryPath(),
+    size: 0,
+    packedSize: 0,
+    numberOfFiles: 0,
+    numberOfFilesArchived: 0,
+    creationTime: faker.date.past().toISOString(),
+    description: faker.random.words(10),
+    datasetName: faker.random.words(2),
+    classification: "AV=medium,CO=low",
+    license: "CC BY-SA 4.0",
+    isPublished: false,
+    ownerGroup: faker.random.alphaNumeric(6),
+    accessGroups: [],
+    proposalId: process.env.PID_PREFIX
+      ? process.env.PID_PREFIX
+      : "" + faker.random.numeric(6),
     type: "raw",
     keywords: ["sls", "protein"],
   },
