@@ -65,6 +65,17 @@ const TestData = {
     type: "base",
   },
 
+  RawCorrectMin: {
+    ownerGroup: faker.company.name(),
+    creationLocation: faker.address.city(),
+    principalInvestigator: faker.internet.userName(),
+    type: "raw",
+    creationTime: faker.date.past(),
+    sourceFolder: faker.system.directoryPath(),
+    owner: faker.internet.userName(),
+    contactEmail: faker.internet.email(),
+  },
+
   RawCorrect: {
     principalInvestigator: "scicatingestor@your.site",
     endTime: "2011-09-14T06:31:25.000Z",
@@ -321,6 +332,20 @@ const TestData = {
     proposalId: "10.540.16635/20110123",
     type: "raw",
     history: {},
+  },
+
+  DerivedCorrectMin: {
+    investigator: faker.internet.email(),
+    inputDatasets: [faker.system.filePath()],
+    usedSoftware: [
+      "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
+    ],
+    owner: faker.internet.userName(),
+    contactEmail: faker.internet.email(),
+    sourceFolder: faker.system.directoryPath(),
+    creationTime: faker.date.past(),
+    ownerGroup: faker.random.alphaNumeric(6),
+    type: "derived",
   },
 
   DerivedCorrect: {

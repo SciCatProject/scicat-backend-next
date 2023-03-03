@@ -6,6 +6,7 @@ const { TestData } = require("./TestData");
 
 var accessToken = null;
 var pid = null;
+var minPid = null;
 var accessProposalToken = null;
 var accessTokenArchiveManager = null;
 
@@ -71,6 +72,23 @@ describe("RawDataset: Raw Datasets", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
+  it("adds a new minimal raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("pid").and.be.string;
+
+        minPid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -263,6 +281,15 @@ describe("RawDataset: Raw Datasets", () => {
   it("should delete this raw dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + pid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
+  it("should delete this minimal raw dataset", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + minPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
