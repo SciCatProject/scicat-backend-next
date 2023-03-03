@@ -337,9 +337,7 @@ const TestData = {
   DerivedCorrectMin: {
     investigator: faker.internet.email(),
     inputDatasets: [faker.system.filePath()],
-    usedSoftware: [
-      "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
-    ],
+    usedSoftware: [faker.internet.url()],
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
