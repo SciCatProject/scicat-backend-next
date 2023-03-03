@@ -38,6 +38,7 @@ export class CreateDatasetDto extends OwnableDto {
     description:
       "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
+  @IsOptional()
   @IsEmail()
   readonly ownerEmail?: string;
 
