@@ -4,11 +4,13 @@
 const { faker } = require("@faker-js/faker");
 var utils = require("./LoginUtils");
 
+const NUMBER_OF_DATASETS_TO_CREATE = 100;
+
 let accessTokenIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
-  accessTokenUser3 = null;
-const NUMBER_OF_DATASETS_TO_CREATE = 100;
+  accessTokenUser3 = null,
+  accessTokenArchiveManager = null;
 
 let groupedDatasets = {
   1: [],
@@ -26,7 +28,7 @@ function generateRandomDataset() {
     scientificMetadata: {
       approx_file_size_mb: {
         value: faker.random.numeric(5),
-        unit: faker.random.words(2),
+        unit: "bytes",
       },
       beamlineParameters: {
         Monostripe: "Ru/C",
@@ -141,6 +143,18 @@ function addDataset() {
     });
 }
 
+function removeDataset(datasetPid) {
+  return request(appUrl)
+    .delete("/api/v3/datasets/" + encodeURIComponent(datasetPid))
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+    .expect(200)
+    .expect("Content-Type", /json/)
+    .then((result) => {
+      return result.body;
+    });
+}
+
 async function addAllDatasets() {
   const allPromises = [];
 
@@ -162,6 +176,21 @@ async function addAllDatasets() {
       (value) => value.ownerGroup === "group4",
     );
   });
+}
+
+async function removeAllDatasets() {
+  const allPromises = [];
+  const allDatasets = groupedDatasets[1]
+    .concat(groupedDatasets[2])
+    .concat(groupedDatasets[3])
+    .concat(groupedDatasets[4]);
+
+  for (let index = 0; index < allDatasets.length; index++) {
+    const dataset = allDatasets[index];
+    allPromises.push(removeDataset(dataset.pid));
+  }
+
+  return Promise.all(allPromises);
 }
 
 describe("Randomized Datasets: permission test with bigger amount of data", async () => {
@@ -198,7 +227,17 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
                   },
                   (tokenVal) => {
                     accessTokenUser3 = tokenVal;
-                    done();
+                    utils.getToken(
+                      appUrl,
+                      {
+                        username: "archiveManager",
+                        password: "aman",
+                      },
+                      (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                      },
+                    );
                   },
                 );
               },
@@ -211,13 +250,12 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
 
   it("access private dataset as unauthenticated user", async () => {
     await addAllDatasets();
+    const randomGroup = randomIntFromInterval(1, 4);
 
     return request(appUrl)
       .get(
         "/api/v3/Datasets/" +
-          encodeURIComponent(
-            groupedDatasets[randomIntFromInterval(0, 3)][0].pid,
-          ),
+          encodeURIComponent(groupedDatasets[randomGroup][0].pid),
       )
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -404,5 +442,11 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(403);
+  });
+
+  it("should remove all created random datasets", async () => {
+    return await removeAllDatasets().then((values) => {
+      values.length.should.be.equal(NUMBER_OF_DATASETS_TO_CREATE);
+    });
   });
 });
