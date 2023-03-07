@@ -8,7 +8,8 @@ const sandbox = require("sinon").createSandbox();
 let accessTokenIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
-  accessTokenUser3 = null;
+  accessTokenUser3 = null,
+  accessTokenArchiveManager = null;
 
 let datasetPid1 = null,
   encodedDatasetPid1 = null,
@@ -72,7 +73,17 @@ describe("DatasetAuthorization: Test access to dataset", () => {
                   },
                   (tokenVal) => {
                     accessTokenUser3 = tokenVal;
-                    done();
+                    utils.getToken(
+                      appUrl,
+                      {
+                        username: "archiveManager",
+                        password: "aman",
+                      },
+                      (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                      },
+                    );
                   },
                 );
               },
@@ -594,5 +605,32 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(200);
+  });
+
+  it("should delete dataset 1", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + encodedDatasetPid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
+  it("should delete dataset 2", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
+  it("should delete dataset 3", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + encodedDatasetPid3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
   });
 });
