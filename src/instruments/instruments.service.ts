@@ -23,12 +23,15 @@ export class InstrumentsService {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
-    return this.instrumentModel
+    const instrumentPromise = this.instrumentModel
       .find(whereFilter)
       .limit(limit)
       .skip(skip)
-      .sort(sort)
-      .exec();
+      .sort(sort);
+
+    const instruments = await instrumentPromise.exec();
+
+    return instruments;
   }
 
   async findOne(
