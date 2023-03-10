@@ -94,6 +94,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
           "Could not create User from OIDC response.",
         );
       }
+      console.log("Created oidc user ", newUser.username);
 
       const createUserIdentity: CreateUserIdentityDto = {
         authStrategy: "oidc",
@@ -105,6 +106,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
+      console.log("Created user identity for oidc user with id ",newUser._id);
 
       user = newUser;
     } else {
