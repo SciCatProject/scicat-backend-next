@@ -1588,7 +1588,7 @@ export class DatasetsController {
     status: 200,
     description: "No value is returned",
   })
-  async findData(
+  async findLogbookByPid(
     @Param("pid") datasetId: string,
     @Query("filters") filters: string,
   ) {
