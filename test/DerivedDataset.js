@@ -7,6 +7,7 @@ const { TestData } = require("./TestData");
 var accessToken = null;
 var accessTokenArchiveManager = null;
 var pid = null;
+var minPid = null;
 
 describe("DerivedDataset: Derived Datasets", () => {
   beforeEach((done) => {
@@ -43,6 +44,22 @@ describe("DerivedDataset: Derived Datasets", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
+      });
+  });
+
+  it("adds a new minimal derived dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.DerivedCorrectMin)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("derived");
+        res.body.should.have.property("pid").and.be.string;
+        minPid = encodeURIComponent(res.body["pid"]);
       });
   });
 
@@ -173,6 +190,15 @@ describe("DerivedDataset: Derived Datasets", () => {
   it("should delete a derived dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + encodeURIComponent(pid))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
+  it("should delete a minimal derived dataset", async () => {
+    return request(appUrl)
+      .delete("/api/v3/Datasets/" + minPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
