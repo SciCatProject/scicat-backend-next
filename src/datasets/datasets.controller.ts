@@ -83,6 +83,7 @@ import { filterDescription, filterExample } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { LogbooksService } from "src/logbooks/logbooks.service";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -101,6 +102,7 @@ export class DatasetsController {
     private datasetsService: DatasetsService,
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
+    private logbooksService: LogbooksService,
   ) {}
 
   getFilters(
@@ -1567,5 +1569,37 @@ export class DatasetsController {
       return res;
     }
     return null;
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Datablock))
+  @Get("/:pid/logbook")
+  @ApiOperation({
+    summary: "Retrive logbook associated with dataset.",
+    description: "It fetches specific logbook based on dataset pid.",
+  })
+  @ApiParam({
+    name: "pid",
+    description:
+      "Id of the dataset for which we would like to delete the datablock specified",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned",
+  })
+  async findData(
+    @Param("pid") datasetId: string,
+    @Query("filters") filters: string,
+  ) {
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: datasetId },
+    });
+    const proposalId = dataset?.proposalId;
+
+    if (!proposalId) return [];
+
+    const result = await this.logbooksService.findByName(proposalId, filters);
+    return result;
   }
 }
