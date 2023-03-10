@@ -25,10 +25,10 @@ export class UsersLogbooksInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((payload: unknown) => {
         if (Array.isArray(payload)) {
-          const result = (payload as Logbook[]).filter((logbook) =>
+          const filteredLogbook = (payload as Logbook[]).filter((logbook) =>
             proposalIds.includes(logbook?.name),
           );
-          return result;
+          return filteredLogbook;
         }
         return proposalIds.includes((payload as Logbook)?.name)
           ? (payload as Logbook)
