@@ -84,6 +84,7 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1572,7 +1573,7 @@ export class DatasetsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Datablock))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
   @Get("/:pid/logbook")
   @ApiOperation({
     summary: "Retrive logbook associated with dataset.",
@@ -1586,7 +1587,9 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    description: "No value is returned",
+    type: Logbook,
+    isArray: false,
+    description: "It returns all messages from specificied Logbook room",
   })
   async findLogbookByPid(
     @Param("pid") datasetId: string,
@@ -1597,7 +1600,7 @@ export class DatasetsController {
     });
     const proposalId = dataset?.proposalId;
 
-    if (!proposalId) return [];
+    if (!proposalId) return null;
 
     const result = await this.logbooksService.findByName(proposalId, filters);
     return result;
