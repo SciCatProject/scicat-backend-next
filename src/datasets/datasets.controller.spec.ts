@@ -5,6 +5,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
+import { LogbooksService } from "src/logbooks/logbooks.service";
 
 class AttachmentsServiceMock {}
 
@@ -13,6 +14,8 @@ class DatablocksServiceMock {}
 class DatasetsServiceMock {}
 
 class OrigDatablocksServiceMock {}
+
+class LogbooksServiceMock {}
 
 describe("DatasetsController", () => {
   let controller: DatasetsController;
@@ -23,6 +26,7 @@ describe("DatasetsController", () => {
       imports: [CaslModule],
       providers: [
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
+        { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: DatablocksService, useClass: DatablocksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
