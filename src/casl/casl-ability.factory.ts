@@ -91,6 +91,10 @@ export class CaslAbilityFactory {
 
     // Instrument permissions
     can(Action.Read, Instrument);
+    if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      can(Action.Manage, Instrument)
+    }
+
 
     can(Action.Manage, Job);
 
@@ -140,6 +144,10 @@ export class CaslAbilityFactory {
       cannot(Action.Update, Datablock);
       can(Action.Delete, Datablock);
       can(Action.Delete, PublishedData);
+      // instruments
+      cannot(Action.Create, Instrument);
+      cannot(Action.Update, Instrument);
+      can(Action.Delete, Instrument);
     }
     if (user.currentGroups.includes(Role.GlobalAccess)) {
       can(Action.Read, "all");
