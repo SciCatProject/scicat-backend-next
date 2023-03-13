@@ -1587,7 +1587,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: Logbook,
+    // type: Logbook,
     isArray: false,
     description: "It returns all messages from specificied Logbook room",
   })
