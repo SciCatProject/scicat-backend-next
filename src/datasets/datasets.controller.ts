@@ -609,10 +609,12 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
-    const mergedFilters = this.updateMergedFiltersForList(
-      request,
-      this.getFilters(headers, queryFilter),
-    );
+    const mergedFilters = replaceLikeOperator(
+      this.updateMergedFiltersForList(
+        request,
+        this.getFilters(headers, queryFilter),
+      ) as Record<string, unknown>
+    ) as IFilters<DatasetDocument, IDatasetFields>;
 
     const dataset = await this.datasetsService.findOne(mergedFilters);
     if (dataset) {
@@ -674,10 +676,12 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<{ count: number }> {
-    const mergedFilters = this.updateMergedFiltersForList(
-      request,
-      this.getFilters(headers, queryFilter),
-    );
+    const mergedFilters = replaceLikeOperator(
+      this.updateMergedFiltersForList(
+        request,
+        this.getFilters(headers, queryFilter),
+      ) as Record<string, unknown>
+    ) as IFilters<DatasetDocument, IDatasetFields>;
 
     return this.datasetsService.count(mergedFilters);
   }
