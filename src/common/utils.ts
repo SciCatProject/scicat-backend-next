@@ -6,6 +6,7 @@ import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
+  IFilters,
   ILimitsFilter,
   IScientificFilter,
 } from "./interfaces/common.interface";
@@ -680,3 +681,30 @@ export const parseBoolean = (v: unknown): boolean => {
       return false;
   }
 };
+
+export const replaceLikeOperator = <T>(
+  filter: IFilters<T>,
+): IFilters<T> => {
+  if (filter.where) {
+    filter.where = replaceLikeOperatorRecursive(filter.where as Record<string, unknown>)
+  }
+  return filter;
+};
+
+const replaceLikeOperatorRecursive = (
+  input: Record<string, unknown>
+): Record<string, unknown> => {
+  const output = {} as Record<string, unknown>;
+  for (let k in input) {
+    if ( k == 'like' && typeof input[k] !== 'object' ) {
+      // we have encountered a loopback operator like
+      output['$regex'] = input[k];
+    } else if (typeof input[k] === 'object' ) {
+      output[k] = replaceLikeOperatorRecursive(input[k] as Record<string, unknown>);
+    } else {
+      output[k] = input[k];
+    }
+  }
+
+  return output;
+}

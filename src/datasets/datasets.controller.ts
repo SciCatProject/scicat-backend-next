@@ -79,7 +79,7 @@ import {
   UpdateDerivedDatasetDto,
 } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
-import { filterDescription, filterExample } from "src/common/utils";
+import { filterDescription, filterExample, replaceLikeOperator } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -372,10 +372,12 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass[] | null> {
-    const mergedFilters = this.updateMergedFiltersForList(
-      request,
-      this.getFilters(headers, queryFilter),
-    );
+    const mergedFilters = replaceLikeOperator(
+      this.updateMergedFiltersForList(
+        request,
+        this.getFilters(headers, queryFilter),
+      ) as Record<string, unknown>
+    ) as IFilters<DatasetDocument, IDatasetFields>;
 
     const datasets = await this.datasetsService.findAll(mergedFilters);
     if (datasets && datasets.length > 0) {
