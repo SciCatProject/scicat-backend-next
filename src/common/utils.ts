@@ -699,6 +699,8 @@ const replaceLikeOperatorRecursive = (
     if (k == "like" && typeof input[k] !== "object") {
       // we have encountered a loopback operator like
       output["$regex"] = input[k];
+    } else if (k == "$or" || k == "$and" || k == "$in") {
+      output[k] = (input[k] as Array<unknown>).map( v  => (typeof v === "string" ? v : replaceLikeOperatorRecursive(v as Record<string, unknown>) ));
     } else if (typeof input[k] === "object") {
       output[k] = replaceLikeOperatorRecursive(
         input[k] as Record<string, unknown>,
