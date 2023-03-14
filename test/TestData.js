@@ -157,7 +157,7 @@ const TestData = {
     type: "raw",
     keywords: ["sls", "protein"],
   },
-
+  
   RawCorrectRandom: {
     principalInvestigator: faker.internet.email(),
     endTime: faker.date.past().toISOString(),
@@ -681,6 +681,15 @@ const TestData = {
     pidArray: [],
     status: "pending_registration",
   },
+
+  InstrumentCorrect: {
+    name: "ESS1",
+    customMetadata: {
+      institute: "An immaginary intitution",
+      department: "An immaginary department",
+    }
+  },
+
 };
 
 module.exports = { TestData };
