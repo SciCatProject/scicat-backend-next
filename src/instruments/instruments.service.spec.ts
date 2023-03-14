@@ -8,8 +8,7 @@ const mockInstrument: Instrument = {
   _id: "testPid",
   pid: "testPid",
   name: "Test",
-  customMetadata: {},
-  datasets: [],
+  customMetadata: {}
 };
 
 describe("InstrumentsService", () => {
