@@ -13,7 +13,13 @@ import {
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -21,7 +27,11 @@ import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
-import { filterDescription, filterExample, replaceLikeOperator } from "src/common/utils";
+import {
+  filterDescription,
+  filterExample,
+  replaceLikeOperator,
+} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -53,9 +63,7 @@ export class InstrumentsController {
   })
   async findAll(@Query("filter") filter?: string): Promise<Instrument[]> {
     const instrumentFilter: IFilters<InstrumentDocument> = replaceLikeOperator(
-      JSON.parse(
-        filter ?? "{}",
-      )
+      JSON.parse(filter ?? "{}"),
     );
     return this.instrumentsService.findAll(instrumentFilter);
   }
@@ -83,14 +91,8 @@ export class InstrumentsController {
     type: Instrument,
     description: "Return the instrument requested",
   })
-  async findOne(
-    @Query("filter") filter?: string,
-  ): Promise<Instrument | null> {
-    const instrumentFilters = replaceLikeOperator(
-      JSON.parse(
-        filter ?? "{}",
-      )
-    );
+  async findOne(@Query("filter") filter?: string): Promise<Instrument | null> {
+    const instrumentFilters = replaceLikeOperator(JSON.parse(filter ?? "{}"));
 
     return this.instrumentsService.findOne(instrumentFilters);
   }

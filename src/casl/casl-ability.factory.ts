@@ -92,9 +92,8 @@ export class CaslAbilityFactory {
     // Instrument permissions
     can(Action.Read, Instrument);
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
-      can(Action.Manage, Instrument)
+      can(Action.Manage, Instrument);
     }
-
 
     can(Action.Manage, Job);
 

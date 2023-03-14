@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty  } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
@@ -27,13 +27,13 @@ export class Instrument {
     unique: true,
     required: true,
     default: function genUUID(): string {
-      return (process.env.PID_PREFIX ? process.env.PID_PREFIX : "")  + uuidv4();
+      return (process.env.PID_PREFIX ? process.env.PID_PREFIX : "") + uuidv4();
     },
   })
   pid: string;
 
-  @Prop({ 
-    type: String 
+  @Prop({
+    type: String,
   })
   _id: string;
 
@@ -42,9 +42,9 @@ export class Instrument {
     required: true,
     description: "The name of the instrument.",
   })
-  @Prop({ 
-    type: String, 
-    required: true 
+  @Prop({
+    type: String,
+    required: true,
   })
   name: string;
 
@@ -54,10 +54,10 @@ export class Instrument {
     default: {},
     description: "JSON object containing custom metadata",
   })
-  @Prop({ 
-    type: Object, 
-    required: false, 
-    default: {} 
+  @Prop({
+    type: Object,
+    required: false,
+    default: {},
   })
   customMetadata: Record<string, unknown>;
 }

@@ -682,29 +682,31 @@ export const parseBoolean = (v: unknown): boolean => {
   }
 };
 
-export const replaceLikeOperator = <T>(
-  filter: IFilters<T>,
-): IFilters<T> => {
+export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
   if (filter.where) {
-    filter.where = replaceLikeOperatorRecursive(filter.where as Record<string, unknown>)
+    filter.where = replaceLikeOperatorRecursive(
+      filter.where as Record<string, unknown>,
+    );
   }
   return filter;
 };
 
 const replaceLikeOperatorRecursive = (
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
 ): Record<string, unknown> => {
   const output = {} as Record<string, unknown>;
-  for (let k in input) {
-    if ( k == 'like' && typeof input[k] !== 'object' ) {
+  for (const k in input) {
+    if (k == "like" && typeof input[k] !== "object") {
       // we have encountered a loopback operator like
-      output['$regex'] = input[k];
-    } else if (typeof input[k] === 'object' ) {
-      output[k] = replaceLikeOperatorRecursive(input[k] as Record<string, unknown>);
+      output["$regex"] = input[k];
+    } else if (typeof input[k] === "object") {
+      output[k] = replaceLikeOperatorRecursive(
+        input[k] as Record<string, unknown>,
+      );
     } else {
       output[k] = input[k];
     }
   }
 
   return output;
-}
+};

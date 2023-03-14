@@ -106,7 +106,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-      console.log("Created user identity for oidc user with id ",newUser._id);
+      console.log("Created user identity for oidc user with id ", newUser._id);
 
       user = newUser;
     } else {

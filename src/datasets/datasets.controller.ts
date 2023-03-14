@@ -79,7 +79,11 @@ import {
   UpdateDerivedDatasetDto,
 } from "./dto/update-derived-dataset.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
-import { filterDescription, filterExample, replaceLikeOperator } from "src/common/utils";
+import {
+  filterDescription,
+  filterExample,
+  replaceLikeOperator,
+} from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -379,7 +383,7 @@ export class DatasetsController {
       this.updateMergedFiltersForList(
         request,
         this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>
+      ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     const datasets = await this.datasetsService.findAll(mergedFilters);
@@ -616,7 +620,7 @@ export class DatasetsController {
       this.updateMergedFiltersForList(
         request,
         this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>
+      ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     const dataset = await this.datasetsService.findOne(mergedFilters);
@@ -683,7 +687,7 @@ export class DatasetsController {
       this.updateMergedFiltersForList(
         request,
         this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>
+      ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     return this.datasetsService.count(mergedFilters);

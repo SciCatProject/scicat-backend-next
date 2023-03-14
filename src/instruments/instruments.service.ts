@@ -38,9 +38,10 @@ export class InstrumentsService {
     filter: FilterQuery<InstrumentDocument>,
   ): Promise<Instrument | null> {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<InstrumentDocument> = filter.fields ?? {};
+    const fieldsProjection: FilterQuery<InstrumentDocument> =
+      filter.fields ?? {};
 
-    return this.instrumentModel.findOne(whereFilter,fieldsProjection).exec();
+    return this.instrumentModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
   async update(

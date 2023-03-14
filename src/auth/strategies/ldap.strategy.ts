@@ -43,7 +43,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
         authStrategy: "ldap",
       };
       const user = await this.usersService.create(createUser);
-      console.log("Created ldap user ",user?.username);
+      console.log("Created ldap user ", user?.username);
 
       if (!user) {
         throw new InternalServerErrorException(
@@ -83,7 +83,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
       };
 
       await this.usersService.createUserIdentity(createUserIdentity);
-      console.log("Created user identity for ldap user with id ",user._id);
+      console.log("Created user identity for ldap user with id ", user._id);
     }
 
     const foundUser = await this.usersService.findOne(userFilter);
@@ -114,7 +114,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
         },
         user._id,
       );
-      console.log("Updated user identity for ldap user with id ",user._id);
+      console.log("Updated user identity for ldap user with id ", user._id);
     }
 
     return user;
