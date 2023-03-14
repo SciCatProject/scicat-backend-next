@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { ApiProperty  } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { v4 as uuidv4 } from "uuid";
 
 export type InstrumentDocument = Instrument & Document;
