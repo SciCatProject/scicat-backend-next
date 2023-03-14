@@ -12,7 +12,7 @@ module.exports = {
           authStrategy = "ldap";
         }
         console.log(`Updating User Identity ${identity.externalId} (${identity.userId}) with authStrategy: ${authStrategy}`);
-        const res = db.collection("UserIdentity").updateOne(
+        db.collection("UserIdentity").updateOne(
           {
             _id: ObjectId(identity._id),
           },
