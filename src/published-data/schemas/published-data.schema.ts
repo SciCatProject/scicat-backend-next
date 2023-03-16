@@ -16,7 +16,14 @@ export class PublishedData {
   @Prop({
     type: String,
     default: function genUUID(): string {
-      return process.env.DOI_PREFIX + uuidv4();
+      return (
+        process.env.DOI_PREFIX 
+        ? (
+          process.env.DOI_PREFIX.endsWith('/')
+          ? process.env.DOI_PREFIX.slice(0,-1)
+          : process.env.DOI_PREFIX )
+        : "undefined"
+      ) + "/" + uuidv4();
     },
   })
   _id: string;
@@ -27,7 +34,14 @@ export class PublishedData {
     unique: true,
     required: true,
     default: function genUUID(): string {
-      return process.env.DOI_PREFIX + uuidv4();
+      return (
+        process.env.DOI_PREFIX 
+        ? (
+          process.env.DOI_PREFIX.endsWith('/')
+          ? process.env.DOI_PREFIX.slice(0,-1)
+          : process.env.DOI_PREFIX )
+        : "undefined"
+      ) + "/" + uuidv4();
     },
   })
   doi: string;
