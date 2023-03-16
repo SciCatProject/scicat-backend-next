@@ -37,13 +37,12 @@ export class DatasetClass extends OwnableClass {
     required: true,
     default: function genUUID(): string {
       return (
-        process.env.PID_PREFIX 
-        ? (
-          process.env.PID_PREFIX.endsWith('/')
-          ? process.env.PID_PREFIX.slice(0,-1)
-          : process.env.PID_PREFIX )
-        : "undefined"
-      ) + "/" + uuidv4();
+        (process.env.PID_PREFIX
+          ? process.env.PID_PREFIX.replace(/\/$/, "")
+          : "undefined") +
+        "/" +
+        uuidv4()
+      );
     },
     description:
       "Persistent Identifier for datasets derived from UUIDv4 and prepended automatically by site specific PID prefix like 20.500.12345/",
@@ -54,13 +53,12 @@ export class DatasetClass extends OwnableClass {
     required: true,
     default: function genUUID(): string {
       return (
-        process.env.PID_PREFIX 
-        ? (
-          process.env.PID_PREFIX.endsWith('/')
-          ? process.env.PID_PREFIX.slice(0,-1)
-          : process.env.PID_PREFIX )
-        : "undefined"
-      ) + "/" + uuidv4();
+        (process.env.PID_PREFIX
+          ? process.env.PID_PREFIX.replace(/\/$/, "")
+          : "undefined") +
+        "/" +
+        uuidv4()
+      );
     },
   })
   pid: string;
