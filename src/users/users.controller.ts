@@ -9,7 +9,6 @@ import {
   Delete,
   UseInterceptors,
   Put,
-  ForbiddenException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
