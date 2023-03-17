@@ -608,7 +608,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
 
   it("should delete dataset 1", async () => {
     return request(appUrl)
-      .delete("/api/v3/datasets/" + datasetPid1)
+      .delete("/api/v3/datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -617,7 +617,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
 
   it("should delete dataset 2", async () => {
     return request(appUrl)
-      .delete("/api/v3/datasets/" + datasetPid2)
+      .delete("/api/v3/datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -626,7 +626,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
 
   it("should delete dataset 3", async () => {
     return request(appUrl)
-      .delete("/api/v3/datasets/" + datasetPid3)
+      .delete("/api/v3/datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
@@ -635,7 +635,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
 
   it("should delete dataset 4", async () => {
     return request(appUrl)
-      .delete("/api/v3/datasets/" + datasetPid4)
+      .delete("/api/v3/datasets/" + encodedDatasetPid4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
