@@ -326,7 +326,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
   it("access any dataset from group1 ownerGroup as user 1", async () => {
     const randomIndex = randomIntFromInterval(0, groupedDatasets[1].length - 1);
     const randomDatasetPid = groupedDatasets[1][randomIndex].pid;
-
+    
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(randomDatasetPid))
       .set("Accept", "application/json")
@@ -339,13 +339,13 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
   });
 
   it("access dataset from another ownerGroup as user 1", async () => {
-    const randomGroupIndex = randomIntFromInterval(1, 3);
+    const randomGroupIndex = faker.helpers.arrayElement(["2", "3", "4"]);
     const randomIndex = randomIntFromInterval(
       0,
       groupedDatasets[randomGroupIndex].length - 1,
     );
     const randomDatasetPid = groupedDatasets[randomGroupIndex][randomIndex].pid;
-
+    
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(randomDatasetPid))
       .set("Accept", "application/json")
