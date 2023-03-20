@@ -66,6 +66,9 @@ export class CaslAbilityFactory {
     } else {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
+      can(Action.Create,DatasetClass,{
+        ownerGroup: { $in: user.currentGroups }
+      });
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
