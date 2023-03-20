@@ -172,12 +172,12 @@ export class DatasetsController {
   async checkPermissionsForDataset(request: Request, id: string) {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
-  
+
     if (dataset) {
       // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
       const datasetInstance = new DatasetClass();
-      datasetInstance._id = ( "_id" in dataset ? dataset?._id : "");
-      datasetInstance.pid = ( "pid" in dataset ? dataset?.pid : "");
+      datasetInstance._id = dataset._id;
+      datasetInstance.pid = dataset.pid;
       datasetInstance.accessGroups = dataset.accessGroups || [];
       datasetInstance.ownerGroup = dataset.ownerGroup;
       datasetInstance.sharedWith = dataset.sharedWith;
@@ -190,17 +190,20 @@ export class DatasetsController {
           ability.can(Action.Manage, datasetInstance) ||
           ability.can(Action.Read, datasetInstance);
         if (!canView && !dataset.isPublished) {
-            throw new ForbiddenException("Unauthorized access");
+          throw new ForbiddenException("Unauthorized access");
         }
       } else if (!dataset.isPublished) {
         throw new ForbiddenException("Unauthorized access");
       }
     }
-  
-    return dataset;
-  };
 
-  async checkPermissionsForDatasetCreate(request: Request, dataset: CreateRawDatasetDto | CreateDerivedDatasetDto) {
+    return dataset;
+  }
+
+  async checkPermissionsForDatasetCreate(
+    request: Request, 
+    dataset: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ) {
     const user: JWTUser = request.user as JWTUser;
 
     if (dataset) {
@@ -273,7 +276,7 @@ export class DatasetsController {
         : CreateDerivedDatasetDto,
     );
 
-    await this.checkPermissionsForDatasetCreate(request,createDatasetDto);
+    await this.checkPermissionsForDatasetCreate(request, createDatasetDto);
 
     return this.datasetsService.create(createDatasetDto);
   }
