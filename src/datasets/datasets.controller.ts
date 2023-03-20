@@ -201,7 +201,7 @@ export class DatasetsController {
   }
 
   async checkPermissionsForDatasetCreate(
-    request: Request, 
+    request: Request,
     dataset: CreateRawDatasetDto | CreateDerivedDatasetDto,
   ) {
     const user: JWTUser = request.user as JWTUser;
