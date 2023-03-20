@@ -188,6 +188,22 @@ export class UsersService implements OnModuleInit {
     return this.userModel.findById(id).exec();
   }
 
+  async findById2JWTUser(id: string): Promise<JWTUser | null> {
+    const userIdentity = await this.userIdentityModel
+      .findOne({ userId: id })
+      .exec();
+    if (userIdentity) {
+      const userProfile = userIdentity.profile;
+      return {
+        _id: userProfile.id,
+        username: userProfile.username,
+        email: userProfile.email,
+        currentGroups: userProfile.accessGroups,
+      } as JWTUser;
+    }
+    return null;
+  }
+
   async createUserIdentity(
     createUserIdentityDto: CreateUserIdentityDto,
   ): Promise<UserIdentity> {

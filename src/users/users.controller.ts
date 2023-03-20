@@ -9,10 +9,11 @@ import {
   Delete,
   UseInterceptors,
   Put,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { UserIdentity } from "./schemas/user-identity.schema";
@@ -29,6 +30,7 @@ import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settin
 import { AuthService } from "src/auth/auth.service";
 import { CredentialsDto } from "src/auth/dto/credentials.dto";
 import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -37,6 +39,7 @@ export class UsersController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
   @AllowAny()
@@ -132,5 +135,50 @@ export class UsersController {
   @Delete("/:id/settings")
   async removeSettings(@Param("id") userId: string): Promise<unknown> {
     return this.usersService.findOneAndRemoveUserSettings(userId);
+  }
+
+  async checkUserAuthorization(
+    authenticatedUserJWT: JWTUser,
+    viewedUserJWT: JWTUser,
+  ) {
+    const ability = await this.caslAbilityFactory.createForUser(
+      authenticatedUserJWT,
+    );
+    const viewedUser = (await this.usersService.findById(
+      viewedUserJWT._id,
+    )) as User;
+    const viewedUserSchema = new User();
+    viewedUserSchema._id = viewedUser._id;
+    viewedUserSchema.id = viewedUser.id;
+    viewedUserSchema.realm = viewedUser.realm;
+    viewedUserSchema.username = viewedUser.username;
+    viewedUserSchema.email = viewedUser.email;
+
+    if (!ability.can(Action.Read, viewedUserSchema)) {
+      throw new UnauthorizedException("Unauthorized access");
+    }
+  }
+
+  //@UseGuards(PoliciesGuard)
+  //@CheckPolicies((ability: AppAbility) => {
+  //  console.log(ability.can(Action.Read, User));
+  //  return ability.can(Action.Read, User);
+  //})
+  @AllowAny()
+  @Get("/:id/authorization/dataset/create")
+  async canUserCreateDataset(
+    @Req() request: Request,
+    @Param("id") userId: string,
+  ): Promise<unknown> {
+    const authenticatedUser: JWTUser = request.user as JWTUser;
+    const viewedUser: JWTUser =
+      authenticatedUser._id !== userId
+        ? ((await this.usersService.findById2JWTUser(userId)) as JWTUser)
+        : authenticatedUser;
+    await this.checkUserAuthorization(authenticatedUser, viewedUser);
+
+    const ability = await this.caslAbilityFactory.createForUser(viewedUser);
+
+    return { authorization: ability.can(Action.Create, DatasetClass) };
   }
 }

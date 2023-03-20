@@ -169,8 +169,6 @@ export class CaslAbilityFactory {
       can(Action.ListAll, ProposalClass);
     }
 
-    can(Action.Read, UserIdentity, { userId: user._id });
-
     can(Action.Create, UserSettings, { userId: user._id });
     can(Action.Read, UserSettings, { userId: user._id });
     can(Action.Update, UserSettings, { userId: user._id });
