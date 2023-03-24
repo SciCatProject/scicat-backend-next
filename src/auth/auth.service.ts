@@ -35,8 +35,8 @@ export class AuthService {
   }
 
   async login(user: Omit<User, "password">): Promise<Record<string, unknown>> {
-    const accessToken = this.jwtService.sign(user);
     const expiresIn = this.configService.get<number>("jwt.expiresIn");
+    const accessToken = this.jwtService.sign(user, { expiresIn });
     return {
       access_token: accessToken,
       id: accessToken,
