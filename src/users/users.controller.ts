@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   Put,
   UnauthorizedException,
+  Body,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
@@ -105,7 +106,7 @@ export class UsersController {
   @Put("/:id/settings")
   async updateSettings(
     @Param("id") userId: string,
-    updateUserSettingsDto: UpdateUserSettingsDto,
+    @Body() updateUserSettingsDto: UpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     return this.usersService.findOneAndUpdateUserSettings(
       userId,
