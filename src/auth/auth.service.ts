@@ -52,15 +52,14 @@ export class AuthService {
     };
   }
 
-  async logout(req: Request,res: Response) {
+  async logout(req: Request, res: Response) {
     console.log("Logout");
-    const logoutURL =
-      this.configService.get<string>("logoutURL") || "";
+    const logoutURL = this.configService.get<string>("logoutURL") || "";
     const expressSessionSecret = this.configService.get<string>(
       "expressSessionSecret",
-    );  
+    );
 
-    if (expressSessionSecret){
+    if (expressSessionSecret) {
       await req.logout(async (err) => {
         if (err) {
           // we should provide a message
@@ -68,11 +67,10 @@ export class AuthService {
           console.log(err);
           //res.status(HttpStatus.BAD_REQUEST);
         }
-        await this.additionalLogoutTasks(req, res,logoutURL);
+        await this.additionalLogoutTasks(req, res, logoutURL);
       });
-    } 
-    else {
-      await this.additionalLogoutTasks(req, res,logoutURL);
+    } else {
+      await this.additionalLogoutTasks(req, res, logoutURL);
     }
     if (logoutURL) {
       res.redirect(logoutURL);
@@ -85,15 +83,12 @@ export class AuthService {
     const user = req.user as Omit<User, "password">;
     if (user.authStrategy == "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
-      const autoLogout: boolean = parseBoolean(
-        oidcConfig?.autoLogout || false,
-      );
+      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || false);
       if (autoLogout) {
         const trustIssuer = await Issuer.discover(
           `${oidcConfig?.issuer}/.well-known/openid-configuration`,
         );
-      const end_session_endpoint =
-        trustIssuer.metadata.end_session_endpoint;
+        const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
         if (end_session_endpoint) {
           res.redirect(
             end_session_endpoint +

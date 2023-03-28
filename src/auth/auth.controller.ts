@@ -1,16 +1,14 @@
-import {
-  Controller,
-  UseGuards,
-  Post,
-  Get,
-  Res,
-  Req,
-  HttpStatus,
-} from "@nestjs/common";
+import { Controller, UseGuards, Post, Get, Res, Req } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
 import { AllowAny } from "./decorators/allow-any.decorator";
@@ -19,8 +17,6 @@ import { OidcAuthGuard } from "./guards/oidc.guard";
 import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
-//import { Issuer } from "openid-client";
-//import { parseBoolean } from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -99,23 +95,18 @@ export class AuthController {
     return req.user as Omit<User, "password">;
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Get("logout")
   @ApiOperation({
     summary: "It logs the current user out.",
-    description:
-      "It logs out the current user.",
+    description: "It logs out the current user.",
   })
   @ApiResponse({
     status: 200,
     description: "User logged out",
   })
-  async logout(
-    @Req() req: Request, 
-    @Res() res: Response
-  ) {
+  async logout(@Req() req: Request, @Res() res: Response) {
     await this.authService.logout(req, res);
-    res.send({logout:"successful"});
+    res.send({ logout: "successful" });
   }
 }

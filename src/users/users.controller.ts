@@ -186,7 +186,6 @@ export class UsersController {
     return { authorization: ability.can(Action.Create, DatasetClass) };
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Get("logout")
   async logout(@Req() req: Request, @Res() res: Response) {
