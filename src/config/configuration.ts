@@ -3,7 +3,7 @@ const adminGroups = process.env.ADMIN_GROUPS;
 
 const configuration = () => ({
   adminGroups: adminGroups?.split(",") ?? [],
-  logoutURL: process.env.LOGOUT_URL, // Example: http://localhost:3000/
+  logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
   accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
   accessGroupService: {
     token: process.env.ACCESS_GROUP_SERVICE_TOKEN,

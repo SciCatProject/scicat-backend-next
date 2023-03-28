@@ -1,9 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare } from "bcrypt";
 import { User } from "src/users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
+import { Request, Response } from "express";
+import { OidcConfig } from "src/config/configuration";
+import { parseBoolean } from "src/common/utils";
+import { Issuer } from "openid-client";
 
 @Injectable()
 export class AuthService {
@@ -46,5 +50,52 @@ export class AuthService {
       userId: user._id,
       user,
     };
+  }
+
+  async logout(req: Request, res: Response) {
+    const logoutURL = this.configService.get<string>("logoutURL") || "";
+    const expressSessionSecret = this.configService.get<string>(
+      "expressSessionSecret",
+    );
+
+    if (expressSessionSecret) {
+      await req.logout(async (err) => {
+        if (err) {
+          // we should provide a message
+          console.log("Logout error");
+          console.log(err);
+          //res.status(HttpStatus.BAD_REQUEST);
+        }
+        await this.additionalLogoutTasks(req, res, logoutURL);
+      });
+    } else {
+      await this.additionalLogoutTasks(req, res, logoutURL);
+    }
+    if (logoutURL) {
+      res.redirect(logoutURL);
+    }
+    res.status(HttpStatus.OK);
+    return;
+  }
+
+  async additionalLogoutTasks(req: Request, res: Response, logoutURL: string) {
+    const user = req.user as Omit<User, "password">;
+    if (user?.authStrategy == "oidc") {
+      const oidcConfig = this.configService.get<OidcConfig>("oidc");
+      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || false);
+      if (autoLogout) {
+        const trustIssuer = await Issuer.discover(
+          `${oidcConfig?.issuer}/.well-known/openid-configuration`,
+        );
+        const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
+        if (end_session_endpoint) {
+          res.redirect(
+            end_session_endpoint +
+              (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
+          );
+        }
+      }
+    }
+    return;
   }
 }

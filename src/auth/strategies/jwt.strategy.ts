@@ -47,7 +47,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       _id: payload._id,
       username: payload.username,
       email: payload.email,
-      currentGroups,
+      currentGroups: currentGroups,
+      authStrategy: payload.authStrategy,
     } as JWTUser;
   }
 }
