@@ -11,6 +11,7 @@ import {
   Put,
   UnauthorizedException,
   Body,
+  Res,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
@@ -21,7 +22,7 @@ import { UserIdentity } from "./schemas/user-identity.schema";
 import { UsersService } from "./users.service";
 import { CreateUserJWT } from "./dto/create-user-jwt.dto";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
@@ -32,6 +33,8 @@ import { AuthService } from "src/auth/auth.service";
 import { CredentialsDto } from "src/auth/dto/credentials.dto";
 import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
+//import { AuthController } from "src/auth/auth.controller";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -181,5 +184,12 @@ export class UsersController {
     const ability = await this.caslAbilityFactory.createForUser(viewedUser);
 
     return { authorization: ability.can(Action.Create, DatasetClass) };
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get("logout")
+  async logout(@Req() req: Request, @Res() res: Response) {
+    return await this.authService.logout(req, res);
   }
 }

@@ -10,7 +10,7 @@ import {
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
 import { AllowAny } from "./decorators/allow-any.decorator";
@@ -19,8 +19,8 @@ import { OidcAuthGuard } from "./guards/oidc.guard";
 import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
-import { Issuer } from "openid-client";
-import { parseBoolean } from "src/common/utils";
+//import { Issuer } from "openid-client";
+//import { parseBoolean } from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -99,43 +99,23 @@ export class AuthController {
     return req.user as Omit<User, "password">;
   }
 
+
   @UseGuards(JwtAuthGuard)
   @Get("logout")
-  async logout(@Req() req: Request, @Res() res: Response) {
-    console.log("Logout");
-    const user = req.user as Omit<User, "password">;
-    const logoutURL =
-      this.configService.get<string>("logoutURL") || req.originalUrl;
-    await req.logout(async (err) => {
-      if (err) {
-        // we should provide a message
-        console.log("Logout error");
-        console.log(err);
-        res.status(HttpStatus.BAD_REQUEST);
-      }
-      if (user.authStrategy == "oidc") {
-        const oidcConfig = this.configService.get<OidcConfig>("oidc");
-        const autoLogout: boolean = parseBoolean(
-          oidcConfig?.autoLogout || false,
-        );
-        if (autoLogout) {
-          const trustIssuer = await Issuer.discover(
-            `${oidcConfig?.issuer}/.well-known/openid-configuration`,
-          );
-          const end_session_endpoint =
-            trustIssuer.metadata.end_session_endpoint;
-          if (end_session_endpoint) {
-            res.redirect(
-              end_session_endpoint +
-                (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-            );
-          }
-        }
-      }
-      if (logoutURL) {
-        res.redirect(logoutURL);
-      }
-      return;
-    });
+  @ApiOperation({
+    summary: "It logs the current user out.",
+    description:
+      "It logs out the current user.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User logged out",
+  })
+  async logout(
+    @Req() req: Request, 
+    @Res() res: Response
+  ) {
+    await this.authService.logout(req, res);
+    res.send({logout:"successful"});
   }
 }
