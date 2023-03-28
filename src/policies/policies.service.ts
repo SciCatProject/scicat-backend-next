@@ -113,10 +113,15 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
-    const username = (this.request.user as JWTUser).username;
+    const username = (this.request.user as JWTUser)?.username;
+    if (!username) {
+      throw new UnauthorizedException("User not present in the request");
+    }
+
     const createdPolicy = new this.policyModel(
       addCreatedByFields(createPolicyDto, username),
     );
+
     return createdPolicy.save();
   }
 
