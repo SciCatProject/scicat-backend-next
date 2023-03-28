@@ -3,4 +3,5 @@ export interface JWTUser {
   username: string;
   email: string;
   currentGroups: string[];
+  authStrategy?: string;
 }

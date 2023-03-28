@@ -53,7 +53,6 @@ export class AuthService {
   }
 
   async logout(req: Request, res: Response) {
-    console.log("Logout");
     const logoutURL = this.configService.get<string>("logoutURL") || "";
     const expressSessionSecret = this.configService.get<string>(
       "expressSessionSecret",
@@ -81,7 +80,7 @@ export class AuthService {
 
   async additionalLogoutTasks(req: Request, res: Response, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
-    if (user.authStrategy == "oidc") {
+    if (user?.authStrategy == "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
       const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || false);
       if (autoLogout) {
