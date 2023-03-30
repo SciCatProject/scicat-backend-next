@@ -12,7 +12,7 @@ import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: process.env.LOGGING_DISABLED ? false : Logger,
+    logger: process.env.LOGGING_DISABLED ? false : new Logger(),
   });
 
   app.enableCors();
