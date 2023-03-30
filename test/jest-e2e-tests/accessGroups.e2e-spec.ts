@@ -4,7 +4,6 @@ import { INestApplication } from "@nestjs/common";
 import { AppModule } from "src/app.module";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/schemas/user.schema";
-import waitOn from "wait-on";
 
 describe("Access groups test", () => {
   let app: INestApplication;
@@ -12,10 +11,6 @@ describe("Access groups test", () => {
   let u: User;
 
   beforeAll(async () => {
-    await waitOn({
-      resources: ["tcp:localhost:27017"],
-      timeout: 30000, // 30 seconds
-    });
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
