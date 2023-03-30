@@ -2,6 +2,5 @@
   "recursive": true,
   "exit": true,
   "timeout": 60000,
-  "file": ["./test/config/pretest.js"],
-  "require": "mocha-suppress-logs"
+  "file": ["./test/config/pretest.js"]
 }

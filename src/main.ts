@@ -10,8 +10,13 @@ import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+const test = true;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: !test,
+  });
+
   app.enableCors();
   app.setGlobalPrefix("api/v3");
   const config = new DocumentBuilder()
