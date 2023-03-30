@@ -10,7 +10,6 @@ describe("Access groups test", () => {
   let app: INestApplication;
   let usersService: UsersService;
   let u: User;
-  const appUrl = "http://localhost:3000";
 
   beforeAll(async () => {
     await waitOn({
@@ -56,7 +55,7 @@ describe("Access groups test", () => {
       },
     });
 
-    const loginResponse = await request(appUrl)
+    const loginResponse = await request(app.getHttpServer())
       .post("/api/v3/Users/Login?include=user")
       .send({
         username: "noGroup",
@@ -64,7 +63,7 @@ describe("Access groups test", () => {
       })
       .set("Accept", "application/json");
 
-    return request(appUrl)
+    return request(app.getHttpServer())
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${loginResponse.body.id}` })
@@ -82,7 +81,7 @@ describe("Access groups test", () => {
   //       accessGroups: 1,
   //     },
   //   });
-  //   const loginResponse = await request(appUrl)
+  //   const loginResponse = await request(app.getHttpServer())
   //     .post("/api/v3/Users/Login?include=user")
   //     .send({
   //       username: "noGroup",
@@ -90,7 +89,7 @@ describe("Access groups test", () => {
   //     })
   //     .set("Accept", "application/json");
 
-  //   return request(appUrl)
+  //   return request(app.getHttpServer())
   //     .get("/api/v3/Datasets")
   //     .set("Accept", "application/json")
   //     .set({ Authorization: `Bearer ${loginResponse.body.id}` })
@@ -108,7 +107,7 @@ describe("Access groups test", () => {
       },
     });
 
-    const loginResponse = await request(appUrl)
+    const loginResponse = await request(app.getHttpServer())
       .post("/api/v3/Users/Login?include=user")
       .send({
         username: "noGroup",
@@ -116,7 +115,7 @@ describe("Access groups test", () => {
       })
       .set("Accept", "application/json");
 
-    return request(appUrl)
+    return request(app.getHttpServer())
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${loginResponse.body.id}` })
