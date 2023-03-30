@@ -2,5 +2,8 @@
   "recursive": true,
   "exit": true,
   "timeout": 60000,
-  "file": ["./test/config/pretest.js"]
+  "file": ["./test/config/pretest.js"],
+  "globals": {
+    "LOGGING_DISABLED": true
+  }
 }

@@ -10,11 +10,9 @@ import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-const test = true;
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: !test,
+    logger: process.env.LOGGING_DISABLED ? false : Logger,
   });
 
   app.enableCors();
