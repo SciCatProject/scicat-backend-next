@@ -22,7 +22,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:api": "npm run test:api:jest --silent && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha --silent\" \"npm run start\"",
+    "test:api": "npm run test:api:jest --loglevel silent && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha --loglevel silent\" \"npm run start\"",
     "test:api:jest": "jest --config ./test/config/jest-e2e.json",
     "test:api:mocha": "mocha --config ./test/config/.mocharc.json",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml up -d && cp functionalAccounts.json.example functionalAccounts.json"
