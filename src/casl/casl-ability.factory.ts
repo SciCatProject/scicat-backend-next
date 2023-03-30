@@ -58,17 +58,41 @@ export class CaslAbilityFactory {
     const adminGroups: string[] = stringAdminGroups
       ? stringAdminGroups.split(",")
       : [];
-    // Datasets permissions
+    // delete groups
+    const stringDeleteGroups = process.env.DELETE_GROUPS || ("" as string);
+    const deleteGroups: string[] = stringDeleteGroups
+      ? stringDeleteGroups.split(",")
+      : [];
+
+    // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
       can(Action.ListAll, DatasetClass);
       can(Action.ListAll, ProposalClass);
       can(Action.Manage, DatasetClass);
+      can(Action.ReadAll, UserIdentity);
+
+      // -------------------------------------
+      // user endpoint, including useridentity
+      can(Action.UserReadAny,User)
+      can(Action.UserCreateAny,User)
+      can(Action.UserUpdateAny,User)
+      can(Action.UserDeleteAny,User)
+
     } else {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
       can(Action.Create, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
       });
+
+      // -------------------------------------
+      // user endpoint, including useridentity
+      // User can view, create, delete and update own user information
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
+
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
@@ -127,9 +151,7 @@ export class CaslAbilityFactory {
       ownerGroup: { $in: user.currentGroups },
     });
 
-    can(Action.Read, User, { _id: user._id });
-    can(Action.Update, User, { _id: user._id });
-
+  
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
     }
@@ -172,9 +194,9 @@ export class CaslAbilityFactory {
       can(Action.ListAll, ProposalClass);
     }
 
-    can(Action.Create, UserSettings, { userId: user._id });
-    can(Action.Read, UserSettings, { userId: user._id });
-    can(Action.Update, UserSettings, { userId: user._id });
+    //can(Action.Create, UserSettings, { userId: user._id });
+    //can(Action.Read, UserSettings, { userId: user._id });
+    //can(Action.Update, UserSettings, { userId: user._id });
 
     return build({
       detectSubjectType: (item) =>
