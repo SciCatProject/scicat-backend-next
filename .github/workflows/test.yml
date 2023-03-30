@@ -101,7 +101,6 @@ jobs:
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
           ADMIN_GROUPS: admin,ingestor,archivemanager
         # Start mongo container and app before running api tests
-        # NOTE: tcp:27017 is default port for mongoDB, wait-on ensures mongoDB container is fully up before test running.
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           docker-compose up --build -d
