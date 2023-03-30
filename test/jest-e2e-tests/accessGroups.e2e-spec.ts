@@ -2,6 +2,7 @@ import * as request from "supertest";
 import { Test } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
 import { AppModule } from "src/app.module";
+import { genSalt, hash } from "bcrypt";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/schemas/user.schema";
 
@@ -102,11 +103,12 @@ describe("Access groups test", () => {
       },
     });
 
+    const hashedPassword = await hash("aman", await genSalt());
     const loginResponse = await request(app.getHttpServer())
       .post("/api/v3/Users/Login?include=user")
       .send({
         username: "noGroup",
-        password: "aman",
+        password: hashedPassword,
       })
       .set("Accept", "application/json");
 
