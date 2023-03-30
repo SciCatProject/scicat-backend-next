@@ -104,7 +104,7 @@ jobs:
         # NOTE: tcp:27017 is default port for mongoDB, wait-on ensures mongoDB container is fully up before test running.
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
-          docker-compose up --build -d --wait
+          docker-compose up --build -d
           npm run test:api
 
   e2e_tests:
