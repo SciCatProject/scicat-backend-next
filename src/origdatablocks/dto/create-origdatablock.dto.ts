@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsNotEmpty,
   ValidateNested,
 } from "class-validator";
 import { DataFileDto } from "src/common/dto/datafile.dto";
@@ -20,6 +21,7 @@ export class CreateOrigDatablockDto extends OwnableDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   readonly chkAlg: string;
 
   @IsArray()

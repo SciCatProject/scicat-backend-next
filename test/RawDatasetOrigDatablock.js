@@ -1,18 +1,17 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw Datasets", () => {
-  var accessTokenIngestor = null;
-  var accessTokenArchiveManager = null;
-
-  var datasetPid = null;
-
-  var origDatablockId1 = null;
-  var origDatablockId2 = null;
-
-  var origDatablockData1 = null;
-  var origDatablockData2 = null;
+  let accessTokenIngestor = null,
+    accessTokenArchiveManager = null,
+    datasetPid = null,
+    origDatablockId1 = null,
+    origDatablockId2 = null,
+    origDatablockData1 = null,
+    origDatablockData2 = null,
+    origDatablockWithEmptyChkAlg = null,
+    origDatablockWithCorrectChkAlg = null;
 
   beforeEach((done) => {
     utils.getToken(
@@ -39,6 +38,8 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
 
     origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
     origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
+    origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
+    origDatablockWithCorrectChkAlg = { ...TestData.OrigDataBlockCorrect3 };
   });
 
   it("adds a new raw dataset", async () => {
@@ -100,6 +101,34 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(403)
       .expect("Content-Type", /json/);
+  });
+
+  it("add a new origDatablock with empty chkAlg should fail", async () => {
+    return request(appUrl)
+      .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
+      .send(origDatablockWithEmptyChkAlg)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("error");
+      });
+  });
+
+  it("add a new origDatablock with valid chkAlg should success", async () => {
+    return request(appUrl)
+      .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
+      .send(origDatablockWithCorrectChkAlg)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("chkAlg")
+          .and.equal(TestData.OrigDataBlockCorrect3.chkAlg);
+      });
   });
 
   it("adds a new origDatablock with correct account", async () => {
