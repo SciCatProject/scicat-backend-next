@@ -8,6 +8,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     datasetPid = null,
     origDatablockId1 = null,
     origDatablockId2 = null,
+    origDatablockId3 = null,
     origDatablockData1 = null,
     origDatablockData2 = null,
     origDatablockWithEmptyChkAlg = null,
@@ -128,6 +129,8 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
         res.body.should.have
           .property("chkAlg")
           .and.equal(TestData.OrigDataBlockCorrect3.chkAlg);
+        res.body.should.have.property("id").and.be.string;
+        origDatablockId3 = encodeURIComponent(res.body["id"]);
       });
   });
 
@@ -173,9 +176,22 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.instanceof(Array).and.to.have.length(2);
-        res.body[0]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
-        res.body[1]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
+        res.body.should.be.instanceof(Array).and.to.have.length(3);
+        res.body[0]["id"].should.be.oneOf([
+          origDatablockId1,
+          origDatablockId2,
+          origDatablockId3,
+        ]);
+        res.body[1]["id"].should.be.oneOf([
+          origDatablockId1,
+          origDatablockId2,
+          origDatablockId3,
+        ]);
+        res.body[2]["id"].should.be.oneOf([
+          origDatablockId1,
+          origDatablockId2,
+          origDatablockId3,
+        ]);
       });
   });
 
@@ -189,7 +205,8 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .then((res) => {
         res.body["size"].should.be.equal(
           TestData.OrigDataBlockCorrect1.size +
-            TestData.OrigDataBlockCorrect2.size,
+            TestData.OrigDataBlockCorrect2.size +
+            TestData.OrigDataBlockCorrect3.size,
         );
       });
   });
@@ -225,7 +242,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
         res.body["pid"].should.be.equal(decodeURIComponent(datasetPid));
         res.body.origdatablocks.should.be
           .instanceof(Array)
-          .and.to.have.length(2);
+          .and.to.have.length(3);
         res.body.origdatablocks[0].should.have
           .property("dataFileList")
           .and.be.instanceof(Array)
@@ -347,13 +364,15 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
           .property("size")
           .and.equal(
             TestData.OrigDataBlockCorrect1.size +
-              TestData.OrigDataBlockCorrect2.size,
+              TestData.OrigDataBlockCorrect2.size +
+              TestData.OrigDataBlockCorrect3,
           );
         res.body.should.have
           .property("numberOfFiles")
           .and.equal(
             TestData.OrigDataBlockCorrect1.dataFileList.length +
-              TestData.OrigDataBlockCorrect2.dataFileList.length,
+              TestData.OrigDataBlockCorrect2.dataFileList.length +
+              TestData.OrigDataBlockCorrect3.dataFileList.length,
           );
       });
   });
@@ -372,6 +391,16 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId2}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200);
+  });
+
+  it("should delete third OrigDatablock", async () => {
+    return request(appUrl)
+      .delete(
+        `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId3}`,
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
