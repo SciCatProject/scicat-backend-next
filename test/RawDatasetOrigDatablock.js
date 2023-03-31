@@ -243,7 +243,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
         res.body.origdatablocks.should.be
           .instanceof(Array)
           .and.to.have.length(3);
-        res.body.origdatablocks[0].should.have
+        res.body.origdatablocks[1].should.have
           .property("dataFileList")
           .and.be.instanceof(Array)
           .and.to.have.length(
@@ -365,7 +365,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
           .and.equal(
             TestData.OrigDataBlockCorrect1.size +
               TestData.OrigDataBlockCorrect2.size +
-              TestData.OrigDataBlockCorrect3,
+              TestData.OrigDataBlockCorrect3.size,
           );
         res.body.should.have
           .property("numberOfFiles")
