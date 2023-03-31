@@ -12,7 +12,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     origDatablockData1 = null,
     origDatablockData2 = null,
     origDatablockWithEmptyChkAlg = null,
-    origDatablockWithCorrectChkAlg = null;
+    origDatablockWithValidChkAlg = null;
 
   beforeEach((done) => {
     utils.getToken(
@@ -40,7 +40,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     origDatablockData1 = { ...TestData.OrigDataBlockCorrect1 };
     origDatablockData2 = { ...TestData.OrigDataBlockCorrect2 };
     origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
-    origDatablockWithCorrectChkAlg = { ...TestData.OrigDataBlockCorrect3 };
+    origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
   });
 
   it("adds a new raw dataset", async () => {
@@ -120,7 +120,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
   it("add a new origDatablock with valid chkAlg should success", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
-      .send(origDatablockWithCorrectChkAlg)
+      .send(origDatablockWithValidChkAlg)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
