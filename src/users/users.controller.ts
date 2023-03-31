@@ -12,8 +12,9 @@ import {
   UnauthorizedException,
   Body,
   Res,
+  ForbiddenException,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -60,16 +61,29 @@ export class UsersController {
       authenticatedUser,
     );
 
-    actions.forEach( action => {
-      if (!ability.can(action, viewedUserSchema)) {
-        throw new UnauthorizedException("Unauthorized access");
-      }
-    });
+    // const authorized = actions.map( action => 
+    //   ability.can(action, viewedUserSchema)
+    // ) as Array<Boolean>;
+    if (!actions.some(action => 
+      ability.can(action, viewedUserSchema)
+    )) {
+      throw new ForbiddenException("Access Forbidden or Unauthorized");
+    }
   }
 
 
   @AllowAny()
   @Post("jwt")
+  @ApiOperation({
+    summary: "It creates a new jwt token or return the current one for logged in users.",
+    description:
+      "It creates a new jwt token or return the current one for logged in users.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: CreateUserJWT,
+    description: "Create a new JWT token for anonymous or the user that is currently logged in",
+  })
   async getUserJWT(@Req() request: Request): Promise<CreateUserJWT | null> {
     return this.usersService.createUserJWT(request.user as JWTUser);
   }
@@ -86,7 +100,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => 
-    ability.can(Action.UserReadOwn, User) && ability.can(Action.UserReadAny, User)
+    ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User)
   )
   @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/:id")
@@ -100,7 +114,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserReadOwn, User) && ability.can(Action.UserReadAny, User)
+    ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User)
   )
   @Get(":id/userIdentity")
   async getUserIdentity(
@@ -113,7 +127,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserCreateOwn, User) && ability.can(Action.UserCreateAny, User)
+    ability.can(Action.UserCreateOwn, User) || ability.can(Action.UserCreateAny, User)
   )
   @Post("/:id/settings")
   async createSettings(
@@ -127,7 +141,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserReadOwn, User) && ability.can(Action.UserReadAny, User)
+    ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User)
   )
   @Get("/:id/settings")
   async getSettings(
@@ -140,7 +154,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserUpdateOwn, User) && ability.can(Action.UserUpdateAny, User)
+    ability.can(Action.UserUpdateOwn, User) || ability.can(Action.UserUpdateAny, User)
   )
   @Put("/:id/settings")
   async updateSettings(
@@ -157,7 +171,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserUpdateOwn, User) && ability.can(Action.UserUpdateAny, User)
+    ability.can(Action.UserUpdateOwn, User) || ability.can(Action.UserUpdateAny, User)
   )
   @Patch("/:id/settings")
   async patchSettings(
@@ -174,7 +188,7 @@ export class UsersController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserDeleteOwn, User) && ability.can(Action.UserDeleteAny, User)
+    ability.can(Action.UserDeleteOwn, User) || ability.can(Action.UserDeleteAny, User)
   )
   @Delete("/:id/settings")
   async removeSettings(
@@ -186,9 +200,9 @@ export class UsersController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserReadOwn, User) && ability.can(Action.UserReadAny, User)
-  )
+  @CheckPolicies((ability: AppAbility) => {
+    return ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User);
+  })
   @Get("/:id/authorization/dataset/create")
   async canUserCreateDataset(
     @Req() request: Request,

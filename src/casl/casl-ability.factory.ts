@@ -63,6 +63,11 @@ export class CaslAbilityFactory {
     const deleteGroups: string[] = stringDeleteGroups
       ? stringDeleteGroups.split(",")
       : [];
+    // create dataset groups
+    const stringCreateDatasetGroups = process.env.CREATE_DATASET_GROUPS || ("all" as string);
+    const createDatasetGroups: string[] = stringCreateDatasetGroups
+      ? stringCreateDatasetGroups.split(",")
+      : [];
 
     // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
@@ -81,9 +86,11 @@ export class CaslAbilityFactory {
     } else {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
-      can(Action.Create, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
+      if (user.currentGroups.some((g) => createDatasetGroups.includes(g)) || createDatasetGroups.includes("all")) {
+        can(Action.Create, DatasetClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      }
 
       // -------------------------------------
       // user endpoint, including useridentity
@@ -156,9 +163,9 @@ export class CaslAbilityFactory {
       can(Action.Manage, "all");
     }
     if (user.currentGroups.includes(Role.ArchiveManager)) {
-      cannot(Action.Create, DatasetClass);
-      cannot(Action.Update, DatasetClass);
-      can(Action.Delete, DatasetClass);
+      //cannot(Action.Create, DatasetClass);
+      //cannot(Action.Update, DatasetClass);
+      //can(Action.Delete, DatasetClass);
       cannot(Action.Manage, OrigDatablock);
       cannot(Action.Create, OrigDatablock);
       cannot(Action.Update, OrigDatablock);
@@ -174,14 +181,14 @@ export class CaslAbilityFactory {
       can(Action.Delete, Instrument);
     }
     if (user.currentGroups.includes(Role.GlobalAccess)) {
-      can(Action.Read, "all");
+      //can(Action.Read, "all");
     }
     if (user.currentGroups.includes(Role.Ingestor)) {
       can(Action.Create, Attachment);
 
-      cannot(Action.Delete, DatasetClass);
-      can(Action.Create, DatasetClass);
-      can(Action.Update, DatasetClass);
+      //cannot(Action.Delete, DatasetClass);
+      //can(Action.Create, DatasetClass);
+      //can(Action.Update, DatasetClass);
 
       can(Action.Create, Instrument);
       can(Action.Update, Instrument);

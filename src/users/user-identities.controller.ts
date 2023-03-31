@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { Controller, ForbiddenException, Get, Headers, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -21,7 +21,7 @@ export class UserIdentitiesController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserReadOwn, User) && ability.can(Action.UserReadAny, User),
+    ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User),
   )
   @Get("/findOne")
   async findOne(
@@ -49,13 +49,22 @@ export class UserIdentitiesController {
       authenticatedUser,
     );
 
-    if (ability.can(Action.UserReadOwn, UserIdentity)) {
+    //console.log(ability.can(Action.UserReadAny, User));
+    //console.log(ability.can(Action.UserReadOwn, User));
+    if (!ability.can(Action.UserReadAny, User) && ability.can(Action.UserReadOwn, User)) {
       // this user can only see his/her user identity
-      filter = {...filter, "userId": authenticatedUser._id};
-    } else if (!ability.can(Action.UserReadAny, UserIdentity)) {
-      throw new UnauthorizedException("Unauthorized access");
+      filter = {"userId": authenticatedUser._id, ...filter};
     }
 
-    return this.userIdentitiesService.findOne(filter);
+    const identity = await this.userIdentitiesService.findOne(filter) as UserIdentity;
+
+    const user = new User();
+    user._id = identity.userId;
+    user.id = identity.userId;
+    if (!ability.can(Action.UserReadOwn, user) && !ability.can(Action.UserReadAny, User)) {
+      throw new ForbiddenException("Access Forbidden or Unauthorized");
+    }
+
+    return identity;
   }
 }
