@@ -108,7 +108,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockWithEmptyChkAlg)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -121,7 +121,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockWithCorrectChkAlg)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
