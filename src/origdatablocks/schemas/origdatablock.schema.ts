@@ -52,7 +52,7 @@ export class OrigDatablock extends OwnableClass {
     description: "Algorithm used to compute the file chksum",
   })
   @Prop({
-    type: Number,
+    type: String,
     required: false,
   })
   chkAlg: string;

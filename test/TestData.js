@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { faker } = require("@faker-js/faker");
 
 const TestData = {
@@ -565,8 +566,37 @@ const TestData = {
     ],
   },
 
+  OrigDataBlockCorrect3: {
+    chkAlg: "Test-chkAlg",
+    size: 41780189,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
+  },
+
   OrigDataBlockWrong: {
     size: "This is wrong",
+  },
+  OrigDataBlockWrongChkAlg: {
+    chkAlg: "",
+    size: 41780189,
+    dataFileList: [
+      {
+        path: "N1039-1.tif",
+        size: 8356037,
+        time: "2017-07-24T13:56:30.000Z",
+        uid: "egon.meiera@psi.ch",
+        gid: "p16738",
+        perm: "-rw-rw-r--",
+      },
+    ],
   },
 
   DatasetLifecycle_query_1: {
