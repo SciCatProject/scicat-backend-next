@@ -4,13 +4,11 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import lodash from "lodash";
+import { get, update } from "lodash";
 import { map, Observable } from "rxjs";
 import { convertToRequestedUnit } from "src/common/utils";
 import { IDatasetFields } from "../interfaces/dataset-filters.interface";
 import { DatasetClass } from "../schemas/dataset.schema";
-//import { DerivedDataset } from "../schemas/derived-dataset.schema";
-//import { RawDataset } from "../schemas/raw-dataset.schema";
 
 @Injectable()
 export class FullQueryInterceptor implements NestInterceptor {
@@ -28,11 +26,11 @@ export class FullQueryInterceptor implements NestInterceptor {
           const { scientific } = fields;
           data.forEach(({ scientificMetadata }) => {
             scientific.forEach(({ lhs, unit }) => {
-              const currentUnit = lodash.get(
+              const currentUnit = get(
                 scientificMetadata,
                 `${lhs}.unit`,
               ) as string;
-              const currentValue = lodash.get(
+              const currentValue = get(
                 scientificMetadata,
                 `${lhs}.value`,
               ) as number;
@@ -44,12 +42,8 @@ export class FullQueryInterceptor implements NestInterceptor {
               ) {
                 const { valueRequested, unitRequested } =
                   convertToRequestedUnit(currentValue, currentUnit, unit);
-                lodash.update(
-                  scientificMetadata,
-                  `${lhs}.unit`,
-                  () => unitRequested,
-                );
-                lodash.update(
+                update(scientificMetadata, `${lhs}.unit`, () => unitRequested);
+                update(
                   scientificMetadata,
                   `${lhs}.value`,
                   () => valueRequested,
