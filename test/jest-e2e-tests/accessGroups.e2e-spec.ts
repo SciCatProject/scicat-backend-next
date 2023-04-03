@@ -24,6 +24,7 @@ describe("Access groups test", () => {
       username: "noGroup",
       password: "aman",
       email: "no.group@your-site.com",
+      authStrategy: "local",
       global: false,
     })) as User;
 

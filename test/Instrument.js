@@ -8,7 +8,7 @@ let accessToken = null,
   accessTokenArchiveManager = null,
   instrumentId = null;
 
-const newName="ESS2.5";
+const newName = "ESS2.5";
 
 describe("Instrument: Instrument management", () => {
   beforeEach((done) => {
@@ -44,7 +44,9 @@ describe("Instrument: Instrument management", () => {
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.be.equal(TestData.InstrumentCorrect.name);
+        res.body.should.have
+          .property("name")
+          .and.be.equal(TestData.InstrumentCorrect.name);
         res.body.should.have.property("pid").and.be.string;
         instrumentId = res.body["pid"];
       });
@@ -58,7 +60,9 @@ describe("Instrument: Instrument management", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.be.equal(TestData.InstrumentCorrect.name);
+        res.body.should.have
+          .property("name")
+          .and.be.equal(TestData.InstrumentCorrect.name);
         res.body.should.have.property("pid").and.be.equal(instrumentId);
       });
   });
@@ -72,7 +76,9 @@ describe("Instrument: Instrument management", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(1);
-        res.body[0].should.have.property("name").and.be.equal(TestData.InstrumentCorrect.name);
+        res.body[0].should.have
+          .property("name")
+          .and.be.equal(TestData.InstrumentCorrect.name);
         res.body[0].should.have.property("pid").and.be.equal(instrumentId);
       });
   });

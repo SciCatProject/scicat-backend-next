@@ -20,29 +20,52 @@ let datasetPid1 = null,
   datasetPid4 = null,
   encodedDatasetPid4 = null;
 
-
 const RawCorrect1 = {
   ...TestData.RawCorrect,
+  scientificMetadata: {
+    ...TestData.RawCorrect.scientificMetadata,
+    test_field_1: {
+      value: 5,
+      unit: "",
+    },
+  },
   datasetName: "This is the first correct test raw dataset",
-  description: "There was no ice cream in the freezer, nor did they have money to go to the store. Part of the first two datasets",
+  description:
+    "There was no ice cream in the freezer, nor did they have money to go to the store. Part of the first two datasets",
   isPublished: true,
   ownerGroup: "group1",
   accessGroups: ["group5"],
 };
-  
+
 const RawCorrect2 = {
   ...TestData.RawCorrect,
+  scientificMetadata: {
+    ...TestData.RawCorrect.scientificMetadata,
+    test_field_1: {
+      value: 5,
+      unit: "",
+    },
+  },
   datasetName: "This is the second correct test raw dataset",
-  description: "There was no telling what thoughts would come from the machine. Part of the first two datasets",
+  description:
+    "There was no telling what thoughts would come from the machine. Part of the first two datasets",
   isPublished: false,
   ownerGroup: "group2",
   accessGroups: ["group6"],
 };
-  
+
 const RawCorrect3 = {
   ...TestData.RawCorrect,
+  scientificMetadata: {
+    ...TestData.RawCorrect.scientificMetadata,
+    test_field_1: {
+      value: 6,
+      unit: "",
+    },
+  },
   datasetName: "This is the third correct test raw dataset",
-  description: "The opportunity of a lifetime passed before him as he tried to decide between a cone or a cup. Last and third dataset",
+  description:
+    "The opportunity of a lifetime passed before him as he tried to decide between a cone or a cup. Last and third dataset",
   isPublished: false,
   ownerGroup: "group3",
   accessGroups: ["group6"],
@@ -50,8 +73,16 @@ const RawCorrect3 = {
 
 const RawCorrect4 = {
   ...TestData.RawCorrect,
+  scientificMetadata: {
+    ...TestData.RawCorrect.scientificMetadata,
+    test_field_1: {
+      value: 7,
+      unit: "",
+    },
+  },
   datasetName: "This is the fourth correct test dataset, and it is raw",
-  description: "After coating myself in vegetable oil I found my success rate skyrocketed",
+  description:
+    "After coating myself in vegetable oil I found my success rate skyrocketed",
   isPublished: false,
   ownerGroup: "group4",
   accessGroups: ["group6"],
@@ -126,9 +157,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal(RawCorrect1.ownerGroup);
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(RawCorrect1.ownerGroup);
         res.body.should.have.property("type").and.equal(RawCorrect1.type);
-        res.body.should.have.property("isPublished").and.equal(RawCorrect1.isPublished);
+        res.body.should.have
+          .property("isPublished")
+          .and.equal(RawCorrect1.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid1 = res.body["pid"];
         encodedDatasetPid1 = encodeURIComponent(datasetPid1);
@@ -144,9 +179,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal(RawCorrect2.ownerGroup);
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(RawCorrect2.ownerGroup);
         res.body.should.have.property("type").and.equal(RawCorrect2.type);
-        res.body.should.have.property("isPublished").and.equal(RawCorrect2.isPublished);
+        res.body.should.have
+          .property("isPublished")
+          .and.equal(RawCorrect2.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid2 = res.body["pid"];
         encodedDatasetPid2 = encodeURIComponent(datasetPid2);
@@ -162,9 +201,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal(RawCorrect3.ownerGroup);
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(RawCorrect3.ownerGroup);
         res.body.should.have.property("type").and.equal(RawCorrect3.type);
-        res.body.should.have.property("isPublished").and.equal(RawCorrect3.isPublished);
+        res.body.should.have
+          .property("isPublished")
+          .and.equal(RawCorrect3.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid3 = res.body["pid"];
         encodedDatasetPid3 = encodeURIComponent(datasetPid3);
@@ -180,9 +223,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("ownerGroup").and.equal(RawCorrect4.ownerGroup);
+        res.body.should.have
+          .property("ownerGroup")
+          .and.equal(RawCorrect4.ownerGroup);
         res.body.should.have.property("type").and.equal(RawCorrect4.type);
-        res.body.should.have.property("isPublished").and.equal(RawCorrect4.isPublished);
+        res.body.should.have
+          .property("isPublished")
+          .and.equal(RawCorrect4.isPublished);
         res.body.should.have.property("pid").and.be.string;
         datasetPid4 = res.body["pid"];
         encodedDatasetPid4 = encodeURIComponent(datasetPid4);
@@ -203,8 +250,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"correct test raw\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "correct test raw" }}};
+  it('retrieve datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -216,8 +263,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"correct test raw\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "correct test raw" }}};
+  it('count how many datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -229,8 +276,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"correct test raw\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "correct test raw" }}};
+  it('retrieve one dataset with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -238,12 +285,16 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["pid"].should.be.oneOf([datasetPid1, datasetPid2, datasetPid3]);
+        res.body["pid"].should.be.oneOf([
+          datasetPid1,
+          datasetPid2,
+          datasetPid3,
+        ]);
       });
   });
 
-  it("retrieve datasets with \"correct test raw\" in dataset name using mongo regex operator", async () => {
-    const query = { where: { datasetName: { "$regex": "correct test raw" }}};
+  it('retrieve datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+    const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -255,8 +306,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"correct test raw\" in dataset name using mongo regex operator", async () => {
-    const query = { where: { datasetName: { "$regex": "correct test raw" }}};
+  it('count how many datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+    const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -268,8 +319,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one datasets with \"correct test raw\" in dataset name using mongo regex operator", async () => {
-    const query = { where: { datasetName: { "$regex": "correct test raw" }}};
+  it('retrieve one datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+    const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -277,13 +328,16 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["pid"].should.be.oneOf([datasetPid1, datasetPid2, datasetPid3]);
+        res.body["pid"].should.be.oneOf([
+          datasetPid1,
+          datasetPid2,
+          datasetPid3,
+        ]);
       });
   });
 
-
-  it("retrieve datasets with \"third correct\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "third correct" }}};
+  it('retrieve datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -296,8 +350,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"third correct\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "third correct" }}};
+  it('retrieve one dataset with "third correct" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -309,8 +363,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"third correct\" in dataset name using loopback style \"like\" operator", async () => {
-    const query = { where: { datasetName: { like: "third correct" }}};
+  it('count how many datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
+    const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -322,8 +376,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"third correct\" in dataset name using mongo \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "third correct" }}};
+  it('retrieve datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
+    const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -336,8 +390,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"third correct\" in dataset name using mongo \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "third correct" }}};
+  it('retrieve one dataset with "third correct" in dataset name using mongo "regex" operator', async () => {
+    const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -349,8 +403,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"third correct\" in dataset name using mongo \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "third correct" }}};
+  it('count how many datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
+    const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -362,8 +416,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"Part of the first two dataset\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "Part of the first two datasets" }}};
+  it('retrieve datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+    const query = {
+      where: { description: { like: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -377,8 +433,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"Part of the first two dataset\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "Part of the first two datasets" }}};
+  it('retrieve one dataset with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+    const query = {
+      where: { description: { like: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -390,8 +448,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"Part of the first two dataset\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "Part of the first two datasets" }}};
+  it('count how many datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+    const query = {
+      where: { description: { like: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -403,8 +463,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"Part of the first two dataset\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "Part of the first two datasets" }}};
+  it('retrieve datasets with "Part of the first two dataset" in description using "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -418,8 +480,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"Part of the first two dataset\" in description using mongo \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "Part of the first two datasets" }}};
+  it('retrieve one dataset with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -431,8 +495,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"Part of the first two dataset\" in description using mongo \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "Part of the first two datasets" }}};
+  it('count how many datasets with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "Part of the first two datasets" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -444,8 +510,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"lifetime passed\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "lifetime passed" }}};
+  it('retrieve datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
+    const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -458,8 +524,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"lifetime passed\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "lifetime passed" }}};
+  it('retrieve one dataset with "lifetime passed" in description using loopback style "like" operator', async () => {
+    const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -471,8 +537,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"lifetime passed\" in description using loopback style \"like\" operator", async () => {
-    const query = { where: { description: { like: "lifetime passed" }}};
+  it('count how many datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
+    const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -484,8 +550,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"lifetime passed\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "lifetime passed" }}};
+  it('retrieve datasets with "lifetime passed" in description using "regex" operator', async () => {
+    const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -498,8 +564,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"lifetime passed\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "lifetime passed" }}};
+  it('retrieve one dataset with "lifetime passed" in description using "regex" operator', async () => {
+    const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -511,8 +577,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"lifetime passed\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "lifetime passed" }}};
+  it('count how many datasets with "lifetime passed" in description using "regex" operator', async () => {
+    const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -524,8 +590,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"second\" or \"third\" together with \"dataset\" in description using \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "(second|third).*dataset" }}};
+  it('retrieve datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+    const query = {
+      where: { datasetName: { $regex: "(second|third).*dataset" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -539,8 +607,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"second\" or \"third\" together with \"dataset\" in description using \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "(second|third).*dataset" }}};
+  it('retrieve one dataset with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+    const query = {
+      where: { datasetName: { $regex: "(second|third).*dataset" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -552,8 +622,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"second\" or \"third\" together with \"dataset\" in description using \"regex\" operator", async () => {
-    const query = { where: { datasetName: { "$regex": "(second|third).*dataset" }}};
+  it('count how many datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+    const query = {
+      where: { datasetName: { $regex: "(second|third).*dataset" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -565,8 +637,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve datasets with \"cream\" and \"money\" or \"opportunity\" and \"decide\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "(cream.*money|opportunity.*decide)" }}};
+  it('retrieve datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -580,8 +654,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve one dataset with \"cream\" and \"money\" or \"opportunity\" and \"decide\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "(cream.*money|opportunity.*decide)" }}};
+  it('retrieve one dataset with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -593,8 +669,10 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("count how many datasets with \"cream\" and \"money\" or \"opportunity\" and \"decide\" in description using \"regex\" operator", async () => {
-    const query = { where: { description: { "$regex": "(cream.*money|opportunity.*decide)" }}};
+  it('count how many datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+    const query = {
+      where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
+    };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -603,6 +681,95 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
+      });
+  });
+
+  it("Adding GREATER_THAN condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs: "test_field_1", relation: "GREATER_THAN", rhs: 1, unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(4);
+      });
+  });
+
+  it("Adding LESS_THAN condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs: "test_field_1", relation: "LESS_THAN", rhs: 6, unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(2);
+      });
+  });
+
+  it("Adding EQUAL_TO_NUMERIC condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        { lhs: "test_field_1", relation: "EQUAL_TO_NUMERIC", rhs: 6, unit: "" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(1);
+      });
+  });
+
+  it("Adding EQUAL_TO_NUMERIC condition on the fullquery endpoint should work", async () => {
+    const fields = {
+      mode: {},
+      scientific: [
+        {
+          lhs: "test_field_1",
+          relation: "EQUAL_TO_STRING",
+          rhs: "6",
+          unit: "",
+        },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Datasets/fullquery?fields=${encodeURIComponent(
+          JSON.stringify(fields),
+        )}`,
+      )
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.length.should.be.equal(0);
       });
   });
 
@@ -641,5 +808,4 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .expect(200)
       .expect("Content-Type", /json/);
   });
-
 });
