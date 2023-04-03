@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Controller,
   Get,
@@ -243,10 +244,14 @@ export class PublishedDataController {
         password: "removed",
       };
 
-      if (existsSync(this.doiConfigPath)) {
-        doiProviderCredentials = JSON.parse(
-          readFileSync(this.doiConfigPath).toString(),
-        );
+      const username = this.configService.get<string>("doiUsername");
+      const password = this.configService.get<string>("doiPassword");
+
+      if (username && password) {
+        doiProviderCredentials = {
+          username,
+          password,
+        };
       }
 
       const registerDataciteMetadataOptions = {
