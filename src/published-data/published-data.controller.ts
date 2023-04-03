@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   HttpException,
   HttpStatus,
+  NotFoundException,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -181,9 +182,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -210,9 +208,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
@@ -305,9 +300,12 @@ export class PublishedDataController {
               method: "PUT",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -317,9 +315,12 @@ export class PublishedDataController {
               method: "PUT",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -359,9 +360,12 @@ export class PublishedDataController {
               method: "POST",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -376,7 +380,8 @@ export class PublishedDataController {
         return res ? res.data : null;
       }
     }
-    return null;
+
+    throw new NotFoundException();
   }
 
   // POST /publisheddata/:id/resync
@@ -384,9 +389,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,
