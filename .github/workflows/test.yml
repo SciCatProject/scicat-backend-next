@@ -100,6 +100,9 @@ jobs:
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
           ADMIN_GROUPS: admin,ingestor,archivemanager
+          CREATE_DATASET_GROUPS: group1,group2,group3
+          DELETE_GROUPS: archivemanager
+
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
