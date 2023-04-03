@@ -11,7 +11,10 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: process.env.LOGGING_DISABLED ? false : new Logger(),
+  });
+
   app.enableCors();
   app.setGlobalPrefix("api/v3");
   const config = new DocumentBuilder()
