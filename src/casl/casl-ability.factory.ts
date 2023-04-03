@@ -58,17 +58,48 @@ export class CaslAbilityFactory {
     const adminGroups: string[] = stringAdminGroups
       ? stringAdminGroups.split(",")
       : [];
-    // Datasets permissions
+    // delete groups
+    const stringDeleteGroups = process.env.DELETE_GROUPS || ("" as string);
+    const deleteGroups: string[] = stringDeleteGroups
+      ? stringDeleteGroups.split(",")
+      : [];
+    // create dataset groups
+    const stringCreateDatasetGroups =
+      process.env.CREATE_DATASET_GROUPS || ("all" as string);
+    const createDatasetGroups: string[] = stringCreateDatasetGroups.split(",");
+
+    // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
       can(Action.ListAll, DatasetClass);
       can(Action.ListAll, ProposalClass);
       can(Action.Manage, DatasetClass);
+      can(Action.ReadAll, UserIdentity);
+
+      // -------------------------------------
+      // user endpoint, including useridentity
+      can(Action.UserReadAny, User);
+      can(Action.UserCreateAny, User);
+      can(Action.UserUpdateAny, User);
+      can(Action.UserDeleteAny, User);
     } else {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
-      can(Action.Create, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
+      if (
+        user.currentGroups.some((g) => createDatasetGroups.includes(g)) ||
+        createDatasetGroups.includes("all")
+      ) {
+        can(Action.Create, DatasetClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      }
+
+      // -------------------------------------
+      // user endpoint, including useridentity
+      // User can view, create, delete and update own user information
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
@@ -127,16 +158,13 @@ export class CaslAbilityFactory {
       ownerGroup: { $in: user.currentGroups },
     });
 
-    can(Action.Read, User, { _id: user._id });
-    can(Action.Update, User, { _id: user._id });
-
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
     }
     if (user.currentGroups.includes(Role.ArchiveManager)) {
-      cannot(Action.Create, DatasetClass);
-      cannot(Action.Update, DatasetClass);
-      can(Action.Delete, DatasetClass);
+      //cannot(Action.Create, DatasetClass);
+      //cannot(Action.Update, DatasetClass);
+      //can(Action.Delete, DatasetClass);
       cannot(Action.Manage, OrigDatablock);
       cannot(Action.Create, OrigDatablock);
       cannot(Action.Update, OrigDatablock);
@@ -151,15 +179,15 @@ export class CaslAbilityFactory {
       cannot(Action.Update, Instrument);
       can(Action.Delete, Instrument);
     }
-    if (user.currentGroups.includes(Role.GlobalAccess)) {
-      can(Action.Read, "all");
-    }
+    //if (user.currentGroups.includes(Role.GlobalAccess)) {
+    //  can(Action.Read, "all");
+    //}
     if (user.currentGroups.includes(Role.Ingestor)) {
       can(Action.Create, Attachment);
 
-      cannot(Action.Delete, DatasetClass);
-      can(Action.Create, DatasetClass);
-      can(Action.Update, DatasetClass);
+      //cannot(Action.Delete, DatasetClass);
+      //can(Action.Create, DatasetClass);
+      //can(Action.Update, DatasetClass);
 
       can(Action.Create, Instrument);
       can(Action.Update, Instrument);
@@ -172,9 +200,16 @@ export class CaslAbilityFactory {
       can(Action.ListAll, ProposalClass);
     }
 
-    can(Action.Create, UserSettings, { userId: user._id });
-    can(Action.Read, UserSettings, { userId: user._id });
-    can(Action.Update, UserSettings, { userId: user._id });
+    //can(Action.Create, UserSettings, { userId: user._id });
+    //can(Action.Read, UserSettings, { userId: user._id });
+    //can(Action.Update, UserSettings, { userId: user._id });
+
+    if (user.currentGroups.some((g) => deleteGroups.includes(g))) {
+      can(Action.Delete, OrigDatablock);
+      can(Action.Delete, Datablock);
+      can(Action.Delete, PublishedData);
+      can(Action.Delete, Instrument);
+    }
 
     return build({
       detectSubjectType: (item) =>

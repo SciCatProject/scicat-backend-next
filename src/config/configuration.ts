@@ -61,6 +61,13 @@ const configuration = () => ({
       role: "group3",
       global: false,
     },
+    {
+      username: "user4",
+      email: "user4@your.site",
+      password: "0014890e7020f515b92b767227ef2dfa",
+      role: "group4",
+      global: false,
+    },
   ],
   httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
   httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
