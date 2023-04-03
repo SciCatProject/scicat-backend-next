@@ -64,7 +64,8 @@ export class CaslAbilityFactory {
       ? stringDeleteGroups.split(",")
       : [];
     // create dataset groups
-    const stringCreateDatasetGroups = process.env.CREATE_DATASET_GROUPS || ("all" as string);
+    const stringCreateDatasetGroups =
+      process.env.CREATE_DATASET_GROUPS || ("all" as string);
     const createDatasetGroups: string[] = stringCreateDatasetGroups
       ? stringCreateDatasetGroups.split(",")
       : [];
@@ -78,15 +79,17 @@ export class CaslAbilityFactory {
 
       // -------------------------------------
       // user endpoint, including useridentity
-      can(Action.UserReadAny,User)
-      can(Action.UserCreateAny,User)
-      can(Action.UserUpdateAny,User)
-      can(Action.UserDeleteAny,User)
-
+      can(Action.UserReadAny, User);
+      can(Action.UserCreateAny, User);
+      can(Action.UserUpdateAny, User);
+      can(Action.UserDeleteAny, User);
     } else {
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
-      if (user.currentGroups.some((g) => createDatasetGroups.includes(g)) || createDatasetGroups.includes("all")) {
+      if (
+        user.currentGroups.some((g) => createDatasetGroups.includes(g)) ||
+        createDatasetGroups.includes("all")
+      ) {
         can(Action.Create, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
@@ -99,7 +102,6 @@ export class CaslAbilityFactory {
       can(Action.UserCreateOwn, User, { _id: user._id });
       can(Action.UserUpdateOwn, User, { _id: user._id });
       can(Action.UserDeleteOwn, User, { _id: user._id });
-
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
@@ -158,7 +160,6 @@ export class CaslAbilityFactory {
       ownerGroup: { $in: user.currentGroups },
     });
 
-  
     if (user.currentGroups.includes(Role.Admin)) {
       can(Action.Manage, "all");
     }

@@ -1,4 +1,12 @@
-import { Controller, ForbiddenException, Get, Headers, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  ForbiddenException,
+  Get,
+  Headers,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -6,7 +14,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { UserIdentity } from "./schemas/user-identity.schema";
 import { UserIdentitiesService } from "./user-identities.service";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
 
@@ -20,8 +28,10 @@ export class UserIdentitiesController {
   ) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserReadOwn, User) || ability.can(Action.UserReadAny, User),
+  @CheckPolicies(
+    (ability: AppAbility) =>
+      ability.can(Action.UserReadOwn, User) ||
+      ability.can(Action.UserReadAny, User),
   )
   @Get("/findOne")
   async findOne(
@@ -32,7 +42,6 @@ export class UserIdentitiesController {
     @Req() request: Request,
     @Query("filter") queryFilters?: string,
   ): Promise<UserIdentity | null> {
-
     const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
     let filter = {};
     if (headers.filter) {
@@ -51,17 +60,25 @@ export class UserIdentitiesController {
 
     //console.log(ability.can(Action.UserReadAny, User));
     //console.log(ability.can(Action.UserReadOwn, User));
-    if (!ability.can(Action.UserReadAny, User) && ability.can(Action.UserReadOwn, User)) {
+    if (
+      !ability.can(Action.UserReadAny, User) &&
+      ability.can(Action.UserReadOwn, User)
+    ) {
       // this user can only see his/her user identity
-      filter = {"userId": authenticatedUser._id, ...filter};
+      filter = { userId: authenticatedUser._id, ...filter };
     }
 
-    const identity = await this.userIdentitiesService.findOne(filter) as UserIdentity;
+    const identity = (await this.userIdentitiesService.findOne(
+      filter,
+    )) as UserIdentity;
 
     const user = new User();
     user._id = identity.userId;
     user.id = identity.userId;
-    if (!ability.can(Action.UserReadOwn, user) && !ability.can(Action.UserReadAny, User)) {
+    if (
+      !ability.can(Action.UserReadOwn, user) &&
+      !ability.can(Action.UserReadAny, User)
+    ) {
       throw new ForbiddenException("Access Forbidden or Unauthorized");
     }
 
