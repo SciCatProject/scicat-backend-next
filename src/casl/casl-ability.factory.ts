@@ -66,9 +66,7 @@ export class CaslAbilityFactory {
     // create dataset groups
     const stringCreateDatasetGroups =
       process.env.CREATE_DATASET_GROUPS || ("all" as string);
-    const createDatasetGroups: string[] = stringCreateDatasetGroups
-      ? stringCreateDatasetGroups.split(",")
-      : [];
+    const createDatasetGroups: string[] = stringCreateDatasetGroups.split(",");
 
     // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
@@ -181,9 +179,9 @@ export class CaslAbilityFactory {
       cannot(Action.Update, Instrument);
       can(Action.Delete, Instrument);
     }
-    if (user.currentGroups.includes(Role.GlobalAccess)) {
-      //can(Action.Read, "all");
-    }
+    //if (user.currentGroups.includes(Role.GlobalAccess)) {
+    //  can(Action.Read, "all");
+    //}
     if (user.currentGroups.includes(Role.Ingestor)) {
       can(Action.Create, Attachment);
 
@@ -205,6 +203,13 @@ export class CaslAbilityFactory {
     //can(Action.Create, UserSettings, { userId: user._id });
     //can(Action.Read, UserSettings, { userId: user._id });
     //can(Action.Update, UserSettings, { userId: user._id });
+
+    if (user.currentGroups.some((g) => deleteGroups.includes(g))) {
+      can(Action.Delete, OrigDatablock);
+      can(Action.Delete, Datablock);
+      can(Action.Delete, PublishedData);
+      can(Action.Delete, Instrument);
+    }
 
     return build({
       detectSubjectType: (item) =>
