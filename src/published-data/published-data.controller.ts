@@ -257,7 +257,7 @@ export class PublishedDataController {
       const registerDataciteMetadataOptions = {
         method: "PUT",
         data: xml,
-        url: registerMetadataUri,
+        url: `${registerMetadataUri}/${fullDoi}`,
         headers: {
           "content-type": "application/xml;charset=UTF-8",
         },
@@ -267,14 +267,10 @@ export class PublishedDataController {
       const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi)); //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
       const registerDataciteDoiOptions = {
         method: "PUT",
-        data: [
-          "#Content-Type:text/plain;charset=UTF-8",
-          `doi= ${fullDoi}`,
-          `url= ${this.configService.get<string>(
-            "publicURLprefix",
-          )}${encodeDoi}`,
-        ].join("\n"),
-        url: registerDoiUri,
+        data: `#Content-Type:text/plain;charset=UTF-8\ndoi= ${fullDoi}\nurl=${this.configService.get<string>(
+          "publicURLprefix",
+        )}${encodeDoi}`,
+        url: `${registerDoiUri}/${fullDoi}`,
         headers: {
           "content-type": "text/plain;charset=UTF-8",
         },
@@ -300,7 +296,7 @@ export class PublishedDataController {
         let res;
         try {
           res = await firstValueFrom(
-            this.httpService.request<IRegister>({
+            this.httpService.request({
               ...registerDataciteMetadataOptions,
               method: "PUT",
             }),
@@ -337,7 +333,7 @@ export class PublishedDataController {
           console.error(error);
         }
 
-        return res ? res.data : null;
+        return res ? { doi: res.data } : null;
       } else if (!this.configService.get<string>("oaiProviderRoute")) {
         try {
           await this.publishedDataService.update(
@@ -360,7 +356,7 @@ export class PublishedDataController {
         let res;
         try {
           res = await firstValueFrom(
-            this.httpService.request<IRegister>({
+            this.httpService.request({
               ...syncOAIPublication,
               method: "POST",
             }),
@@ -382,7 +378,7 @@ export class PublishedDataController {
           console.error(error);
         }
 
-        return res ? res.data : null;
+        return res ? { doi: res.data } : null;
       }
     }
 
@@ -479,7 +475,7 @@ function formRegistrationXML(publishedData: PublishedData): string {
   });
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-        <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+        <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 https://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
             <identifier identifierType="doi">${doi}</identifier>
             <creators>
                 ${creatorElements.join("\n")}
