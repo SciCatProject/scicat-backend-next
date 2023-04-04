@@ -66,7 +66,9 @@ export class CaslAbilityFactory {
     // create dataset groups
     const stringCreateDatasetGroups =
       process.env.CREATE_DATASET_GROUPS || ("all" as string);
-    const createDatasetGroups: string[] = stringCreateDatasetGroups.split(",").map((v) => v.trim());
+    const createDatasetGroups: string[] = stringCreateDatasetGroups
+      .split(",")
+      .map((v) => v.trim());
 
     // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
