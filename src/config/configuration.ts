@@ -1,10 +1,14 @@
 const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
-const adminGroups = process.env.ADMIN_GROUPS;
+const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
+const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
+const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || ("all" as string);
 
 const configuration = () => ({
-  adminGroups: adminGroups?.split(",") ?? [],
+  adminGroups: adminGroups?.split(",").map((v) => v.trim()) ?? [],
+  deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
+  createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
   logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
-  accessGroupsStaticValues: accessGroupsStaticValues?.split(",") ?? [],
+  accessGroupsStaticValues: accessGroupsStaticValues?.split(",").map((v) => v.trim()) ?? [],
   accessGroupService: {
     token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
     apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,

@@ -56,17 +56,17 @@ export class CaslAbilityFactory {
     // admin groups
     const stringAdminGroups = process.env.ADMIN_GROUPS || ("" as string);
     const adminGroups: string[] = stringAdminGroups
-      ? stringAdminGroups.split(",")
+      ? stringAdminGroups.split(",").map((v) => v.trim())
       : [];
     // delete groups
     const stringDeleteGroups = process.env.DELETE_GROUPS || ("" as string);
     const deleteGroups: string[] = stringDeleteGroups
-      ? stringDeleteGroups.split(",")
+      ? stringDeleteGroups.split(",").map((v) => v.trim())
       : [];
     // create dataset groups
     const stringCreateDatasetGroups =
       process.env.CREATE_DATASET_GROUPS || ("all" as string);
-    const createDatasetGroups: string[] = stringCreateDatasetGroups.split(",");
+    const createDatasetGroups: string[] = stringCreateDatasetGroups.split(",").map((v) => v.trim());
 
     // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
