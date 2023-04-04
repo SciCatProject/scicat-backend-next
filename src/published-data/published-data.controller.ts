@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Controller,
   Get,
@@ -11,6 +12,7 @@ import {
   UseInterceptors,
   HttpException,
   HttpStatus,
+  NotFoundException,
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
@@ -181,9 +183,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Patch("/:id")
   async update(
     @Param("id") id: string,
@@ -210,9 +209,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
@@ -248,16 +244,20 @@ export class PublishedDataController {
         password: "removed",
       };
 
-      if (existsSync(this.doiConfigPath)) {
-        doiProviderCredentials = JSON.parse(
-          readFileSync(this.doiConfigPath).toString(),
-        );
+      const username = this.configService.get<string>("doiUsername");
+      const password = this.configService.get<string>("doiPassword");
+
+      if (username && password) {
+        doiProviderCredentials = {
+          username,
+          password,
+        };
       }
 
       const registerDataciteMetadataOptions = {
         method: "PUT",
         data: xml,
-        url: registerMetadataUri,
+        url: `${registerMetadataUri}/${fullDoi}`,
         headers: {
           "content-type": "application/xml;charset=UTF-8",
         },
@@ -267,14 +267,10 @@ export class PublishedDataController {
       const encodeDoi = encodeURIComponent(encodeURIComponent(fullDoi)); //Needed to make sure that the "/" between DOI prefix and ID stays encoded in datacite
       const registerDataciteDoiOptions = {
         method: "PUT",
-        data: [
-          "#Content-Type:text/plain;charset=UTF-8",
-          `doi= ${fullDoi}`,
-          `url= ${this.configService.get<string>(
-            "publicURLprefix",
-          )}${encodeDoi}`,
-        ].join("\n"),
-        url: registerDoiUri,
+        data: `#Content-Type:text/plain;charset=UTF-8\ndoi= ${fullDoi}\nurl=${this.configService.get<string>(
+          "publicURLprefix",
+        )}${encodeDoi}`,
+        url: `${registerDoiUri}/${fullDoi}`,
         headers: {
           "content-type": "text/plain;charset=UTF-8",
         },
@@ -300,14 +296,17 @@ export class PublishedDataController {
         let res;
         try {
           res = await firstValueFrom(
-            this.httpService.request<IRegister>({
+            this.httpService.request({
               ...registerDataciteMetadataOptions,
               method: "PUT",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -317,9 +316,12 @@ export class PublishedDataController {
               method: "PUT",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -331,7 +333,7 @@ export class PublishedDataController {
           console.error(error);
         }
 
-        return res ? res.data : null;
+        return res ? { doi: res.data } : null;
       } else if (!this.configService.get<string>("oaiProviderRoute")) {
         try {
           await this.publishedDataService.update(
@@ -354,14 +356,17 @@ export class PublishedDataController {
         let res;
         try {
           res = await firstValueFrom(
-            this.httpService.request<IRegister>({
+            this.httpService.request({
               ...syncOAIPublication,
               method: "POST",
             }),
           );
-        } catch (err) {
+        } catch (err: any) {
           handleAxiosRequestError(err, "PublishedDataController.register");
-          return null;
+          throw new HttpException(
+            `Error occurred: ${err}`,
+            err.response.status || HttpStatus.FAILED_DEPENDENCY,
+          );
         }
 
         try {
@@ -373,10 +378,11 @@ export class PublishedDataController {
           console.error(error);
         }
 
-        return res ? res.data : null;
+        return res ? { doi: res.data } : null;
       }
     }
-    return null;
+
+    throw new NotFoundException();
   }
 
   // POST /publisheddata/:id/resync
@@ -384,9 +390,6 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
-  // @UseInterceptors(
-  //   new SetCreatedUpdatedAtInterceptor<PublishedData>("updatedAt"),
-  // )
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,
@@ -472,7 +475,7 @@ function formRegistrationXML(publishedData: PublishedData): string {
   });
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-        <resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+        <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 https://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
             <identifier identifierType="doi">${doi}</identifier>
             <creators>
                 ${creatorElements.join("\n")}

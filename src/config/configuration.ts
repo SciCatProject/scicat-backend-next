@@ -123,6 +123,8 @@ const configuration = () => ({
   },
   registerDoiUri: process.env.REGISTER_DOI_URI,
   registerMetadataUri: process.env.REGISTER_METADATA_URI,
+  doiUsername: process.env.DOI_USERNAME,
+  doiPassword: process.env.DOI_PASSWORD,
   site: process.env.SITE,
   smtp: {
     host: process.env.SMTP_HOST,
