@@ -287,7 +287,7 @@ export class UsersController {
     description:
       "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use 'expiresIn: never' for tokens that have no expiration.",
   })
-  @ApiBody({ type: CreateCustomJwt })  
+  @ApiBody({ type: CreateCustomJwt })
   @ApiResponse({
     status: 201,
     type: CreateUserJWT,
@@ -303,6 +303,9 @@ export class UsersController {
       id,
     )) as JWTUser;
 
-    return this.usersService.createCustomJWT(viewedUser, jwtProperties as JwtSignOptions);
+    return this.usersService.createCustomJWT(
+      viewedUser,
+      jwtProperties as JwtSignOptions,
+    );
   }
 }
