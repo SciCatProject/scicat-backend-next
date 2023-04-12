@@ -290,11 +290,11 @@ export class UsersService implements OnModuleInit {
   }
 
   async createCustomJWT(
-    user: JWTUser, 
-    jwtProperties: JwtSignOptions
+    user: JWTUser,
+    jwtProperties: JwtSignOptions,
   ): Promise<CreateUserJWT | null> {
     const signAndVerifyOptions = { ...jwtProperties };
-    if ( signAndVerifyOptions.expiresIn == "never" ) {
+    if (signAndVerifyOptions.expiresIn == "never") {
       delete signAndVerifyOptions.expiresIn;
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");

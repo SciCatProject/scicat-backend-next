@@ -78,8 +78,7 @@ export class UsersController {
   @AllowAny()
   @Post("jwt")
   @ApiOperation({
-    summary:
-      "It creates a new jwt token.",
+    summary: "It creates a new jwt token.",
     description:
       "It creates a new jwt token. It will be anonymous if no user is logged in.",
   })
@@ -278,16 +277,14 @@ export class UsersController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) =>
-      ability.can(Action.UserCreateJwt, User),
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.UserCreateJwt, User),
   )
   @Post("/:id/jwt")
   @ApiOperation({
-    summary:
-      "It creates a new jwt token for the user specified.",
+    summary: "It creates a new jwt token for the user specified.",
     description:
-      "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use \"expiresIn: never\" for tokens that have no expiration.",
+      "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use 'expiresIn: never' for tokens that have no expiration.",
   })
   @ApiResponse({
     status: 201,
@@ -304,7 +301,6 @@ export class UsersController {
       id,
     )) as JWTUser;
 
-    return this.usersService.createCustomJWT(viewedUser,jwtProperties);
+    return this.usersService.createCustomJWT(viewedUser, jwtProperties);
   }
-
 }

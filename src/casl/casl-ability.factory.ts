@@ -85,7 +85,6 @@ export class CaslAbilityFactory {
       can(Action.UserUpdateAny, User);
       can(Action.UserDeleteAny, User);
       can(Action.UserCreateJwt, User);
-
     } else {
       //
       // non admin users

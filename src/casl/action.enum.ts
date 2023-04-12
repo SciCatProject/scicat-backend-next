@@ -17,5 +17,5 @@ export enum Action {
   UserUpdateAny = "user_update_any",
   UserDeleteOwn = "user_update_own",
   UserDeleteAny = "user_update_any",
-  UserCreateJwt = "user_create_jwt"
+  UserCreateJwt = "user_create_jwt",
 }
