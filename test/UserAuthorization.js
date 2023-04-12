@@ -587,4 +587,87 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(401);
   });
 
+  it("0460: admin should be able to create a custom jwt token for him/her-self", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdAdmin}/jwt`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .send({
+        expiresIn: "never",
+      })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.jwt.should.be.a("string");
+      });
+  });
+
+  it("0470: admin should be able to create a custom jwt token for user 1", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdUser1}/jwt`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .send({
+        expiresIn: "never",
+      })
+      .expect(201)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.jwt.should.be.a("string");
+      });
+  });
+
+  it("0480: user1 should be not able to create a custom jwt token for him/her-self, as he/she is not an admin", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdUser1}/jwt`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .send({
+        expiresIn: "never",
+      })
+      .expect(403);
+  });
+
+  it("0490: user1 should not be able to create a custom jwt token for admin user", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdAdmin}/jwt`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .send({
+        expiresIn: "never",
+      })
+      .expect(403);
+  });
+
+  it("0500: user1 should not be able to create a custom jwt token for user2 user", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdUser2}/jwt`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .send({
+        expiresIn: "never",
+      })
+      .expect(403);
+  });
+
+  it("0510: anonymous user should not be create custom jwt token for admin user", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdAdmin}/jwt`)
+      .set("Accept", "application/json")
+      .send({
+        expiresIn: "never",
+      })
+      .expect(401);
+  });
+
+  it("0520: anonymous user should not be able to create jwt token for view user1", async () => {
+    return request(appUrl)
+      .post(`/api/v3/users/${userIdUser1}/jwt`)
+      .set("Accept", "application/json")
+      .send({
+        expiresIn: "never",
+      })
+      .expect(401);
+  });
+
 });
