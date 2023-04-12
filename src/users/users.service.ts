@@ -14,7 +14,7 @@ import { User, UserDocument } from "./schemas/user.schema";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { CreateUserRoleDto } from "./dto/create-user-role.dto";
 import { CreateUserJWT } from "./dto/create-user-jwt.dto";
-import { JwtService } from "@nestjs/jwt";
+import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 import {
@@ -284,6 +284,23 @@ export class UsersService implements OnModuleInit {
     const payload = {
       username: accessToken._id,
       groups: accessToken.currentGroups,
+    };
+    const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+    return { jwt: jwtString };
+  }
+
+  async createCustomJWT(
+    user: JWTUser, 
+    jwtProperties: JwtSignOptions
+  ): Promise<CreateUserJWT | null> {
+    const signAndVerifyOptions = { ...jwtProperties };
+    if ( signAndVerifyOptions.expiresIn == "never" ) {
+      delete signAndVerifyOptions.expiresIn;
+    }
+    signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
+    const payload = {
+      username: user._id,
+      groups: user.currentGroups,
     };
     const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
     return { jwt: jwtString };

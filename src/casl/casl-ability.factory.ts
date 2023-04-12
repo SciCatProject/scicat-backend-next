@@ -72,18 +72,24 @@ export class CaslAbilityFactory {
 
     // check if the user is an admin or not
     if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      //
+      // user that belongs to any of the group listed in ADMIN_GROUPS
       can(Action.ListAll, DatasetClass);
       can(Action.ListAll, ProposalClass);
       can(Action.Manage, DatasetClass);
       can(Action.ReadAll, UserIdentity);
-
       // -------------------------------------
       // user endpoint, including useridentity
       can(Action.UserReadAny, User);
       can(Action.UserCreateAny, User);
       can(Action.UserUpdateAny, User);
       can(Action.UserDeleteAny, User);
+      can(Action.UserCreateJwt, User);
+
     } else {
+      //
+      // non admin users
+
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
       if (
@@ -102,6 +108,11 @@ export class CaslAbilityFactory {
       can(Action.UserCreateOwn, User, { _id: user._id });
       can(Action.UserUpdateOwn, User, { _id: user._id });
       can(Action.UserDeleteOwn, User, { _id: user._id });
+      cannot(Action.UserReadAny, User);
+      cannot(Action.UserCreateAny, User);
+      cannot(Action.UserUpdateAny, User);
+      cannot(Action.UserDeleteAny, User);
+      cannot(Action.UserCreateJwt, User);
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
