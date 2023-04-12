@@ -41,6 +41,7 @@ import { CredentialsDto } from "src/auth/dto/credentials.dto";
 import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
+import { JwtSignOptions } from "@nestjs/jwt";
 //import { AuthController } from "src/auth/auth.controller";
 
 @ApiBearerAuth()
@@ -77,10 +78,9 @@ export class UsersController {
   @AllowAny()
   @Post("jwt")
   @ApiOperation({
-    summary:
-      "It creates a new jwt token or return the current one for logged in users.",
+    summary: "It creates a new jwt token.",
     description:
-      "It creates a new jwt token or return the current one for logged in users.",
+      "It creates a new jwt token. It will be anonymous if no user is logged in.",
   })
   @ApiResponse({
     status: 201,
@@ -274,5 +274,33 @@ export class UsersController {
   @Get("logout")
   async logout(@Req() req: Request, @Res() res: Response) {
     return await this.authService.logout(req, res);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.UserCreateJwt, User),
+  )
+  @Post("/:id/jwt")
+  @ApiOperation({
+    summary: "It creates a new jwt token for the user specified.",
+    description:
+      "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use 'expiresIn: never' for tokens that have no expiration.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: CreateUserJWT,
+    description:
+      "Create a new JWT token for specified user with custom properties",
+  })
+  async createCustomJWT(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() jwtProperties: JwtSignOptions,
+  ): Promise<CreateUserJWT | null> {
+    const viewedUser = (await this.usersService.findById2JWTUser(
+      id,
+    )) as JWTUser;
+
+    return this.usersService.createCustomJWT(viewedUser, jwtProperties);
   }
 }
