@@ -293,9 +293,11 @@ export class UsersService implements OnModuleInit {
     user: JWTUser,
     jwtProperties: JwtSignOptions,
   ): Promise<CreateUserJWT | null> {
-    const signAndVerifyOptions = { ...jwtProperties };
+    const signAndVerifyOptions: JwtSignOptions = { ...jwtProperties } as JwtSignOptions;
     if (signAndVerifyOptions.expiresIn == "never") {
       delete signAndVerifyOptions.expiresIn;
+    } else if ( typeof signAndVerifyOptions.expiresIn === 'string' && signAndVerifyOptions.expiresIn && !isNaN(signAndVerifyOptions.expiresIn as any) ) {
+      signAndVerifyOptions.expiresIn = parseInt(signAndVerifyOptions.expiresIn);
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
     const payload = {
