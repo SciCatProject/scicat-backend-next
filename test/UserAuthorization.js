@@ -617,7 +617,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       });
   });
 
-  it("0480: user1 should be able to create a custom jwt token for him/her-self", async () => {
+  it("0480: user1 should be not able to create a custom jwt token for him/her-self, as he/she is not an admin", async () => {
     return request(appUrl)
       .post(`/api/v3/users/${userIdUser1}/jwt`)
       .set("Accept", "application/json")
@@ -625,11 +625,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(201)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.jwt.should.be.a("string");
-      });
+      .expect(403);
   });
 
   it("0490: user1 should not be able to create a custom jwt token for admin user", async () => {
@@ -640,7 +636,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(401);
+      .expect(403);
   });
 
   it("0500: user1 should not be able to create a custom jwt token for user2 user", async () => {
@@ -651,7 +647,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(401);
+      .expect(403);
   });
 
   it("0510: anonymous user should not be create custom jwt token for admin user", async () => {
