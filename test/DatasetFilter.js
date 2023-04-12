@@ -747,7 +747,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("Adding EQUAL_TO_NUMERIC condition on the fullquery endpoint should work", async () => {
+  it("Adding EQUAL_TO_STRING condition on the fullquery endpoint should work", async () => {
     const fields = {
       mode: {},
       scientific: [
