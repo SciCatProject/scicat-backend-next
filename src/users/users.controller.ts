@@ -299,13 +299,17 @@ export class UsersController {
     @Param("id") id: string,
     @Body() jwtProperties: CreateCustomJwt,
   ): Promise<CreateUserJWT | null> {
-    const viewedUser = (await this.usersService.findById2JWTUser(
-      id,
-    )) as JWTUser;
+    const viewedUser = (await this.usersService.findById(id)) as Omit<
+      User,
+      "password"
+    >;
 
-    return this.usersService.createCustomJWT(
-      viewedUser,
-      jwtProperties as JwtSignOptions,
-    );
+    if (viewedUser) {
+      return this.usersService.createCustomJWT(
+        JSON.parse(JSON.stringify(viewedUser)),
+        jwtProperties as JwtSignOptions,
+      );
+    }
+    return null;
   }
 }
