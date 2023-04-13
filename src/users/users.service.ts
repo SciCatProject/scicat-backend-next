@@ -290,27 +290,27 @@ export class UsersService implements OnModuleInit {
   }
 
   async createCustomJWT(
-    user: JWTUser,
+    user: Omit<User, "password">,
     jwtProperties: JwtSignOptions,
   ): Promise<CreateUserJWT | null> {
     const signAndVerifyOptions: JwtSignOptions = {
       ...jwtProperties,
     } as JwtSignOptions;
     if (signAndVerifyOptions.expiresIn == "never") {
-      delete signAndVerifyOptions.expiresIn;
+      signAndVerifyOptions.expiresIn =
+        this.configService.get<string>("jwt.neverExpires") || "100y";
     } else if (
       typeof signAndVerifyOptions.expiresIn === "string" &&
       signAndVerifyOptions.expiresIn &&
       !isNaN(+signAndVerifyOptions.expiresIn)
     ) {
       signAndVerifyOptions.expiresIn = parseInt(signAndVerifyOptions.expiresIn);
+    } else if (!signAndVerifyOptions.expiresIn) {
+      signAndVerifyOptions.expiresIn =
+        this.configService.get<string>("jwt.expiresIn") || "1h";
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
-    const payload = {
-      username: user._id,
-      groups: user.currentGroups,
-    };
-    const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
+    const jwtString = this.jwtService.sign(user, signAndVerifyOptions);
     return { jwt: jwtString };
   }
 }

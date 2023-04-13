@@ -80,6 +80,7 @@ const configuration = () => ({
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: parseInt(process.env.JWT_EXPIRES_IN ?? "3600", 10),
+    neverExpires: process.env.JWT_NEVER_EXPIRES ?? "100y",
   },
   ldap: {
     server: {
