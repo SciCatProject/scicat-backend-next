@@ -42,6 +42,7 @@ import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
+import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 //import { AuthController } from "src/auth/auth.controller";
 
 @ApiBearerAuth()
@@ -286,6 +287,7 @@ export class UsersController {
     description:
       "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use 'expiresIn: never' for tokens that have no expiration.",
   })
+  @ApiBody({ type: CreateCustomJwt })
   @ApiResponse({
     status: 201,
     type: CreateUserJWT,
@@ -295,12 +297,15 @@ export class UsersController {
   async createCustomJWT(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() jwtProperties: JwtSignOptions,
+    @Body() jwtProperties: CreateCustomJwt,
   ): Promise<CreateUserJWT | null> {
     const viewedUser = (await this.usersService.findById2JWTUser(
       id,
     )) as JWTUser;
 
-    return this.usersService.createCustomJWT(viewedUser, jwtProperties);
+    return this.usersService.createCustomJWT(
+      viewedUser,
+      jwtProperties as JwtSignOptions,
+    );
   }
 }
