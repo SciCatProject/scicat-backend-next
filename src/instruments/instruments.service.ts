@@ -21,10 +21,12 @@ export class InstrumentsService {
 
   async findAll(filter: IFilters<InstrumentDocument>): Promise<Instrument[]> {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<InstrumentDocument> =
+      filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     const instrumentPromise = this.instrumentModel
-      .find(whereFilter)
+      .find(whereFilter, fieldsProjection)
       .limit(limit)
       .skip(skip)
       .sort(sort);

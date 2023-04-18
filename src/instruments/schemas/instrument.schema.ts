@@ -40,10 +40,11 @@ export class Instrument {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The name of the instrument.",
+    description: "The name of the instrument. The name has to be unique.",
   })
   @Prop({
     type: String,
+    unique: true,
     required: true,
   })
   name: string;
