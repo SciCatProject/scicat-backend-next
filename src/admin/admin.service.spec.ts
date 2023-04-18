@@ -21,6 +21,7 @@ describe("PoliciesService", () => {
             exec: jest.fn(),
           },
         },
+        AdminService,
       ],
     }).compile();
 
