@@ -15,7 +15,12 @@ export enum Action {
   UserCreateAny = "user_create_any",
   UserUpdateOwn = "user_update_own",
   UserUpdateAny = "user_update_any",
-  UserDeleteOwn = "user_update_own",
-  UserDeleteAny = "user_update_any",
+  UserDeleteOwn = "user_delete_own",
+  UserDeleteAny = "user_delete_any",
   UserCreateJwt = "user_create_jwt",
+  // Instrument actions
+  InstrumentRead = "instrument_read",
+  InstrumentUpdate = "instrument_update",
+  InstrumentCreate = "instrument_create",
+  InstrumentDelete = "instrument_delete",
 }
