@@ -85,6 +85,12 @@ export class CaslAbilityFactory {
       can(Action.UserUpdateAny, User);
       can(Action.UserDeleteAny, User);
       can(Action.UserCreateJwt, User);
+      // -------------------------------------
+      // instrument
+      can(Action.InstrumentRead, Instrument);
+      can(Action.InstrumentCreate, Instrument);
+      can(Action.InstrumentUpdate, Instrument);
+      cannot(Action.InstrumentDelete, Instrument);
     } else {
       //
       // non admin users
@@ -112,6 +118,12 @@ export class CaslAbilityFactory {
       cannot(Action.UserUpdateAny, User);
       cannot(Action.UserDeleteAny, User);
       cannot(Action.UserCreateJwt, User);
+      // -------------------------------------
+      // instrument
+      can(Action.InstrumentRead, Instrument);
+      cannot(Action.InstrumentCreate, Instrument);
+      cannot(Action.InstrumentUpdate, Instrument);
+      cannot(Action.InstrumentDelete, Instrument);
     }
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
@@ -136,10 +148,10 @@ export class CaslAbilityFactory {
     );
 
     // Instrument permissions
-    can(Action.Read, Instrument);
-    if (user.currentGroups.some((g) => adminGroups.includes(g))) {
-      can(Action.Manage, Instrument);
-    }
+    //can(Action.Read, Instrument);
+    //if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+    //  can(Action.Manage, Instrument);
+    //}
 
     can(Action.Manage, Job);
 
@@ -186,10 +198,12 @@ export class CaslAbilityFactory {
       cannot(Action.Update, Datablock);
       can(Action.Delete, Datablock);
       can(Action.Delete, PublishedData);
-      // instruments
-      cannot(Action.Create, Instrument);
-      cannot(Action.Update, Instrument);
-      can(Action.Delete, Instrument);
+      //--------------------------------
+      // instrument
+      cannot(Action.InstrumentRead, Instrument);
+      cannot(Action.InstrumentCreate, Instrument);
+      cannot(Action.InstrumentUpdate, Instrument);
+      can(Action.InstrumentDelete, Instrument);
     }
     //if (user.currentGroups.includes(Role.GlobalAccess)) {
     //  can(Action.Read, "all");

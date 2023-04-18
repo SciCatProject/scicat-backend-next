@@ -9,6 +9,8 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
+  HttpException,
+  HttpStatus,
 } from "@nestjs/common";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
@@ -41,7 +43,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, Instrument),
+    ability.can(Action.InstrumentCreate, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -50,11 +52,23 @@ export class InstrumentsController {
   async create(
     @Body() createInstrumentDto: CreateInstrumentDto,
   ): Promise<Instrument> {
-    return this.instrumentsService.create(createInstrumentDto);
+    try {
+      const instrument = await this.instrumentsService.create(
+        createInstrumentDto,
+      );
+      return instrument;
+    } catch (e) {
+      throw new HttpException(
+        "Instrument with the same name already exists",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Instrument))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
   @Get()
   @ApiQuery({
     name: "filter",
@@ -70,7 +84,9 @@ export class InstrumentsController {
 
   // GET /instrument/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Instrument))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns the first instrument found.",
@@ -98,15 +114,17 @@ export class InstrumentsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Instrument))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
   @Get(":id")
   async findById(@Param("id") pid: string): Promise<Instrument | null> {
-    return this.instrumentsService.findOne({ pid });
+    return this.instrumentsService.findOne({ where: { _id: pid } });
   }
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, Instrument),
+    ability.can(Action.InstrumentUpdate, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -116,12 +134,12 @@ export class InstrumentsController {
     @Param("id") id: string,
     @Body() updateInstrumentDto: UpdateInstrumentDto,
   ): Promise<Instrument | null> {
-    return this.instrumentsService.update({ id }, updateInstrumentDto);
+    return this.instrumentsService.update({ _id: id }, updateInstrumentDto);
   }
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, Instrument),
+    ability.can(Action.InstrumentDelete, Instrument),
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {

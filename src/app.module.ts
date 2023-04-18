@@ -29,6 +29,7 @@ import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handleba
 import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
     PublishedDataModule,
     SamplesModule,
     UsersModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [
