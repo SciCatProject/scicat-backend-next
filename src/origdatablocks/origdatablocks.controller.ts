@@ -128,9 +128,7 @@ export class OrigDatablocksController {
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    const dataFileList: OrigDatablockFileList[] = [];
-
-    const origdatablockList = await this.origDatablocksService.fullqueryFiles(
+    const origdatablockList = await this.origDatablocksService.fullquery(
       parsedFilters,
     );
 
@@ -141,10 +139,11 @@ export class OrigDatablocksController {
 
     if (!origdatablockListCopy) return null;
 
-    origdatablockListCopy.forEach((data) => {
-      (data.dataFileList as DataFile[]).forEach((file) => {
-        dataFileList.push({ ...data, dataFileList: file });
-      });
+    const dataFileList = origdatablockListCopy.flatMap((data) => {
+      return data.dataFileList.map((file) => ({
+        ...data,
+        dataFileList: file,
+      }));
     });
 
     return dataFileList;

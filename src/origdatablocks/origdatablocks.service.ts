@@ -66,23 +66,6 @@ export class OrigDatablocksService {
 
     return origDatablocks;
   }
-  async fullqueryFiles(
-    filter: IFilters<OrigDatablockDocument, IOrigDatablockFields>,
-  ): Promise<OrigDatablock[] | null> {
-    const filterQuery: FilterQuery<OrigDatablockDocument> =
-      createFullqueryFilter<OrigDatablockDocument>(
-        this.origDatablockModel,
-        "_id",
-        filter.fields as FilterQuery<OrigDatablockDocument>,
-      );
-    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-
-    const origDatablocksWithFiles = await this.origDatablockModel
-      .find(filterQuery, null, modifiers)
-      .exec();
-
-    return origDatablocksWithFiles;
-  }
 
   async update(
     filter: FilterQuery<OrigDatablockDocument>,
