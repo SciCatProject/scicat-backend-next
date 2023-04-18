@@ -712,13 +712,34 @@ const TestData = {
     status: "pending_registration",
   },
 
-  InstrumentCorrect: {
+  InstrumentCorrect1: {
     name: "ESS1",
     customMetadata: {
-      institute: "An immaginary intitution",
-      department: "An immaginary department",
+      institute: "An immaginary intitution #1",
+      department: "An immaginary department #1",
+      main_user: "ESS",
     },
   },
+  InstrumentCorrect2: {
+    name: "ESS2",
+    customMetadata: {
+      institute: "An immaginary intitution #2",
+      department: "An immaginary department #2",
+      main_user: "ESS",
+    },
+  },
+  InstrumentCorrect3: {
+    name: "ESS3",
+    customMetadata: {
+      institute: "An immaginary intitution #3",
+      department: "An immaginary department #3",
+      main_user: "somebody else",
+    },
+  },
+  InstrumentWrong1: {
+    instrumentName: "ESS-wrong",
+  },
+
 };
 
 module.exports = { TestData };
