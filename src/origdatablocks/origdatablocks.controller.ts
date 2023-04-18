@@ -22,12 +22,14 @@ import { Action } from "src/casl/action.enum";
 import {
   OrigDatablock,
   OrigDatablockDocument,
+  OrigDatablockFileList,
 } from "./schemas/origdatablock.schema";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
+import { DataFile } from "src/common/schemas/datafile.schema";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -102,7 +104,50 @@ export class OrigDatablocksController {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
+
     return this.origDatablocksService.fullquery(parsedFilters);
+  }
+
+  // GET /origdatablocks/fullquery/files
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, OrigDatablock),
+  )
+  @Get("/fullquery/files")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Database query and filters to apply when retrieve all origdatablocks with files",
+    required: false,
+  })
+  async fullqueryFiles(
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<OrigDatablockFileList[] | null> {
+    const parsedFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.limits ?? "{}"),
+    };
+
+    const dataFileList: OrigDatablockFileList[] = [];
+
+    const origdatablockList = await this.origDatablocksService.fullqueryFiles(
+      parsedFilters,
+    );
+
+    // This conversion process is needed to get output directly rather than from _doc
+    const origdatablockListCopy: OrigDatablock[] | null = JSON.parse(
+      JSON.stringify(origdatablockList),
+    );
+
+    if (!origdatablockListCopy) return null;
+
+    origdatablockListCopy.forEach((data) => {
+      (data.dataFileList as DataFile[]).forEach((file) => {
+        dataFileList.push({ ...data, dataFileList: file });
+      });
+    });
+
+    return dataFileList;
   }
 
   // GET /origdatablocks/:id
