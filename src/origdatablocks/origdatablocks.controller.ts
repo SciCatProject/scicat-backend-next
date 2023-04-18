@@ -29,7 +29,6 @@ import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
-import { DataFile } from "src/common/schemas/datafile.schema";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
