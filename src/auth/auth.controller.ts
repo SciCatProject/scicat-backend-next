@@ -84,6 +84,10 @@ export class AuthController {
     );
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);
+    url.searchParams.append(
+      "returnUrl",
+      this.configService.get<OidcConfig>("oidc")?.returnURL || "/datasets",
+    );
     res.redirect(url.toString());
   }
 
