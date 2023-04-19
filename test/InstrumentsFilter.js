@@ -22,23 +22,24 @@ let instrumentPid1 = null,
 
 
 const InstrumentCorrect1 = {
-  ...TestData.InstrumentCorrect,
+  ...TestData.InstrumentCorrect1,
   name: "ESS instrument one",
 };
   
 const InstrumentCorrect2 = {
-  ...TestData.InstrumentCorrect,
+  ...TestData.InstrumentCorrect2,
   name: "ESS instrument two",
 };
 
 const InstrumentCorrect3 = {
-  ...TestData.InstrumentCorrect,
+  ...TestData.InstrumentCorrect3,
   name: "Another instrument at ESS, number three",
 };
   
 const InstrumentCorrect4 = {
-  ...TestData.InstrumentCorrect,
-  name: "Yet another instrument at ESS, number four",
+  ...TestData.InstrumentCorrect3,
+  uniqueName: "ESS3-2",
+  name: "Yet another instrument at ESS, a new number three different from the other",
 };
 
 describe("InstrumentFilter: Test retrieving instruments using filtering capabilities", () => {
