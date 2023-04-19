@@ -7,6 +7,7 @@ import { Instrument } from "./schemas/instrument.schema";
 const mockInstrument: Instrument = {
   _id: "testPid",
   pid: "testPid",
+  uniqueName: "Test",
   name: "Test",
   customMetadata: {},
 };

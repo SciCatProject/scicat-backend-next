@@ -40,7 +40,8 @@ export class Instrument {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The unique name of the instrument. This name has to be unique within the scicat instance.",
+    description: 
+      "The unique name of the instrument. This name has to be unique within the scicat instance.",
   })
   @Prop({
     type: String,
@@ -52,7 +53,8 @@ export class Instrument {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The common name of the instrument. This name can be non unique as it is the name that users use to commnoly refer to this instrument.",
+    description: 
+      "The common name of the instrument. This name can be non unique as it is the name that users use to commnoly refer to this instrument.",
   })
   @Prop({
     type: String,
