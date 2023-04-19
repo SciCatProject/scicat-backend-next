@@ -5,6 +5,9 @@ import { v4 as uuidv4 } from "uuid";
 import { DataFile, DataFileSchema } from "../../common/schemas/datafile.schema";
 
 export type OrigDatablockDocument = OrigDatablock & Document;
+export type OrigDatablockFileList = Omit<OrigDatablock, "dataFileList"> & {
+  dataFileList: DataFile;
+};
 
 @Schema({
   collection: "OrigDatablock",
