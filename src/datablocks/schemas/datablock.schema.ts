@@ -28,7 +28,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,
-    description: "PID of the dataset to which the datablock belongs",
+    description: "PID of the dataset to which the datablock belongs.",
   })
   @Prop({ type: String, ref: "Dataset", required: true })
   datasetId: string;
@@ -36,7 +36,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: String,
     description:
-      "Unique identifier given bey archive system to the stored datablock. This id is used when data is retrieved back.",
+      "Unique identifier given by the archive system to the stored datablock. This id is used when data is retrieved back.",
   })
   @Prop({
     type: String,
@@ -49,7 +49,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: Number,
     required: true,
-    description: "Total size in bytes of all files in datablock when unpacked",
+    description: "Total size in bytes of all files in the datablock when unpacked.",
   })
   @Prop({
     type: Number,
@@ -60,7 +60,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: Number,
     required: true,
-    description: "Size of datablock package file",
+    description: "Size of the datablock package file.",
   })
   @Prop({
     type: Number,
@@ -70,7 +70,8 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     type: String,
-    description: "Algoritm used for calculation of checksums, e.g. sha2",
+    description:
+      "Algorithm used for calculation of file checksums. Should be lowercase, e.g., sha2 or blake2b.",
   })
   @Prop({
     type: String,
@@ -81,7 +82,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: String,
     description:
-      "Version string defining format of how data is packed and stored in archive",
+      "Version string defining the format of how data is packed and stored in archive.",
   })
   @Prop({
     type: String,
@@ -91,7 +92,7 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     description:
-      "Embedded schema definition for which fields are required for each file",
+      "Embedded schema definition for which fields are required for each file.",
   })
   @Prop([DataFileSchema])
   dataFileList: DataFile[];
