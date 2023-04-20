@@ -135,7 +135,10 @@ export class InstrumentsController {
     @Body() updateInstrumentDto: UpdateInstrumentDto,
   ): Promise<Instrument | null> {
     try {
-      const instrument = await this.instrumentsService.update({ _id: id }, updateInstrumentDto);
+      const instrument = await this.instrumentsService.update(
+        { _id: id },
+        updateInstrumentDto,
+      );
       return instrument;
     } catch (e) {
       throw new HttpException(
