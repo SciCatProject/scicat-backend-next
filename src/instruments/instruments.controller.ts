@@ -59,7 +59,7 @@ export class InstrumentsController {
       return instrument;
     } catch (e) {
       throw new HttpException(
-        "Instrument with the same name already exists",
+        "Instrument with the same unique name already exists",
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -134,7 +134,18 @@ export class InstrumentsController {
     @Param("id") id: string,
     @Body() updateInstrumentDto: UpdateInstrumentDto,
   ): Promise<Instrument | null> {
-    return this.instrumentsService.update({ _id: id }, updateInstrumentDto);
+    try {
+      const instrument = await this.instrumentsService.update(
+        { _id: id },
+        updateInstrumentDto,
+      );
+      return instrument;
+    } catch (e) {
+      throw new HttpException(
+        "Instrument with the same unique name already exists",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @UseGuards(PoliciesGuard)

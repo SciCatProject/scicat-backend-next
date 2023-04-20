@@ -713,6 +713,7 @@ const TestData = {
   },
 
   InstrumentCorrect1: {
+    uniqueName: "ESS1-1",
     name: "ESS1",
     customMetadata: {
       institute: "An immaginary intitution #1",
@@ -721,6 +722,7 @@ const TestData = {
     },
   },
   InstrumentCorrect2: {
+    uniqueName: "ESS2-1",
     name: "ESS2",
     customMetadata: {
       institute: "An immaginary intitution #2",
@@ -729,7 +731,8 @@ const TestData = {
     },
   },
   InstrumentCorrect3: {
-    name: "ESS3",
+    uniqueName: "ESS3-1",
+    name: "ESS1",
     customMetadata: {
       institute: "An immaginary intitution #3",
       department: "An immaginary department #3",
@@ -737,7 +740,7 @@ const TestData = {
     },
   },
   InstrumentWrong1: {
-    instrumentName: "ESS-wrong",
+    name: "ESS-wrong",
   },
 
 };

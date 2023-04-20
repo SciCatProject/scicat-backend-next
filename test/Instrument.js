@@ -14,7 +14,7 @@ let accessTokenIngestor = null,
   instrumentId3 = null,
   encodedInstrumentId3 = null;
 
-const newName = "ESS2.5";
+const newName = "ESS3-1";
 
 describe("0900: Instrument: instrument management, creation, update, deletion and search", () => {
   beforeEach((done) => {
@@ -105,7 +105,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       });
   });
 
-  it("0040: adds instrument #2 again as ingestor, which should fail", async () => {
+  it("0040: adds instrument #2 again as ingestor, which should fail because uniqueName is not unique", async () => {
     return request(appUrl)
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentCorrect2)
@@ -114,7 +114,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .expect(400);
   });
 
-  it("0050: adds invalid instrument as ingestor, which should fail", async () => {
+  it("0050: adds invalid instrument as ingestor, which should fail because it is missing the uniqeName", async () => {
     return request(appUrl)
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentWrong1)
@@ -273,6 +273,15 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
         res.body.should.have.property("name").and.be.equal(newName);
         res.body.should.have.property("pid").and.be.equal(instrumentId2);
       });
+  });
+
+  it("0155: update unique name for instrument #2 as ingestor to ESS3-1, which should fail becuase is not unique ", async () => {
+    return request(appUrl)
+      .patch("/api/v3/Instruments/" + instrumentId2)
+      .send({ uniqueName: newName })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400);
   });
 
   it("0160: should fetch same instrument by id as ingestor", async () => {

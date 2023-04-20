@@ -5,6 +5,14 @@ import { IsObject, IsOptional, IsString } from "class-validator";
 export class CreateInstrumentDto {
   @ApiProperty({
     type: String,
+    uniqueItems: true,
+    required: true,
+  })
+  @IsString()
+  readonly uniqueName: string;
+
+  @ApiProperty({
+    type: String,
     required: true,
   })
   @IsString()
