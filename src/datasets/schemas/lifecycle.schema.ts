@@ -69,7 +69,7 @@ export class LifecycleClass {
     type: Date,
     required: false,
     description:
-      "Day when dataset is supposed to become public according to data policy",
+      "Day when dataset is supposed to become public according to data policy.",
   })
   @Prop({
     type: Date,
@@ -97,7 +97,7 @@ export class LifecycleClass {
     type: Boolean,
     required: false,
     description:
-      "Flag indicating if full dataset is available on central fileserver. If false data needs to be copied from decentral storage place to  a cache server before the ingest. This information needs to be transferred to the archive system at archive time",
+      "Flag indicating if full dataset is available on central fileserver. If false, data needs to be copied from decentral storage places to a cache server before the ingest. This information needs to be transferred to the archive system at archive time.",
   })
   @Prop({ default: true, required: false })
   isOnCentralDisk?: boolean;
@@ -107,7 +107,7 @@ export class LifecycleClass {
     required: false,
     default: "",
     description:
-      "Short string defining current status of Dataset with respect to storage on disk/tape.",
+      "Short string defining the current status of the dataset with respect to storage on disk/tape.",
   })
   @Prop({ default: "datasetCreated", required: false, index: true })
   archiveStatusMessage?: string;
@@ -117,7 +117,7 @@ export class LifecycleClass {
     required: false,
     default: "",
     description:
-      "Latest message for this dataset concerning retrieve from archive system.",
+      "Latest message for this dataset concerning retrieval from archive system.",
   })
   @Prop({ required: false, index: true, default: "" })
   retrieveStatusMessage?: string;
@@ -127,7 +127,7 @@ export class LifecycleClass {
     required: false,
     default: {},
     description:
-      "Detailed status or error message returned by archive system when archiving this dataset.",
+      "Detailed status or error message returned by the archive system when archiving this dataset.",
   })
   @Prop({ type: Object, required: false, default: {} })
   archiveReturnMessage?: unknown;
@@ -137,7 +137,7 @@ export class LifecycleClass {
     required: false,
     default: {},
     description:
-      "Detailed status or error message returned by archive system when retrieving this dataset.",
+      "Detailed status or error message returned by the archive system when retrieving this dataset.",
   })
   @Prop({ type: Object, required: false, default: {} })
   retrieveReturnMessage?: unknown;
@@ -155,7 +155,7 @@ export class LifecycleClass {
     required: false,
     default: false,
     description:
-      "Set to true when checksum tests after retrieve of datasets were successful",
+      "Set to true when checksum tests after retrieve of datasets were successful.",
   })
   @Prop({ type: Boolean, default: false, required: false })
   retrieveIntegrityCheck?: boolean;

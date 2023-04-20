@@ -72,7 +72,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: true,
     description:
-      "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons.",
+      "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons.",
   })
   @Prop({
     type: String,
@@ -85,7 +85,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
   @Prop({
     type: String,
@@ -97,7 +97,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons.",
+      "ORCID of the owner or custodian. The string may contain a list of ORCIDs, which should then be separated by semicolons.",
   })
   @Prop({
     type: String,
@@ -109,7 +109,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: true,
     description:
-      "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
   @Prop({
     type: String,
@@ -139,7 +139,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com",
+      "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com",
   })
   @Prop({
     type: String,
@@ -153,7 +153,7 @@ export class DatasetClass extends OwnableClass {
     default: 0,
     required: true,
     description:
-      "Total size of all source files contained in source folder on disk when unpacked",
+      "Total size of all source files contained in source folder on disk when unpacked.",
   })
   @Prop({
     type: Number,
@@ -168,7 +168,7 @@ export class DatasetClass extends OwnableClass {
     default: 0,
     required: false,
     description:
-      "Total size of all datablock package files created for this dataset",
+      "Total size of all datablock package files created for this dataset.",
   })
   @Prop({ type: Number, required: false, default: 0 })
   packedSize?: number = 0;
@@ -178,7 +178,7 @@ export class DatasetClass extends OwnableClass {
     default: 0,
     required: true,
     description:
-      "Total number of lines in filelisting of all OrigDatablocks for this dataset",
+      "Total number of files in all OrigDatablocks for this dataset.",
   })
   @Prop({ type: Number, required: true, default: 0 })
   numberOfFiles: number;
@@ -187,8 +187,7 @@ export class DatasetClass extends OwnableClass {
     type: Number,
     default: 0,
     required: false,
-    description:
-      "Total number of lines in filelisting of all Datablocks for this dataset",
+    description: "Total number of files in all Datablocks for this dataset.",
   })
   @Prop({ type: Number, default: 0, required: false })
   numberOfFilesArchived: number;
@@ -207,7 +206,7 @@ export class DatasetClass extends OwnableClass {
     required: true,
     enum: [DatasetType.Raw, DatasetType.Derived],
     description:
-      "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models",
+      "Characterize type of dataset, either 'raw' or 'derived'. Autofilled when choosing the proper inherited models.",
   })
   @Prop({
     type: String,
@@ -221,7 +220,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons",
+      "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons.",
   })
   @Prop({ type: String, required: false })
   validationStatus?: string;
@@ -230,7 +229,7 @@ export class DatasetClass extends OwnableClass {
     type: [String],
     required: false,
     description:
-      "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs",
+      "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs.",
   })
   @Prop({ type: [String], required: false })
   keywords: string[];
@@ -238,7 +237,7 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Free text explanation of contents of dataset",
+    description: "Free text explanation of contents of dataset.",
   })
   @Prop({ type: String, required: false })
   description?: string;
@@ -247,7 +246,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder",
+      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder.",
   })
   @Prop({
     type: String,
@@ -274,7 +273,7 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Name of license under which data can be used",
+    description: "Name of the license under which the data can be used.",
   })
   @Prop({ type: String, required: false })
   license?: string;
@@ -282,7 +281,7 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Version of API used in creation of dataset",
+    description: "Version of the API used in creation of the dataset.",
   })
   @Prop({ type: String, required: false })
   version?: string;
@@ -291,7 +290,7 @@ export class DatasetClass extends OwnableClass {
     type: Boolean,
     required: true,
     default: true,
-    description: "Flag is true when data are made publically available",
+    description: "Flag is true when data are made publicly available.",
   })
   @Prop({ type: Boolean, required: true, default: false })
   isPublished: boolean;
@@ -299,7 +298,7 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: HistoryClass,
     required: false,
-    description: "List of objects containing old value and new value",
+    description: "List of objects containing old and new values.",
   })
   @Prop({ type: [HistorySchema], required: false })
   history?: HistoryClass[];
@@ -309,7 +308,7 @@ export class DatasetClass extends OwnableClass {
     required: false,
     default: {},
     description:
-      "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
+      "Describes the current status of the dataset during its lifetime with respect to the storage handling systems.",
   })
   @Prop({ type: LifecycleSchema, default: {}, required: false })
   datasetlifecycle?: LifecycleClass;
@@ -319,7 +318,7 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(TechniqueClass) },
     required: false,
     default: [],
-    description: "Stores the metadata information for techniques",
+    description: "Stores the metadata information for techniques.",
   })
   @Prop({ type: [TechniqueSchema], required: false, default: [] })
   techniques?: TechniqueClass[];
@@ -329,7 +328,7 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(RelationshipClass) },
     required: false,
     default: [],
-    description: "Stores the relationships with other datasets",
+    description: "Stores the relationships with other datasets.",
   })
   @Prop({ type: [RelationshipSchema], required: false, default: [] })
   relationships?: RelationshipClass[];
@@ -338,7 +337,7 @@ export class DatasetClass extends OwnableClass {
     type: [String],
     required: false,
     default: [],
-    description: "List of users that the dataset has been shared with",
+    description: "List of users that the dataset has been shared with.",
   })
   @Prop({
     type: [String],
@@ -352,7 +351,7 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(Attachment) },
     required: false,
     description:
-      "Small less than 16 MB attachments, envisaged for png/jpeg previews",
+      "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
   })
   @Prop({ type: [AttachmentSchema], default: [] })
   attachments?: Attachment[];
@@ -363,7 +362,7 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(OrigDatablock) },
     required: false,
     description:
-      "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
+      "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
   })
   @Prop({ type: [OrigDatablockSchema], default: [] })
   origdatablocks: OrigDatablock[];
@@ -374,7 +373,7 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(Datablock) },
     required: false,
     description:
-      "When archiving a dataset all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a dataset consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
+      "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
   })
   @Prop({ type: [DatablockSchema], default: [] })
   datablocks: Datablock[];
@@ -383,7 +382,7 @@ export class DatasetClass extends OwnableClass {
     type: Object,
     required: false,
     default: {},
-    description: "JSON object containing the scientific metadata",
+    description: "JSON object containing the scientific metadata.",
   })
   @Prop({ type: Object, required: false, default: {} })
   scientificMetadata?: Record<string, unknown>;
@@ -404,7 +403,7 @@ export class DatasetClass extends OwnableClass {
     type: Date,
     required: false,
     description:
-      "Time of end of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset",
+      "End time of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
   @Prop({ type: Date, required: false })
   endTime?: Date;
@@ -422,7 +421,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "Defines format of subsequent scientific meta data, e.g Nexus Version x.y.This field is required if the dataset is a Raw dataset.",
+      "Defines the format of the data files in this dataset, e.g Nexus Version x.y.",
   })
   @Prop({ type: String, required: false })
   dataFormat?: string;
@@ -446,7 +445,7 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "ID of instrument where the data was created",
+    description: "ID of the instrument where the data was created.",
   })
   @Prop({ type: String, ref: "Instrument", required: false })
   instrumentId?: string;
@@ -458,7 +457,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "First name and last name of person or people pursuing the data analysis. The string may contain a list of emails, which should then be separated by semicolons. This field is required if the dataset is a Derived dataset.",
+      "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
   })
   @Prop({ type: String, required: false, index: true })
   investigator?: string;
@@ -476,7 +475,7 @@ export class DatasetClass extends OwnableClass {
     type: [String],
     required: false,
     description:
-      "A list of links to software repositories which uniquely identifies the software used and the version for yielding the derived data. This field is required if the dataset is a Derived dataset.",
+      "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data. This field is required if the dataset is a Derived dataset.",
   })
   @Prop({ type: [String], required: false })
   usedSoftware?: string[];
@@ -485,7 +484,7 @@ export class DatasetClass extends OwnableClass {
     type: Object,
     required: false,
     description:
-      "The creation process of the drived data will usually depend on input job parameters. The full structure of these input parameters are stored here",
+      "The creation process of the derived data will usually depend on input job parameters. The full structure of these input parameters are stored here.",
   })
   @Prop({ type: Object, required: false })
   jobParameters?: Record<string, unknown>;
@@ -494,7 +493,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "The output job logfile. Keep the size of this log data well below 15 MB ",
+      "The output job logfile. Keep the size of this log data well below 15 MB.",
   })
   @Prop({ type: String, required: false })
   jobLogData?: string;

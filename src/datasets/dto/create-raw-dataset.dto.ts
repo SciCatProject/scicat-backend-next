@@ -8,7 +8,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
     type: String,
     required: true,
     description:
-      "Email of principal investigator. This field is required if the dataset is a Raw dataset.",
+      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
   })
   @IsString()
   readonly principalInvestigator: string;
@@ -17,7 +17,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
     type: Date,
     required: false,
     description:
-      "Time of end of data taking for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server. This field is required if the dataset is a Raw dataset",
+      "End time of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
   @IsOptional()
   @IsDateString()
@@ -36,7 +36,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
     type: String,
     required: false,
     description:
-      "Defines format of subsequent scientific meta data, e.g Nexus Version x.y.This field is required if the dataset is a Raw dataset.",
+      "Defines the format of the data files in this dataset, e.g Nexus Version x.y.",
   })
   @IsOptional()
   @IsString()
@@ -63,7 +63,7 @@ export class CreateRawDatasetDto extends CreateDatasetDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "ID of instrument where the data was created",
+    description: "ID of the instrument where the data was created.",
   })
   @IsOptional()
   @IsString()

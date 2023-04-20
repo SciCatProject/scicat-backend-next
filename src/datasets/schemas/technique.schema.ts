@@ -10,7 +10,7 @@ export class TechniqueClass {
     type: String,
     required: true,
     description:
-      "Persistent Identifier of the technique. Usually it is a UUIDv4",
+      "Persistent Identifier of the technique. Usually it is a UUIDv4.",
   })
   @Prop({ type: String, required: true, sparse: true })
   pid: string;
@@ -18,7 +18,7 @@ export class TechniqueClass {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The name of the technique",
+    description: "The name of the technique.",
   })
   @Prop({ type: String, required: true })
   name: string;
