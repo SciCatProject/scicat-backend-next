@@ -3,10 +3,10 @@
 const config = {
   mongodb: {
     // TODO Change (or review) the url to your MongoDB:
-    url: "mongodb://localhost:27017",
+    url: process.env.DB_MIGRATE_MONGODB_URL,
 
     // TODO Change this to your database name:
-    databaseName: "dacat",
+    databaseName: process.env.DB_MIGRATE_DATABASE_NAME,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting
