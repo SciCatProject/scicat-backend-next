@@ -30,14 +30,14 @@ export class Attachment extends OwnableClass {
   @ApiProperty({
     type: String,
     description:
-      "Contains a thumbnail preview in base64 encoded png format for a given dataset",
+      "Contains a thumbnail preview in base64 encoded png format for a given dataset.",
   })
   @Prop({ type: String })
   thumbnail: string;
 
   @ApiProperty({
     type: String,
-    description: "Attachment caption to show in frontend",
+    description: "Attachment caption to show in frontend.",
   })
   @Prop({ type: String })
   caption: string;

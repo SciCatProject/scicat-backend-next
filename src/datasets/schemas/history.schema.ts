@@ -50,7 +50,7 @@ export class HistoryClass {
     type: Date,
     required: true,
     default: Date.now(),
-    description: "Time when update was performed.",
+    description: "Time when the update was performed.",
   })
   @Prop({
     type: Date,

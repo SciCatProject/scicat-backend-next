@@ -18,7 +18,7 @@ export class CreateProposalDto extends OwnableDto {
     type: String,
     required: true,
     description:
-      "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended",
+      "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended.",
   })
   @IsString()
   readonly proposalId: string;
@@ -26,7 +26,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Email of principal investigator",
+    description: "Email of principal investigator.",
   })
   @IsOptional()
   @IsEmail()
@@ -35,7 +35,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "First name of principal investigator",
+    description: "First name of principal investigator.",
   })
   @IsOptional()
   @IsString()
@@ -44,7 +44,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Last name of principal investigator",
+    description: "Last name of principal investigator.",
   })
   @IsOptional()
   @IsString()
@@ -53,7 +53,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Email of main proposer",
+    description: "Email of main proposer.",
   })
   @IsEmail()
   readonly email: string;
@@ -61,7 +61,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "First name of main proposer",
+    description: "First name of main proposer.",
   })
   @IsOptional()
   @IsString()
@@ -70,7 +70,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Last name of main proposer",
+    description: "Last name of main proposer.",
   })
   @IsOptional()
   @IsString()
@@ -79,7 +79,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The title of the proposal",
+    description: "The title of the proposal.",
   })
   @IsString()
   readonly title: string;
@@ -87,7 +87,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "The proposal abstract",
+    description: "The proposal abstract.",
   })
   @IsOptional()
   @IsString()
@@ -96,7 +96,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: Date,
     required: false,
-    description: "The date when the data collection starts",
+    description: "The date when the data collection starts.",
   })
   @IsOptional()
   @IsDateString()
@@ -105,7 +105,7 @@ export class CreateProposalDto extends OwnableDto {
   @ApiProperty({
     type: Date,
     required: false,
-    description: "The date when data collection finishes",
+    description: "The date when data collection finishes.",
   })
   @IsOptional()
   @IsDateString()
@@ -116,7 +116,7 @@ export class CreateProposalDto extends OwnableDto {
     isArray: true,
     required: false,
     description:
-      "Embedded information used inside proposals to define which type of experiment as to be pursued where (at which intrument) and when.",
+      "Embedded information used inside proposals to define which type of experiment has to be pursued, where (at which instrument) and when.",
   })
   @IsArray()
   @IsOptional()

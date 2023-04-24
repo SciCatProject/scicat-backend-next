@@ -20,7 +20,7 @@ export class Instrument {
       return (process.env.PID_PREFIX ? process.env.PID_PREFIX : "") + uuidv4();
     },
     required: true,
-    description: "PID of the instrument",
+    description: "PID of the instrument.",
   })
   @Prop({
     type: String,
@@ -54,7 +54,7 @@ export class Instrument {
     type: String,
     required: true,
     description:
-      "The common name of the instrument. This name can be non unique as it is the name that users use to commnoly refer to this instrument.",
+      "The common name of the instrument. This name can be non unique as it is the name that users use to commonly refer to this instrument.",
   })
   @Prop({
     type: String,
@@ -66,7 +66,7 @@ export class Instrument {
     type: Object,
     required: false,
     default: {},
-    description: "JSON object containing custom metadata",
+    description: "JSON object containing custom metadata.",
   })
   @Prop({
     type: Object,

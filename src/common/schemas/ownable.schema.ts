@@ -17,7 +17,7 @@ export class OwnableClass extends QueryableClass {
   @ApiProperty({
     type: [String],
     description:
-      "Optional additional groups which have read access to the data. Users which are member in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users",
+      "Optional additional groups which have read access to the data. Users which are members in one of the groups listed here are allowed to access this data. The special group 'public' makes data available to all users.",
   })
   @Prop({
     type: [String],
@@ -29,7 +29,7 @@ export class OwnableClass extends QueryableClass {
     type: String,
     required: false,
     description:
-      "Optional additional groups which have read and write access to the data. Users which are member in one of the groups listed here are allowed to access this data.",
+      "Optional additional groups which have read and write access to the data. Users which are members in one of the groups listed here are allowed to access this data.",
   })
   @Prop({
     type: String,
