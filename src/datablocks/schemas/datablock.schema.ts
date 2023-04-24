@@ -49,7 +49,8 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: Number,
     required: true,
-    description: "Total size in bytes of all files in the datablock when unpacked.",
+    description: 
+      "Total size in bytes of all files in the datablock when unpacked.",
   })
   @Prop({
     type: Number,
