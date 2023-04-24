@@ -1,16 +1,17 @@
-import {v4 as uuidv4} from 'uuid';
+//import {v4 as uuidv4} from 'uuid';
+const uuidv4 = require('uuid').v4;
 const ObjectId = require('bson').ObjectId;
 
 module.exports = {
   async up(db, client) {
-    await db.collection("Instruments")
+    await db.collection("Instrument")
       .find({})
       .forEach(instrument => {
         const uniqueName = instrument.name + " " + uuidv4().split("-")[4];
         console.log(`Updating Instrument ${instrument.name} (Id: ${instrument.id}) with unique name =>${uniqueName}<=`);
-        db.collection("Instruments").updateOne(
+        db.collection("Instrument").updateOne(
           {
-            _id: ObjectId(instrument._id),
+            _id: instrument._id,
           },
           {
             $set: {
