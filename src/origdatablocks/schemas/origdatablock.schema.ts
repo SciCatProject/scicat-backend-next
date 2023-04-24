@@ -62,8 +62,7 @@ export class OrigDatablock extends OwnableClass {
   chkAlg: string;
 
   @ApiProperty({
-    description:
-      "Embedded schema definitions for each file.",
+    description: "Embedded schema definitions for each file.",
   })
   @Prop([DataFileSchema])
   dataFileList: DataFile[];
