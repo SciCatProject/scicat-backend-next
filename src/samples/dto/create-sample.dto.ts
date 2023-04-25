@@ -16,7 +16,7 @@ export class CreateSampleDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "The owner of the sample",
+    description: "The owner of the sample.",
   })
   @IsString()
   @IsOptional()
@@ -25,7 +25,7 @@ export class CreateSampleDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "A description of the sample",
+    description: "A description of the sample.",
   })
   @IsString()
   @IsOptional()
@@ -35,7 +35,7 @@ export class CreateSampleDto extends OwnableDto {
     type: Object,
     default: {},
     required: false,
-    description: "JSON object containing the sample characteristics metadata",
+    description: "JSON object containing the sample characteristics metadata.",
   })
   @IsObject()
   @IsOptional()
@@ -45,7 +45,7 @@ export class CreateSampleDto extends OwnableDto {
     type: Boolean,
     default: false,
     required: false,
-    description: "Flag is true when data are made publicly available",
+    description: "Flag is true when data are made publicly available.",
   })
   @IsBoolean()
   @IsOptional()

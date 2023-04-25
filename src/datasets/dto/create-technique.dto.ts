@@ -6,7 +6,7 @@ export class CreateTechniqueDto {
     type: String,
     required: true,
     description:
-      "Persistent Identifier of the technique. Usually it is a UUIDv4",
+      "Persistent Identifier of the technique. Usually it is a UUIDv4.",
   })
   @IsString()
   readonly pid: string;
@@ -14,7 +14,7 @@ export class CreateTechniqueDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "The name of the technique",
+    description: "The name of the technique.",
   })
   @IsString()
   readonly name: string;

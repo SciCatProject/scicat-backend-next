@@ -32,7 +32,7 @@ export class SampleClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "The owner of the sample",
+    description: "The owner of the sample.",
   })
   @Prop({ type: String, required: false })
   owner?: string;
@@ -40,7 +40,7 @@ export class SampleClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "A description of the sample",
+    description: "A description of the sample.",
   })
   @Prop({ type: String, required: false })
   description?: string;
@@ -49,7 +49,7 @@ export class SampleClass extends OwnableClass {
     type: Object,
     default: {},
     required: false,
-    description: "JSON object containing the sample characteristics metadata",
+    description: "JSON object containing the sample characteristics metadata.",
   })
   @Prop({ type: Object, required: false, default: {} })
   sampleCharacteristics?: Record<string, unknown>;
@@ -58,7 +58,7 @@ export class SampleClass extends OwnableClass {
     type: Boolean,
     default: false,
     required: false,
-    description: "Flag is true when data are made publicly available",
+    description: "Flag is true when data are made publicly available.",
   })
   @Prop({ type: Boolean, required: false, default: false })
   isPublished?: boolean;
@@ -73,7 +73,7 @@ export class SampleWithAttachmentsAndDatasets extends SampleClass {
     type: Attachment,
     isArray: true,
     required: false,
-    description: "Attachments that are related to this sample",
+    description: "Attachments that are related to this sample.",
   })
   attachments?: Attachment[];
 
@@ -85,7 +85,7 @@ export class SampleWithAttachmentsAndDatasets extends SampleClass {
     type: DatasetClass,
     isArray: true,
     required: false,
-    description: "Datasets that are related to this sample",
+    description: "Datasets that are related to this sample.",
   })
   datasets?: DatasetClass[];
 }

@@ -87,13 +87,13 @@ fields:
       type: string
       required: true
       index: true
-      description: "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
+      description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons."
       file: dataset
     schema:
       type: string
       swagger:
         type: String,
-        description: "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons."
+        description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons."
       database:
         type: String
         required: true
@@ -102,14 +102,14 @@ fields:
     type: string
     legacy:
       type: string
-      description: "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons."
+      description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons."
       file: dataset
     schema:
       type: string
       swagger: 
         type: String
         required: false
-        description: "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons."
+        description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons."
       database:
         type: String
         required: false
@@ -117,14 +117,14 @@ fields:
     type: string
     legacy:
       type: string
-      description: "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons."
+      description: "ORCID of the owner or custodian. The string may contain a list of ORCIDs, which should then be separated by semicolons."
       file: dataset
     schema:
       type: string
       swagger:
         type: String
         required: false
-        description: "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons."
+        description: "ORCID of the owner or custodian. The string may contain a list of ORCIDs, which should then be separated by semicolons."
       database:
         type: String
         required: false
@@ -170,14 +170,14 @@ fields:
       type: string
       required: false
       index: true
-      description: "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
+      description: "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com"
       file: dataset
     schema:
       type: string
       swagger:
         type: String
         required: false
-        description: "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com"
+        description: "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com"
       database:
         type: String
         required: false
@@ -222,7 +222,7 @@ fields:
     type: number
     legacy:
       type: number
-      description: "Total number of lines in filelisting of all OrigDatablocks for this dataset"
+      description: "Total number of files in all OrigDatablocks for this dataset"
       file: dataset
     schema: 
       type: number
@@ -230,7 +230,7 @@ fields:
         type: Number
         required: true
         default: 0
-        description: "Total number of lines in filelisting of all OrigDatablocks for this dataset"
+        description: "Total number of files in all OrigDatablocks for this dataset"
       database:
         type: Number
         required: true
@@ -239,7 +239,7 @@ fields:
     type: number
     legacy:
       type: number
-      description: "Total number of lines in filelisting of all Datablocks for this dataset"
+      description: "Total number of files in all Datablocks for this dataset"
       file: dataset
     schema:
       type: number
@@ -247,7 +247,7 @@ fields:
         type: Number
         default: 0
         required: true
-        description: "Total number of lines in filelisting of all Datablocks for this dataset"
+        description: "Total number of files in all Datablocks for this dataset"
       database:
         type: Number
         default: 0
@@ -374,14 +374,14 @@ fields:
     type: string;
     legacy:
       type: string
-      description: "Name of license under which data can be used"
+      description: "Name of the license under which the data can be used."
       file: dataset
     schema:
       type: string
       swagger:
         type: String
         required: false
-        description: "Name of license under which data can be used"
+        description: "Name of the license under which the data can be used."
       database:
         type: String
         required: false
@@ -389,14 +389,14 @@ fields:
     type: string
     legacy:
       type: string
-      description: "Version of API used in creation of dataset"
+      description: "Version of the API used in creation of the dataset."
       file: dataset
     schema:
       type: string
       swagger: 
         type: String
         required: false
-        description: "Version of API used in creation of dataset"
+        description: "Version of the API used in creation of the dataset."
       database:
         type: String
         required: false
@@ -405,14 +405,14 @@ fields:
     legacy:
       type: boolean
       index: true,
-      description: "Flag is true when data are made publically available"
+      description: "Flag is true when data are made publicly available"
       file: dataset
     schema:
       type: boolean
       swagger:
         type: Boolean
         required: true
-        description: "Flag is true when data are made publically available"
+        description: "Flag is true when data are made publicly available"
       database:
         type: Boolean
         required: true
@@ -434,7 +434,7 @@ fields:
         type: History
         required: false
         default: {}
-        description: "List of objects containing old value and new value"
+        description: "List of objects containing old and versions of the dataset."
       database:
         type: [HistorySchema]
         required: false
@@ -455,7 +455,7 @@ fields:
         type: Lifecycle
         required: false
         default: {}
-        description: "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems"
+        description: "Describes the current status of the dataset during its lifetime with respect to the storage handling systems."
       database:
         type: LifecycleSchema
         default: {}
@@ -537,7 +537,7 @@ fields:
       swagger:
         type: "array"
         items_ref_schema: OrigDatablock
-        description: "Container list all files and their attributes which make up a dataset. Usually Filled at the time the datasets metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets."
+        description: "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets."
       database:
         type: [OrigDatablockSchema]
   - name: datablocks
@@ -552,7 +552,7 @@ fields:
       swagger:
         type: "array",
         items_ref_schema: Datablock
-        description: "When archiving a dataset all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a dataset consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
+        description: "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
       database:
         type: [DatablockSchema]
   - name: scientificMetadata
