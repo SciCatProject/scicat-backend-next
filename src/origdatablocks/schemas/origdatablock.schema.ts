@@ -41,7 +41,7 @@ export class OrigDatablock extends OwnableClass {
     type: Number,
     required: true,
     description:
-      "Total size in bytes of all files contained in the dataFileList",
+      "Total size in bytes of all files contained in the dataFileList.",
   })
   @Prop({
     type: Number,
@@ -52,7 +52,8 @@ export class OrigDatablock extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Algorithm used to compute the file chksum",
+    description:
+      "Algorithm used for calculation of file checksums. Should be lowercase, e.g., sha2 or blake2b.",
   })
   @Prop({
     type: String,
@@ -61,8 +62,7 @@ export class OrigDatablock extends OwnableClass {
   chkAlg: string;
 
   @ApiProperty({
-    description:
-      "Embedded schema definition for which fields are required for each file",
+    description: "Embedded schema definitions for each file.",
   })
   @Prop([DataFileSchema])
   dataFileList: DataFile[];

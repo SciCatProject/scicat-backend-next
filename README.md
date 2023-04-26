@@ -111,13 +111,12 @@ Where the [current SciCat Backend](https://github.com/SciCatProject/backend) acc
 All database [migration scripts](https://github.com/SciCatProject/scicat-backend-next/tree/master/migrations) located in the [migrations](/migrations/) folder. Copy these together with [`migrate-mongo-config.js`](https://github.com/SciCatProject/scicat-backend-next/blob/master/migrate-mongo-config.js) file to a location were you can access your MongoDB instance and have `migrate-mongo` package installed either globally(which is preferred) or locally if global installation is not possible. Then modify the config file to contain your MongoDB instance details like database name and url. Once modified, start the migration by running
 
 ```sh
-migrate-mongo up
+npm run migrate:db:up
 ```
 
-if `migrate-mongo` is installed globally at the location where you want to run it from or if it is locally installed just run
-
+For down migration use:
 ```sh
-./node_modules/migrate-mongo/bin/migrate-mongo.js up
+npm run migrate:db:down
 ```
 
 ---

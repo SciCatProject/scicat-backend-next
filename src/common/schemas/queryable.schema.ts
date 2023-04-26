@@ -5,7 +5,7 @@ export class QueryableClass {
   @ApiProperty({
     type: String,
     description:
-      "Indicate the user who created this record. This property is added and maintained by the system",
+      "Indicate the user who created this record. This property is added and maintained by the system.",
   })
   @Prop({
     type: String,
@@ -17,7 +17,7 @@ export class QueryableClass {
   @ApiProperty({
     type: String,
     description:
-      "Indicate the user who updated this record last. This property is added and maintained by the system",
+      "Indicate the user who updated this record last. This property is added and maintained by the system.",
   })
   @Prop({
     type: String,
@@ -32,7 +32,7 @@ export class QueryableClass {
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was created. This property is added and maintained by mongoose",
+      "Date and time when this record was created. This property is added and maintained by mongoose.",
   })
   @Prop({
     type: Date,
@@ -42,7 +42,7 @@ export class QueryableClass {
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was updated last. This property is added and maintained by mongoose",
+      "Date and time when this record was updated last. This property is added and maintained by mongoose.",
   })
   @Prop({
     type: Date,

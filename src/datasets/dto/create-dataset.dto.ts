@@ -27,7 +27,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: true,
     description:
-      "Owner or custodian of the data set, usually first name + lastname. The string may contain a list of persons, which should then be seperated by semicolons.",
+      "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons.",
   })
   @IsString()
   readonly owner: string;
@@ -36,7 +36,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "Email of owner or of custodian of the data set. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
   @IsOptional()
   @IsEmail()
@@ -46,7 +46,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "ORCID of owner/custodian. The string may contain a list of ORCID, which should then be separated by semicolons.",
+      "ORCID of the owner or custodian. The string may contain a list of ORCIDs, which should then be separated by semicolons.",
   })
   @IsOptional()
   @IsString()
@@ -56,7 +56,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: true,
     description:
-      "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
   })
   @IsEmail()
   readonly contactEmail: string;
@@ -74,7 +74,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "DNS host name of file server hosting sourceFolder, optionally including protocol e.g. [protocol://]fileserver1.example.com",
+      "DNS host name of file server hosting sourceFolder, optionally including a protocol e.g. [protocol://]fileserver1.example.com",
   })
   @IsOptional()
   @IsFQDN()
@@ -88,7 +88,7 @@ export class CreateDatasetDto extends OwnableDto {
     default: 0,
     required: false,
     description:
-      "Total size of all source files contained in source folder on disk when unpacked",
+      "Total size of all source files contained in source folder on disk when unpacked.",
   })
   @IsOptional()
   @IsInt()
@@ -99,7 +99,7 @@ export class CreateDatasetDto extends OwnableDto {
     default: 0,
     required: false,
     description:
-      "Total size of all datablock package files created for this dataset",
+      "Total size of all datablock package files created for this dataset.",
   })
   @IsOptional()
   @IsInt()
@@ -110,7 +110,7 @@ export class CreateDatasetDto extends OwnableDto {
     default: 0,
     required: false,
     description:
-      "Total number of lines in filelisting of all OrigDatablocks for this dataset",
+      "Total number of files in all OrigDatablocks for this dataset.",
   })
   @IsOptional()
   @IsInt()
@@ -120,8 +120,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: Number,
     default: 0,
     required: true,
-    description:
-      "Total number of lines in filelisting of all Datablocks for this dataset",
+    description: "Total number of files in all Datablocks for this dataset.",
   })
   @IsOptional()
   @IsInt()
@@ -141,7 +140,7 @@ export class CreateDatasetDto extends OwnableDto {
     required: true,
     enum: [DatasetType.Raw, DatasetType.Derived],
     description:
-      "Characterize type of dataset, either 'base' or 'raw' or 'derived'. Autofilled when choosing the proper inherited models",
+      "Characterize type of dataset, either 'raw' or 'derived'. Autofilled when choosing the proper inherited models.",
   })
   @IsEnum(DatasetType)
   readonly type: string;
@@ -150,7 +149,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons",
+      "Defines a level of trust, e.g. a measure of how much data was verified or used by other persons.",
   })
   @IsOptional()
   @IsString()
@@ -160,7 +159,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: [String],
     required: false,
     description:
-      "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs",
+      "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs.",
   })
   @IsOptional()
   @IsString({
@@ -171,7 +170,7 @@ export class CreateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Free text explanation of contents of dataset",
+    description: "Free text explanation of contents of dataset.",
   })
   @IsOptional()
   @IsString()
@@ -181,7 +180,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder",
+      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder.",
   })
   @IsOptional()
   @IsString()
@@ -200,7 +199,7 @@ export class CreateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Name of license under which data can be used",
+    description: "Name of the license under which the data can be used.",
   })
   @IsOptional()
   @IsString()
@@ -209,7 +208,7 @@ export class CreateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Version of API used in creation of dataset",
+    description: "Version of the API used in creation of the dataset.",
   })
   @IsOptional()
   @IsString()
@@ -220,7 +219,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: Boolean,
     required: false,
     default: false,
-    description: "Flag is true when data are made publically available",
+    description: "Flag is true when data are made publicly available.",
   })
   @IsOptional()
   @IsBoolean()
@@ -231,7 +230,7 @@ export class CreateDatasetDto extends OwnableDto {
     items: { $ref: getSchemaPath(TechniqueClass) },
     required: false,
     default: [],
-    description: "Stores the metadata information for techniques",
+    description: "Stores the metadata information for techniques.",
   })
   @IsOptional()
   @IsArray()
@@ -244,7 +243,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: [String],
     required: false,
     default: [],
-    description: "List of users that the dataset has been shared with",
+    description: "List of users that the dataset has been shared with.",
   })
   @IsOptional()
   @IsString({
@@ -258,7 +257,7 @@ export class CreateDatasetDto extends OwnableDto {
     items: { $ref: getSchemaPath(RelationshipClass) },
     required: false,
     default: [],
-    description: "Stores the relationships with other datasets",
+    description: "Stores the relationships with other datasets.",
   })
   @IsArray()
   @IsOptional()
@@ -271,7 +270,7 @@ export class CreateDatasetDto extends OwnableDto {
     required: false,
     default: {},
     description:
-      "For each dataset there exists an embedded dataset lifecycle document which describes the current status of the dataset during its lifetime with respect to the storage handling systems",
+      "Describes the current status of the dataset during its lifetime with respect to the storage handling systems.",
   })
   @IsOptional()
   readonly datasetlifecycle: LifecycleClass;
@@ -280,7 +279,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: Object,
     required: false,
     default: {},
-    description: "JSON object containing the scientific metadata",
+    description: "JSON object containing the scientific metadata.",
   })
   @IsOptional()
   @IsObject()
