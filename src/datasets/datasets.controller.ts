@@ -924,12 +924,13 @@ export class DatasetsController {
     description: "Id of the dataset to be modified",
     type: String,
   })
-  @ApiParam({
+  @ApiQuery({
     name: "fieldName",
     description: "Name of the field to be updated",
     type: String,
   })
-  @ApiBody({
+  @ApiQuery({
+    name: "data",
     description: "Json object with the fields to be updated and their values",
     required: true,
     type: Array,
@@ -942,13 +943,16 @@ export class DatasetsController {
   async appendToArrayField(
     @Param("pid") id: string,
     @Query("fieldName") fieldName: string,
-    @Body() data: unknown[],
+    @Query("data") data: string,
   ): Promise<DatasetClass | null> {
     // $addToSet is necessary to append to the field and not overwrite
     // $each is necessary as data is an array of values
+
+    const parsedData = JSON.parse(data);
+
     const updateQuery: UpdateQuery<DatasetDocument> = {
       $addToSet: {
-        [fieldName]: { $each: data },
+        [fieldName]: { $each: parsedData },
       },
     };
 
