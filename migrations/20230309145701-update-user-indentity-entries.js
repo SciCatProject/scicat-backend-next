@@ -14,7 +14,7 @@ module.exports = {
         console.log(`Updating User Identity ${identity.externalId} (${identity.userId}) with authStrategy: ${authStrategy}`);
         db.collection("UserIdentity").updateOne(
           {
-            _id: ObjectId(identity._id),
+            _id: new ObjectId(identity._id),
           },
           {
             $set: {
