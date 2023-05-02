@@ -30,7 +30,10 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     const response = await this.callGraphQLApi(query);
     const accessGroups = this.responseProcessor(response);
 
-    Logger.log("Access groups from graphql api call getAccessGroups: " + accessGroups.join(','));
+    Logger.log(
+      "Access groups from graphql api call getAccessGroups: " +
+        accessGroups.join(","),
+    );
     return accessGroups;
   }
 

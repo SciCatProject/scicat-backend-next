@@ -21,16 +21,20 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
 
     if (accessGroupsProperty) {
       const payload: Record<string, unknown> | undefined = userPayload.payload;
-      if (payload !== undefined && Array.isArray(payload[accessGroupsProperty])) {
-        accessGroups = (
+      if (
+        payload !== undefined &&
+        Array.isArray(payload[accessGroupsProperty])
+      ) {
+        accessGroups =
           payload[accessGroupsProperty] !== undefined
-          ? (payload[accessGroupsProperty] as string[])
-          : []
-        );
+            ? (payload[accessGroupsProperty] as string[])
+            : [];
       }
     }
 
-    Logger.log("ESS access groups getESSAccessGroupService : " + accessGroups.join(','));
+    Logger.log(
+      "ESS access groups getESSAccessGroupService : " + accessGroups.join(","),
+    );
     return accessGroups;
   }
 }

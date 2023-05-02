@@ -23,7 +23,10 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
       accessGroups.push(...accessGroupsFromProvider);
     }
 
-    Logger.log("Access groups from multiple providers getESSAccessGroups : " + accessGroups.join(','));
+    Logger.log(
+      "Access groups from multiple providers getESSAccessGroups : " +
+        accessGroups.join(","),
+    );
     return accessGroups;
   }
 }
