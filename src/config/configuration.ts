@@ -1,6 +1,7 @@
 import { Logger } from "@nestjs/common";
 
-const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
+const accessGroupsStaticValues =
+  process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
 const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
 const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
 const createDatasetGroups =
