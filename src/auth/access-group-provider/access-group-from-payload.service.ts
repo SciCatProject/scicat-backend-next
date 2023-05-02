@@ -1,7 +1,8 @@
-import { AccessGroupService as AccessGroupService } from "./access-group.service";
+//import { AccessGroupService as AccessGroupService } from "./access-group.service";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { UserPayload } from "../interfaces/userPayload.interface";
+import { AccessGroupService } from "./access-group.service";
 
 /**
  * This service is used to get the access groups from the payload of the IDP.
@@ -13,7 +14,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
   }
 
   async getAccessGroups(userPayload: UserPayload): Promise<string[]> {
-    const defaultAccessGroups: string[] = [];
+    //const defaultAccessGroups: string[] = [];
     let accessGroups: string[] = [];
 
     const accessGroupsProperty = userPayload?.accessGroupProperty;
