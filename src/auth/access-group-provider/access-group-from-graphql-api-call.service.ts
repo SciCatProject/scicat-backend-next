@@ -1,5 +1,5 @@
 import { AccessGroupService as AccessGroupService } from "./access-group.service";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 ///import fetch from "node-fetch";
 
 import { UserPayload } from "../interfaces/userPayload.interface";
@@ -30,6 +30,10 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
     const response = await this.callGraphQLApi(query);
     const accessGroups = this.responseProcessor(response);
 
+    Logger.log(
+      "Access groups from graphql api call getAccessGroups: " +
+        accessGroups.join(","),
+    );
     return accessGroups;
   }
 
