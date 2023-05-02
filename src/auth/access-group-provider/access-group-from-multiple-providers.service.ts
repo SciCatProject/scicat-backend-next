@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { AccessGroupService } from "./access-group.service";
 
@@ -23,6 +23,10 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
       accessGroups.push(...accessGroupsFromProvider);
     }
 
+    Logger.log(
+      "Access groups from multiple providers getESSAccessGroups : " +
+        accessGroups.join(","),
+    );
     return accessGroups;
   }
 }
