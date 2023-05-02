@@ -1,8 +1,12 @@
-const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES;
+import { Logger } from "@nestjs/common";
+
+const accessGroupsStaticValues = process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
 const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
 const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
 const createDatasetGroups =
   process.env.CREATE_DATASET_GROUPS || ("all" as string);
+
+Logger.log("Config Access groups statis values : " + accessGroupsStaticValues);
 
 const configuration = () => ({
   adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
@@ -10,7 +14,7 @@ const configuration = () => ({
   createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
   logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
   accessGroupsStaticValues:
-    accessGroupsStaticValues?.split(",").map((v) => v.trim()) ?? [],
+    accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
   accessGroupService: {
     token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
     apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
