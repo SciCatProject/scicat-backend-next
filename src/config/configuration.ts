@@ -1,41 +1,48 @@
 import { Logger } from "@nestjs/common";
 
-const accessGroupsStaticValues =
-  process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
-const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
-const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
-const createDatasetGroups =
-  process.env.CREATE_DATASET_GROUPS || ("all" as string);
 
-Logger.log("Config Access groups statis values : " + accessGroupsStaticValues);
+const configuration = () => {
 
-const configuration = () => ({
-  adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
-  deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
-  createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
-  logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
-  accessGroupsStaticValues:
-    accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
-  accessGroupService: {
-    token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
-    apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
-  },
-  doiPrefix: process.env.DOI_PREFIX,
-  expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
-  functionalAccounts: [
-    {
-      username: "admin",
-      email: "admin@your.site",
-      password: "am2jf70TPNZsSan",
-      role: "admin",
-      global: true,
+  const accessGroupsStaticValues =
+    process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
+  const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
+  const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
+  const createDatasetGroups =
+    process.env.CREATE_DATASET_GROUPS || ("all" as string);
+
+  Logger.log("Config SETUP");
+  Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
+  Logger.log("- Admin groups : " + adminGroups);
+  Logger.log("- Delete groups : " + deleteGroups);
+  Logger.log("- Create dataset groups : " + createDatasetGroups);
+
+  return {
+    adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
+    deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
+    createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
+    logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
+    accessGroupsStaticValues:
+      accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
+    accessGroupService: {
+      token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
+      apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
     },
-    {
-      username: "ingestor",
-      email: "scicatingestor@your.site",
-      password: "aman",
+    doiPrefix: process.env.DOI_PREFIX,
+    expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
+    functionalAccounts: [
+      {
+        username: "admin",
+        email: "admin@your.site",
+        password: "am2jf70TPNZsSan",
+        role: "admin",
+        global: true,
+      },
+      {
+        username: "ingestor",
+        email: "scicatingestor@your.site",
+        password: "aman",
       role: "ingestor",
-      global: false,
+        global: false,
     },
     {
       username: "archiveManager",
@@ -149,7 +156,8 @@ const configuration = () => ({
     policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
     policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
   },
-});
+}
+};
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
 
