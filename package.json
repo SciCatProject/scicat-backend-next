@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "migrate:db:up": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js up",
     "migrate:db:down": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js down",
+    "migrate:db:status": "node ./node_modules/migrate-mongo/bin/migrate-mongo.js status",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

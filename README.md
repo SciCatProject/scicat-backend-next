@@ -118,6 +118,10 @@ For down migration use:
 ```sh
 npm run migrate:db:down
 ```
+For listing applied DB migrations:
+```sh
+npm run migrate:db:status
+```
 
 ---
 
