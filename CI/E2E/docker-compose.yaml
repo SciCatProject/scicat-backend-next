@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "./CI/E2E/.env.backend-next:/home/node/app/.env"
+      - "./CI/E2E/.env.backend:/home/node/app/.env"
     depends_on:
       - mongodb
     labels:
@@ -42,7 +42,7 @@ services:
   frontend:
     image: ghcr.io/scicatproject/frontend:latest
     volumes:
-      - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
+      - "./CI/E2E/config-frontend.backend-e2e.json:/usr/share/nginx/html/assets/config.json"
     depends_on:
       - backend-next
     labels:
