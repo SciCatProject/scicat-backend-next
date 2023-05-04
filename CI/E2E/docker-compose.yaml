@@ -28,7 +28,7 @@ services:
       - "./CI/E2E/.env.scichat-loopback:/home/node/app/.env"
     depends_on:
       - mongodb
-  backend-next:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -37,8 +37,8 @@ services:
     depends_on:
       - mongodb
     labels:
-      - "traefik.http.routers.backend-next.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-next.entrypoints=web"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
   frontend:
     image: ghcr.io/scicatproject/frontend:latest
     volumes:
