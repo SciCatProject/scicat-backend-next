@@ -44,7 +44,7 @@ services:
     volumes:
       - "./CI/E2E/config-frontend.backend-e2e.json:/usr/share/nginx/html/assets/config.json"
     depends_on:
-      - backend-next
+      - backend
     labels:
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
