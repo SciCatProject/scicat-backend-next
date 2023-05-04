@@ -44,6 +44,7 @@ COPY --from=builder --chown=node:node /usr/src/app/node_modules ./node_modules
 # Copy migration scripts so we can run them directly in the container if needed
 COPY ./migrations ./migrations
 COPY ./migrate-mongo-config.js ./migrate-mongo-config.js
+COPY ./package.json ./package.json
 
 EXPOSE 3000
 
