@@ -108,7 +108,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 
 Where the [current SciCat Backend](https://github.com/SciCatProject/backend) accepts id fields in the database named `pid`, `doi`, or similar, this implementation requires there to be an id field of the form `_id` on every document. It is therefore necessary to run a database migration script towards MongoDB instance from a place where you have access to it and can install `migrate-mongo` package.
 
-All database [migration scripts](https://github.com/SciCatProject/scicat-backend-next/tree/master/migrations) located in the [migrations](/migrations/) folder. Copy these together with [`migrate-mongo-config.js`](https://github.com/SciCatProject/scicat-backend-next/blob/master/migrate-mongo-config.js) file to a location were you can access your MongoDB instance and have `migrate-mongo` package installed either globally(which is preferred) or locally if global installation is not possible. Then modify the config file to contain your MongoDB instance details like database name and url. Once modified, start the migration by running
+All database [migration scripts](https://github.com/SciCatProject/scicat-backend-next/tree/master/migrations) located in the [migrations](/migrations/) folder. To start the migration use:
 
 ```sh
 npm run migrate:db:up
@@ -117,6 +117,10 @@ npm run migrate:db:up
 For down migration use:
 ```sh
 npm run migrate:db:down
+```
+For listing applied DB migrations:
+```sh
+npm run migrate:db:status
 ```
 
 ---
