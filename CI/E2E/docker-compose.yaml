@@ -33,7 +33,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "./CI/E2E/.env.backend:/home/node/app/.env"
+      - "./CI/E2E/backend.env:/home/node/app/.env"
+    #  - "./CI/E2E/frontend.config.json:/home/node/app/dist/config/frontend.config.json"
     depends_on:
       - mongodb
     labels:
@@ -41,8 +42,8 @@ services:
       - "traefik.http.routers.backend.entrypoints=web"
   frontend:
     image: ghcr.io/scicatproject/frontend:latest
-    volumes:
-      - "./CI/E2E/config-frontend.backend-e2e.json:/usr/share/nginx/html/assets/config.json"
+    #volumes:
+    #  - "./CI/E2E/config-frontend.backend-e2e.json:/usr/share/nginx/html/assets/config.json"
     depends_on:
       - backend
     labels:
