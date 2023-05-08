@@ -1,6 +1,5 @@
 export default {
   accessTokenPrefix: "Bearer ",
-  lbTokenPrefix: "Bearer ",
   addDatasetEnabled: true,
   archiveWorkflowEnabled: false,
   datasetReduceEnabled: true,
@@ -16,6 +15,8 @@ export default {
   loginFacilityEnabled: true,
   loginLdapEnabled: true,
   loginLocalEnabled: true,
+  facilityLoginLabel: "ESS",
+  localLoginLabel: "Local",
   fileColorEnabled: true,
   fileDownloadEnabled: true,
   gettingStarted: null,
@@ -24,7 +25,7 @@ export default {
   jsonMetadataEnabled: true,
   jupyterHubUrl: "https://jupyterhub.esss.lu.se/",
   landingPage: "doi.ess.eu/detail/",
-  lbBaseURL: "http://localhost:3000",
+  lbBaseURL: "",
   localColumns: [
     {
       name: "select",
@@ -84,7 +85,7 @@ export default {
       name: "metadata",
       order: 9,
       type: "standard",
-      enabled: true,
+      enabled: false,
     },
     {
       name: "proposalId",
@@ -110,14 +111,17 @@ export default {
   maxDirectDownloadSize: 5000000000,
   metadataPreviewEnabled: true,
   metadataStructure: "",
-  multipleDownloadAction: "http://localhost:3012/zip",
+  multipleDownloadAction: "https://scicatfileserver.esss.dk/zip",
   multipleDownloadEnabled: true,
   oAuth2Endpoints: [
-    { authURL: "api/v3/auth/oidc", displayText: "ESS One Identity" },
+    {
+      authURL: "api/v3/auth/oidc",
+      displayText: "ESS One Identity",
+    },
   ],
   policiesEnabled: true,
   retrieveDestinations: [],
-  riotBaseUrl: "http://scichat.swap.ess.eu",
+  riotBaseUrl: "http://scichat.esss.lu.se",
   scienceSearchEnabled: true,
   scienceSearchUnitsEnabled: true,
   searchPublicDataEnabled: true,
