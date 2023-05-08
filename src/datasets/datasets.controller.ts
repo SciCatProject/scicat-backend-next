@@ -506,6 +506,7 @@ export class DatasetsController {
       if (!canViewAll && !fields.isPublished) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
+        fields.sharedWith = user.email;
       }
     }
 

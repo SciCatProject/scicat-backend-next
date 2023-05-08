@@ -58,8 +58,6 @@ export class UserIdentitiesController {
       authenticatedUser,
     );
 
-    //console.log(ability.can(Action.UserReadAny, User));
-    //console.log(ability.can(Action.UserReadOwn, User));
     if (
       !ability.can(Action.UserReadAny, User) &&
       ability.can(Action.UserReadOwn, User)
