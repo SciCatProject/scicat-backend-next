@@ -1,5 +1,5 @@
 export default {
-  lbBaseURL: "https://scicatdev.orgasoft.frm2.tum.de",
+  lbBaseURL: "https://scicat-dev.k8s-test.frm2.tum.de",
   archiveWorkflowEnabled: true,
   retrieveDestinations: [
     {
