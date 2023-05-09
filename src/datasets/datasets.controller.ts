@@ -942,12 +942,26 @@ export class DatasetsController {
     description: "Return new value of the dataset",
   })
   async appendToArrayField(
+    @Req() request: Request,
     @Param("pid") id: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
+    const loggedInUser: JWTUser = request.user as JWTUser;
+
+    const datasetToUpdate = await this.datasetsService.findOne({
+      where: { pid: id },
+    });
+
+    // NOTE: Not sure if email is the best way to do this but since we don't have userId or something like that email is acceptable.
+    const couldUpdateDataset =
+      datasetToUpdate?.ownerEmail === loggedInUser.email;
     // $addToSet is necessary to append to the field and not overwrite
     // $each is necessary as data is an array of values
+
+    if (!couldUpdateDataset) {
+      throw new ForbiddenException();
+    }
 
     const parsedData = JSON.parse(data);
 

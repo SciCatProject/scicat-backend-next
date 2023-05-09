@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Get,
   Headers,
+  NotFoundException,
   Query,
   Req,
   UseGuards,
@@ -70,6 +71,10 @@ export class UserIdentitiesController {
       filter,
     )) as UserIdentity;
 
+    if (!identity) {
+      throw new NotFoundException();
+    }
+
     const user = new User();
     user._id = identity.userId;
     user.id = identity.userId;
@@ -81,5 +86,36 @@ export class UserIdentitiesController {
     }
 
     return identity;
+  }
+
+  @UseGuards(PoliciesGuard)
+  @Get("/isValidEmail")
+  async isValidEmail(
+    // NOTE: This now supports both headers filter and query filter.
+    // There is a loopback config file where we have this as a setting on the frontend.
+    // In the future if we fully migrate to the new backend we can only support query filters.
+    @Headers() headers: Record<string, string>,
+    @Query("filter") queryFilters?: string,
+  ): Promise<boolean | null> {
+    const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
+    let filter = {};
+    if (headers.filter) {
+      const parsedFilter = JSON.parse(headers.filter);
+      if (parsedFilter.where) {
+        filter = parsedFilter.where;
+      }
+    } else if (parsedQueryFilters.where) {
+      filter = parsedQueryFilters.where;
+    }
+
+    const identity = (await this.userIdentitiesService.findOne(
+      filter,
+    )) as UserIdentity;
+
+    if (!identity) {
+      return false;
+    }
+
+    return true;
   }
 }
