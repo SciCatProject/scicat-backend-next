@@ -10,7 +10,9 @@ export default {
       option: "MLZ S3 (Testphase)"
     }
   ],
-  externalAuthEndpoint: "/auth/ldap",
+  accessTokenPrefix: "Bearer ",
+  lbTokenPrefix: "Bearer ",
+  externalAuthEndpoint: "",
   editMetadataEnabled: true,
   editSampleEnabled: true,
   editPublishedData: true,
