@@ -1,6 +1,6 @@
-export default {
-  name: "light",
-  properties: {
+{
+  "name": "light",
+  "properties": {
     "--theme-primary-default": "#0099c8",
     "--theme-primary-default-contrast": "#ffffff",
     "--theme-primary-lighter": "#99d5e9",
@@ -54,6 +54,6 @@ export default {
     "--theme-hover-lighter": "#e5e5e5",
     "--theme-hover-lighter-contrast": "#000000",
     "--theme-hover-darker": "#b2b2b2",
-    "--theme-hover-darker-contrast": "#000000",
-  },
-};
+    "--theme-hover-darker-contrast": "#000000"
+  }
+}

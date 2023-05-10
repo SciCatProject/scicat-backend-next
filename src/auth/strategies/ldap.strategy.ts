@@ -1,4 +1,4 @@
-import * as Strategy from "passport-ldapauth";
+import Strategy from "passport-ldapauth";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@nestjs/config";

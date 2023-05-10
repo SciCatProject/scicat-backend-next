@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import config from "../config/frontend.config";
-import theme from "../config/frontend.theme";
+import config from "../config/frontend.config.json";
+import theme from "../config/frontend.theme.json";
 
 @Injectable()
 export class AdminService {
