@@ -948,18 +948,28 @@ export class DatasetsController {
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
     const loggedInUser: JWTUser = request.user as JWTUser;
-
+    const ability = this.caslAbilityFactory.createForUser(loggedInUser);
     const datasetToUpdate = await this.datasetsService.findOne({
       where: { pid: id },
     });
 
-    // NOTE: Not sure if email is the best way to do this but since we don't have userId or something like that email is acceptable.
-    const couldUpdateDataset =
-      datasetToUpdate?.ownerEmail === loggedInUser.email;
-    // $addToSet is necessary to append to the field and not overwrite
-    // $each is necessary as data is an array of values
+    if (!datasetToUpdate) {
+      throw new NotFoundException();
+    }
 
-    if (!couldUpdateDataset) {
+    const datasetInstance = new DatasetClass();
+    datasetInstance._id = datasetToUpdate._id;
+    datasetInstance.pid = datasetToUpdate.pid;
+    datasetInstance.accessGroups = datasetToUpdate.accessGroups || [];
+    datasetInstance.ownerGroup = datasetToUpdate.ownerGroup;
+    datasetInstance.sharedWith = datasetToUpdate.sharedWith;
+    datasetInstance.isPublished = datasetToUpdate.isPublished || false;
+    datasetInstance.owner = datasetToUpdate.owner;
+    datasetInstance.ownerEmail = datasetToUpdate.ownerEmail;
+
+    const canUpdate = ability.can(Action.Update, datasetInstance);
+
+    if (!canUpdate) {
       throw new ForbiddenException();
     }
 
