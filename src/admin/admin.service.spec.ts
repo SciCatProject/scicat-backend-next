@@ -1,7 +1,7 @@
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AdminService } from "./admin.service";
-import config from "../config/frontend.config";
+import config from "../config/frontend.config.json";
 
 const mockConfig: Record<string, unknown> = config;
 
