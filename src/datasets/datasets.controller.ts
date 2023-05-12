@@ -1007,7 +1007,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") id: string,
   ): Promise<Partial<Attachment>> {
-    await this.checkPermissionsForDataset(request, id);
+    // await this.checkPermissionsForDataset(request, id);
 
     const attachment = await this.attachmentsService.findOne(
       { datasetId: id },
