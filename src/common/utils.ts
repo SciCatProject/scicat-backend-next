@@ -429,6 +429,10 @@ export const createFullqueryFilter = <T>(
           accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
         },
       ];
+    } else if (key === "sharedWith") {
+      filterQuery["$or"]?.push({
+        sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),
+      });
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
         model,

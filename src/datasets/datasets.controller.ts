@@ -506,6 +506,7 @@ export class DatasetsController {
       if (!canViewAll && !fields.isPublished) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
+        fields.sharedWith = user.email;
       }
     }
 
@@ -941,12 +942,36 @@ export class DatasetsController {
     description: "Return new value of the dataset",
   })
   async appendToArrayField(
+    @Req() request: Request,
     @Param("pid") id: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
-    // $addToSet is necessary to append to the field and not overwrite
-    // $each is necessary as data is an array of values
+    const loggedInUser: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(loggedInUser);
+    const datasetToUpdate = await this.datasetsService.findOne({
+      where: { pid: id },
+    });
+
+    if (!datasetToUpdate) {
+      throw new NotFoundException();
+    }
+
+    const datasetInstance = new DatasetClass();
+    datasetInstance._id = datasetToUpdate._id;
+    datasetInstance.pid = datasetToUpdate.pid;
+    datasetInstance.accessGroups = datasetToUpdate.accessGroups || [];
+    datasetInstance.ownerGroup = datasetToUpdate.ownerGroup;
+    datasetInstance.sharedWith = datasetToUpdate.sharedWith;
+    datasetInstance.isPublished = datasetToUpdate.isPublished || false;
+    datasetInstance.owner = datasetToUpdate.owner;
+    datasetInstance.ownerEmail = datasetToUpdate.ownerEmail;
+
+    const canUpdate = ability.can(Action.Update, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException();
+    }
 
     const parsedData = JSON.parse(data);
 
