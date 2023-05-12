@@ -172,6 +172,7 @@ export class DatasetsController {
   async checkPermissionsForDataset(request: Request, id: string) {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
+    const isAuthenticated = request.isAuthenticated();
 
     if (dataset && user) {
       // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
@@ -184,7 +185,7 @@ export class DatasetsController {
       datasetInstance.isPublished = dataset.isPublished || false;
       datasetInstance.owner = dataset.owner;
       datasetInstance.ownerEmail = dataset.ownerEmail;
-      if (user) {
+      if (isAuthenticated) {
         const ability = this.caslAbilityFactory.createForUser(user);
         const canView =
           ability.can(Action.Manage, datasetInstance) ||
