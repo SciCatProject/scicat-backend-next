@@ -99,7 +99,6 @@ export class AuthController {
     return req.user as Omit<User, "password">;
   }
   @UseGuards(JwtAuthGuard)
-  @AllowAny()
   @ApiOperation({
     summary: "It logs the current user out.",
     description: "It logs out the current user.",

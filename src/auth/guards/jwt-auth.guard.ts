@@ -11,6 +11,17 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   constructor(private readonly reflector: Reflector) {
     super();
   }
+
+  getRequest(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    const token = request.query.access_token;
+    if (token) {
+      request.headers.authorization = token;
+    }
+
+    return request;
+  }
+
   handleRequest(
     err: unknown,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
