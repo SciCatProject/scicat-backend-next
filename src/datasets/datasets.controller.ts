@@ -172,6 +172,7 @@ export class DatasetsController {
   async checkPermissionsForDataset(request: Request, id: string) {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
+
     if (dataset) {
       // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
       const datasetInstance = new DatasetClass();
@@ -192,8 +193,6 @@ export class DatasetsController {
           throw new ForbiddenException("Unauthorized access");
         }
       } else if (!dataset.isPublished) {
-        throw new ForbiddenException("Unauthorized access");
-      } else {
         throw new ForbiddenException("Unauthorized access");
       }
     }
