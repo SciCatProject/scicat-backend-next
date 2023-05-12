@@ -194,6 +194,8 @@ export class DatasetsController {
         }
       } else if (!dataset.isPublished) {
         throw new ForbiddenException("Unauthorized access");
+      } else {
+        throw new ForbiddenException("Unauthorized access");
       }
     }
 
