@@ -15,7 +15,7 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   getRequest(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const token = request.query.access_token;
-    if (token) {
+    if (!request.headers.authorization && token) {
       request.headers.authorization = token;
     }
 
