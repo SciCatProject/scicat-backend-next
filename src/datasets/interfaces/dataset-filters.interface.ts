@@ -16,5 +16,6 @@ export interface IDatasetFields {
   metadataKey?: string;
   _id?: string;
   userGroups?: string[];
+  sharedWith?: string;
   [key: string]: unknown;
 }
