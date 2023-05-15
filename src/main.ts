@@ -1,4 +1,4 @@
-import * as session from "express-session";
+import session from "express-session";
 import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
 import {

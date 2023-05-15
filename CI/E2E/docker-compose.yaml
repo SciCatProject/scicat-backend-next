@@ -28,23 +28,24 @@ services:
       - "./CI/E2E/.env.scichat-loopback:/home/node/app/.env"
     depends_on:
       - mongodb
-  backend-next:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "./CI/E2E/.env.backend-next:/home/node/app/.env"
+      - "./CI/E2E/backend.env:/home/node/app/.env"
+    #  - "./CI/E2E/frontend.config.json:/home/node/app/dist/config/frontend.config.json"
     depends_on:
       - mongodb
     labels:
-      - "traefik.http.routers.backend-next.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-next.entrypoints=web"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
   frontend:
     image: ghcr.io/scicatproject/frontend:latest
-    volumes:
-      - "./CI/E2E/config.e2e.json:/usr/share/nginx/html/assets/config.json"
+    #volumes:
+    #  - "./CI/E2E/config-frontend.backend-e2e.json:/usr/share/nginx/html/assets/config.json"
     depends_on:
-      - backend-next
+      - backend
     labels:
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
