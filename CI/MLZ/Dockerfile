@@ -12,6 +12,7 @@ RUN apt update && apt install -y rabbitmq-server
 # Prepare app directory
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
+COPY CI/MLZ/frontend.config.json /usr/src/app/src/config/
 # RUN npm config set -g production false
 # USER myuser
 # Install our packages
