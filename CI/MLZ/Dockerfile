@@ -28,7 +28,7 @@ COPY CI/MLZ/envfiles/datasources.json /usr/src/app/server/
 COPY CI/MLZ/component-config.json /usr/src/app/server/
 COPY CI/MLZ/envfiles/settings.json /usr/src/app/test/config/
 COPY CI/MLZ/start.sh /usr/src/app/start.sh
-COPY CI/MLZ/frontend.config.ts /usr/src/app/src/config/
+COPY CI/MLZ/frontend.config.json /usr/src/app/src/config/
 
 # Start the app
 RUN cat /usr/src/app/server/datasources.json
