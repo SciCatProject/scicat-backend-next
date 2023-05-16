@@ -27,7 +27,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: true,
     description:
-      "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons.",
+      "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons.",
   })
   @IsString()
   readonly owner: string;
@@ -36,7 +36,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be separated by semicolons.",
   })
   @IsOptional()
   @IsEmail()
@@ -56,7 +56,7 @@ export class CreateDatasetDto extends OwnableDto {
     type: String,
     required: true,
     description:
-      "Email of the contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons.",
+      "Email of the contact person for this dataset. The string may contain a list of emails, which should then be separated by semicolons.",
   })
   @IsEmail()
   readonly contactEmail: string;
