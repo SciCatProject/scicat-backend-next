@@ -18,7 +18,7 @@ describe("Authorization functionalities", () => {
 
   it("Logout with unauthenticated user should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/auth/logout")
+      .post("/api/v3/auth/logout")
       .set("Accept", "application/json")
       .expect(401);
   });
@@ -41,7 +41,7 @@ describe("Authorization functionalities", () => {
 
   it("Logout with authenticated user should succeed", async () => {
     return request(appUrl)
-      .get("/api/v3/auth/logout")
+      .post("/api/v3/auth/logout")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200);
