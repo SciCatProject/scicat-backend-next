@@ -7,6 +7,7 @@ import {
   IsEmail,
   IsFQDN,
   IsInt,
+  IsNumber,
   IsDateString,
   IsBoolean,
   ValidateNested,
@@ -301,5 +302,6 @@ export class CreateDatasetDto extends OwnableDto {
       "Data Quality Metrics is a number given by the user to rate the dataset.",
   })
   @IsOptional()
+  @IsNumber()
   readonly dataQualityMetrics?: number;
 }
