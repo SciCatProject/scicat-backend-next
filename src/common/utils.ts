@@ -454,6 +454,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
   idField: keyof T,
   fields: Y,
   facets: string[],
+  subField = "",
 ): PipelineStage[] => {
   const pipeline = [];
   const facetMatch: Record<string, unknown> = {};
@@ -596,10 +597,17 @@ export const createFullfacetPipeline = <T, Y extends object>(
     {
       $match: facetMatch as Record<string, Expression>,
     },
-    {
-      $count: "totalSets",
-    },
   ];
+
+  if (subField) {
+    facetObject["all"].push({
+      $unwind: "$" + subField,
+    });
+  }
+
+  facetObject["all"].push({
+    $count: "totalSets",
+  });
   pipeline.push({ $facet: facetObject });
 
   return pipeline as PipelineStage[];
