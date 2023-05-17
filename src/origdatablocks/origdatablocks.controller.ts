@@ -148,6 +148,43 @@ export class OrigDatablocksController {
     return dataFileList;
   }
 
+  //  GET /origdatablocks/fullfacet
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, OrigDatablock),
+  )
+  @Get("/fullfacet")
+  async fullfacet(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const parsedFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.facets ?? "{}"),
+    };
+    return this.origDatablocksService.fullfacet(parsedFilters);
+  }
+
+  //  GET /origdatablocks/fullfacet/files
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, OrigDatablock),
+  )
+  @Get("/fullfacet/files")
+  async fullfacetFiles(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const parsedFilters = {
+      fields: JSON.parse(filters.fields ?? "{}"),
+      limits: JSON.parse(filters.facets ?? "{}"),
+    };
+    const getSubFieldCount = "dataFileList";
+
+    return this.origDatablocksService.fullfacet(
+      parsedFilters,
+      getSubFieldCount,
+    );
+  }
+
   // GET /origdatablocks/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>

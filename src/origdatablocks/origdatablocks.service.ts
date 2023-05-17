@@ -3,10 +3,11 @@ import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model, QueryOptions } from "mongoose";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
+  createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
@@ -65,6 +66,22 @@ export class OrigDatablocksService {
       .exec();
 
     return origDatablocks;
+  }
+
+  async fullfacet(
+    filters: IFacets<IOrigDatablockFields>,
+    subField?: string,
+  ): Promise<Record<string, unknown>[]> {
+    const fields = filters.fields ?? {};
+    const facets = filters.facets ?? [];
+    const pipeline = createFullfacetPipeline<
+      OrigDatablockDocument,
+      FilterQuery<OrigDatablockDocument>
+    >(this.origDatablockModel, "datasetId", fields, facets, subField);
+
+    const result = await this.origDatablockModel.aggregate(pipeline).exec();
+
+    return result;
   }
 
   async update(
