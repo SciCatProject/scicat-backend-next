@@ -743,6 +743,22 @@ const TestData = {
     name: "ESS-wrong",
   },
 
+  PatchComment: {
+    comment: "test",
+  },
+
+  PatchDataQualityMetrics: {
+    dataQualityMetrics: 2.5,
+  },
+
+  PatchCommentInvalid: {
+    comment: 1,
+  },
+  
+  PatchDataQualityMetricsInvalid: {
+    dataQualityMetrics: "test",
+  },
+
 };
 
 module.exports = { TestData };
