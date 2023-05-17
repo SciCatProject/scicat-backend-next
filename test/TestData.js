@@ -751,6 +751,14 @@ const TestData = {
     dataQualityMetrics: 2.5,
   },
 
+  PatchCommentInvalid: {
+    comment: 1,
+  },
+  
+  PatchDataQualityMetricsInvalid: {
+    dataQualityMetrics: "test",
+  },
+
 };
 
 module.exports = { TestData };

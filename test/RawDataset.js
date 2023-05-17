@@ -304,6 +304,32 @@ describe("RawDataset: Raw Datasets", () => {
       });
   })
 
+  it("should fail to update comment of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchCommentInvalid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("comment");
+        res.body.message.should.contain("isString");
+      });
+  })
+
+  it("should fail to update data quality metrics of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchDataQualityMetricsInvalid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("dataQualityMetrics");
+        res.body.message.should.contain("isNumber");
+      });
+  })
+
   it("should delete this raw dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + pid)
