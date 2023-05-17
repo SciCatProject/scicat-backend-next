@@ -278,6 +278,58 @@ describe("RawDataset: Raw Datasets", () => {
     );
   });
 
+  it("should update comment of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchComment)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("comment").and.be.string;
+      });
+  })
+
+  it("should update data quality metrics of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchDataQualityMetrics)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("dataQualityMetrics");
+      });
+  })
+
+  it("should fail to update comment of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchCommentInvalid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("comment");
+        res.body.message.should.contain("isString");
+      });
+  })
+
+  it("should fail to update data quality metrics of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchDataQualityMetricsInvalid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(400)
+      .then((res) => {
+        res.body.message.should.contain("dataQualityMetrics");
+        res.body.message.should.contain("isNumber");
+      });
+  })
+
   it("should delete this raw dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + pid)
