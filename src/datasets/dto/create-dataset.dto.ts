@@ -7,6 +7,7 @@ import {
   IsEmail,
   IsFQDN,
   IsInt,
+  IsNumber,
   IsDateString,
   IsBoolean,
   ValidateNested,
@@ -284,4 +285,23 @@ export class CreateDatasetDto extends OwnableDto {
   @IsOptional()
   @IsObject()
   readonly scientificMetadata?: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Comment the user has about a given dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly comment?: string;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description:
+      "Data Quality Metrics is a number given by the user to rate the dataset.",
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly dataQualityMetrics?: number;
 }

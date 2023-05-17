@@ -387,6 +387,28 @@ export class DatasetClass extends OwnableClass {
   @Prop({ type: Object, required: false, default: {} })
   scientificMetadata?: Record<string, unknown>;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Comment the user has about a given dataset.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  comment?: string;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description: "Data Quality Metrics given by the user to rate the dataset.",
+  })
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  dataQualityMetrics: number;
+
   /*
    * fields related to Raw Datasets
    */

@@ -98,9 +98,7 @@ export class AuthController {
   ): Promise<Omit<User, "password">> {
     return req.user as Omit<User, "password">;
   }
-
   @UseGuards(JwtAuthGuard)
-  @Get("logout")
   @ApiOperation({
     summary: "It logs the current user out.",
     description: "It logs out the current user.",
@@ -109,6 +107,7 @@ export class AuthController {
     status: 200,
     description: "User logged out",
   })
+  @Post("logout")
   async logout(@Req() req: Request, @Res() res: Response) {
     await this.authService.logout(req, res);
     res.send({ logout: "successful" });
