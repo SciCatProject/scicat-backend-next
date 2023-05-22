@@ -91,9 +91,9 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery")
   @ApiQuery({
-    name: "fields",
+    name: "query",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the origdatablocks.",
+      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
     type: String,
     example: {},
@@ -106,10 +106,10 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() filters: { query?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: JSON.parse(filters.query ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -123,9 +123,9 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery/files")
   @ApiQuery({
-    name: "fields",
+    name: "query",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the origdatablocks.",
+      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
     type: String,
     example: {},
@@ -138,10 +138,10 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() filters: { query?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: JSON.parse(filters.query ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
