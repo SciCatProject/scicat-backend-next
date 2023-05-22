@@ -91,7 +91,7 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery")
   @ApiQuery({
-    name: "query",
+    name: "fields",
     description:
       "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
@@ -106,10 +106,10 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
-    @Query() filters: { query?: string; limits?: string },
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
-      fields: JSON.parse(filters.query ?? "{}"),
+      fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -123,7 +123,7 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery/files")
   @ApiQuery({
-    name: "query",
+    name: "fields",
     description:
       "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
@@ -138,10 +138,10 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
-    @Query() filters: { query?: string; limits?: string },
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
-      fields: JSON.parse(filters.query ?? "{}"),
+      fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 

@@ -472,7 +472,7 @@ export class DatasetsController {
       "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "query",
+    name: "fields",
     description:
       "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the dataset. Please refer to mongo documentation for more information about the syntax",
     required: false,
@@ -494,10 +494,10 @@ export class DatasetsController {
   })
   async fullquery(
     @Req() request: Request,
-    @Query() filters: { query?: string; limits?: string },
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const fields: IDatasetFields = JSON.parse(filters.query ?? "{}");
+    const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.ListAll, DatasetClass);
