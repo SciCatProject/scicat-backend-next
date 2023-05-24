@@ -8,11 +8,11 @@ EXPOSE 3000
 RUN addgroup mygroup 
 RUN useradd -ms /bin/bash myuser
 RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
-RUN apt update && apt install -y rabbitmq-server
 # Prepare app directory
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
+COPY package*.json /usr/src/app/
 COPY CI/MLZ/frontend.config.json /usr/src/app/src/config/
+COPY CI/MLZ/migrate-mongo-config.js /usr/src/app/
 # RUN npm config set -g production false
 # USER myuser
 # Install our packages
