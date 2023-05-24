@@ -20,6 +20,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
+  BadRequestException,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import {
@@ -223,7 +224,10 @@ export class DatasetsController {
       (value) => user.currentGroups.includes(value),
     );
 
-    return { isPartOfAdminGroups, userCanCreateDatasetWithPid };
+    return {
+      isPartOfAdminGroups,
+      userCanCreateDatasetWithPid,
+    };
   }
 
   async checkPermissionsForDatasetCreate(
@@ -266,6 +270,26 @@ export class DatasetsController {
 
           if (!canCreate) {
             throw new ForbiddenException("Unauthorized to create this dataset");
+          }
+
+          const datasetCreationValidationEnabled =
+            process.env.DATASET_CREATION_VALIDATION_ENABLED;
+
+          const datasetCreationValidationRegex =
+            process.env.DATASET_CREATION_VALIDATION_REGEX;
+
+          if (
+            datasetCreationValidationEnabled &&
+            datasetCreationValidationRegex &&
+            dataset.pid
+          ) {
+            const re = new RegExp(datasetCreationValidationRegex);
+
+            if (!re.test(dataset.pid)) {
+              throw new BadRequestException(
+                "PID is not following required standards",
+              );
+            }
           }
         }
       } else {
