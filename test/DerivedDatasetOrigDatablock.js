@@ -71,9 +71,10 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .send({ ...TestData.OrigDataBlockCorrect1, datasetId: datasetPid })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
+        console.log("----res", res);
         res.body.should.have.property("id").and.be.string;
       });
   });
