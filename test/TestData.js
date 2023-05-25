@@ -68,7 +68,7 @@ const TestData = {
 
   RawCorrectMin: {
     ownerGroup: faker.company.name(),
-    creationLocation: faker.address.city(),
+    creationLocation: faker.location.city(),
     principalInvestigator: faker.internet.userName(),
     type: "raw",
     creationTime: faker.date.past(),
@@ -163,11 +163,11 @@ const TestData = {
     principalInvestigator: faker.internet.email(),
     endTime: faker.date.past().toISOString(),
     creationLocation: faker.system.directoryPath(),
-    dataFormat: faker.random.words(3),
+    dataFormat: faker.lorem.words(3),
     scientificMetadata: {
       approx_file_size_mb: {
-        value: faker.random.numeric(5),
-        unit: faker.random.words(2),
+        value: faker.string.numeric(5),
+        unit: faker.lorem.words(2),
       },
       beamlineParameters: {
         Monostripe: "Ru/C",
@@ -229,16 +229,16 @@ const TestData = {
     numberOfFiles: 0,
     numberOfFilesArchived: 0,
     creationTime: faker.date.past().toISOString(),
-    description: faker.random.words(10),
-    datasetName: faker.random.words(2),
+    description: faker.lorem.words(10),
+    datasetName: faker.lorem.words(2),
     classification: "AV=medium,CO=low",
     license: "CC BY-SA 4.0",
     isPublished: false,
-    ownerGroup: faker.random.alphaNumeric(6),
+    ownerGroup: faker.string.alphanumeric(6),
     accessGroups: [],
     proposalId: process.env.PID_PREFIX
       ? process.env.PID_PREFIX
-      : "" + faker.random.numeric(6),
+      : "" + faker.string.numeric(6),
     type: "raw",
     keywords: ["sls", "protein"],
   },
@@ -343,7 +343,7 @@ const TestData = {
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
-    ownerGroup: faker.random.alphaNumeric(6),
+    ownerGroup: faker.string.alphanumeric(6),
     type: "derived",
   },
 
