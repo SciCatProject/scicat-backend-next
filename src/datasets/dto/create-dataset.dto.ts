@@ -26,6 +26,15 @@ import { LifecycleClass } from "../schemas/lifecycle.schema";
 export class CreateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
+    required: false,
+    description: "Persistent identifier of the dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  pid?: string;
+
+  @ApiProperty({
+    type: String,
     required: true,
     description:
       "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons.",
