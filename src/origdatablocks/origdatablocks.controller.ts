@@ -10,6 +10,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from "@nestjs/common";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
@@ -29,12 +30,16 @@ import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
+import { DatasetsService } from "src/datasets/datasets.service";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
 @Controller("origdatablocks")
 export class OrigDatablocksController {
-  constructor(private readonly origDatablocksService: OrigDatablocksService) {}
+  constructor(
+    private readonly origDatablocksService: OrigDatablocksService,
+    private readonly datasetsService: DatasetsService,
+  ) {}
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
@@ -46,6 +51,12 @@ export class OrigDatablocksController {
   async create(
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: createOrigDatablockDto.datasetId },
+    });
+    if (!dataset) {
+      throw new BadRequestException("Invalid datasetId");
+    }
     return this.origDatablocksService.create(createOrigDatablockDto);
   }
 

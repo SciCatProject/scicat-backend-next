@@ -117,6 +117,19 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
+  it("add a new origDatablock with invalid dataset should fail", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({ ...OrigDataBlockCorrect1, datasetId: "wrong" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("error");
+      });
+  });
+
   it("add a new origDatablock with valid chkAlg should success", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
