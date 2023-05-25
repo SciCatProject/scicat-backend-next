@@ -52,16 +52,29 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       });
   });
 
-  it("add a new origDatablock with invalid dataset should fail", async () => {
+  it("add a new origDatablock with invalid pid should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
-      .send({ ...origDatablockData1, datasetId: "wrong" })
+      .send({ ...TestData.OrigDataBlockCorrect1, datasetId: "wrong" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
+      });
+  });
+
+  it("add a new origDatablock with valid pid should success", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({ ...TestData.OrigDataBlockCorrect1, datasetId: datasetPid })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id").and.be.string;
       });
   });
 
