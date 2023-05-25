@@ -76,6 +76,20 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
+  it("should fetch this new published data without authorization", async () => {
+    return request(appUrl)
+      .get("/api/v3/PublishedData/" + doi)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("publisher").and.equal("ESS");
+        res.body.should.have
+          .property("status")
+          .and.equal("pending_registration");
+      });
+  });
+
   it("should fetch this new published data", async () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
