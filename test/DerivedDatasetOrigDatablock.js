@@ -300,6 +300,30 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       });
   });
 
+  it("Fetch origDatablock datafiles should include datasetExist field", async () => {
+    const fields = {};
+    const limits = {
+      skip: 0,
+      limit: 20,
+    };
+    return request(appUrl)
+      .get(
+        "/api/v3/OrigDatablocks/fullQuery/files?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.forEach((origdatablock) =>
+          origdatablock.should.have.property("datasetExist"),
+        );
+      });
+  });
+
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
@@ -365,6 +389,36 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("numberOfFiles").and.equal(0);
+      });
+  });
+
+  it("add a new origDatablock with invalid pid should fail", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({ ...TestData.OrigDataBlockCorrect1, datasetId: "wrong" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("error");
+      });
+  });
+
+  it("add a new origDatablock with valid pid should success", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({
+        ...TestData.OrigDataBlockCorrect1,
+        datasetId: decodeURIComponent(datasetPid),
+        ownerGroup: "string",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id").and.be.string;
       });
   });
 

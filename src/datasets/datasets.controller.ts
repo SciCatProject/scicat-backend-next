@@ -474,7 +474,7 @@ export class DatasetsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
+      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the dataset. Please refer to mongo documentation for more information about the syntax",
     required: false,
     type: String,
     example: {},

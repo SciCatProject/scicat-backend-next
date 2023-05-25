@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 import {
   Controller,
   Get,
@@ -10,6 +11,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from "@nestjs/common";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
@@ -22,19 +24,22 @@ import { Action } from "src/casl/action.enum";
 import {
   OrigDatablock,
   OrigDatablockDocument,
-  OrigDatablockFileList,
 } from "./schemas/origdatablock.schema";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
+import { DatasetsService } from "src/datasets/datasets.service";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
 @Controller("origdatablocks")
 export class OrigDatablocksController {
-  constructor(private readonly origDatablocksService: OrigDatablocksService) {}
+  constructor(
+    private readonly origDatablocksService: OrigDatablocksService,
+    private readonly datasetsService: DatasetsService,
+  ) {}
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
@@ -46,6 +51,12 @@ export class OrigDatablocksController {
   async create(
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: createOrigDatablockDto.datasetId },
+    });
+    if (!dataset) {
+      throw new BadRequestException("Invalid datasetId");
+    }
     return this.origDatablocksService.create(createOrigDatablockDto);
   }
 
@@ -91,10 +102,19 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery")
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Database query and filters to apply when retrieve all origdatablocks",
+      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
@@ -114,38 +134,29 @@ export class OrigDatablocksController {
   )
   @Get("/fullquery/files")
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
-      "Database query and filters to apply when retrieve all origdatablocks with files",
+      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the originalDatablocks. Please refer to mongo documentation for more information about the syntax",
     required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<OrigDatablockFileList[] | null> {
+  ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    const origdatablockList = await this.origDatablocksService.fullquery(
-      parsedFilters,
-    );
-
-    // This conversion process is needed to get output directly rather than from _doc
-    const origdatablockListCopy: OrigDatablock[] | null = JSON.parse(
-      JSON.stringify(origdatablockList),
-    );
-
-    if (!origdatablockListCopy) return null;
-
-    const dataFileList = origdatablockListCopy.flatMap((data) => {
-      return data.dataFileList.map((file) => ({
-        ...data,
-        dataFileList: file,
-      }));
-    });
-
-    return dataFileList;
+    return this.origDatablocksService.fullqueryFilesList(parsedFilters);
   }
 
   //  GET /origdatablocks/fullfacet
