@@ -352,6 +352,30 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
+  it("Fetch origDatablock datafiles should include datasetExist field", async () => {
+    const fields = {};
+    const limits = {
+      skip: 0,
+      limit: 20,
+    };
+    return request(appUrl)
+      .get(
+        "/api/v3/OrigDatablocks/fullQuery/files?fields=" +
+          encodeURIComponent(JSON.stringify(fields)) +
+          "&limits=" +
+          encodeURIComponent(JSON.stringify(limits)),
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.forEach((origdatablock) =>
+          origdatablock.should.have.property("datasetExist"),
+        );
+      });
+  });
+
   it("The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
