@@ -133,13 +133,16 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
   it("add a new origDatablock with valid pid should success", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
-      .send({ ...origDatablockData1, datasetId: datasetPid })
+      .send({
+        ...origDatablockData1,
+        datasetId: decodeURIComponent(datasetPid),
+        ownerGroup: "string",
+      })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log("-----res", res);
         res.body.should.have.property("id").and.be.string;
       });
   });
