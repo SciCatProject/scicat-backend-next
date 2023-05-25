@@ -52,36 +52,6 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       });
   });
 
-  it("add a new origDatablock with invalid pid should fail", async () => {
-    return request(appUrl)
-      .post(`/api/v3/origdatablocks`)
-      .send({ ...TestData.OrigDataBlockCorrect1, datasetId: "wrong" })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("error");
-      });
-  });
-
-  it("add a new origDatablock with valid pid should success", async () => {
-    return request(appUrl)
-      .post(`/api/v3/origdatablocks`)
-      .send({
-        ...TestData.OrigDataBlockCorrect1,
-        datasetId: decodeURIComponent(datasetPid),
-        ownerGroup: "string",
-      })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("id").and.be.string;
-      });
-  });
-
   it("validate correct origDatablock data used later", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
@@ -395,6 +365,36 @@ describe("DerivedDatasetOrigDatablock: Test OrigDatablocks and their relation to
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
         res.body.should.have.property("numberOfFiles").and.equal(0);
+      });
+  });
+
+  it("add a new origDatablock with invalid pid should fail", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({ ...TestData.OrigDataBlockCorrect1, datasetId: "wrong" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(400)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("error");
+      });
+  });
+
+  it("add a new origDatablock with valid pid should success", async () => {
+    return request(appUrl)
+      .post(`/api/v3/origdatablocks`)
+      .send({
+        ...TestData.OrigDataBlockCorrect1,
+        datasetId: decodeURIComponent(datasetPid),
+        ownerGroup: "string",
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id").and.be.string;
       });
   });
 
