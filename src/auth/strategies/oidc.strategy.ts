@@ -63,12 +63,15 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
   async validate(tokenset: TokenSet): Promise<Omit<User, "password">> {
     const userinfo: UserinfoResponse = await this.client.userinfo(tokenset);
+    const oidcConfig = this.configService.get<OidcConfig>("oidc");
 
     const userProfile = this.parseUserInfo(userinfo);
     const userPayload: UserPayload = {
       userId: userProfile.id,
       username: userProfile.username,
       email: userProfile.email,
+      accessGroupProperty: oidcConfig?.accessGroupProperty,
+      payload: userinfo,
     };
     userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
       userPayload,

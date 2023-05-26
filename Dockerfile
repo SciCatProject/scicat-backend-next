@@ -13,7 +13,7 @@ USER node
 RUN npm install glob rimraf
 RUN npm install
 
-FROM node:16-alpine AS builder 
+FROM node:16-alpine AS builder
 
 # Prepare app directory
 WORKDIR /usr/src/app
