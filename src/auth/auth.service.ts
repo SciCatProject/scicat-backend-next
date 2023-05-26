@@ -1,10 +1,10 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare } from "bcrypt";
 import { User } from "src/users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { OidcConfig } from "src/config/configuration";
 import { parseBoolean } from "src/common/utils";
 import { Issuer } from "openid-client";
@@ -52,7 +52,7 @@ export class AuthService {
     };
   }
 
-  async logout(req: Request, res: Response) {
+  async logout(req: Request) {
     const logoutURL = this.configService.get<string>("logoutURL") || "";
     const expressSessionSecret = this.configService.get<string>(
       "expressSessionSecret",
@@ -66,21 +66,19 @@ export class AuthService {
           console.log(err);
           //res.status(HttpStatus.BAD_REQUEST);
         }
-        return await this.additionalLogoutTasks(req, res, logoutURL);
+        return await this.additionalLogoutTasks(req, logoutURL);
       });
     } else {
-      return await this.additionalLogoutTasks(req, res, logoutURL);
+      return await this.additionalLogoutTasks(req, logoutURL);
     }
     if (logoutURL) {
-      return res
-        .status(HttpStatus.OK)
-        .send({ logout: "successful", logoutURL: logoutURL });
+      return { logout: "successful", logoutURL: logoutURL };
     }
 
-    return res.status(HttpStatus.OK).send({ logout: "successful" });
+    return { logout: "successful" };
   }
 
-  async additionalLogoutTasks(req: Request, res: Response, logoutURL: string) {
+  async additionalLogoutTasks(req: Request, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
     if (user?.authStrategy == "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
@@ -91,12 +89,12 @@ export class AuthService {
         );
         const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
         if (end_session_endpoint) {
-          return res.status(HttpStatus.OK).send({
+          return {
             logout: "successful",
             logoutURL:
               end_session_endpoint +
               (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-          });
+          };
         }
       }
     }
