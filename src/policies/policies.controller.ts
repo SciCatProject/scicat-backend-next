@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/quotes */
 import {
   Controller,
   Get,
   Post,
   Body,
+  Headers,
   Patch,
   Param,
   Delete,
@@ -15,7 +17,7 @@ import {
 import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
 import { UpdatePolicyDto } from "./dto/update-policy.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiHeaders, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -42,12 +44,17 @@ export class PoliciesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
   @Get()
-  @ApiQuery({
-    name: "filter",
-    description: "Database filters to apply when retrieve all policies",
-    required: false,
-  })
-  async findAll(@Query("filter") filter?: string): Promise<Policy[]> {
+  @ApiHeaders([
+    {
+      name: "filter",
+      description: "Database filters to apply when retrieve all policies",
+      required: false,
+      schema: {
+        example: '{"order":"ownerGroup:desc","skip":0,"limit":25}',
+      },
+    },
+  ])
+  async findAll(@Headers("filter") filter?: string): Promise<Policy[]> {
     const parsedFilter: IPolicyFilter = JSON.parse(filter ?? "{}");
     return this.policiesService.findAll(parsedFilter);
   }

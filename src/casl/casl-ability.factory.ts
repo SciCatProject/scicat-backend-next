@@ -91,6 +91,9 @@ export class CaslAbilityFactory {
       can(Action.InstrumentCreate, Instrument);
       can(Action.InstrumentUpdate, Instrument);
       cannot(Action.InstrumentDelete, Instrument);
+      // -------------------------------------
+      // policies
+      can(Action.Update, Policy);
     } else {
       //
       // non admin users
