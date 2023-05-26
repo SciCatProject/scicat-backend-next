@@ -66,13 +66,15 @@ export class AuthService {
           console.log(err);
           //res.status(HttpStatus.BAD_REQUEST);
         }
-        await this.additionalLogoutTasks(req, res, logoutURL);
+        return await this.additionalLogoutTasks(req, res, logoutURL);
       });
     } else {
-      await this.additionalLogoutTasks(req, res, logoutURL);
+      return await this.additionalLogoutTasks(req, res, logoutURL);
     }
     if (logoutURL) {
-      res.redirect(logoutURL);
+      return res
+        .status(HttpStatus.OK)
+        .send({ logout: "successful", logoutURL: logoutURL });
     }
 
     return res.status(HttpStatus.OK).send({ logout: "successful" });
@@ -89,10 +91,12 @@ export class AuthService {
         );
         const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
         if (end_session_endpoint) {
-          res.redirect(
-            end_session_endpoint +
+          return res.status(HttpStatus.OK).send({
+            logout: "successful",
+            logoutURL:
+              end_session_endpoint +
               (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-          );
+          });
         }
       }
     }
