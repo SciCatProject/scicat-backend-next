@@ -59,7 +59,7 @@ export class AuthService {
     );
 
     if (expressSessionSecret) {
-      await req.logout(async (err) => {
+      req.logout(async (err) => {
         if (err) {
           // we should provide a message
           console.log("Logout error");
@@ -74,8 +74,8 @@ export class AuthService {
     if (logoutURL) {
       res.redirect(logoutURL);
     }
-    res.status(HttpStatus.OK);
-    return;
+
+    return res.status(HttpStatus.OK).send({ logout: "successful" });
   }
 
   async additionalLogoutTasks(req: Request, res: Response, logoutURL: string) {
