@@ -9,10 +9,9 @@ import {
   Delete,
   UseInterceptors,
   Put,
-  //UnauthorizedException,
   Body,
-  Res,
   ForbiddenException,
+  HttpCode,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -272,10 +271,18 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "It logs the current user out.",
+    description: "It logs out the current user.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User logged out",
+  })
+  @HttpCode(200)
   @Post("logout")
-  async logout(@Req() req: Request, @Res() res: Response) {
-    await this.authService.logout(req, res);
-    return res.send({ logout: "successful" });
+  async logout(@Req() req: Request) {
+    return this.authService.logout(req);
   }
 
   @UseGuards(PoliciesGuard)
