@@ -1,38 +1,53 @@
-# gives a docker image below 200 MB
-FROM node:18
+FROM node:18-alpine AS dev
 
-ENV NODE_ENV "development"
-ENV PORT 3000
-EXPOSE 3000
-# create local user to avoid running as root
-RUN addgroup mygroup
-RUN useradd -ms /bin/bash myuser
-RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
+# Prepare app directory
+WORKDIR /home/node/app
+COPY . .
+RUN cp ./CI/MLZ/frontend.config.ts ./src/config/
+RUN  mv ./CI/MLZ/MLZ-access-group-service-factory.ts ./src/auth/access-group-provider/access-group-service-factory.ts 
+
+# Set up local user
+RUN mkdir /home/node/app/dist
+RUN chown -R node:node /home/node/app
+USER node
+
+# Install dependencies
+RUN npm install glob rimraf
+RUN npm install
+
+FROM node:18-alpine AS builder
+
 # Prepare app directory
 WORKDIR /usr/src/app
-COPY package*.json /usr/src/app/
-COPY CI/MLZ/frontend.config.json /usr/src/app/src/config/
-COPY CI/MLZ/migrate-mongo-config.js /usr/src/app/
-# RUN npm config set -g production false
-# USER myuser
-# Install our packages
-RUN npm ci
 
-#  patch for loopback-component-passport
-# RUN sed -i "s|relations: modelDefinition.relations,|relations: modelDefinition.relations,acls: modelDefinition.acls|" node_modules/loopback-component-passport/lib/index.js
+# Set up local user
+# Copy files from dev image
+COPY --from=dev /home/node/app .
 
-# Copy the rest of our application, node_modules is ignored via .dockerignore
-COPY . /usr/src/app
-COPY CI/MLZ/envfiles/config.local.js /usr/src/app/server/
-COPY CI/MLZ/envfiles/providers.json /usr/src/app/server/
-COPY CI/MLZ/envfiles/datasources.json /usr/src/app/server/
-COPY CI/MLZ/component-config.json /usr/src/app/server/
-COPY CI/MLZ/envfiles/settings.json /usr/src/app/test/config/
-COPY CI/MLZ/start.sh /usr/src/app/start.sh
-COPY CI/MLZ/frontend.config.json /usr/src/app/src/config/
-RUN  mv /usr/src/app/CI/MLZ/MLZ-access-group-service-factory.ts /usr/src/auth/access-group-provider/access-group-service-factory.ts && \
+# Build app
+RUN npm run build
 
-# Start the app
-RUN cat /usr/src/app/server/datasources.json
-RUN echo "Running startup script"
-CMD ./start.sh
+# Remove development dependencies
+RUN npm prune --production
+
+FROM node:18-alpine
+
+# Prepare app directory
+WORKDIR /home/node/app
+
+# Set up local user
+RUN chown -R node:node /home/node/app
+USER node
+
+# Copy files from builder image
+COPY --from=builder --chown=node:node /usr/src/app/dist ./dist
+COPY --from=builder --chown=node:node /usr/src/app/node_modules ./node_modules
+
+# Copy migration scripts so we can run them directly in the container if needed
+COPY ./migrations ./migrations
+COPY ./CI/MLZ/migrate-mongo-config.js ./migrate-mongo-config.js
+COPY ./package.json ./package.json
+
+EXPOSE 3000
+
+CMD ["node", "dist/src/main"]

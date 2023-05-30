@@ -53,7 +53,7 @@ yaml: '''
         stage('Build release') {
             ansiColor('xterm') {
                 sh '''
-                /kaniko/executor --context `pwd` --destination docker.ictrl.frm2.tum.de:5443/mlz/scicatv2:${tag}
+                /kaniko/executor --context `pwd` --dockerfile CI/MLZ/Dockerfile --destination docker.ictrl.frm2.tum.de:5443/mlz/scicatv2:${tag}
                 '''
             }
         }

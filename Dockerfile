@@ -3,7 +3,6 @@ FROM node:18-alpine AS dev
 # Prepare app directory
 WORKDIR /home/node/app
 COPY . .
-RUN cp ./CI/MLZ/frontend.config.ts ./src/config/
 
 # Set up local user
 RUN mkdir /home/node/app/dist
