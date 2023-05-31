@@ -248,6 +248,31 @@ export const parseLimitFilters = (
   return { limit, skip, sort };
 };
 
+export const parseLimitFiltersForPipeline = (
+  limits: ILimitsFilter | undefined,
+): PipelineStage[] => {
+  const pipelineStages: PipelineStage[] = [];
+
+  if (!limits) {
+    pipelineStages.push({ $skip: 0 }, { $limit: 100 });
+  } else {
+    const { limit = 100, skip = 0, order } = limits;
+
+    pipelineStages.push({ $skip: skip }, { $limit: limit });
+
+    if (order) {
+      const [field, direction] = order.split(":");
+      if (direction === "asc" || direction === "desc") {
+        // NOTE string val of "asc" & "desc" is not supported for aggregate pipeline
+        const sortIntVal = direction === "asc" ? 1 : -1;
+        pipelineStages.unshift({ $sort: { [field]: sortIntVal } });
+      }
+    }
+  }
+
+  return pipelineStages;
+};
+
 export const createNewFacetPipelineStage = (
   name: string,
   type: string,
@@ -454,6 +479,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
   idField: keyof T,
   fields: Y,
   facets: string[],
+  subField = "",
 ): PipelineStage[] => {
   const pipeline = [];
   const facetMatch: Record<string, unknown> = {};
@@ -596,10 +622,17 @@ export const createFullfacetPipeline = <T, Y extends object>(
     {
       $match: facetMatch as Record<string, Expression>,
     },
-    {
-      $count: "totalSets",
-    },
   ];
+
+  if (subField) {
+    facetObject["all"].push({
+      $unwind: "$" + subField,
+    });
+  }
+
+  facetObject["all"].push({
+    $count: "totalSets",
+  });
   pipeline.push({ $facet: facetObject });
 
   return pipeline as PipelineStage[];

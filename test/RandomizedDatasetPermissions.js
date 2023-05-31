@@ -24,10 +24,10 @@ function generateRandomDataset() {
     principalInvestigator: faker.internet.email(),
     endTime: faker.date.past().toISOString(),
     creationLocation: faker.system.directoryPath(),
-    dataFormat: faker.random.words(3),
+    dataFormat: faker.lorem.words(3),
     scientificMetadata: {
       approx_file_size_mb: {
-        value: faker.random.numeric(5),
+        value: faker.string.numeric(5),
         unit: "bytes",
       },
       beamlineParameters: {
@@ -90,8 +90,8 @@ function generateRandomDataset() {
     numberOfFiles: 0,
     numberOfFilesArchived: 0,
     creationTime: faker.date.past().toISOString(),
-    description: faker.random.words(10),
-    datasetName: faker.random.words(2),
+    description: faker.lorem.words(10),
+    datasetName: faker.lorem.words(2),
     classification: "AV=medium,CO=low",
     license: "CC BY-SA 4.0",
     isPublished: false,
@@ -104,7 +104,7 @@ function generateRandomDataset() {
     accessGroups: [],
     proposalId: process.env.PID_PREFIX
       ? process.env.PID_PREFIX
-      : "" + faker.random.numeric(6),
+      : "" + faker.string.numeric(6),
     type: "raw",
     keywords: ["sls", "protein"],
   };

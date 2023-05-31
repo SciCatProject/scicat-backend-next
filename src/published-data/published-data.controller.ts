@@ -17,7 +17,14 @@ import {
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -169,10 +176,23 @@ export class PublishedDataController {
   }
 
   // GET /publisheddata/:id
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, PublishedData),
-  )
+  @AllowAny()
+  @ApiOperation({
+    summary: "It returns the published data requested.",
+    description:
+      "It returns the published data requested through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the published data to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedData,
+    isArray: false,
+    description: "Return published data with id specified",
+  })
   @Get("/:id")
   async findOne(@Param("id") id: string): Promise<PublishedData | null> {
     return this.publishedDataService.findOne({ doi: id });

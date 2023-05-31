@@ -2,13 +2,15 @@ import { Injectable, Inject, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, QueryOptions } from "mongoose";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
+  createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
+  parseLimitFiltersForPipeline,
 } from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
@@ -60,11 +62,55 @@ export class OrigDatablocksService {
       );
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    const origDatablocks = await this.origDatablockModel
-      .find(filterQuery, null, modifiers)
-      .exec();
+    return this.origDatablockModel.find(filterQuery, null, modifiers).exec();
+  }
 
-    return origDatablocks;
+  async fullqueryFilesList(
+    filter: IFilters<OrigDatablockDocument, IOrigDatablockFields>,
+  ): Promise<OrigDatablock[] | null> {
+    const filterQuery: FilterQuery<OrigDatablockDocument> =
+      createFullqueryFilter<OrigDatablockDocument>(
+        this.origDatablockModel,
+        "_id",
+        filter.fields as FilterQuery<OrigDatablockDocument>,
+      );
+    const modifiers = parseLimitFiltersForPipeline(filter.limits);
+
+    const pipelineStages: PipelineStage[] = [
+      { $match: filterQuery },
+      {
+        $lookup: {
+          from: "Dataset",
+          localField: "datasetId",
+          foreignField: "pid",
+          as: "Dataset",
+        },
+      },
+      {
+        $addFields: {
+          datasetExist: { $gt: [{ $size: "$Dataset" }, 0] },
+        },
+      },
+      { $unset: "Dataset" },
+      { $unwind: "$dataFileList" },
+      ...modifiers,
+    ];
+
+    return this.origDatablockModel.aggregate(pipelineStages).exec();
+  }
+
+  async fullfacet(
+    filters: IFacets<IOrigDatablockFields>,
+    subField?: string,
+  ): Promise<Record<string, unknown>[]> {
+    const fields = filters.fields ?? {};
+    const facets = filters.facets ?? [];
+    const pipeline = createFullfacetPipeline<
+      OrigDatablockDocument,
+      FilterQuery<OrigDatablockDocument>
+    >(this.origDatablockModel, "datasetId", fields, facets, subField);
+
+    return this.origDatablockModel.aggregate(pipeline).exec();
   }
 
   async update(

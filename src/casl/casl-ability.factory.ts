@@ -54,18 +54,18 @@ export class CaslAbilityFactory {
     >(Ability as AbilityClass<AppAbility>);
 
     // admin groups
-    const stringAdminGroups = process.env.ADMIN_GROUPS || ("" as string);
+    const stringAdminGroups = process.env.ADMIN_GROUPS || "";
     const adminGroups: string[] = stringAdminGroups
       ? stringAdminGroups.split(",").map((v) => v.trim())
       : [];
     // delete groups
-    const stringDeleteGroups = process.env.DELETE_GROUPS || ("" as string);
+    const stringDeleteGroups = process.env.DELETE_GROUPS || "";
     const deleteGroups: string[] = stringDeleteGroups
       ? stringDeleteGroups.split(",").map((v) => v.trim())
       : [];
     // create dataset groups
     const stringCreateDatasetGroups =
-      process.env.CREATE_DATASET_GROUPS || ("all" as string);
+      process.env.CREATE_DATASET_GROUPS || "all";
     const createDatasetGroups: string[] = stringCreateDatasetGroups
       .split(",")
       .map((v) => v.trim());
@@ -91,6 +91,9 @@ export class CaslAbilityFactory {
       can(Action.InstrumentCreate, Instrument);
       can(Action.InstrumentUpdate, Instrument);
       cannot(Action.InstrumentDelete, Instrument);
+      // -------------------------------------
+      // policies
+      can(Action.Update, Policy);
     } else {
       //
       // non admin users

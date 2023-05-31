@@ -33,7 +33,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
     }
 
     Logger.log(
-      "ESS access groups getESSAccessGroupService : " + accessGroups.join(","),
+      "Access groups AccessGroupFromPayloadService : " + accessGroups.join(","),
     );
     return accessGroups;
   }

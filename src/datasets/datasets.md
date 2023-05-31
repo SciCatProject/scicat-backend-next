@@ -87,13 +87,13 @@ fields:
       type: string
       required: true
       index: true
-      description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons."
+      description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons."
       file: dataset
     schema:
       type: string
       swagger:
         type: String,
-        description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be seperated by semicolons."
+        description: "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons."
       database:
         type: String
         required: true
@@ -102,14 +102,14 @@ fields:
     type: string
     legacy:
       type: string
-      description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+      description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be separated by semicolons."
       file: dataset
     schema:
       type: string
       swagger: 
         type: String
         required: false
-        description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+        description: "Email of the owner or custodian of the dataset. The string may contain a list of emails, which should then be separated by semicolons."
       database:
         type: String
         required: false
@@ -134,13 +134,13 @@ fields:
       type: string
       required: true
       index: true
-      description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+      description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be separated by semicolons."
       file: dataset
     schema:
       swagger:
         type: String,
         required: true,
-        description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be seperated by semicolons."
+        description: "Email of contact person for this dataset. The string may contain a list of emails, which should then be separated by semicolons."
       database:
         type: String
         required: true
@@ -552,7 +552,7 @@ fields:
       swagger:
         type: "array",
         items_ref_schema: Datablock
-        description: "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with managable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
+        description: "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with manageable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files."
       database:
         type: [DatablockSchema]
   - name: scientificMetadata
