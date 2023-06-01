@@ -10,9 +10,9 @@ export class DataFile {
     required: true,
     description: "Relative path of the file within the dataset folder.",
   })
-  @Prop({ 
-    type: String, 
-    required: true 
+  @Prop({
+    type: String,
+    required: true,
   })
   path: string;
 
@@ -29,13 +29,13 @@ export class DataFile {
 
   @ApiProperty({
     type: Date,
-    required: true
+    required: true,
     description:
       "Time of file creation on disk, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
   @Prop({
     type: Date,
-    required: true
+    required: true,
   })
   time: Date;
 
@@ -47,7 +47,7 @@ export class DataFile {
   })
   @Prop({
     type: String,
-    required: false
+    required: false,
   })
   chk: string;
 
@@ -58,7 +58,7 @@ export class DataFile {
   })
   @Prop({
     type: String,
-    required: false
+    required: false,
   })
   uid: string;
 
@@ -69,18 +69,18 @@ export class DataFile {
   })
   @Prop({
     type: String,
-    required: false
+    required: false,
   })
   gid: string;
 
-  @ApiProperty({ 
-    type: String, 
+  @ApiProperty({
+    type: String,
     required: false,
-    description: "Posix permission bits." 
+    description: "Posix permission bits.",
   })
   @Prop({
-    type: String, 
-    required: false
+    type: String,
+    required: false,
   })
   perm: string;
 }
