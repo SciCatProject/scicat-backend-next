@@ -77,7 +77,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `OIDC_CLIENT_SECRET` [string] *Optional* Secret to provide to the oidc service to obtain the user token. Example: Aa1JIw3kv3mQlGFWhRrE3gOdkH6xreAwro
 - `OIDC_CALLBACK_URL` [string] *Optional* SciCat callback URL that we want th eoidc service to redirect to, in case of successful login. Example: http://myscicat/api/v3/oidc/callback
 - `OIDC_SCOPE` [string] *Optional* Space separated list of the info returned by the oidc service. Example: "openid profile email"
-- `OIDC_SUCCESS_URL` [string] *Optional* SciCat URL. It is still unclear the functionality of this URL
+- `OIDC_SUCCESS_URL` [string] *Optional* SciCat Frontend auth-callback URL. Required in order to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback
 - `OIDC_ACCESS_GROUPS` [string]  *Optional* Functionality is still unclear.
 - `LOGBOOK_ENABLED` [string] *Optional* Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
 - `LOGBOOK_BASE_URL` [string] *Optional* The base URL to the Logbook API. Only required if Logbook is enabled.
