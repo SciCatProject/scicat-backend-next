@@ -91,10 +91,33 @@ export class PublishedDataController {
     description: "Database filters to apply when retrieve all published data",
     required: false,
   })
-  async findAll(@Query("filter") filter?: string): Promise<PublishedData[]> {
+  @ApiQuery({
+    name: "limits",
+    description: "Database limits to apply when retrieve all published data",
+    required: false,
+  })
+  async findAll(
+    @Query("filter") filter?: string,
+    @Query("limits") limits?: string,
+    @Query("fields") fields?: string,
+  ): Promise<PublishedData[]> {
     const publishedDataFilters: IPublishedDataFilters = JSON.parse(
       filter ?? "{}",
     );
+    const publishedDataLimits: {
+      skip: number;
+      limit: number;
+      order: string;
+    } = JSON.parse(limits ?? "{}");
+    const publishedDataFields = JSON.parse(fields ?? "{}");
+
+    if (!publishedDataFilters.limits) {
+      publishedDataFilters.limits = publishedDataLimits;
+    }
+    if (!publishedDataFilters.fields) {
+      publishedDataFilters.fields = publishedDataFields;
+    }
+
     return this.publishedDataService.findAll(publishedDataFilters);
   }
 
