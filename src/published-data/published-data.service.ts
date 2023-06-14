@@ -7,6 +7,7 @@ import {
   parseLimitFilters,
   addCreatedByFields,
   addUpdatedByField,
+  createFullqueryFilter,
 } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
 import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
@@ -44,10 +45,21 @@ export class PublishedDataService {
 
   async findAll(filter: IPublishedDataFilters): Promise<PublishedData[]> {
     const whereFilter: FilterQuery<PublishedDataDocument> = filter.where ?? {};
+    const fields = filter.fields ?? {};
+    const filterQuery: FilterQuery<PublishedDataDocument> =
+      createFullqueryFilter<PublishedDataDocument>(
+        this.publishedDataModel,
+        "doi",
+        fields,
+      );
+    const whereClause: FilterQuery<PublishedDataDocument> = {
+      ...filterQuery,
+      ...whereFilter,
+    };
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.publishedDataModel
-      .find(whereFilter)
+      .find(whereClause)
       .limit(limit)
       .skip(skip)
       .sort(sort)
