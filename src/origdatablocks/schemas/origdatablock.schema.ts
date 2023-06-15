@@ -66,7 +66,7 @@ export class OrigDatablock extends OwnableClass {
   })
   @Prop({
     type: [DataFileSchema],
-    required: true
+    required: true,
   })
   dataFileList: DataFile[];
 }

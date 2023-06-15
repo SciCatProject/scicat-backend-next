@@ -62,7 +62,7 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: Number,
     required: true,
-    description: 
+    description:
       "Total size in bytes of all files in the datablock when on archived.",
   })
   @Prop({
@@ -99,12 +99,11 @@ export class Datablock extends OwnableClass {
     type: "array",
     items: { $ref: getSchemaPath(DataFile) },
     required: true,
-    description:
-      "Embedded schema definition for each file.",
+    description: "Embedded schema definition for each file.",
   })
   @Prop({
     type: [DataFileSchema],
-    required: true
+    required: true,
   })
   dataFileList: DataFile[];
 }
