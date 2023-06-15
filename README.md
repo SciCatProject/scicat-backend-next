@@ -1,4 +1,6 @@
-# SciCat Backend Next
+# SciCat Backend 
+## Version: v4.x
+## NestJS implementation
 
 
 [![Build Status](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SciCatProject/scicat-backend-next/actions)
@@ -7,7 +9,15 @@
 
 ---
 
-**This repository contains the source code of the next version of the SciCat backend, which is under development. The current version of the backend is located in [SciCatProject/backend](https://github.com/SciCatProject/backend).**
+# IMPORTANT!!!!
+**As of 2023/06/15, this repository holds the official version of SciCat backend**
+This is the only version that is officially supported. It is commonly referred to as backend, BE, v4.x or a combination of them.
+
+You can find the old backend (v3.x, loopback implementation) at (https://github.com/SciCatProject/backend).
+The repo for backend v3.x is archived and rea-only
+
+If you have any questions, please feel free to contact any member of the development team, 
+or the SciCat team at ESS.
 
 ## Get started
 
