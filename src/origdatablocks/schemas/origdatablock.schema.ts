@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DataFile, DataFileSchema } from "../../common/schemas/datafile.schema";
@@ -59,9 +59,15 @@ export class OrigDatablock extends OwnableClass {
   chkAlg: string;
 
   @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(DataFile) },
+    required: true,
     description: "Embedded schema definitions for each file.",
   })
-  @Prop([DataFileSchema])
+  @Prop({
+    type: [DataFileSchema],
+    required: true
+  })
   dataFileList: DataFile[];
 }
 

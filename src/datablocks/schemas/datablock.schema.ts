@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { DataFile, DataFileSchema } from "src/common/schemas/datafile.schema";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
@@ -35,6 +35,7 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     type: String,
+    required: true,
     description:
       "Unique identifier given by the archive system to the stored datablock. This id is used when data is retrieved back.",
   })
@@ -50,7 +51,7 @@ export class Datablock extends OwnableClass {
     type: Number,
     required: true,
     description:
-      "Total size in bytes of all files in the datablock when unpacked.",
+      "Total size in bytes of all files in the datablock when on accessible.",
   })
   @Prop({
     type: Number,
@@ -61,7 +62,8 @@ export class Datablock extends OwnableClass {
   @ApiProperty({
     type: Number,
     required: true,
-    description: "Size of the datablock package file.",
+    description: 
+      "Total size in bytes of all files in the datablock when on archived.",
   })
   @Prop({
     type: Number,
@@ -71,6 +73,7 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     type: String,
+    required: false,
     description:
       "Algorithm used for calculation of file checksums. Should be lowercase, e.g., sha2 or blake2b.",
   })
@@ -82,6 +85,7 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     type: String,
+    required: true,
     description:
       "Version string defining the format of how data is packed and stored in archive.",
   })
@@ -92,10 +96,16 @@ export class Datablock extends OwnableClass {
   version: string;
 
   @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(DataFile) },
+    required: true,
     description:
-      "Embedded schema definition for which fields are required for each file.",
+      "Embedded schema definition for each file.",
   })
-  @Prop([DataFileSchema])
+  @Prop({
+    type: [DataFileSchema],
+    required: true
+  })
   dataFileList: DataFile[];
 }
 
