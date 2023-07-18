@@ -208,7 +208,7 @@ export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
     if (instance[key]) {
       const dateField = instance[key] as unknown as string;
       instance[key] = DateTime.fromISO(dateField, {
-        zone: DateTime.local().zoneName,
+        zone: DateTime.local().zoneName as string,
       }).toISO() as unknown as T[keyof T];
     }
   });
