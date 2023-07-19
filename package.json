@@ -41,7 +41,7 @@
     "@nestjs/mongoose": "^10.0.0",
     "@nestjs/passport": "^10.0.0",
     "@nestjs/platform-express": "^8.4.4",
-    "@nestjs/swagger": "^5.2.1",
+    "@nestjs/swagger": "^7.1.1",
     "@user-office-software/duo-message-broker": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
