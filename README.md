@@ -1,4 +1,6 @@
-# SciCat Backend Next
+# SciCat Backend 
+## Version: v4.x
+## NestJS implementation
 
 
 [![Build Status](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SciCatProject/scicat-backend-next/actions)
@@ -7,7 +9,15 @@
 
 ---
 
-**This repository contains the source code of the next version of the SciCat backend, which is under development. The current version of the backend is located in [SciCatProject/backend](https://github.com/SciCatProject/backend).**
+# IMPORTANT!!!!
+**As of 2023/06/15, this repository holds the official version of SciCat backend**
+This is the only version that is officially supported. It is commonly referred to as backend, BE, v4.x or a combination of them.
+
+You can find the old backend (v3.x, loopback implementation) at (https://github.com/SciCatProject/backend).
+The repo for backend v3.x is archived and rea-only
+
+If you have any questions, please feel free to contact any member of the development team, 
+or the SciCat team at ESS.
 
 ## Get started
 
@@ -77,7 +87,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `OIDC_CLIENT_SECRET` [string] *Optional* Secret to provide to the oidc service to obtain the user token. Example: Aa1JIw3kv3mQlGFWhRrE3gOdkH6xreAwro
 - `OIDC_CALLBACK_URL` [string] *Optional* SciCat callback URL that we want th eoidc service to redirect to, in case of successful login. Example: http://myscicat/api/v3/oidc/callback
 - `OIDC_SCOPE` [string] *Optional* Space separated list of the info returned by the oidc service. Example: "openid profile email"
-- `OIDC_SUCCESS_URL` [string] *Optional* SciCat URL. It is still unclear the functionality of this URL
+- `OIDC_SUCCESS_URL` [string] *Optional* SciCat Frontend auth-callback URL. Required in order to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback
 - `OIDC_ACCESS_GROUPS` [string]  *Optional* Functionality is still unclear.
 - `LOGBOOK_ENABLED` [string] *Optional* Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
 - `LOGBOOK_BASE_URL` [string] *Optional* The base URL to the Logbook API. Only required if Logbook is enabled.
