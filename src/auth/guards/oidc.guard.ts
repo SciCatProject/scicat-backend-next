@@ -1,26 +1,24 @@
-import {
-    ExecutionContext,
-    Injectable,
-  } from "@nestjs/common";
-  import { AuthGuard } from "@nestjs/passport";
+import { ExecutionContext, Injectable } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
 export class OidcAuthGuard extends AuthGuard("oidc") {
-    constructor(private referer: Record<string, string>) {
-      referer = {};
-      super();
+  constructor(private referer: Record<string, string>) {
+    referer = {};
+    super();
+  }
+
+  getRequest(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    var cookie: string = request.headers["cookie"]
+      .split(";")
+      .find((c: string) => c.startsWith("connect.sid="));
+    if (request.headers["referer"]) {
+      this.referer[cookie] = request.headers["referer"];
+    } else {
+      request.headers["referer"] = this.referer[cookie];
+      delete this.referer[cookie];
     }
-    
-    getRequest(context: ExecutionContext) {
-      const request = context.switchToHttp().getRequest();
-      var cookie: string = request.headers["cookie"].split(";").find((c: string) => c.startsWith("connect.sid="))
-      if(request.headers["referer"]) {
-          this.referer[cookie] = request.headers["referer"]
-      } else {
-          request.headers["referer"] = this.referer[cookie]
-          delete(this.referer[cookie])
-      }
-      return request;
-    }
-    
+    return request;
+  }
 }
