@@ -88,7 +88,9 @@ export class AuthController {
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
     const url = new URL(
-      this.configService.get<OidcConfig>("oidc")?.successURL || "",
+      this.configService.get<OidcConfig>("oidc")?.successURL ||
+        res.req.headers["referer"] ||
+        "",
     );
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);
