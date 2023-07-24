@@ -16,7 +16,14 @@ import {
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -48,6 +55,21 @@ export class OrigDatablocksController {
   )
   @HttpCode(HttpStatus.OK)
   @Post()
+  @ApiOperation({
+    summary: "It creates a new orig datablock for the specified dataset.",
+    description:
+      "It creates a new orig datablock for the specified dataset. It contains the list of files associated with the datasets. Each dataset can have more than one orig datablocks",
+  })
+  @ApiBody({
+    description: "Input fields for the orig datablock to be created",
+    required: true,
+    type: CreateOrigDatablockDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: OrigDatablock,
+    description: "Create a new dataset and return its representation in SciCat",
+  })
   async create(
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
@@ -63,6 +85,23 @@ export class OrigDatablocksController {
   @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
+  @ApiOperation({
+    summary: "It validates the orig datablock provided as input.",
+    description:
+      "It validates the orig datablock provided as input, and returns true if the information is a valid dataset",
+  })
+  @ApiBody({
+    description:
+      "Input fields for the orig datablock that needs to be validated",
+    required: true,
+    type: OrigDatablock,
+  })
+  @ApiResponse({
+    status: 200,
+    type: Boolean,
+    description:
+      "Check if the orig datablock provided pass validation. It return true if the validation is passed",
+  })
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createOrigDatablock: unknown,
@@ -84,10 +123,21 @@ export class OrigDatablocksController {
     ability.can(Action.Read, OrigDatablock),
   )
   @Get()
+  @ApiOperation({
+    summary: "It returns a list of orig datablocks.",
+    description:
+      "It returns a list of orig datablocks. The list returned can be modified by providing a filter.",
+  })
   @ApiQuery({
     name: "filters",
-    description: "Database filters to apply when retrieve all origdatablocks",
+    description: "Database filters to apply when retrieving all origdatablocks",
     required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    type: OrigDatablock,
+    isArray: true,
+    description: "Return the orig datablocks requested",
   })
   async findAll(@Query("filters") filters?: string): Promise<OrigDatablock[]> {
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =

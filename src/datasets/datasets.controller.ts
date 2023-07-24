@@ -434,7 +434,7 @@ export class DatasetsController {
   })
   @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
   @ApiBody({
-    description: "Input fields for the dataset to be created",
+    description: "Input fields for the dataset that needs to be validated",
     required: true,
     schema: {
       oneOf: [
