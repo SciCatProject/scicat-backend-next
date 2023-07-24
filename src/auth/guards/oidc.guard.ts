@@ -10,7 +10,7 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
 
   getRequest(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    let cookie: string = request.headers["cookie"]
+    const cookie: string = request.headers["cookie"]
       .split(";")
       .find((c: string) => c.startsWith("connect.sid="));
     if (request.headers["referer"]) {
