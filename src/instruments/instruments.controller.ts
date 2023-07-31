@@ -57,9 +57,13 @@ export class InstrumentsController {
         createInstrumentDto,
       );
       return instrument;
-    } catch (e) {
+    } catch (error) {
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      // we'll proceed, but let's report it
       throw new HttpException(
-        "Instrument with the same unique name already exists",
+        `Instrument with the same unique name already exists: ${message}`,
         HttpStatus.BAD_REQUEST,
       );
     }
