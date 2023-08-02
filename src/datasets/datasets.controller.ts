@@ -854,7 +854,6 @@ export class DatasetsController {
   ): Promise<string[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
-
     const ability = this.caslAbilityFactory.createForUser(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 

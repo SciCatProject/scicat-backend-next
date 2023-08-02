@@ -114,6 +114,12 @@ const configuration = () => {
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
+    elasticSearch: {
+      enabled: process.env.ELASTICSEARCH_ENABLED ?? "no",
+      username: process.env.ES_USERNAME,
+      password: process.env.ES_PASSWORD,
+      host: process.env.ES_HOST,
+    },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
