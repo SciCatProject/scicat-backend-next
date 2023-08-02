@@ -42,7 +42,19 @@ export class OrigDatablocksService {
   async findAll(
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock[]> {
-    return this.origDatablockModel.find(filter).exec();
+    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<OrigDatablockDocument> = filter.fields ?? {};
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
+
+    const origdatablockPromise = this.origDatablockModel
+      .find(whereFilter, fieldsProjection)
+      .limit(limit)
+      .skip(skip)
+      .sort(sort);
+
+    const origdatablock = await origdatablockPromise.exec();
+
+    return origdatablock;
   }
 
   async findOne(

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { genSalt, hash } from "bcrypt";
-import { FilterQuery, Model } from "mongoose";
+import { FilterQuery, Model, ObjectId } from "mongoose";
 import { CreateUserIdentityDto } from "./dto/create-user-identity.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { RolesService } from "./roles.service";
@@ -52,10 +52,13 @@ export class UsersService implements OnModuleInit {
     }
 
     if (functionalAccounts && functionalAccounts.length > 0) {
-      functionalAccounts.forEach(async (account) => {
+
+      const accountPromises = functionalAccounts.map(async (account) => {
+      //const accountPromises = functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
         createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
+        const roles : Record<string, Array<string>> = {};
 
         if (user) {
           const userPayload: UserPayload = {
@@ -70,7 +73,11 @@ export class UsersService implements OnModuleInit {
           if (role) {
             // add role as access group
             accessGroups.push(role);
-            const createRole: CreateRoleDto = {
+            if ( !(role in roles)) {
+              roles[role] = [];
+            }
+            roles[role].push(user._id.toString());
+            /* const createRole: CreateRoleDto = {
               name: role,
             };
             const createdRole = await this.rolesService.findOrCreate(
@@ -82,11 +89,15 @@ export class UsersService implements OnModuleInit {
                 roleId: createdRole._id,
               };
               await this.rolesService.findOrCreateUserRole(createUserRole);
-            }
+            } */
           }
           if (global) {
             accessGroups.push("globalaccess");
-            const createRole: CreateRoleDto = {
+            if ( !("globalaccess" in roles)) {
+              roles["globalaccess"] = [];
+            }
+            roles["globalaccess"].push(user._id.toString());
+/*             const createRole: CreateRoleDto = {
               name: "globalaccess",
             };
             const createdRole = await this.rolesService.findOrCreate(
@@ -99,6 +110,7 @@ export class UsersService implements OnModuleInit {
               };
               await this.rolesService.findOrCreateUserRole(createUserRole);
             }
+ */          
           }
 
           // creates user identity to store access groups
@@ -126,7 +138,40 @@ export class UsersService implements OnModuleInit {
             await this.createUserIdentity(createUserIdentity);
           }
         }
+        return roles;        
       });
+
+      const results = await Promise.all(accountPromises);
+      const roles = results.reduce( (a,b) => { 
+        Object.keys(b).forEach( (k) => { 
+          if ( k in a ) { 
+            a[k] = a[k].concat(b[k])
+          } 
+          else { 
+            a[k] = b[k]
+          }
+        }); 
+        return a; 
+      }, {})
+      if ( roles ) {
+        for (const [role, userIds] of Object.entries(roles)) {
+          const createRole: CreateRoleDto = {
+            name: role,
+          };
+          const createdRole = await this.rolesService.findOrCreate(
+            createRole,
+          );
+          if (createdRole && userIds) {
+            userIds.forEach(async (userId) => {
+              const createUserRole: CreateUserRoleDto = {
+                userId: userId,
+                roleId: createdRole._id,
+              };
+              await this.rolesService.findOrCreateUserRole(createUserRole);
+            })
+          } 
+        }  
+      }
     }
   }
 

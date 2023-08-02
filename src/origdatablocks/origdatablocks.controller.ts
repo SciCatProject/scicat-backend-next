@@ -53,7 +53,7 @@ export class OrigDatablocksController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Create, OrigDatablock),
   )
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiOperation({
     summary: "It creates a new orig datablock for the specified dataset.",
@@ -68,7 +68,7 @@ export class OrigDatablocksController {
   @ApiResponse({
     status: 201,
     type: OrigDatablock,
-    description: "Create a new dataset and return its representation in SciCat",
+    description: "Create a new origdataset and return its representation in SciCat",
   })
   async create(
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
@@ -79,6 +79,22 @@ export class OrigDatablocksController {
     if (!dataset) {
       throw new BadRequestException("Invalid datasetId");
     }
+
+    createOrigDatablockDto = {
+      ...createOrigDatablockDto,
+      "ownerGroup" : createOrigDatablockDto.ownerGroup ? createOrigDatablockDto.ownerGroup : dataset.ownerGroup,
+      "accessGroups" : (
+        createOrigDatablockDto.accessGroups 
+        ? createOrigDatablockDto.accessGroups
+        : JSON.parse(JSON.stringify(dataset.accessGroups))
+      ),
+      "instrumentGroup" : (
+        createOrigDatablockDto.instrumentGroup ? 
+        createOrigDatablockDto.instrumentGroup : 
+        dataset.instrumentGroup
+      ),
+    }
+
     return this.origDatablocksService.create(createOrigDatablockDto);
   }
 
@@ -129,7 +145,7 @@ export class OrigDatablocksController {
       "It returns a list of orig datablocks. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "filter",
     description: "Database filters to apply when retrieving all origdatablocks",
     required: false,
   })
@@ -139,9 +155,9 @@ export class OrigDatablocksController {
     isArray: true,
     description: "Return the orig datablocks requested",
   })
-  async findAll(@Query("filters") filters?: string): Promise<OrigDatablock[]> {
+  async findAll(@Query("filter") filter?: string): Promise<OrigDatablock[]> {
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
-      JSON.parse(filters ?? "{}");
+      JSON.parse(filter ?? "{}");
     return this.origDatablocksService.findAll(parsedFilters);
   }
 
