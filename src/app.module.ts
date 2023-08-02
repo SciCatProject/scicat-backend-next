@@ -30,9 +30,11 @@ import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
+import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
 
 @Module({
   imports: [
+    ElasticSearchModule,
     AttachmentsModule,
     AuthModule,
     CaslModule,
@@ -111,6 +113,13 @@ export class AppModule implements OnApplicationBootstrap {
       this.configService.get<string>("rabbitMq.enabled") === "yes"
         ? true
         : false;
+    const elasticSearchEnabled =
+      this.configService.get<string>("elasticSearch.enabled") === "yes"
+        ? true
+        : false;
+
+    Logger.log("------elasticSearchEnabled", elasticSearchEnabled);
+
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
       const username = this.configService.get<string>("rabbitMq.username");
