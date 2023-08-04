@@ -38,6 +38,7 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 import { DatasetsService } from "src/datasets/datasets.service";
+import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -95,7 +96,24 @@ export class OrigDatablocksController {
       ),
     }
 
-    return this.origDatablocksService.create(createOrigDatablockDto);
+    const origdatablock = await this.origDatablocksService.create(createOrigDatablockDto);
+
+    // updates datasets size
+    const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
+      { "where" : { "datasetId" : dataset.pid } };
+    const datasetOrigdatablocks = await this.origDatablocksService.findAll(parsedFilters);
+
+    const updateDatasetDto: PartialUpdateDatasetDto = {
+      size: datasetOrigdatablocks.map(od => od.size).reduce((ps, a) => ps + a,0),
+      numberOfFiles: datasetOrigdatablocks.map(od => od.dataFileList.length).reduce((ps, a) => ps + a,0),
+    };
+
+    await this.datasetsService.findByIdAndUpdate(
+      dataset.pid,
+      updateDatasetDto,
+    );    
+
+    return origdatablock;
   }
 
   @AllowAny()

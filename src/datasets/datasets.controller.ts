@@ -756,7 +756,7 @@ export class DatasetsController {
             }
             case "origdatablocks": {
               dataset.origdatablocks = await this.origDatablocksService.findAll(
-                { datasetId: dataset.pid },
+                { where: { datasetId: dataset.pid }},
               );
               break;
             }

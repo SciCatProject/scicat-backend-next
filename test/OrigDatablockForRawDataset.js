@@ -313,17 +313,23 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           .and.to.have.length(2);
         res.body.origdatablocks[0].should.have
           .property("dataFileList")
-          .and.be.instanceof(Array)
-          .and.should.be.oneOf([
-            origDataBlockData1.dataFileList,
-            origDataBlockData2.dataFileList,
+          .and.be.instanceof(Array);
+        res.body.origdatablocks[0].dataFileList[0].path
+          .should.oneOf([
+            origDatablockData1.dataFileList[0].path,
+            origDatablockData2.dataFileList[1].path,
+          ]);
+        res.body.origdatablocks[0].dataFileList[0].size
+          .should.oneOf([
+            origDatablockData1.dataFileList[0].size,
+            origDatablockData2.dataFileList[1].size
           ]);
       });
   });
 
-  it("0150: Should fetch some origDatablock by the full filename and dataset pid", async () => {
+  it("0150: Should fetch some origDatablock by the full filename and dataset pid from dataset 1", async () => {
     var fields = {
-      datasetId: decodeURIComponent(datasetPid),
+      datasetId: decodeURIComponent(datasetPid1),
       "dataFileList.path": "N1039-B410377.tif",
     };
     var limits = {
