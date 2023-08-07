@@ -20,6 +20,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -39,6 +40,7 @@ import { plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
+import { filterDescription, filterExample } from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -98,9 +100,18 @@ export class OrigDatablocksController {
 
     const origdatablock = await this.origDatablocksService.create(createOrigDatablockDto);
 
+    await this.updateDatasetSizeAndFiles(dataset.pid)
+
+    return origdatablock;
+  }
+
+
+  async updateDatasetSizeAndFiles(
+    pid: string
+  ) {
     // updates datasets size
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
-      { "where" : { "datasetId" : dataset.pid } };
+      { "where" : { "datasetId" : pid } };
     const datasetOrigdatablocks = await this.origDatablocksService.findAll(parsedFilters);
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
@@ -109,11 +120,9 @@ export class OrigDatablocksController {
     };
 
     await this.datasetsService.findByIdAndUpdate(
-      dataset.pid,
+      pid,
       updateDatasetDto,
     );    
-
-    return origdatablock;
   }
 
   @AllowAny()
@@ -164,8 +173,11 @@ export class OrigDatablocksController {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving all origdatablocks",
+    description: "Database filters to apply when retrieving all origdatablocks\n" +
+      filterDescription,
     required: false,
+    type: String,
+    example: filterExample,
   })
   @ApiResponse({
     status: 200,
@@ -286,7 +298,20 @@ export class OrigDatablocksController {
     ability.can(Action.Read, OrigDatablock),
   )
   @Get("/:id")
-  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
+  @ApiOperation({
+    summary: "It retrieve the origdatablock.",
+    description: "It retrieve the original datablock with the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the origdatablock to be retrieved",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "The origdatablock requested",
+    type: OrigDatablock,
+  })  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
     return this.origDatablocksService.findOne({ _id: id });
   }
 
@@ -296,23 +321,64 @@ export class OrigDatablocksController {
     ability.can(Action.Update, OrigDatablock),
   )
   @Patch("/:id")
+  @ApiOperation({
+    summary: "It updates the origdatablock.",
+    description: "It updates the original datablock with the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the origdatablock to be updated",
+    type: String,
+  })
+  @ApiBody({
+    description:
+      "OrigDatablock object that needs to be updated. Only the origdatablock object fields that needs to be updated, should be passed in.",
+    required: true,
+    type: UpdateOrigDatablockDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "The updated origdatablock",
+    type: OrigDatablock,
+  })
   async update(
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.update(
+    const origdatablock = await this.origDatablocksService.update(
       { _id: id },
       updateOrigDatablockDto,
-    );
+    ) as OrigDatablock;
+
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId)
+
+    return origdatablock;
   }
 
   // DELETE /origdatablocks/:id
-  @UseGuards()
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Delete, OrigDatablock),
   )
   @Delete("/:id")
+  @ApiOperation({
+    summary: "It deletes the origdatablock.",
+    description: "It delete the original datablock specified through the id specified.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "Id of the origdatablock to be deleted",
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "No value is returned",
+  })
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.origDatablocksService.remove({ _id: id });
+    const origdatablock = await this.origDatablocksService.remove({ _id: id }) as OrigDatablock;
+
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId)
+
+    return origdatablock;
   }
 }

@@ -12,7 +12,9 @@ var accessTokenIngestor = null,
   origDatablockId2 = null,
   origDatablockId3 = null,
   origDatablockData1 = null,
+  origDatablockData1Modified = null,
   origDatablockData2 = null,
+  origDatablockData3 = null,
   origDatablockWithEmptyChkAlg = null,
   origDatablockWithValidChkAlg = null;
 
@@ -44,6 +46,17 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     origDatablockData1 = {
       ...TestData.OrigDataBlockCorrect1,
       "datasetId": null
+    }
+    const dataFileList = TestData.OrigDataBlockCorrect1.dataFileList.slice(0,-1);
+    const origDatablocSize = dataFileList
+      .map(e => e.size)
+      .reduce((a,v) => { 
+        return a+v;
+      },0);
+    origDatablockData1Modified = {
+      ...TestData.OrigDataBlockCorrect1,
+      'dataFileList': dataFileList,
+      'size': origDatablocSize
     }
     origDatablockData2 = {
       ...TestData.OrigDataBlockCorrect2,
@@ -329,7 +342,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
   it("0150: Should fetch some origDatablock by the full filename and dataset pid from dataset 1", async () => {
     var fields = {
-      datasetId: decodeURIComponent(datasetPid1),
+      datasetId: datasetPid1,
       "dataFileList.path": "N1039-B410377.tif",
     };
     var limits = {
@@ -352,9 +365,9 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0160: Should fetch some origDatablock by the partial filename and dataset pid", async () => {
+  it("0160: Should fetch some origDatablock by the partial filename and dataset pid 1", async () => {
     var fields = {
-      datasetId: decodeURIComponent(datasetPid),
+      datasetId: datasetPid1,
       "dataFileList.path": { $regex: "B410" },
     };
     var limits = {
@@ -379,7 +392,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
   it("0170: Should fetch no origDatablock using a non existing filename", async () => {
     var fields = {
-      datasetId: decodeURIComponent(datasetPid),
+      datasetId: datasetPid1,
       "dataFileList.path": "this_file_does_not_exists.txt",
     };
     var limits = {
@@ -404,7 +417,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
   it("0190: Should fetch one origDatablock using a specific filename and dataset id", async () => {
     var fields = {
-      datasetId: decodeURIComponent(datasetPid),
+      datasetId: datasetPid1,
       "dataFileList.path": "this_unique_file.txt",
     };
     var limits = {
@@ -453,7 +466,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
   it("0210: Verify that size and numFiles fields are correct in the dataset 1, pass 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid1)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -476,7 +489,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
   it("0220: Verify that size and numFiles fields are correct in the dataset 2, pass 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid2)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -495,19 +508,151 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0230: should delete OrigDatablock 1", async () => {
+  it("0230: should update file list and size of the origdatablock 1", async () => {
+    const origDatablock1Updates = {
+      'size' : origDatablockData1Modified.size,
+      'dataFileList': origDatablockData1Modified.dataFileList,
+    }
+    return request(appUrl)
+      .patch("/api/v3/origdatablocks/" + origDatablockId1)
+      .send(origDatablock1Updates)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.be.equal(origDatablockData1Modified.size);
+        res.body.should.have
+          .property("dataFileList")
+          .and.have.length(origDatablockData1Modified.dataFileList.length);
+      });
+  })
+
+  it("0240: Verify that size and numFiles fields are correct in the dataset 1, pass 2", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData1Modified.size +
+              origDatablockData2.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData1Modified.dataFileList.length +
+              origDatablockData2.dataFileList.length,
+          );
+      });
+  });
+
+  it("0250: Verify that size and numFiles fields are correct in the dataset 2, pass 2", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData3.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData3.dataFileList.length,
+          );
+      });
+  });
+
+  it("0260: should update file list and size of the origdatablock 1 to original", async () => {
+    const origDatablock1Updates = {
+      'size' : origDatablockData1.size,
+      'dataFileList': origDatablockData1.dataFileList,
+    }
+    return request(appUrl)
+      .patch("/api/v3/origdatablocks/" + origDatablockId1)
+      .send(origDatablock1Updates)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.be.equal(origDatablockData1.size);
+        res.body.should.have
+          .property("dataFileList")
+          .and.have.length(origDatablockData1.dataFileList.length);
+      });
+  })
+
+  it("0270: Verify that size and numFiles fields are correct in the dataset 1, pass 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData1.size +
+              origDatablockData2.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData1.dataFileList.length +
+              origDatablockData2.dataFileList.length,
+          );
+      });
+  });
+
+  it("0280: Verify that size and numFiles fields are correct in the dataset 2, pass 3", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData3.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData3.dataFileList.length,
+          );
+      });
+  });
+
+  it("0290: should delete OrigDatablock 1", async () => {
     return request(appUrl)
       .delete(
-        `/api/v3/datasets/${origDatablockId1}`,
+        `/api/v3/OrigDatablocks/${origDatablockId1}`,
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
   });
 
-  it("0240: Verify that size and numFiles fields are correct in the dataset 1, pass 2", async () => {
+  it("0300: Verify that size and numFiles fields are correct in the dataset 1, pass 4", async () => {
     return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid1)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -526,105 +671,40 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0250: Verify that size and numFiles fields are correct in the dataset 2, pass 2", async () => {
-    return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid2)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
-      });
-  });
-
-  it("0260: should delete OrigDatablock 2", async () => {
-    return request(appUrl)
-      .delete(
-        `/api/v3/datasets/${origDatablockId2}`,
-      )
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
-  });
-
-  it("0270: Verify that size and numFiles fields are correct in the dataset 1, pass 3", async () => {
-    return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid1)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
-      });
-  });
-
-  it("0280: Verify that size and numFiles fields are correct in the dataset 2, pass 3", async () => {
-    return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid2)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
-      });
-  });
-
-  it("0290: should delete OrigDatablock 3", async () => {
-    return request(appUrl)
-      .delete(
-        `/api/v3/datasets/${origDatablockId3}`,
-      )
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
-  });
-
-  it("0300: Verify that size and numFiles fields are correct in the dataset 1, pass 4", async () => {
-    return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid1)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
-      });
-  });
-
   it("0310: Verify that size and numFiles fields are correct in the dataset 2, pass 4", async () => {
     return request(appUrl)
-      .get("/api/v3/Datasets/" + datasetPid2)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData3.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData3.dataFileList.length,
+          );
+      });
+  });
+
+  it("0320: should delete OrigDatablock 2", async () => {
+    return request(appUrl)
+      .delete(
+        `/api/v3/OrigDatablocks/${origDatablockId2}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200);
+  });
+
+  it("0330: Verify that size and numFiles fields are correct in the dataset 1, pass 5", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
@@ -639,7 +719,72 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0320: Should fetch no origdatablocks belonging to the dataset 1", async () => {
+  it("0340: Verify that size and numFiles fields are correct in the dataset 2, pass 5", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(
+            origDatablockData3.size,
+          );
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(
+            origDatablockData3.dataFileList.length,
+          );
+      });
+  });
+
+  it("0350: should delete OrigDatablock 3", async () => {
+    return request(appUrl)
+      .delete(
+        `/api/v3/OrigDatablocks/${origDatablockId3}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200);
+  });
+
+  it("0360: Verify that size and numFiles fields are correct in the dataset 1, pass 6", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(0);
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(0);
+      });
+  });
+
+  it("0370: Verify that size and numFiles fields are correct in the dataset 2, pass 6", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("size")
+          .and.equal(0);
+        res.body.should.have
+          .property("numberOfFiles")
+          .and.equal(0);
+      });
+  });
+
+  it("0380: Should fetch no origdatablocks belonging to the dataset 1", async () => {
     const filter= { where: { datasetId: datasetPid1 } };
 
     return request(appUrl)
@@ -654,7 +799,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0330: Should fetch no origdatablocks belonging to the dataset 2", async () => {
+  it("0390: Should fetch no origdatablocks belonging to the dataset 2", async () => {
     const filter= { where: { datasetId: datasetPid2 } };
 
     return request(appUrl)
@@ -669,7 +814,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0340: add a new origDatablock with invalid pid should fail", async () => {
+  it("0400: add a new origDatablock with invalid pid should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({ ...origDatablockData1, datasetId: "wrong" })
@@ -682,18 +827,18 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       });
   });
 
-  it("0350: should delete the dataset 1", async () => {
+  it("0410: should delete the dataset 1", async () => {
     return request(appUrl)
-      .delete(`/api/v3/Datasets/${datasetPid1}`)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
 
-  it("0360: should delete the dataset 2", async () => {
+  it("0420: should delete the dataset 2", async () => {
     return request(appUrl)
-      .delete(`/api/v3/Datasets/${datasetPid2}`)
+      .delete("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
