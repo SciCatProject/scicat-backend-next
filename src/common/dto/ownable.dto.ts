@@ -5,8 +5,7 @@ export class OwnableDto {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Name of the group owning this item.",
+    description: "Name of the group owning this item.",
   })
   @IsString()
   readonly ownerGroup: string;
@@ -14,8 +13,7 @@ export class OwnableDto {
   @ApiProperty({
     type: [String],
     required: false,
-    description:
-      "List of groups which have access to this item.",
+    description: "List of groups which have access to this item.",
   })
   @IsOptional()
   @IsString({
@@ -26,8 +24,7 @@ export class OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    description:
-      "Group of the instrument which this item was acquired on.",
+    description: "Group of the instrument which this item was acquired on.",
   })
   @IsOptional()
   @IsString()

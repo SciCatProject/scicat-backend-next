@@ -46,8 +46,7 @@ export class CreateOrigDatablockDto extends OwnableDto {
     type: "array",
     items: { $ref: getSchemaPath(DataFile) },
     required: true,
-    description:
-      "List of the files contained in this orig datablock.",
+    description: "List of the files contained in this orig datablock.",
   })
   @IsArray()
   @ArrayNotEmpty()

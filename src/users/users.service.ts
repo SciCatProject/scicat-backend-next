@@ -52,13 +52,11 @@ export class UsersService implements OnModuleInit {
     }
 
     if (functionalAccounts && functionalAccounts.length > 0) {
-
       const accountPromises = functionalAccounts.map(async (account) => {
-      //const accountPromises = functionalAccounts.forEach(async (account) => {
         const { role, global, ...createAccount } = account;
         createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
-        const roles : Record<string, Array<string>> = {};
+        const roles: Record<string, Array<string>> = {};
 
         if (user) {
           const userPayload: UserPayload = {
@@ -73,44 +71,17 @@ export class UsersService implements OnModuleInit {
           if (role) {
             // add role as access group
             accessGroups.push(role);
-            if ( !(role in roles)) {
+            if (!(role in roles)) {
               roles[role] = [];
             }
             roles[role].push(user._id.toString());
-            /* const createRole: CreateRoleDto = {
-              name: role,
-            };
-            const createdRole = await this.rolesService.findOrCreate(
-              createRole,
-            );
-            if (createdRole) {
-              const createUserRole: CreateUserRoleDto = {
-                userId: user._id,
-                roleId: createdRole._id,
-              };
-              await this.rolesService.findOrCreateUserRole(createUserRole);
-            } */
           }
           if (global) {
             accessGroups.push("globalaccess");
-            if ( !("globalaccess" in roles)) {
+            if (!("globalaccess" in roles)) {
               roles["globalaccess"] = [];
             }
             roles["globalaccess"].push(user._id.toString());
-/*             const createRole: CreateRoleDto = {
-              name: "globalaccess",
-            };
-            const createdRole = await this.rolesService.findOrCreate(
-              createRole,
-            );
-            if (createdRole) {
-              const createUserRole: CreateUserRoleDto = {
-                userId: user._id,
-                roleId: createdRole._id,
-              };
-              await this.rolesService.findOrCreateUserRole(createUserRole);
-            }
- */          
           }
 
           // creates user identity to store access groups
@@ -138,29 +109,26 @@ export class UsersService implements OnModuleInit {
             await this.createUserIdentity(createUserIdentity);
           }
         }
-        return roles;        
+        return roles;
       });
 
       const results = await Promise.all(accountPromises);
-      const roles = results.reduce( (a,b) => { 
-        Object.keys(b).forEach( (k) => { 
-          if ( k in a ) { 
-            a[k] = a[k].concat(b[k])
-          } 
-          else { 
-            a[k] = b[k]
+      const roles = results.reduce((a, b) => {
+        Object.keys(b).forEach((k) => {
+          if (k in a) {
+            a[k] = a[k].concat(b[k]);
+          } else {
+            a[k] = b[k];
           }
-        }); 
-        return a; 
-      }, {})
-      if ( roles ) {
+        });
+        return a;
+      }, {});
+      if (roles) {
         for (const [role, userIds] of Object.entries(roles)) {
           const createRole: CreateRoleDto = {
             name: role,
           };
-          const createdRole = await this.rolesService.findOrCreate(
-            createRole,
-          );
+          const createdRole = await this.rolesService.findOrCreate(createRole);
           if (createdRole && userIds) {
             userIds.forEach(async (userId) => {
               const createUserRole: CreateUserRoleDto = {
@@ -168,9 +136,9 @@ export class UsersService implements OnModuleInit {
                 roleId: createdRole._id,
               };
               await this.rolesService.findOrCreateUserRole(createUserRole);
-            })
-          } 
-        }  
+            });
+          }
+        }
       }
     }
   }

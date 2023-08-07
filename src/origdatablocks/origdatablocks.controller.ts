@@ -71,7 +71,8 @@ export class OrigDatablocksController {
   @ApiResponse({
     status: 201,
     type: OrigDatablock,
-    description: "Create a new origdataset and return its representation in SciCat",
+    description:
+      "Create a new origdataset and return its representation in SciCat",
   })
   async create(
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
@@ -85,44 +86,45 @@ export class OrigDatablocksController {
 
     createOrigDatablockDto = {
       ...createOrigDatablockDto,
-      "ownerGroup" : createOrigDatablockDto.ownerGroup ? createOrigDatablockDto.ownerGroup : dataset.ownerGroup,
-      "accessGroups" : (
-        createOrigDatablockDto.accessGroups 
+      "ownerGroup" : createOrigDatablockDto.ownerGroup
+        ? createOrigDatablockDto.ownerGroup
+	: dataset.ownerGroup,
+      "accessGroups" : createOrigDatablockDto.accessGroups 
         ? createOrigDatablockDto.accessGroups
-        : JSON.parse(JSON.stringify(dataset.accessGroups))
+        : JSON.parse(JSON.stringify(dataset.accessGroups)),
+      "instrumentGroup" : createOrigDatablockDto.instrumentGroup
+        ? createOrigDatablockDto.instrumentGroup
+	: dataset.instrumentGroup,
       ),
-      "instrumentGroup" : (
-        createOrigDatablockDto.instrumentGroup ? 
-        createOrigDatablockDto.instrumentGroup : 
-        dataset.instrumentGroup
-      ),
-    }
+    };
 
-    const origdatablock = await this.origDatablocksService.create(createOrigDatablockDto);
+    const origdatablock = await this.origDatablocksService.create(
+      createOrigDatablockDto
+    );
 
-    await this.updateDatasetSizeAndFiles(dataset.pid)
+    await this.updateDatasetSizeAndFiles(dataset.pid);
 
     return origdatablock;
   }
 
-
-  async updateDatasetSizeAndFiles(
-    pid: string
-  ) {
+  async updateDatasetSizeAndFiles(pid: string) {
     // updates datasets size
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
-      { "where" : { "datasetId" : pid } };
-    const datasetOrigdatablocks = await this.origDatablocksService.findAll(parsedFilters);
+      { where : { datasetId : pid } };
+    const datasetOrigdatablocks = await this.origDatablocksService.findAll(
+      parsedFilters
+    );
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
-      size: datasetOrigdatablocks.map(od => od.size).reduce((ps, a) => ps + a,0),
-      numberOfFiles: datasetOrigdatablocks.map(od => od.dataFileList.length).reduce((ps, a) => ps + a,0),
+      size: datasetOrigdatablocks
+        .map(od => od.size)
+	.reduce((ps, a) => ps + a,0),
+      numberOfFiles: datasetOrigdatablocks
+        .map(od => od.dataFileList.length)
+	.reduce((ps, a) => ps + a,0),
     };
 
-    await this.datasetsService.findByIdAndUpdate(
-      pid,
-      updateDatasetDto,
-    );    
+    await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);    
   }
 
   @AllowAny()
@@ -173,8 +175,9 @@ export class OrigDatablocksController {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving all origdatablocks\n" +
-      filterDescription,
+    description:
+      "Database filters to apply when retrieving all origdatablocks\n" +
+        filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -311,7 +314,8 @@ export class OrigDatablocksController {
     status: 200,
     description: "The origdatablock requested",
     type: OrigDatablock,
-  })  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
+  })
+  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
     return this.origDatablocksService.findOne({ _id: id });
   }
 
@@ -345,12 +349,12 @@ export class OrigDatablocksController {
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const origdatablock = await this.origDatablocksService.update(
+    const origdatablock = (await this.origDatablocksService.update(
       { _id: id },
       updateOrigDatablockDto,
-    ) as OrigDatablock;
+    )) as OrigDatablock;
 
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId)
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
 
     return origdatablock;
   }
@@ -363,7 +367,8 @@ export class OrigDatablocksController {
   @Delete("/:id")
   @ApiOperation({
     summary: "It deletes the origdatablock.",
-    description: "It delete the original datablock specified through the id specified.",
+    description: 
+      "It delete the original datablock specified through the id specified.",
   })
   @ApiParam({
     name: "id",
@@ -375,9 +380,11 @@ export class OrigDatablocksController {
     description: "No value is returned",
   })
   async remove(@Param("id") id: string): Promise<unknown> {
-    const origdatablock = await this.origDatablocksService.remove({ _id: id }) as OrigDatablock;
+    const origdatablock = (await this.origDatablocksService.remove({
+      _id: id,
+    })) as OrigDatablock;
 
-    await this.updateDatasetSizeAndFiles(origdatablock.datasetId)
+    await this.updateDatasetSizeAndFiles(origdatablock.datasetId);
 
     return origdatablock;
   }

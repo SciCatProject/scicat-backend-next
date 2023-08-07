@@ -43,7 +43,8 @@ export class OrigDatablocksService {
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock[]> {
     const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<OrigDatablockDocument> = filter.fields ?? {};
+    const fieldsProjection: FilterQuery<OrigDatablockDocument> =
+      filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     const origdatablockPromise = this.origDatablockModel
