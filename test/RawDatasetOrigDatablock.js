@@ -43,7 +43,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
     origDatablockWithValidChkAlg = { ...TestData.OrigDataBlockCorrect3 };
   });
 
-  it("adds a new raw dataset", async () => {
+  it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
@@ -60,7 +60,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("validate correct origDatablock data used later", async () => {
+  it("0020: validate correct origDatablock data used later", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
       .send(origDatablockData1)
@@ -77,7 +77,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("validate wrong origDatablock and expect false", async () => {
+  it("0030: validate wrong origDatablock and expect false", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockWrong)
@@ -94,7 +94,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("adds a new origDatablock with wrong account which should fail", async () => {
+  it("0040: adds a new origDatablock with wrong account which should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockData1)
@@ -104,7 +104,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect("Content-Type", /json/);
   });
 
-  it("add a new origDatablock with empty chkAlg should fail", async () => {
+  it("0050: add a new origDatablock with empty chkAlg should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockWithEmptyChkAlg)
@@ -117,7 +117,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("add a new origDatablock with valid chkAlg should success", async () => {
+  it("0060: add a new origDatablock with valid chkAlg should success", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockWithValidChkAlg)
@@ -134,7 +134,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("adds a new origDatablock with correct account", async () => {
+  it("0070: adds a new origDatablock with correct account", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockData1)
@@ -151,7 +151,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("adds a second origDatablock", async () => {
+  it("0080: adds a second origDatablock", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/OrigDatablocks`)
       .send(origDatablockData2)
@@ -168,7 +168,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Should fetch all origdatablocks belonging to the new dataset", async () => {
+  it("0090: Should fetch all origdatablocks belonging to the new dataset", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/OrigDatablocks`)
       .set("Accept", "application/json")
@@ -195,7 +195,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("The new dataset should be the sum of the size of the origDatablocks", async () => {
+  it("0100: The new dataset should be the sum of the size of the origDatablocks", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
@@ -211,7 +211,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("should fetch one dataset including related data", async () => {
+  it("0110: should fetch one dataset including related data", async () => {
     var limits = {
       skip: 0,
       limit: 10,
@@ -252,7 +252,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Should fetch some origDatablock by the full filename and dataset pid", async () => {
+  it("0130: Should fetch some origDatablock by the full filename and dataset pid", async () => {
     var fields = {
       datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "N1039-B410377.tif",
@@ -277,7 +277,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Should fetch some origDatablock by the partial filename and dataset pid", async () => {
+  it("0140: Should fetch some origDatablock by the partial filename and dataset pid", async () => {
     var fields = {
       datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": { $regex: "B410" },
@@ -302,7 +302,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Should fetch no origDatablock using a non existing filename", async () => {
+  it("0150: Should fetch no origDatablock using a non existing filename", async () => {
     var fields = {
       datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "this_file_does_not_exists.txt",
@@ -327,7 +327,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Should fetch one origDatablock using a specific filename and dataset id", async () => {
+  it("0160: Should fetch one origDatablock using a specific filename and dataset id", async () => {
     var fields = {
       datasetId: decodeURIComponent(datasetPid),
       "dataFileList.path": "this_unique_file.txt",
@@ -352,7 +352,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("Fetch origDatablock datafiles should include datasetExist field", async () => {
+  it("0170: Fetch origDatablock datafiles should include datasetExist field", async () => {
     const fields = {};
     const limits = {
       skip: 0,
@@ -376,7 +376,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+  it("0180: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
@@ -401,7 +401,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("should delete first OrigDatablock", async () => {
+  it("0190: should delete first OrigDatablock", async () => {
     return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId1}`,
@@ -411,7 +411,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect(200);
   });
 
-  it("should delete second OrigDatablock", async () => {
+  it("0200: should delete second OrigDatablock", async () => {
     return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId2}`,
@@ -421,7 +421,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect(200);
   });
 
-  it("should delete third OrigDatablock", async () => {
+  it("0210: should delete third OrigDatablock", async () => {
     return request(appUrl)
       .delete(
         `/api/v3/datasets/${datasetPid}/OrigDatablocks/${origDatablockId3}`,
@@ -431,7 +431,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       .expect(200);
   });
 
-  it("Should fetch no origdatablocks belonging to the new dataset", async () => {
+  it("0220: Should fetch no origdatablocks belonging to the new dataset", async () => {
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/OrigDatablocks`)
       .set("Accept", "application/json")
@@ -443,7 +443,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("The size and numFiles fields in the dataset should be zero", async () => {
+  it("0230: The size and numFiles fields in the dataset should be zero", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
@@ -456,7 +456,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("add a new origDatablock with invalid pid should fail", async () => {
+  it("0240: add a new origDatablock with invalid pid should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({ ...origDatablockData1, datasetId: "wrong" })
@@ -469,7 +469,7 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       });
   });
 
-  it("add a new origDatablock with valid pid should success", async () => {
+  it("0250: add a new origDatablock with valid pid should success", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({
@@ -479,14 +479,14 @@ describe("RawDatasetOrigDatablock: Test OrigDatablocks and their relation to raw
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("id").and.be.string;
       });
   });
 
-  it("should delete the newly created dataset", async () => {
+  it("0260: should delete the newly created dataset", async () => {
     return request(appUrl)
       .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
