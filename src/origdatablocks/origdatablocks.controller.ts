@@ -86,20 +86,19 @@ export class OrigDatablocksController {
 
     createOrigDatablockDto = {
       ...createOrigDatablockDto,
-      "ownerGroup" : createOrigDatablockDto.ownerGroup
+      ownerGroup: createOrigDatablockDto.ownerGroup
         ? createOrigDatablockDto.ownerGroup
-	: dataset.ownerGroup,
-      "accessGroups" : createOrigDatablockDto.accessGroups 
+        : dataset.ownerGroup,
+      accessGroups: createOrigDatablockDto.accessGroups
         ? createOrigDatablockDto.accessGroups
         : JSON.parse(JSON.stringify(dataset.accessGroups)),
-      "instrumentGroup" : createOrigDatablockDto.instrumentGroup
+      instrumentGroup: createOrigDatablockDto.instrumentGroup
         ? createOrigDatablockDto.instrumentGroup
-	: dataset.instrumentGroup,
-      ),
+        : dataset.instrumentGroup,
     };
 
     const origdatablock = await this.origDatablocksService.create(
-      createOrigDatablockDto
+      createOrigDatablockDto,
     );
 
     await this.updateDatasetSizeAndFiles(dataset.pid);
@@ -110,21 +109,21 @@ export class OrigDatablocksController {
   async updateDatasetSizeAndFiles(pid: string) {
     // updates datasets size
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
-      { where : { datasetId : pid } };
+      { where: { datasetId: pid } };
     const datasetOrigdatablocks = await this.origDatablocksService.findAll(
-      parsedFilters
+      parsedFilters,
     );
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
       size: datasetOrigdatablocks
-        .map(od => od.size)
-	.reduce((ps, a) => ps + a,0),
+        .map((od) => od.size)
+        .reduce((ps, a) => ps + a, 0),
       numberOfFiles: datasetOrigdatablocks
-        .map(od => od.dataFileList.length)
-	.reduce((ps, a) => ps + a,0),
+        .map((od) => od.dataFileList.length)
+        .reduce((ps, a) => ps + a, 0),
     };
 
-    await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);    
+    await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
   @AllowAny()
@@ -177,7 +176,7 @@ export class OrigDatablocksController {
     name: "filter",
     description:
       "Database filters to apply when retrieving all origdatablocks\n" +
-        filterDescription,
+      filterDescription,
     required: false,
     type: String,
     example: filterExample,
@@ -367,7 +366,7 @@ export class OrigDatablocksController {
   @Delete("/:id")
   @ApiOperation({
     summary: "It deletes the origdatablock.",
-    description: 
+    description:
       "It delete the original datablock specified through the id specified.",
   })
   @ApiParam({
