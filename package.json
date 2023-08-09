@@ -122,6 +122,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)/"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
