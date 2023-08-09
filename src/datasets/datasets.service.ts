@@ -9,7 +9,12 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import mongoose, {
+  FilterQuery,
+  Model,
+  QueryOptions,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -20,6 +25,7 @@ import {
   extractMetadataKeys,
   parseLimitFilters,
 } from "src/common/utils";
+import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
@@ -47,6 +53,7 @@ export class DatasetsService {
     private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
+    private elsticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
   ) {}
 
@@ -66,7 +73,6 @@ export class DatasetsService {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
-
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
       .limit(limit)
@@ -88,12 +94,49 @@ export class DatasetsService {
         "pid",
         filter.fields as FilterQuery<DatasetDocument>,
       );
+
     const whereClause: FilterQuery<DatasetDocument> = {
       ...filterQuery,
       ...extraWhereClause,
     };
-    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
+    const dataWithScores = new Map();
+    if (filter.fields?.text) {
+      const result = await this.elsticSearchService.search({
+        search_term: filter.fields.text,
+      });
+      const pids = result.data.map((data) => {
+        dataWithScores.set(data.pid, data.relevancy_score);
+        console.log("---result", {
+          data: data.pid,
+          name: data.datasetName,
+          _score: data.relevancy_score,
+        });
+
+        return data.pid;
+      });
+
+      const datasets = await this.datasetModel
+        .find({ _id: { $in: pids } }, null, modifiers)
+        .exec();
+
+      const finalResult = datasets
+        .map((dataset) => {
+          const score = dataWithScores.get(dataset.pid);
+
+          return {
+            ...dataset.toObject(),
+            relevancy_score: score,
+          };
+        })
+        .sort((a, b) => b.relevancy_score - a.relevancy_score);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return finalResult as any;
+    }
+
+    console.log("-------------  wrong trigged  -------------");
     const datasets = await this.datasetModel
       .find(whereClause, null, modifiers)
       .exec();

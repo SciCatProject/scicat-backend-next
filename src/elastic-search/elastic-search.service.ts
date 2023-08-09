@@ -6,17 +6,24 @@ import { SearchQueryBuilderService } from "./query-builder.service";
 import { v4 as uuidv4 } from "uuid";
 import { SearchTotalHits } from "@elastic/elasticsearch/lib/api/types";
 
+type searchType =
+  | "text"
+  | "keyword"
+  | "long"
+  | "integer"
+  | "date"
+  | "boolean"
+  | "object"
+  | "nested";
+
 interface MappingProperty {
-  type:
-    | "text"
-    | "keyword"
-    | "long"
-    | "integer"
-    | "date"
-    | "boolean"
-    | "object"
-    | "nested";
-  [key: string]: string | boolean;
+  type: searchType;
+  fields?: {
+    keyword: {
+      type: searchType;
+    };
+  };
+  [key: string]: any;
 }
 
 interface MappingObject {
@@ -29,9 +36,11 @@ export const datasetMappings: MappingObject = {
   properties: {
     description: {
       type: "text",
+      analyzer: "ngram_analyzer",
     },
     datasetName: {
       type: "text",
+      analyzer: "ngram_analyzer",
     },
     scientificMetadata: {
       type: "nested",
@@ -44,10 +53,11 @@ const defaultElasticSettings = {
   index: {
     number_of_replicas: 0,
   },
+  dynamic: true,
 };
 
 @Injectable()
-export class SearchService {
+export class ElasticSearchService {
   constructor(
     private readonly esService: ElasticsearchService,
     private readonly builderService: SearchQueryBuilderService,
@@ -63,7 +73,7 @@ export class SearchService {
             index,
             body: {
               mappings: datasetMappings,
-              settings: defaultElasticSettings,
+              settings: defaultElasticSettings as any,
             },
           })
           .catch((err) => {
@@ -90,15 +100,15 @@ export class SearchService {
       throw err;
     }
   }
-  public async search(searchParam: SearchDtoParam) {
+  public async search(searchParam: SearchDtoParam, limit = 20) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = await this.esService.search<any>({
         index: process.env.ELASTIC_INDEX || "",
         body: this.builderService.buildSearchQuery(searchParam),
         from: 0,
-        size: 5,
-        min_score: 5,
+        size: limit,
+        min_score: 0.5,
       });
       const totalCount = (body.hits.total as SearchTotalHits).value ?? 0;
       const hits = body.hits.hits;

@@ -1,8 +1,8 @@
 import { Module, OnModuleInit } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ElasticsearchModule } from "@nestjs/elasticsearch";
-import { SearchServiceController } from "./elastic-search.controller";
-import { SearchService } from "./elastic-search.service";
+import { ElasticSearchServiceController } from "./elastic-search.controller";
+import { ElasticSearchService } from "./elastic-search.service";
 import { SearchQueryBuilderService } from "./query-builder.service";
 
 @Module({
@@ -24,13 +24,17 @@ import { SearchQueryBuilderService } from "./query-builder.service";
       inject: [ConfigService],
     }),
   ],
-  controllers: [SearchServiceController],
-  providers: [SearchService, SearchQueryBuilderService],
-  exports: [ElasticsearchModule, SearchService, SearchQueryBuilderService],
+  controllers: [ElasticSearchServiceController],
+  providers: [ElasticSearchService, SearchQueryBuilderService],
+  exports: [
+    ElasticsearchModule,
+    ElasticSearchService,
+    SearchQueryBuilderService,
+  ],
 })
 export class ElasticSearchModule implements OnModuleInit {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(private readonly elasticSearchService: ElasticSearchService) {}
   public async onModuleInit() {
-    await this.searchService.createIndex();
+    await this.elasticSearchService.createIndex();
   }
 }
