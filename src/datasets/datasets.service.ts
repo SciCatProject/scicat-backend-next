@@ -102,46 +102,46 @@ export class DatasetsService {
 
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
     const dataWithScores = new Map();
-    if (filter.fields?.text) {
-      const result = await this.elsticSearchService.search({
-        search_term: filter.fields.text,
-      });
-      const pids = result.data.map((data) => {
-        dataWithScores.set(data.pid, data.relevancy_score);
-        console.log("---result", {
-          data: data.pid,
-          name: data.datasetName,
-          _score: data.relevancy_score,
-        });
 
-        return data.pid;
-      });
+    console.log("filter.fields filter.fields ", filter.fields);
 
-      const datasets = await this.datasetModel
-        .find({ _id: { $in: pids } }, null, modifiers)
-        .exec();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await this.elsticSearchService.search(filter.fields as any);
+    const pids = result.data.map((data) => {
+      dataWithScores.set(data.pid, data.relevancy_score);
+      // console.log("---result", {
+      //   data: data.pid,
+      //   name: data.datasetName,
+      //   group: data.ownerGroup,
+      //   _score: data.relevancy_score,
+      // });
 
-      const finalResult = datasets
-        .map((dataset) => {
-          const score = dataWithScores.get(dataset.pid);
+      return data.pid;
+    });
 
-          return {
-            ...dataset.toObject(),
-            relevancy_score: score,
-          };
-        })
-        .sort((a, b) => b.relevancy_score - a.relevancy_score);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return finalResult as any;
-    }
-
-    console.log("-------------  wrong trigged  -------------");
     const datasets = await this.datasetModel
-      .find(whereClause, null, modifiers)
+      .find({ _id: { $in: pids } }, null, modifiers)
       .exec();
 
-    return datasets;
+    const finalResult = datasets
+      .map((dataset) => {
+        const score = dataWithScores.get(dataset.pid);
+
+        return {
+          ...dataset.toObject(),
+          relevancy_score: score,
+        };
+      })
+      .sort((a, b) => b.relevancy_score - a.relevancy_score);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return finalResult as any;
+
+    // const datasets = await this.datasetModel
+    //   .find(whereClause, null, modifiers)
+    //   .exec();
+
+    // return datasets;
   }
 
   async fullFacet(

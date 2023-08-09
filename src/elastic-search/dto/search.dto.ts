@@ -11,9 +11,45 @@ export class SearchDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Type any thing here",
+    default: "",
+    description: "text query",
   })
   @IsOptional()
-  @IsString()
-  readonly search_term: string;
+  readonly text: string;
+
+  @ApiProperty({
+    type: Array,
+    required: false,
+    default: [],
+    description: "ownerGroup",
+  })
+  @IsOptional()
+  readonly ownerGroup: [];
+
+  @ApiProperty({
+    type: Array,
+    required: false,
+    default: [],
+    description: "creationLocation",
+  })
+  @IsOptional()
+  readonly creationLocation: [];
+
+  @ApiProperty({
+    type: Array,
+    required: false,
+    default: [],
+    description: "type",
+  })
+  @IsOptional()
+  readonly type: [];
+
+  @ApiProperty({
+    type: Array,
+    required: false,
+    default: "",
+    description: "keywords",
+  })
+  @IsOptional()
+  readonly keywords: [];
 }

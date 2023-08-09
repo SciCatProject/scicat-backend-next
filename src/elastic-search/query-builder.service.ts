@@ -1,57 +1,68 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { SearchDtoParam } from "./dto/search.dto";
 import {
+  EqlSearchRequest,
   QueryDslQueryContainer,
   QueryDslTextQueryType,
 } from "@elastic/elasticsearch/lib/api/types";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
+interface Filter {
+  terms: {
+    [key: string]: string[];
+  };
+}
+const addTermsFilter = (
+  fieldName: string,
+  values: unknown,
+  filterArray: Filter[],
+) => {
+  if (Array.isArray(values)) {
+    filterArray.push({
+      terms: {
+        [fieldName]: values as string[],
+      },
+    });
+  }
+};
 @Injectable()
 export class SearchQueryBuilderService {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  constructor() {}
+  public buildSearchQuery(searchParam: IDatasetFields) {
+    const { text = "", ...fields } = searchParam;
 
-  public buildSearchQuery(searchParam: SearchDtoParam) {
-    const { search_term } = searchParam;
+    const fieldNames = ["keywords", "type", "creationLocation", "ownerGroup"];
+
     try {
       const query: QueryDslQueryContainer[] = [];
-      let flag = false;
-      if (search_term) {
-        flag = true;
+      const filter: Filter[] = [];
 
-        console.log("---helllo", search_term);
-
+      if (text) {
         query.push({
           multi_match: {
-            query: `${search_term}`,
+            query: `${text}`,
             type: "best_fields",
             fields: ["description", "datasetName"],
           },
         });
       }
 
-      if (flag) {
-        return {
-          query: {
-            bool: {
-              must: query,
-              should: [],
-            },
-          },
-        };
+      for (const fieldName of fieldNames) {
+        addTermsFilter(fieldName, fields[fieldName], filter);
       }
-      return {};
+
+      return {
+        query: {
+          bool: {
+            must: query,
+            filter: filter,
+            should: [],
+          },
+        },
+      };
+      // return {};
     } catch (err) {
       Logger.error("elastic search build search query failed");
       throw err;
     }
-  }
-
-  private selectQueryType(search_term: string): QueryDslTextQueryType {
-    const prefixes = /[_@]/;
-    const hasPrefixes = prefixes.test(search_term);
-    // if (hasPrefixes) {
-    //   return "phrase_prefix";
-    // }
-    return "cross_fields";
   }
 }
