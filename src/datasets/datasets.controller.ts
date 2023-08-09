@@ -1388,7 +1388,7 @@ export class DatasetsController {
   ): Promise<OrigDatablock[]> {
     await this.checkPermissionsForDataset(request, id);
 
-    return this.origDatablocksService.findAll({ datasetId: id });
+    return this.origDatablocksService.findAll({ where: { datasetId: id } });
   }
 
   // PATCH /datasets/:id/origdatablocks/:fk
@@ -1500,7 +1500,7 @@ export class DatasetsController {
       });
       // all the remaing orig datablocks for this dataset
       const odb = await this.origDatablocksService.findAll({
-        datasetId: datasetId,
+        where: { datasetId: datasetId },
       });
       // update dataset size and files number
       const updateDatasetDto: PartialUpdateDatasetDto = {
