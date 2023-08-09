@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
-import { SearchDtoParam } from "./dto/search.dto";
 import { SearchQueryBuilderService } from "./query-builder.service";
 import { v4 as uuidv4 } from "uuid";
 import { SearchTotalHits } from "@elastic/elasticsearch/lib/api/types";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
 type searchType =
   | "text"
@@ -100,7 +100,7 @@ export class ElasticSearchService {
       throw err;
     }
   }
-  public async search(searchParam: SearchDtoParam, limit = 20) {
+  public async search(searchParam: IDatasetFields, limit = 20) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = await this.esService.search<any>({
@@ -108,8 +108,9 @@ export class ElasticSearchService {
         body: this.builderService.buildSearchQuery(searchParam),
         from: 0,
         size: limit,
-        min_score: 0.5,
+        min_score: 0,
       });
+      console.log("---body", body);
       const totalCount = (body.hits.total as SearchTotalHits).value ?? 0;
       const hits = body.hits.hits;
 
@@ -117,6 +118,7 @@ export class ElasticSearchService {
         return {
           pid: item._source.pid,
           datasetName: item._source.datasetName,
+          ownerGroup: item._source.ownerGroup, // TODO: remove this and description and datasetName later
           description: item._source.description,
           relevancy_score: item._score,
         };

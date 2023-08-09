@@ -1,6 +1,7 @@
 import { Controller, Body, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiBody } from "@nestjs/swagger";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { SearchDto } from "./dto/search.dto";
 import { ElasticSearchService } from "./elastic-search.service";
 
@@ -16,8 +17,10 @@ export class ElasticSearchServiceController {
   @ApiBody({
     type: SearchDto,
   })
+
   //@UseGuards(new JWTAuthGuard())
-  async fetchESResults(@Body() searchDto: SearchDto) {
+  async fetchESResults(@Body() searchDto: IDatasetFields) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.elasticSearchService.search(searchDto);
   }
 
