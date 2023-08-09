@@ -1,6 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { SearchDtoParam } from "./dto/search.dto";
-import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
+import {
+  QueryDslQueryContainer,
+  QueryDslTextQueryType,
+} from "@elastic/elasticsearch/lib/api/types";
 
 @Injectable()
 export class SearchQueryBuilderService {
@@ -8,23 +11,24 @@ export class SearchQueryBuilderService {
   constructor() {}
 
   public buildSearchQuery(searchParam: SearchDtoParam) {
-    // tslint:disable-next-line:naming-convention
     const { search_term } = searchParam;
     try {
       const query: QueryDslQueryContainer[] = [];
       let flag = false;
       if (search_term) {
         flag = true;
+
+        console.log("---helllo", search_term);
+
         query.push({
           multi_match: {
             query: `${search_term}`,
             type: "best_fields",
             fields: ["description", "datasetName"],
-            fuzziness: "AUTO",
-            prefix_length: 1,
           },
         });
       }
+
       if (flag) {
         return {
           query: {
@@ -40,5 +44,14 @@ export class SearchQueryBuilderService {
       Logger.error("elastic search build search query failed");
       throw err;
     }
+  }
+
+  private selectQueryType(search_term: string): QueryDslTextQueryType {
+    const prefixes = /[_@]/;
+    const hasPrefixes = prefixes.test(search_term);
+    // if (hasPrefixes) {
+    //   return "phrase_prefix";
+    // }
+    return "cross_fields";
   }
 }

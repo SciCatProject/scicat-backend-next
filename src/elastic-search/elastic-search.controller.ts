@@ -2,24 +2,23 @@ import { Controller, Body, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiBody } from "@nestjs/swagger";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { SearchDto } from "./dto/search.dto";
-import { SearchService } from "./elastic-search.service";
+import { ElasticSearchService } from "./elastic-search.service";
 
 @ApiBearerAuth()
 @ApiTags("search-service")
 @Controller("search-service")
-export class SearchServiceController {
-  constructor(private readonly service: SearchService) {}
+export class ElasticSearchServiceController {
+  constructor(private readonly elasticSearchService: ElasticSearchService) {}
 
   @HttpCode(HttpStatus.CREATED)
   @AllowAny()
-  // @ApiConsumes("application/json")
   @Post("/search")
   @ApiBody({
     type: SearchDto,
   })
   //@UseGuards(new JWTAuthGuard())
   async fetchESResults(@Body() searchDto: SearchDto) {
-    return this.service.search(searchDto);
+    return this.elasticSearchService.search(searchDto);
   }
 
   // @HttpCode(HttpStatus.CREATED)
