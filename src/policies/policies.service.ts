@@ -53,22 +53,6 @@ export class PoliciesService implements OnModuleInit {
         "PoliciesService",
       );
       Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================\n",
-        "PoliciesService",
-      );
-      Logger.warn(
         "    Warning: your DB contains old ID format   ",
         "PoliciesService",
       );
@@ -85,22 +69,6 @@ export class PoliciesService implements OnModuleInit {
         "PoliciesService",
       );
       Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
-        "===================================================",
-        "PoliciesService",
-      );
-      Logger.warn(
         "===================================================\n",
         "PoliciesService",
       );
@@ -112,8 +80,13 @@ export class PoliciesService implements OnModuleInit {
     }
   }
 
-  async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
-    const username = (this.request.user as JWTUser)?.username;
+  async create(
+    createPolicyDto: CreatePolicyDto,
+    policyUsername: string | null = null,
+  ): Promise<Policy> {
+    const username = policyUsername
+      ? policyUsername
+      : (this.request.user as JWTUser)?.username;
     if (!username) {
       throw new UnauthorizedException("User not present in the request");
     }
@@ -246,6 +219,7 @@ export class PoliciesService implements OnModuleInit {
     accessGroups: string[],
     ownerEmail: string,
     tapeRedundancy: string,
+    policyUsername: string | null = null,
   ) {
     const policy = await this.policyModel.findOne({ ownerGroup }).exec();
 
@@ -275,7 +249,7 @@ export class PoliciesService implements OnModuleInit {
     };
 
     try {
-      await this.create(defaultPolicy);
+      await this.create(defaultPolicy, policyUsername);
     } catch (error) {
       throw new InternalServerErrorException(
         error,

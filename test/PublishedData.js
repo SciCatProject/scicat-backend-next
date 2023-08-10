@@ -63,7 +63,7 @@ describe("PublishedData: Test of access to published data", () => {
     done();
   });
 
-  it("adds a published data", async () => {
+  it("0010: adds a published data", async () => {
     return request(appUrl)
       .post("/api/v3/PublishedData")
       .send(publishedData)
@@ -76,7 +76,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fetch this new published data without authorization", async () => {
+  it("0020: should fetch this new published data without authorization", async () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
@@ -90,7 +90,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fetch this new published data", async () => {
+  it("0030: should fetch this new published data", async () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
@@ -106,7 +106,7 @@ describe("PublishedData: Test of access to published data", () => {
   });
 
   // NOTE: This is added because we need dataset for registering published data
-  it("adds a new raw dataset", async () => {
+  it("0040: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(testdataset)
@@ -123,7 +123,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should register this new published data", async () => {
+  it("0050: should register this new published data", async () => {
     return request(appUrl)
       .post("/api/v3/PublishedData/" + doi + "/register")
       .set("Accept", "application/json")
@@ -132,7 +132,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("should fetch this new published data", async () => {
+  it("0060: should fetch this new published data", async () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
@@ -162,7 +162,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
-  it("should fetch this new published data", async () => {
+  it("0070: should fetch this new published data", async () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
@@ -171,7 +171,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("adds a new nonpublic dataset", async () => {
+  it("0080: adds a new nonpublic dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(nonpublictestdataset)
@@ -219,7 +219,7 @@ describe("PublishedData: Test of access to published data", () => {
   //     });
   // });
 
-  it("should delete this published data", async () => {
+  it("0090: should delete this published data", async () => {
     return request(appUrl)
       .delete("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
@@ -228,7 +228,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("should fetch this new dataset", async () => {
+  it("0100: should fetch this new dataset", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
@@ -240,7 +240,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fetch the non public dataset as ingestor", async () => {
+  it("0110: should fetch the non public dataset as ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pidnonpublic)
       .set("Accept", "application/json")
@@ -252,13 +252,13 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("adds a new origDatablock", async () => {
+  it("0120: adds a new origDatablock", async () => {
     return request(appUrl)
       .post("/api/v3/OrigDatablocks")
       .send(origDataBlock)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(41780189);
@@ -267,7 +267,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should add a new attachment to this dataset", async () => {
+  it("0130: should add a new attachment to this dataset", async () => {
     const testAttachment = {
       thumbnail: "data/abc123",
       caption: "Some caption",
@@ -305,7 +305,7 @@ describe("PublishedData: Test of access to published data", () => {
   });
 
   // NOTE: Getting dataset attachment by id is missing but we modify the test little bit and check if created attachment is part of the array of attachments returned by /datasets/{id}/attachments
-  it("should fetch this dataset attachment", async () => {
+  it("0140: should fetch this dataset attachment", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid + "/attachments")
       .set("Accept", "application/json")
@@ -318,7 +318,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fetch some published datasets anonymously", async () => {
+  it("0150: should fetch some published datasets anonymously", async () => {
     var fields = {
       ownerGroup: ["p13388"],
     };
@@ -342,7 +342,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fail to fetch non-public dataset anonymously", async () => {
+  it("0160: should fail to fetch non-public dataset anonymously", async () => {
     var fields = {
       ownerGroup: [nonpublictestdataset.ownerGroup],
     };
@@ -366,7 +366,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should fetch one dataset including related data anonymously", async () => {
+  it("0170: should fetch one dataset including related data anonymously", async () => {
     var limits = {
       skip: 0,
       limit: 2,
@@ -406,7 +406,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should delete this dataset attachment", async () => {
+  it("0180: should delete this dataset attachment", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
@@ -414,7 +414,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect(200);
   });
 
-  it("should delete a OrigDatablock", async () => {
+  it("0190: should delete a OrigDatablock", async () => {
     return request(appUrl)
       .delete("/api/v3/OrigDatablocks/" + idOrigDatablock)
       .set("Accept", "application/json")
@@ -426,7 +426,7 @@ describe("PublishedData: Test of access to published data", () => {
       });
   });
 
-  it("should delete the nonpublic dataset", async () => {
+  it("0200: should delete the nonpublic dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pidnonpublic)
       .set("Accept", "application/json")
@@ -435,7 +435,7 @@ describe("PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("should delete this dataset", async () => {
+  it("0210: should delete this dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
