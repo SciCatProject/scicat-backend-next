@@ -2,8 +2,8 @@
 
 var accessToken = null;
 
-describe("Authorization functionalities", () => {
-  it("Ingestor login fails with incorrect credentials", async () => {
+describe("0100: Authorization functionalities", () => {
+  it("0010: Ingestor login fails with incorrect credentials", async () => {
     return request(appUrl)
       .post("/api/v3/auth/login")
       .send({
@@ -16,14 +16,14 @@ describe("Authorization functionalities", () => {
       });
   });
 
-  it("Logout with unauthenticated user should fail", async () => {
+  it("0020: Logout with unauthenticated user should fail", async () => {
     return request(appUrl)
       .post("/api/v3/auth/logout")
       .set("Accept", "application/json")
       .expect(401);
   });
 
-  it("Login should succeed with correct credentials", async () => {
+  it("0030: Login should succeed with correct credentials", async () => {
     return request(appUrl)
       .post("/api/v3/auth/login")
       .send({
@@ -39,7 +39,7 @@ describe("Authorization functionalities", () => {
       });
   });
 
-  it("Logout with authenticated user should succeed", async () => {
+  it("0040: Logout with authenticated user should succeed", async () => {
     return request(appUrl)
       .post("/api/v3/auth/logout")
       .set("Accept", "application/json")

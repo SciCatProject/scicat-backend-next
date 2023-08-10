@@ -2,7 +2,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-describe("CheckDifferentDatasetTypes: Check different dataset types and their inheritance", () => {
+describe("0200: CheckDifferentDatasetTypes: Check different dataset types and their inheritance", () => {
   let countDataset = 0;
   let countRawDataset = 0;
   let countDerivedDataset = 0;
