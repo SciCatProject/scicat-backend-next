@@ -12,15 +12,20 @@ import { Message } from "./schemas/message.schema";
 
 @Injectable()
 export class LogbooksService {
-  private logbookEnabled = this.configService.get<boolean>("logbook.enabled");
-  private baseUrl = this.configService.get<string>("logbook.baseUrl");
-  private username = this.configService.get<string>("logbook.username");
-  private password = this.configService.get<string>("logbook.password");
+  private logbookEnabled;
+  private baseUrl;
+  private username;
+  private password;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-  ) {}
+  ) {
+    this.logbookEnabled = this.configService.get<boolean>("logbook.enabled");
+    this.baseUrl = this.configService.get<string>("logbook.baseUrl");
+    this.username = this.configService.get<string>("logbook.username");
+    this.password = this.configService.get<string>("logbook.password");
+  }
 
   async login(username: string, password: string): Promise<{ token: string }> {
     const credentials = { username, password };
