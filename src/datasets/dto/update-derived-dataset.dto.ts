@@ -13,7 +13,7 @@ export class UpdateDerivedDatasetDto extends CreateDerivedDatasetDto {
 
   @IsOptional()
   @Exclude()
-  readonly pid?: string;
+  declare readonly pid?: string;
 
   @IsOptional()
   @Exclude()

@@ -13,7 +13,7 @@ export class UpdateRawDatasetDto extends CreateRawDatasetDto {
 
   @IsOptional()
   @Exclude()
-  readonly pid?: string;
+  declare readonly pid?: string;
 
   @IsOptional()
   @Exclude()
