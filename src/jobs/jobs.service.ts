@@ -25,7 +25,7 @@ import { Job, JobDocument } from "./schemas/job.schema";
 @Injectable()
 export class JobsService {
   private domainName = process.env.HOST;
-  private smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
+  private smtpMessageFrom;
 
   constructor(
     private configService: ConfigService,
@@ -33,7 +33,9 @@ export class JobsService {
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private mailService: MailService,
     private policiesService: PoliciesService,
-  ) {}
+  ) {
+    this.smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
+  }
 
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const createdJob = new this.jobModel(createJobDto);
