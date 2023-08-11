@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:14-alpine
+FROM node:18-alpine
 RUN apk update && apk upgrade
 
 ENV NODE_ENV "production"

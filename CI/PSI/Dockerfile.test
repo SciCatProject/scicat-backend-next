@@ -1,11 +1,11 @@
 # gives a docker image below 200 MB
-FROM node:10
+FROM node:18
 
 ENV NODE_ENV "qa"
 ENV PORT 3000
 EXPOSE 3000
 # create local user to avoid running as root
-RUN addgroup mygroup 
+RUN addgroup mygroup
 RUN useradd -ms /bin/bash myuser
 RUN mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 RUN apt update && apt install -y rabbitmq-server
