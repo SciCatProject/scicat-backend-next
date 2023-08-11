@@ -7,8 +7,14 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "transformIgnorePatterns": ["node_modules/(?!axios)/"],
   "moduleNameMapper": {
     "src/(.*)": "<rootDir>/src/$1"
+  },
+  "transformIgnorePatterns": ["node_modules/(?!axios)/"],
+  "globals": {
+    "ts-jest": {
+      "isolatedModules": true
+    }
   }
+
 }
