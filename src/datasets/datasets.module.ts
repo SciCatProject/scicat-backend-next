@@ -48,6 +48,7 @@ import { PoliciesModule } from "src/policies/policies.module";
                 this.accessGroups,
                 this.ownerEmail ?? "",
                 av,
+                this.createdBy,
               );
             }
             this.classification = `IN=medium,AV=${av},CO=low`;

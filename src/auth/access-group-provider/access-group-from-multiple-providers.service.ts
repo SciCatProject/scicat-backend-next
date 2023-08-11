@@ -22,11 +22,6 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
         await accessGroupProvider.getAccessGroups(userPayload);
       accessGroups.push(...accessGroupsFromProvider);
     }
-
-    Logger.log(
-      "Access groups from multiple providers getESSAccessGroups : " +
-        accessGroups.join(","),
-    );
     return accessGroups;
   }
 }
