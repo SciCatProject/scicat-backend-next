@@ -123,12 +123,16 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!axios)/"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
   }
 }
