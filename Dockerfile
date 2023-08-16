@@ -1,4 +1,4 @@
-FROM node:16-alpine AS dev
+FROM node:18-alpine AS dev
 
 # Prepare app directory
 WORKDIR /home/node/app
@@ -6,16 +6,17 @@ COPY . .
 
 # Set up local user
 RUN mkdir /home/node/app/dist
-RUN chown -R node:node /home/node/app
-USER node
+RUN npm install -g npm@9.8.1
 
 # Install dependencies
+
 RUN npm install glob rimraf
 RUN npm install
 
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 
 # Prepare app directory
+RUN npm install -g npm@9.8.1
 WORKDIR /usr/src/app
 
 # Set up local user
@@ -28,7 +29,7 @@ RUN npm run build
 # Remove development dependencies
 RUN npm prune --production
 
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Prepare app directory
 WORKDIR /home/node/app
@@ -48,4 +49,4 @@ COPY ./package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

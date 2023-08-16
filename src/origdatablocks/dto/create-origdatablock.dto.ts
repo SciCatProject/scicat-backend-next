@@ -63,5 +63,5 @@ export class CreateOrigDatablockDto extends OwnableDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  readonly ownerGroup: string;
+  declare readonly ownerGroup: string;
 }

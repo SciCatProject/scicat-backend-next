@@ -1,5 +1,5 @@
 # gives a docker image below 200 MB
-FROM node:10.16.1-alpine
+FROM node:18-alpine
 RUN apk update && apk upgrade && \
     apk add --no-cache git
 
