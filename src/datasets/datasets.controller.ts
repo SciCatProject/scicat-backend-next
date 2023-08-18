@@ -86,9 +86,9 @@ import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-dat
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionFields,
+  datasetsFullQueryDescriptionFields,
   fullQueryDescriptionLimits,
-  fullQueryExampleFields,
+  datasetsFullQueryExampleFields,
   fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
@@ -563,14 +563,14 @@ export class DatasetsController {
     name: "fields",
     description:
       "Database filters to apply when retrieving datasets\n" +
-      fullQueryDescriptionFields,
+      datasetsFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: fullQueryExampleFields,
+    example: datasetsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "limits",
-    description: 
+    description:
       "Define further query parameters like skip, limit, order\n" +
       fullQueryDescriptionLimits,
     required: false,

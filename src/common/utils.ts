@@ -693,7 +693,7 @@ export const filterDescription =
 export const fullQueryExampleLimits =
   '{"limit": 1, "skip": 1, "order": "creationTime:desc"}';
 
-export const fullQueryExampleFields =
+export const datasetsFullQueryExampleFields =
   '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
 
 export const fullQueryDescriptionLimits =
@@ -705,7 +705,7 @@ export const fullQueryDescriptionLimits =
 }\n \
 </pre>';
 
-export const fullQueryDescriptionFields = 
+export const datasetsFullQueryDescriptionFields =
   '<pre>\n  \
 {\n \
   "mode":{\n \
@@ -734,6 +734,49 @@ export const fullQueryDescriptionFields =
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
   "sharedWith": "email", <optional>\n \
+}\n \
+  </pre>';
+
+export const proposalsFullQueryExampleFields =
+  '{"text": "some text", "proposalId": "proposal_id"}';
+
+export const proposalsFullQueryDescriptionFields =
+  '<pre>\n \
+{\n \
+  "text": string, <optional>\n \
+  "startTime": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "proposalId": { "regex": string, "options": string }, <optional>\n \
+  "title": { "regex": string, "options": string }, <optional>\n \
+  "firstname": { "regex": string, "options": string }, <optional>\n \
+  "lastname": { "regex": string, "options": string }, <optional>\n \
+  "endTime": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "userGroups": ["group1", ...],\n \
+}\n \
+  </pre>';
+
+export const samplesFullQueryExampleFields =
+  '{"text": "some text", "metadataKey": "key", "characteristics": [{"lhs":"material","relation":"EQUAL_TO_STRING","rhs":"my material"}]}';
+
+export const samplesFullQueryDescriptionFields =
+  '<pre>\n \
+{\n \
+  "text": string, <optional>\n \
+  "metadataKey": string, <optional>\n \
+  "charactersitics": [ <optional>\n \
+    {\n \
+      "lhs":<property>>,\n \
+      "relation":["EQUAL_TO_STRING","EQUAL_TO_NUMERIC","GREATER_THAN","LESS_THAN"],\n \
+      "rhs":<value>,\n \
+      "unit":<unit>,\n \
+    },\n \
+    ...\n \
+  ],\n \
 }\n \
   </pre>';
 
