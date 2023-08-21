@@ -34,7 +34,6 @@ import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
 
 @Module({
   imports: [
-    ElasticSearchModule,
     AttachmentsModule,
     AuthModule,
     CaslModule,
@@ -47,6 +46,7 @@ import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
     InitialDatasetsModule,
     InstrumentsModule,
     JobsModule,
+    ElasticSearchModule,
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({

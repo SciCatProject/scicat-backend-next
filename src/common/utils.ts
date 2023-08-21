@@ -602,6 +602,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
   fields: Y,
   facets: string[],
   subField = "",
+  esPids?: string[],
 ): PipelineStage[] => {
   const pipeline: PipelineStage[] = [];
   const facetMatch: Record<string, unknown> = {};
@@ -894,4 +895,9 @@ const replaceLikeOperatorRecursive = (
   }
 
   return output;
+};
+
+export const isObjectWithOneKey = (obj: object): boolean => {
+  const keys = Object.keys(obj);
+  return keys.length === 1;
 };
