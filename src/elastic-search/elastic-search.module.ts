@@ -9,6 +9,7 @@ import { SearchQueryBuilderService } from "./query-builder.service";
 @Module({
   imports: [
     forwardRef(() => DatasetsModule),
+    ConfigModule,
     ElasticsearchModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

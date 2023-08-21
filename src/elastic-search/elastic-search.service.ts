@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
 import { SearchQueryBuilderService } from "./query-builder.service";
@@ -7,38 +6,16 @@ import {
   SearchTotalHits,
   IndicesIndexSettingsAnalysis,
   MappingDynamicTemplate,
+  SearchRequest,
 } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import { autocomplete_tokenizer } from "./settings/indexSetting";
+import {
+  defaultElasticSettings,
+  dynamic_template,
+} from "./settings/indexSetting";
 import { datasetMappings } from "./mappings/datasetFieldMapping";
 import { MappingObject } from "./interfaces/mappingInterface";
-
-const defaultElasticSettings = {
-  dynamic: true,
-  index: {
-    max_result_window: process.env.ES_MAX_RESULT,
-    number_of_replicas: 0,
-    mapping: {
-      total_fields: {
-        limit: process.env.ES_FIELDS_LIMIT,
-      },
-    },
-  },
-  analysis: {
-    analyzer: {
-      autocomplete: {
-        tokenizer: "autocomplete",
-        filter: ["lowercase"],
-      },
-      autocomplete_search: {
-        tokenizer: "lowercase",
-      },
-    },
-    tokenizer: {
-      autocomplete: autocomplete_tokenizer,
-    },
-  },
-};
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -51,90 +28,97 @@ export class ElasticSearchService implements OnModuleInit {
     try {
       const index = process.env.ES_INDEX || "";
       const indexExists = await this.esService.indices.exists({ index });
+
       if (!indexExists) {
-        this.esService.indices
-          .create({
-            index,
-            body: {
-              mappings: datasetMappings,
-              settings: defaultElasticSettings as IndicesIndexSettingsAnalysis,
-            },
-          })
-          .catch((err) => {
-            if (err) {
-              Logger.error(err, "SearchService -> createIndex");
-              throw err;
-            }
-          });
+        await this.esService.indices.create({
+          index,
+          body: {
+            settings: defaultElasticSettings,
+          },
+        });
+        await this.esService.indices.close({ index });
+        await this.esService.indices.putSettings({
+          index,
+          body: {
+            settings: defaultElasticSettings,
+          },
+        });
+        await this.esService.indices.putMapping({
+          index,
+          dynamic: true,
+          body: {
+            dynamic_templates: dynamic_template,
+            properties: datasetMappings,
+          },
+        });
+        await this.esService.indices.open({
+          index,
+        });
+
+        Logger.log(`Index created with index name: ${index}`);
       }
-    } catch (err) {
-      Logger.error(err, "SearchService -> createIndex");
-      throw err;
-    }
-  }
-
-  async syncDatabase(collection: any, index: string) {
-    let errorCount = 0;
-    try {
-      const operations = collection.flatMap((doc: any) => [
-        { index: { _index: index } },
-        doc,
-      ]);
-
-      console.log("=====operations,", operations);
-
-      const bulkResponse = await this.esService.helpers.bulk({
-        retries: 3,
-        wait: 3000,
-        datasource: operations,
-        onDocument(doc: any) {
-          delete doc._id;
-          return {
-            index: {
-              _index: index,
-            },
-          };
-        },
-        onDrop(doc: any) {
-          console.error(`Failed Number ${++errorCount}`, doc.error);
-        },
-      });
-      console.log("======bulkResponse", bulkResponse);
+      return;
     } catch (error) {
-      Logger.error(error, "SearchService -> syncDatabase");
+      Logger.error(error);
+      throw new Error("onModuleInit failed-> ElasticSearchService");
     }
   }
 
-  async updateIndex(
-    index: string,
-    mappings: MappingObject,
-    settings: any,
-    dynamic_templates: Record<string, MappingDynamicTemplate>[],
-  ) {
+  async syncDatabase(collection: DatasetClass[], index: string) {
+    const indexExists = await this.esService.indices.exists({ index });
+    if (!indexExists) {
+      throw new Error("Index not found");
+    }
+    const bulkResponse = await this.esService.helpers.bulk({
+      retries: 3,
+      wait: 3000,
+      datasource: collection,
+      onDocument(doc) {
+        return {
+          index: {
+            _index: index,
+            _id: doc.pid,
+          },
+        };
+      },
+      onDrop(doc) {
+        Logger.error("Bulk drop failed", doc.error);
+      },
+    });
+    Logger.log("bulkResponse", bulkResponse);
+  }
+
+  async updateIndex(index: string) {
     await this.esService.indices.close({
       index,
     });
     await this.esService.indices.putSettings({
       index,
-      body: { settings },
+      body: { settings: defaultElasticSettings },
     });
 
     await this.esService.indices.putMapping({
       index,
       dynamic: true,
       body: {
-        properties: mappings,
-        dynamic_templates,
+        properties: datasetMappings,
+        dynamic_templates: dynamic_template,
       },
     });
 
     await this.esService.indices.open({
       index,
     });
-
-    // console.log(response);
   }
-  async indexData(payload: any) {
+
+  async getIndexSettings(index: string) {
+    return await this.esService.indices.getSettings({ index });
+  }
+
+  async deleteIndex(index: string) {
+    await this.esService.indices.delete({ index });
+  }
+  async indexData(payload: string[]) {
     try {
       return await this.esService.index({
         index: process.env.ES_INDEX || "",
@@ -150,35 +134,35 @@ export class ElasticSearchService implements OnModuleInit {
     searchParam: IDatasetFields,
     limit = 20,
     skip = 0,
-  ): Promise<{ totalCount: number; data: any[] }> {
+  ): Promise<{ totalCount: number; data: string[] }> {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
     try {
       const searchQuery = this.builderService.buildSearchQuery(searchParam);
 
-      const searchOptions: any = {
+      const searchOptions = {
         track_scores: true,
         body: searchQuery,
         size: limit + skip,
-        sort: [{ _score: "desc" }],
+        sort: [{ _score: { order: "desc" } }],
         min_score: defaultMinScore,
         track_total_hits: true,
         _source: [""],
-      };
+      } as SearchRequest;
 
       const body = await this.esService.search(searchOptions);
 
       const totalCount = (body.hits.total as SearchTotalHits)?.value || 0;
 
-      const data = body.hits.hits.map((item: any) => item._id);
+      const data = body.hits.hits.map((item) => item._id);
 
       return {
         totalCount,
         data,
       };
-    } catch (err) {
-      Logger.error(err, "SearchService || search query issue || -> search");
-      throw err;
+    } catch (error) {
+      Logger.error(error, "SearchService || search query issue || -> search");
+      throw error;
     }
   }
 }

@@ -413,7 +413,7 @@ export class DatasetsService {
         collectionName,
         this.datasetModel.schema,
       );
-      const datasets = await DatasetModel.find({}).exec();
+      const datasets = await DatasetModel.find({}, { _id: 0 }).exec();
 
       return datasets;
     } catch (error) {

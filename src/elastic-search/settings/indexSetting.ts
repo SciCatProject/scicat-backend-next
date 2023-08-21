@@ -1,6 +1,7 @@
 import {
   AnalysisEdgeNGramTokenizer,
   AnalysisPatternReplaceCharFilter,
+  IndicesIndexSettingsAnalysis,
   MappingDynamicTemplate,
 } from "@elastic/elasticsearch/lib/api/types";
 
@@ -51,3 +52,30 @@ export const dynamic_template = [
     },
   },
 ] as Record<string, MappingDynamicTemplate>[] | never;
+
+//Index Settings
+export const defaultElasticSettings = {
+  index: {
+    max_result_window: process.env.ES_MAX_RESULT || 2000000,
+    number_of_replicas: 0,
+    mapping: {
+      total_fields: {
+        limit: process.env.ES_FIELDS_LIMIT || 2000000,
+      },
+    },
+  },
+  analysis: {
+    analyzer: {
+      autocomplete: {
+        tokenizer: "autocomplete",
+        filter: ["lowercase"],
+      },
+      autocomplete_search: {
+        tokenizer: "lowercase",
+      },
+    },
+    tokenizer: {
+      autocomplete: autocomplete_tokenizer,
+    },
+  },
+} as IndicesIndexSettingsAnalysis;
