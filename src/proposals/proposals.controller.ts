@@ -54,8 +54,10 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescription,
-  fullQueryExample,
+  fullQueryDescriptionLimits,
+  fullQueryExampleLimits,
+  proposalsFullQueryDescriptionFields,
+  proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
@@ -222,13 +224,22 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
       "Full query filters to apply when retrieving proposals\n" +
-      fullQueryDescription,
+      proposalsFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: proposalsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: 200,
@@ -278,10 +289,10 @@ export class ProposalsController {
     name: "filters",
     description:
       "Full facet query filters to apply when retrieving proposals\n" +
-      fullQueryDescription,
+      proposalsFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: proposalsFullQueryExampleFields,
   })
   @ApiResponse({
     status: 200,

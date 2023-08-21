@@ -86,6 +86,10 @@ import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-dat
 import {
   filterDescription,
   filterExample,
+  datasetsFullQueryDescriptionFields,
+  fullQueryDescriptionLimits,
+  datasetsFullQueryExampleFields,
+  fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
 import { TechniqueClass } from "./schemas/technique.schema";
@@ -558,17 +562,20 @@ export class DatasetsController {
   @ApiQuery({
     name: "fields",
     description:
-      "Define the query conditions using mongoDB syntax as JSON object. It also supports the `text` search, if you want to look for strings anywhere in the dataset. Please refer to mongo documentation for more information about the syntax",
+      "Database filters to apply when retrieving datasets\n" +
+      datasetsFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: {},
+    example: datasetsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "limits",
-    description: "Define further query parameters like skip, limit, order",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
     required: false,
     type: String,
-    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: 200,
