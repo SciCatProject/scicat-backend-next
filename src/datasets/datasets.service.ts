@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Scope,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -23,6 +24,7 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
+  isObjectWithOneKey,
   parseLimitFilters,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
@@ -99,49 +101,28 @@ export class DatasetsService {
       ...filterQuery,
       ...extraWhereClause,
     };
+    const { $text, ...remainingClauses } = whereClause;
 
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-    const dataWithScores = new Map();
 
-    console.log("filter.fields filter.fields ", filter.fields);
+    if (!$text) {
+      const datasets = await this.datasetModel
+        .find(whereClause, null, modifiers)
+        .exec();
+      return datasets;
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.elsticSearchService.search(filter.fields as any);
-    const pids = result.data.map((data) => {
-      dataWithScores.set(data.pid, data.relevancy_score);
-      // console.log("---result", {
-      //   data: data.pid,
-      //   name: data.datasetName,
-      //   group: data.ownerGroup,
-      //   _score: data.relevancy_score,
-      // });
-
-      return data.pid;
-    });
+    const esResult = await this.elsticSearchService.search(
+      filter.fields as IDatasetFields,
+      modifiers.limit,
+      modifiers.skip,
+    );
 
     const datasets = await this.datasetModel
-      .find({ _id: { $in: pids } }, null, modifiers)
+      .find({ _id: { $in: esResult.data }, remainingClauses }, null, modifiers)
       .exec();
 
-    const finalResult = datasets
-      .map((dataset) => {
-        const score = dataWithScores.get(dataset.pid);
-
-        return {
-          ...dataset.toObject(),
-          relevancy_score: score,
-        };
-      })
-      .sort((a, b) => b.relevancy_score - a.relevancy_score);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return finalResult as any;
-
-    // const datasets = await this.datasetModel
-    //   .find(whereClause, null, modifiers)
-    //   .exec();
-
-    // return datasets;
+    return datasets;
   }
 
   async fullFacet(
@@ -150,14 +131,43 @@ export class DatasetsService {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
 
+    const isESenabled = process.env.ELASTICSEARCH_ENABLED;
+
+    if (!isObjectWithOneKey(fields) && isESenabled) {
+      const totalDocCount = await this.datasetModel.countDocuments();
+
+      const { totalCount: esTotalCount, data: esPids } =
+        await this.elsticSearchService.search(
+          fields as IDatasetFields,
+          totalDocCount,
+        );
+
+      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+        this.datasetModel,
+        "pid",
+        fields,
+        facets,
+        "",
+        esPids,
+      );
+
+      const data = await this.datasetModel.aggregate(pipeline).exec();
+
+      data[0].all[0] = { totalSets: esTotalCount };
+      return data;
+    }
+
     const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
       this.datasetModel,
       "pid",
       fields,
       facets,
+      "",
     );
 
-    return await this.datasetModel.aggregate(pipeline).exec();
+    const data = await this.datasetModel.aggregate(pipeline).exec();
+
+    return data;
   }
 
   async updateAll(
@@ -182,7 +192,6 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-
     const count = await this.datasetModel.count(whereFilter).exec();
     return { count };
   }
@@ -395,6 +404,20 @@ export class DatasetsService {
     // single dataset, update
     if (req.query.where && !req.body.data) {
       return;
+    }
+  }
+
+  async getCollection(collectionName: string) {
+    try {
+      const DatasetModel = this.datasetModel.db.model(
+        collectionName,
+        this.datasetModel.schema,
+      );
+      const datasets = await DatasetModel.find({}).exec();
+
+      return datasets;
+    } catch (error) {
+      throw new NotImplementedException(error);
     }
   }
 

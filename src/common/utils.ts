@@ -480,14 +480,18 @@ export const createFullfacetPipeline = <T, Y extends object>(
   fields: Y,
   facets: string[],
   subField = "",
+  esPids?: string[],
 ): PipelineStage[] => {
   const pipeline = [];
-  const facetMatch: Record<string, unknown> = {};
+
+  const facetMatch: Record<string, unknown> = esPids
+    ? { _id: { $in: esPids } }
+    : {};
 
   Object.keys(fields).forEach((key) => {
     if (facets.indexOf(key) < 0) {
       if (key === "text") {
-        if (typeof fields[key as keyof Y] === "string") {
+        if (typeof fields[key as keyof Y] === "string" && !esPids) {
           const match = {
             $match: {
               $or: [
@@ -752,4 +756,9 @@ const replaceLikeOperatorRecursive = (
   }
 
   return output;
+};
+
+export const isObjectWithOneKey = (obj: object): boolean => {
+  const keys = Object.keys(obj);
+  return keys.length === 1;
 };

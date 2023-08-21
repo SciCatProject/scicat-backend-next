@@ -1,5 +1,5 @@
 import { ApiTags, ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional } from "class-validator";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface SearchDtoParam {
@@ -47,9 +47,18 @@ export class SearchDto {
   @ApiProperty({
     type: Array,
     required: false,
-    default: "",
+    default: [],
     description: "keywords",
   })
   @IsOptional()
   readonly keywords: [];
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    default: false,
+    description: "isPublished",
+  })
+  @IsOptional()
+  readonly isPublished: boolean;
 }

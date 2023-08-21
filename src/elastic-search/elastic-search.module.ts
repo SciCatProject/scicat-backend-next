@@ -1,12 +1,14 @@
-import { Module, OnModuleInit } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ElasticsearchModule } from "@nestjs/elasticsearch";
+import { DatasetsModule } from "src/datasets/datasets.module";
 import { ElasticSearchServiceController } from "./elastic-search.controller";
 import { ElasticSearchService } from "./elastic-search.service";
 import { SearchQueryBuilderService } from "./query-builder.service";
 
 @Module({
   imports: [
+    forwardRef(() => DatasetsModule),
     ElasticsearchModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -32,9 +34,4 @@ import { SearchQueryBuilderService } from "./query-builder.service";
     SearchQueryBuilderService,
   ],
 })
-export class ElasticSearchModule implements OnModuleInit {
-  constructor(private readonly elasticSearchService: ElasticSearchService) {}
-  public async onModuleInit() {
-    await this.elasticSearchService.createIndex();
-  }
-}
+export class ElasticSearchModule {}

@@ -1,17 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { SearchDtoParam } from "./dto/search.dto";
-import {
-  EqlSearchRequest,
-  QueryDslQueryContainer,
-  QueryDslTextQueryType,
-} from "@elastic/elasticsearch/lib/api/types";
+import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
 interface Filter {
-  terms: {
-    [key: string]: string[];
+  terms?: {
+    [key: string]: string[] | boolean[];
+  };
+  term?: {
+    [key: string]: string | boolean;
   };
 }
+
 const addTermsFilter = (
   fieldName: string,
   values: unknown,
@@ -20,7 +19,14 @@ const addTermsFilter = (
   if (Array.isArray(values)) {
     filterArray.push({
       terms: {
-        [fieldName]: values as string[],
+        [fieldName]: values,
+      },
+    });
+  }
+  if (typeof values === "boolean") {
+    filterArray.push({
+      term: {
+        [fieldName]: values,
       },
     });
   }
@@ -29,37 +35,75 @@ const addTermsFilter = (
 export class SearchQueryBuilderService {
   public buildSearchQuery(searchParam: IDatasetFields) {
     const { text = "", ...fields } = searchParam;
-
-    const fieldNames = ["keywords", "type", "creationLocation", "ownerGroup"];
+    const filterFields = [
+      "keywords",
+      "type",
+      "creationLocation",
+      "ownerGroup",
+      "isPublished",
+    ];
+    const queryFields = ["datasetName", "description"];
 
     try {
       const query: QueryDslQueryContainer[] = [];
       const filter: Filter[] = [];
 
-      if (text) {
-        query.push({
-          multi_match: {
-            query: `${text}`,
-            type: "best_fields",
-            fields: ["description", "datasetName"],
-          },
-        });
+      for (const fieldName of filterFields) {
+        addTermsFilter(fieldName, fields[fieldName], filter);
       }
 
-      for (const fieldName of fieldNames) {
-        addTermsFilter(fieldName, fields[fieldName], filter);
+      if (!text) {
+        return {
+          query: {
+            bool: {
+              filter: filter,
+            },
+          },
+        };
+      }
+
+      // query.push({
+      //   // multi_match: {
+      //   //   query: `${text}`,
+      //   //   type: "best_fields", //This type searches for a phrase across the fields, considering the order of terms.
+      //   //   fields: ["datasetName", "description"],
+      //   //   fuzziness: "AUTO",
+      //   // },
+      //   // wildcard: {
+      //   //   datasetName: {
+      //   //     value: text,
+      //   //   },
+      //   // },
+      // });
+
+      const searchTermArray = text.toLowerCase().split(" ");
+      const wildcardQueries = searchTermArray.flatMap((term) =>
+        queryFields.map((fieldName) => ({
+          wildcard: {
+            [fieldName]: {
+              value: `*${term}*`,
+            },
+          },
+        })),
+      );
+
+      if (wildcardQueries.length > 0) {
+        query.push({
+          bool: {
+            should: wildcardQueries,
+            minimum_should_match: 1,
+          },
+        });
       }
 
       return {
         query: {
           bool: {
-            must: query,
             filter: filter,
-            should: [],
+            must: query,
           },
         },
       };
-      // return {};
     } catch (err) {
       Logger.error("elastic search build search query failed");
       throw err;
