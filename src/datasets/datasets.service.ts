@@ -43,10 +43,7 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
-  public elasticSearchEnabled =
-    this.configService.get<string>("elasticSearch.enabled") === "yes"
-      ? true
-      : false;
+  public elasticSearchEnabled = true;
   constructor(
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
@@ -55,7 +52,12 @@ export class DatasetsService {
     private logbooksService: LogbooksService,
     private elsticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
-  ) {}
+  ) {
+    this.elasticSearchEnabled =
+      this.configService.get<string>("elasticSearch.enabled") === "yes"
+        ? true
+        : false;
+  }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
