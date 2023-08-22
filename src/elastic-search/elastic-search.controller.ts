@@ -6,6 +6,7 @@ import {
   Post,
   Get,
   Query,
+  BadRequestException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -25,100 +26,127 @@ import { ElasticSearchService } from "./elastic-search.service";
 @ApiTags("search-service")
 @Controller("search-service")
 export class ElasticSearchServiceController {
-  private defaultIndex =
-    this.configService.get<string>("elasticSearch.defaultIndex") || "dataset";
-  private baseUrl = this.configService.get<string>("logbook.baseUrl");
-  private username = this.configService.get<string>("logbook.username");
-  private password = this.configService.get<string>("logbook.password");
+  private defaultIndex = this.configService.get<string>(
+    "elasticSearch.defaultIndex",
+  );
+  private defaultCollection = this.configService.get<string>(
+    "elasticSearch.mongoDBCollection",
+  );
 
   constructor(
     private readonly elasticSearchService: ElasticSearchService,
     private readonly datasetsService: DatasetsService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    if (!this.defaultIndex || !this.defaultCollection) {
+      throw new BadRequestException(
+        "Elastic search environment variables are missing",
+      );
+    }
+  }
 
   @HttpCode(HttpStatus.CREATED)
+  @ApiQuery({
+    name: "index",
+    required: true,
+    type: String,
+    example: "dataset",
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Create index",
+  })
+  @Post("/create-index")
+  async createIndex(@Query("index") index: string) {
+    const esIndex = index.trim();
+
+    return this.elasticSearchService.createIndex(esIndex);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post("/sync-database")
+  @ApiQuery({
+    name: "index",
+    required: true,
+    type: String,
+    example: "dataset",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Sync data to the index",
+  })
+  async syncDatabase(@Query("index") index: string) {
+    const esIndex = index.trim();
+    const collectionData = await this.datasetsService.getDatasetsWithoutId();
+
+    return this.elasticSearchService.syncDatabase(collectionData, esIndex);
+  }
+
+  @HttpCode(HttpStatus.OK)
   @AllowAny()
-  @Post("/search")
   @ApiBody({
     type: SearchDto,
   })
+  @ApiResponse({
+    status: 200,
+    description: "Data is synched successfully",
+  })
+  @Post("/search")
   async fetchESResults(@Body() searchDto: IDatasetFields) {
     return this.elasticSearchService.search(searchDto);
   }
 
-  @HttpCode(HttpStatus.CREATED)
-  @AllowAny()
-  @Post("/sync-database")
+  @HttpCode(HttpStatus.OK)
   @ApiQuery({
     name: "index",
-    required: false,
+    required: true,
     type: String,
-    example: "dataset-index",
+    example: "dataset",
   })
   @ApiResponse({
     status: 200,
-    description: "Index created successfully",
+    description: "Delete index",
   })
-  async createIndex(@Query("index") index?: string) {
-    const defaultCollection: string = process.env.MONGODB_COLLECTION || "";
-    const esIndex: string = index || this.defaultIndex || "";
-    const collection = await this.datasetsService.getCollection(
-      defaultCollection,
-    );
-
-    return this.elasticSearchService.syncDatabase(collection, esIndex);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @AllowAny()
   @Post("/delete-index")
-  async deleteIndex() {
-    if (!this.defaultIndex) {
-      throw new Error("Elastic search data-sync ENV variables are missing");
-    }
+  async deleteIndex(@Query("index") index: string) {
+    const esIndex = index.trim();
 
-    const defaultIndex = process.env.ES_INDEX || "";
-
-    return this.elasticSearchService.deleteIndex(defaultIndex);
+    return this.elasticSearchService.deleteIndex(esIndex);
   }
 
   @HttpCode(HttpStatus.OK)
-  @AllowAny()
-  @Get("/get-index")
   @ApiQuery({
     name: "index",
-    required: false,
+    required: true,
     type: String,
-    example: "dataset-index",
+    example: "dataset",
   })
   @ApiResponse({
     status: 200,
-    description: "Get index successfully",
+    description: "Get current index setting",
   })
-  async getIndex(@Query("index") index?: string) {
-    if (!process.env.ES_INDEX) {
-      throw new Error("Elastic search data-sync ENV variables are missing");
-    }
-    console.log(
-      "index",
-      this.configService.get<number>("elasticSearch.fieldsLimit"),
-    );
-    const esIndex = index || this.defaultIndex;
+  @Get("/get-index")
+  async getIndex(@Query("index") index: string) {
+    const esIndex = index.trim();
 
     return this.elasticSearchService.getIndexSettings(esIndex);
   }
 
   @HttpCode(HttpStatus.OK)
-  @AllowAny()
+  @ApiQuery({
+    name: "index",
+    required: true,
+    type: String,
+    example: "dataset",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Update index to the latest settings",
+  })
   @Post("/update-index")
-  async updateIndex() {
-    if (!process.env.ES_INDEX) {
-      throw new Error("Elastic search data-sync ENV variables are missing");
-    }
+  async updateIndex(@Query("index") index: string) {
+    const esIndex = index.trim();
 
-    const defaultIndex = process.env.ES_INDEX || "";
-
-    return this.elasticSearchService.updateIndex(defaultIndex);
+    return this.elasticSearchService.updateIndex(esIndex);
   }
 }

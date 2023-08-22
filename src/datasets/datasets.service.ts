@@ -3,19 +3,13 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Scope,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import mongoose, {
-  FilterQuery,
-  Model,
-  QueryOptions,
-  UpdateQuery,
-} from "mongoose";
+import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -49,6 +43,10 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
+  public elasticSearchEnabled =
+    this.configService.get<string>("elasticSearch.enabled") === "yes"
+      ? true
+      : false;
   constructor(
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
@@ -101,11 +99,10 @@ export class DatasetsService {
       ...filterQuery,
       ...extraWhereClause,
     };
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
     const { $text, ...remainingClauses } = whereClause;
 
-    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-
-    if (!$text) {
+    if (!$text || !this.elasticSearchEnabled) {
       const datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
@@ -130,31 +127,26 @@ export class DatasetsService {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
+    if (this.elasticSearchEnabled) {
+      if (!isObjectWithOneKey(fields)) {
+        const totalDocCount = await this.datasetModel.countDocuments();
 
-    const isESenabled = process.env.ELASTICSEARCH_ENABLED;
+        const { totalCount: esTotalCount, data: esPids } =
+          await this.elsticSearchService.search(
+            fields as IDatasetFields,
+            totalDocCount,
+          );
 
-    if (!isObjectWithOneKey(fields) && isESenabled) {
-      const totalDocCount = await this.datasetModel.countDocuments();
+        const pipeline = createFullfacetPipeline<
+          DatasetDocument,
+          IDatasetFields
+        >(this.datasetModel, "pid", fields, facets, "", esPids);
 
-      const { totalCount: esTotalCount, data: esPids } =
-        await this.elsticSearchService.search(
-          fields as IDatasetFields,
-          totalDocCount,
-        );
+        const data = await this.datasetModel.aggregate(pipeline).exec();
 
-      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
-        this.datasetModel,
-        "pid",
-        fields,
-        facets,
-        "",
-        esPids,
-      );
-
-      const data = await this.datasetModel.aggregate(pipeline).exec();
-
-      data[0].all[0] = { totalSets: esTotalCount };
-      return data;
+        data[0].all[0] = { totalSets: esTotalCount };
+        return data;
+      }
     }
 
     const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
@@ -407,17 +399,12 @@ export class DatasetsService {
     }
   }
 
-  async getCollection(collectionName: string) {
+  async getDatasetsWithoutId() {
     try {
-      const DatasetModel = this.datasetModel.db.model(
-        collectionName,
-        this.datasetModel.schema,
-      );
-      const datasets = await DatasetModel.find({}, { _id: 0 }).exec();
-
+      const datasets = this.datasetModel.find({}, { _id: 0 }).exec();
       return datasets;
     } catch (error) {
-      throw new NotImplementedException(error);
+      throw new NotFoundException();
     }
   }
 
