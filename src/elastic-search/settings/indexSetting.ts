@@ -21,7 +21,9 @@ export const special_character_filter: AnalysisPatternReplaceCharFilter = {
 };
 
 //Dynamic templates
-export const dynamic_template = [
+export const dynamic_template:
+  | Record<string, MappingDynamicTemplate>[]
+  | never = [
   {
     scientificMetadata_wrong_long_format: {
       path_match: "scientificMetadata.*.value",
@@ -51,7 +53,7 @@ export const dynamic_template = [
       },
     },
   },
-] as Record<string, MappingDynamicTemplate>[] | never;
+];
 
 //Index Settings
 export const defaultElasticSettings = {

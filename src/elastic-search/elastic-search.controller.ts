@@ -23,8 +23,8 @@ import { SearchDto } from "./dto/search.dto";
 import { ElasticSearchService } from "./elastic-search.service";
 
 @ApiBearerAuth()
-@ApiTags("search-service")
-@Controller("search-service")
+@ApiTags("elastic-search")
+@Controller("elastic-search")
 export class ElasticSearchServiceController {
   private defaultIndex = this.configService.get<string>(
     "elasticSearch.defaultIndex",

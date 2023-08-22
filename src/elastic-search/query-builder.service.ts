@@ -62,20 +62,6 @@ export class SearchQueryBuilderService {
         };
       }
 
-      // query.push({
-      //   // multi_match: {
-      //   //   query: `${text}`,
-      //   //   type: "best_fields", //This type searches for a phrase across the fields, considering the order of terms.
-      //   //   fields: ["datasetName", "description"],
-      //   //   fuzziness: "AUTO",
-      //   // },
-      //   // wildcard: {
-      //   //   datasetName: {
-      //   //     value: text,
-      //   //   },
-      //   // },
-      // });
-
       const searchTermArray = text.toLowerCase().split(" ");
       const wildcardQueries = searchTermArray.flatMap((term) =>
         queryFields.map((fieldName) => ({

@@ -113,12 +113,6 @@ export class AppModule implements OnApplicationBootstrap {
       this.configService.get<string>("rabbitMq.enabled") === "yes"
         ? true
         : false;
-    const elasticSearchEnabled =
-      this.configService.get<string>("elasticSearch.enabled") === "yes"
-        ? true
-        : false;
-
-    Logger.log("------elasticSearchEnabled", elasticSearchEnabled);
 
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
