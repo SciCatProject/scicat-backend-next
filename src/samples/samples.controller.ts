@@ -45,8 +45,10 @@ import { IFilters } from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescription,
-  fullQueryExample,
+  fullQueryDescriptionLimits,
+  fullQueryExampleLimits,
+  samplesFullQueryDescriptionFields,
+  samplesFullQueryExampleFields,
 } from "src/common/utils";
 
 @ApiBearerAuth()
@@ -129,13 +131,22 @@ export class SamplesController {
       "It returns a list of samples matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "filters",
+    name: "fields",
     description:
       "Full query filters to apply when retrieve samples\n" +
-      fullQueryDescription,
+      samplesFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: fullQueryExample,
+    example: samplesFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,

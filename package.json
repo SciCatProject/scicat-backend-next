@@ -21,11 +21,11 @@
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "posttest": "npm run lint",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:watch": "jest --watch --maxWorkers=25%",
+    "test:cov": "jest --coverage --maxWorkers=50%",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:api": "npm run test:api:jest && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
-    "test:api:jest": "jest --config ./test/config/jest-e2e.json",
+    "test:api": "npm run test:api:jest --maxWorkers=50% && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
+    "test:api:jest": "jest --config ./test/config/jest-e2e.json --maxWorkers=50%",
     "test:api:mocha": "mocha --config ./test/config/.mocharc.json",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.example functionalAccounts.json"
   },
@@ -33,17 +33,17 @@
     "@casl/ability": "^6.3.2",
     "@elastic/elasticsearch": "^8.9.0",
     "@nestjs-modules/mailer": "^1.8.1",
-    "@nestjs/axios": "0.1.0",
-    "@nestjs/common": "^8.4.7",
+    "@nestjs/axios": "^3.0.0",
+    "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.0.0",
-    "@nestjs/core": "^8.4.4",
     "@nestjs/elasticsearch": "^10.0.1",
-    "@nestjs/event-emitter": "^1.3.1",
+    "@nestjs/core": "^9.0.0",
+    "@nestjs/event-emitter": "^2.0.1",
     "@nestjs/jwt": "^10.0.1",
     "@nestjs/mongoose": "^10.0.0",
     "@nestjs/passport": "^10.0.0",
-    "@nestjs/platform-express": "^8.4.4",
-    "@nestjs/swagger": "^5.2.1",
+    "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/swagger": "^7.1.7",
     "@user-office-software/duo-message-broker": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
@@ -73,7 +73,7 @@
     "@faker-js/faker": "^8.0.1",
     "@nestjs/cli": "^10.0.5",
     "@nestjs/schematics": "^10.0.1",
-    "@nestjs/testing": "^8.0.0",
+    "@nestjs/testing": "^9.0.0",
     "@types/bcrypt": "^5.0.0",
     "@types/chai": "^4.3.3",
     "@types/express": "^4.17.13",
@@ -89,18 +89,18 @@
     "@types/passport-local": "^1.0.34",
     "@types/supertest": "^2.0.11",
     "@types/uuid": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.43.0",
-    "@typescript-eslint/parser": "^5.43.0",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
     "chai": "^4.3.6",
     "chai-http": "^4.3.0",
     "concurrently": "^8.0.1",
-    "eslint": "^8.27.0",
+    "eslint": "^8.46.0",
     "eslint-config-loopback": "^13.1.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
     "jest": "27.0.6",
     "mocha": "^10.0.0",
-    "prettier": "^2.7.1",
+    "prettier": "^3.0.1",
     "sinon": "^15.0.0",
     "supertest": "^6.1.3",
     "ts-jest": "^27.0.3",
@@ -124,10 +124,17 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
   }
 }

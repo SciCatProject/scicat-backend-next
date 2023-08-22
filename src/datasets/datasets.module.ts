@@ -50,6 +50,7 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
                 this.accessGroups,
                 this.ownerEmail ?? "",
                 av,
+                this.createdBy,
               );
             }
             this.classification = `IN=medium,AV=${av},CO=low`;

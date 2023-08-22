@@ -48,6 +48,7 @@
       }
     ],
     "@typescript-eslint/semi": ["error", "always"],
-    "no-constant-condition": ["error", { "checkLoops": false }]
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "@typescript-eslint/no-unused-vars": "warn"
   }
 }

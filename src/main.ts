@@ -3,7 +3,7 @@ import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
-  ExpressSwaggerCustomOptions,
+  SwaggerCustomOptions,
   SwaggerModule,
 } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
@@ -24,7 +24,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  const swaggerOptions: ExpressSwaggerCustomOptions = {
+  const swaggerOptions: SwaggerCustomOptions = {
     swaggerOptions: {
       docExpansion: "none",
     },

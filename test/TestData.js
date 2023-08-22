@@ -219,7 +219,7 @@ const TestData = {
         "Number of inter-flats": 0,
       },
     },
-    owner: faker.name.fullName(),
+    owner: faker.person.fullName(),
     ownerEmail: faker.internet.email(),
     orcidOfOwner: faker.database.mongodbObjectId(),
     contactEmail: faker.internet.email(),

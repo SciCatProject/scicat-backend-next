@@ -35,7 +35,7 @@ export class CreateOrigDatablockDto extends OwnableDto {
     type: String,
     required: false,
     description:
-      "Name of the hasing algorithm used to compute the hash for each file.",
+      "Name of the hashing algorithm used to compute the hash for each file.",
   })
   @IsOptional()
   @IsString()
@@ -46,12 +46,22 @@ export class CreateOrigDatablockDto extends OwnableDto {
     type: "array",
     items: { $ref: getSchemaPath(DataFile) },
     required: true,
-    description:
-      "Name of the hasing algorithm used to compute the hash for each file.",
+    description: "List of the files contained in this orig datablock.",
   })
   @IsArray()
   @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => DataFileDto)
   readonly dataFileList: DataFile[];
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Name of the group owning this item. If it is not specified, the datasets owner group is used.",
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  declare readonly ownerGroup: string;
 }
