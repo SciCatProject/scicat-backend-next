@@ -98,6 +98,7 @@ export class ElasticSearchService implements OnModuleInit {
       },
     });
     Logger.log("bulkResponse", bulkResponse);
+
     return bulkResponse;
   }
 
