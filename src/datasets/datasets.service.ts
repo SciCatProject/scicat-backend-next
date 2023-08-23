@@ -43,7 +43,7 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
-  public elasticSearchEnabled = true;
+  public elasticSearchEnabled: boolean;
   constructor(
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
@@ -118,7 +118,11 @@ export class DatasetsService {
     );
 
     const datasets = await this.datasetModel
-      .find({ _id: { $in: esResult.data }, remainingClauses }, null, modifiers)
+      .find(
+        { _id: { $in: esResult.data }, ...remainingClauses },
+        null,
+        modifiers,
+      )
       .exec();
 
     return datasets;

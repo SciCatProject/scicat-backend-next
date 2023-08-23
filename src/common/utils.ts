@@ -466,6 +466,7 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
   return filterQuery;
 };
 
@@ -483,7 +484,6 @@ export const createFullfacetPipeline = <T, Y extends object>(
   esPids?: string[],
 ): PipelineStage[] => {
   const pipeline = [];
-
   const facetMatch: Record<string, unknown> = esPids
     ? { _id: { $in: esPids } }
     : {};
