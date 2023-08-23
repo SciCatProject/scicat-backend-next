@@ -6,7 +6,6 @@ import {
   Post,
   Get,
   Query,
-  BadRequestException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -26,24 +25,11 @@ import { ElasticSearchService } from "./elastic-search.service";
 @ApiTags("elastic-search")
 @Controller("elastic-search")
 export class ElasticSearchServiceController {
-  private defaultIndex = this.configService.get<string>(
-    "elasticSearch.defaultIndex",
-  );
-  private defaultCollection = this.configService.get<string>(
-    "elasticSearch.mongoDBCollection",
-  );
-
   constructor(
     private readonly elasticSearchService: ElasticSearchService,
     private readonly datasetsService: DatasetsService,
     private readonly configService: ConfigService,
-  ) {
-    if (!this.defaultIndex || !this.defaultCollection) {
-      throw new BadRequestException(
-        "Elastic search environment variables are missing",
-      );
-    }
-  }
+  ) {}
 
   @HttpCode(HttpStatus.CREATED)
   @ApiQuery({
