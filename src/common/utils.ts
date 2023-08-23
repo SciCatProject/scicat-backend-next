@@ -473,6 +473,7 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
   return filterQuery;
 };
 

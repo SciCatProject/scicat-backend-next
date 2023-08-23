@@ -17,8 +17,8 @@ import { SearchQueryBuilderService } from "./query-builder.service";
         maxRetries: 10,
         requestTimeout: 60000,
         auth: {
-          username: process.env.ES_USERNAME || "elastic",
-          password: process.env.ES_PASSWORD || "password",
+          username: configService.get<string>("elasticSearch.username") || "",
+          password: configService.get<string>("elasticSearch.password") || "",
         },
         tls: {
           rejectUnauthorized: false,
