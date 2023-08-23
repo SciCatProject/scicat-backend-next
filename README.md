@@ -26,7 +26,7 @@ or the SciCat team at ESS.
 3. Add *.env* file to project root folder. See [Environment variables](#environment-variables).
 4. *Optional* Add *functionalAccounts.json* file to project root folder. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
 5. `npm run start:dev`
-6. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
+6. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 7. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
 ## Develop in a container using the docker-compose.dev file
@@ -37,7 +37,7 @@ or the SciCat team at ESS.
 4. *Optional* change the container env variables
 5. Attach to the container
 6. `npm run start:dev`
-7. Go to http://localhost:3000/explorer-next to get an overview of available endpoints and database schemas.
+7. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
