@@ -46,7 +46,9 @@ import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
     InitialDatasetsModule,
     InstrumentsModule,
     JobsModule,
-    ElasticSearchModule,
+    ...(process.env.ELASTICSEARCH_ENABLED === "yes"
+      ? [ElasticSearchModule]
+      : []),
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
