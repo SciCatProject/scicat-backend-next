@@ -163,14 +163,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 18.x
 
       - name: Run stack in docker-compose
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
           docker-compose build --no-cache
-          docker-compose --env-file up &
+          docker-compose up &
 
       - name: Checkout frontend repo
         uses: actions/checkout@v4
