@@ -43,7 +43,6 @@ jobs:
         with:
           node-version: 18.x
 
-
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
@@ -146,7 +145,7 @@ jobs:
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
           docker-compose build --no-cache
-          docker-compose up &
+          docker-compose --env-file CI/E2E/.env.elastic-search up &
 
       - name: Checkout frontend repo
         uses: actions/checkout@v3
