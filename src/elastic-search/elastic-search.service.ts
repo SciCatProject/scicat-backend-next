@@ -1,11 +1,6 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Logger,
-  OnModuleInit,
-} from "@nestjs/common";
-import { ElasticsearchService } from "@nestjs/elasticsearch";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+
+import { Client } from "@elastic/elasticsearch";
 import { SearchQueryBuilderService } from "./query-builder.service";
 import {
   SearchTotalHits,
@@ -18,17 +13,43 @@ import {
 } from "./settings/indexSetting";
 import { datasetMappings } from "./mappings/datasetFieldMapping";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
-export class ElasticSearchService implements OnModuleInit {
+export class ElasticSearchService {
+  private esService: Client;
   constructor(
-    private readonly esService: ElasticsearchService,
     private readonly builderService: SearchQueryBuilderService,
+    private readonly configService: ConfigService,
   ) {}
-
+  async connect() {
+    this.esService = new Client({
+      node: this.configService.get<string>("elasticSearch.host"),
+      maxRetries: 10,
+      requestTimeout: 60000,
+      auth: {
+        username:
+          this.configService.get<string>("elasticSearch.username") || "",
+        password:
+          this.configService.get<string>("elasticSearch.password") || "",
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+  }
   async onModuleInit() {
+    const esEnabled =
+      this.configService.get<string>("elasticSearch.enabled") === "yes"
+        ? true
+        : false;
+
+    if (!esEnabled) return;
     try {
-      const index = process.env.ES_INDEX || "";
+      await this.connect();
+
+      const index =
+        this.configService.get<string>("elasticSearch.defaultIndex") || "";
       const indexExists = await this.esService.indices.exists({ index });
 
       if (!indexExists) {
@@ -157,6 +178,14 @@ export class ElasticSearchService implements OnModuleInit {
     }
   }
 
+  async disconnect() {
+    this.esService.close();
+  }
+
+  onApplicationShutdown(signal?: string) {
+    console.log("---signal.", signal);
+    this.disconnect();
+  }
   async search(
     searchParam: IDatasetFields,
     limit = 20,

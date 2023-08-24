@@ -30,7 +30,6 @@ import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
-import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
 
 @Module({
   imports: [
@@ -46,9 +45,6 @@ import { ElasticSearchModule } from "./elastic-search/elastic-search.module";
     InitialDatasetsModule,
     InstrumentsModule,
     JobsModule,
-    ...(process.env.ELASTICSEARCH_ENABLED === "yes"
-      ? [ElasticSearchModule]
-      : []),
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
