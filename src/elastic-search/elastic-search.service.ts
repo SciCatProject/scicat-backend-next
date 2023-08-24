@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 
-import { Client } from "@elastic/elasticsearch";
+import { Client, ClientOptions } from "@elastic/elasticsearch";
 import { SearchQueryBuilderService } from "./query-builder.service";
 import {
   SearchTotalHits,
@@ -22,21 +22,8 @@ export class ElasticSearchService {
     private readonly builderService: SearchQueryBuilderService,
     private readonly configService: ConfigService,
   ) {}
-  async connect() {
-    this.esService = new Client({
-      node: this.configService.get<string>("elasticSearch.host"),
-      maxRetries: 10,
-      requestTimeout: 60000,
-      auth: {
-        username:
-          this.configService.get<string>("elasticSearch.username") || "",
-        password:
-          this.configService.get<string>("elasticSearch.password") || "",
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
+  async connect(connectOptions: ClientOptions) {
+    this.esService = new Client(connectOptions);
   }
   async onModuleInit() {
     const esEnabled =
@@ -46,7 +33,20 @@ export class ElasticSearchService {
 
     if (!esEnabled) return;
     try {
-      await this.connect();
+      await this.connect({
+        node: this.configService.get<string>("elasticSearch.host"),
+        maxRetries: 10,
+        requestTimeout: 60000,
+        auth: {
+          username:
+            this.configService.get<string>("elasticSearch.username") || "",
+          password:
+            this.configService.get<string>("elasticSearch.password") || "",
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
 
       const index =
         this.configService.get<string>("elasticSearch.defaultIndex") || "";
@@ -178,14 +178,6 @@ export class ElasticSearchService {
     }
   }
 
-  async disconnect() {
-    this.esService.close();
-  }
-
-  onApplicationShutdown(signal?: string) {
-    console.log("---signal.", signal);
-    this.disconnect();
-  }
   async search(
     searchParam: IDatasetFields,
     limit = 20,
