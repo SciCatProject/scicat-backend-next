@@ -14,16 +14,28 @@ import {
 import { datasetMappings } from "./mappings/datasetFieldMapping";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
+import { throwError } from "rxjs";
 
 @Injectable()
 export class ElasticSearchService {
   private esService: Client;
+  private host: string | undefined;
+  private username: string | undefined;
+  private password: string | undefined;
   constructor(
     private readonly builderService: SearchQueryBuilderService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.host = this.configService.get<string>("elasticSearch.host");
+    this.username = this.configService.get<string>("elasticSearch.username");
+    this.password = this.configService.get<string>("elasticSearch.password");
+  }
   async connect(connectOptions: ClientOptions) {
-    this.esService = new Client(connectOptions);
+    try {
+      this.esService = new Client(connectOptions);
+    } catch (error) {
+      Logger.error("connect failed-> ElasticSearchService", error);
+    }
   }
   async onModuleInit() {
     const esEnabled =
@@ -32,16 +44,20 @@ export class ElasticSearchService {
         : false;
 
     if (!esEnabled) return;
+    if (!this.host || !this.username || !this.password) {
+      Logger.error(
+        "Missing ENVIRONMENT variables for elastic search connection",
+      );
+      return;
+    }
     try {
       await this.connect({
-        node: this.configService.get<string>("elasticSearch.host"),
+        node: this.host,
         maxRetries: 10,
         requestTimeout: 60000,
         auth: {
-          username:
-            this.configService.get<string>("elasticSearch.username") || "",
-          password:
-            this.configService.get<string>("elasticSearch.password") || "",
+          username: this.username,
+          password: this.password,
         },
         tls: {
           rejectUnauthorized: false,
@@ -58,7 +74,6 @@ export class ElasticSearchService {
       return;
     } catch (error) {
       Logger.error("onModuleInit failed-> ElasticSearchService", error);
-      throw new Error("onModuleInit failed-> ElasticSearchService");
     }
   }
   async createIndex(index: string) {
