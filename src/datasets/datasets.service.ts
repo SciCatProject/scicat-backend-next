@@ -43,21 +43,16 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
-  public elasticSearchEnabled: boolean;
   constructor(
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
     private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
-    private elsticSearchService: ElasticSearchService,
+    @Inject(ElasticSearchService)
+    private readonly elasticSearchService: ElasticSearchService | null,
     @Inject(REQUEST) private request: Request,
-  ) {
-    this.elasticSearchEnabled =
-      this.configService.get<string>("elasticSearch.enabled") === "yes"
-        ? true
-        : false;
-  }
+  ) {}
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
@@ -104,14 +99,21 @@ export class DatasetsService {
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
     const { $text, ...remainingClauses } = whereClause;
 
-    if (!$text || !this.elasticSearchEnabled) {
+    if (!this.elasticSearchService) {
       const datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
       return datasets;
     }
 
-    const esResult = await this.elsticSearchService.search(
+    if (!$text) {
+      const datasets = await this.datasetModel
+        .find(whereClause, null, modifiers)
+        .exec();
+      return datasets;
+    }
+
+    const esResult = await this.elasticSearchService.search(
       filter.fields as IDatasetFields,
       modifiers.limit,
       modifiers.skip,
@@ -124,7 +126,6 @@ export class DatasetsService {
         modifiers,
       )
       .exec();
-
     return datasets;
   }
 
@@ -133,12 +134,12 @@ export class DatasetsService {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
-    if (this.elasticSearchEnabled) {
+    if (this.elasticSearchService) {
       if (!isObjectWithOneKey(fields)) {
         const totalDocCount = await this.datasetModel.countDocuments();
 
         const { totalCount: esTotalCount, data: esPids } =
-          await this.elsticSearchService.search(
+          await this.elasticSearchService.search(
             fields as IDatasetFields,
             totalDocCount,
           );

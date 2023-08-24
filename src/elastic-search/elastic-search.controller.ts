@@ -6,6 +6,7 @@ import {
   Post,
   Get,
   Query,
+  Inject,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -26,6 +27,7 @@ import { ElasticSearchService } from "./elastic-search.service";
 @Controller("elastic-search")
 export class ElasticSearchServiceController {
   constructor(
+    @Inject(ElasticSearchService)
     private readonly elasticSearchService: ElasticSearchService,
     private readonly datasetsService: DatasetsService,
     private readonly configService: ConfigService,
