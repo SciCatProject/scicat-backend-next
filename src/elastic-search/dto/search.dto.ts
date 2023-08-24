@@ -10,11 +10,10 @@ export interface SearchDtoParam {
 export class SearchDto {
   @ApiProperty({
     type: String,
-    required: false,
+    required: true,
     default: "",
     description: "text query",
   })
-  @IsOptional()
   readonly text: string;
 
   @ApiProperty({

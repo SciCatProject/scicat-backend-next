@@ -16,7 +16,7 @@ const addTermsFilter = (
   values: unknown,
   filterArray: Filter[],
 ) => {
-  if (Array.isArray(values)) {
+  if (Array.isArray(values) && values.length > 0) {
     filterArray.push({
       terms: {
         [fieldName]: values,
