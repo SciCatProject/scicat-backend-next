@@ -8,7 +8,6 @@ import {
   Query,
   Inject,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import {
   ApiTags,
   ApiBearerAuth,
@@ -30,7 +29,6 @@ export class ElasticSearchServiceController {
     @Inject(ElasticSearchService)
     private readonly elasticSearchService: ElasticSearchService,
     private readonly datasetsService: DatasetsService,
-    private readonly configService: ConfigService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -77,7 +75,7 @@ export class ElasticSearchServiceController {
   })
   @ApiResponse({
     status: 200,
-    description: "Data is synched successfully",
+    description: "Search with elasticsearch to get restuls in PIDs",
   })
   @Post("/search")
   async fetchESResults(@Body() searchDto: IDatasetFields) {

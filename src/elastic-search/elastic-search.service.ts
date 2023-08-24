@@ -14,7 +14,6 @@ import {
 import { datasetMappings } from "./mappings/datasetFieldMapping";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
-import { throwError } from "rxjs";
 
 @Injectable()
 export class ElasticSearchService {
@@ -184,6 +183,7 @@ export class ElasticSearchService {
   async deleteIndex(index: string) {
     try {
       await this.esService.indices.delete({ index });
+      return { success: true, message: `Index ${index} deleted` };
     } catch (error) {
       Logger.error("deleteIndex failed-> ElasticSearchService", error);
       throw new HttpException(
