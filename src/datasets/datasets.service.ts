@@ -106,14 +106,7 @@ export class DatasetsService {
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
     const { $text, ...remainingClauses } = whereClause;
-    if (!this.ESClient) {
-      const datasets = await this.datasetModel
-        .find(whereClause, null, modifiers)
-        .exec();
-      return datasets;
-    }
-
-    if (!$text) {
+    if (!this.ESClient || !$text) {
       const datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
