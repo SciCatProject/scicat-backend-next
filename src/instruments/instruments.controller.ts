@@ -154,6 +154,6 @@ export class InstrumentsController {
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.instrumentsService.remove({ id });
+    return this.instrumentsService.remove({ pid: id });
   }
 }
