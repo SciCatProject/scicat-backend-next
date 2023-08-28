@@ -156,7 +156,7 @@ jobs:
           fetch-depth: 1
 
       - name: Run Cypress tests
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: frontend
           config-file: CI/ESS/e2e/cypress.nestjs.json
