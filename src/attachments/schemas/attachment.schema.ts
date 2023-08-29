@@ -30,7 +30,7 @@ export class Attachment extends OwnableClass {
   @ApiProperty({
     type: String,
     description:
-      "Contains a thumbnail preview in base64 encoded png format for a given dataset.",
+      "A small, base64-encoded image. Must have a MIME content-header; e.g. 'data:image/png;base64,{the-image-in-base64}'.",
   })
   @Prop({ type: String })
   thumbnail: string;
