@@ -12,7 +12,10 @@ import {
   dynamic_template,
 } from "./settings/indexSetting";
 import { datasetMappings } from "./mappings/datasetFieldMapping";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import {
+  DatasetClass,
+  DatasetDocument,
+} from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable()
@@ -21,6 +24,8 @@ export class ElasticSearchService {
   private host: string | undefined;
   private username: string | undefined;
   private password: string | undefined;
+  private defaultIndex: string;
+  private esEnabled: boolean;
   constructor(
     private readonly builderService: SearchQueryBuilderService,
     private readonly configService: ConfigService,
@@ -28,40 +33,37 @@ export class ElasticSearchService {
     this.host = this.configService.get<string>("elasticSearch.host");
     this.username = this.configService.get<string>("elasticSearch.username");
     this.password = this.configService.get<string>("elasticSearch.password");
-  }
-  async connect(connectOptions: ClientOptions) {
-    try {
-      this.esService = new Client(connectOptions);
-    } catch (error) {
-      Logger.error("connect failed-> ElasticSearchService", error);
-    }
-  }
-  async onModuleInit() {
-    const esEnabled =
+    this.esEnabled =
       this.configService.get<string>("elasticSearch.enabled") === "yes"
         ? true
         : false;
+    this.defaultIndex =
+      this.configService.get<string>("elasticSearch.defaultIndex") || "";
 
-    if (!esEnabled) return;
-    if (!this.host || !this.username || !this.password) {
+    if (!this.host || !this.username || !this.password || !this.defaultIndex) {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
       );
-      return;
     }
+  }
+  async connect() {
+    this.esService = new Client({
+      node: this.host,
+      maxRetries: 10,
+      auth: {
+        username: this.username || "",
+        password: this.password || "",
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+  }
+  async onModuleInit() {
+    if (!this.esEnabled) return;
+
     try {
-      await this.connect({
-        node: this.host,
-        maxRetries: 10,
-        requestTimeout: 60000,
-        auth: {
-          username: this.username,
-          password: this.password,
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
+      this.connect();
 
       const index =
         this.configService.get<string>("elasticSearch.defaultIndex") || "";
@@ -75,7 +77,8 @@ export class ElasticSearchService {
       Logger.error("onModuleInit failed-> ElasticSearchService", error);
     }
   }
-  async createIndex(index: string) {
+
+  async createIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.create({
         index,
@@ -111,7 +114,7 @@ export class ElasticSearchService {
       );
     }
   }
-  async syncDatabase(collection: DatasetClass[], index: string) {
+  async syncDatabase(collection: DatasetClass[], index = this.defaultIndex) {
     const indexExists = await this.esService.indices.exists({ index });
     if (!indexExists) {
       throw new Error("Index not found");
@@ -137,7 +140,7 @@ export class ElasticSearchService {
     return bulkResponse;
   }
 
-  async updateIndex(index: string) {
+  async updateIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.close({
         index,
@@ -168,7 +171,7 @@ export class ElasticSearchService {
     }
   }
 
-  async getIndexSettings(index: string) {
+  async getIndexSettings(index = this.defaultIndex) {
     try {
       return await this.esService.indices.getSettings({ index });
     } catch (error) {
@@ -180,7 +183,7 @@ export class ElasticSearchService {
     }
   }
 
-  async deleteIndex(index: string) {
+  async deleteIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.delete({ index });
       return { success: true, message: `Index ${index} deleted` };
@@ -230,6 +233,33 @@ export class ElasticSearchService {
         `SearchService || search query issue || -> search ${error}`,
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  async updateDocument(data: DatasetDocument) {
+    if (!this.defaultIndex) {
+      throw new HttpException("Index not found", HttpStatus.BAD_REQUEST);
+    }
+    const { _id: docId, ...dataWithoutId } = data;
+    try {
+      await this.esService.index({
+        index: this.defaultIndex,
+        id: docId,
+        document: dataWithoutId,
+      });
+    } catch (error) {
+      Logger.error("updateDocument failed-> ElasticSearchService", error);
+    }
+  }
+
+  async deleteDocument(id: string) {
+    try {
+      await this.esService.delete({
+        index: this.defaultIndex,
+        id,
+      });
+    } catch (error) {
+      Logger.error("deleteDocument failed-> ElasticSearchService", error);
     }
   }
 }

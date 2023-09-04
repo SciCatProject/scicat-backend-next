@@ -203,6 +203,7 @@ export class DatasetsService {
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
+
     if (!existingDataset) {
       throw new NotFoundException();
     }
@@ -224,6 +225,8 @@ export class DatasetsService {
         },
       )
       .exec();
+
+    console.log("-----updatedDataset", updatedDataset);
 
     // check if we were able to find the dataset and update it
     if (!updatedDataset) {
@@ -264,7 +267,12 @@ export class DatasetsService {
         ),
         { new: true },
       )
+      .lean()
       .exec();
+
+    if (this.ESClient) {
+      this.ESClient.updateDocument(patchedDataset as DatasetDocument);
+    }
 
     // we were able to find the dataset and update it
     return patchedDataset;
@@ -272,6 +280,9 @@ export class DatasetsService {
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+    if (this.ESClient) {
+      this.ESClient.deleteDocument(id);
+    }
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
 
