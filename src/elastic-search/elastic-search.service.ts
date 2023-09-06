@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 
-import { Client, ClientOptions } from "@elastic/elasticsearch";
+import { Client } from "@elastic/elasticsearch";
 import { SearchQueryBuilderService } from "./query-builder.service";
 import {
   SearchTotalHits,
@@ -20,12 +20,14 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class ElasticSearchService {
-  private esService: Client;
+  public esService: Client;
   private host: string | undefined;
   private username: string | undefined;
   private password: string | undefined;
   private defaultIndex: string;
   private esEnabled: boolean;
+  public connected = false;
+
   constructor(
     private readonly builderService: SearchQueryBuilderService,
     private readonly configService: ConfigService,
@@ -59,20 +61,24 @@ export class ElasticSearchService {
       },
     });
   }
+
   async onModuleInit() {
-    if (!this.esEnabled) return;
+    if (!this.esEnabled) {
+      this.connected = false;
+      return;
+    }
 
     try {
-      this.connect();
+      await this.connect();
 
-      const index =
-        this.configService.get<string>("elasticSearch.defaultIndex") || "";
+      const index = this.defaultIndex;
       const indexExists = await this.esService.indices.exists({ index });
 
       if (!indexExists) {
         this.createIndex(index);
       }
-      return;
+      this.connected = true;
+      Logger.log(`Elasticsearch Connected`);
     } catch (error) {
       Logger.error("onModuleInit failed-> ElasticSearchService", error);
     }
@@ -104,7 +110,7 @@ export class ElasticSearchService {
       await this.esService.indices.open({
         index,
       });
-      Logger.log(`Index created with index name: ${index}`);
+      Logger.log(`Elasticsearch Index Created-> Index: ${index}`);
       return HttpStatus.CREATED;
     } catch (error) {
       Logger.error("createIndex failed-> ElasticSearchService", error);
@@ -135,7 +141,7 @@ export class ElasticSearchService {
         Logger.error("Bulk drop failed", doc.error);
       },
     });
-    Logger.log("bulkResponse", bulkResponse);
+    Logger.debug("bulkResponse", bulkResponse);
 
     return bulkResponse;
   }
@@ -162,6 +168,7 @@ export class ElasticSearchService {
       await this.esService.indices.open({
         index,
       });
+      Logger.log(`Elasticsearch Index Updated-> Index: ${index}`);
     } catch (error) {
       Logger.error("updateIndex failed-> ElasticSearchService", error);
       throw new HttpException(
@@ -186,6 +193,7 @@ export class ElasticSearchService {
   async deleteIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.delete({ index });
+      Logger.log(`Elasticsearch Index Deleted-> Index: ${index} `);
       return { success: true, message: `Index ${index} deleted` };
     } catch (error) {
       Logger.error("deleteIndex failed-> ElasticSearchService", error);
@@ -237,16 +245,32 @@ export class ElasticSearchService {
   }
 
   async updateDocument(data: DatasetDocument) {
-    if (!this.defaultIndex) {
-      throw new HttpException("Index not found", HttpStatus.BAD_REQUEST);
-    }
-    const { _id: docId, ...dataWithoutId } = data;
+    delete data._id;
     try {
       await this.esService.index({
         index: this.defaultIndex,
-        id: docId,
-        document: dataWithoutId,
+        id: data.pid,
+        document: data,
       });
+      Logger.log(
+        `Elasticsearch Document Updated-> Document_id: ${data.pid} updated on index: ${this.defaultIndex}`,
+      );
+    } catch (error) {
+      Logger.error("updateDocument failed-> ElasticSearchService", error);
+    }
+  }
+
+  async insertDocument(data: DatasetDocument) {
+    delete data._id;
+    try {
+      await this.esService.index({
+        index: this.defaultIndex,
+        id: data.pid,
+        document: data,
+      });
+      Logger.log(
+        `Elasticsearch Document Inserted-> Document_id: ${data.pid} inserted on index: ${this.defaultIndex}`,
+      );
     } catch (error) {
       Logger.error("updateDocument failed-> ElasticSearchService", error);
     }
@@ -258,6 +282,9 @@ export class ElasticSearchService {
         index: this.defaultIndex,
         id,
       });
+      Logger.log(
+        `Elasticsearch Document Deleted-> Document_id: ${id} deleted on index: ${this.defaultIndex}`,
+      );
     } catch (error) {
       Logger.error("deleteDocument failed-> ElasticSearchService", error);
     }

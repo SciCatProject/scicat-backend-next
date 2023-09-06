@@ -43,7 +43,6 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
-  private readonly elasticSearchEnabled: boolean;
   private ESClient: ElasticSearchService | null;
   constructor(
     private configService: ConfigService,
@@ -55,11 +54,9 @@ export class DatasetsService {
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
   ) {
-    this.elasticSearchEnabled =
-      this.configService.get("elasticSearch.enabled") === "yes" ? true : false;
-    this.ESClient = this.elasticSearchEnabled
-      ? this.elasticSearchService
-      : null;
+    if (this.elasticSearchService.connected) {
+      this.ESClient = this.elasticSearchService;
+    }
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
@@ -68,7 +65,11 @@ export class DatasetsService {
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
     );
-
+    if (this.ESClient) {
+      this.ESClient.insertDocument(
+        createdDataset.toObject() as DatasetDocument,
+      );
+    }
     return createdDataset.save();
   }
 
@@ -210,11 +211,11 @@ export class DatasetsService {
     // TODO: This might need a discussion.
     // NOTE: _id, pid and some other fields should not be touched in any case.
     const updatedDatasetInput = {
+      ...updateDatasetDto,
       pid: existingDataset.pid,
       createdBy: existingDataset.createdBy,
       createdAt: existingDataset.createdAt,
       history: existingDataset.history,
-      ...updateDatasetDto,
     };
     const updatedDataset = await this.datasetModel
       .findOneAndReplace(
@@ -226,13 +227,16 @@ export class DatasetsService {
       )
       .exec();
 
-    console.log("-----updatedDataset", updatedDataset);
-
     // check if we were able to find the dataset and update it
     if (!updatedDataset) {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
+    if (this.ESClient) {
+      this.ESClient.updateDocument(
+        updatedDataset.toObject() as DatasetDocument,
+      );
+    }
     // we were able to find the dataset and update it
     return updatedDataset;
   }
@@ -267,11 +271,12 @@ export class DatasetsService {
         ),
         { new: true },
       )
-      .lean()
       .exec();
 
     if (this.ESClient) {
-      this.ESClient.updateDocument(patchedDataset as DatasetDocument);
+      this.ESClient.updateDocument(
+        patchedDataset?.toObject() as DatasetDocument,
+      );
     }
 
     // we were able to find the dataset and update it
