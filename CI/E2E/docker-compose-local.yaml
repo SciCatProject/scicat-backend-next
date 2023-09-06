@@ -84,6 +84,7 @@ services:
       - ${ES_PORT}:9200
     environment:
       - node.name=es01
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
       - cluster.name=${CLUSTER_NAME}
       - cluster.initial_master_nodes=es01
       - ELASTIC_PASSWORD=${ES_PASSWORD}

@@ -43,7 +43,6 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
-  private readonly elasticSearchEnabled: boolean;
   private ESClient: ElasticSearchService | null;
   constructor(
     private configService: ConfigService,
@@ -55,11 +54,9 @@ export class DatasetsService {
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
   ) {
-    this.elasticSearchEnabled =
-      this.configService.get("elasticSearch.enabled") === "yes" ? true : false;
-    this.ESClient = this.elasticSearchEnabled
-      ? this.elasticSearchService
-      : null;
+    if (this.elasticSearchService.connected) {
+      this.ESClient = this.elasticSearchService;
+    }
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
@@ -68,7 +65,11 @@ export class DatasetsService {
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
     );
-
+    if (this.ESClient) {
+      this.ESClient.insertDocument(
+        createdDataset.toObject() as DatasetDocument,
+      );
+    }
     return createdDataset.save();
   }
 
@@ -203,6 +204,7 @@ export class DatasetsService {
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
+
     if (!existingDataset) {
       throw new NotFoundException();
     }
@@ -230,6 +232,11 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
+    if (this.ESClient) {
+      this.ESClient.updateDocument(
+        updatedDataset.toObject() as DatasetDocument,
+      );
+    }
     // we were able to find the dataset and update it
     return updatedDataset;
   }
@@ -266,12 +273,21 @@ export class DatasetsService {
       )
       .exec();
 
+    if (this.ESClient) {
+      this.ESClient.updateDocument(
+        patchedDataset?.toObject() as DatasetDocument,
+      );
+    }
+
     // we were able to find the dataset and update it
     return patchedDataset;
   }
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+    if (this.ESClient) {
+      this.ESClient.deleteDocument(id);
+    }
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
 
