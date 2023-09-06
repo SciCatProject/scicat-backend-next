@@ -141,7 +141,7 @@ export class ElasticSearchService {
         Logger.error("Bulk drop failed", doc.error);
       },
     });
-    Logger.debug("bulkResponse", bulkResponse);
+    Logger.debug("Elasticsearch Data Synchronization Response", bulkResponse);
 
     return bulkResponse;
   }
