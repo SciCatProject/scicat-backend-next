@@ -1,7 +1,6 @@
 import { ApiTags, ApiProperty } from "@nestjs/swagger";
 import { IsOptional } from "class-validator";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface SearchDtoParam {
   search_term: string;
 }
