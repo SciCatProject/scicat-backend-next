@@ -156,9 +156,8 @@ export class AppModule implements OnApplicationBootstrap {
           };
 
           try {
-            const createdProposal = await this.proposalsService.create(
-              proposal,
-            );
+            const createdProposal =
+              await this.proposalsService.create(proposal);
             Logger.log(
               `Proposal created/updated: ${createdProposal.proposalId}`,
               "AppModule",
