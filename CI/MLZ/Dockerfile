@@ -4,7 +4,7 @@ FROM node:18-alpine AS dev
 WORKDIR /home/node/app
 COPY . .
 RUN cp ./CI/MLZ/frontend.config.ts ./src/config/
-RUN  mv ./CI/MLZ/MLZ-access-group-service-factory.ts ./src/auth/access-group-provider/access-group-service-factory.ts 
+RUN cp ./CI/MLZ/MLZ-access-group-service-factory.ts.x ./src/auth/access-group-provider/access-group-service-factory.ts 
 
 # Set up local user
 RUN mkdir /home/node/app/dist
