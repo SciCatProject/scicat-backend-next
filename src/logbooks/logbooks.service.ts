@@ -16,6 +16,7 @@ export class LogbooksService {
   private baseUrl;
   private username;
   private password;
+  private accessToken: string | null;
 
   constructor(
     private readonly configService: ConfigService,
@@ -27,13 +28,17 @@ export class LogbooksService {
     this.password = this.configService.get<string>("logbook.password");
   }
 
-  async login(username: string, password: string): Promise<{ token: string }> {
+  async login(
+    username: string,
+    password: string,
+  ): Promise<{ token: string | null }> {
     const credentials = { username, password };
     try {
       const res = await firstValueFrom(
         this.httpService.post(this.baseUrl + "/Users/login", credentials),
       );
-      return res.data;
+      this.accessToken = res.data.token;
+      return { token: this.accessToken };
     } catch (error) {
       handleAxiosRequestError(error, "LogbooksService.login");
       throw new InternalServerErrorException("Logbook login failed");
@@ -44,11 +49,15 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          const accessToken = await this.login(this.username, this.password);
+          await this.checkTokenStatus();
+          if (!this.accessToken) {
+            await this.login(this.username, this.password);
+          }
+
           Logger.log("Fetching Logbooks", "LogbooksService.findAll");
           const res = await firstValueFrom(
             this.httpService.get<Logbook[]>(this.baseUrl + "/Logbooks", {
-              headers: { Authorization: `Bearer ${accessToken.token}` },
+              headers: { Authorization: `Bearer ${this.accessToken}` },
             }),
           );
           const nonEmptyLogbooks = res.data.filter(
@@ -84,13 +93,16 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          const accessToken = await this.login(this.username, this.password);
+          await this.checkTokenStatus();
+          if (!this.accessToken) {
+            await this.login(this.username, this.password);
+          }
           Logger.log("Fetching logbook " + name, "LogbooksService.findByName");
           Logger.log(filters, "LogbooksService.findByName");
           const res = await firstValueFrom(
             this.httpService.get<Logbook>(
               this.baseUrl + `/Logbooks/${name}?filter=${filters}`,
-              { headers: { Authorization: `Bearer ${accessToken.token}` } },
+              { headers: { Authorization: `Bearer ${this.accessToken}` } },
             ),
           );
           Logger.log("Found logbook " + name, "LogbooksService.findByName");
@@ -132,7 +144,10 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          const accessToken = await this.login(this.username, this.password);
+          await this.checkTokenStatus();
+          if (!this.accessToken) {
+            await this.login(this.username, this.password);
+          }
           Logger.log(
             "Sending message to room " + name,
             "LogbooksService.sendMessage",
@@ -141,7 +156,7 @@ export class LogbooksService {
             this.httpService.post<{ event_id: string }>(
               this.baseUrl + `/Logbooks/${name}/message`,
               data,
-              { headers: { Authorization: `Bearer ${accessToken.token}` } },
+              { headers: { Authorization: `Bearer ${this.accessToken}` } },
             ),
           );
           Logger.log(
@@ -162,6 +177,25 @@ export class LogbooksService {
       }
     }
     return null;
+  }
+
+  async checkTokenStatus() {
+    try {
+      const res = await firstValueFrom(
+        this.httpService.get(this.baseUrl + "/Users/getTokenStatus"),
+      );
+      const shouldTokenRenew = res.data;
+
+      if (shouldTokenRenew) {
+        this.accessToken = null;
+      }
+      return;
+    } catch (error) {
+      handleAxiosRequestError(error, "LogbooksService.getLoopbackServerStatus");
+      throw new InternalServerErrorException(
+        "Logbook get loopback server status failed",
+      );
+    }
   }
 }
 
