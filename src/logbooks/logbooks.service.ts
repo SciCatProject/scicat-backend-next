@@ -49,8 +49,8 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          await this.checkTokenStatus();
-          if (!this.accessToken) {
+          const shouldRenewToken = await this.shouldRenewToken();
+          if (!this.accessToken || shouldRenewToken) {
             await this.login(this.username, this.password);
           }
 
@@ -93,8 +93,8 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          await this.checkTokenStatus();
-          if (!this.accessToken) {
+          const shouldRenewToken = await this.shouldRenewToken();
+          if (!this.accessToken || shouldRenewToken) {
             await this.login(this.username, this.password);
           }
           Logger.log("Fetching logbook " + name, "LogbooksService.findByName");
@@ -144,8 +144,8 @@ export class LogbooksService {
     if (this.logbookEnabled) {
       if (this.username && this.password) {
         try {
-          await this.checkTokenStatus();
-          if (!this.accessToken) {
+          const shouldRenewToken = await this.shouldRenewToken();
+          if (!this.accessToken || shouldRenewToken) {
             await this.login(this.username, this.password);
           }
           Logger.log(
@@ -179,17 +179,13 @@ export class LogbooksService {
     return null;
   }
 
-  async checkTokenStatus() {
+  async shouldRenewToken() {
     try {
       const res = await firstValueFrom(
         this.httpService.get(this.baseUrl + "/Users/getTokenStatus"),
       );
-      const shouldRenewToken = res.data;
 
-      if (shouldRenewToken) {
-        this.accessToken = null;
-      }
-      return;
+      return res.data;
     } catch (error) {
       handleAxiosRequestError(error, "LogbooksService.getLoopbackServerStatus");
       throw new InternalServerErrorException(
