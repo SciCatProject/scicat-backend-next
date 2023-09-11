@@ -161,11 +161,11 @@ export class DatasetsService {
     // TODO: This might need a discussion.
     // NOTE: _id, pid and some other fields should not be touched in any case.
     const updatedDatasetInput = {
+      ...updateDatasetDto,
       pid: existingDataset.pid,
       createdBy: existingDataset.createdBy,
       createdAt: existingDataset.createdAt,
       history: existingDataset.history,
-      ...updateDatasetDto,
     };
     const updatedDataset = await this.datasetModel
       .findOneAndReplace(
