@@ -159,7 +159,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           working-directory: frontend
-          config-file: CI/ESS/e2e/cypress.nestjs.json
+          config-file: CI/ESS/e2e/cypress.github.ts
           install-command: npm install --omit peer
           browser: chrome
 
