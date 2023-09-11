@@ -184,9 +184,9 @@ export class LogbooksService {
       const res = await firstValueFrom(
         this.httpService.get(this.baseUrl + "/Users/getTokenStatus"),
       );
-      const shouldTokenRenew = res.data;
+      const shouldRenewToken = res.data;
 
-      if (shouldTokenRenew) {
+      if (shouldRenewToken) {
         this.accessToken = null;
       }
       return;
