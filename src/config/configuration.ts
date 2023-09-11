@@ -2,6 +2,8 @@ import { Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
+import { boolean } from "mathjs";
+
 const configuration = () => {
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
@@ -80,12 +82,21 @@ const configuration = () => {
     createJobGroups: createJobGroups,
     updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
-    accessGroupsStaticValues:
-      accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
-    accessGroupService: {
+    accessGroupsGraphQlConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
       token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
       apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
+      responseProcessorSrc: process.env.ACCESS_GROUP_SERVICE_HANDLER, // ts import defining the resposne processor and query
     },
+    accessGroupsStaticConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
+      value: accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
+    },
+    accessGroupsOIDCPayloadConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
+      accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
+    },
+
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
