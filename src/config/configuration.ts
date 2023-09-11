@@ -1,5 +1,7 @@
+import { Logger } from "@nestjs/common";
 import * as fs from "fs";
-
+import { merge } from "lodash";
+import localconfiguration from "./localconfiguration";
 const configuration = () => {
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
@@ -60,7 +62,7 @@ const configuration = () => {
   // Logger.log("- Create job groups : " + createJobGroups);
   // Logger.log("- Update job groups : " + updateJobGroups);
 
-  return {
+  const config = {
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -184,6 +186,7 @@ const configuration = () => {
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
   };
+  return merge(config, localconfiguration);
 };
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
