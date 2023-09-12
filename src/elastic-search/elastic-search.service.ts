@@ -17,6 +17,7 @@ import {
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
+import { sleep } from "src/common/utils";
 
 @Injectable()
 export class ElasticSearchService {
@@ -49,17 +50,35 @@ export class ElasticSearchService {
     }
   }
   async connect() {
-    this.esService = new Client({
-      node: this.host,
-      maxRetries: 10,
-      auth: {
-        username: this.username || "",
-        password: this.password || "",
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
+    const maxRetries = 10;
+    let retryCount = 0;
+    while (maxRetries > retryCount) {
+      await sleep(5000);
+      try {
+        const connection = new Client({
+          node: this.host,
+          auth: {
+            username: this.username || "",
+            password: this.password || "",
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        await connection.ping();
+        this.esService = connection;
+        Logger.log("Client successfully initialized after retry.");
+        break;
+      } catch (error) {
+        Logger.error(`Retry attempt ${retryCount + 1} failed:`, error);
+        retryCount++;
+      }
+    }
+    if (retryCount === maxRetries) {
+      throw new Error(
+        `Max retry attempts reached for elastic search connection`,
+      );
+    }
   }
 
   async onModuleInit() {

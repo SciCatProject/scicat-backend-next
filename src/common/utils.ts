@@ -902,3 +902,7 @@ export const isObjectWithOneKey = (obj: object): boolean => {
   const keys = Object.keys(obj);
   return keys.length === 1;
 };
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
