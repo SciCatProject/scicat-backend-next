@@ -24,14 +24,13 @@ describe("LogbooksService", () => {
   const username = "test-username";
   const password = "test-password";
   const configureService = (
-    accessToken: string | null,
     username: "test-username",
     password: "test-password",
   ) => {
     service["logbookEnabled"] = true;
     service["username"] = username;
     service["password"] = password;
-    service["accessToken"] = accessToken;
+    service["accessToken"] = "accessToken";
   };
 
   beforeEach(async () => {
@@ -50,31 +49,8 @@ describe("LogbooksService", () => {
     expect(service).toBeDefined();
   });
 
-  it("[LogBooks-2]should fetch access token if accessToken is null", async () => {
-    configureService(null, username, password);
-    const loginSpy = jest.spyOn(service, "login");
-    loginSpy.mockResolvedValue(Promise.resolve({ token: "token" }));
-
-    const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
-    shouldRenewTokenSpy.mockResolvedValue(false);
-
-    await service.findAll();
-    expect(loginSpy).toHaveBeenCalledWith(username, password);
-  });
-
-  it("[LogBooks-3]should not fetch access token if accessToken is not null & shouldRenewToken is false", async () => {
-    configureService("token", username, password);
-    const loginSpy = jest.spyOn(service, "login");
-
-    const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
-    shouldRenewTokenSpy.mockResolvedValue(false);
-
-    await service.findAll();
-    expect(loginSpy).toHaveBeenCalledTimes(0);
-  });
-
-  it("[LogBooks-4]should re-fetch access token even accessToken is not null, if shouldRenewToken is true", async () => {
-    configureService("test", username, password);
+  it("[LogBooks-2]should access token if shouldRenewToken is true", async () => {
+    configureService(username, password);
     const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
     shouldRenewTokenSpy.mockResolvedValue(true);
 
@@ -83,5 +59,16 @@ describe("LogbooksService", () => {
 
     await service.findAll();
     expect(loginSpy).toHaveBeenCalledWith(username, password);
+  });
+
+  it("[LogBooks-3]should not fetch access token if shouldRenewToken is false", async () => {
+    configureService(username, password);
+    const loginSpy = jest.spyOn(service, "login");
+
+    const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
+    shouldRenewTokenSpy.mockResolvedValue(false);
+
+    await service.findAll();
+    expect(loginSpy).toHaveBeenCalledTimes(0);
   });
 });
