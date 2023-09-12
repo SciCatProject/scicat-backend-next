@@ -56,9 +56,7 @@ export class LogbooksService {
 
           Logger.log("Fetching Logbooks", "LogbooksService.findAll");
           const res = await firstValueFrom(
-            this.httpService.get<Logbook[]>(this.baseUrl + "/Logbooks", {
-              headers: { Authorization: `Bearer ${this.accessToken}` },
-            }),
+            this.httpService.get<Logbook[]>(this.baseUrl + "/Logbooks"),
           );
           const nonEmptyLogbooks = res.data.filter(
             (logbook) => logbook.messages.length !== 0,
@@ -102,7 +100,6 @@ export class LogbooksService {
           const res = await firstValueFrom(
             this.httpService.get<Logbook>(
               this.baseUrl + `/Logbooks/${name}?filter=${filters}`,
-              { headers: { Authorization: `Bearer ${this.accessToken}` } },
             ),
           );
           Logger.log("Found logbook " + name, "LogbooksService.findByName");
@@ -156,7 +153,6 @@ export class LogbooksService {
             this.httpService.post<{ event_id: string }>(
               this.baseUrl + `/Logbooks/${name}/message`,
               data,
-              { headers: { Authorization: `Bearer ${this.accessToken}` } },
             ),
           );
           Logger.log(
