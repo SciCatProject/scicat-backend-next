@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 
 import { Client } from "@elastic/elasticsearch";
-import { SearchQueryBuilderService } from "./query-builder.service";
+import { SearchQueryService } from "./providers/query-builder.service";
 import {
   SearchTotalHits,
   SearchRequest,
@@ -22,20 +22,22 @@ import { sleep } from "src/common/utils";
 @Injectable()
 export class ElasticSearchService {
   public esService: Client;
-  private host: string | undefined;
-  private username: string | undefined;
-  private password: string | undefined;
+  private host: string;
+  private username: string;
+  private password: string;
   private defaultIndex: string;
   private esEnabled: boolean;
   public connected = false;
 
   constructor(
-    private readonly builderService: SearchQueryBuilderService,
+    private readonly searchService: SearchQueryService,
     private readonly configService: ConfigService,
   ) {
-    this.host = this.configService.get<string>("elasticSearch.host");
-    this.username = this.configService.get<string>("elasticSearch.username");
-    this.password = this.configService.get<string>("elasticSearch.password");
+    this.host = this.configService.get<string>("elasticSearch.host") || "";
+    this.username =
+      this.configService.get<string>("elasticSearch.username") || "";
+    this.password =
+      this.configService.get<string>("elasticSearch.password") || "";
     this.esEnabled =
       this.configService.get<string>("elasticSearch.enabled") === "yes"
         ? true
@@ -58,8 +60,8 @@ export class ElasticSearchService {
         const connection = new Client({
           node: this.host,
           auth: {
-            username: this.username || "",
-            password: this.password || "",
+            username: this.username,
+            password: this.password,
           },
           tls: {
             rejectUnauthorized: false,
@@ -231,7 +233,7 @@ export class ElasticSearchService {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
     try {
-      const searchQuery = this.builderService.buildSearchQuery(searchParam);
+      const searchQuery = this.searchService.buildSearchQuery(searchParam);
 
       const searchOptions = {
         track_scores: true,
