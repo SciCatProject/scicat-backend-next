@@ -52,7 +52,7 @@ export class ElasticSearchService {
     }
   }
   async connect() {
-    const maxRetries = 10;
+    const maxRetries = 3;
     let retryCount = 0;
     while (maxRetries > retryCount) {
       await sleep(5000);
