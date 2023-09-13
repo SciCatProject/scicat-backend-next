@@ -35,7 +35,6 @@ const addTermsFilter = (
 export class SearchQueryService {
   public buildSearchQuery(searchParam: IDatasetFields) {
     const { text = "", ...fields } = searchParam;
-    console.log("----searchParam", searchParam);
     const filterFields = [
       "keywords",
       "type",
@@ -83,18 +82,6 @@ export class SearchQueryService {
           },
         });
       }
-
-      console.log(
-        "yes?",
-        JSON.stringify({
-          query: {
-            bool: {
-              filter: filter,
-              must: query,
-            },
-          },
-        }),
-      );
 
       return {
         query: {
