@@ -32,9 +32,10 @@ const addTermsFilter = (
   }
 };
 @Injectable()
-export class SearchQueryBuilderService {
+export class SearchQueryService {
   public buildSearchQuery(searchParam: IDatasetFields) {
     const { text = "", ...fields } = searchParam;
+    console.log("----searchParam", searchParam);
     const filterFields = [
       "keywords",
       "type",
@@ -53,13 +54,14 @@ export class SearchQueryBuilderService {
       }
 
       if (!text) {
-        return {
+        const filterQuery = {
           query: {
             bool: {
               filter: filter,
             },
           },
         };
+        return filterQuery;
       }
 
       const searchTermArray = text.toLowerCase().split(" ");
@@ -81,6 +83,18 @@ export class SearchQueryBuilderService {
           },
         });
       }
+
+      console.log(
+        "yes?",
+        JSON.stringify({
+          query: {
+            bool: {
+              filter: filter,
+              must: query,
+            },
+          },
+        }),
+      );
 
       return {
         query: {

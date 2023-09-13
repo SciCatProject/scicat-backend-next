@@ -3,12 +3,12 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ElasticSearchServiceController } from "./elastic-search.controller";
 import { ElasticSearchService } from "./elastic-search.service";
-import { SearchQueryBuilderService } from "./query-builder.service";
+import { SearchQueryService } from "./providers/query-builder.service";
 
 @Module({
   imports: [forwardRef(() => DatasetsModule), ConfigModule],
   controllers: [ElasticSearchServiceController],
-  providers: [ElasticSearchService, SearchQueryBuilderService, ConfigService],
-  exports: [ElasticSearchService, SearchQueryBuilderService],
+  providers: [ElasticSearchService, SearchQueryService, ConfigService],
+  exports: [ElasticSearchService, SearchQueryService],
 })
 export class ElasticSearchModule {}
