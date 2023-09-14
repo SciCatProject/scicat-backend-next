@@ -1,21 +1,12 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-import {
-  DatasetClass,
-  DatasetSchema,
-} from "src/datasets/schemas/dataset.schema";
+import { DatasetsModule } from "src/datasets/datasets.module";
 import { ElasticSearchServiceController } from "./elastic-search.controller";
 import { ElasticSearchService } from "./elastic-search.service";
 import { SearchQueryService } from "./providers/query-builder.service";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: DatasetClass.name, schema: DatasetSchema },
-    ]),
-    ConfigModule,
-  ],
+  imports: [forwardRef(() => DatasetsModule), ConfigModule],
   controllers: [ElasticSearchServiceController],
   providers: [ElasticSearchService, SearchQueryService, ConfigService],
   exports: [ElasticSearchService, SearchQueryService],

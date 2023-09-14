@@ -24,8 +24,6 @@ import {
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -38,8 +36,6 @@ export class ElasticSearchService implements OnModuleInit {
   public connected = false;
 
   constructor(
-    @InjectModel(DatasetClass.name)
-    private datasetModel: Model<DatasetDocument>,
     private readonly searchService: SearchQueryService,
     private readonly configService: ConfigService,
   ) {
@@ -78,10 +74,6 @@ export class ElasticSearchService implements OnModuleInit {
         this.createIndex(defaultIndex);
       }
 
-      const collectionData = await this.datasetModel
-        .find({}, { _id: 0 })
-        .exec();
-      this.syncDatabase(collectionData, defaultIndex);
       this.connected = true;
       Logger.log(`Elasticsearch Connected`);
     } catch (error) {
@@ -106,7 +98,6 @@ export class ElasticSearchService implements OnModuleInit {
         });
         await connection.ping();
         this.esService = connection;
-        Logger.log("Client successfully initialized after retry.");
         break;
       } catch (error) {
         Logger.error(`Retry attempt ${retryCount + 1} failed:`, error);

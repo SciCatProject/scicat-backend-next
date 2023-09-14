@@ -290,7 +290,15 @@ export class DatasetsService {
     }
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
-
+  // GET datasets without _id which is used for elastic search data synchronization
+  async getDatasetsWithoutId() {
+    try {
+      const datasets = this.datasetModel.find({}, { _id: 0 }).exec();
+      return datasets;
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,
