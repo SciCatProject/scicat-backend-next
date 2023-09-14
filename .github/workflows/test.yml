@@ -141,6 +141,14 @@ jobs:
           node-version: 18.x
 
       - name: Run stack in docker-compose
+        env:
+          STACK_VERSION: 8.8.2
+          ES_PORT: 9200
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
+          ES_USERNAME: elastic
+          ES_PASSWORD: duo-password
+
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
