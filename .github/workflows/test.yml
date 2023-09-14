@@ -183,7 +183,6 @@ jobs:
           MEM_LIMIT: 4G
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password
-          ES_PORT: 9200
 
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
