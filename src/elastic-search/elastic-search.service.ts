@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from "@nestjs/common";
 
 import { Client } from "@elastic/elasticsearch";
 import { SearchQueryService } from "./providers/query-builder.service";
@@ -18,18 +24,22 @@ import {
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 
 @Injectable()
-export class ElasticSearchService {
-  public esService: Client;
+export class ElasticSearchService implements OnModuleInit {
+  private esService: Client;
   private host: string;
   private username: string;
   private password: string;
-  private defaultIndex: string;
-  private esEnabled: boolean;
+  public defaultIndex: string;
+  public esEnabled: boolean;
   public connected = false;
 
   constructor(
+    @InjectModel(DatasetClass.name)
+    private datasetModel: Model<DatasetDocument>,
     private readonly searchService: SearchQueryService,
     private readonly configService: ConfigService,
   ) {
@@ -49,6 +59,33 @@ export class ElasticSearchService {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
       );
+    }
+  }
+
+  async onModuleInit() {
+    if (!this.esEnabled) {
+      this.connected = false;
+      return;
+    }
+
+    try {
+      await this.connect();
+
+      const defaultIndex = this.defaultIndex;
+      const isIndexExists = await this.isIndexExists(defaultIndex);
+
+      if (!isIndexExists) {
+        this.createIndex(defaultIndex);
+      }
+
+      const collectionData = await this.datasetModel
+        .find({}, { _id: 0 })
+        .exec();
+      this.syncDatabase(collectionData, defaultIndex);
+      this.connected = true;
+      Logger.log(`Elasticsearch Connected`);
+    } catch (error) {
+      Logger.error("onModuleInit failed-> ElasticSearchService", error);
     }
   }
   async connect() {
@@ -83,26 +120,10 @@ export class ElasticSearchService {
     }
   }
 
-  async onModuleInit() {
-    if (!this.esEnabled) {
-      this.connected = false;
-      return;
-    }
-
-    try {
-      await this.connect();
-
-      const index = this.defaultIndex;
-      const indexExists = await this.esService.indices.exists({ index });
-
-      if (!indexExists) {
-        this.createIndex(index);
-      }
-      this.connected = true;
-      Logger.log(`Elasticsearch Connected`);
-    } catch (error) {
-      Logger.error("onModuleInit failed-> ElasticSearchService", error);
-    }
+  async isIndexExists(index = this.defaultIndex) {
+    return await this.esService.indices.exists({
+      index,
+    });
   }
 
   async createIndex(index = this.defaultIndex) {
@@ -162,7 +183,10 @@ export class ElasticSearchService {
         Logger.error("Bulk drop failed", doc.error);
       },
     });
-    Logger.debug("Elasticsearch Data Synchronization Response", bulkResponse);
+    Logger.log(
+      JSON.stringify(bulkResponse, null, 0),
+      "Elasticsearch Data Synchronization Response",
+    );
 
     return bulkResponse;
   }

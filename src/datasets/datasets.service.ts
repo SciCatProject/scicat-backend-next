@@ -419,15 +419,6 @@ export class DatasetsService {
     }
   }
 
-  async getDatasetsWithoutId() {
-    try {
-      const datasets = this.datasetModel.find({}, { _id: 0 }).exec();
-      return datasets;
-    } catch (error) {
-      throw new NotFoundException();
-    }
-  }
-
   async updateHistory(
     req: Request,
     dataset: DatasetClass,
