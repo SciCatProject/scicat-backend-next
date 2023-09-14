@@ -134,8 +134,4 @@ export class ElasticSearchServiceController {
 
     return this.elasticSearchService.updateIndex(esIndex);
   }
-
-  async hello() {
-    console.log("--heloo");
-  }
 }
