@@ -122,13 +122,16 @@ jobs:
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
           ELASTICSEARCH_ENABLED: "yes"
-          ES_HOST: https://localhost:9200
+          ES_HOST: https://es01:9200
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password
           MONGODB_COLLECTION: Dataset
           ES_MAX_RESULT: 210000
           ES_FIELDS_LIMIT: 400000
           ES_INDEX: "dataset"
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
 
         # Start mongo container and app before running api tests
         run: |
@@ -151,7 +154,6 @@ jobs:
       - name: Run stack in docker-compose
         env:
           STACK_VERSION: 8.8.2
-          ES_PORT: 9200
           CLUSTER_NAME: es-cluster
           MEM_LIMIT: 4G
           ES_USERNAME: elastic
