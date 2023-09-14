@@ -6,9 +6,7 @@ import {
   Post,
   Get,
   Query,
-  Inject,
 } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
 import {
   ApiTags,
   ApiBearerAuth,
@@ -16,13 +14,10 @@ import {
   ApiQuery,
   ApiResponse,
 } from "@nestjs/swagger";
-import { Model } from "mongoose";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import {
-  DatasetClass,
-  DatasetDocument,
-} from "src/datasets/schemas/dataset.schema";
+
 import { SearchDto } from "./dto/search.dto";
 import { ElasticSearchService } from "./elastic-search.service";
 
@@ -31,10 +26,8 @@ import { ElasticSearchService } from "./elastic-search.service";
 @Controller("elastic-search")
 export class ElasticSearchServiceController {
   constructor(
-    @Inject(ElasticSearchService)
     private readonly elasticSearchService: ElasticSearchService,
-    @InjectModel(DatasetClass.name)
-    private datasetModel: Model<DatasetDocument>,
+    private readonly datasetService: DatasetsService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -69,7 +62,7 @@ export class ElasticSearchServiceController {
   })
   async syncDatabase(@Query("index") index: string) {
     const esIndex = index.trim();
-    const collectionData = await this.datasetModel.find({}, { _id: 0 }).exec();
+    const collectionData = await this.datasetService.getDatasetsWithoutId();
 
     return this.elasticSearchService.syncDatabase(collectionData, esIndex);
   }
@@ -140,5 +133,9 @@ export class ElasticSearchServiceController {
     const esIndex = index.trim();
 
     return this.elasticSearchService.updateIndex(esIndex);
+  }
+
+  async hello() {
+    console.log("--heloo");
   }
 }
