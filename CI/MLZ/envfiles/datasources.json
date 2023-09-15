@@ -1,0 +1,18 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "mongo": {
+    "url": "mongodb+srv://my-user:ce2dbf77-d275-4477-bcca-7a4fdd4d5f0e@mongodb-specify-pod-resources-svc.mongodb.svc.cluster.local/admin?replicaSet=mongodb-specify-pod-resources&ssl=false",
+    "database": "scicat-test",
+    "name": "mongo",
+    "connector": "mongodb",
+    "useNewUrlParser": true,
+    "allowExtendedOperators": true
+  },
+  "transient": {
+    "name": "transient",
+    "connector": "transient"
+  }
+}
