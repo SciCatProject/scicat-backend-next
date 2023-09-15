@@ -63,7 +63,7 @@ export class SearchQueryService {
         return filterQuery;
       }
 
-      const searchTermArray = text.toLowerCase().split(" ");
+      const searchTermArray = text.toLowerCase().trim().split(" ");
       const wildcardQueries = searchTermArray.flatMap((term) =>
         queryFields.map((fieldName) => ({
           wildcard: {
