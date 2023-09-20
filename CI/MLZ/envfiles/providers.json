@@ -1,0 +1,36 @@
+{
+  "local": {
+    "provider": "local",
+    "module": "passport-local",
+    "usernameField": "username",
+    "passwordField": "password",
+    "authPath": "/auth/local",
+    "successRedirect": "/auth/account",
+    "failureRedirect": "/local",
+    "failureFlash": true
+  },
+  "ldap": {
+    "provider": "ldap",
+    "authScheme": "ldap",
+    "module": "",
+    "authPath": "/auth/msad",
+    "successRedirect": "/auth/account",
+    "failureRedirect": "/auth/msad",
+    "session": true,
+    "failureFlash": true,
+    "json": "true",
+    "profileAttributesFromLDAP": {
+      "displayName": "displayName",
+      "email": "mail",
+      "id": "uid",
+      "accessGroups": []
+    },
+    "server": {
+      "url": "ldap://minos.admin.frm2.tum.de",
+      "bindDn": "",
+      "bindCredentials": "",
+      "searchBase": "ou=People,dc=ghost,dc=mlz-garching,dc=de",
+      "searchFilter": ""
+    }
+  }
+}
