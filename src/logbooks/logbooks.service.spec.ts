@@ -21,16 +21,14 @@ class HttpServiceMock {
 
 describe("LogbooksService", () => {
   let service: LogbooksService;
-  const username = "test-username";
-  const password = "test-password";
-  const configureService = (
-    username: "test-username",
-    password: "test-password",
-  ) => {
-    service["logbookEnabled"] = true;
-    service["username"] = username;
-    service["password"] = password;
-    service["accessToken"] = "accessToken";
+  const filters = JSON.stringify({
+    textSearch: "",
+    showBotMessages: true,
+    showUserMessages: true,
+    showImages: true,
+  });
+  const configureService = (logbook: boolean) => {
+    service["logbookEnabled"] = logbook;
   };
 
   beforeEach(async () => {
@@ -49,26 +47,23 @@ describe("LogbooksService", () => {
     expect(service).toBeDefined();
   });
 
-  it("[LogBooks-2]should access token if shouldRenewToken is true", async () => {
-    configureService(username, password);
-    const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
-    shouldRenewTokenSpy.mockResolvedValue(true);
+  it("[LogBooks-2]logbook services should not return null if loogbook is enabled ", async () => {
+    configureService(true);
 
-    const loginSpy = jest.spyOn(service, "login");
-    loginSpy.mockResolvedValue(Promise.resolve({ token: "token" }));
+    const findAllResult = await service.findAll();
+    expect(findAllResult).not.toEqual(null);
 
-    await service.findAll();
-    expect(loginSpy).toHaveBeenCalledWith(username, password);
+    const findByNameResult = await service.findByName("111111", filters);
+    expect(findByNameResult).not.toEqual(null);
   });
 
-  it("[LogBooks-3]should not fetch access token if shouldRenewToken is false", async () => {
-    configureService(username, password);
-    const loginSpy = jest.spyOn(service, "login");
+  it("[LogBooks-3]logbook services should return null if logbook is not enabled", async () => {
+    configureService(false);
 
-    const shouldRenewTokenSpy = jest.spyOn(service, "shouldRenewToken");
-    shouldRenewTokenSpy.mockResolvedValue(false);
+    const findAllResult = await service.findAll();
+    expect(findAllResult).toEqual([]);
 
-    await service.findAll();
-    expect(loginSpy).toHaveBeenCalledTimes(0);
+    const findByNameResult = await service.findByName("111111", filters);
+    expect(findByNameResult).toEqual(null);
   });
 });

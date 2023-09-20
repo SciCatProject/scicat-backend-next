@@ -65,6 +65,7 @@ export class LogbooksService {
             this.baseUrl + `/Logbooks/${name}?filter=${filters}`,
           ),
         );
+
         Logger.log("Found logbook " + name, "LogbooksService.findByName");
         const { skip, limit, sortField } = JSON.parse(filters);
         Logger.log(
