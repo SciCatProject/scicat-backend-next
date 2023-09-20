@@ -57,7 +57,7 @@ describe("LogbooksService", () => {
     expect(findByNameResult).not.toEqual(null);
   });
 
-  it("[LogBooks-3]logbook services should return null if logbook is not enabled", async () => {
+  it("[LogBooks-3]logbook services should return null or [] if logbook is not enabled", async () => {
     configureService(false);
 
     const findAllResult = await service.findAll();
