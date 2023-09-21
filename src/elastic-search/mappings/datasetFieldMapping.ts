@@ -24,13 +24,7 @@ export const datasetMappings: MappingObject = {
     },
   },
   pid: {
-    type: "text",
-    fields: {
-      keyword: {
-        type: "keyword",
-        ignore_above: 256,
-      },
-    },
+    type: "keyword",
   },
   creationTime: {
     type: "date",
@@ -62,6 +56,12 @@ export const datasetMappings: MappingObject = {
     type: "keyword",
   },
   ownerGroup: {
+    type: "keyword",
+  },
+  accessGroups: {
+    type: "keyword",
+  },
+  sharedWith: {
     type: "keyword",
   },
 };
