@@ -32,6 +32,29 @@ jobs:
         if: steps.cached-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+  eslint:
+    name: eslint
+    needs: [install-and-cache]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Cache node_modules
+        id: cached-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+
+      - name: run eslint
+        run: npm run lint
+
   unit_tests:
     name: Unit tests
     needs: [install-and-cache]
