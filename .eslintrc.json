@@ -7,8 +7,9 @@
   "plugins": ["@typescript-eslint/eslint-plugin"],
   "extends": [
     "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended"
-  ],
+    "plugin:prettier/recommended",
+    "prettier"
+   ],
   "root": true,
   "env": {
     "node": true,
@@ -18,19 +19,6 @@
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/member-delimiter-style": [
-      "error",
-      {
-        "multiline": {
-          "delimiter": "semi",
-          "requireLast": true
-        },
-        "singleline": {
-          "delimiter": "semi",
-          "requireLast": false
-        }
-      }
-    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {
@@ -44,10 +32,10 @@
       "error",
       "double",
       {
-        "allowTemplateLiterals": true
+        "allowTemplateLiterals": true,
+	"avoidEscape": true
       }
     ],
-    "@typescript-eslint/semi": ["error", "always"],
     "no-constant-condition": ["error", { "checkLoops": false }],
     "@typescript-eslint/no-unused-vars": "warn"
   }
