@@ -137,8 +137,6 @@ const configuration = () => {
           : false,
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
-      username: process.env.LOGBOOK_USERNAME,
-      password: process.env.LOGBOOK_PASSWORD,
     },
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
