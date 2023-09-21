@@ -135,23 +135,30 @@ export class DatasetsService {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
-    if (this.ESClient) {
-      if (!isObjectWithOneKey(fields)) {
-        const totalDocCount = await this.datasetModel.countDocuments();
 
-        const { totalCount: esTotalCount, data: esPids } =
-          await this.ESClient.search(fields as IDatasetFields, totalDocCount);
+    // NOTE: if fields contains no value, we should use mongo query to optimize performance.
+    // however, fields always contain mode key, so we need to check if there's more than one key
+    const isFieldsEmpty = isObjectWithOneKey(fields);
 
-        const pipeline = createFullfacetPipeline<
-          DatasetDocument,
-          IDatasetFields
-        >(this.datasetModel, "pid", fields, facets, "", esPids);
+    if (this.ESClient && !isFieldsEmpty) {
+      const totalDocCount = await this.datasetModel.countDocuments();
 
-        const data = await this.datasetModel.aggregate(pipeline).exec();
+      const { totalCount: esTotalCount, data: esPids } =
+        await this.ESClient.search(fields as IDatasetFields, totalDocCount);
 
-        data[0].all[0] = { totalSets: esTotalCount };
-        return data;
-      }
+      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+        this.datasetModel,
+        "pid",
+        fields,
+        facets,
+        "",
+        esPids,
+      );
+
+      const data = await this.datasetModel.aggregate(pipeline).exec();
+
+      data[0].all[0] = { totalSets: esTotalCount };
+      return data;
     }
 
     const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
