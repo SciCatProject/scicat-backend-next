@@ -2,7 +2,12 @@ import { Injectable, Logger } from "@nestjs/common";
 import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
-interface Filter {
+interface IShould {
+  terms?: {
+    [key: string]: string[] | undefined;
+  };
+}
+interface IFilter {
   terms?: {
     [key: string]: string[] | boolean[];
   };
@@ -14,7 +19,7 @@ interface Filter {
 const addTermsFilter = (
   fieldName: string,
   values: unknown,
-  filterArray: Filter[],
+  filterArray: IFilter[],
 ) => {
   if (Array.isArray(values) && values.length > 0) {
     filterArray.push({
@@ -37,33 +42,63 @@ export class SearchQueryService {
     const { text = "", ...fields } = searchParam;
     const filterFields = [
       "keywords",
+      "pid",
       "type",
       "creationLocation",
       "ownerGroup",
+      "accessGroup",
       "isPublished",
     ];
     const queryFields = ["datasetName", "description"];
 
     try {
+      const filter: IFilter[] = [];
+      const should: IShould[] = [];
       const query: QueryDslQueryContainer[] = [];
-      const filter: Filter[] = [];
 
+      // Apply each filter into the query
       for (const fieldName of filterFields) {
         addTermsFilter(fieldName, fields[fieldName], filter);
       }
+      // We need to make sure ownerGroup or accessGroup to includes userGroup value
+      if ("userGroups" in fields) {
+        const userGroupsQuery = [
+          {
+            terms: {
+              ownerGroup: fields["userGroups"],
+            },
+          },
+          {
+            terms: {
+              accessGroup: fields["userGroups"],
+            },
+          },
+        ];
+        should.push(...userGroupsQuery);
+      }
 
+      // If text query is not provided, only applies filter query .
       if (!text) {
         const filterQuery = {
           query: {
             bool: {
               filter: filter,
+              should: should,
+              minimum_should_match: fields.userGroups ? 1 : 0,
             },
           },
         };
         return filterQuery;
       }
 
-      const searchTermArray = text.toLowerCase().trim().split(" ");
+      // Split text query by space and turns them into several terms, each term supports blur search.
+      // Modify the splitBy based on the need.
+      const splitBy = /[ ,]+/;
+      const searchTermArray = text
+        .toLowerCase()
+        .trim()
+        .split(splitBy)
+        .filter(Boolean);
       const wildcardQueries = searchTermArray.flatMap((term) =>
         queryFields.map((fieldName) => ({
           wildcard: {
@@ -73,7 +108,6 @@ export class SearchQueryService {
           },
         })),
       );
-
       if (wildcardQueries.length > 0) {
         query.push({
           bool: {
@@ -88,6 +122,7 @@ export class SearchQueryService {
           bool: {
             filter: filter,
             must: query,
+            should: should,
           },
         },
       };
