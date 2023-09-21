@@ -12,7 +12,7 @@ interface IFilter {
     [key: string]: string[] | boolean[];
   };
   term?: {
-    [key: string]: string | boolean;
+    [key: string]: boolean;
   };
 }
 
@@ -28,107 +28,121 @@ const addTermsFilter = (
       },
     });
   }
-  if (typeof values === "boolean") {
-    filterArray.push({
-      term: {
-        [fieldName]: values,
-      },
-    });
-  }
 };
 @Injectable()
 export class SearchQueryService {
+  readonly filterFields = [
+    "keywords",
+    "pid",
+    "type",
+    "creationLocation",
+    "ownerGroup",
+    "accessGroup",
+    "isPublished",
+  ];
+  readonly queryFields = ["datasetName", "description"];
+  readonly textQuerySplitMethod = /[ ,]+/;
   public buildSearchQuery(searchParam: IDatasetFields) {
-    const { text = "", ...fields } = searchParam;
-    const filterFields = [
-      "keywords",
-      "pid",
-      "type",
-      "creationLocation",
-      "ownerGroup",
-      "accessGroup",
-      "isPublished",
-    ];
-    const queryFields = ["datasetName", "description"];
-
     try {
-      const filter: IFilter[] = [];
-      const should: IShould[] = [];
-      const query: QueryDslQueryContainer[] = [];
+      const { text = "", ...fields } = searchParam;
+      const filter = this.buildFilterFields(fields);
+      const should = this.buildShouldFields(fields);
+      const query = this.buildTextQuery(text);
 
-      // Apply each filter into the query
-      for (const fieldName of filterFields) {
+      return this.constructFinalQuery(filter, should, query, fields.userGroups);
+    } catch (err) {
+      Logger.error("Elastic search build search query failed");
+      throw err;
+    }
+  }
+
+  private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
+    const filter: IFilter[] = [];
+    for (const fieldName of this.filterFields) {
+      if (fields[fieldName]) {
         addTermsFilter(fieldName, fields[fieldName], filter);
       }
-      // We need to make sure ownerGroup or accessGroup to includes userGroup value
-      if ("userGroups" in fields) {
-        const userGroupsQuery = [
-          {
-            terms: {
-              ownerGroup: fields["userGroups"],
-            },
-          },
-          {
-            terms: {
-              accessGroup: fields["userGroups"],
-            },
-          },
-        ];
-        should.push(...userGroupsQuery);
-      }
+    }
+    const isPublished = fields["isPublished"] ?? false;
+    filter.push({ term: { isPublished: isPublished } });
+    return filter;
+  }
 
-      // If text query is not provided, only applies filter query .
-      if (!text) {
-        const filterQuery = {
-          query: {
-            bool: {
-              filter: filter,
-              should: should,
-              minimum_should_match: fields.userGroups ? 1 : 0,
-            },
+  private buildShouldFields(fields: Partial<IDatasetFields>): IShould[] {
+    const should: IShould[] = [];
+    if ("userGroups" in fields) {
+      const userGroupsQuery = [
+        {
+          terms: {
+            ownerGroup: fields["userGroups"],
           },
-        };
-        return filterQuery;
-      }
+        },
+        {
+          terms: {
+            accessGroup: fields["userGroups"],
+          },
+        },
+      ];
+      should.push(...userGroupsQuery);
+    }
+    return should;
+  }
 
-      // Split text query by space and turns them into several terms, each term supports blur search.
-      // Modify the splitBy based on the need.
-      const splitBy = /[ ,]+/;
-      const searchTermArray = text
-        .toLowerCase()
-        .trim()
-        .split(splitBy)
-        .filter(Boolean);
-      const wildcardQueries = searchTermArray.flatMap((term) =>
-        queryFields.map((fieldName) => ({
-          wildcard: {
-            [fieldName]: {
-              value: `*${term}*`,
-            },
+  private buildTextQuery(text: string): QueryDslQueryContainer[] {
+    const searchTermArray = text
+      .toLowerCase()
+      .trim()
+      .split(this.textQuerySplitMethod)
+      .filter(Boolean);
+    const query: QueryDslQueryContainer[] = [];
+    const wildcardQueries = searchTermArray.flatMap((term) =>
+      this.queryFields.map((fieldName) => ({
+        wildcard: {
+          [fieldName]: {
+            value: `*${term}*`,
           },
-        })),
-      );
-      if (wildcardQueries.length > 0) {
-        query.push({
-          bool: {
-            should: wildcardQueries,
-            minimum_should_match: 1,
-          },
-        });
-      }
+        },
+      })),
+    );
 
+    if (wildcardQueries.length > 0) {
+      query.push({
+        bool: {
+          should: wildcardQueries,
+          minimum_should_match: 1,
+        },
+      });
+    }
+
+    return query;
+  }
+
+  private constructFinalQuery(
+    filter: IFilter[],
+    should: IShould[],
+    query: QueryDslQueryContainer[],
+    userGroups?: string[],
+  ) {
+    if (!query.length) {
       return {
         query: {
           bool: {
             filter: filter,
-            must: query,
             should: should,
+            minimum_should_match: userGroups ? 1 : 0,
           },
         },
       };
-    } catch (err) {
-      Logger.error("elastic search build search query failed");
-      throw err;
     }
+
+    return {
+      query: {
+        bool: {
+          filter: filter,
+          must: query,
+          should: should,
+        },
+      },
+    };
   }
 }
