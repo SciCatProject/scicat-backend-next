@@ -1,4 +1,6 @@
 name: Test
+env:
+  NODE_VERSION: 18.x
 
 on:
   pull_request:
@@ -17,14 +19,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Install dependencies
         if: steps.cached-node-modules.outputs.cache-hit != 'true'
@@ -41,14 +43,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Unit tests
         run: npm run test
@@ -64,14 +66,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Build
         run: npm run build
@@ -87,14 +89,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: API tests
         env:
@@ -149,7 +151,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Run stack in docker-compose
         env:

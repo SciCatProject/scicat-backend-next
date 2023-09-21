@@ -53,9 +53,8 @@ export class InstrumentsController {
     @Body() createInstrumentDto: CreateInstrumentDto,
   ): Promise<Instrument> {
     try {
-      const instrument = await this.instrumentsService.create(
-        createInstrumentDto,
-      );
+      const instrument =
+        await this.instrumentsService.create(createInstrumentDto);
       return instrument;
     } catch (e) {
       throw new HttpException(

@@ -95,8 +95,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `OIDC_ACCESS_GROUPS` [string] _Optional_ Functionality is still unclear.
 - `LOGBOOK_ENABLED` [string] _Optional_ Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
 - `LOGBOOK_BASE_URL` [string] _Optional_ The base URL to the Logbook API. Only required if Logbook is enabled.
-- `LOGBOOK_USERNAME` [string] _Optional_ The username used to authenticate to the Logbook API. Only required if Logbook is enabled.
-- `LOGBOOK_PASSWORD` [string] _Optional_ The password used to authenticate to the Logbook API. Only required if Logbook is enabled.
+
 - `METADATA_KEYS_RETURN_LIMIT` [number] _Optional_ The return limit for the `/Datasets/metadataKeys` endpoint.
 - `METADATA_PARENT_INSTANCES_RETURN_LIMIT` _Optional_ The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint.
 - `MONGODB_URI` [string] The URI for your MongoDB instance.

@@ -1,0 +1,45 @@
+{
+  "loopback-component-explorer": {
+    "mountPath": "/explorer"
+  },
+  "../node_modules/loopback-component-mq/lib": {
+    "options": {
+      "restPort": 15672,
+      "acls": [
+        {
+          "accessType": "*",
+          "principalType": "ROLE",
+          "principalId": "$unauthenticated",
+          "permission": "DENY"
+        }
+      ]
+    },
+    "topology": {
+      "connection": {
+        "uri": "amqp://guest:guest@127.0.0.1:5672/"
+      },
+      "exchanges": [
+        {
+          "name": "jobs.write",
+          "type": "topic",
+          "persistent": true
+        }
+      ],
+      "queues": [
+        {
+          "name": "client.jobs.write",
+          "subscribe": true
+        }
+      ],
+      "bindings": [
+        {
+          "exchange": "jobs.write",
+          "target": "client.jobs.write",
+          "keys": [
+            "jobqueue"
+          ]
+        }
+      ]
+    }
+  }
+}
