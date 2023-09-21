@@ -14,7 +14,6 @@ import {
   ApiQuery,
   ApiResponse,
 } from "@nestjs/swagger";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
@@ -68,7 +67,6 @@ export class ElasticSearchServiceController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @AllowAny()
   @ApiBody({
     type: SearchDto,
   })

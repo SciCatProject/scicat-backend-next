@@ -1598,8 +1598,9 @@ export class DatasetsController {
         accessGroups: dataset.accessGroups,
         instrumentGroup: dataset.instrumentGroup,
       };
-      const datablock =
-        await this.origDatablocksService.create(createOrigDatablock);
+      const datablock = await this.origDatablocksService.create(
+        createOrigDatablock,
+      );
 
       const updateDatasetDto: PartialUpdateDatasetDto = {
         size: dataset.size + datablock.size,
