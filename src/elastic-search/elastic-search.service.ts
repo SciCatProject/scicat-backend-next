@@ -48,6 +48,7 @@ export class ElasticSearchService implements OnModuleInit {
       this.configService.get<string>("elasticSearch.enabled") === "yes"
         ? true
         : false;
+
     this.defaultIndex =
       this.configService.get<string>("elasticSearch.defaultIndex") || "";
 
