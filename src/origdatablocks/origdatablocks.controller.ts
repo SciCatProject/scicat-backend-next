@@ -110,8 +110,9 @@ export class OrigDatablocksController {
     // updates datasets size
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       { where: { datasetId: pid } };
-    const datasetOrigdatablocks =
-      await this.origDatablocksService.findAll(parsedFilters);
+    const datasetOrigdatablocks = await this.origDatablocksService.findAll(
+      parsedFilters,
+    );
 
     const updateDatasetDto: PartialUpdateDatasetDto = {
       size: datasetOrigdatablocks

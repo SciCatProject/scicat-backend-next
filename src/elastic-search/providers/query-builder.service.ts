@@ -36,9 +36,11 @@ export class SearchQueryService {
     "pid",
     "type",
     "creationLocation",
+    "creationTime",
     "ownerGroup",
     "accessGroup",
     "isPublished",
+    "scientificMetadata",
   ];
   readonly queryFields = ["datasetName", "description"];
   readonly textQuerySplitMethod = /[ ,]+/;
@@ -58,13 +60,16 @@ export class SearchQueryService {
 
   private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
     const filter: IFilter[] = [];
+
+    const isPublished = fields["isPublished"] ?? false;
+    filter.push({ term: { isPublished: isPublished } });
+
     for (const fieldName of this.filterFields) {
       if (fields[fieldName]) {
         addTermsFilter(fieldName, fields[fieldName], filter);
       }
     }
-    const isPublished = fields["isPublished"] ?? false;
-    filter.push({ term: { isPublished: isPublished } });
+
     return filter;
   }
 
@@ -89,12 +94,12 @@ export class SearchQueryService {
   }
 
   private buildTextQuery(text: string): QueryDslQueryContainer[] {
+    const query: QueryDslQueryContainer[] = [];
     const searchTermArray = text
       .toLowerCase()
       .trim()
       .split(this.textQuerySplitMethod)
       .filter(Boolean);
-    const query: QueryDslQueryContainer[] = [];
     const wildcardQueries = searchTermArray.flatMap((term) =>
       this.queryFields.map((fieldName) => ({
         wildcard: {

@@ -1,4 +1,4 @@
-import { MappingObject } from "../interfaces/mappingInterface";
+import { MappingObject } from "../interfaces/mappingInterface.type";
 
 export const datasetMappings: MappingObject = {
   description: {
