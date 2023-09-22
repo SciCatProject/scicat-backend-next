@@ -16,24 +16,24 @@ import {
   HttpException,
   Req,
 } from "@nestjs/common";
-import { Request } from "express";
-import { PoliciesService } from "./policies.service";
-import { CreatePolicyDto } from "./dto/create-policy.dto";
-import { UpdatePolicyDto } from "./dto/update-policy.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
-import { Policy, PolicyDocument } from "./schemas/policy.schema";
-import { FilterQuery } from "mongoose";
-import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
-import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
-import { IFilters } from "src/common/interfaces/common.interface";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { replaceLikeOperator } from "src/common/utils";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
+import {Request} from "express";
+import {PoliciesService} from "./policies.service";
+import {CreatePolicyDto} from "./dto/create-policy.dto";
+import {UpdatePolicyDto} from "./dto/update-policy.dto";
+import {ApiBearerAuth, ApiQuery, ApiTags} from "@nestjs/swagger";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {AppAbility, CaslAbilityFactory} from "src/casl/casl-ability.factory";
+import {Action} from "src/casl/action.enum";
+import {Policy, PolicyDocument} from "./schemas/policy.schema";
+import {FilterQuery} from "mongoose";
+import {IPolicyFilter} from "./interfaces/policy-filters.interface";
+import {HistoryInterceptor} from "src/common/interceptors/history.interceptor";
+import {UpdateWherePolicyDto} from "./dto/update-where-policy.dto";
+import {IFilters} from "src/common/interfaces/common.interface";
+import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
+import {replaceLikeOperator} from "src/common/utils";
+import {FilterPipe} from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("policies")
@@ -43,10 +43,7 @@ export class PoliciesController {
     private readonly policiesService: PoliciesService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
+  getFilters(headers: Record<string, string>, queryFilter: {filter?: string}) {
     // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
     if (queryFilter?.filter && (headers?.filter || headers?.where)) {
       throw new HttpException(
@@ -92,9 +89,9 @@ export class PoliciesController {
           mergedFilters.where = {};
         }
         mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { isPublished: true },
+          {ownerGroup: {$in: user.currentGroups}},
+          {accessGroups: {$in: user.currentGroups}},
+          {isPublished: true},
         ];
       }
     }
@@ -120,7 +117,7 @@ export class PoliciesController {
   async findAll(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Query(new FilterPipe()) queryFilter: {filter?: string},
   ): Promise<Policy[]> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
@@ -135,7 +132,7 @@ export class PoliciesController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
   @Get("/count")
-  async count(@Query("where") where?: string): Promise<{ count: number }> {
+  async count(@Query("where") where?: string): Promise<{count: number}> {
     const parsedWhere: FilterQuery<PolicyDocument> = JSON.parse(where ?? "{}");
     return this.policiesService.count(parsedWhere);
   }
@@ -156,7 +153,7 @@ export class PoliciesController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<Policy | null> {
-    return this.policiesService.findOne({ _id: id });
+    return this.policiesService.findOne({_id: id});
   }
 
   @UseGuards(PoliciesGuard)
@@ -166,13 +163,13 @@ export class PoliciesController {
     @Param("id") id: string,
     @Body() updatePolicyDto: UpdatePolicyDto,
   ): Promise<Policy | null> {
-    return this.policiesService.update({ _id: id }, updatePolicyDto);
+    return this.policiesService.update({_id: id}, updatePolicyDto);
   }
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Policy))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.policiesService.remove({ _id: id });
+    return this.policiesService.remove({_id: id});
   }
 }

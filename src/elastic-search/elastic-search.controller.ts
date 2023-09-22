@@ -8,23 +8,23 @@ import {
   UseInterceptors,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags, ApiBearerAuth, ApiQuery, ApiResponse } from "@nestjs/swagger";
-import { Action } from "src/casl/action.enum";
-import { AppAbility } from "src/casl/casl-ability.factory";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { SubDatasetsPublicInterceptor } from "src/datasets/interceptors/datasets-public.interceptor";
-import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import { ElasticSearchActions } from "./dto";
-import { CreateIndexDto } from "./dto/create-index.dto";
-import { DeleteIndexDto } from "./dto/delete-index.dto";
-import { GetIndexDto } from "./dto/get-index.dto";
+import {ApiTags, ApiBearerAuth, ApiQuery, ApiResponse} from "@nestjs/swagger";
+import {Action} from "src/casl/action.enum";
+import {AppAbility} from "src/casl/casl-ability.factory";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {DatasetsService} from "src/datasets/datasets.service";
+import {SubDatasetsPublicInterceptor} from "src/datasets/interceptors/datasets-public.interceptor";
+import {IDatasetFields} from "src/datasets/interfaces/dataset-filters.interface";
+import {ElasticSearchActions} from "./dto";
+import {CreateIndexDto} from "./dto/create-index.dto";
+import {DeleteIndexDto} from "./dto/delete-index.dto";
+import {GetIndexDto} from "./dto/get-index.dto";
 
-import { SearchDto } from "./dto/search.dto";
-import { SyncDatabaseDto } from "./dto/sync-data.dto";
-import { UpdateIndexDto } from "./dto/update-index.dto";
-import { ElasticSearchService } from "./elastic-search.service";
+import {SearchDto} from "./dto/search.dto";
+import {SyncDatabaseDto} from "./dto/sync-data.dto";
+import {UpdateIndexDto} from "./dto/update-index.dto";
+import {ElasticSearchService} from "./elastic-search.service";
 
 @ApiBearerAuth()
 @ApiTags("elastic-search")
@@ -45,7 +45,7 @@ export class ElasticSearchServiceController {
     description: "Create index",
   })
   @Post("/create-index")
-  async createIndex(@Query() { index }: CreateIndexDto) {
+  async createIndex(@Query() {index}: CreateIndexDto) {
     const esIndex = index.trim();
 
     return this.elasticSearchService.createIndex(esIndex);
@@ -61,7 +61,7 @@ export class ElasticSearchServiceController {
     description: "Sync data to the index",
   })
   @Post("/sync-database")
-  async syncDatabase(@Query() { index }: SyncDatabaseDto) {
+  async syncDatabase(@Query() {index}: SyncDatabaseDto) {
     const esIndex = index.trim();
     const collectionData = await this.datasetService.getDatasetsWithoutId();
 
@@ -96,7 +96,7 @@ export class ElasticSearchServiceController {
     description: "Delete index",
   })
   @Post("/delete-index")
-  async deleteIndex(@Query() { index }: DeleteIndexDto) {
+  async deleteIndex(@Query() {index}: DeleteIndexDto) {
     const esIndex = index.trim();
 
     return this.elasticSearchService.deleteIndex(esIndex);
@@ -112,7 +112,7 @@ export class ElasticSearchServiceController {
     description: "Get current index setting",
   })
   @Get("/get-index")
-  async getIndex(@Query() { index }: GetIndexDto) {
+  async getIndex(@Query() {index}: GetIndexDto) {
     const esIndex = index.trim();
 
     return this.elasticSearchService.getIndexSettings(esIndex);
@@ -128,7 +128,7 @@ export class ElasticSearchServiceController {
     description: "Update index to the latest settings",
   })
   @Post("/update-index")
-  async updateIndex(@Query() { index }: UpdateIndexDto) {
+  async updateIndex(@Query() {index}: UpdateIndexDto) {
     const esIndex = index.trim();
 
     return this.elasticSearchService.updateIndex(esIndex);

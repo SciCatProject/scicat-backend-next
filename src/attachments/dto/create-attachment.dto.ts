@@ -1,5 +1,5 @@
-import { IsOptional, IsString } from "class-validator";
-import { OwnableDto } from "src/common/dto/ownable.dto";
+import {IsOptional, IsString} from "class-validator";
+import {OwnableDto} from "src/common/dto/ownable.dto";
 
 export class CreateAttachmentDto extends OwnableDto {
   @IsOptional()

@@ -1,11 +1,11 @@
-import { HttpService } from "@nestjs/axios";
-import { Test, TestingModule } from "@nestjs/testing";
-import { UserPayload } from "../interfaces/userPayload.interface";
-import { AccessGroupFromGraphQLApiService } from "./access-group-from-graphql-api-call.service";
+import {HttpService} from "@nestjs/axios";
+import {Test, TestingModule} from "@nestjs/testing";
+import {UserPayload} from "../interfaces/userPayload.interface";
+import {AccessGroupFromGraphQLApiService} from "./access-group-from-graphql-api-call.service";
 
 describe("AccessGroupFromGraphQLApiService", () => {
   const mockResponse = {
-    data: [{ id: "AAA" }, { id: "BBB" }],
+    data: [{id: "AAA"}, {id: "BBB"}],
   };
 
   let service: AccessGroupFromGraphQLApiService;
@@ -13,7 +13,7 @@ describe("AccessGroupFromGraphQLApiService", () => {
     "",
     "",
     {},
-    (result) => (result as typeof mockResponse).data.map(({ id }) => id),
+    (result) => (result as typeof mockResponse).data.map(({id}) => id),
     new HttpService(),
   );
 

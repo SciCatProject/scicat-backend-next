@@ -7,9 +7,9 @@ import {
   Req,
   HttpCode,
 } from "@nestjs/common";
-import { LocalAuthGuard } from "./guards/local-auth.guard";
-import { AuthService } from "./auth.service";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import {LocalAuthGuard} from "./guards/local-auth.guard";
+import {AuthService} from "./auth.service";
+import {JwtAuthGuard} from "./guards/jwt-auth.guard";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -17,14 +17,14 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { CredentialsDto } from "./dto/credentials.dto";
-import { LdapAuthGuard } from "./guards/ldap.guard";
-import { AllowAny } from "./decorators/allow-any.decorator";
-import { User } from "src/users/schemas/user.schema";
-import { OidcAuthGuard } from "./guards/oidc.guard";
-import { Request, Response } from "express";
-import { ConfigService } from "@nestjs/config";
-import { OidcConfig } from "src/config/configuration";
+import {CredentialsDto} from "./dto/credentials.dto";
+import {LdapAuthGuard} from "./guards/ldap.guard";
+import {AllowAny} from "./decorators/allow-any.decorator";
+import {User} from "src/users/schemas/user.schema";
+import {OidcAuthGuard} from "./guards/oidc.guard";
+import {Request, Response} from "express";
+import {ConfigService} from "@nestjs/config";
+import {OidcConfig} from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -35,7 +35,7 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  @ApiBody({ type: CredentialsDto })
+  @ApiBody({type: CredentialsDto})
   @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post("login")
@@ -45,7 +45,7 @@ export class AuthController {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
-  @ApiBody({ type: CredentialsDto })
+  @ApiBody({type: CredentialsDto})
   @ApiOperation({
     summary: "Legacy endpoint to authenticate users through an ldap service.",
     description:
@@ -60,7 +60,7 @@ export class AuthController {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
-  @ApiBody({ type: CredentialsDto })
+  @ApiBody({type: CredentialsDto})
   @ApiOperation({
     summary: "Endpoint to authenticate users through an ldap service.",
     description:

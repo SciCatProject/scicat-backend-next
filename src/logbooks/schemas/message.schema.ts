@@ -1,12 +1,12 @@
-import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
-import { MessageContent, MessageContentSchema } from "./message-content.schema";
+import {Prop, raw, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Document} from "mongoose";
+import {MessageContent, MessageContentSchema} from "./message-content.schema";
 
 export type MessageDocument = Message & Document;
 
 @Schema()
 export class Message {
-  @Prop({ type: MessageContentSchema })
+  @Prop({type: MessageContentSchema})
   content: MessageContent;
 
   @Prop()
@@ -23,7 +23,7 @@ export class Message {
 
   @Prop(
     raw({
-      age: { type: Number },
+      age: {type: Number},
     }),
   )
   unsigned: Record<string, number>;

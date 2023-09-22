@@ -1,6 +1,6 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { UserPayload } from "../interfaces/userPayload.interface";
-import { AccessGroupFromMultipleProvidersService } from "./access-group-from-multiple-providers.service";
+import {Test, TestingModule} from "@nestjs/testing";
+import {UserPayload} from "../interfaces/userPayload.interface";
+import {AccessGroupFromMultipleProvidersService} from "./access-group-from-multiple-providers.service";
 
 describe("AccessGroupFromMultipleProvidersService", () => {
   let service: AccessGroupFromMultipleProvidersService;

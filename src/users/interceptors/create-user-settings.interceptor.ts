@@ -5,9 +5,9 @@ import {
   Logger,
   NestInterceptor,
 } from "@nestjs/common";
-import { Observable, tap } from "rxjs";
-import { CreateUserSettingsDto } from "../dto/create-user-settings.dto";
-import { UsersService } from "../users.service";
+import {Observable, tap} from "rxjs";
+import {CreateUserSettingsDto} from "../dto/create-user-settings.dto";
+import {UsersService} from "../users.service";
 
 @Injectable()
 export class CreateUserSettingsInterceptor implements NestInterceptor {

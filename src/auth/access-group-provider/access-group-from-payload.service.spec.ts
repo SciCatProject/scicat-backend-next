@@ -1,7 +1,7 @@
-import { ConfigService } from "@nestjs/config";
-import { Test, TestingModule } from "@nestjs/testing";
-import { UserPayload } from "../interfaces/userPayload.interface";
-import { AccessGroupFromPayloadService } from "./access-group-from-payload.service";
+import {ConfigService} from "@nestjs/config";
+import {Test, TestingModule} from "@nestjs/testing";
+import {UserPayload} from "../interfaces/userPayload.interface";
+import {AccessGroupFromPayloadService} from "./access-group-from-payload.service";
 
 describe("AccessGroupFromPayloadService", () => {
   let service: AccessGroupFromPayloadService;

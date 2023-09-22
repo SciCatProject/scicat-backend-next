@@ -1,4 +1,4 @@
-import { IDatafileFilter } from "src/common/interfaces/common.interface";
+import {IDatafileFilter} from "src/common/interfaces/common.interface";
 
 export interface IDatablockFields {
   datasetId?: string;

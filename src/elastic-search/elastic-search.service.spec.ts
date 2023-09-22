@@ -1,9 +1,9 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigService } from "@nestjs/config";
-import { ElasticSearchService } from "./elastic-search.service";
-import { SearchQueryService } from "./providers/query-builder.service";
+import {Test, TestingModule} from "@nestjs/testing";
+import {ConfigService} from "@nestjs/config";
+import {ElasticSearchService} from "./elastic-search.service";
+import {SearchQueryService} from "./providers/query-builder.service";
 
-import { DatasetsService } from "src/datasets/datasets.service";
+import {DatasetsService} from "src/datasets/datasets.service";
 
 class SearchQueryServiceMock {}
 class DatasetsServiceMock {}
@@ -33,7 +33,7 @@ describe("ElasticSearchService", () => {
           provide: SearchQueryService,
           useClass: SearchQueryServiceMock,
         },
-        { provide: DatasetsService, useClass: DatasetsServiceMock },
+        {provide: DatasetsService, useClass: DatasetsServiceMock},
       ],
     }).compile();
 

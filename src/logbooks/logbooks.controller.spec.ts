@@ -1,8 +1,8 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { CaslModule } from "src/casl/casl.module";
-import { ProposalsService } from "src/proposals/proposals.service";
-import { LogbooksController } from "./logbooks.controller";
-import { LogbooksService } from "./logbooks.service";
+import {Test, TestingModule} from "@nestjs/testing";
+import {CaslModule} from "src/casl/casl.module";
+import {ProposalsService} from "src/proposals/proposals.service";
+import {LogbooksController} from "./logbooks.controller";
+import {LogbooksService} from "./logbooks.service";
 
 class LogbooksServiceMock {}
 
@@ -16,8 +16,8 @@ describe("LogbooksController", () => {
       controllers: [LogbooksController],
       imports: [CaslModule],
       providers: [
-        { provide: LogbooksService, useClass: LogbooksServiceMock },
-        { provide: ProposalsService, useClass: ProposalsServiceMock },
+        {provide: LogbooksService, useClass: LogbooksServiceMock},
+        {provide: ProposalsService, useClass: ProposalsServiceMock},
       ],
     }).compile();
 

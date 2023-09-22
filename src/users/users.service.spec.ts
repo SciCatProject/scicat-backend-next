@@ -1,15 +1,15 @@
-import { ConfigModule } from "@nestjs/config";
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { RolesService } from "./roles.service";
-import { UserIdentity } from "./schemas/user-identity.schema";
-import { User } from "./schemas/user.schema";
-import { UsersService } from "./users.service";
-import { JwtService } from "@nestjs/jwt";
-import { UserSettings } from "./schemas/user-settings.schema";
-import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
-import { AccessGroupFromStaticValuesService } from "src/auth/access-group-provider/access-group-from-static-values.service";
+import {ConfigModule} from "@nestjs/config";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {RolesService} from "./roles.service";
+import {UserIdentity} from "./schemas/user-identity.schema";
+import {User} from "./schemas/user.schema";
+import {UsersService} from "./users.service";
+import {JwtService} from "@nestjs/jwt";
+import {UserSettings} from "./schemas/user-settings.schema";
+import {AccessGroupService} from "src/auth/access-group-provider/access-group.service";
+import {AccessGroupFromStaticValuesService} from "src/auth/access-group-provider/access-group-from-static-values.service";
 
 class RolesServiceMock {}
 class JwtServiceMock {}
@@ -70,8 +70,8 @@ describe("UsersService", () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule],
       providers: [
-        { provide: RolesService, useClass: RolesServiceMock },
-        { provide: JwtService, useClass: JwtServiceMock },
+        {provide: RolesService, useClass: RolesServiceMock},
+        {provide: JwtService, useClass: JwtServiceMock},
         {
           provide: getModelToken("User"),
           useValue: {

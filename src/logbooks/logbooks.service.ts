@@ -1,14 +1,10 @@
-import { HttpService } from "@nestjs/axios";
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { firstValueFrom } from "rxjs";
-import { handleAxiosRequestError } from "src/common/utils";
-import { Logbook } from "./schemas/logbook.schema";
-import { Message } from "./schemas/message.schema";
+import {HttpService} from "@nestjs/axios";
+import {Injectable, InternalServerErrorException, Logger} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
+import {firstValueFrom} from "rxjs";
+import {handleAxiosRequestError} from "src/common/utils";
+import {Logbook} from "./schemas/logbook.schema";
+import {Message} from "./schemas/message.schema";
 
 @Injectable()
 export class LogbooksService {
@@ -67,7 +63,7 @@ export class LogbooksService {
         );
 
         Logger.log("Found logbook " + name, "LogbooksService.findByName");
-        const { skip, limit, sortField } = JSON.parse(filters);
+        const {skip, limit, sortField} = JSON.parse(filters);
         Logger.log(
           "Applying filters skip: " +
             skip +
@@ -83,7 +79,7 @@ export class LogbooksService {
         if (skip >= 0 && limit >= 0) {
           const end = skip + limit;
           const messages = res.data.messages.slice(skip, end);
-          return { ...res.data, messages };
+          return {...res.data, messages};
         }
         return res.data;
       } catch (error) {
@@ -95,8 +91,8 @@ export class LogbooksService {
 
   async sendMessage(
     name: string,
-    data: { message: string },
-  ): Promise<{ event_id: string } | null> {
+    data: {message: string},
+  ): Promise<{event_id: string} | null> {
     if (this.logbookEnabled) {
       try {
         Logger.log(
@@ -104,7 +100,7 @@ export class LogbooksService {
           "LogbooksService.sendMessage",
         );
         const res = await firstValueFrom(
-          this.httpService.post<{ event_id: string }>(
+          this.httpService.post<{event_id: string}>(
             this.baseUrl + `/Logbooks/${name}/message`,
             data,
           ),

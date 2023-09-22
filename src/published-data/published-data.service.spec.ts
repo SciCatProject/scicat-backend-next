@@ -1,8 +1,8 @@
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { PublishedDataService } from "./published-data.service";
-import { PublishedData } from "./schemas/published-data.schema";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {PublishedDataService} from "./published-data.service";
+import {PublishedData} from "./schemas/published-data.schema";
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",

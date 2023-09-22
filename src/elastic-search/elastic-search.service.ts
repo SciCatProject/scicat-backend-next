@@ -6,24 +6,24 @@ import {
   OnModuleInit,
 } from "@nestjs/common";
 
-import { Client } from "@elastic/elasticsearch";
-import { SearchQueryService } from "./providers/query-builder.service";
+import {Client} from "@elastic/elasticsearch";
+import {SearchQueryService} from "./providers/query-builder.service";
 import {
   SearchTotalHits,
   SearchRequest,
 } from "@elastic/elasticsearch/lib/api/types";
-import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import {IDatasetFields} from "src/datasets/interfaces/dataset-filters.interface";
 import {
   defaultElasticSettings,
   dynamic_template,
 } from "./settings/indexSetting";
-import { datasetMappings } from "./mappings/datasetFieldMapping";
+import {datasetMappings} from "./mappings/datasetFieldMapping";
 import {
   DatasetClass,
   DatasetDocument,
 } from "src/datasets/schemas/dataset.schema";
-import { ConfigService } from "@nestjs/config";
-import { sleep } from "src/common/utils";
+import {ConfigService} from "@nestjs/config";
+import {sleep} from "src/common/utils";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -126,7 +126,7 @@ export class ElasticSearchService implements OnModuleInit {
           settings: defaultElasticSettings,
         },
       });
-      await this.esService.indices.close({ index });
+      await this.esService.indices.close({index});
       await this.esService.indices.putSettings({
         index,
         body: {
@@ -155,7 +155,7 @@ export class ElasticSearchService implements OnModuleInit {
     }
   }
   async syncDatabase(collection: DatasetClass[], index = this.defaultIndex) {
-    const indexExists = await this.esService.indices.exists({ index });
+    const indexExists = await this.esService.indices.exists({index});
     if (!indexExists) {
       throw new Error("Index not found");
     }
@@ -190,7 +190,7 @@ export class ElasticSearchService implements OnModuleInit {
       });
       await this.esService.indices.putSettings({
         index,
-        body: { settings: defaultElasticSettings },
+        body: {settings: defaultElasticSettings},
       });
 
       await this.esService.indices.putMapping({
@@ -217,7 +217,7 @@ export class ElasticSearchService implements OnModuleInit {
 
   async getIndexSettings(index = this.defaultIndex) {
     try {
-      return await this.esService.indices.getSettings({ index });
+      return await this.esService.indices.getSettings({index});
     } catch (error) {
       Logger.error("getIndexSettings failed-> ElasticSearchService", error);
       throw new HttpException(
@@ -229,9 +229,9 @@ export class ElasticSearchService implements OnModuleInit {
 
   async deleteIndex(index = this.defaultIndex) {
     try {
-      await this.esService.indices.delete({ index });
+      await this.esService.indices.delete({index});
       Logger.log(`Elasticsearch Index Deleted-> Index: ${index} `);
-      return { success: true, message: `Index ${index} deleted` };
+      return {success: true, message: `Index ${index} deleted`};
     } catch (error) {
       Logger.error("deleteIndex failed-> ElasticSearchService", error);
       throw new HttpException(
@@ -245,7 +245,7 @@ export class ElasticSearchService implements OnModuleInit {
     searchParam: IDatasetFields,
     limit = 20,
     skip = 0,
-  ): Promise<{ totalCount: number; data: string[] }> {
+  ): Promise<{totalCount: number; data: string[]}> {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
     try {
@@ -255,7 +255,7 @@ export class ElasticSearchService implements OnModuleInit {
         track_scores: true,
         body: searchQuery,
         size: limit + skip,
-        sort: [{ _score: { order: "desc" } }],
+        sort: [{_score: {order: "desc"}}],
         min_score: defaultMinScore,
         track_total_hits: true,
         _source: [""],

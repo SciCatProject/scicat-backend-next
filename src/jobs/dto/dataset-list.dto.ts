@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
+import {IsArray, IsNotEmpty, IsString} from "class-validator";
 
 export class DatasetListDto {
   @IsString()
@@ -6,6 +6,6 @@ export class DatasetListDto {
   readonly pid: string;
 
   @IsArray()
-  @IsString({ each: true })
+  @IsString({each: true})
   readonly files: string[];
 }

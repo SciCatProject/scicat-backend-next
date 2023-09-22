@@ -1,13 +1,13 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import { compare } from "bcrypt";
-import { User } from "src/users/schemas/user.schema";
-import { UsersService } from "../users/users.service";
-import { Request } from "express";
-import { OidcConfig } from "src/config/configuration";
-import { parseBoolean } from "src/common/utils";
-import { Issuer } from "openid-client";
+import {Injectable, Logger} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
+import {JwtService} from "@nestjs/jwt";
+import {compare} from "bcrypt";
+import {User} from "src/users/schemas/user.schema";
+import {UsersService} from "../users/users.service";
+import {Request} from "express";
+import {OidcConfig} from "src/config/configuration";
+import {parseBoolean} from "src/common/utils";
+import {Issuer} from "openid-client";
 
 @Injectable()
 export class AuthService {
@@ -21,14 +21,14 @@ export class AuthService {
     username: string,
     pass: string,
   ): Promise<Omit<User, "password"> | null> {
-    const user = await this.usersService.findOne({ username }, true);
+    const user = await this.usersService.findOne({username}, true);
 
     if (!user) {
       return null;
     }
 
     // Hacky deep copy of User object, as shallow copy is not enough
-    const { password, ...result } = JSON.parse(JSON.stringify(user));
+    const {password, ...result} = JSON.parse(JSON.stringify(user));
     const match = await compare(pass, password);
 
     if (!match) {
@@ -40,7 +40,7 @@ export class AuthService {
 
   async login(user: Omit<User, "password">): Promise<Record<string, unknown>> {
     const expiresIn = this.configService.get<number>("jwt.expiresIn");
-    const accessToken = this.jwtService.sign(user, { expiresIn });
+    const accessToken = this.jwtService.sign(user, {expiresIn});
     return {
       access_token: accessToken,
       id: accessToken,
@@ -71,10 +71,10 @@ export class AuthService {
       return await this.additionalLogoutTasks(req, logoutURL);
     }
     if (logoutURL) {
-      return { logout: "successful", logoutURL: logoutURL };
+      return {logout: "successful", logoutURL: logoutURL};
     }
 
-    return { logout: "successful" };
+    return {logout: "successful"};
   }
 
   async additionalLogoutTasks(req: Request, logoutURL: string) {

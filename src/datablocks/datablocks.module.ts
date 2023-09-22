@@ -1,7 +1,7 @@
-import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { DatablocksService } from "./datablocks.service";
-import { Datablock, DatablockSchema } from "./schemas/datablock.schema";
+import {Module} from "@nestjs/common";
+import {MongooseModule} from "@nestjs/mongoose";
+import {DatablocksService} from "./datablocks.service";
+import {Datablock, DatablockSchema} from "./schemas/datablock.schema";
 
 @Module({
   imports: [

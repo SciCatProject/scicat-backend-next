@@ -1,14 +1,14 @@
-import { Strategy } from "passport-local";
-import { PassportStrategy } from "@nestjs/passport";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { AuthService } from "../auth.service";
-import { User } from "src/users/schemas/user.schema";
-import { UserPayload } from "../interfaces/userPayload.interface";
-import { UsersService } from "src/users/users.service";
-import { AccessGroupService } from "../access-group-provider/access-group.service";
-import { RolesService } from "src/users/roles.service";
-import { Role } from "src/users/schemas/role.schema";
-import { UserRole } from "src/users/schemas/user-role.schema";
+import {Strategy} from "passport-local";
+import {PassportStrategy} from "@nestjs/passport";
+import {Injectable, UnauthorizedException} from "@nestjs/common";
+import {AuthService} from "../auth.service";
+import {User} from "src/users/schemas/user.schema";
+import {UserPayload} from "../interfaces/userPayload.interface";
+import {UsersService} from "src/users/users.service";
+import {AccessGroupService} from "../access-group-provider/access-group.service";
+import {RolesService} from "src/users/roles.service";
+import {Role} from "src/users/schemas/role.schema";
+import {UserRole} from "src/users/schemas/user-role.schema";
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -36,7 +36,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     })) as UserRole[];
     const roles: Role[] = (await Promise.all(
       userRoles.map((r) => {
-        return this.rolesService.findOne({ _id: r.roleId });
+        return this.rolesService.findOne({_id: r.roleId});
       }),
     )) as Role[];
     const roleGroups: string[] = roles

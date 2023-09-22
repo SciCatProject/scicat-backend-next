@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Document} from "mongoose";
 
 export type InitialDatasetDocument = InitialDataset & Document;
 
@@ -10,7 +10,7 @@ export type InitialDatasetDocument = InitialDataset & Document;
   },
 })
 export class InitialDataset {
-  @Prop({ type: String, required: true })
+  @Prop({type: String, required: true})
   _id: string;
 }
 

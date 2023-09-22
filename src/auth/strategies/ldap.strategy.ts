@@ -1,16 +1,16 @@
 import Strategy from "passport-ldapauth";
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { ConfigService } from "@nestjs/config";
-import { UsersService } from "src/users/users.service";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
-import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
-import { FilterQuery } from "mongoose";
-import { User, UserDocument } from "src/users/schemas/user.schema";
-import { AccessGroupService } from "../access-group-provider/access-group.service";
-import { UserPayload } from "../interfaces/userPayload.interface";
-import { Profile } from "passport";
-import { UserProfile } from "src/users/schemas/user-profile.schema";
+import {Injectable, InternalServerErrorException} from "@nestjs/common";
+import {PassportStrategy} from "@nestjs/passport";
+import {ConfigService} from "@nestjs/config";
+import {UsersService} from "src/users/users.service";
+import {CreateUserDto} from "src/users/dto/create-user.dto";
+import {CreateUserIdentityDto} from "src/users/dto/create-user-identity.dto";
+import {FilterQuery} from "mongoose";
+import {User, UserDocument} from "src/users/schemas/user.schema";
+import {AccessGroupService} from "../access-group-provider/access-group.service";
+import {UserPayload} from "../interfaces/userPayload.interface";
+import {Profile} from "passport";
+import {UserProfile} from "src/users/schemas/user-profile.schema";
 
 @Injectable()
 export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
@@ -29,9 +29,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
-        { username: `ldap.${payload.displayName}` },
-        { username: payload.displayName },
-        { email: payload.mail as string },
+        {username: `ldap.${payload.displayName}`},
+        {username: payload.displayName},
+        {email: payload.mail as string},
       ],
     };
     const userExists = await this.usersService.userExists(userFilter);
@@ -73,7 +73,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
                 "base64",
               )
             : "error: no photo found",
-          emails: [{ value: payload.mail as string }],
+          emails: [{value: payload.mail as string}],
           accessGroups: accessGroups,
           id: payload.sAMAccountName as string,
         },
@@ -87,7 +87,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
 
     const foundUser = await this.usersService.findOne(userFilter);
     const jsonUser = JSON.parse(JSON.stringify(foundUser));
-    const { password, ...user } = jsonUser;
+    const {password, ...user} = jsonUser;
     user.userId = user._id;
 
     // update user identity if needed
@@ -131,7 +131,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
           "base64",
         )
       : "error: no photo found";
-    profile.emails = [{ value: payload.mail as string }];
+    profile.emails = [{value: payload.mail as string}];
     profile.id = payload.sAMAccountName as string;
   }
 }

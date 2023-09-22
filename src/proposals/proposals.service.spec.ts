@@ -1,8 +1,8 @@
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { ProposalsService } from "./proposals.service";
-import { ProposalClass } from "./schemas/proposal.schema";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {ProposalsService} from "./proposals.service";
+import {ProposalClass} from "./schemas/proposal.schema";
 
 const mockProposal: ProposalClass = {
   proposalId: "ABCDEF",

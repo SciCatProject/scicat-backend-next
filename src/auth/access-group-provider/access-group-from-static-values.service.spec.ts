@@ -1,5 +1,5 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { AccessGroupFromStaticValuesService } from "./access-group-from-static-values.service";
+import {Test, TestingModule} from "@nestjs/testing";
+import {AccessGroupFromStaticValuesService} from "./access-group-from-static-values.service";
 
 describe("AccessGroupFromStaticValuesService", () => {
   let service: AccessGroupFromStaticValuesService;

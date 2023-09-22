@@ -1,9 +1,9 @@
-import { Injectable, Inject, Scope } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
-import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import {Injectable, Inject, Scope} from "@nestjs/common";
+import {REQUEST} from "@nestjs/core";
+import {Request} from "express";
+import {InjectModel} from "@nestjs/mongoose";
+import {FilterQuery, Model, PipelineStage, QueryOptions} from "mongoose";
+import {IFacets, IFilters} from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -12,16 +12,16 @@ import {
   parseLimitFilters,
   parseLimitFiltersForPipeline,
 } from "src/common/utils";
-import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
-import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
-import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
+import {CreateOrigDatablockDto} from "./dto/create-origdatablock.dto";
+import {UpdateOrigDatablockDto} from "./dto/update-origdatablock.dto";
+import {IOrigDatablockFields} from "./interfaces/origdatablocks.interface";
 import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({scope: Scope.REQUEST})
 export class OrigDatablocksService {
   constructor(
     @InjectModel(OrigDatablock.name)
@@ -45,7 +45,7 @@ export class OrigDatablocksService {
     const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<OrigDatablockDocument> =
       filter.fields ?? {};
-    const { limit, skip, sort } = parseLimitFilters(filter.limits);
+    const {limit, skip, sort} = parseLimitFilters(filter.limits);
 
     const origdatablockPromise = this.origDatablockModel
       .find(whereFilter, fieldsProjection)
@@ -90,7 +90,7 @@ export class OrigDatablocksService {
     const modifiers = parseLimitFiltersForPipeline(filter.limits);
 
     const pipelineStages: PipelineStage[] = [
-      { $match: filterQuery },
+      {$match: filterQuery},
       {
         $lookup: {
           from: "Dataset",
@@ -101,11 +101,11 @@ export class OrigDatablocksService {
       },
       {
         $addFields: {
-          datasetExist: { $gt: [{ $size: "$Dataset" }, 0] },
+          datasetExist: {$gt: [{$size: "$Dataset"}, 0]},
         },
       },
-      { $unset: "Dataset" },
-      { $unwind: "$dataFileList" },
+      {$unset: "Dataset"},
+      {$unwind: "$dataFileList"},
       ...modifiers,
     ];
 
@@ -135,7 +135,7 @@ export class OrigDatablocksService {
       .findOneAndUpdate(
         filter,
         addUpdatedByField(updateOrigdatablockDto, username),
-        { new: true },
+        {new: true},
       )
       .exec();
   }

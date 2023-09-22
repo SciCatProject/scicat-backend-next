@@ -1,17 +1,17 @@
-import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
+import {PipeTransform, Injectable, ArgumentMetadata} from "@nestjs/common";
 
 @Injectable()
 export class FilterPipe
   implements
     PipeTransform<
-      { filter?: string; fields?: string },
-      { filter?: string; fields?: string }
+      {filter?: string; fields?: string},
+      {filter?: string; fields?: string}
     >
 {
   transform(
-    inValue: { filter?: string; fields?: string },
+    inValue: {filter?: string; fields?: string},
     metadata: ArgumentMetadata,
-  ): { filter?: string; fields?: string } {
+  ): {filter?: string; fields?: string} {
     /*
      * intercept filter and make sure to convert loopback operators to mongo operators
      */
