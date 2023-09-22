@@ -1,8 +1,8 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
-import { DataFile, DataFileSchema } from "src/common/schemas/datafile.schema";
-import { OwnableClass } from "src/common/schemas/ownable.schema";
-import { v4 as uuidv4 } from "uuid";
+import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {ApiProperty, getSchemaPath} from "@nestjs/swagger";
+import {DataFile, DataFileSchema} from "src/common/schemas/datafile.schema";
+import {OwnableClass} from "src/common/schemas/ownable.schema";
+import {v4 as uuidv4} from "uuid";
 
 export type DatablockDocument = Datablock & Document;
 
@@ -30,7 +30,7 @@ export class Datablock extends OwnableClass {
     required: true,
     description: "PID of the dataset to which the datablock belongs.",
   })
-  @Prop({ type: String, ref: "Dataset", required: true })
+  @Prop({type: String, ref: "Dataset", required: true})
   datasetId: string;
 
   @ApiProperty({
@@ -97,7 +97,7 @@ export class Datablock extends OwnableClass {
 
   @ApiProperty({
     type: "array",
-    items: { $ref: getSchemaPath(DataFile) },
+    items: {$ref: getSchemaPath(DataFile)},
     required: true,
     description: "Embedded schema definition for each file.",
   })

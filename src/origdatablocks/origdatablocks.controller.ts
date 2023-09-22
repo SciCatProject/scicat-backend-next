@@ -13,9 +13,9 @@ import {
   HttpStatus,
   BadRequestException,
 } from "@nestjs/common";
-import { OrigDatablocksService } from "./origdatablocks.service";
-import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
-import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import {OrigDatablocksService} from "./origdatablocks.service";
+import {CreateOrigDatablockDto} from "./dto/create-origdatablock.dto";
+import {UpdateOrigDatablockDto} from "./dto/update-origdatablock.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,22 +25,22 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {AppAbility} from "src/casl/casl-ability.factory";
+import {Action} from "src/casl/action.enum";
 import {
   OrigDatablock,
   OrigDatablockDocument,
 } from "./schemas/origdatablock.schema";
-import { IFilters } from "src/common/interfaces/common.interface";
-import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { plainToInstance } from "class-transformer";
-import { validate, ValidationError } from "class-validator";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
-import { filterDescription, filterExample } from "src/common/utils";
+import {IFilters} from "src/common/interfaces/common.interface";
+import {IOrigDatablockFields} from "./interfaces/origdatablocks.interface";
+import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import {plainToInstance} from "class-transformer";
+import {validate, ValidationError} from "class-validator";
+import {DatasetsService} from "src/datasets/datasets.service";
+import {PartialUpdateDatasetDto} from "src/datasets/dto/update-dataset.dto";
+import {filterDescription, filterExample} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -78,7 +78,7 @@ export class OrigDatablocksController {
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
     const dataset = await this.datasetsService.findOne({
-      where: { pid: createOrigDatablockDto.datasetId },
+      where: {pid: createOrigDatablockDto.datasetId},
     });
     if (!dataset) {
       throw new BadRequestException("Invalid datasetId");
@@ -109,7 +109,7 @@ export class OrigDatablocksController {
   async updateDatasetSizeAndFiles(pid: string) {
     // updates datasets size
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
-      { where: { datasetId: pid } };
+      {where: {datasetId: pid}};
     const datasetOrigdatablocks =
       await this.origDatablocksService.findAll(parsedFilters);
 
@@ -148,7 +148,7 @@ export class OrigDatablocksController {
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createOrigDatablock: unknown,
-  ): Promise<{ valid: boolean; errors: ValidationError[] }> {
+  ): Promise<{valid: boolean; errors: ValidationError[]}> {
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
       createOrigDatablock,
@@ -157,7 +157,7 @@ export class OrigDatablocksController {
 
     const valid = errorsTestOrigDatablock.length == 0;
 
-    return { valid: valid, errors: errorsTestOrigDatablock };
+    return {valid: valid, errors: errorsTestOrigDatablock};
   }
 
   // GET /origdatablock
@@ -214,7 +214,7 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() filters: {fields?: string; limits?: string},
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -246,7 +246,7 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() filters: {fields?: string; limits?: string},
   ): Promise<OrigDatablock[] | null> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -263,7 +263,7 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet")
   async fullfacet(
-    @Query() filters: { fields?: string; facets?: string },
+    @Query() filters: {fields?: string; facets?: string},
   ): Promise<Record<string, unknown>[]> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -279,7 +279,7 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet/files")
   async fullfacetFiles(
-    @Query() filters: { fields?: string; facets?: string },
+    @Query() filters: {fields?: string; facets?: string},
   ): Promise<Record<string, unknown>[]> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -314,7 +314,7 @@ export class OrigDatablocksController {
     type: OrigDatablock,
   })
   async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.findOne({ _id: id });
+    return this.origDatablocksService.findOne({_id: id});
   }
 
   // PATCH /origdatablocks/:id
@@ -348,7 +348,7 @@ export class OrigDatablocksController {
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const origdatablock = (await this.origDatablocksService.update(
-      { _id: id },
+      {_id: id},
       updateOrigDatablockDto,
     )) as OrigDatablock;
 

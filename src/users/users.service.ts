@@ -1,31 +1,31 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { InjectModel } from "@nestjs/mongoose";
-import { genSalt, hash } from "bcrypt";
-import { FilterQuery, Model, ObjectId } from "mongoose";
-import { CreateUserIdentityDto } from "./dto/create-user-identity.dto";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { RolesService } from "./roles.service";
+import {Injectable, Logger, OnModuleInit} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
+import {InjectModel} from "@nestjs/mongoose";
+import {genSalt, hash} from "bcrypt";
+import {FilterQuery, Model, ObjectId} from "mongoose";
+import {CreateUserIdentityDto} from "./dto/create-user-identity.dto";
+import {CreateUserDto} from "./dto/create-user.dto";
+import {RolesService} from "./roles.service";
 import {
   UserIdentity,
   UserIdentityDocument,
 } from "./schemas/user-identity.schema";
-import { User, UserDocument } from "./schemas/user.schema";
-import { CreateRoleDto } from "./dto/create-role.dto";
-import { CreateUserRoleDto } from "./dto/create-user-role.dto";
-import { CreateUserJWT } from "./dto/create-user-jwt.dto";
-import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { JWTUser } from "../auth/interfaces/jwt-user.interface";
+import {User, UserDocument} from "./schemas/user.schema";
+import {CreateRoleDto} from "./dto/create-role.dto";
+import {CreateUserRoleDto} from "./dto/create-user-role.dto";
+import {CreateUserJWT} from "./dto/create-user-jwt.dto";
+import {JwtService, JwtSignOptions} from "@nestjs/jwt";
+import {JWTUser} from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 import {
   UserSettings,
   UserSettingsDocument,
 } from "./schemas/user-settings.schema";
-import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
-import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
-import { UserPayload } from "src/auth/interfaces/userPayload.interface";
-import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
+import {CreateUserSettingsDto} from "./dto/create-user-settings.dto";
+import {UpdateUserSettingsDto} from "./dto/update-user-settings.dto";
+import {UpdateUserIdentityDto} from "./dto/update-user-identity.dto";
+import {UserPayload} from "src/auth/interfaces/userPayload.interface";
+import {AccessGroupService} from "src/auth/access-group-provider/access-group.service";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -53,7 +53,7 @@ export class UsersService implements OnModuleInit {
 
     if (functionalAccounts && functionalAccounts.length > 0) {
       const accountPromises = functionalAccounts.map(async (account) => {
-        const { role, global, ...createAccount } = account;
+        const {role, global, ...createAccount} = account;
         createAccount.authStrategy = "local";
         const user = await this.findOrCreate(createAccount);
         const roles: Record<string, Array<string>> = {};
@@ -94,7 +94,7 @@ export class UsersService implements OnModuleInit {
               email: account.email as string,
               username: account.username as string,
               thumbnailPhoto: "error: no photo found",
-              emails: [{ value: account.email as string }],
+              emails: [{value: account.email as string}],
               accessGroups: [...new Set([role as string, ...accessGroups])],
               id: user.id as string,
             },
@@ -155,7 +155,7 @@ export class UsersService implements OnModuleInit {
     );
 
     if (createUserDto.authStrategy !== "local") {
-      const { password, ...sanitizedCreateUserDto } = createUserDto;
+      const {password, ...sanitizedCreateUserDto} = createUserDto;
       const createdUser = new this.userModel(sanitizedCreateUserDto);
       return createdUser.save();
     } else if (createUserDto.password) {
@@ -163,7 +163,7 @@ export class UsersService implements OnModuleInit {
         createUserDto.password,
         await genSalt(),
       );
-      const createUser = { ...createUserDto, password: hashedPassword };
+      const createUser = {...createUserDto, password: hashedPassword};
       const createdUser = new this.userModel(createUser);
       return createdUser.save();
     }
@@ -174,10 +174,7 @@ export class UsersService implements OnModuleInit {
     createUserDto: CreateUserDto,
   ): Promise<Omit<User, "password"> | null> {
     const userFilter: FilterQuery<UserDocument> = {
-      $or: [
-        { username: createUserDto.username },
-        { email: createUserDto.email },
-      ],
+      $or: [{username: createUserDto.username}, {email: createUserDto.email}],
     };
     const userExists = await this.userExists(userFilter);
 
@@ -203,7 +200,7 @@ export class UsersService implements OnModuleInit {
 
   async findById2JWTUser(id: string): Promise<JWTUser | null> {
     const userIdentity = await this.userIdentityModel
-      .findOne({ userId: id })
+      .findOne({userId: id})
       .exec();
     if (userIdentity) {
       const userProfile = userIdentity.profile;
@@ -231,21 +228,21 @@ export class UsersService implements OnModuleInit {
     userId: string,
   ): Promise<UserIdentity | null> {
     return this.userIdentityModel
-      .findOneAndUpdate({ userId }, updateUserIdentityDto, { new: true })
+      .findOneAndUpdate({userId}, updateUserIdentityDto, {new: true})
       .exec();
   }
 
   // NOTE: This is just for testing purposes inside accessGroups.e2e-spec.ts
   async removeUserIdentity(userId: string): Promise<UserIdentity | null> {
     const removedUserIdentity = await this.userIdentityModel
-      .findOneAndDelete({ userId })
+      .findOneAndDelete({userId})
       .exec();
 
     return removedUserIdentity;
   }
 
   async findByIdUserIdentity(userId: string): Promise<UserIdentity | null> {
-    return this.userIdentityModel.findOne({ userId }).exec();
+    return this.userIdentityModel.findOne({userId}).exec();
   }
 
   async createUserSettings(
@@ -260,7 +257,7 @@ export class UsersService implements OnModuleInit {
   }
 
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
-    return this.userSettingsModel.findOne({ userId }).exec();
+    return this.userSettingsModel.findOne({userId}).exec();
   }
 
   async findOneAndUpdateUserSettings(
@@ -268,12 +265,12 @@ export class UsersService implements OnModuleInit {
     updateUserSettingsDto: UpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     return this.userSettingsModel
-      .findOneAndUpdate({ userId }, updateUserSettingsDto, { new: true })
+      .findOneAndUpdate({userId}, updateUserSettingsDto, {new: true})
       .exec();
   }
 
   async findOneAndRemoveUserSettings(userId: string): Promise<unknown> {
-    return this.userSettingsModel.findOneAndRemove({ userId }).exec();
+    return this.userSettingsModel.findOneAndRemove({userId}).exec();
   }
 
   async createUserJWT(
@@ -291,7 +288,7 @@ export class UsersService implements OnModuleInit {
         groups,
       };
       const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
-      return { jwt: jwtString };
+      return {jwt: jwtString};
     }
 
     const payload = {
@@ -299,7 +296,7 @@ export class UsersService implements OnModuleInit {
       groups: accessToken.currentGroups,
     };
     const jwtString = this.jwtService.sign(payload, signAndVerifyOptions);
-    return { jwt: jwtString };
+    return {jwt: jwtString};
   }
 
   async createCustomJWT(
@@ -324,6 +321,6 @@ export class UsersService implements OnModuleInit {
     }
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
     const jwtString = this.jwtService.sign(user, signAndVerifyOptions);
-    return { jwt: jwtString };
+    return {jwt: jwtString};
   }
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -7,6 +8,17 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { PoliciesService } from "src/policies/policies.service";
 import { JobsService } from "./jobs.service";
 import { JobClass } from "./schemas/job.schema";
+=======
+import {ConfigService} from "@nestjs/config";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {MailService} from "src/common/mail.service";
+import {DatasetsService} from "src/datasets/datasets.service";
+import {PoliciesService} from "src/policies/policies.service";
+import {JobsService} from "./jobs.service";
+import {Job} from "./schemas/job.schema";
+>>>>>>> b35ceca7 (fix: fix lint issue)
 
 const mockJob: JobClass = {
   _id: "testId",
@@ -35,7 +47,7 @@ describe("JobsService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConfigService,
-        { provide: DatasetsService, useClass: DatasetsServiceMock },
+        {provide: DatasetsService, useClass: DatasetsServiceMock},
         JobsService,
         {
           provide: getModelToken("JobClass"),
@@ -47,8 +59,8 @@ describe("JobsService", () => {
             exec: jest.fn(),
           },
         },
-        { provide: MailService, useClass: MailServiceMock },
-        { provide: PoliciesService, useClass: PoliciesServiceMock },
+        {provide: MailService, useClass: MailServiceMock},
+        {provide: PoliciesService, useClass: PoliciesServiceMock},
       ],
     }).compile();
 

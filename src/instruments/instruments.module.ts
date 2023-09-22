@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { InstrumentsService } from "./instruments.service";
-import { InstrumentsController } from "./instruments.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Instrument, InstrumentSchema } from "./schemas/instrument.schema";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import {Module} from "@nestjs/common";
+import {InstrumentsService} from "./instruments.service";
+import {InstrumentsController} from "./instruments.controller";
+import {MongooseModule} from "@nestjs/mongoose";
+import {Instrument, InstrumentSchema} from "./schemas/instrument.schema";
+import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
 
 @Module({
   controllers: [InstrumentsController],

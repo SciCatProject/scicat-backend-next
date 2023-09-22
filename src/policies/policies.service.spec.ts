@@ -1,11 +1,11 @@
-import { ConfigService } from "@nestjs/config";
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { UsersService } from "src/users/users.service";
-import { PoliciesService } from "./policies.service";
-import { Policy } from "./schemas/policy.schema";
+import {ConfigService} from "@nestjs/config";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {DatasetsService} from "src/datasets/datasets.service";
+import {UsersService} from "src/users/users.service";
+import {PoliciesService} from "./policies.service";
+import {Policy} from "./schemas/policy.schema";
 
 class DatasetsServiceMock {}
 class UsersServiceMock {}
@@ -38,9 +38,9 @@ describe("PoliciesService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConfigService,
-        { provide: DatasetsService, useClass: DatasetsServiceMock },
+        {provide: DatasetsService, useClass: DatasetsServiceMock},
         PoliciesService,
-        { provide: UsersService, useClass: UsersServiceMock },
+        {provide: UsersService, useClass: UsersServiceMock},
         {
           provide: getModelToken("Policy"),
           useValue: {

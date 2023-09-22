@@ -20,28 +20,28 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Action } from "src/casl/action.enum";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { UserIdentity } from "./schemas/user-identity.schema";
-import { UsersService } from "./users.service";
-import { CreateUserJWT } from "./dto/create-user-jwt.dto";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { Request, Response } from "express";
-import { JWTUser } from "../auth/interfaces/jwt-user.interface";
-import { UserSettings } from "./schemas/user-settings.schema";
-import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
-import { User } from "./schemas/user.schema";
-import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
-import { AuthService } from "src/auth/auth.service";
-import { CredentialsDto } from "src/auth/dto/credentials.dto";
-import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
-import { JwtSignOptions } from "@nestjs/jwt";
-import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
+import {Action} from "src/casl/action.enum";
+import {AppAbility, CaslAbilityFactory} from "src/casl/casl-ability.factory";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {UserIdentity} from "./schemas/user-identity.schema";
+import {UsersService} from "./users.service";
+import {CreateUserJWT} from "./dto/create-user-jwt.dto";
+import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import {Request, Response} from "express";
+import {JWTUser} from "../auth/interfaces/jwt-user.interface";
+import {UserSettings} from "./schemas/user-settings.schema";
+import {CreateUserSettingsDto} from "./dto/create-user-settings.dto";
+import {UpdateUserSettingsDto} from "./dto/update-user-settings.dto";
+import {User} from "./schemas/user.schema";
+import {CreateUserSettingsInterceptor} from "./interceptors/create-user-settings.interceptor";
+import {AuthService} from "src/auth/auth.service";
+import {CredentialsDto} from "src/auth/dto/credentials.dto";
+import {LocalAuthGuard} from "src/auth/guards/local-auth.guard";
+import {DatasetClass} from "src/datasets/schemas/dataset.schema";
+import {JwtAuthGuard} from "src/auth/guards/jwt-auth.guard";
+import {JwtSignOptions} from "@nestjs/jwt";
+import {CreateCustomJwt} from "./dto/create-custom-jwt.dto";
 //import { AuthController } from "src/auth/auth.controller";
 
 @ApiBearerAuth()
@@ -91,7 +91,7 @@ export class UsersController {
     return this.usersService.createUserJWT(request.user as JWTUser);
   }
 
-  @ApiBody({ type: CredentialsDto })
+  @ApiBody({type: CredentialsDto})
   @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post("login")
@@ -266,7 +266,7 @@ export class UsersController {
     )) as JWTUser;
     const ability = await this.caslAbilityFactory.createForUser(viewedUser);
 
-    return { authorization: ability.can(Action.Create, DatasetClass) };
+    return {authorization: ability.can(Action.Create, DatasetClass)};
   }
 
   @UseGuards(JwtAuthGuard)
@@ -294,7 +294,7 @@ export class UsersController {
     description:
       "It creates a new jwt token for the user specified. Only users in admin groups can create use this endpoint. Token expiration can be custom. Use 'expiresIn: never' for tokens that have no expiration.",
   })
-  @ApiBody({ type: CreateCustomJwt })
+  @ApiBody({type: CreateCustomJwt})
   @ApiResponse({
     status: 201,
     type: CreateUserJWT,

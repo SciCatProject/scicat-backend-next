@@ -1,6 +1,6 @@
-import { Prop } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
-import { QueryableClass } from "./queryable.schema";
+import {Prop} from "@nestjs/mongoose";
+import {ApiProperty} from "@nestjs/swagger";
+import {QueryableClass} from "./queryable.schema";
 
 export class OwnableClass extends QueryableClass {
   @ApiProperty({

@@ -1,8 +1,8 @@
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { AttachmentsService } from "./attachments.service";
-import { Attachment } from "./schemas/attachment.schema";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {AttachmentsService} from "./attachments.service";
+import {Attachment} from "./schemas/attachment.schema";
 
 const mockAttachment: Attachment = {
   _id: "testId",

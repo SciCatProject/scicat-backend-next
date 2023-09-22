@@ -1,15 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { PassportStrategy } from "@nestjs/passport";
-import { FilterQuery } from "mongoose";
-import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
-import { User, UserDocument } from "src/users/schemas/user.schema";
-import { UsersService } from "src/users/users.service";
+import {Injectable, Logger, InternalServerErrorException} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
+import {PassportStrategy} from "@nestjs/passport";
+import {FilterQuery} from "mongoose";
+import {CreateUserIdentityDto} from "src/users/dto/create-user-identity.dto";
+import {CreateUserDto} from "src/users/dto/create-user.dto";
+import {User, UserDocument} from "src/users/schemas/user.schema";
+import {UsersService} from "src/users/users.service";
 import {
   Strategy,
   Client,
@@ -17,12 +13,12 @@ import {
   TokenSet,
   Issuer,
 } from "openid-client";
-import { AuthService } from "../auth.service";
-import { Profile } from "passport";
-import { UserProfile } from "src/users/schemas/user-profile.schema";
-import { OidcConfig } from "src/config/configuration";
-import { AccessGroupService } from "../access-group-provider/access-group.service";
-import { UserPayload } from "../interfaces/userPayload.interface";
+import {AuthService} from "../auth.service";
+import {Profile} from "passport";
+import {UserProfile} from "src/users/schemas/user-profile.schema";
+import {OidcConfig} from "src/config/configuration";
+import {AccessGroupService} from "../access-group-provider/access-group.service";
+import {UserPayload} from "../interfaces/userPayload.interface";
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -82,8 +78,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
-        { username: `oidc.${userProfile.username}` },
-        { email: userProfile.email as string },
+        {username: `oidc.${userProfile.username}`},
+        {email: userProfile.email as string},
       ],
     };
     let user = await this.usersService.findOne(userFilter);
@@ -125,7 +121,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     }
 
     const jsonUser = JSON.parse(JSON.stringify(user));
-    const { password, ...returnUser } = jsonUser;
+    const {password, ...returnUser} = jsonUser;
     returnUser.userId = returnUser._id;
 
     return returnUser;
@@ -155,7 +151,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     profile.id = userId;
     profile.username = userinfo.preferred_username ?? userinfo.name ?? "";
     profile.displayName = userinfo.name ?? "";
-    profile.emails = userinfo.email ? [{ value: userinfo.email }] : [];
+    profile.emails = userinfo.email ? [{value: userinfo.email}] : [];
     profile.email = userinfo.email ?? "";
     profile.thumbnailPhoto = this.getUserPhoto(userinfo);
 

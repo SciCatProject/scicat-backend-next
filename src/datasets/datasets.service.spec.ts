@@ -1,12 +1,12 @@
-import { ConfigService } from "@nestjs/config";
-import { getModelToken } from "@nestjs/mongoose";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from "mongoose";
-import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
-import { LogbooksService } from "src/logbooks/logbooks.service";
-import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
-import { DatasetsService } from "./datasets.service";
-import { DatasetClass } from "./schemas/dataset.schema";
+import {ConfigService} from "@nestjs/config";
+import {getModelToken} from "@nestjs/mongoose";
+import {Test, TestingModule} from "@nestjs/testing";
+import {Model} from "mongoose";
+import {InitialDatasetsService} from "src/initial-datasets/initial-datasets.service";
+import {LogbooksService} from "src/logbooks/logbooks.service";
+import {ElasticSearchService} from "src/elastic-search/elastic-search.service";
+import {DatasetsService} from "./datasets.service";
+import {DatasetClass} from "./schemas/dataset.schema";
 
 class InitialDatasetsServiceMock {}
 
@@ -108,8 +108,8 @@ describe("DatasetsService", () => {
           provide: InitialDatasetsService,
           useClass: InitialDatasetsServiceMock,
         },
-        { provide: LogbooksService, useClass: LogbooksServiceMock },
-        { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
+        {provide: LogbooksService, useClass: LogbooksServiceMock},
+        {provide: ElasticSearchService, useClass: ElasticSearchServiceMock},
       ],
     }).compile();
 

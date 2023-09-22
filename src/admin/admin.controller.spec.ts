@@ -1,6 +1,6 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { AdminService } from "./admin.service";
-import { AdminController } from "./admin.controller";
+import {Test, TestingModule} from "@nestjs/testing";
+import {AdminService} from "./admin.service";
+import {AdminController} from "./admin.controller";
 
 class AdminServiceMock {}
 
@@ -10,7 +10,7 @@ describe("PoliciesController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminController],
-      providers: [{ provide: AdminService, useClass: AdminServiceMock }],
+      providers: [{provide: AdminService, useClass: AdminServiceMock}],
     }).compile();
 
     controller = module.get<AdminController>(AdminController);

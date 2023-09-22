@@ -1,10 +1,10 @@
-import { PartialType } from "@nestjs/swagger";
-import { Exclude } from "class-transformer";
-import { IsOptional } from "class-validator";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { CreateDerivedDatasetDto } from "./create-derived-dataset.dto";
+import {PartialType} from "@nestjs/swagger";
+import {Exclude} from "class-transformer";
+import {IsOptional} from "class-validator";
+import {Attachment} from "src/attachments/schemas/attachment.schema";
+import {Datablock} from "src/datablocks/schemas/datablock.schema";
+import {OrigDatablock} from "src/origdatablocks/schemas/origdatablock.schema";
+import {CreateDerivedDatasetDto} from "./create-derived-dataset.dto";
 
 export class UpdateDerivedDatasetDto extends CreateDerivedDatasetDto {
   @IsOptional()

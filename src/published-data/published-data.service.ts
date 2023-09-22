@@ -1,16 +1,16 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
-import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model } from "mongoose";
+import {Inject, Injectable, Scope} from "@nestjs/common";
+import {REQUEST} from "@nestjs/core";
+import {Request} from "express";
+import {InjectModel} from "@nestjs/mongoose";
+import {FilterQuery, Model} from "mongoose";
 import {
   parseLimitFilters,
   addCreatedByFields,
   addUpdatedByField,
   createFullqueryFilter,
 } from "src/common/utils";
-import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import {CreatePublishedDataDto} from "./dto/create-published-data.dto";
+import {UpdatePublishedDataDto} from "./dto/update-published-data.dto";
 import {
   ICount,
   IPublishedDataFilters,
@@ -19,9 +19,9 @@ import {
   PublishedData,
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({scope: Scope.REQUEST})
 export class PublishedDataService {
   constructor(
     @InjectModel(PublishedData.name)
@@ -56,7 +56,7 @@ export class PublishedDataService {
       ...filterQuery,
       ...whereFilter,
     };
-    const { limit, skip, sort } = parseLimitFilters(filter.limits);
+    const {limit, skip, sort} = parseLimitFilters(filter.limits);
 
     return this.publishedDataModel
       .find(whereClause)
@@ -68,7 +68,7 @@ export class PublishedDataService {
 
   async count(filter: FilterQuery<PublishedDataDocument>): Promise<ICount> {
     const count = await this.publishedDataModel.count(filter).exec();
-    return { count };
+    return {count};
   }
 
   async findOne(

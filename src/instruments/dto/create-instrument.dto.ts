@@ -1,5 +1,5 @@
-import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { IsObject, IsOptional, IsString } from "class-validator";
+import {ApiProperty, ApiTags} from "@nestjs/swagger";
+import {IsObject, IsOptional, IsString} from "class-validator";
 
 @ApiTags("instruments")
 export class CreateInstrumentDto {

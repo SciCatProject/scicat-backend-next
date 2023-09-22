@@ -1,17 +1,18 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { OnEvent } from "@nestjs/event-emitter";
-import { InjectModel } from "@nestjs/mongoose";
-import { readFileSync } from "fs";
-import { compile } from "handlebars";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { MailService } from "src/common/mail.service";
+import {Injectable, Logger, NotFoundException} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
+import {OnEvent} from "@nestjs/event-emitter";
+import {InjectModel} from "@nestjs/mongoose";
+import {readFileSync} from "fs";
+import {compile} from "handlebars";
+import {FilterQuery, Model, PipelineStage, QueryOptions} from "mongoose";
+import {IFacets, IFilters} from "src/common/interfaces/common.interface";
+import {MailService} from "src/common/mail.service";
 import {
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
+<<<<<<< HEAD
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
@@ -21,6 +22,17 @@ import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobType } from "./job-type.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
+=======
+import {DatasetsService} from "src/datasets/datasets.service";
+import {IDatasetFields} from "src/datasets/interfaces/dataset-filters.interface";
+import {DatasetDocument} from "src/datasets/schemas/dataset.schema";
+import {PoliciesService} from "src/policies/policies.service";
+import {Policy} from "src/policies/schemas/policy.schema";
+import {CreateJobDto} from "./dto/create-job.dto";
+import {UpdateJobDto} from "./dto/update-job.dto";
+import {JobType} from "./job-type.enum";
+import {Job, JobDocument} from "./schemas/job.schema";
+>>>>>>> b35ceca7 (fix: fix lint issue)
 
 @Injectable()
 export class JobsService {
@@ -46,7 +58,7 @@ export class JobsService {
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
   ): Promise<JobClass[]> {
     const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
-    const { limit, skip, sort } = parseLimitFilters(filter.limits);
+    const {limit, skip, sort} = parseLimitFilters(filter.limits);
 
     return this.jobModel
       .find(whereFilters)
@@ -89,7 +101,7 @@ export class JobsService {
     updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
     return this.jobModel
-      .findOneAndUpdate(filter, updateJobDto, { new: true })
+      .findOneAndUpdate(filter, updateJobDto, {new: true})
       .exec();
   }
 
@@ -98,7 +110,11 @@ export class JobsService {
   }
 
   @OnEvent("jobCreated")
+<<<<<<< HEAD
   async sendStartJobEmail(context: { instance: JobClass }) {
+=======
+  async sendStartJobEmail(context: {instance: Job}) {
+>>>>>>> b35ceca7 (fix: fix lint issue)
     const ids: string[] = context.instance.datasetList.map(
       (dataset) => dataset.pid as string,
     );
@@ -142,13 +158,18 @@ export class JobsService {
   // Populate email context for finished job notification
   @OnEvent("jobUpdated")
   async sendFinishJobEmail(context: {
+<<<<<<< HEAD
     instance: JobClass;
     hookState: { oldData: JobClass[] };
+=======
+    instance: Job;
+    hookState: {oldData: Job[]};
+>>>>>>> b35ceca7 (fix: fix lint issue)
   }) {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job
     context.hookState.oldData.forEach(async (oldData) => {
-      const currentData = await this.findOne({ id: oldData.id });
+      const currentData = await this.findOne({id: oldData.id});
       //Check that statusMessage has changed. Only run on finished job
       if (
         currentData &&
@@ -282,7 +303,7 @@ export class JobsService {
   async getPolicy(datasetId: string): Promise<Partial<Policy>> {
     try {
       const dataset = await this.datasetsService.findOne({
-        where: { pid: datasetId },
+        where: {pid: datasetId},
       });
       if (!dataset) {
         throw new NotFoundException(
@@ -325,11 +346,11 @@ export class JobsService {
     to: string,
     cc = "",
   ) {
-    const { failure } = emailContext;
+    const {failure} = emailContext;
 
     switch (jobType) {
       case JobType.Archive: {
-        const { archiveEmailNotification, archiveEmailsToBeNotified } = policy;
+        const {archiveEmailNotification, archiveEmailsToBeNotified} = policy;
         if (archiveEmailsToBeNotified) {
           to += "," + archiveEmailsToBeNotified.join();
         }
@@ -341,8 +362,7 @@ export class JobsService {
         break;
       }
       case JobType.Retrieve: {
-        const { retrieveEmailNotification, retrieveEmailsToBeNotified } =
-          policy;
+        const {retrieveEmailNotification, retrieveEmailsToBeNotified} = policy;
 
         if (retrieveEmailsToBeNotified) {
           to += "," + retrieveEmailsToBeNotified.join();

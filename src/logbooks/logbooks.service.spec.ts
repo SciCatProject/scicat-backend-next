@@ -1,12 +1,12 @@
-import { HttpService } from "@nestjs/axios";
-import { ConfigService } from "@nestjs/config";
-import { Test, TestingModule } from "@nestjs/testing";
-import { of } from "rxjs";
-import { LogbooksService } from "./logbooks.service";
+import {HttpService} from "@nestjs/axios";
+import {ConfigService} from "@nestjs/config";
+import {Test, TestingModule} from "@nestjs/testing";
+import {of} from "rxjs";
+import {LogbooksService} from "./logbooks.service";
 
 class HttpServiceMock {
   get() {
-    const responseData = [{ messages: [] }, { messages: [] }];
+    const responseData = [{messages: []}, {messages: []}];
 
     // Create an object that mimics the structure of an HTTP response
     const response = {
@@ -35,7 +35,7 @@ describe("LogbooksService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConfigService,
-        { provide: HttpService, useClass: HttpServiceMock },
+        {provide: HttpService, useClass: HttpServiceMock},
         LogbooksService,
       ],
     }).compile();

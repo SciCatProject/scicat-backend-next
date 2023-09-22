@@ -15,10 +15,10 @@ import {
   ForbiddenException,
   ConflictException,
 } from "@nestjs/common";
-import { Request } from "express";
-import { ProposalsService } from "./proposals.service";
-import { CreateProposalDto } from "./dto/create-proposal.dto";
-import { UpdateProposalDto } from "./dto/update-proposal.dto";
+import {Request} from "express";
+import {ProposalsService} from "./proposals.service";
+import {CreateProposalDto} from "./dto/create-proposal.dto";
+import {UpdateProposalDto} from "./dto/update-proposal.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -29,28 +29,28 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
-import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
-import { AttachmentsService } from "src/attachments/attachments.service";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { IProposalFields } from "./interfaces/proposal-filters.interface";
-import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
-import { MeasurementPeriodClass } from "./schemas/measurement-period.schema";
+import {PoliciesGuard} from "src/casl/guards/policies.guard";
+import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
+import {AppAbility, CaslAbilityFactory} from "src/casl/casl-ability.factory";
+import {Action} from "src/casl/action.enum";
+import {ProposalClass, ProposalDocument} from "./schemas/proposal.schema";
+import {AttachmentsService} from "src/attachments/attachments.service";
+import {Attachment} from "src/attachments/schemas/attachment.schema";
+import {CreateAttachmentDto} from "src/attachments/dto/create-attachment.dto";
+import {UpdateAttachmentDto} from "src/attachments/dto/update-attachment.dto";
+import {DatasetsService} from "src/datasets/datasets.service";
+import {DatasetClass} from "src/datasets/schemas/dataset.schema";
+import {IProposalFields} from "./interfaces/proposal-filters.interface";
+import {MultiUTCTimeInterceptor} from "src/common/interceptors/multi-utc-time.interceptor";
+import {MeasurementPeriodClass} from "./schemas/measurement-period.schema";
 import {
   IFacets,
   IFilters,
   ILimitsFilter,
 } from "src/common/interfaces/common.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { plainToInstance } from "class-transformer";
-import { validate, ValidatorOptions } from "class-validator";
+import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import {plainToInstance} from "class-transformer";
+import {validate, ValidatorOptions} from "class-validator";
 import {
   filterDescription,
   filterExample,
@@ -59,7 +59,7 @@ import {
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
-import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -87,8 +87,8 @@ export class ProposalsController {
           mergedFilters.where = {};
         }
         mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
+          {ownerGroup: {$in: user.currentGroups}},
+          {accessGroups: {$in: user.currentGroups}},
         ];
       }
     }
@@ -161,7 +161,7 @@ export class ProposalsController {
   async isValid(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() createProposal: unknown,
-  ): Promise<{ valid: boolean }> {
+  ): Promise<{valid: boolean}> {
     const validatorOptions: ValidatorOptions = {
       skipMissingProperties: true,
       whitelist: true,
@@ -173,7 +173,7 @@ export class ProposalsController {
 
     const valid = errorsProposal.length == 0;
 
-    return { valid: valid };
+    return {valid: valid};
   }
 
   // GET /proposals
@@ -249,7 +249,7 @@ export class ProposalsController {
   })
   async fullquery(
     @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
+    @Query() filters: {fields?: string; limits?: string},
   ): Promise<ProposalClass[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
@@ -302,7 +302,7 @@ export class ProposalsController {
   })
   async fullfacet(
     @Req() request: Request,
-    @Query() filters: { fields?: string; facets?: string },
+    @Query() filters: {fields?: string; facets?: string},
   ): Promise<Record<string, unknown>[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
@@ -419,7 +419,7 @@ export class ProposalsController {
     @Body() updateProposalDto: UpdateProposalDto,
   ): Promise<ProposalClass | null> {
     return this.proposalsService.update(
-      { proposalId: proposalId },
+      {proposalId: proposalId},
       updateProposalDto,
     );
   }
@@ -444,7 +444,7 @@ export class ProposalsController {
     description: "No value is returned",
   })
   async remove(@Param("pid") proposalId: string): Promise<unknown> {
-    return this.proposalsService.remove({ proposalId: proposalId });
+    return this.proposalsService.remove({proposalId: proposalId});
   }
 
   // POST /proposals/:id/attachments
@@ -510,7 +510,7 @@ export class ProposalsController {
   async findAllAttachments(
     @Param("pid") proposalId: string,
   ): Promise<Attachment[]> {
-    return this.attachmentsService.findAll({ proposalId: proposalId });
+    return this.attachmentsService.findAll({proposalId: proposalId});
   }
 
   // PATCH /proposals/:pid/attachments/:aid
@@ -549,7 +549,7 @@ export class ProposalsController {
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, proposalId: proposalId },
+      {_id: attachmentId, proposalId: proposalId},
       updateAttachmentDto,
     );
   }
@@ -620,6 +620,6 @@ export class ProposalsController {
   async findAllDatasets(
     @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
-    return this.datasetsService.findAll({ where: { proposalId } });
+    return this.datasetsService.findAll({where: {proposalId}});
   }
 }

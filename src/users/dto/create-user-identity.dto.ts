@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { UserProfile } from "../schemas/user-profile.schema";
+import {ApiProperty} from "@nestjs/swagger";
+import {UserProfile} from "../schemas/user-profile.schema";
 
 export class CreateUserIdentityDto {
   @ApiProperty()

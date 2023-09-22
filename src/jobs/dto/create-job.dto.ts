@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+import {Type} from "class-transformer";
 import {
   IsArray,
   IsDateString,
@@ -8,8 +8,8 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { DatasetListDto } from "./dataset-list.dto";
+import {IDatasetList} from "../interfaces/dataset-list.interface";
+import {DatasetListDto} from "./dataset-list.dto";
 
 export class CreateJobDto {
   @IsEmail()
@@ -32,7 +32,7 @@ export class CreateJobDto {
 
   @IsArray()
   @IsOptional()
-  @ValidateNested({ each: true })
+  @ValidateNested({each: true})
   @Type(() => DatasetListDto)
   readonly datasetList: IDatasetList[];
 
