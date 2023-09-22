@@ -64,8 +64,9 @@ export class UsersController {
     viewedUserSchema._id = viewedUserId;
     viewedUserSchema.id = viewedUserId;
 
-    const ability =
-      await this.caslAbilityFactory.createForUser(authenticatedUser);
+    const ability = await this.caslAbilityFactory.createForUser(
+      authenticatedUser,
+    );
     // const authorized = actions.map( action =>
     //   ability.can(action, viewedUserSchema)
     // ) as Array<Boolean>;

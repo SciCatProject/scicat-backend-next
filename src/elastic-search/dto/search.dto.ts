@@ -1,15 +1,10 @@
-import { ApiTags, ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional } from "class-validator";
 
-export interface SearchDtoParam {
-  search_term: string;
-}
-
-@ApiTags("search-service")
 export class SearchDto {
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     default: "",
     description: "text query",
   })

@@ -24,8 +24,9 @@ export class CreateUserSettingsInterceptor implements NestInterceptor {
           return;
         }
         const userId = user._id;
-        const userSettings =
-          await this.usersService.findByIdUserSettings(userId);
+        const userSettings = await this.usersService.findByIdUserSettings(
+          userId,
+        );
         if (!userSettings) {
           Logger.log(
             `Adding default settings to user ${user.username}`,

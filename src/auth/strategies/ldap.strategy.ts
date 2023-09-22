@@ -56,8 +56,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
         username: user.username,
         email: user.email,
       };
-      const accessGroups =
-        await this.accessGroupService.getAccessGroups(userPayload);
+      const accessGroups = await this.accessGroupService.getAccessGroups(
+        userPayload,
+      );
 
       const createUserIdentity: CreateUserIdentityDto = {
         authStrategy: "ldap",
@@ -104,8 +105,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
         throw new Error("User identity does not exists!!!");
       }
       const userProfile = userIdentity.profile;
-      userProfile.accessGroups =
-        await this.accessGroupService.getAccessGroups(userPayload);
+      userProfile.accessGroups = await this.accessGroupService.getAccessGroups(
+        userPayload,
+      );
       await this.usersService.updateUserIdentity(
         {
           profile: userProfile,
