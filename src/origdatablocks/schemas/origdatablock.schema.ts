@@ -1,8 +1,8 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {ApiProperty, getSchemaPath} from "@nestjs/swagger";
-import {OwnableClass} from "src/common/schemas/ownable.schema";
-import {v4 as uuidv4} from "uuid";
-import {DataFile, DataFileSchema} from "../../common/schemas/datafile.schema";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { v4 as uuidv4 } from "uuid";
+import { DataFile, DataFileSchema } from "../../common/schemas/datafile.schema";
 
 export type OrigDatablockDocument = OrigDatablock & Document;
 
@@ -31,7 +31,7 @@ export class OrigDatablock extends OwnableClass {
     required: true,
     description: "PID of the dataset to which the orig datablock belongs.",
   })
-  @Prop({type: String, ref: "Dataset", required: true})
+  @Prop({ type: String, ref: "Dataset", required: true })
   datasetId: string;
 
   @ApiProperty({
@@ -60,7 +60,7 @@ export class OrigDatablock extends OwnableClass {
 
   @ApiProperty({
     type: "array",
-    items: {$ref: getSchemaPath(DataFile)},
+    items: { $ref: getSchemaPath(DataFile) },
     required: true,
     description: "Embedded schema definitions for each file.",
   })
@@ -73,4 +73,4 @@ export class OrigDatablock extends OwnableClass {
 
 export const OrigDatablockSchema = SchemaFactory.createForClass(OrigDatablock);
 
-OrigDatablockSchema.index({"$**": "text"});
+OrigDatablockSchema.index({ "$**": "text" });

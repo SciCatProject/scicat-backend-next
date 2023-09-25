@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class MainDatasetsPublicInterceptor implements NestInterceptor {
@@ -16,7 +16,7 @@ export class MainDatasetsPublicInterceptor implements NestInterceptor {
       if ("where" in jsonFilter) {
         jsonFilter.where.isPublished = true;
       } else {
-        jsonFilter.where = {isPublished: true};
+        jsonFilter.where = { isPublished: true };
       }
       request.query.filter = JSON.stringify(jsonFilter);
     }
@@ -31,7 +31,7 @@ export class SubDatasetsPublicInterceptor implements NestInterceptor {
     if (!request.isAuthenticated()) {
       const stringFields = request.query.fields ? request.query.fields : "{}";
       let jsonFields = JSON.parse(stringFields);
-      jsonFields = {...jsonFields, isPublished: true};
+      jsonFields = { ...jsonFields, isPublished: true };
       request.query.fields = JSON.stringify(jsonFields);
     }
     return next.handle();

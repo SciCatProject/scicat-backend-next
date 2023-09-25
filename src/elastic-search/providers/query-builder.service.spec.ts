@@ -1,5 +1,5 @@
-import {Test, TestingModule} from "@nestjs/testing";
-import {SearchQueryService} from "./query-builder.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { SearchQueryService } from "./query-builder.service";
 
 describe("SearchQueryService", () => {
   let service: SearchQueryService;

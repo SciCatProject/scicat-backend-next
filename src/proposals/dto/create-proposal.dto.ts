@@ -1,5 +1,5 @@
-import {ApiProperty, ApiTags} from "@nestjs/swagger";
-import {Type} from "class-transformer";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
   IsArray,
   IsDateString,
@@ -8,9 +8,9 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import {OwnableDto} from "src/common/dto/ownable.dto";
-import {MeasurementPeriodClass} from "../schemas/measurement-period.schema";
-import {CreateMeasurementPeriodDto} from "./create-measurement-period.dto";
+import { OwnableDto } from "src/common/dto/ownable.dto";
+import { MeasurementPeriodClass } from "../schemas/measurement-period.schema";
+import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
 
 @ApiTags("proposals")
 export class CreateProposalDto extends OwnableDto {
@@ -120,7 +120,7 @@ export class CreateProposalDto extends OwnableDto {
   })
   @IsArray()
   @IsOptional()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
   readonly MeasurementPeriodList?: Record<string, unknown>;
 }

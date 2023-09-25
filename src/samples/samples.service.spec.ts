@@ -1,9 +1,9 @@
-import {ConfigService} from "@nestjs/config";
-import {getModelToken} from "@nestjs/mongoose";
-import {Test, TestingModule} from "@nestjs/testing";
-import {Model} from "mongoose";
-import {SamplesService} from "./samples.service";
-import {SampleClass} from "./schemas/sample.schema";
+import { ConfigService } from "@nestjs/config";
+import { getModelToken } from "@nestjs/mongoose";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Model } from "mongoose";
+import { SamplesService } from "./samples.service";
+import { SampleClass } from "./schemas/sample.schema";
 
 const mockSample: SampleClass = {
   _id: "testId",

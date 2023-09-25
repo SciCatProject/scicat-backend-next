@@ -1,7 +1,7 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {ApiProperty} from "@nestjs/swagger";
-import {Document} from "mongoose";
-import {QueryableClass} from "src/common/schemas/queryable.schema";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
+import { Document } from "mongoose";
+import { QueryableClass } from "src/common/schemas/queryable.schema";
 
 export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 
@@ -13,7 +13,7 @@ export class MeasurementPeriodClass extends QueryableClass {
     description:
       "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT",
   })
-  @Prop({type: String, required: true, index: true})
+  @Prop({ type: String, required: true, index: true })
   instrument: string;
 
   @ApiProperty({
@@ -21,7 +21,7 @@ export class MeasurementPeriodClass extends QueryableClass {
     description:
       "Time when measurement period started, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
-  @Prop({type: Date, index: true})
+  @Prop({ type: Date, index: true })
   start: Date;
 
   @ApiProperty({
@@ -29,7 +29,7 @@ export class MeasurementPeriodClass extends QueryableClass {
     description:
       "Time when measurement period ended, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
-  @Prop({type: Date, index: true})
+  @Prop({ type: Date, index: true })
   end: Date;
 
   @ApiProperty({
@@ -37,7 +37,7 @@ export class MeasurementPeriodClass extends QueryableClass {
     description:
       "Additional information relevant for this measurement period, e.g. if different accounts were used for data taking.",
   })
-  @Prop({type: String})
+  @Prop({ type: String })
   comment: string;
 }
 

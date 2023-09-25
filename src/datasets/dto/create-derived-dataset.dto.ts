@@ -1,6 +1,6 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {IsObject, IsOptional, IsString} from "class-validator";
-import {CreateDatasetDto} from "./create-dataset.dto";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsObject, IsOptional, IsString } from "class-validator";
+import { CreateDatasetDto } from "./create-dataset.dto";
 
 export class CreateDerivedDatasetDto extends CreateDatasetDto {
   @ApiProperty({

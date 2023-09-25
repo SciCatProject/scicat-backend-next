@@ -22,7 +22,7 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
-import {MongoError} from "mongodb";
+import { MongoError } from "mongodb";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -34,46 +34,46 @@ import {
   ApiTags,
   getSchemaPath,
 } from "@nestjs/swagger";
-import {Request} from "express";
-import {DatasetsService} from "./datasets.service";
-import {PartialUpdateDatasetDto} from "./dto/update-dataset.dto";
-import {DatasetClass, DatasetDocument} from "./schemas/dataset.schema";
-import {CreateRawDatasetDto} from "./dto/create-raw-dataset.dto";
-import {CreateDerivedDatasetDto} from "./dto/create-derived-dataset.dto";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility, CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
-import {IDatasetFields} from "./interfaces/dataset-filters.interface";
+import { Request } from "express";
+import { DatasetsService } from "./datasets.service";
+import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
+import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
+import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import {
   MainDatasetsPublicInterceptor,
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
-import {AllowAny} from "src/auth/decorators/allow-any.decorator";
-import {Attachment} from "src/attachments/schemas/attachment.schema";
-import {CreateAttachmentDto} from "src/attachments/dto/create-attachment.dto";
-import {AttachmentsService} from "src/attachments/attachments.service";
-import {UpdateAttachmentDto} from "src/attachments/dto/update-attachment.dto";
-import {OrigDatablock} from "src/origdatablocks/schemas/origdatablock.schema";
-import {CreateOrigDatablockDto} from "src/origdatablocks/dto/create-origdatablock.dto";
-import {OrigDatablocksService} from "src/origdatablocks/origdatablocks.service";
-import {UpdateOrigDatablockDto} from "src/origdatablocks/dto/update-origdatablock.dto";
-import {DatablocksService} from "src/datablocks/datablocks.service";
-import {Datablock} from "src/datablocks/schemas/datablock.schema";
-import {CreateDatablockDto} from "src/datablocks/dto/create-datablock.dto";
-import {UpdateDatablockDto} from "src/datablocks/dto/update-datablock.dto";
-import {UpdateQuery} from "mongoose";
-import {FilterPipe} from "src/common/pipes/filter.pipe";
-import {UTCTimeInterceptor} from "src/common/interceptors/utc-time.interceptor";
-import {DataFile} from "src/common/schemas/datafile.schema";
-import {MultiUTCTimeInterceptor} from "src/common/interceptors/multi-utc-time.interceptor";
-import {FullQueryInterceptor} from "./interceptors/fullquery.interceptor";
-import {FormatPhysicalQuantitiesInterceptor} from "src/common/interceptors/format-physical-quantities.interceptor";
-import {IFacets, IFilters} from "src/common/interfaces/common.interface";
-import {ClassConstructor, plainToInstance} from "class-transformer";
-import {validate, ValidationError, ValidatorOptions} from "class-validator";
-import {HistoryInterceptor} from "src/common/interceptors/history.interceptor";
-import {CreateDatasetOrigDatablockDto} from "src/origdatablocks/dto/create-dataset-origdatablock";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { CreateOrigDatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { UpdateOrigDatablockDto } from "src/origdatablocks/dto/update-origdatablock.dto";
+import { DatablocksService } from "src/datablocks/datablocks.service";
+import { Datablock } from "src/datablocks/schemas/datablock.schema";
+import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
+import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
+import { UpdateQuery } from "mongoose";
+import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
+import { DataFile } from "src/common/schemas/datafile.schema";
+import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
+import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { ClassConstructor, plainToInstance } from "class-transformer";
+import { validate, ValidationError, ValidatorOptions } from "class-validator";
+import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
+import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 import {
   PartialUpdateRawDatasetDto,
   UpdateRawDatasetDto,
@@ -82,7 +82,7 @@ import {
   PartialUpdateDerivedDatasetDto,
   UpdateDerivedDatasetDto,
 } from "./dto/update-derived-dataset.dto";
-import {CreateDatasetDatablockDto} from "src/datablocks/dto/create-dataset-datablock";
+import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
   filterDescription,
   filterExample,
@@ -93,11 +93,15 @@ import {
   replaceLikeOperator,
 } from "src/common/utils";
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+<<<<<<< HEAD
 import configuration from "src/config/configuration";
 =======
 import {TechniqueClass} from "./schemas/technique.schema";
@@ -106,6 +110,8 @@ import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
 import {LogbooksService} from "src/logbooks/logbooks.service";
 import {Logbook} from "src/logbooks/schemas/logbook.schema";
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -127,7 +133,10 @@ export class DatasetsController {
     private logbooksService: LogbooksService,
   ) {}
 
-  getFilters(headers: Record<string, string>, queryFilter: {filter?: string}) {
+  getFilters(
+    headers: Record<string, string>,
+    queryFilter: { filter?: string },
+  ) {
     // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
     if (queryFilter?.filter && (headers?.filter || headers?.where)) {
       throw new HttpException(
@@ -183,6 +192,7 @@ export class DatasetsController {
       if (canViewAccess) {
         mergedFilters.where["$or"] = [
 <<<<<<< HEAD
+<<<<<<< HEAD
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
           { sharedWith: { $in: user.email } },
@@ -192,6 +202,11 @@ export class DatasetsController {
           {accessGroups: {$in: user.currentGroups}},
           {isPublished: true},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+          { ownerGroup: { $in: user.currentGroups } },
+          { accessGroups: { $in: user.currentGroups } },
+          { isPublished: true },
+>>>>>>> 37d12183 (fix: lint issue fix)
         ];
       } else if (canViewOwner) {
         mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
@@ -294,7 +309,7 @@ export class DatasetsController {
   }
 
   async checkPermissionsForDataset(request: Request, id: string) {
-    const dataset = await this.datasetsService.findOne({where: {pid: id}});
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
     if (dataset) {
@@ -384,7 +399,7 @@ export class DatasetsController {
       datasetInstance.owner = dataset.owner;
       datasetInstance.ownerEmail = dataset.ownerEmail;
       if (user) {
-        const {isPartOfAdminGroups, userCanCreateDatasetWithPid} =
+        const { isPartOfAdminGroups, userCanCreateDatasetWithPid } =
           this.getUserPermissionsFromGroups(user);
         if (
           datasetInstance.pid &&
@@ -450,8 +465,8 @@ export class DatasetsController {
     required: true,
     schema: {
       oneOf: [
-        {$ref: getSchemaPath(CreateRawDatasetDto)},
-        {$ref: getSchemaPath(CreateDerivedDatasetDto)},
+        { $ref: getSchemaPath(CreateRawDatasetDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
       ],
     },
   })
@@ -568,8 +583,8 @@ export class DatasetsController {
     required: true,
     schema: {
       oneOf: [
-        {$ref: getSchemaPath(CreateRawDatasetDto)},
-        {$ref: getSchemaPath(CreateDerivedDatasetDto)},
+        { $ref: getSchemaPath(CreateRawDatasetDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
       ],
     },
   })
@@ -579,6 +594,7 @@ export class DatasetsController {
     description:
       "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
+<<<<<<< HEAD
 <<<<<<< HEAD
   async isValid(
     @Req() request: Request,
@@ -592,6 +608,9 @@ export class DatasetsController {
 =======
   async isValid(@Body() createDataset: unknown): Promise<{valid: boolean}> {
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+  async isValid(@Body() createDataset: unknown): Promise<{ valid: boolean }> {
+>>>>>>> 37d12183 (fix: lint issue fix)
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
       createDatasetDto,
@@ -607,7 +626,7 @@ export class DatasetsController {
     const valid =
       errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0;
 
-    return {valid: valid};
+    return { valid: valid };
   }
 
   // GET /datasets
@@ -640,7 +659,7 @@ export class DatasetsController {
   async findAll(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: {filter?: string},
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass[] | null> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
@@ -657,7 +676,7 @@ export class DatasetsController {
         datasets.map(async (dataset) => {
           if (includeFilters) {
             await Promise.all(
-              includeFilters.map(async ({relation}) => {
+              includeFilters.map(async ({ relation }) => {
                 switch (relation) {
                   case "attachments": {
                     dataset.attachments = await this.attachmentsService.findAll(
@@ -730,7 +749,7 @@ export class DatasetsController {
   })
   async fullquery(
     @Req() request: Request,
-    @Query() filters: {fields?: string; limits?: string},
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
@@ -813,7 +832,7 @@ export class DatasetsController {
   })
   async fullfacet(
     @Req() request: Request,
-    @Query() filters: {fields?: string; facets?: string},
+    @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
@@ -894,7 +913,7 @@ export class DatasetsController {
   })
   async metadataKeys(
     @Req() request: Request,
-    @Query() filters: {fields?: string; limits?: string},
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
@@ -966,7 +985,7 @@ export class DatasetsController {
   async findOne(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: {filter?: string},
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
     const user: JWTUser = request.user as JWTUser;
 
@@ -984,7 +1003,7 @@ export class DatasetsController {
     if (dataset) {
       const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
-        includeFilters.map(async ({relation}) => {
+        includeFilters.map(async ({ relation }) => {
           switch (relation) {
             case "attachments": {
               dataset.attachments = await this.attachmentsService.findAll({
@@ -994,7 +1013,7 @@ export class DatasetsController {
             }
             case "origdatablocks": {
               dataset.origdatablocks = await this.origDatablocksService.findAll(
-                {where: {datasetId: dataset.pid}},
+                { where: { datasetId: dataset.pid } },
               );
               break;
             }
@@ -1038,8 +1057,8 @@ export class DatasetsController {
   async count(
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: {filter?: string},
-  ): Promise<{count: number}> {
+    @Query(new FilterPipe()) queryFilter: { filter?: string },
+  ): Promise<{ count: number }> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -1114,8 +1133,8 @@ export class DatasetsController {
     required: true,
     schema: {
       oneOf: [
-        {$ref: getSchemaPath(PartialUpdateRawDatasetDto)},
-        {$ref: getSchemaPath(PartialUpdateDerivedDatasetDto)},
+        { $ref: getSchemaPath(PartialUpdateRawDatasetDto) },
+        { $ref: getSchemaPath(PartialUpdateDerivedDatasetDto) },
       ],
     },
   })
@@ -1133,7 +1152,7 @@ export class DatasetsController {
       | PartialUpdateRawDatasetDto
       | PartialUpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
-    const foundDataset = await this.datasetsService.findOne({where: {pid}});
+    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -1144,7 +1163,7 @@ export class DatasetsController {
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     await this.validateDataset(
-      {...updateDatasetDto, type: datasetType},
+      { ...updateDatasetDto, type: datasetType },
       datasetType === "raw"
         ? PartialUpdateRawDatasetDto
         : PartialUpdateDerivedDatasetDto,
@@ -1200,8 +1219,8 @@ export class DatasetsController {
     required: true,
     schema: {
       oneOf: [
-        {$ref: getSchemaPath(UpdateRawDatasetDto)},
-        {$ref: getSchemaPath(UpdateDerivedDatasetDto)},
+        { $ref: getSchemaPath(UpdateRawDatasetDto) },
+        { $ref: getSchemaPath(UpdateDerivedDatasetDto) },
       ],
     },
   })
@@ -1339,10 +1358,14 @@ export class DatasetsController {
     const ability = this.caslAbilityFactory.createForUser(user);
     const datasetToUpdate = await this.datasetsService.findOne({
 <<<<<<< HEAD
+<<<<<<< HEAD
       where: { pid: pid },
 =======
       where: {pid: id},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+      where: { pid: id },
+>>>>>>> 37d12183 (fix: lint issue fix)
     });
 
     if (!datasetToUpdate) {
@@ -1365,7 +1388,7 @@ export class DatasetsController {
 
     const updateQuery: UpdateQuery<DatasetDocument> = {
       $addToSet: {
-        [fieldName]: {$each: parsedData},
+        [fieldName]: { $each: parsedData },
       },
     };
 
@@ -1406,12 +1429,17 @@ export class DatasetsController {
 
     const attachment = await this.attachmentsService.findOne(
 <<<<<<< HEAD
+<<<<<<< HEAD
       { datasetId: pid },
       { _id: false, thumbnail: true },
 =======
       {datasetId: id},
       {_id: false, thumbnail: true},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+      { datasetId: id },
+      { _id: false, thumbnail: true },
+>>>>>>> 37d12183 (fix: lint issue fix)
     );
 
     if (!attachment || !attachment.thumbnail) {
@@ -1455,6 +1483,7 @@ export class DatasetsController {
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1464,6 +1493,9 @@ export class DatasetsController {
 =======
     const dataset = await this.datasetsService.findOne({where: {pid: id}});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+>>>>>>> 37d12183 (fix: lint issue fix)
     if (dataset) {
       const createAttachment: CreateAttachmentDto = {
         ...createAttachmentDto,
@@ -1512,10 +1544,14 @@ export class DatasetsController {
     );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     return this.attachmentsService.findAll({ datasetId: pid });
 =======
     return this.attachmentsService.findAll({datasetId: id});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    return this.attachmentsService.findAll({ datasetId: id });
+>>>>>>> 37d12183 (fix: lint issue fix)
   }
 
   // PATCH /datasets/:id/attachments/:fk
@@ -1561,10 +1597,14 @@ export class DatasetsController {
 
     return this.attachmentsService.findOneAndUpdate(
 <<<<<<< HEAD
+<<<<<<< HEAD
       { _id: aid, datasetId: pid },
 =======
       {_id: attachmentId, datasetId: datasetId},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+      { _id: attachmentId, datasetId: datasetId },
+>>>>>>> 37d12183 (fix: lint issue fix)
       updateAttachmentDto,
     );
   }
@@ -1650,6 +1690,7 @@ export class DatasetsController {
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1659,6 +1700,9 @@ export class DatasetsController {
 =======
     const dataset = await this.datasetsService.findOne({where: {pid: id}});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+>>>>>>> 37d12183 (fix: lint issue fix)
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
         ...createDatasetOrigDatablockDto,
@@ -1715,6 +1759,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createOrigDatablock: unknown,
 <<<<<<< HEAD
+<<<<<<< HEAD
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
@@ -1725,6 +1770,9 @@ export class DatasetsController {
 =======
   ): Promise<{valid: boolean; errors: ValidationError[]}> {
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+  ): Promise<{ valid: boolean; errors: ValidationError[] }> {
+>>>>>>> 37d12183 (fix: lint issue fix)
     const dtoTestOrigDatablock = plainToInstance(
       CreateDatasetOrigDatablockDto,
       createOrigDatablock,
@@ -1733,7 +1781,7 @@ export class DatasetsController {
 
     const valid = errorsTestOrigDatablock.length == 0;
 
-    return {valid: valid, errors: errorsTestOrigDatablock};
+    return { valid: valid, errors: errorsTestOrigDatablock };
   }
 
   // GET /datasets/:id/origdatablocks
@@ -1771,10 +1819,14 @@ export class DatasetsController {
     );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     return this.origDatablocksService.findAll({ where: { datasetId: pid } });
 =======
     return this.origDatablocksService.findAll({where: {datasetId: id}});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    return this.origDatablocksService.findAll({ where: { datasetId: id } });
+>>>>>>> 37d12183 (fix: lint issue fix)
   }
 
   // PATCH /datasets/:id/origdatablocks/:fk
@@ -1828,7 +1880,7 @@ export class DatasetsController {
 
 =======
     const dataset = await this.datasetsService.findOne({
-      where: {pid: datasetId},
+      where: { pid: datasetId },
     });
 >>>>>>> b35ceca7 (fix: fix lint issue)
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
@@ -1837,10 +1889,14 @@ export class DatasetsController {
     if (dataset && origDatablockBeforeUpdate) {
       const origDatablock = await this.origDatablocksService.update(
 <<<<<<< HEAD
+<<<<<<< HEAD
         { _id: oid, pid },
 =======
         {_id: origDatablockId, datasetId},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+        { _id: origDatablockId, datasetId },
+>>>>>>> 37d12183 (fix: lint issue fix)
         updateOrigdatablockDto,
       );
       if (origDatablock) {
@@ -1899,7 +1955,7 @@ export class DatasetsController {
 
 =======
     const dataset = await this.datasetsService.findOne({
-      where: {pid: datasetId},
+      where: { pid: datasetId },
     });
 >>>>>>> b35ceca7 (fix: fix lint issue)
     if (dataset) {
@@ -1911,10 +1967,14 @@ export class DatasetsController {
       // all the remaining orig datablocks for this dataset
       const odb = await this.origDatablocksService.findAll({
 <<<<<<< HEAD
+<<<<<<< HEAD
         where: { datasetId: pid },
 =======
         where: {datasetId: datasetId},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+        where: { datasetId: datasetId },
+>>>>>>> 37d12183 (fix: lint issue fix)
       });
       // update dataset size and files number
       const updateDatasetDto: PartialUpdateDatasetDto = {
@@ -1965,6 +2025,7 @@ export class DatasetsController {
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1974,6 +2035,9 @@ export class DatasetsController {
 =======
     const dataset = await this.datasetsService.findOne({where: {pid: id}});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+>>>>>>> 37d12183 (fix: lint issue fix)
     if (dataset) {
       const createDatablock: CreateDatablockDto = {
         ...createDatablockDto,
@@ -2030,10 +2094,14 @@ export class DatasetsController {
     );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     return this.datablocksService.findAll({ datasetId: pid });
 =======
     return this.datablocksService.findAll({datasetId: id});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    return this.datablocksService.findAll({ datasetId: id });
+>>>>>>> 37d12183 (fix: lint issue fix)
   }
 
   // PATCH /datasets/:id/datablocks/:fk
@@ -2084,7 +2152,7 @@ export class DatasetsController {
 
 =======
     const dataset = await this.datasetsService.findOne({
-      where: {pid: datasetId},
+      where: { pid: datasetId },
     });
 >>>>>>> b35ceca7 (fix: fix lint issue)
     const datablockBeforeUpdate = await this.datablocksService.findOne({
@@ -2093,10 +2161,14 @@ export class DatasetsController {
     if (dataset && datablockBeforeUpdate) {
       const datablock = await this.datablocksService.update(
 <<<<<<< HEAD
+<<<<<<< HEAD
         { _id: did, pid },
 =======
         {_id: datablockId, datasetId},
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+        { _id: datablockId, datasetId },
+>>>>>>> 37d12183 (fix: lint issue fix)
         updateDatablockDto,
       );
       if (datablock) {
@@ -2157,7 +2229,7 @@ export class DatasetsController {
 
 =======
     const dataset = await this.datasetsService.findOne({
-      where: {pid: datasetId},
+      where: { pid: datasetId },
     });
 >>>>>>> b35ceca7 (fix: fix lint issue)
     if (dataset) {
@@ -2227,7 +2299,7 @@ export class DatasetsController {
 
 =======
     const dataset = await this.datasetsService.findOne({
-      where: {pid: datasetId},
+      where: { pid: datasetId },
     });
 >>>>>>> b35ceca7 (fix: fix lint issue)
     const proposalId = dataset?.proposalId;

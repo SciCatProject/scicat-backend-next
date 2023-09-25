@@ -1,9 +1,9 @@
-import {getModelToken} from "@nestjs/mongoose";
-import {Test, TestingModule} from "@nestjs/testing";
-import {Model} from "mongoose";
-import {RolesService} from "./roles.service";
-import {Role} from "./schemas/role.schema";
-import {UserRole} from "./schemas/user-role.schema";
+import { getModelToken } from "@nestjs/mongoose";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Model } from "mongoose";
+import { RolesService } from "./roles.service";
+import { Role } from "./schemas/role.schema";
+import { UserRole } from "./schemas/user-role.schema";
 
 const mockRole: Role = {
   _id: "testId",

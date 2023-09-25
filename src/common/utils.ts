@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/quotes */
-import {Logger} from "@nestjs/common";
-import {DateTime} from "luxon";
-import {format, unit} from "mathjs";
-import {Expression, FilterQuery, Model, PipelineStage} from "mongoose";
-import {DatasetType} from "src/datasets/dataset-type.enum";
+import { Logger } from "@nestjs/common";
+import { DateTime } from "luxon";
+import { format, unit } from "mathjs";
+import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
+import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
   IFilters,
   ILimitsFilter,
   IScientificFilter,
 } from "./interfaces/common.interface";
-import {ScientificRelation} from "./scientific-relation.enum";
+import { ScientificRelation } from "./scientific-relation.enum";
 
 export const convertToSI = (
   inputValue: number,
   inputUnit: string,
-): {valueSI: number; unitSI: string} => {
+): { valueSI: number; unitSI: string } => {
   try {
     const quantity = unit(inputValue, inputUnit).toSI().toJSON();
-    return {valueSI: Number(quantity.value), unitSI: quantity.unit};
+    return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
     console.error(error);
-    return {valueSI: inputValue, unitSI: inputUnit};
+    return { valueSI: inputValue, unitSI: inputUnit };
   }
 };
 
@@ -47,7 +47,7 @@ export const appendSIUnitToPhysicalQuantity = <T extends object>(object: T) => {
     });
 
     if (value !== undefined && unit && unit.length > 0) {
-      const {valueSI, unitSI} = convertToSI(value, unit);
+      const { valueSI, unitSI } = convertToSI(value, unit);
       updatedObject[key as keyof T] = {
         ...instance,
         valueSI,
@@ -71,9 +71,9 @@ export const convertToRequestedUnit = (
   value: number,
   currentUnit: string,
   requestedUnit: string,
-): {valueRequested: number; unitRequested: string} => {
+): { valueRequested: number; unitRequested: string } => {
   const converted = unit(value, currentUnit).to(requestedUnit);
-  const formatted = format(converted, {precision: 3}).toString();
+  const formatted = format(converted, { precision: 3 }).toString();
   const convertedValue = formatted.substring(0, formatted.indexOf(" "));
   const convertedUnit = formatted.substring(formatted.indexOf(" ") + 1);
   return {
@@ -88,43 +88,43 @@ export const mapScientificQuery = (
   const scientificFilterQuery: Record<string, unknown> = {};
 
   scientific.forEach((scientificFilter) => {
-    const {lhs, relation, rhs, unit} = scientificFilter;
+    const { lhs, relation, rhs, unit } = scientificFilter;
     const matchKeyGeneric = `scientificMetadata.${lhs}`;
     const matchKeyMeasurement = `scientificMetadata.${lhs}.valueSI`;
     const matchUnit = `scientificMetadata.${lhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
-        scientificFilterQuery[`${matchKeyGeneric}.value`] = {$eq: rhs};
+        scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: rhs };
         break;
       }
       case ScientificRelation.EQUAL_TO_NUMERIC: {
         if (unit && unit.length > 0) {
-          const {valueSI, unitSI} = convertToSI(Number(rhs), unit);
-          scientificFilterQuery[matchKeyMeasurement] = {$eq: valueSI};
-          scientificFilterQuery[matchUnit] = {$eq: unitSI};
+          const { valueSI, unitSI } = convertToSI(Number(rhs), unit);
+          scientificFilterQuery[matchKeyMeasurement] = { $eq: valueSI };
+          scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = {$eq: rhs};
+          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: rhs };
         }
         break;
       }
       case ScientificRelation.GREATER_THAN: {
         if (unit && unit.length > 0) {
-          const {valueSI, unitSI} = convertToSI(Number(rhs), unit);
-          scientificFilterQuery[matchKeyMeasurement] = {$gt: valueSI};
-          scientificFilterQuery[matchUnit] = {$eq: unitSI};
+          const { valueSI, unitSI } = convertToSI(Number(rhs), unit);
+          scientificFilterQuery[matchKeyMeasurement] = { $gt: valueSI };
+          scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = {$gt: rhs};
+          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $gt: rhs };
         }
         break;
       }
       case ScientificRelation.LESS_THAN: {
         if (unit && unit.length > 0) {
-          const {valueSI, unitSI} = convertToSI(Number(rhs), unit);
-          scientificFilterQuery[matchKeyMeasurement] = {$lt: valueSI};
-          scientificFilterQuery[matchUnit] = {$eq: unitSI};
+          const { valueSI, unitSI } = convertToSI(Number(rhs), unit);
+          scientificFilterQuery[matchKeyMeasurement] = { $lt: valueSI };
+          scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = {$lt: rhs};
+          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $lt: rhs };
         }
         break;
       }
@@ -192,7 +192,7 @@ export const handleAxiosRequestError = (
     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
     // http.ClientRequest in node.js
     console.error(error.request);
-    Logger.error({request: error.request}, context);
+    Logger.error({ request: error.request }, context);
   } else {
     // Something happened in setting up the request that triggered an Error
     Logger.error("Error: " + error.message, context);
@@ -231,21 +231,21 @@ export const parseLimitFilters = (
 ): {
   limit: number;
   skip: number;
-  sort: {[key: string]: "asc" | "desc"} | string;
+  sort: { [key: string]: "asc" | "desc" } | string;
 } => {
   if (!limits) {
-    return {limit: 100, skip: 0, sort: ""};
+    return { limit: 100, skip: 0, sort: "" };
   }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
-  let sort: {[key: string]: "asc" | "desc"} | string = "";
+  let sort: { [key: string]: "asc" | "desc" } | string = "";
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
     if (direction === "asc" || direction === "desc") {
-      sort = {[field]: direction as "asc" | "desc"};
+      sort = { [field]: direction as "asc" | "desc" };
     }
   }
-  return {limit, skip, sort};
+  return { limit, skip, sort };
 };
 
 export const parseLimitFiltersForPipeline = (
@@ -254,18 +254,18 @@ export const parseLimitFiltersForPipeline = (
   const pipelineStages: PipelineStage[] = [];
 
   if (!limits) {
-    pipelineStages.push({$skip: 0}, {$limit: 100});
+    pipelineStages.push({ $skip: 0 }, { $limit: 100 });
   } else {
-    const {limit = 100, skip = 0, order} = limits;
+    const { limit = 100, skip = 0, order } = limits;
 
-    pipelineStages.push({$skip: skip}, {$limit: limit});
+    pipelineStages.push({ $skip: skip }, { $limit: limit });
 
     if (order) {
       const [field, direction] = order.split(":");
       if (direction === "asc" || direction === "desc") {
         // NOTE string val of "asc" & "desc" is not supported for aggregate pipeline
         const sortIntVal = direction === "asc" ? 1 : -1;
-        pipelineStages.unshift({$sort: {[field]: sortIntVal}});
+        pipelineStages.unshift({ $sort: { [field]: sortIntVal } });
       }
     }
   }
@@ -287,7 +287,7 @@ export const createNewFacetPipelineStage = (
   }
 
   if (query && Object.keys(query).length > 0) {
-    const queryCopy = {...query};
+    const queryCopy = { ...query };
     delete queryCopy[name];
 
     if (Object.keys(queryCopy).length > 0) {
@@ -379,7 +379,7 @@ export const searchExpression = <T>(
   value: unknown,
 ): unknown => {
   if (fieldName === "text") {
-    return {$search: value};
+    return { $search: value };
   }
 
   const valueType = schemaTypeOf<T>(model, fieldName, value);
@@ -434,7 +434,7 @@ export const createFullqueryFilter = <T>(
         currentExpression["_id"] = currentExpression[idField];
         delete currentExpression[idField];
       }
-      filterQuery = {...filterQuery, ...currentExpression};
+      filterQuery = { ...filterQuery, ...currentExpression };
     } else if (key === "text") {
       filterQuery.$text = searchExpression<T>(
         model,
@@ -611,7 +611,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
 =======
   const pipeline = [];
   const facetMatch: Record<string, unknown> = esPids
-    ? {_id: {$in: esPids}}
+    ? { _id: { $in: esPids } }
     : {};
 >>>>>>> b35ceca7 (fix: fix lint issue)
 
@@ -708,12 +708,16 @@ export const createFullfacetPipeline = <T, Y extends object>(
     $count: "totalSets",
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
   pipeline.push({
     $facet: facetObject as Record<string, PipelineStage.FacetPipelineStage[]>,
   });
 =======
   pipeline.push({$facet: facetObject});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+  pipeline.push({ $facet: facetObject });
+>>>>>>> 37d12183 (fix: lint issue fix)
 
   return pipeline;
 };

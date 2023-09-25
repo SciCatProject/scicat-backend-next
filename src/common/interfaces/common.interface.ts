@@ -1,5 +1,5 @@
-import {FilterQuery} from "mongoose";
-import {ScientificRelation} from "../scientific-relation.enum";
+import { FilterQuery } from "mongoose";
+import { ScientificRelation } from "../scientific-relation.enum";
 
 export interface IScientificFilter {
   lhs: string;
@@ -42,7 +42,7 @@ export interface ILimitsFilter {
 
 export interface IFilters<T, Y = null> {
   where?: FilterQuery<T>;
-  include?: {relation: string}[];
+  include?: { relation: string }[];
   fields?: Y;
   limits?: ILimitsFilter;
 }

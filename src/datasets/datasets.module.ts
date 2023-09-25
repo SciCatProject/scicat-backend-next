@@ -1,18 +1,18 @@
-import {forwardRef, Module} from "@nestjs/common";
-import {MongooseModule} from "@nestjs/mongoose";
-import {DatasetClass, DatasetSchema} from "./schemas/dataset.schema";
-import {DatasetsController} from "./datasets.controller";
-import {DatasetsService} from "./datasets.service";
-import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {AttachmentsModule} from "src/attachments/attachments.module";
-import {ConfigModule} from "@nestjs/config";
-import {OrigDatablocksModule} from "src/origdatablocks/origdatablocks.module";
-import {DatablocksModule} from "src/datablocks/datablocks.module";
-import {InitialDatasetsModule} from "src/initial-datasets/initial-datasets.module";
-import {LogbooksModule} from "src/logbooks/logbooks.module";
-import {PoliciesService} from "src/policies/policies.service";
-import {PoliciesModule} from "src/policies/policies.module";
-import {ElasticSearchModule} from "src/elastic-search/elastic-search.module";
+import { forwardRef, Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
+import { DatasetsController } from "./datasets.controller";
+import { DatasetsService } from "./datasets.service";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { ConfigModule } from "@nestjs/config";
+import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
+import { DatablocksModule } from "src/datablocks/datablocks.module";
+import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
+import { LogbooksModule } from "src/logbooks/logbooks.module";
+import { PoliciesService } from "src/policies/policies.service";
+import { PoliciesModule } from "src/policies/policies.module";
+import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 
 @Module({
   imports: [

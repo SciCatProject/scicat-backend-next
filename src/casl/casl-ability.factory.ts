@@ -6,6 +6,9 @@ import {
   InferSubjects,
 } from "@casl/ability";
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -14,7 +17,11 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
+<<<<<<< HEAD
 import { JobClass } from "src/jobs/schemas/job.schema";
+=======
+import { Job } from "src/jobs/schemas/job.schema";
+>>>>>>> 37d12183 (fix: lint issue fix)
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -25,6 +32,7 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
+<<<<<<< HEAD
 import configuration from "src/config/configuration";
 =======
 import {Injectable} from "@nestjs/common";
@@ -47,6 +55,8 @@ import {UserSettings} from "src/users/schemas/user-settings.schema";
 import {User} from "src/users/schemas/user.schema";
 import {Action} from "./action.enum";
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 
 type Subjects =
   | string
@@ -74,7 +84,7 @@ export type AppAbility = Ability<[Action, Subjects]>;
 @Injectable()
 export class CaslAbilityFactory {
   createForUser(user: JWTUser) {
-    const {can, cannot, build} = new AbilityBuilder<
+    const { can, cannot, build } = new AbilityBuilder<
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
@@ -875,7 +885,7 @@ export class CaslAbilityFactory {
         createDatasetGroups.includes("all")
       ) {
         can(Action.Create, DatasetClass, {
-          ownerGroup: {$in: user.currentGroups},
+          ownerGroup: { $in: user.currentGroups },
         });
       }
 >>>>>>> b35ceca7 (fix: fix lint issue)
@@ -883,10 +893,10 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // user endpoint, including useridentity
       // User can view, create, delete and update own user information
-      can(Action.UserReadOwn, User, {_id: user._id});
-      can(Action.UserCreateOwn, User, {_id: user._id});
-      can(Action.UserUpdateOwn, User, {_id: user._id});
-      can(Action.UserDeleteOwn, User, {_id: user._id});
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
       cannot(Action.UserReadAny, User);
       cannot(Action.UserCreateAny, User);
       cannot(Action.UserUpdateAny, User);
@@ -966,14 +976,14 @@ export class CaslAbilityFactory {
     */
 =======
     }
-    can(Action.Read, DatasetClass, {isPublished: true});
+    can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
-      ownerGroup: {$in: user.currentGroups},
+      ownerGroup: { $in: user.currentGroups },
     });
     can(Action.Read, DatasetClass, {
       isPublished: false,
-      accessGroups: {$in: user.currentGroups},
+      accessGroups: { $in: user.currentGroups },
     });
     can(Action.Read, DatasetClass, {
       sharedWith: user.email,
@@ -984,7 +994,7 @@ export class CaslAbilityFactory {
       DatasetClass,
       ["isPublished", "keywords", "scientificMetadata"],
       {
-        ownerGroup: {$in: user.currentGroups},
+        ownerGroup: { $in: user.currentGroups },
       },
     );
 >>>>>>> b35ceca7 (fix: fix lint issue)
@@ -999,13 +1009,13 @@ export class CaslAbilityFactory {
 
     can(Action.Read, Logbook);
 
-    can(Action.Manage, Policy, {ownerGroup: {$in: user.currentGroups}});
+    can(Action.Manage, Policy, { ownerGroup: { $in: user.currentGroups } });
 
     can(Action.Read, ProposalClass, {
-      ownerGroup: {$in: user.currentGroups},
+      ownerGroup: { $in: user.currentGroups },
     });
     can(Action.Read, ProposalClass, {
-      accessGroups: {$in: user.currentGroups},
+      accessGroups: { $in: user.currentGroups },
     });
 
     can(Action.Read, PublishedData);
@@ -1013,15 +1023,15 @@ export class CaslAbilityFactory {
     can(Action.Create, PublishedData);
 
     can(Action.Create, SampleClass);
-    can(Action.Read, SampleClass, {ownerGroup: {$in: user.currentGroups}});
+    can(Action.Read, SampleClass, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Read, SampleClass, {
-      accessGroups: {$in: user.currentGroups},
+      accessGroups: { $in: user.currentGroups },
     });
 
-    can(Action.Manage, Attachment, {ownerGroup: {$in: user.currentGroups}});
-    can(Action.Manage, Datablock, {ownerGroup: {$in: user.currentGroups}});
+    can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
+    can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, OrigDatablock, {
-      ownerGroup: {$in: user.currentGroups},
+      ownerGroup: { $in: user.currentGroups },
     });
 
     if (user.currentGroups.includes(Role.Admin)) {

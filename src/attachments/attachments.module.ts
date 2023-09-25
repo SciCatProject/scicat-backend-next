@@ -1,7 +1,7 @@
-import {Module} from "@nestjs/common";
-import {MongooseModule} from "@nestjs/mongoose";
-import {AttachmentsService} from "./attachments.service";
-import {Attachment, AttachmentSchema} from "./schemas/attachment.schema";
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AttachmentsService } from "./attachments.service";
+import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
 
 @Module({
   imports: [

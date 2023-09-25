@@ -1,8 +1,8 @@
-import {getModelToken} from "@nestjs/mongoose";
-import {Test, TestingModule} from "@nestjs/testing";
-import {Model} from "mongoose";
-import {InstrumentsService} from "./instruments.service";
-import {Instrument} from "./schemas/instrument.schema";
+import { getModelToken } from "@nestjs/mongoose";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Model } from "mongoose";
+import { InstrumentsService } from "./instruments.service";
+import { Instrument } from "./schemas/instrument.schema";
 
 const mockInstrument: Instrument = {
   _id: "testPid",

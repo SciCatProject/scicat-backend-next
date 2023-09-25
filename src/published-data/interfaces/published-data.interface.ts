@@ -1,9 +1,9 @@
-import {FilterQuery} from "mongoose";
-import {PublishedDataDocument} from "../schemas/published-data.schema";
+import { FilterQuery } from "mongoose";
+import { PublishedDataDocument } from "../schemas/published-data.schema";
 
 export interface IPublishedDataFilters {
   where?: FilterQuery<PublishedDataDocument>;
-  include?: {relation: string}[];
+  include?: { relation: string }[];
   fields?: {
     status: string;
   };

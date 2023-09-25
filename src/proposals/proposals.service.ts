@@ -1,9 +1,9 @@
-import {Inject, Injectable, Scope} from "@nestjs/common";
-import {REQUEST} from "@nestjs/core";
-import {Request} from "express";
-import {InjectModel} from "@nestjs/mongoose";
-import {FilterQuery, Model, PipelineStage, QueryOptions} from "mongoose";
-import {IFacets, IFilters} from "src/common/interfaces/common.interface";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   createFullfacetPipeline,
   createFullqueryFilter,
@@ -11,13 +11,13 @@ import {
   addCreatedByFields,
   addUpdatedByField,
 } from "src/common/utils";
-import {CreateProposalDto} from "./dto/create-proposal.dto";
-import {UpdateProposalDto} from "./dto/update-proposal.dto";
-import {IProposalFields} from "./interfaces/proposal-filters.interface";
-import {ProposalClass, ProposalDocument} from "./schemas/proposal.schema";
-import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
+import { CreateProposalDto } from "./dto/create-proposal.dto";
+import { UpdateProposalDto } from "./dto/update-proposal.dto";
+import { IProposalFields } from "./interfaces/proposal-filters.interface";
+import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 
-@Injectable({scope: Scope.REQUEST})
+@Injectable({ scope: Scope.REQUEST })
 export class ProposalsService {
   constructor(
     @InjectModel(ProposalClass.name)
@@ -37,7 +37,7 @@ export class ProposalsService {
     filter: IFilters<ProposalDocument, IProposalFields>,
   ): Promise<ProposalClass[]> {
     const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
-    const {limit, skip, sort} = parseLimitFilters(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.proposalModel
       .find(whereFilter)

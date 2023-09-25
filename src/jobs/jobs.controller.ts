@@ -13,6 +13,9 @@ import {
   Req,
 } from "@nestjs/common";
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
@@ -22,11 +25,16 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
+<<<<<<< HEAD
 import { JobClass, JobDocument } from "./schemas/job.schema";
+=======
+import { Job, JobDocument } from "./schemas/job.schema";
+>>>>>>> 37d12183 (fix: lint issue fix)
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
+<<<<<<< HEAD
 =======
 import {Request} from "express";
 import {FilterQuery} from "mongoose";
@@ -43,10 +51,12 @@ import {IFacets, IFilters} from "src/common/interfaces/common.interface";
 import {DatasetsService} from "src/datasets/datasets.service";
 import {JobType, DatasetState} from "./job-type.enum";
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+>>>>>>> 37d12183 (fix: lint issue fix)
 import configuration from "src/config/configuration";
-import {EventEmitter2} from "@nestjs/event-emitter";
-import {OrigDatablocksService} from "src/origdatablocks/origdatablocks.service";
-import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -221,14 +231,14 @@ export class JobsController {
           );
           // Get a list of requested files that is not in originDataBlocks
           const checkResults = datasetsToCheck.reduce(
-            (acc: {pid: string; nonExistFiles: string[]}[], x) => {
+            (acc: { pid: string; nonExistFiles: string[] }[], x) => {
               const pid = x.pid;
               const referenceFiles = result[pid];
               const nonExistFiles = x.files.filter(
                 (f) => !referenceFiles.has(f),
               );
               if (nonExistFiles.length > 0) {
-                acc.push({pid, nonExistFiles});
+                acc.push({ pid, nonExistFiles });
               }
               return acc;
             },
@@ -294,8 +304,12 @@ export class JobsController {
     const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
 =======
   ): Promise<Job> {
+<<<<<<< HEAD
     const jobToCreate = {...createJobDto, jobStatusMessage: "jobSubmitted"};
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
+>>>>>>> 37d12183 (fix: lint issue fix)
     await this.validateJob(jobToCreate, request);
 
     const createdJob = await this.jobsService.create(jobToCreate);
@@ -303,7 +317,7 @@ export class JobsController {
     if (createdJob) {
       // Emit event so facilities can trigger custom code
       this.publishJob();
-      this.eventEmitter.emit("jobCreated", {instance: createdJob});
+      this.eventEmitter.emit("jobCreated", { instance: createdJob });
     }
 
     return createdJob;
@@ -330,10 +344,14 @@ export class JobsController {
   @Get("/fullquery")
   async fullquery(
 <<<<<<< HEAD
+<<<<<<< HEAD
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<JobClass[]> {
 =======
     @Query() filters: {fields?: string; limits?: string},
+=======
+    @Query() filters: { fields?: string; limits?: string },
+>>>>>>> 37d12183 (fix: lint issue fix)
   ): Promise<Job[]> {
 >>>>>>> b35ceca7 (fix: fix lint issue)
     const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
@@ -347,7 +365,7 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get("/fullfacet")
   async fullfacet(
-    @Query() filters: {fields?: string; facets?: string},
+    @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
     const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -364,8 +382,12 @@ export class JobsController {
     return this.jobsService.findOne({ _id: id });
 =======
   async findOne(@Param("id") id: string): Promise<Job | null> {
+<<<<<<< HEAD
     return this.jobsService.findOne({_id: id});
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    return this.jobsService.findOne({ _id: id });
+>>>>>>> 37d12183 (fix: lint issue fix)
   }
 
   @UseGuards(PoliciesGuard)
@@ -379,13 +401,17 @@ export class JobsController {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 =======
   ): Promise<Job | null> {
+<<<<<<< HEAD
     const updatedJob = await this.jobsService.update({_id: id}, updateJobDto);
 >>>>>>> b35ceca7 (fix: fix lint issue)
+=======
+    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
+>>>>>>> 37d12183 (fix: lint issue fix)
 
     if (updatedJob) {
       this.eventEmitter.emit("jobUpdated", {
         instance: updatedJob,
-        hookState: {oldData: [updatedJob]},
+        hookState: { oldData: [updatedJob] },
       });
     }
 
@@ -396,6 +422,6 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.jobsService.remove({_id: id});
+    return this.jobsService.remove({ _id: id });
   }
 }

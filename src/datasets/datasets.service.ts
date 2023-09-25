@@ -5,13 +5,13 @@ import {
   NotFoundException,
   Scope,
 } from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
-import {REQUEST} from "@nestjs/core";
-import {InjectModel} from "@nestjs/mongoose";
-import {Request} from "express";
-import {FilterQuery, Model, QueryOptions, UpdateQuery} from "mongoose";
-import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
-import {IFacets, IFilters} from "src/common/interfaces/common.interface";
+import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
+import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
+import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -21,11 +21,11 @@ import {
   isObjectWithOneKey,
   parseLimitFilters,
 } from "src/common/utils";
-import {ElasticSearchService} from "src/elastic-search/elastic-search.service";
-import {InitialDatasetsService} from "src/initial-datasets/initial-datasets.service";
-import {LogbooksService} from "src/logbooks/logbooks.service";
-import {DatasetType} from "./dataset-type.enum";
-import {CreateDatasetDto} from "./dto/create-dataset.dto";
+import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
+import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
+import { LogbooksService } from "src/logbooks/logbooks.service";
+import { DatasetType } from "./dataset-type.enum";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
@@ -38,10 +38,10 @@ import {
   PartialUpdateRawDatasetDto,
   UpdateRawDatasetDto,
 } from "./dto/update-raw-dataset.dto";
-import {IDatasetFields} from "./interfaces/dataset-filters.interface";
-import {DatasetClass, DatasetDocument} from "./schemas/dataset.schema";
+import { IDatasetFields } from "./interfaces/dataset-filters.interface";
+import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
-@Injectable({scope: Scope.REQUEST})
+@Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
   private ESClient: ElasticSearchService | null;
   constructor(
@@ -78,7 +78,7 @@ export class DatasetsService {
   ): Promise<DatasetClass[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
-    const {limit, skip, sort} = parseLimitFilters(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
       .limit(limit)
@@ -106,7 +106,7 @@ export class DatasetsService {
       ...extraWhereClause,
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-    const {$text, ...remainingClauses} = whereClause;
+    const { $text, ...remainingClauses } = whereClause;
     if (!this.ESClient || !$text) {
       const datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
@@ -121,7 +121,11 @@ export class DatasetsService {
     );
 
     const datasets = await this.datasetModel
-      .find({_id: {$in: esResult.data}, ...remainingClauses}, null, modifiers)
+      .find(
+        { _id: { $in: esResult.data }, ...remainingClauses },
+        null,
+        modifiers,
+      )
       .exec();
     return datasets;
   }
@@ -139,7 +143,7 @@ export class DatasetsService {
     if (this.ESClient && !isFieldsEmpty) {
       const totalDocCount = await this.datasetModel.countDocuments();
 
-      const {totalCount: esTotalCount, data: esPids} =
+      const { totalCount: esTotalCount, data: esPids } =
         await this.ESClient.search(fields as IDatasetFields, totalDocCount);
 
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
@@ -153,7 +157,7 @@ export class DatasetsService {
 
       const data = await this.datasetModel.aggregate(pipeline).exec();
 
-      data[0].all[0] = {totalSets: esTotalCount};
+      data[0].all[0] = { totalSets: esTotalCount };
       return data;
     }
 
@@ -175,7 +179,7 @@ export class DatasetsService {
     updateDatasetDto: Record<string, unknown>,
   ): Promise<unknown> {
     return this.datasetModel
-      .updateMany(filter, updateDatasetDto, {new: true})
+      .updateMany(filter, updateDatasetDto, { new: true })
       .exec();
   }
 
@@ -188,10 +192,12 @@ export class DatasetsService {
     return this.datasetModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
-  async count(filter: FilterQuery<DatasetDocument>): Promise<{count: number}> {
+  async count(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<{ count: number }> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const count = await this.datasetModel.count(whereFilter).exec();
-    return {count};
+    return { count };
   }
 
   // PUT dataset
@@ -204,7 +210,7 @@ export class DatasetsService {
       | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
-    const existingDataset = await this.datasetModel.findOne({pid: id}).exec();
+    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
 
     if (!existingDataset) {
       throw new NotFoundException();
@@ -220,7 +226,7 @@ export class DatasetsService {
     };
     const updatedDataset = await this.datasetModel
       .findOneAndReplace(
-        {pid: id},
+        { pid: id },
         addUpdatedByField(updatedDatasetInput, username),
         {
           new: true,
@@ -252,7 +258,7 @@ export class DatasetsService {
       | PartialUpdateDerivedDatasetDto
       | UpdateQuery<DatasetDocument>,
   ): Promise<DatasetClass | null> {
-    const existingDataset = await this.datasetModel.findOne({pid: id}).exec();
+    const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
     if (!existingDataset) {
       // no luck. we need to create a new dataset
@@ -265,12 +271,12 @@ export class DatasetsService {
     // https://stackoverflow.com/questions/57324321/mongoose-overwriting-data-in-mongodb-with-default-values-in-subdocuments
     const patchedDataset = await this.datasetModel
       .findOneAndUpdate(
-        {pid: id},
+        { pid: id },
         addUpdatedByField(
           updateDatasetDto as UpdateQuery<DatasetDocument>,
           username,
         ),
-        {new: true},
+        { new: true },
       )
       .exec();
 
@@ -289,12 +295,12 @@ export class DatasetsService {
     if (this.ESClient) {
       this.ESClient.deleteDocument(id);
     }
-    return await this.datasetModel.findOneAndRemove({pid: id});
+    return await this.datasetModel.findOneAndRemove({ pid: id });
   }
   // GET datasets without _id which is used for elastic search data synchronization
   async getDatasetsWithoutId() {
     try {
-      const datasets = this.datasetModel.find({}, {_id: 0}).exec();
+      const datasets = this.datasetModel.find({}, { _id: 0 }).exec();
       return datasets;
     } catch (error) {
       throw new NotFoundException();
@@ -397,7 +403,7 @@ export class DatasetsService {
             );
 
             if (!initialDataset) {
-              await this.initialDatasetsService.create({_id: dataset.pid});
+              await this.initialDatasetsService.create({ _id: dataset.pid });
               await this.updateHistory(req, dataset as DatasetClass, dataCopy);
             } else {
               await this.updateHistory(req, dataset as DatasetClass, dataCopy);
@@ -452,7 +458,7 @@ export class DatasetsService {
         updatedBy: (req.user as JWTUser).username,
         ...JSON.parse(JSON.stringify(historyItem).replace(/\$/g, "")),
       });
-      await this.findByIdAndUpdate(dataset.pid, {history: dataset.history});
+      await this.findByIdAndUpdate(dataset.pid, { history: dataset.history });
       const logbookEnabled = this.configService.get<boolean>("logbook.enabled");
       if (logbookEnabled) {
         const user = (req.user as JWTUser).username.replace("ldap.", "");
@@ -465,7 +471,7 @@ export class DatasetsService {
           await Promise.all(
             Object.keys(updatedFields).map(async (updatedField) => {
               const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
-              await this.logbooksService.sendMessage(proposalId, {message});
+              await this.logbooksService.sendMessage(proposalId, { message });
             }),
           );
         }

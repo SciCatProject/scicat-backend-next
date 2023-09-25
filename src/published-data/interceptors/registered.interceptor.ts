@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class RegisteredInterceptor implements NestInterceptor {
@@ -13,7 +13,7 @@ export class RegisteredInterceptor implements NestInterceptor {
     if (!user) {
       if (context.getArgs()[1].req.query.fields) {
         let fields = JSON.parse(context.getArgs()[1].req.query.fields);
-        fields = {...fields, status: "registered"};
+        fields = { ...fields, status: "registered" };
         context.getArgs()[1].req.query.fields = JSON.stringify(fields);
       } else {
         context.getArgs()[1].req.query.fields = JSON.stringify({

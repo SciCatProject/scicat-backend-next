@@ -1,6 +1,6 @@
-import {OwnableDto} from "src/common/dto/ownable.dto";
-import {TechniqueClass} from "../schemas/technique.schema";
-import {RelationshipClass} from "../schemas/relationship.schema";
+import { OwnableDto } from "src/common/dto/ownable.dto";
+import { TechniqueClass } from "../schemas/technique.schema";
+import { RelationshipClass } from "../schemas/relationship.schema";
 import {
   IsString,
   IsOptional,
@@ -15,12 +15,12 @@ import {
   IsArray,
   IsEnum,
 } from "class-validator";
-import {ApiProperty, ApiTags, getSchemaPath} from "@nestjs/swagger";
-import {DatasetType} from "../dataset-type.enum";
-import {Type} from "class-transformer";
-import {CreateRelationshipDto} from "./create-relationship.dto";
-import {CreateTechniqueDto} from "./create-technique.dto";
-import {LifecycleClass} from "../schemas/lifecycle.schema";
+import { ApiProperty, ApiTags, getSchemaPath } from "@nestjs/swagger";
+import { DatasetType } from "../dataset-type.enum";
+import { Type } from "class-transformer";
+import { CreateRelationshipDto } from "./create-relationship.dto";
+import { CreateTechniqueDto } from "./create-technique.dto";
+import { LifecycleClass } from "../schemas/lifecycle.schema";
 
 @ApiTags("datasets")
 export class CreateDatasetDto extends OwnableDto {
@@ -237,14 +237,14 @@ export class CreateDatasetDto extends OwnableDto {
 
   @ApiProperty({
     type: "array",
-    items: {$ref: getSchemaPath(TechniqueClass)},
+    items: { $ref: getSchemaPath(TechniqueClass) },
     required: false,
     default: [],
     description: "Stores the metadata information for techniques.",
   })
   @IsOptional()
   @IsArray()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateTechniqueDto)
   readonly techniques?: TechniqueClass[];
 
@@ -264,14 +264,14 @@ export class CreateDatasetDto extends OwnableDto {
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
     type: "array",
-    items: {$ref: getSchemaPath(RelationshipClass)},
+    items: { $ref: getSchemaPath(RelationshipClass) },
     required: false,
     default: [],
     description: "Stores the relationships with other datasets.",
   })
   @IsArray()
   @IsOptional()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateRelationshipDto)
   readonly relationships?: RelationshipClass[];
 

@@ -7,18 +7,18 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
-import {InjectModel} from "@nestjs/mongoose";
-import {FilterQuery, Model} from "mongoose";
-import {CreatePolicyDto} from "./dto/create-policy.dto";
-import {UpdatePolicyDto} from "./dto/update-policy.dto";
-import {Policy, PolicyDocument} from "./schemas/policy.schema";
-import {Request} from "express";
-import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
-import {UsersService} from "src/users/users.service";
-import {IPolicyFilter} from "./interfaces/policy-filters.interface";
-import {addCreatedByFields, addUpdatedByField} from "src/common/utils";
-import {REQUEST} from "@nestjs/core";
+import { ConfigService } from "@nestjs/config";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
+import { CreatePolicyDto } from "./dto/create-policy.dto";
+import { UpdatePolicyDto } from "./dto/update-policy.dto";
+import { Policy, PolicyDocument } from "./schemas/policy.schema";
+import { Request } from "express";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { UsersService } from "src/users/users.service";
+import { IPolicyFilter } from "./interfaces/policy-filters.interface";
+import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
+import { REQUEST } from "@nestjs/core";
 
 @Injectable()
 export class PoliciesService implements OnModuleInit {
@@ -111,7 +111,7 @@ export class PoliciesService implements OnModuleInit {
     }
     if (filter.order) {
       const [field, direction] = filter.order.split(":");
-      sort = {[field]: direction};
+      sort = { [field]: direction };
     }
     return this.policyModel
       .find(whereFilter)
@@ -121,9 +121,9 @@ export class PoliciesService implements OnModuleInit {
       .exec();
   }
 
-  async count(where: FilterQuery<PolicyDocument>): Promise<{count: number}> {
+  async count(where: FilterQuery<PolicyDocument>): Promise<{ count: number }> {
     const count = await this.policyModel.count(where).exec();
-    return {count};
+    return { count };
   }
 
   async findOne(filter: FilterQuery<PolicyDocument>): Promise<Policy | null> {
@@ -184,7 +184,7 @@ export class PoliciesService implements OnModuleInit {
           try {
             // allow all functional users
             return await this.policyModel
-              .updateOne({ownerGroup}, data, {new: true})
+              .updateOne({ ownerGroup }, data, { new: true })
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();
@@ -203,7 +203,7 @@ export class PoliciesService implements OnModuleInit {
 
           try {
             return await this.policyModel
-              .updateOne({ownerGroup}, data, {new: true})
+              .updateOne({ ownerGroup }, data, { new: true })
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();
@@ -211,7 +211,7 @@ export class PoliciesService implements OnModuleInit {
         }
       }),
     );
-    return {message: "successful policy update"};
+    return { message: "successful policy update" };
   }
 
   async addDefaultPolicy(
@@ -221,7 +221,7 @@ export class PoliciesService implements OnModuleInit {
     tapeRedundancy: string,
     policyUsername: string | null = null,
   ) {
-    const policy = await this.policyModel.findOne({ownerGroup}).exec();
+    const policy = await this.policyModel.findOne({ ownerGroup }).exec();
 
     if (policy) {
       return;
@@ -262,7 +262,7 @@ export class PoliciesService implements OnModuleInit {
     ownerGroup: string,
     email: string,
   ): Promise<boolean> {
-    const policy = await this.policyModel.findOne({ownerGroup}).exec();
+    const policy = await this.policyModel.findOne({ ownerGroup }).exec();
 
     if (!policy) {
       return false;

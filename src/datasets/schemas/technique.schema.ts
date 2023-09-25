@@ -1,6 +1,6 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {ApiProperty} from "@nestjs/swagger";
-import {Document} from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
+import { Document } from "mongoose";
 
 export type TechniqueDocument = TechniqueClass & Document;
 
@@ -12,7 +12,7 @@ export class TechniqueClass {
     description:
       "Persistent Identifier of the technique. Usually it is a UUIDv4.",
   })
-  @Prop({type: String, required: true, sparse: true})
+  @Prop({ type: String, required: true, sparse: true })
   pid: string;
 
   @ApiProperty({
@@ -20,7 +20,7 @@ export class TechniqueClass {
     required: true,
     description: "The name of the technique.",
   })
-  @Prop({type: String, required: true})
+  @Prop({ type: String, required: true })
   name: string;
 }
 

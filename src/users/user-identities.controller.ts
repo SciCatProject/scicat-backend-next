@@ -8,16 +8,16 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiTags} from "@nestjs/swagger";
-import {Action} from "src/casl/action.enum";
-import {AppAbility, CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {UserIdentity} from "./schemas/user-identity.schema";
-import {UserIdentitiesService} from "./user-identities.service";
-import {Request} from "express";
-import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
-import {User} from "./schemas/user.schema";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Action } from "src/casl/action.enum";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { UserIdentity } from "./schemas/user-identity.schema";
+import { UserIdentitiesService } from "./user-identities.service";
+import { Request } from "express";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { User } from "./schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiTags("user identities")
@@ -63,7 +63,7 @@ export class UserIdentitiesController {
       ability.can(Action.UserReadOwn, User)
     ) {
       // this user can only see his/her user identity
-      filter = {userId: authenticatedUser._id, ...filter};
+      filter = { userId: authenticatedUser._id, ...filter };
     }
 
     const identity = (await this.userIdentitiesService.findOne(

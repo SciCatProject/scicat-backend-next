@@ -1,11 +1,11 @@
-import {Injectable, Inject, Scope} from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
-import {REQUEST} from "@nestjs/core";
-import {Request} from "express";
-import {InjectModel} from "@nestjs/mongoose";
-import {FilterQuery, Model, QueryOptions} from "mongoose";
-import {JWTUser} from "src/auth/interfaces/jwt-user.interface";
-import {IFilters} from "src/common/interfaces/common.interface";
+import { Injectable, Inject, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -13,13 +13,13 @@ import {
   mapScientificQuery,
   parseLimitFilters,
 } from "src/common/utils";
-import {CreateSampleDto} from "./dto/create-sample.dto";
-import {UpdateSampleDto} from "./dto/update-sample.dto";
-import {ISampleFields} from "./interfaces/sample-filters.interface";
-import {SampleField} from "./sample-field.enum";
-import {SampleClass, SampleDocument} from "./schemas/sample.schema";
+import { CreateSampleDto } from "./dto/create-sample.dto";
+import { UpdateSampleDto } from "./dto/update-sample.dto";
+import { ISampleFields } from "./interfaces/sample-filters.interface";
+import { SampleField } from "./sample-field.enum";
+import { SampleClass, SampleDocument } from "./schemas/sample.schema";
 
-@Injectable({scope: Scope.REQUEST})
+@Injectable({ scope: Scope.REQUEST })
 export class SamplesService {
   constructor(
     @InjectModel(SampleClass.name) private sampleModel: Model<SampleDocument>,
@@ -39,7 +39,7 @@ export class SamplesService {
     filter: IFilters<SampleDocument, ISampleFields>,
   ): Promise<SampleClass[]> {
     const whereFilter: FilterQuery<SampleDocument> = filter.where ?? {};
-    const {limit, skip, sort} = parseLimitFilters(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.sampleModel
       .find(whereFilter)
@@ -56,7 +56,7 @@ export class SamplesService {
     let filterQuery: FilterQuery<SampleDocument> = {};
 
     if (filter) {
-      const {limit, skip, sort} = parseLimitFilters(filter.limits);
+      const { limit, skip, sort } = parseLimitFilters(filter.limits);
       modifiers.limit = limit;
       modifiers.skip = skip;
       modifiers.sort = sort;
@@ -67,7 +67,7 @@ export class SamplesService {
           if (key === SampleField.Text) {
             const text = fields[key];
             if (text) {
-              filterQuery.$text = {$search: text};
+              filterQuery.$text = { $search: text };
             }
           } else if (key === SampleField.Characteristics) {
             filterQuery = {

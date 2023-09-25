@@ -1,4 +1,4 @@
-import {Prop, raw, Schema, SchemaFactory} from "@nestjs/mongoose";
+import { Prop, raw, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 export type MessageContentDocument = MessageContent & Document;
 
@@ -9,7 +9,7 @@ export class MessageContent {
 
   @Prop(
     raw({
-      thumbnail_url: {type: String},
+      thumbnail_url: { type: String },
     }),
   )
   info?: Record<string, string>;

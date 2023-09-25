@@ -1,9 +1,9 @@
 import request from "supertest";
-import {Test} from "@nestjs/testing";
-import {INestApplication} from "@nestjs/common";
-import {AppModule} from "src/app.module";
-import {UsersService} from "src/users/users.service";
-import {User} from "src/users/schemas/user.schema";
+import { Test } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import { AppModule } from "src/app.module";
+import { UsersService } from "src/users/users.service";
+import { User } from "src/users/schemas/user.schema";
 
 describe("Access groups test", () => {
   let app: INestApplication;
@@ -62,7 +62,7 @@ describe("Access groups test", () => {
     return request(app.getHttpServer())
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
-      .set({Authorization: `Bearer ${loginResponse.body.id}`})
+      .set({ Authorization: `Bearer ${loginResponse.body.id}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -114,7 +114,7 @@ describe("Access groups test", () => {
     return request(app.getHttpServer())
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
-      .set({Authorization: `Bearer ${loginResponse.body.id}`})
+      .set({ Authorization: `Bearer ${loginResponse.body.id}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
