@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import config from "../config/frontend.config.json";
 import theme from "../config/frontend.theme.json";
 

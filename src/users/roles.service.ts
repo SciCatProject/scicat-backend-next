@@ -1,10 +1,10 @@
-import {Injectable, Logger, OnModuleInit} from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {FilterQuery, Model} from "mongoose";
-import {CreateRoleDto} from "./dto/create-role.dto";
-import {CreateUserRoleDto} from "./dto/create-user-role.dto";
-import {Role, RoleDocument} from "./schemas/role.schema";
-import {UserRole, UserRoleDocument} from "./schemas/user-role.schema";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
+import { CreateRoleDto } from "./dto/create-role.dto";
+import { CreateUserRoleDto } from "./dto/create-user-role.dto";
+import { Role, RoleDocument } from "./schemas/role.schema";
+import { UserRole, UserRoleDocument } from "./schemas/user-role.schema";
 
 @Injectable()
 export class RolesService implements OnModuleInit {
@@ -40,10 +40,10 @@ export class RolesService implements OnModuleInit {
   }
 
   async findOrCreate(createRoleDto: CreateRoleDto): Promise<Role | null> {
-    const roleExists = await this.roleExists({name: createRoleDto.name});
+    const roleExists = await this.roleExists({ name: createRoleDto.name });
 
     if (roleExists) {
-      return await this.findOne({name: createRoleDto.name});
+      return await this.findOne({ name: createRoleDto.name });
     }
 
     return await this.create(createRoleDto);
@@ -66,8 +66,8 @@ export class RolesService implements OnModuleInit {
   ): Promise<UserRole | null> {
     const filter: FilterQuery<UserRoleDocument> = {
       $and: [
-        {userId: createUserRoleDto.userId},
-        {roleId: createUserRoleDto.roleId},
+        { userId: createUserRoleDto.userId },
+        { roleId: createUserRoleDto.roleId },
       ],
     };
     const userRoleExists = await this.userRoleExists(filter);
@@ -101,7 +101,7 @@ export class RolesService implements OnModuleInit {
     return await Promise.all(
       userRoles.map(
         async (userRole) =>
-          await this.roleModel.findOne({_id: userRole.roleId}),
+          await this.roleModel.findOne({ _id: userRole.roleId }),
       ),
     );
   }

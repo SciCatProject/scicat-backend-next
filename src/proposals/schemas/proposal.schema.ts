@@ -1,11 +1,11 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {ApiProperty, getSchemaPath} from "@nestjs/swagger";
-import {Document} from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { Document } from "mongoose";
 import {
   Attachment,
   AttachmentSchema,
 } from "src/attachments/schemas/attachment.schema";
-import {OwnableClass} from "src/common/schemas/ownable.schema";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
   MeasurementPeriodClass,
   MeasurementPeriodSchema,
@@ -165,4 +165,4 @@ export class ProposalClass extends OwnableClass {
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
 
-ProposalSchema.index({"$**": "text"});
+ProposalSchema.index({ "$**": "text" });

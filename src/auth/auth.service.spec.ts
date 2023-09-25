@@ -1,8 +1,8 @@
-import {ConfigService} from "@nestjs/config";
-import {JwtService} from "@nestjs/jwt";
-import {Test, TestingModule} from "@nestjs/testing";
-import {UsersService} from "src/users/users.service";
-import {AuthService} from "./auth.service";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { Test, TestingModule } from "@nestjs/testing";
+import { UsersService } from "src/users/users.service";
+import { AuthService } from "./auth.service";
 
 class JwtServiceMock {}
 
@@ -16,8 +16,8 @@ describe("AuthService", () => {
       providers: [
         AuthService,
         ConfigService,
-        {provide: JwtService, useClass: JwtServiceMock},
-        {provide: UsersService, useClass: UsersServiceMock},
+        { provide: JwtService, useClass: JwtServiceMock },
+        { provide: UsersService, useClass: UsersServiceMock },
       ],
     }).compile();
 

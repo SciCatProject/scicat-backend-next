@@ -1,5 +1,5 @@
-import {MailerService} from "@nestjs-modules/mailer";
-import {Injectable, Logger} from "@nestjs/common";
+import { MailerService } from "@nestjs-modules/mailer";
+import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
 export class MailService {
@@ -16,10 +16,10 @@ export class MailService {
       Logger.log("Sending email to: " + to, "Utils.sendMail");
       await this.mailerService.sendMail({
         to,
-        ...(cc && {cc}),
-        ...(subject && {subject}),
-        ...(html && {html}),
-        ...(mailText && {mailText}),
+        ...(cc && { cc }),
+        ...(subject && { subject }),
+        ...(html && { html }),
+        ...(mailText && { mailText }),
       });
     } catch (error) {
       Logger.error("Failed sending email to: " + to, "MailService.sendMail");

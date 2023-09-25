@@ -1,12 +1,12 @@
-import {Test, TestingModule} from "@nestjs/testing";
-import {AuthService} from "src/auth/auth.service";
-import {CaslModule} from "src/casl/casl.module";
-import {UsersController} from "./users.controller";
-import {UsersService} from "./users.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { AuthService } from "src/auth/auth.service";
+import { CaslModule } from "src/casl/casl.module";
+import { UsersController } from "./users.controller";
+import { UsersService } from "./users.service";
 
 class UsersServiceMock {
   findByIdUserIdentity(id: string) {
-    return {id};
+    return { id };
   }
 }
 
@@ -20,8 +20,8 @@ describe("UsersController", () => {
       controllers: [UsersController],
       imports: [CaslModule],
       providers: [
-        {provide: AuthService, useClass: AuthServiceMock},
-        {provide: UsersService, useClass: UsersServiceMock},
+        { provide: AuthService, useClass: AuthServiceMock },
+        { provide: UsersService, useClass: UsersServiceMock },
       ],
     }).compile();
 

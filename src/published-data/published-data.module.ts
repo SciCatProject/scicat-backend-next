@@ -1,17 +1,17 @@
-import {Module} from "@nestjs/common";
-import {PublishedDataService} from "./published-data.service";
-import {PublishedDataController} from "./published-data.controller";
-import {MongooseModule} from "@nestjs/mongoose";
+import { Module } from "@nestjs/common";
+import { PublishedDataService } from "./published-data.service";
+import { PublishedDataController } from "./published-data.controller";
+import { MongooseModule } from "@nestjs/mongoose";
 import {
   PublishedData,
   PublishedDataSchema,
 } from "./schemas/published-data.schema";
-import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {AttachmentsModule} from "src/attachments/attachments.module";
-import {DatasetsModule} from "src/datasets/datasets.module";
-import {ProposalsModule} from "src/proposals/proposals.module";
-import {ConfigModule, ConfigService} from "@nestjs/config";
-import {HttpModule} from "@nestjs/axios";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { ProposalsModule } from "src/proposals/proposals.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { HttpModule } from "@nestjs/axios";
 
 @Module({
   imports: [

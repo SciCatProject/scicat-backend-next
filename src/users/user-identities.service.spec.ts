@@ -1,8 +1,8 @@
-import {getModelToken} from "@nestjs/mongoose";
-import {Test, TestingModule} from "@nestjs/testing";
-import {Model} from "mongoose";
-import {UserIdentity} from "./schemas/user-identity.schema";
-import {UserIdentitiesService} from "./user-identities.service";
+import { getModelToken } from "@nestjs/mongoose";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Model } from "mongoose";
+import { UserIdentity } from "./schemas/user-identity.schema";
+import { UserIdentitiesService } from "./user-identities.service";
 
 const mockUserIdentity: UserIdentity = {
   authStrategy: "test",

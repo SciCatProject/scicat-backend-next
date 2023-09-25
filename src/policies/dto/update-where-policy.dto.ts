@@ -1,6 +1,6 @@
-import {Type} from "class-transformer";
-import {IsObject, IsOptional, IsString} from "class-validator";
-import {UpdatePolicyDto} from "./update-policy.dto";
+import { Type } from "class-transformer";
+import { IsObject, IsOptional, IsString } from "class-validator";
+import { UpdatePolicyDto } from "./update-policy.dto";
 
 export class UpdateWherePolicyDto {
   @IsString()

@@ -1,11 +1,11 @@
-import {Test, TestingModule} from "@nestjs/testing";
-import {AttachmentsService} from "src/attachments/attachments.service";
-import {CaslModule} from "src/casl/casl.module";
-import {DatablocksService} from "src/datablocks/datablocks.service";
-import {OrigDatablocksService} from "src/origdatablocks/origdatablocks.service";
-import {DatasetsController} from "./datasets.controller";
-import {DatasetsService} from "./datasets.service";
-import {LogbooksService} from "src/logbooks/logbooks.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { CaslModule } from "src/casl/casl.module";
+import { DatablocksService } from "src/datablocks/datablocks.service";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { DatasetsController } from "./datasets.controller";
+import { DatasetsService } from "./datasets.service";
+import { LogbooksService } from "src/logbooks/logbooks.service";
 
 class AttachmentsServiceMock {}
 
@@ -25,11 +25,11 @@ describe("DatasetsController", () => {
       controllers: [DatasetsController],
       imports: [CaslModule],
       providers: [
-        {provide: AttachmentsService, useClass: AttachmentsServiceMock},
-        {provide: LogbooksService, useClass: LogbooksServiceMock},
-        {provide: DatablocksService, useClass: DatablocksServiceMock},
-        {provide: DatasetsService, useClass: DatasetsServiceMock},
-        {provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock},
+        { provide: AttachmentsService, useClass: AttachmentsServiceMock },
+        { provide: LogbooksService, useClass: LogbooksServiceMock },
+        { provide: DatablocksService, useClass: DatablocksServiceMock },
+        { provide: DatasetsService, useClass: DatasetsServiceMock },
+        { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
       ],
     }).compile();
 

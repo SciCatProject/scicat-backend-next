@@ -1,12 +1,12 @@
-import {Module} from "@nestjs/common";
-import {SamplesService} from "./samples.service";
-import {SamplesController} from "./samples.controller";
-import {AttachmentsModule} from "src/attachments/attachments.module";
-import {DatasetsModule} from "src/datasets/datasets.module";
-import {MongooseModule} from "@nestjs/mongoose";
-import {SampleClass, SampleSchema} from "./schemas/sample.schema";
-import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {ConfigModule} from "@nestjs/config";
+import { Module } from "@nestjs/common";
+import { SamplesService } from "./samples.service";
+import { SamplesController } from "./samples.controller";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
+import { MongooseModule } from "@nestjs/mongoose";
+import { SampleClass, SampleSchema } from "./schemas/sample.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [

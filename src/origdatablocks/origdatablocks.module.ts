@@ -1,13 +1,13 @@
-import {forwardRef, Module} from "@nestjs/common";
-import {OrigDatablocksService} from "./origdatablocks.service";
-import {MongooseModule} from "@nestjs/mongoose";
+import { forwardRef, Module } from "@nestjs/common";
+import { OrigDatablocksService } from "./origdatablocks.service";
+import { MongooseModule } from "@nestjs/mongoose";
 import {
   OrigDatablock,
   OrigDatablockSchema,
 } from "./schemas/origdatablock.schema";
-import {OrigDatablocksController} from "./origdatablocks.controller";
-import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {DatasetsModule} from "src/datasets/datasets.module";
+import { OrigDatablocksController } from "./origdatablocks.controller";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [

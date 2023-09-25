@@ -1,4 +1,4 @@
-import {Type} from "class-transformer";
+import { Type } from "class-transformer";
 import {
   ArrayNotEmpty,
   IsArray,
@@ -8,10 +8,10 @@ import {
   IsNotEmpty,
   ValidateNested,
 } from "class-validator";
-import {DataFileDto} from "src/common/dto/datafile.dto";
-import {OwnableDto} from "src/common/dto/ownable.dto";
-import {DataFile} from "../../common/schemas/datafile.schema";
-import {ApiProperty, getSchemaPath} from "@nestjs/swagger";
+import { DataFileDto } from "src/common/dto/datafile.dto";
+import { OwnableDto } from "src/common/dto/ownable.dto";
+import { DataFile } from "../../common/schemas/datafile.schema";
+import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 
 export class CreateOrigDatablockDto extends OwnableDto {
   @ApiProperty({
@@ -44,13 +44,13 @@ export class CreateOrigDatablockDto extends OwnableDto {
 
   @ApiProperty({
     type: "array",
-    items: {$ref: getSchemaPath(DataFile)},
+    items: { $ref: getSchemaPath(DataFile) },
     required: true,
     description: "List of the files contained in this orig datablock.",
   })
   @IsArray()
   @ArrayNotEmpty()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => DataFileDto)
   readonly dataFileList: DataFile[];
 

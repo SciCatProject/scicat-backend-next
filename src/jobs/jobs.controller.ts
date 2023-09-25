@@ -12,24 +12,24 @@ import {
   HttpException,
   Req,
 } from "@nestjs/common";
-import {Request} from "express";
-import {FilterQuery} from "mongoose";
-import {JobsService} from "./jobs.service";
-import {CreateJobDto} from "./dto/create-job.dto";
-import {UpdateJobDto} from "./dto/update-job.dto";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
-import {Job, JobDocument} from "./schemas/job.schema";
-import {ApiBearerAuth, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {IFacets, IFilters} from "src/common/interfaces/common.interface";
-import {DatasetsService} from "src/datasets/datasets.service";
-import {JobType, DatasetState} from "./job-type.enum";
+import { Request } from "express";
+import { FilterQuery } from "mongoose";
+import { JobsService } from "./jobs.service";
+import { CreateJobDto } from "./dto/create-job.dto";
+import { UpdateJobDto } from "./dto/update-job.dto";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
+import { Job, JobDocument } from "./schemas/job.schema";
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { JobType, DatasetState } from "./job-type.enum";
 import configuration from "src/config/configuration";
-import {EventEmitter2} from "@nestjs/event-emitter";
-import {OrigDatablocksService} from "src/origdatablocks/origdatablocks.service";
-import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -204,14 +204,14 @@ export class JobsController {
           );
           // Get a list of requested files that is not in originDataBlocks
           const checkResults = datasetsToCheck.reduce(
-            (acc: {pid: string; nonExistFiles: string[]}[], x) => {
+            (acc: { pid: string; nonExistFiles: string[] }[], x) => {
               const pid = x.pid;
               const referenceFiles = result[pid];
               const nonExistFiles = x.files.filter(
                 (f) => !referenceFiles.has(f),
               );
               if (nonExistFiles.length > 0) {
-                acc.push({pid, nonExistFiles});
+                acc.push({ pid, nonExistFiles });
               }
               return acc;
             },
@@ -273,7 +273,7 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<Job> {
-    const jobToCreate = {...createJobDto, jobStatusMessage: "jobSubmitted"};
+    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
     await this.validateJob(jobToCreate, request);
 
     const createdJob = await this.jobsService.create(jobToCreate);
@@ -281,7 +281,7 @@ export class JobsController {
     if (createdJob) {
       // Emit event so facilities can trigger custom code
       this.publishJob();
-      this.eventEmitter.emit("jobCreated", {instance: createdJob});
+      this.eventEmitter.emit("jobCreated", { instance: createdJob });
     }
 
     return createdJob;
@@ -307,7 +307,7 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
   @Get("/fullquery")
   async fullquery(
-    @Query() filters: {fields?: string; limits?: string},
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<Job[]> {
     const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -320,7 +320,7 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
   @Get("/fullfacet")
   async fullfacet(
-    @Query() filters: {fields?: string; facets?: string},
+    @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
     const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -333,7 +333,7 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<Job | null> {
-    return this.jobsService.findOne({_id: id});
+    return this.jobsService.findOne({ _id: id });
   }
 
   @UseGuards(PoliciesGuard)
@@ -343,12 +343,12 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<Job | null> {
-    const updatedJob = await this.jobsService.update({_id: id}, updateJobDto);
+    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 
     if (updatedJob) {
       this.eventEmitter.emit("jobUpdated", {
         instance: updatedJob,
-        hookState: {oldData: [updatedJob]},
+        hookState: { oldData: [updatedJob] },
       });
     }
 
@@ -359,6 +359,6 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Job))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.jobsService.remove({_id: id});
+    return this.jobsService.remove({ _id: id });
   }
 }

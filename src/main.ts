@@ -1,14 +1,14 @@
 import session from "express-session";
-import {json} from "body-parser";
-import {NestFactory} from "@nestjs/core";
+import { json } from "body-parser";
+import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
   SwaggerCustomOptions,
   SwaggerModule,
 } from "@nestjs/swagger";
-import {AppModule} from "./app.module";
-import {Logger, ValidationPipe} from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
+import { AppModule } from "./app.module";
+import { Logger, ValidationPipe } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -61,7 +61,7 @@ async function bootstrap() {
     }),
   );
 
-  app.use(json({limit: "16mb"}));
+  app.use(json({ limit: "16mb" }));
 
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
     ConfigService,

@@ -1,5 +1,5 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {Document} from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export type UserProfileDocument = UserProfile & Document;
 
@@ -20,10 +20,10 @@ export class UserProfile {
   @Prop()
   id?: string;
 
-  @Prop({type: [Object]})
+  @Prop({ type: [Object] })
   emails?: Record<string, string>[];
 
-  @Prop({type: [String]})
+  @Prop({ type: [String] })
   accessGroups: string[];
 }
 

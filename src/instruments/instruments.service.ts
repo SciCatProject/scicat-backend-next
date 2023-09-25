@@ -1,11 +1,11 @@
-import {Injectable} from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {FilterQuery, Model} from "mongoose";
-import {IFilters} from "src/common/interfaces/common.interface";
-import {parseLimitFilters} from "src/common/utils";
-import {CreateInstrumentDto} from "./dto/create-instrument.dto";
-import {UpdateInstrumentDto} from "./dto/update-instrument.dto";
-import {Instrument, InstrumentDocument} from "./schemas/instrument.schema";
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { FilterQuery, Model } from "mongoose";
+import { IFilters } from "src/common/interfaces/common.interface";
+import { parseLimitFilters } from "src/common/utils";
+import { CreateInstrumentDto } from "./dto/create-instrument.dto";
+import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
+import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 
 @Injectable()
 export class InstrumentsService {
@@ -23,7 +23,7 @@ export class InstrumentsService {
     const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<InstrumentDocument> =
       filter.fields ?? {};
-    const {limit, skip, sort} = parseLimitFilters(filter.limits);
+    const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     const instrumentPromise = this.instrumentModel
       .find(whereFilter, fieldsProjection)
@@ -51,7 +51,7 @@ export class InstrumentsService {
     updateInstrumentDto: UpdateInstrumentDto,
   ): Promise<Instrument | null> {
     return this.instrumentModel
-      .findOneAndUpdate(filter, updateInstrumentDto, {new: true})
+      .findOneAndUpdate(filter, updateInstrumentDto, { new: true })
       .exec();
   }
 

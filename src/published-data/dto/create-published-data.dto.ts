@@ -1,4 +1,4 @@
-import {IsDateString, IsOptional, IsString, IsNumber} from "class-validator";
+import { IsDateString, IsOptional, IsString, IsNumber } from "class-validator";
 
 export class CreatePublishedDataDto {
   @IsString()

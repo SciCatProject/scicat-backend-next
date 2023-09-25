@@ -1,11 +1,11 @@
-import {forwardRef, Module} from "@nestjs/common";
-import {ProposalsService} from "./proposals.service";
-import {ProposalsController} from "./proposals.controller";
-import {MongooseModule} from "@nestjs/mongoose";
-import {ProposalClass, ProposalSchema} from "./schemas/proposal.schema";
-import {CaslAbilityFactory} from "src/casl/casl-ability.factory";
-import {AttachmentsModule} from "src/attachments/attachments.module";
-import {DatasetsModule} from "src/datasets/datasets.module";
+import { forwardRef, Module } from "@nestjs/common";
+import { ProposalsService } from "./proposals.service";
+import { ProposalsController } from "./proposals.controller";
+import { MongooseModule } from "@nestjs/mongoose";
+import { ProposalClass, ProposalSchema } from "./schemas/proposal.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AttachmentsModule } from "src/attachments/attachments.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [

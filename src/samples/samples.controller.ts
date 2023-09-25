@@ -12,9 +12,9 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
-import {SamplesService} from "./samples.service";
-import {CreateSampleDto} from "./dto/create-sample.dto";
-import {UpdateSampleDto} from "./dto/update-sample.dto";
+import { SamplesService } from "./samples.service";
+import { CreateSampleDto } from "./dto/create-sample.dto";
+import { UpdateSampleDto } from "./dto/update-sample.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,23 +25,23 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
 import {
   SampleClass,
   SampleDocument,
   SampleWithAttachmentsAndDatasets,
 } from "./schemas/sample.schema";
-import {Attachment} from "src/attachments/schemas/attachment.schema";
-import {CreateAttachmentDto} from "src/attachments/dto/create-attachment.dto";
-import {AttachmentsService} from "src/attachments/attachments.service";
-import {DatasetClass} from "src/datasets/schemas/dataset.schema";
-import {DatasetsService} from "src/datasets/datasets.service";
-import {ISampleFields} from "./interfaces/sample-filters.interface";
-import {FormatPhysicalQuantitiesInterceptor} from "src/common/interceptors/format-physical-quantities.interceptor";
-import {IFilters} from "src/common/interfaces/common.interface";
+import { Attachment } from "src/attachments/schemas/attachment.schema";
+import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { ISampleFields } from "./interfaces/sample-filters.interface";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { IFilters } from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
@@ -155,7 +155,7 @@ export class SamplesController {
     description: "Return samples requested",
   })
   async fullquery(
-    @Query() filters: {fields?: string; limits?: string},
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<SampleClass[]> {
     const parsedFilters = {
       fields: JSON.parse(filters.fields ?? "{}"),
@@ -190,7 +190,9 @@ export class SamplesController {
     isArray: true,
     description: "Return sample metadata keys requested",
   })
-  async metadataKeys(@Query() {filters}: {filters: string}): Promise<string[]> {
+  async metadataKeys(
+    @Query() { filters }: { filters: string },
+  ): Promise<string[]> {
     const parsedInput = JSON.parse(filters ?? "{}");
 
     const parsedFilters = {
@@ -236,7 +238,7 @@ export class SamplesController {
     if (sample) {
       const includeFilters = jsonFilters.include ?? [];
       await Promise.all(
-        includeFilters.map(async ({relation}) => {
+        includeFilters.map(async ({ relation }) => {
           switch (relation) {
             case "attachments": {
               sample.attachments = await this.attachmentsService.findAll({
@@ -246,7 +248,7 @@ export class SamplesController {
             }
             case "datasets": {
               sample.datasets = await this.datasetsService.findAll({
-                where: {sampleId: sample.sampleId},
+                where: { sampleId: sample.sampleId },
               });
               break;
             }
@@ -277,7 +279,7 @@ export class SamplesController {
     description: "Return sample with id specified",
   })
   async findById(@Param("id") id: string): Promise<SampleClass | null> {
-    return this.samplesService.findOne({sampleId: id});
+    return this.samplesService.findOne({ sampleId: id });
   }
 
   // PATCH /samples/:id
@@ -315,7 +317,7 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() updateSampleDto: UpdateSampleDto,
   ): Promise<SampleClass | null> {
-    return this.samplesService.update({sampleId: id}, updateSampleDto);
+    return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
 
   // DELETE /samples/:id
@@ -338,7 +340,7 @@ export class SamplesController {
     description: "No value is returned",
   })
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.samplesService.remove({sampleId: id});
+    return this.samplesService.remove({ sampleId: id });
   }
 
   // POST /samples/:id/attachments
@@ -371,7 +373,7 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
-    const sample = await this.samplesService.findOne({sampleId: id});
+    const sample = await this.samplesService.findOne({ sampleId: id });
     if (sample) {
       const createAttachment: CreateAttachmentDto = {
         ...createAttachmentDto,
@@ -404,7 +406,7 @@ export class SamplesController {
     description: "Return attachments related with sample id specified",
   })
   async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
-    return this.attachmentsService.findAll({sampleId: id});
+    return this.attachmentsService.findAll({ sampleId: id });
   }
 
   /*
@@ -537,7 +539,7 @@ export class SamplesController {
   async findAllDatasets(
     @Param("id") sampleId: string,
   ): Promise<DatasetClass[] | null> {
-    const cond = {where: {sampleId: sampleId}};
+    const cond = { where: { sampleId: sampleId } };
     return this.datasetsService.findAll(cond);
   }
 

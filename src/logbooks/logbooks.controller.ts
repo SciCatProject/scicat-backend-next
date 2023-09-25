@@ -6,14 +6,14 @@ import {
   UseInterceptors,
   Query,
 } from "@nestjs/common";
-import {LogbooksService} from "./logbooks.service";
-import {ApiBearerAuth, ApiTags} from "@nestjs/swagger";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
-import {Logbook} from "./schemas/logbook.schema";
-import {UsersLogbooksInterceptor} from "./interceptors/users-logbooks.interceptor";
+import { LogbooksService } from "./logbooks.service";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
+import { Logbook } from "./schemas/logbook.schema";
+import { UsersLogbooksInterceptor } from "./interceptors/users-logbooks.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("logbooks")

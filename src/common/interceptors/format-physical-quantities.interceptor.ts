@@ -4,8 +4,8 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import {Observable} from "rxjs";
-import {appendSIUnitToPhysicalQuantity} from "../utils";
+import { Observable } from "rxjs";
+import { appendSIUnitToPhysicalQuantity } from "../utils";
 
 @Injectable()
 export class FormatPhysicalQuantitiesInterceptor<T> implements NestInterceptor {

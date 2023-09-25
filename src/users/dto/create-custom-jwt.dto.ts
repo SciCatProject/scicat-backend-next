@@ -1,7 +1,7 @@
-import {JwtSignOptions} from "@nestjs/jwt";
-import {ApiProperty} from "@nestjs/swagger";
-import {Type} from "class-transformer";
-import {IsOptional, IsString} from "class-validator";
+import { JwtSignOptions } from "@nestjs/jwt";
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsOptional, IsString } from "class-validator";
 
 export class CreateCustomJwt implements JwtSignOptions {
   @ApiProperty({

@@ -1,7 +1,7 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {ApiProperty} from "@nestjs/swagger";
-import {Document} from "mongoose";
-import {v4 as uuidv4} from "uuid";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiProperty } from "@nestjs/swagger";
+import { Document } from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 export type InstrumentDocument = Instrument & Document;
 
@@ -78,4 +78,4 @@ export class Instrument {
 
 export const InstrumentSchema = SchemaFactory.createForClass(Instrument);
 
-InstrumentSchema.index({"$**": "text"});
+InstrumentSchema.index({ "$**": "text" });

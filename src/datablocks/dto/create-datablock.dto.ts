@@ -1,5 +1,5 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {Type} from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
   ArrayNotEmpty,
   IsArray,
@@ -9,9 +9,9 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import {DataFileDto} from "src/common/dto/datafile.dto";
-import {OwnableDto} from "src/common/dto/ownable.dto";
-import {DataFile} from "src/common/schemas/datafile.schema";
+import { DataFileDto } from "src/common/dto/datafile.dto";
+import { OwnableDto } from "src/common/dto/ownable.dto";
+import { DataFile } from "src/common/schemas/datafile.schema";
 
 export class CreateDatablockDto extends OwnableDto {
   @ApiProperty({
@@ -72,7 +72,7 @@ export class CreateDatablockDto extends OwnableDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => DataFileDto)
   readonly dataFileList: DataFile[];
 }

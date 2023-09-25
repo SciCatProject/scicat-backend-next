@@ -14,9 +14,9 @@ import {
   HttpStatus,
   NotFoundException,
 } from "@nestjs/common";
-import {PublishedDataService} from "./published-data.service";
-import {CreatePublishedDataDto} from "./dto/create-published-data.dto";
-import {UpdatePublishedDataDto} from "./dto/update-published-data.dto";
+import { PublishedDataService } from "./published-data.service";
+import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
+import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -25,10 +25,10 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
 import {
   PublishedData,
   PublishedDataDocument,
@@ -39,18 +39,18 @@ import {
   IPublishedDataFilters,
   IRegister,
 } from "./interfaces/published-data.interface";
-import {AllowAny} from "src/auth/decorators/allow-any.decorator";
-import {RegisteredInterceptor} from "./interceptors/registered.interceptor";
-import {FilterQuery} from "mongoose";
-import {DatasetsService} from "src/datasets/datasets.service";
-import {ProposalsService} from "src/proposals/proposals.service";
-import {AttachmentsService} from "src/attachments/attachments.service";
-import {existsSync, readFileSync} from "fs";
-import {HttpService} from "@nestjs/axios";
-import {ConfigService} from "@nestjs/config";
-import {firstValueFrom} from "rxjs";
-import {handleAxiosRequestError} from "src/common/utils";
-import {DatasetClass} from "src/datasets/schemas/dataset.schema";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
+import { FilterQuery } from "mongoose";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { ProposalsService } from "src/proposals/proposals.service";
+import { AttachmentsService } from "src/attachments/attachments.service";
+import { existsSync, readFileSync } from "fs";
+import { HttpService } from "@nestjs/axios";
+import { ConfigService } from "@nestjs/config";
+import { firstValueFrom } from "rxjs";
+import { handleAxiosRequestError } from "src/common/utils";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -131,7 +131,7 @@ export class PublishedDataController {
     required: false,
   })
   async count(
-    @Query() filter?: {filter: string; fields: string},
+    @Query() filter?: { filter: string; fields: string },
   ): Promise<ICount> {
     const jsonFilters: IPublishedDataFilters =
       filter && filter.filter ? JSON.parse(filter.filter) : {};
@@ -168,7 +168,7 @@ export class PublishedDataController {
   })
   async formPopulate(@Query("pid") pid: string) {
     const formData: IFormPopulateData = {};
-    const dataset = await this.datasetsService.findOne({where: {pid}});
+    const dataset = await this.datasetsService.findOne({ where: { pid } });
 
     let proposalId;
     if (dataset) {
@@ -179,7 +179,7 @@ export class PublishedDataController {
 
     let proposal;
     if (proposalId) {
-      proposal = await this.proposalsService.findOne({proposalId});
+      proposal = await this.proposalsService.findOne({ proposalId });
     }
 
     if (proposal) {
@@ -218,7 +218,7 @@ export class PublishedDataController {
   })
   @Get("/:id")
   async findOne(@Param("id") id: string): Promise<PublishedData | null> {
-    return this.publishedDataService.findOne({doi: id});
+    return this.publishedDataService.findOne({ doi: id });
   }
 
   // PATCH /publisheddata/:id
@@ -231,7 +231,10 @@ export class PublishedDataController {
     @Param("id") id: string,
     @Body() updatePublishedDataDto: UpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
-    return this.publishedDataService.update({doi: id}, updatePublishedDataDto);
+    return this.publishedDataService.update(
+      { doi: id },
+      updatePublishedDataDto,
+    );
   }
 
   // DELETE /publisheddata/:id
@@ -241,7 +244,7 @@ export class PublishedDataController {
   )
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.publishedDataService.remove({doi: id});
+    return this.publishedDataService.remove({ doi: id });
   }
 
   // POST /publisheddata/:id/register
@@ -251,7 +254,7 @@ export class PublishedDataController {
   )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
-    const publishedData = await this.publishedDataService.findOne({doi: id});
+    const publishedData = await this.publishedDataService.findOne({ doi: id });
 
     if (publishedData) {
       const data = {
@@ -268,7 +271,7 @@ export class PublishedDataController {
         publishedData.pidArray.map(async (pid) => {
           await this.datasetsService.findByIdAndUpdate(pid, {
             isPublished: true,
-            datasetlifecycle: {publishedOn: data.registeredTime},
+            datasetlifecycle: { publishedOn: data.registeredTime },
           });
         }),
       );
@@ -366,18 +369,18 @@ export class PublishedDataController {
 
         try {
           await this.publishedDataService.update(
-            {doi: publishedData.doi},
+            { doi: publishedData.doi },
             data,
           );
         } catch (error) {
           console.error(error);
         }
 
-        return res ? {doi: res.data} : null;
+        return res ? { doi: res.data } : null;
       } else if (!this.configService.get<string>("oaiProviderRoute")) {
         try {
           await this.publishedDataService.update(
-            {doi: publishedData.doi},
+            { doi: publishedData.doi },
             data,
           );
         } catch (error) {
@@ -411,14 +414,14 @@ export class PublishedDataController {
 
         try {
           await this.publishedDataService.update(
-            {doi: publishedData.doi},
+            { doi: publishedData.doi },
             data,
           );
         } catch (error) {
           console.error(error);
         }
 
-        return res ? {doi: res.data} : null;
+        return res ? { doi: res.data } : null;
       }
     }
 
@@ -436,7 +439,7 @@ export class PublishedDataController {
     @Body() data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const {_id, doi, ...publishedData} = data;
+    const { _id, doi, ...publishedData } = data;
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
@@ -475,7 +478,7 @@ export class PublishedDataController {
     }
 
     try {
-      await this.publishedDataService.update({doi: id}, publishedData);
+      await this.publishedDataService.update({ doi: id }, publishedData);
     } catch (error) {
       console.error(error);
     }

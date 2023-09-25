@@ -1,6 +1,6 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {QueryDslQueryContainer} from "@elastic/elasticsearch/lib/api/types";
-import {IDatasetFields} from "src/datasets/interfaces/dataset-filters.interface";
+import { Injectable, Logger } from "@nestjs/common";
+import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
 interface IShould {
   terms?: {
@@ -46,7 +46,7 @@ export class SearchQueryService {
   readonly textQuerySplitMethod = /[ ,]+/;
   public buildSearchQuery(searchParam: IDatasetFields) {
     try {
-      const {text = "", ...fields} = searchParam;
+      const { text = "", ...fields } = searchParam;
       const filter = this.buildFilterFields(fields);
       const should = this.buildShouldFields(fields);
       const query = this.buildTextQuery(text);
@@ -62,7 +62,7 @@ export class SearchQueryService {
     const filter: IFilter[] = [];
 
     const isPublished = fields["isPublished"] ?? false;
-    filter.push({term: {isPublished: isPublished}});
+    filter.push({ term: { isPublished: isPublished } });
 
     for (const fieldName of this.filterFields) {
       if (fields[fieldName]) {

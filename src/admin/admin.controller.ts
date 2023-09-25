@@ -1,7 +1,7 @@
-import {Controller, Get} from "@nestjs/common";
-import {ApiTags} from "@nestjs/swagger";
-import {AdminService} from "./admin.service";
-import {AllowAny} from "src/auth/decorators/allow-any.decorator";
+import { Controller, Get } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
+import { AdminService } from "./admin.service";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiTags("admin")
 @Controller("admin")

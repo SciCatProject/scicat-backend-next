@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-import {OwnableDto} from "src/common/dto/ownable.dto";
+import { OwnableDto } from "src/common/dto/ownable.dto";
 
 export class CreatePolicyDto extends OwnableDto {
   @IsArray()

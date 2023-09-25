@@ -12,9 +12,9 @@ import {
   HttpException,
   HttpStatus,
 } from "@nestjs/common";
-import {InstrumentsService} from "./instruments.service";
-import {CreateInstrumentDto} from "./dto/create-instrument.dto";
-import {UpdateInstrumentDto} from "./dto/update-instrument.dto";
+import { InstrumentsService } from "./instruments.service";
+import { CreateInstrumentDto } from "./dto/create-instrument.dto";
+import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -22,13 +22,13 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
-import {Instrument, InstrumentDocument} from "./schemas/instrument.schema";
-import {FormatPhysicalQuantitiesInterceptor} from "src/common/interceptors/format-physical-quantities.interceptor";
-import {IFilters} from "src/common/interfaces/common.interface";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
+import { AppAbility } from "src/casl/casl-ability.factory";
+import { Action } from "src/casl/action.enum";
+import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
+import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { IFilters } from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
@@ -122,7 +122,7 @@ export class InstrumentsController {
   )
   @Get(":id")
   async findById(@Param("id") pid: string): Promise<Instrument | null> {
-    return this.instrumentsService.findOne({where: {_id: pid}});
+    return this.instrumentsService.findOne({ where: { _id: pid } });
   }
 
   @UseGuards(PoliciesGuard)
@@ -139,7 +139,7 @@ export class InstrumentsController {
   ): Promise<Instrument | null> {
     try {
       const instrument = await this.instrumentsService.update(
-        {_id: id},
+        { _id: id },
         updateInstrumentDto,
       );
       return instrument;
@@ -157,6 +157,6 @@ export class InstrumentsController {
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.instrumentsService.remove({pid: id});
+    return this.instrumentsService.remove({ pid: id });
   }
 }

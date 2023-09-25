@@ -4,8 +4,8 @@ import {
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
-import {Observable} from "rxjs";
-import {updateAllTimesToUTC} from "../utils";
+import { Observable } from "rxjs";
+import { updateAllTimesToUTC } from "../utils";
 
 @Injectable()
 export class MultiUTCTimeInterceptor<T, U> implements NestInterceptor {
