@@ -12,7 +12,10 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Req,
+  ForbiddenException,
 } from "@nestjs/common";
+import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
@@ -27,7 +30,7 @@ import {
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import {
   OrigDatablock,
@@ -41,6 +44,8 @@ import { validate, ValidationError } from "class-validator";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
 import { filterDescription, filterExample } from "src/common/utils";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -49,6 +54,7 @@ export class OrigDatablocksController {
   constructor(
     private readonly origDatablocksService: OrigDatablocksService,
     private readonly datasetsService: DatasetsService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
   // POST /origdatablocks
@@ -75,12 +81,27 @@ export class OrigDatablocksController {
       "Create a new origdataset and return its representation in SciCat",
   })
   async create(
+    @Req() request: Request,
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
+    const user: JWTUser = request.user as JWTUser;
+
     const dataset = await this.datasetsService.findOne({
       where: { pid: createOrigDatablockDto.datasetId },
     });
-    if (!dataset) {
+
+    if (dataset) {
+      const datasetInstance = new DatasetClass();
+      datasetInstance.ownerGroup = dataset.ownerGroup;
+
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canUpdate = ability.can(Action.Update, datasetInstance);
+        if (!canUpdate) {
+          throw new ForbiddenException("Unauthorized access");
+        }
+      }
+    } else {
       throw new BadRequestException("Invalid datasetId");
     }
 
