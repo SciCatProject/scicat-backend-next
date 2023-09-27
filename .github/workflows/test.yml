@@ -68,7 +68,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
@@ -199,3 +198,12 @@ jobs:
         with:
           name: cypress-videos
           path: frontend/cypress/videos/
+
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ahmadnassri/action-dependabot-auto-merge@v2
+        with:
+          target: patch
+          github-token: ${{ secrets.GITHUB_TOKEN  }}
