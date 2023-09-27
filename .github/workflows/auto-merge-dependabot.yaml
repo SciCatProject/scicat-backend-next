@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Dependabot auto-merge
 
 on: pull_request_target
@@ -47,3 +48,22 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+=======
+name: Auto merge dependabot
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  auto-merge-dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        ## https://github.com/ahmadnassri/action-dependabot-auto-merge
+      - uses: ahmadnassri/action-dependabot-auto-merge@v2
+        with:
+          target: patch
+          github-token: ${{ secrets.GITHUB_TOKEN  }}
+>>>>>>> 006f3127 (fix: new action file for auto merge yaml)
