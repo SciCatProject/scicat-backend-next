@@ -65,5 +65,9 @@ jobs:
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: patch
+<<<<<<< HEAD
           github-token: ${{ secrets.GITHUB_TOKEN  }}
 >>>>>>> 006f3127 (fix: new action file for auto merge yaml)
+=======
+          github-token: ${{ secrets.DEPENDABOT_TOKEN  }}
+>>>>>>> 8a5f92e9 (update)
