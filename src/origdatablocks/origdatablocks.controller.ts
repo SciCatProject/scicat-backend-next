@@ -91,12 +91,15 @@ export class OrigDatablocksController {
     });
 
     if (dataset) {
-      const datasetInstance = new DatasetClass();
-      datasetInstance.ownerGroup = dataset.ownerGroup;
+      // NOTE: We need DatasetClass instance because casl module
+      // can not recognize the type from dataset mongo database model.
+      // If other fields are needed can be added later.
+      const newDatasetClass = new DatasetClass();
+      newDatasetClass.ownerGroup = dataset.ownerGroup;
 
       if (user) {
         const ability = this.caslAbilityFactory.createForUser(user);
-        const canUpdate = ability.can(Action.Update, datasetInstance);
+        const canUpdate = ability.can(Action.Update, newDatasetClass);
         if (!canUpdate) {
           throw new ForbiddenException("Unauthorized access");
         }
