@@ -19,10 +19,6 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      ## Git glone repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       ## NOTE: This step is only required if the repository has been configured to Require approval
       ## Checks if update-type is patch or minor, then approve if the PR status is not approved yet.
       ## Token with PR approval permission is required
