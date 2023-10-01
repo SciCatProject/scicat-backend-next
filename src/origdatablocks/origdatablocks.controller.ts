@@ -56,6 +56,39 @@ export class OrigDatablocksController {
     private readonly datasetsService: DatasetsService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+  async checkPermissionsForOrigDatablock(request: Request, id: string) {
+    const origDatablock = await this.origDatablocksService.findOne({ _id: id });
+    if (!origDatablock) {
+      throw new BadRequestException("Invalid origDatablock Id");
+    }
+
+    await this.checkPermissionsForDataset(request, origDatablock.datasetId);
+  }
+
+  async checkPermissionsForDataset(request: Request, id: string) {
+    const user: JWTUser = request.user as JWTUser;
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: id },
+    });
+    if (dataset) {
+      // NOTE: We need DatasetClass instance because casl module
+      // can not recognize the type from dataset mongo database model.
+      // If other fields are needed can be added later.
+      const newDatasetClass = new DatasetClass();
+      newDatasetClass.ownerGroup = dataset.ownerGroup;
+
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canUpdate = ability.can(Action.Update, newDatasetClass);
+        if (!canUpdate) {
+          throw new ForbiddenException("Unauthorized access");
+        }
+      }
+    } else {
+      throw new BadRequestException("Invalid datasetId");
+    }
+    return dataset;
+  }
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
@@ -84,29 +117,10 @@ export class OrigDatablocksController {
     @Req() request: Request,
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
-    const user: JWTUser = request.user as JWTUser;
-
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: createOrigDatablockDto.datasetId },
-    });
-
-    if (dataset) {
-      // NOTE: We need DatasetClass instance because casl module
-      // can not recognize the type from dataset mongo database model.
-      // If other fields are needed can be added later.
-      const newDatasetClass = new DatasetClass();
-      newDatasetClass.ownerGroup = dataset.ownerGroup;
-
-      if (user) {
-        const ability = this.caslAbilityFactory.createForUser(user);
-        const canUpdate = ability.can(Action.Update, newDatasetClass);
-        if (!canUpdate) {
-          throw new ForbiddenException("Unauthorized access");
-        }
-      }
-    } else {
-      throw new BadRequestException("Invalid datasetId");
-    }
+    const dataset = await this.checkPermissionsForDataset(
+      request,
+      createOrigDatablockDto.datasetId,
+    );
 
     createOrigDatablockDto = {
       ...createOrigDatablockDto,
@@ -368,9 +382,12 @@ export class OrigDatablocksController {
     type: OrigDatablock,
   })
   async update(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
+    await this.checkPermissionsForOrigDatablock(request, id);
+
     const origdatablock = (await this.origDatablocksService.update(
       { _id: id },
       updateOrigDatablockDto,
@@ -401,7 +418,12 @@ export class OrigDatablocksController {
     status: 200,
     description: "No value is returned",
   })
-  async remove(@Param("id") id: string): Promise<unknown> {
+  async remove(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<unknown> {
+    await this.checkPermissionsForOrigDatablock(request, id);
+
     const origdatablock = (await this.origDatablocksService.remove({
       _id: id,
     })) as OrigDatablock;
