@@ -976,6 +976,7 @@ export class CaslAbilityFactory {
     */
 =======
     }
+
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
@@ -1030,7 +1031,15 @@ export class CaslAbilityFactory {
 
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
-    can(Action.Manage, OrigDatablock, {
+
+    can(Action.Create, OrigDatablock);
+    can(Action.Read, OrigDatablock, {
+      accessGroups: { $in: user.currentGroups },
+    });
+    can(Action.Read, OrigDatablock, {
+      ownerGroup: { $in: user.currentGroups },
+    });
+    can(Action.Update, OrigDatablock, {
       ownerGroup: { $in: user.currentGroups },
     });
 
