@@ -14,6 +14,7 @@ import {
   BadRequestException,
   Req,
   ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -62,7 +63,10 @@ export class OrigDatablocksController {
       throw new BadRequestException("Invalid origDatablock Id");
     }
 
-    await this.checkPermissionsForDataset(request, origDatablock.datasetId);
+    return await this.checkPermissionsForDataset(
+      request,
+      origDatablock.datasetId,
+    );
   }
 
   async checkPermissionsForDataset(request: Request, id: string) {
@@ -224,9 +228,24 @@ export class OrigDatablocksController {
     isArray: true,
     description: "Return the orig datablocks requested",
   })
-  async findAll(@Query("filter") filter?: string): Promise<OrigDatablock[]> {
+  async findAll(
+    @Req() request: Request,
+    @Query("filter") filter?: string,
+  ): Promise<OrigDatablock[]> {
+    const user: JWTUser = request.user as JWTUser;
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       JSON.parse(filter ?? "{}");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        parsedFilters.where = parsedFilters.where ?? {};
+        parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
+        parsedFilters.where.userGroups.push(...user.currentGroups);
+      }
+    }
+
     return this.origDatablocksService.findAll(parsedFilters);
   }
 
@@ -252,10 +271,24 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
+
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -284,10 +317,23 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.Manage, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -301,12 +347,26 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet")
   async fullfacet(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.facets ?? "{}"),
     };
+
     return this.origDatablocksService.fullfacet(parsedFilters);
   }
 
@@ -317,10 +377,23 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet/files")
   async fullfacetFiles(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.facets ?? "{}"),
     };
     const getSubFieldCount = "dataFileList";
@@ -351,8 +424,34 @@ export class OrigDatablocksController {
     description: "The origdatablock requested",
     type: OrigDatablock,
   })
-  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.findOne({ _id: id });
+  async findById(
+    @Req() request: Request,
+    @Param("id")
+    id: string,
+  ): Promise<OrigDatablock | null> {
+    const user = request.user as JWTUser;
+    const filter = {
+      _id: id,
+      userGroups: [] as string[],
+    };
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        filter.userGroups.push(...user.currentGroups);
+      }
+    }
+
+    try {
+      const data = await this.origDatablocksService.findOne(filter);
+      return data;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw new ForbiddenException(error.message);
+      }
+      throw new NotFoundException(error);
+    }
   }
 
   // PATCH /origdatablocks/:id
@@ -418,12 +517,7 @@ export class OrigDatablocksController {
     status: 200,
     description: "No value is returned",
   })
-  async remove(
-    @Req() request: Request,
-    @Param("id") id: string,
-  ): Promise<unknown> {
-    await this.checkPermissionsForOrigDatablock(request, id);
-
+  async remove(@Param("id") id: string): Promise<unknown> {
     const origdatablock = (await this.origDatablocksService.remove({
       _id: id,
     })) as OrigDatablock;
