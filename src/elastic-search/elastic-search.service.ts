@@ -16,8 +16,8 @@ import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interfac
 import {
   defaultElasticSettings,
   dynamic_template,
-} from "./settings/indexSetting";
-import { datasetMappings } from "./mappings/datasetFieldMapping";
+} from "./configuration/indexSetting";
+import { datasetMappings } from "./configuration/datasetFieldMapping";
 import {
   DatasetClass,
   DatasetDocument,
@@ -66,48 +66,49 @@ export class ElasticSearchService implements OnModuleInit {
     }
 
     try {
-      await this.connect();
-
-      const defaultIndex = this.defaultIndex;
-      const isIndexExists = await this.isIndexExists(defaultIndex);
-
+      await this.retryConnection(3, 3000);
+      const isIndexExists = await this.isIndexExists(this.defaultIndex);
       if (!isIndexExists) {
-        this.createIndex(defaultIndex);
+        this.createIndex(this.defaultIndex);
       }
-
       this.connected = true;
-      Logger.log(`Elasticsearch Connected`);
+      Logger.log("Elasticsearch Connected");
     } catch (error) {
       Logger.error("onModuleInit failed-> ElasticSearchService", error);
     }
   }
-  async connect() {
-    const maxRetries = 3;
+
+  private async connect() {
+    const connection = new Client({
+      node: this.host,
+      auth: {
+        username: this.username,
+        password: this.password,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    await connection.ping();
+    this.esService = connection;
+  }
+  private async retryConnection(maxRetries: number, interval: number) {
     let retryCount = 0;
     while (maxRetries > retryCount) {
-      await sleep(5000);
+      await sleep(interval);
       try {
-        const connection = new Client({
-          node: this.host,
-          auth: {
-            username: this.username,
-            password: this.password,
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        });
-        await connection.ping();
-        this.esService = connection;
+        await this.connect();
         break;
       } catch (error) {
         Logger.error(`Retry attempt ${retryCount + 1} failed:`, error);
         retryCount++;
       }
     }
+
     if (retryCount === maxRetries) {
-      throw new Error(
-        `Max retry attempts reached for elastic search connection`,
+      throw new HttpException(
+        "Max retries reached; check Elasticsearch config.",
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

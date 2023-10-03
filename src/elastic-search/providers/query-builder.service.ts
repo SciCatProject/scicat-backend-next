@@ -1,49 +1,90 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { IFilter, IShould, ObjectType } from "../interfaces/es-common.type";
+import { FilterFields, QueryFields } from "./fields.enum";
+import { mapScientificQuery } from "src/common/utils";
+import { IScientificFilter } from "src/common/interfaces/common.interface";
 
-interface IShould {
-  terms?: {
-    [key: string]: string[] | undefined;
-  };
-}
-interface IFilter {
-  terms?: {
-    [key: string]: string[] | boolean[];
-  };
-  term?: {
-    [key: string]: boolean;
-  };
-}
-
-const addTermsFilter = (
-  fieldName: string,
-  values: unknown,
-  filterArray: IFilter[],
+export const convertToElasticSearchQuery = (
+  scientificQuery: Record<string, unknown>,
 ) => {
-  if (Array.isArray(values) && values.length > 0) {
-    filterArray.push({
-      terms: {
-        [fieldName]: values,
-      },
-    });
+  const filterArray: IFilter[] = [];
+
+  for (const key in scientificQuery) {
+    const queryObject = scientificQuery[key] as Record<string, unknown>;
+    const operation = Object.keys(queryObject)[0];
+    const value = queryObject[operation];
+    const esOperation = operation.replace("$", "");
+    const transformedSubFieldName = `${key.split(".")[0]}.${key
+      .split(".")[1]
+      .replace(/ /g, "_")
+      .toLocaleLowerCase()}.${key.split(".")[2]}`;
+    let filter = {};
+
+    if (esOperation === "eq") {
+      filter = {
+        match: { [transformedSubFieldName]: value },
+      };
+    } else {
+      filter = {
+        range: { [transformedSubFieldName]: { [esOperation]: value } },
+      };
+    }
+
+    filterArray.push(filter);
   }
+
+  return filterArray;
+};
+
+const addTermsFilter = (fieldName: string, values: unknown) => {
+  const filterArray: IFilter[] = [];
+  switch (fieldName) {
+    case FilterFields.ScientificMetadata:
+      const scientificFilterQuery = mapScientificQuery(
+        values as IScientificFilter[],
+      );
+      const esScientificFilterQuery = convertToElasticSearchQuery(
+        scientificFilterQuery,
+      );
+
+      filterArray.push({
+        nested: {
+          path: "scientificMetadata",
+          query: {
+            bool: {
+              must: esScientificFilterQuery,
+            },
+          },
+        },
+      });
+      break;
+    case FilterFields.CreationTime:
+      filterArray.push({
+        range: {
+          [fieldName]: {
+            gte: (values as ObjectType).begin,
+            lte: (values as ObjectType).end,
+          },
+        },
+      });
+      break;
+    default:
+      filterArray.push({
+        terms: {
+          [fieldName]: values as string[],
+        },
+      });
+  }
+  return filterArray;
 };
 @Injectable()
 export class SearchQueryService {
-  readonly filterFields = [
-    "keywords",
-    "pid",
-    "type",
-    "creationLocation",
-    "creationTime",
-    "ownerGroup",
-    "accessGroup",
-    "isPublished",
-    "scientificMetadata",
-  ];
-  readonly queryFields = ["datasetName", "description"];
+  readonly filterFields = [...Object.values(FilterFields)];
+  readonly queryFields = [...Object.values(QueryFields)];
   readonly textQuerySplitMethod = /[ ,]+/;
+
   public buildSearchQuery(searchParam: IDatasetFields) {
     try {
       const { text = "", ...fields } = searchParam;
@@ -57,16 +98,15 @@ export class SearchQueryService {
       throw err;
     }
   }
-
   private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
     const filter: IFilter[] = [];
 
-    const isPublished = fields["isPublished"] ?? false;
-    filter.push({ term: { isPublished: isPublished } });
+    filter.push({ term: { isPublished: fields["isPublished"] ?? false } });
 
     for (const fieldName of this.filterFields) {
       if (fields[fieldName]) {
-        addTermsFilter(fieldName, fields[fieldName], filter);
+        const additionalFilters = addTermsFilter(fieldName, fields[fieldName]);
+        filter.push(...additionalFilters);
       }
     }
 
@@ -74,52 +114,46 @@ export class SearchQueryService {
   }
 
   private buildShouldFields(fields: Partial<IDatasetFields>): IShould[] {
-    const should: IShould[] = [];
-    if ("userGroups" in fields) {
-      const userGroupsQuery = [
-        {
-          terms: {
-            ownerGroup: fields["userGroups"],
-          },
-        },
-        {
-          terms: {
-            accessGroup: fields["userGroups"],
-          },
-        },
-      ];
-      should.push(...userGroupsQuery);
-    }
-    return should;
+    return fields["userGroups"]
+      ? [
+          { terms: { ownerGroup: fields["userGroups"] } },
+          { terms: { accessGroup: fields["userGroups"] } },
+        ]
+      : [];
   }
 
   private buildTextQuery(text: string): QueryDslQueryContainer[] {
-    const query: QueryDslQueryContainer[] = [];
-    const searchTermArray = text
+    const terms = this.splitSearchText(text);
+    const wildcardQueries = this.buildWildcardQueries(terms);
+    return wildcardQueries.length > 0
+      ? [{ bool: { should: wildcardQueries, minimum_should_match: 1 } }]
+      : [];
+  }
+
+  private splitSearchText(text: string): string[] {
+    return text
       .toLowerCase()
       .trim()
       .split(this.textQuerySplitMethod)
       .filter(Boolean);
-    const wildcardQueries = searchTermArray.flatMap((term) =>
-      this.queryFields.map((fieldName) => ({
-        wildcard: {
-          [fieldName]: {
-            value: `*${term}*`,
-          },
-        },
-      })),
-    );
+  }
 
-    if (wildcardQueries.length > 0) {
-      query.push({
-        bool: {
-          should: wildcardQueries,
-          minimum_should_match: 1,
-        },
-      });
+  private buildWildcardQueries(terms: string[]): QueryDslQueryContainer[] {
+    const wildcardQueries: QueryDslQueryContainer[] = [];
+    for (const term of terms) {
+      for (const fieldName of this.queryFields) {
+        const query = {
+          wildcard: {
+            [fieldName]: {
+              value: `*${term}*`,
+            },
+          },
+        };
+        wildcardQueries.push(query);
+      }
     }
 
-    return query;
+    return wildcardQueries;
   }
 
   private constructFinalQuery(
@@ -128,24 +162,13 @@ export class SearchQueryService {
     query: QueryDslQueryContainer[],
     userGroups?: string[],
   ) {
-    if (!query.length) {
-      return {
-        query: {
-          bool: {
-            filter: filter,
-            should: should,
-            minimum_should_match: userGroups ? 1 : 0,
-          },
-        },
-      };
-    }
-
     return {
       query: {
         bool: {
-          filter: filter,
+          filter,
+          should,
           must: query,
-          should: should,
+          minimum_should_match: userGroups ? 1 : 0,
         },
       },
     };

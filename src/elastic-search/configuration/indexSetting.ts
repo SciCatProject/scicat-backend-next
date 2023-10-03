@@ -25,6 +25,15 @@ export const dynamic_template:
   | Record<string, MappingDynamicTemplate>[]
   | never = [
   {
+    strings_as_keyword: {
+      match_mapping_type: "string",
+      path_match: "scientificMetadata.*.value",
+      mapping: {
+        type: "keyword",
+      },
+    },
+  },
+  {
     scientificMetadata_wrong_long_format: {
       path_match: "scientificMetadata.*.value",
       match_mapping_type: "long",
