@@ -1,12 +1,4 @@
-export type searchType =
-  | "text"
-  | "keyword"
-  | "long"
-  | "integer"
-  | "date"
-  | "boolean"
-  | "object"
-  | "nested";
+import { searchType } from "./es-common.type";
 
 export interface MappingProperty {
   type: searchType;
@@ -16,8 +8,7 @@ export interface MappingProperty {
       ignore_above: number;
     };
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface MappingObject {

@@ -106,8 +106,8 @@ export class DatasetsService {
       ...extraWhereClause,
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
-    const { $text, ...remainingClauses } = whereClause;
-    if (!this.ESClient || !$text) {
+
+    if (!this.ESClient || !whereClause) {
       const datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
@@ -121,11 +121,7 @@ export class DatasetsService {
     );
 
     const datasets = await this.datasetModel
-      .find(
-        { _id: { $in: esResult.data }, ...remainingClauses },
-        null,
-        modifiers,
-      )
+      .find({ _id: { $in: esResult.data } }, null, modifiers)
       .exec();
     return datasets;
   }
