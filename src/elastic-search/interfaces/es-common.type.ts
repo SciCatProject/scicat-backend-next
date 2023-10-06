@@ -24,7 +24,7 @@ export interface IFilter {
     [key: string]: string[];
   };
   term?: {
-    [key: string]: boolean;
+    [key: string]: boolean | string;
   };
   range?: {
     [key: string]: {

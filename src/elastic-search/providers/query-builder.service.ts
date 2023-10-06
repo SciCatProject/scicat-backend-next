@@ -5,41 +5,11 @@ import { IFilter, IShould, ObjectType } from "../interfaces/es-common.type";
 import { FilterFields, QueryFields } from "./fields.enum";
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
-
-export const convertToElasticSearchQuery = (
-  scientificQuery: Record<string, unknown>,
-) => {
-  const filterArray: IFilter[] = [];
-
-  for (const key in scientificQuery) {
-    const queryObject = scientificQuery[key] as Record<string, unknown>;
-    const operation = Object.keys(queryObject)[0];
-    const value = queryObject[operation];
-    const esOperation = operation.replace("$", "");
-    const transformedSubFieldName = `${key.split(".")[0]}.${key
-      .split(".")[1]
-      .replace(/ /g, "_")
-      .toLocaleLowerCase()}.${key.split(".")[2]}`;
-    let filter = {};
-
-    if (esOperation === "eq") {
-      filter = {
-        match: { [transformedSubFieldName]: value },
-      };
-    } else {
-      filter = {
-        range: { [transformedSubFieldName]: { [esOperation]: value } },
-      };
-    }
-
-    filterArray.push(filter);
-  }
-
-  return filterArray;
-};
+import { convertToElasticSearchQuery } from "../helpers/utils";
 
 const addTermsFilter = (fieldName: string, values: unknown) => {
   const filterArray: IFilter[] = [];
+
   switch (fieldName) {
     case FilterFields.ScientificMetadata:
       const scientificFilterQuery = mapScientificQuery(
@@ -59,6 +29,7 @@ const addTermsFilter = (fieldName: string, values: unknown) => {
           },
         },
       });
+
       break;
     case FilterFields.CreationTime:
       filterArray.push({
@@ -70,6 +41,14 @@ const addTermsFilter = (fieldName: string, values: unknown) => {
         },
       });
       break;
+    case FilterFields.Pid:
+      filterArray.push({
+        term: {
+          [fieldName]: values as string,
+        },
+      });
+      break;
+
     default:
       filterArray.push({
         terms: {
@@ -88,6 +67,7 @@ export class SearchQueryService {
   public buildSearchQuery(searchParam: IDatasetFields) {
     try {
       const { text = "", ...fields } = searchParam;
+
       const filter = this.buildFilterFields(fields);
       const should = this.buildShouldFields(fields);
       const query = this.buildTextQuery(text);
