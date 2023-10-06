@@ -24,6 +24,7 @@ import {
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
+import { transformKeysInObject, initialSyncTransform } from "./helpers/utils";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -69,7 +70,7 @@ export class ElasticSearchService implements OnModuleInit {
       await this.retryConnection(3, 3000);
       const isIndexExists = await this.isIndexExists(this.defaultIndex);
       if (!isIndexExists) {
-        this.createIndex(this.defaultIndex);
+        await this.createIndex(this.defaultIndex);
       }
       this.connected = true;
       Logger.log("Elasticsearch Connected");
@@ -160,22 +161,9 @@ export class ElasticSearchService implements OnModuleInit {
     if (!indexExists) {
       throw new Error("Index not found");
     }
-    const bulkResponse = await this.esService.helpers.bulk({
-      retries: 3,
-      wait: 3000,
-      datasource: collection,
-      onDocument(doc) {
-        return {
-          index: {
-            _index: index,
-            _id: doc.pid,
-          },
-        };
-      },
-      onDrop(doc) {
-        Logger.error("Bulk drop failed", doc.error);
-      },
-    });
+
+    const bulkResponse = await this.performBulkOperation(collection, index);
+
     Logger.log(
       JSON.stringify(bulkResponse, null, 0),
       "Elasticsearch Data Synchronization Response",
@@ -282,32 +270,26 @@ export class ElasticSearchService implements OnModuleInit {
     }
   }
 
-  async updateDocument(data: DatasetDocument) {
+  async updateInsertDocument(data: DatasetDocument) {
+    //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
-    try {
-      await this.esService.index({
-        index: this.defaultIndex,
-        id: data.pid,
-        document: data,
-      });
-      Logger.log(
-        `Elasticsearch Document Updated-> Document_id: ${data.pid} updated on index: ${this.defaultIndex}`,
-      );
-    } catch (error) {
-      Logger.error("updateDocument failed-> ElasticSearchService", error);
-    }
-  }
+    const transformedScientificMetadata = transformKeysInObject(
+      data.scientificMetadata as Record<string, unknown>,
+    );
 
-  async insertDocument(data: DatasetDocument) {
-    delete data._id;
+    const transformedData = {
+      ...data,
+      scientificMetadata: transformedScientificMetadata,
+    };
+
     try {
       await this.esService.index({
         index: this.defaultIndex,
         id: data.pid,
-        document: data,
+        document: transformedData,
       });
       Logger.log(
-        `Elasticsearch Document Inserted-> Document_id: ${data.pid} inserted on index: ${this.defaultIndex}`,
+        `Elasticsearch Document Update/inserted-> Document_id: ${data.pid} update/inserted on index: ${this.defaultIndex}`,
       );
     } catch (error) {
       Logger.error("updateDocument failed-> ElasticSearchService", error);
@@ -326,5 +308,30 @@ export class ElasticSearchService implements OnModuleInit {
     } catch (error) {
       Logger.error("deleteDocument failed-> ElasticSearchService", error);
     }
+  }
+
+  // *** NOTE: below are helper methods ***
+
+  async performBulkOperation(collection: DatasetClass[], index: string) {
+    return await this.esService.helpers.bulk({
+      retries: 3,
+      wait: 10000,
+      datasource: collection,
+      onDocument(doc: DatasetClass) {
+        return [
+          {
+            index: {
+              _index: index,
+              _id: doc.pid,
+            },
+          },
+          initialSyncTransform(doc),
+        ];
+      },
+      onDrop(doc) {
+        console.error(doc.document._id, doc.error?.reason);
+        Logger.error("data insert faield: ", doc.document._id);
+      },
+    });
   }
 }

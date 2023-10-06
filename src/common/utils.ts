@@ -508,7 +508,6 @@ export const createFullfacetPipeline = <T, Y extends object>(
           pipeline.unshift(match);
         }
       } else if (key === idField) {
-        console.log("idField", idField);
         const match = {
           $match: {
             [idField]: searchExpression<T>(model, key, fields[key as keyof Y]),

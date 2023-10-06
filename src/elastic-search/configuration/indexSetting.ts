@@ -24,41 +24,51 @@ export const special_character_filter: AnalysisPatternReplaceCharFilter = {
 export const dynamic_template:
   | Record<string, MappingDynamicTemplate>[]
   | never = [
+  // {
+  //   sub_object_as_object: {
+  //     match_mapping_type: "object",
+  //     path_match: "scientificMetadata.*",
+  //     mapping: {
+  //       type: "object",
+  //     },
+  //   },
+  // },
+  // {
+  //   sub_object_as_object: {
+  //     match_mapping_type: "object",
+  //     path_match: "scientificMetadata.*.*",
+  //     mapping: {
+  //       type: "keyword",
+  //     },
+  //   },
+  // },
   {
-    strings_as_keyword: {
+    string_as_keyword: {
+      path_match: "scientificMetadata.*.*",
       match_mapping_type: "string",
-      path_match: "scientificMetadata.*.value",
       mapping: {
         type: "keyword",
+        ignore_above: 256,
       },
     },
   },
   {
-    scientificMetadata_wrong_long_format: {
-      path_match: "scientificMetadata.*.value",
+    long_as_keyword: {
+      path_match: "scientificMetadata.*.*",
       match_mapping_type: "long",
       mapping: {
-        type: "date",
-        ignore_malformed: true,
+        type: "keyword",
+        ignore_above: 256,
       },
     },
   },
   {
-    scientificMetadata_wrong_date_format: {
-      path_match: "scientificMetadata.*.value",
+    date_as_keyword: {
+      path_match: "scientificMetadata.*.*",
       match_mapping_type: "date",
       mapping: {
-        type: "date",
-        ignore_malformed: true,
-      },
-    },
-  },
-  {
-    scientificMetadata_wrong_text_format: {
-      path_match: "scientificMetadata.channel.value",
-      match_mapping_type: "long",
-      mapping: {
-        type: "text",
+        type: "keyword",
+        ignore_above: 256,
       },
     },
   },
@@ -72,6 +82,9 @@ export const defaultElasticSettings = {
     mapping: {
       total_fields: {
         limit: process.env.ES_FIELDS_LIMIT || 2000000,
+      },
+      nested_fields: {
+        limit: 1000,
       },
     },
   },

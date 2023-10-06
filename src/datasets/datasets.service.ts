@@ -66,7 +66,7 @@ export class DatasetsService {
       addCreatedByFields(createDatasetDto, username),
     );
     if (this.ESClient) {
-      this.ESClient.insertDocument(
+      this.ESClient.updateInsertDocument(
         createdDataset.toObject() as DatasetDocument,
       );
     }
@@ -94,6 +94,8 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
     extraWhereClause: FilterQuery<DatasetDocument> = {},
   ): Promise<DatasetClass[] | null> {
+    let datasets;
+
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
@@ -108,21 +110,22 @@ export class DatasetsService {
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     if (!this.ESClient || !whereClause) {
-      const datasets = await this.datasetModel
+      datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
       return datasets;
+    } else {
+      const esResult = await this.ESClient.search(
+        filter.fields as IDatasetFields,
+        modifiers.limit,
+        modifiers.skip,
+      );
+
+      datasets = await this.datasetModel
+        .find({ _id: { $in: esResult.data } }, null, modifiers)
+        .exec();
     }
 
-    const esResult = await this.ESClient.search(
-      filter.fields as IDatasetFields,
-      modifiers.limit,
-      modifiers.skip,
-    );
-
-    const datasets = await this.datasetModel
-      .find({ _id: { $in: esResult.data } }, null, modifiers)
-      .exec();
     return datasets;
   }
 
@@ -136,6 +139,7 @@ export class DatasetsService {
     // however, fields always contain mode key, so we need to check if there's more than one key
     const isFieldsEmpty = isObjectWithOneKey(fields);
 
+    let data;
     if (this.ESClient && !isFieldsEmpty) {
       const totalDocCount = await this.datasetModel.countDocuments();
 
@@ -151,21 +155,21 @@ export class DatasetsService {
         esPids,
       );
 
-      const data = await this.datasetModel.aggregate(pipeline).exec();
+      data = await this.datasetModel.aggregate(pipeline).exec();
 
       data[0].all[0] = { totalSets: esTotalCount };
       return data;
+    } else {
+      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+        this.datasetModel,
+        "pid",
+        fields,
+        facets,
+        "",
+      );
+
+      data = await this.datasetModel.aggregate(pipeline).exec();
     }
-
-    const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
-      this.datasetModel,
-      "pid",
-      fields,
-      facets,
-      "",
-    );
-
-    const data = await this.datasetModel.aggregate(pipeline).exec();
 
     return data;
   }
@@ -236,7 +240,7 @@ export class DatasetsService {
     }
 
     if (this.ESClient) {
-      this.ESClient.updateDocument(
+      this.ESClient.updateInsertDocument(
         updatedDataset.toObject() as DatasetDocument,
       );
     }
@@ -277,7 +281,7 @@ export class DatasetsService {
       .exec();
 
     if (this.ESClient) {
-      this.ESClient.updateDocument(
+      this.ESClient.updateInsertDocument(
         patchedDataset?.toObject() as DatasetDocument,
       );
     }
@@ -296,7 +300,7 @@ export class DatasetsService {
   // GET datasets without _id which is used for elastic search data synchronization
   async getDatasetsWithoutId() {
     try {
-      const datasets = this.datasetModel.find({}, { _id: 0 }).exec();
+      const datasets = this.datasetModel.find({}, { _id: 0 }).lean().exec();
       return datasets;
     } catch (error) {
       throw new NotFoundException();
