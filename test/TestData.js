@@ -754,11 +754,36 @@ const TestData = {
   PatchCommentInvalid: {
     comment: 1,
   },
-  
+
   PatchDataQualityMetricsInvalid: {
     dataQualityMetrics: "test",
   },
-
+  ScientificMetadataForElasticSearch: {
+    ownerGroup: faker.company.name(),
+    creationLocation: faker.location.city(),
+    principalInvestigator: faker.internet.userName(),
+    type: "raw",
+    creationTime: faker.date.past(),
+    sourceFolder: faker.system.directoryPath(),
+    owner: faker.internet.userName(),
+    contactEmail: faker.internet.email(),
+    scientificMetadata: {
+      with_unit_and_value_si: {
+        value: 100,
+        unit: "meters",
+        valueSI: 100,
+        unitSI: "m",
+      },
+      with_number: {
+        value: 111,
+        unit: "",
+      },
+      with_string: {
+        value: "222",
+        unit: "",
+      },
+    },
+  },
 };
 
 module.exports = { TestData };

@@ -28,8 +28,8 @@ export interface IFilter {
   };
   range?: {
     [key: string]: {
-      gte: string;
-      lte: string;
+      gte?: string | number;
+      lte?: string | number;
     };
   };
   nested?: {

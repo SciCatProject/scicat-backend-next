@@ -3,12 +3,13 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Body,
   Get,
   Query,
   UseInterceptors,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags, ApiBearerAuth, ApiQuery, ApiResponse } from "@nestjs/swagger";
+import { ApiTags, ApiBearerAuth, ApiBody, ApiResponse } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -74,7 +75,7 @@ export class ElasticSearchServiceController {
   )
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(SubDatasetsPublicInterceptor)
-  @ApiQuery({
+  @ApiBody({
     type: SearchDto,
   })
   @ApiResponse({
@@ -82,7 +83,7 @@ export class ElasticSearchServiceController {
     description: "Search with elasticsearch to get restuls in PIDs",
   })
   @Post("/search")
-  async fetchESResults(@Query() searchDto: IDatasetFields) {
+  async fetchESResults(@Body() searchDto: IDatasetFields) {
     return this.elasticSearchService.search(searchDto);
   }
 

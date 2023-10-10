@@ -24,24 +24,6 @@ export const special_character_filter: AnalysisPatternReplaceCharFilter = {
 export const dynamic_template:
   | Record<string, MappingDynamicTemplate>[]
   | never = [
-  // {
-  //   sub_object_as_object: {
-  //     match_mapping_type: "object",
-  //     path_match: "scientificMetadata.*",
-  //     mapping: {
-  //       type: "object",
-  //     },
-  //   },
-  // },
-  // {
-  //   sub_object_as_object: {
-  //     match_mapping_type: "object",
-  //     path_match: "scientificMetadata.*.*",
-  //     mapping: {
-  //       type: "keyword",
-  //     },
-  //   },
-  // },
   {
     string_as_keyword: {
       path_match: "scientificMetadata.*.*",
@@ -53,15 +35,16 @@ export const dynamic_template:
     },
   },
   {
-    long_as_keyword: {
+    long_as_long: {
       path_match: "scientificMetadata.*.*",
       match_mapping_type: "long",
       mapping: {
-        type: "keyword",
-        ignore_above: 256,
+        type: "long",
+        ignore_malformed: true,
       },
     },
   },
+
   {
     date_as_keyword: {
       path_match: "scientificMetadata.*.*",
