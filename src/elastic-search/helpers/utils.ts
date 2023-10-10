@@ -15,9 +15,12 @@ export const transformKeysInObject = (obj: Record<string, unknown>) => {
     );
     if (isNumberValueType) {
       (value as Record<string, unknown>)["value_type"] = "number";
+    } else {
+      (value as Record<string, unknown>)["value_type"] = "string";
     }
     newObj[newKey] = value;
   }
+
   return newObj;
 };
 
@@ -44,11 +47,13 @@ export const initialSyncTransform = (obj: DatasetClass) => {
         obj.scientificMetadata as Record<string, { [key: string]: string }>,
       ).map(([key, value]) => {
         const transformdKey = transformKey(key);
+
         return typeof value.value === "number"
           ? [transformdKey, { ...value, value_type: "number" }]
-          : [transformdKey, value];
+          : [transformdKey, { ...value, value_type: "string" }];
       })
     : [];
+
   const modifiedDocInObject = {
     ...obj,
     scientificMetadata:
@@ -75,10 +80,16 @@ export const convertToElasticSearchQuery = (
 
     let filter = {};
 
+    const lastFieldPart = field.split(".").pop();
+
     // NOTE: if value is a number, add a custom number filter
-    if (typeof value === "number") {
+
+    if (lastFieldPart === "valueSI" || lastFieldPart === "value") {
       const numberFilter = {
-        term: { [`${firstPart}.${middlePart}.value_type`]: "number" },
+        term: {
+          [`${firstPart}.${middlePart}.value_type`]:
+            typeof value === "number" ? "number" : "string",
+        },
       };
       filters.push(numberFilter);
     }
@@ -91,6 +102,13 @@ export const convertToElasticSearchQuery = (
         : { range: { [`${transformedKey}`]: { [esOperation]: value } } };
 
     filters.push(filter);
+
+    // NOTE: leave comment for future
+    // if (esOperation !== "eq") {
+    //   filters.push({
+    //     range: { [`${transformedKey}`]: { [esOperation]: value } },
+    //   });
+    // }
   }
 
   return filters;

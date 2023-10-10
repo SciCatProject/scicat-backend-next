@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional } from "class-validator";
+import { IsArray, IsOptional } from "class-validator";
 
 export class SearchDto {
   @ApiProperty({
@@ -54,4 +54,38 @@ export class SearchDto {
   })
   @IsOptional()
   readonly isPublished: boolean;
+
+  @ApiProperty({
+    type: Array,
+    items: {
+      type: "object",
+      properties: {
+        lhs: { type: "string" },
+        relation: { type: "string" },
+        rhs: {
+          type: "number",
+          description: "This can be either a number or a string",
+        },
+        unit: { type: "string" },
+      },
+    },
+    required: false,
+    default: [
+      {
+        lhs: "",
+        relation: "",
+        rhs: 0,
+        unit: "",
+      },
+    ],
+    description: "scientificMetadata condition",
+  })
+  @IsOptional()
+  @IsArray()
+  readonly scientific: Array<{
+    lhs: string;
+    relation: string;
+    rhs: number | string;
+    unit: string;
+  }>;
 }

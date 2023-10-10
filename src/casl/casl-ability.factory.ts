@@ -96,6 +96,8 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // policies
       can(Action.Update, Policy);
+      // elasticSearch
+      can(Action.Manage, ElasticSearchActions);
     } else {
       //
       // non admin users

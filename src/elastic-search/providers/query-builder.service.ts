@@ -10,15 +10,19 @@ import { convertToElasticSearchQuery } from "../helpers/utils";
 const addTermsFilter = (fieldName: string, values: unknown) => {
   const filterArray: IFilter[] = [];
 
+  if (Array.isArray(values) && values.length === 0) {
+    return filterArray;
+  }
+
   switch (fieldName) {
     case FilterFields.ScientificMetadata:
       const scientificFilterQuery = mapScientificQuery(
         values as IScientificFilter[],
       );
+
       const esScientificFilterQuery = convertToElasticSearchQuery(
         scientificFilterQuery,
       );
-
       filterArray.push({
         nested: {
           path: "scientificMetadata",
