@@ -481,17 +481,14 @@ export const createFullfacetPipeline = <T, Y extends object>(
   fields: Y,
   facets: string[],
   subField = "",
-  esPids?: string[],
 ): PipelineStage[] => {
   const pipeline = [];
-  const facetMatch: Record<string, unknown> = esPids
-    ? { _id: { $in: esPids } }
-    : {};
+  const facetMatch: Record<string, unknown> = {};
 
   Object.keys(fields).forEach((key) => {
     if (facets.indexOf(key) < 0) {
       if (key === "text") {
-        if (typeof fields[key as keyof Y] === "string" && !esPids) {
+        if (typeof fields[key as keyof Y] === "string") {
           const match = {
             $match: {
               $or: [
@@ -526,6 +523,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
         const match = {
           $match: currentExpression,
         };
+
         pipeline.push(match);
       } else if (key === "userGroups") {
         if (
