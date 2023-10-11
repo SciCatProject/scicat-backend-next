@@ -80,11 +80,9 @@ export const convertToElasticSearchQuery = (
 
     let filter = {};
 
-    const lastFieldPart = field.split(".").pop();
+    const fieldType = field.split(".").pop();
 
-    // NOTE: if value is a number, add a custom number filter
-
-    if (lastFieldPart === "valueSI" || lastFieldPart === "value") {
+    if (fieldType === "valueSI" || fieldType === "value") {
       const numberFilter = {
         term: {
           [`${firstPart}.${middlePart}.value_type`]:
@@ -102,13 +100,6 @@ export const convertToElasticSearchQuery = (
         : { range: { [`${transformedKey}`]: { [esOperation]: value } } };
 
     filters.push(filter);
-
-    // NOTE: leave comment for future
-    // if (esOperation !== "eq") {
-    //   filters.push({
-    //     range: { [`${transformedKey}`]: { [esOperation]: value } },
-    //   });
-    // }
   }
 
   return filters;

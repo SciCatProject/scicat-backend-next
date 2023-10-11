@@ -143,21 +143,22 @@ export class DatasetsService {
     if (this.ESClient && !isFieldsEmpty) {
       const totalDocCount = await this.datasetModel.countDocuments();
 
-      const { totalCount: esTotalCount, data: esPids } =
-        await this.ESClient.search(fields as IDatasetFields, totalDocCount);
+      const { data: esPids } = await this.ESClient.search(
+        fields as IDatasetFields,
+        totalDocCount,
+      );
 
+      fields.mode = { _id: { $in: esPids } };
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
         this.datasetModel,
         "pid",
         fields,
         facets,
         "",
-        esPids,
       );
 
       data = await this.datasetModel.aggregate(pipeline).exec();
 
-      data[0].all[0] = { totalSets: esTotalCount };
       return data;
     } else {
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(

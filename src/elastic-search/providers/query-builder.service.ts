@@ -7,61 +7,6 @@ import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { convertToElasticSearchQuery } from "../helpers/utils";
 
-const addTermsFilter = (fieldName: string, values: unknown) => {
-  const filterArray: IFilter[] = [];
-
-  if (Array.isArray(values) && values.length === 0) {
-    return filterArray;
-  }
-
-  switch (fieldName) {
-    case FilterFields.ScientificMetadata:
-      const scientificFilterQuery = mapScientificQuery(
-        values as IScientificFilter[],
-      );
-
-      const esScientificFilterQuery = convertToElasticSearchQuery(
-        scientificFilterQuery,
-      );
-      filterArray.push({
-        nested: {
-          path: "scientificMetadata",
-          query: {
-            bool: {
-              must: esScientificFilterQuery,
-            },
-          },
-        },
-      });
-
-      break;
-    case FilterFields.CreationTime:
-      filterArray.push({
-        range: {
-          [fieldName]: {
-            gte: (values as ObjectType).begin,
-            lte: (values as ObjectType).end,
-          },
-        },
-      });
-      break;
-    case FilterFields.Pid:
-      filterArray.push({
-        term: {
-          [fieldName]: values as string,
-        },
-      });
-      break;
-
-    default:
-      filterArray.push({
-        terms: {
-          [fieldName]: values as string[],
-        },
-      });
-  }
-  return filterArray;
-};
 @Injectable()
 export class SearchQueryService {
   readonly filterFields = [...Object.values(FilterFields)];
@@ -85,12 +30,13 @@ export class SearchQueryService {
   private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
     const filter: IFilter[] = [];
 
-    filter.push({ term: { isPublished: fields["isPublished"] ?? false } });
-
     for (const fieldName of this.filterFields) {
       if (fields[fieldName]) {
-        const additionalFilters = addTermsFilter(fieldName, fields[fieldName]);
-        filter.push(...additionalFilters);
+        const filterQueries = this.buildTermsFilter(
+          fieldName,
+          fields[fieldName],
+        );
+        filter.push(...filterQueries);
       }
     }
 
@@ -138,6 +84,71 @@ export class SearchQueryService {
     }
 
     return wildcardQueries;
+  }
+
+  private buildTermsFilter(fieldName: string, values: unknown) {
+    const filterArray: IFilter[] = [];
+
+    if (Array.isArray(values) && values.length === 0) {
+      return filterArray;
+    }
+
+    switch (fieldName) {
+      case FilterFields.ScientificMetadata:
+        const scientificFilterQuery = mapScientificQuery(
+          values as IScientificFilter[],
+        );
+
+        const esScientificFilterQuery = convertToElasticSearchQuery(
+          scientificFilterQuery,
+        );
+        filterArray.push({
+          nested: {
+            path: "scientificMetadata",
+            query: {
+              bool: {
+                must: esScientificFilterQuery,
+              },
+            },
+          },
+        });
+        break;
+
+      case FilterFields.CreationTime:
+        filterArray.push({
+          range: {
+            [fieldName]: {
+              gte: (values as ObjectType).begin,
+              lte: (values as ObjectType).end,
+            },
+          },
+        });
+        break;
+
+      case FilterFields.Pid:
+        filterArray.push({
+          term: {
+            [fieldName]: values as string,
+          },
+        });
+        break;
+
+      case FilterFields.IsPublished:
+        filterArray.push({
+          term: {
+            [fieldName]: values as boolean,
+          },
+        });
+        break;
+
+      default:
+        filterArray.push({
+          terms: {
+            [fieldName]: values as string[],
+          },
+        });
+    }
+    return filterArray;
   }
 
   private constructFinalQuery(
