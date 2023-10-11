@@ -7,6 +7,8 @@ export enum FilterFields {
   OwnerGroup = "ownerGroup",
   AccessGroup = "accessGroup",
   ScientificMetadata = "scientific",
+  SharedWith = "sharedWith",
+  IsPublished = "isPublished",
 }
 
 export enum QueryFields {
