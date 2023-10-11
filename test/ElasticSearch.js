@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-let utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessToken = null;
@@ -196,7 +196,7 @@ describe("RawDataset: Raw Datasets", () => {
       });
   });
 
-  it("should delete this raw dataset", async () => {
+  it("0060: should delete this raw dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + pid)
       .set("Accept", "application/json")
