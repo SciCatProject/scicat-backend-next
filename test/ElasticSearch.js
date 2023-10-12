@@ -72,13 +72,7 @@ describe("RawDataset: Raw Datasets", () => {
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .then((res) => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(res);
-          }, 2000);
-        });
-      })
+
       .then((res) => {
         res.body.should.have
           .property("scientificMetadata")
@@ -90,7 +84,7 @@ describe("RawDataset: Raw Datasets", () => {
           );
         pid = encodeURIComponent(res.body["pid"]);
       });
-  }).timeout(5000);
+  });
 
   it("0020: should fetch dataset with unitSI and ValueSI condition filter", function () {
     request(appUrl)
