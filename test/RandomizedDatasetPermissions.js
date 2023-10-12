@@ -161,23 +161,11 @@ async function addAllDatasets() {
   for (let index = 0; index < NUMBER_OF_DATASETS_TO_CREATE; index++) {
     allPromises.push(addDataset());
   }
-  try {
-    const values = await Promise.all(allPromises);
-    groupedDatasets[1] = values.filter(
-      (value) => value.ownerGroup === "group1",
-    );
-    groupedDatasets[2] = values.filter(
-      (value) => value.ownerGroup === "group2",
-    );
-    groupedDatasets[3] = values.filter(
-      (value) => value.ownerGroup === "group3",
-    );
-    groupedDatasets[4] = values.filter(
-      (value) => value.ownerGroup === "group4",
-    );
-  } catch (error) {
-    console.error("An error occurred:", error);
-  }
+  const values = await Promise.all(allPromises);
+  groupedDatasets[1] = values.filter((value) => value.ownerGroup === "group1");
+  groupedDatasets[2] = values.filter((value) => value.ownerGroup === "group2");
+  groupedDatasets[3] = values.filter((value) => value.ownerGroup === "group3");
+  groupedDatasets[4] = values.filter((value) => value.ownerGroup === "group4");
 }
 
 async function removeAllDatasets() {

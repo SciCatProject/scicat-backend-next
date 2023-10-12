@@ -32,6 +32,7 @@ export class ElasticSearchService implements OnModuleInit {
   private host: string;
   private username: string;
   private password: string;
+  private refresh: "false" | "wait_for";
   public defaultIndex: string;
   public esEnabled: boolean;
   public connected = false;
@@ -49,6 +50,9 @@ export class ElasticSearchService implements OnModuleInit {
       this.configService.get<string>("elasticSearch.enabled") === "yes"
         ? true
         : false;
+    this.refresh =
+      this.configService.get<"false" | "wait_for">("elasticSearch.refresh") ||
+      "false";
 
     this.defaultIndex =
       this.configService.get<string>("elasticSearch.defaultIndex") || "";
@@ -287,7 +291,9 @@ export class ElasticSearchService implements OnModuleInit {
         index: this.defaultIndex,
         id: data.pid,
         document: transformedData,
+        refresh: this.refresh,
       });
+
       Logger.log(
         `Elasticsearch Document Update/inserted-> Document_id: ${data.pid} update/inserted on index: ${this.defaultIndex}`,
       );

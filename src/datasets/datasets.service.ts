@@ -113,7 +113,6 @@ export class DatasetsService {
       datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
-      return datasets;
     } else {
       const esResult = await this.ESClient.search(
         filter.fields as IDatasetFields,

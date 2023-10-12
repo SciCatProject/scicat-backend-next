@@ -161,6 +161,7 @@ const configuration = () => {
       username: process.env.ES_USERNAME,
       password: process.env.ES_PASSWORD,
       host: process.env.ES_HOST,
+      refresh: process.env.ES_REFRESH,
       maxResultWindow: parseInt(process.env.ES_MAX_RESULT || "100000", 10),
       fieldsLimit: parseInt(process.env.ES_FIELDS_LIMIT || "100000", 10),
       mongoDBCollection: process.env.MONGODB_COLLECTION,
