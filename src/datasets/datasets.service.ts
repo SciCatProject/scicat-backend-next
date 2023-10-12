@@ -66,7 +66,7 @@ export class DatasetsService {
       addCreatedByFields(createDatasetDto, username),
     );
     if (this.ESClient) {
-      this.ESClient.updateInsertDocument(
+      await this.ESClient.updateInsertDocument(
         createdDataset.toObject() as DatasetDocument,
       );
     }
@@ -241,7 +241,7 @@ export class DatasetsService {
     }
 
     if (this.ESClient) {
-      this.ESClient.updateInsertDocument(
+      await this.ESClient.updateInsertDocument(
         updatedDataset.toObject() as DatasetDocument,
       );
     }
@@ -282,7 +282,7 @@ export class DatasetsService {
       .exec();
 
     if (this.ESClient) {
-      this.ESClient.updateInsertDocument(
+      await this.ESClient.updateInsertDocument(
         patchedDataset?.toObject() as DatasetDocument,
       );
     }
@@ -294,7 +294,7 @@ export class DatasetsService {
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
     if (this.ESClient) {
-      this.ESClient.deleteDocument(id);
+      await this.ESClient.deleteDocument(id);
     }
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
