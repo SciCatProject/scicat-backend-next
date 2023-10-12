@@ -147,7 +147,7 @@ jobs:
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
           ELASTICSEARCH_ENABLED: "yes"
-          ES_HOST: https://es01:9200
+          ES_HOST: https://localhost:9200
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password
           MONGODB_COLLECTION: Dataset
@@ -216,12 +216,3 @@ jobs:
         with:
           name: cypress-videos
           path: frontend/cypress/videos/
-
-  auto-merge:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2
-        with:
-          target: patch
-          github-token: ${{ secrets.GITHUB_TOKEN  }}
