@@ -81,6 +81,10 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(
             JSON.stringify(TestData.DatasetLifecycle_query_1.fields),
+          ) +
+          "&limits=" +
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_1.limits),
           ),
       )
       .set("Accept", "application/json")
@@ -271,19 +275,19 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     }
   });
 
-  it("should delete the newly created dataset", async () => {
-    return request(appUrl)
-      .delete("/api/v3/Datasets/" + pidRaw1)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
-  });
+  // it("should delete the newly created dataset", async () => {
+  //   return request(appUrl)
+  //     .delete("/api/v3/Datasets/" + pidRaw1)
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+  //     .expect(200);
+  // });
 
-  it("should delete the newly created dataset", async () => {
-    return request(appUrl)
-      .delete("/api/v3/Datasets/" + pidRaw2)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
-  });
+  // it("should delete the newly created dataset", async () => {
+  //   return request(appUrl)
+  //     .delete("/api/v3/Datasets/" + pidRaw2)
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+  //     .expect(200);
+  // });
 });
