@@ -602,13 +602,16 @@ const TestData = {
   DatasetLifecycle_query_1: {
     fields: {
       ownerGroup: ["p12345", "p10029"],
-      text: "'ultimate test'",
+      text: "ultimate test",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
       },
       "datasetlifecycle.archiveStatusMessage": "datasetCreated",
-      keywords: ["energy", "protein"],
+      keywords: ["sls", "protein"],
+    },
+    limits: {
+      skip: 0,
     },
   },
 
@@ -625,12 +628,12 @@ const TestData = {
   DatasetLifecycle_query_3: {
     fields: {
       ownerGroup: ["p12345", "p10029"],
-      text: "'ultimate test'",
+      text: "ultimate test",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
       },
-      keywords: ["energy", "protein"],
+      keywords: ["sls", "protein"],
     },
     facets: [
       "type",
