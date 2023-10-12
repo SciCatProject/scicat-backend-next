@@ -5,9 +5,8 @@ export enum FilterFields {
   CreationLocation = "creationLocation",
   CreationTime = "creationTime",
   OwnerGroup = "ownerGroup",
-  AccessGroup = "accessGroup",
+  AccessGroups = "accessGroups",
   ScientificMetadata = "scientific",
-  SharedWith = "sharedWith",
   IsPublished = "isPublished",
 }
 

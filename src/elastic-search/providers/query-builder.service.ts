@@ -21,7 +21,7 @@ export class SearchQueryService {
       const should = this.buildShouldFields(fields);
       const query = this.buildTextQuery(text);
 
-      return this.constructFinalQuery(filter, should, query, fields.userGroups);
+      return this.constructFinalQuery(filter, should, query);
     } catch (err) {
       Logger.error("Elastic search build search query failed");
       throw err;
@@ -43,13 +43,21 @@ export class SearchQueryService {
     return filter;
   }
 
-  private buildShouldFields(fields: Partial<IDatasetFields>): IShould[] {
-    return fields["userGroups"]
-      ? [
-          { terms: { ownerGroup: fields["userGroups"] } },
-          { terms: { accessGroup: fields["userGroups"] } },
-        ]
-      : [];
+  private buildShouldFields(fields: Partial<IDatasetFields>) {
+    const shouldFilter: IShould[] = [];
+    if (fields["sharedWith"]) {
+      const termFilter = { term: { sharedWith: fields["sharedWith"] } };
+
+      shouldFilter.push(termFilter);
+    }
+
+    if (fields["userGroups"]) {
+      const ownerGroup = { terms: { ownerGroup: fields["userGroups"] } };
+      const accessGroups = { terms: { accessGroups: fields["userGroups"] } };
+
+      shouldFilter.push(ownerGroup, accessGroups);
+    }
+    return shouldFilter;
   }
 
   private buildTextQuery(text: string): QueryDslQueryContainer[] {
@@ -155,17 +163,21 @@ export class SearchQueryService {
     filter: IFilter[],
     should: IShould[],
     query: QueryDslQueryContainer[],
-    userGroups?: string[],
   ) {
-    return {
+    const finalQuery = {
       query: {
         bool: {
           filter,
-          should,
+          should: {
+            bool: {
+              should,
+              minimum_should_match: 1,
+            },
+          },
           must: query,
-          minimum_should_match: userGroups ? 1 : 0,
         },
       },
     };
+    return finalQuery;
   }
 }
