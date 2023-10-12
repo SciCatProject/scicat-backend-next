@@ -17,6 +17,9 @@ export interface IShould {
   terms?: {
     [key: string]: string[] | undefined;
   };
+  term?: {
+    [key: string]: string | undefined;
+  };
 }
 
 export interface IFilter {
