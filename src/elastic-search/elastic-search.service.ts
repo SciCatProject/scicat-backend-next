@@ -306,6 +306,7 @@ export class ElasticSearchService implements OnModuleInit {
       await this.esService.delete({
         index: this.defaultIndex,
         id,
+        refresh: this.refresh,
       });
       Logger.log(
         `Elasticsearch Document Deleted-> Document_id: ${id} deleted on index: ${this.defaultIndex}`,
