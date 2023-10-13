@@ -39,7 +39,7 @@ const scientificMetadata = ({
   };
 };
 
-describe("RawDataset: Raw Datasets", () => {
+describe("ElastiSearch: CRUD, filtering and search test case", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,

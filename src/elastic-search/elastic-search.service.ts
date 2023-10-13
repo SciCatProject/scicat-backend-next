@@ -285,7 +285,6 @@ export class ElasticSearchService implements OnModuleInit {
       ...data,
       scientificMetadata: transformedScientificMetadata,
     };
-
     try {
       await this.esService.index({
         index: this.defaultIndex,
