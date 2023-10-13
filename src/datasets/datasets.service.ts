@@ -157,8 +157,6 @@ export class DatasetsService {
       );
 
       data = await this.datasetModel.aggregate(pipeline).exec();
-
-      return data;
     } else {
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
         this.datasetModel,
@@ -196,7 +194,19 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const count = await this.datasetModel.count(whereFilter).exec();
+    let count = 0;
+    if (this.ESClient && !filter.where) {
+      const totalDocCount = await this.datasetModel.countDocuments();
+
+      const { totalCount } = await this.ESClient.search(
+        whereFilter as IDatasetFields,
+        totalDocCount,
+      );
+      count = totalCount;
+    } else {
+      count = await this.datasetModel.count(whereFilter).exec();
+    }
+
     return { count };
   }
 
