@@ -698,6 +698,10 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline;
 };
 
+// NOTE: remove below comments in the future once its sure that everything is
+// working fine with above refactored code.
+// refactored date 16 October 2023
+
 // export const createFullfacetPipeline = <T, Y extends object>(
 //   model: Model<
 //     T,
