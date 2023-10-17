@@ -36,4 +36,13 @@ export class OwnableClass extends QueryableClass {
     required: false,
   })
   instrumentGroup?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    default: false,
+    description: "Flag is true when data are made publicly available.",
+  })
+  @Prop({ type: Boolean, required: true, default: false })
+  isPublished: boolean;
 }
