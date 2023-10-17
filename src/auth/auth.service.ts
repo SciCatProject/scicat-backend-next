@@ -58,46 +58,80 @@ export class AuthService {
       "expressSessionSecret",
     );
 
+    const logoutResult = await this.additionalLogoutTasks(req, logoutURL);
+
     if (expressSessionSecret) {
       req.logout(async (err) => {
         if (err) {
           // we should provide a message
           console.log("Logout error");
           console.log(err);
-          //res.status(HttpStatus.BAD_REQUEST);
         }
-        return await this.additionalLogoutTasks(req, logoutURL);
       });
-    } else {
-      return await this.additionalLogoutTasks(req, logoutURL);
-    }
-    if (logoutURL) {
-      return { logout: "successful", logoutURL: logoutURL };
-    }
 
-    return { logout: "successful" };
+      return logoutResult;
+    } else {
+      return logoutResult;
+    }
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  flattenObject = (obj: any) => {
+    const result: Record<string, unknown> = {};
+
+    for (const i in obj) {
+      if (typeof obj[i] === "object" && !Array.isArray(obj[i])) {
+        const temp = this.flattenObject(obj[i]);
+        for (const j in temp) {
+          result[i + "." + j] = temp[j];
+        }
+      } else {
+        result[i] = obj[i];
+      }
+    }
+    return result;
+  };
 
   async additionalLogoutTasks(req: Request, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
-    if (user?.authStrategy == "oidc") {
+    if (user?.authStrategy === "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
-      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || false);
+      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || true);
+
       if (autoLogout) {
+        if (logoutURL) {
+          return {
+            logout: "successful",
+            logoutURL: logoutURL,
+          };
+        }
+
+        // If there is no LOGOUT_URL set try to get one from the issuer
         const trustIssuer = await Issuer.discover(
           `${oidcConfig?.issuer}/.well-known/openid-configuration`,
         );
-        const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
-        if (end_session_endpoint) {
-          return {
-            logout: "successful",
-            logoutURL:
-              end_session_endpoint +
-              (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-          };
+        // Flatten the object in case the end_session url is nested.
+        const flattenTrustIssuer = this.flattenObject(trustIssuer);
+
+        // Note search for "end_session" key into the flatten object
+        const endSessionEndpointKey = Object.keys(flattenTrustIssuer).find(
+          (key) => key.includes("end_session"),
+        );
+
+        if (endSessionEndpointKey) {
+          // Get the end_session endpoint value
+          const endSessionEndpoint = flattenTrustIssuer[endSessionEndpointKey];
+
+          if (endSessionEndpoint) {
+            return {
+              logout: "successful",
+              logoutURL: endSessionEndpoint,
+            };
+          }
         }
       }
     }
-    return;
+
+    return { logout: "successful" };
   }
 }
