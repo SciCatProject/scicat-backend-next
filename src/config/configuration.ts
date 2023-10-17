@@ -6,18 +6,33 @@ const configuration = () => {
   const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
   const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
   const createDatasetGroups =
-    process.env.CREATE_DATASET_GROUPS || ("all" as string);
+    process.env.CREATE_DATASET_GROUPS || ("#all" as string);
+  const createDatasetWithPidGroups =
+    process.env.CREATE_DATASET_WITH_PID_GROUPS || ("" as string);
+  const createDatasetPrivilegedGroups =
+    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || ("" as string);
+  const datasetCreationValidationEnabled =
+    process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
+  const datasetCreationValidationRegex =
+    process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
+
 
   Logger.log("Config SETUP");
   Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   Logger.log("- Admin groups : " + adminGroups);
   Logger.log("- Delete groups : " + deleteGroups);
   Logger.log("- Create dataset groups : " + createDatasetGroups);
+  Logger.log("- Create dataset with pid groups : " + createDatasetWithPidGroups);
+  Logger.log("- Create dataset privileged groups : " + createDatasetPrivilegedGroups);
 
   return {
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
+    createDatasetWithPidGroups: createDatasetWithPidGroups.split(",").map((v) => v.trim()),
+    createDatasetPrivilegedGroups: createDatasetPrivilegedGroups.split(",").map((v) => v.trim()),
+    datasetCreationValidationEnabled: datasetCreationValidationEnabled,
+    datasetCreationValidationRegex: datasetCreationValidationRegex,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsStaticValues:
       accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
