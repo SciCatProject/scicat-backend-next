@@ -102,9 +102,15 @@ jobs:
         run: npm run build
 
   api_tests:
-    name: API tests
+    name: API tests with ElasticSearch enabled - ${{ matrix.elasticsearch_enabled }}
     needs: [install-and-cache]
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        elasticsearch_enabled: ["yes", "no"]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -123,6 +129,7 @@ jobs:
 
       - name: API tests
         env:
+          ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
           MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
@@ -146,6 +153,17 @@ jobs:
           CREATE_DATASET_WITH_PID_GROUPS: "group2,group3"
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
+          ES_HOST: https://localhost:9200
+          ES_USERNAME: elastic
+          ES_PASSWORD: duo-password
+          MONGODB_COLLECTION: Dataset
+          ES_MAX_RESULT: 210000
+          ES_FIELDS_LIMIT: 400000
+          ES_INDEX: "dataset"
+          ES_REFRESH: "wait_for"
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
 
         # Start mongo container and app before running api tests
         run: |
@@ -166,6 +184,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Run stack in docker-compose
+        env:
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
+          ES_USERNAME: elastic
+          ES_PASSWORD: duo-password
+
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull

@@ -11,6 +11,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
@@ -41,6 +42,7 @@ type Subjects =
       | typeof User
       | typeof UserIdentity
       | typeof UserSettings
+      | typeof ElasticSearchActions
     >
   | "all";
 
@@ -94,10 +96,14 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // policies
       can(Action.Update, Policy);
+      // elasticSearch
+      can(Action.Manage, ElasticSearchActions);
+      // -------------------------------------
+      // origdatablocks
+      can(Action.Manage, OrigDatablock);
     } else {
       //
       // non admin users
-
       can(Action.ListOwn, ProposalClass);
       can(Action.ListOwn, DatasetClass);
       if (
@@ -128,6 +134,7 @@ export class CaslAbilityFactory {
       cannot(Action.InstrumentUpdate, Instrument);
       cannot(Action.InstrumentDelete, Instrument);
     }
+
     can(Action.Read, DatasetClass, { isPublished: true });
     can(Action.Read, DatasetClass, {
       isPublished: false,
@@ -181,7 +188,15 @@ export class CaslAbilityFactory {
 
     can(Action.Manage, Attachment, { ownerGroup: { $in: user.currentGroups } });
     can(Action.Manage, Datablock, { ownerGroup: { $in: user.currentGroups } });
-    can(Action.Manage, OrigDatablock, {
+
+    can(Action.Create, OrigDatablock);
+    can(Action.Read, OrigDatablock, {
+      accessGroups: { $in: user.currentGroups },
+    });
+    can(Action.Read, OrigDatablock, {
+      ownerGroup: { $in: user.currentGroups },
+    });
+    can(Action.Update, OrigDatablock, {
       ownerGroup: { $in: user.currentGroups },
     });
 

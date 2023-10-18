@@ -18,8 +18,10 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
+  isObjectWithOneKey,
   parseLimitFilters,
 } from "src/common/utils";
+import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
@@ -41,14 +43,21 @@ import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
+  private ESClient: ElasticSearchService | null;
   constructor(
     private configService: ConfigService,
     @InjectModel(DatasetClass.name)
     private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
+    @Inject(ElasticSearchService)
+    private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
-  ) {}
+  ) {
+    if (this.elasticSearchService.connected) {
+      this.ESClient = this.elasticSearchService;
+    }
+  }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
@@ -56,7 +65,11 @@ export class DatasetsService {
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
     );
-
+    if (this.ESClient) {
+      await this.ESClient.updateInsertDocument(
+        createdDataset.toObject() as DatasetDocument,
+      );
+    }
     return createdDataset.save();
   }
 
@@ -66,7 +79,6 @@ export class DatasetsService {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
-
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
       .limit(limit)
@@ -82,21 +94,36 @@ export class DatasetsService {
     filter: IFilters<DatasetDocument, IDatasetFields>,
     extraWhereClause: FilterQuery<DatasetDocument> = {},
   ): Promise<DatasetClass[] | null> {
+    let datasets;
+
     const filterQuery: FilterQuery<DatasetDocument> =
       createFullqueryFilter<DatasetDocument>(
         this.datasetModel,
         "pid",
         filter.fields as FilterQuery<DatasetDocument>,
       );
+
     const whereClause: FilterQuery<DatasetDocument> = {
       ...filterQuery,
       ...extraWhereClause,
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    const datasets = await this.datasetModel
-      .find(whereClause, null, modifiers)
-      .exec();
+    if (!this.ESClient || !whereClause) {
+      datasets = await this.datasetModel
+        .find(whereClause, null, modifiers)
+        .exec();
+    } else {
+      const esResult = await this.ESClient.search(
+        filter.fields as IDatasetFields,
+        modifiers.limit,
+        modifiers.skip,
+      );
+
+      datasets = await this.datasetModel
+        .find({ _id: { $in: esResult.data } }, null, modifiers)
+        .exec();
+    }
 
     return datasets;
   }
@@ -107,14 +134,42 @@ export class DatasetsService {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
 
-    const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
-      this.datasetModel,
-      "pid",
-      fields,
-      facets,
-    );
+    // NOTE: if fields contains no value, we should use mongo query to optimize performance.
+    // however, fields always contain mode key, so we need to check if there's more than one key
+    const isFieldsEmpty = isObjectWithOneKey(fields);
 
-    return await this.datasetModel.aggregate(pipeline).exec();
+    let data;
+    if (this.ESClient && !isFieldsEmpty) {
+      const totalDocCount = await this.datasetModel.countDocuments();
+
+      const { data: esPids } = await this.ESClient.search(
+        fields as IDatasetFields,
+        totalDocCount,
+      );
+
+      fields.mode = { _id: { $in: esPids } };
+      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+        this.datasetModel,
+        "pid",
+        fields,
+        facets,
+        "",
+      );
+
+      data = await this.datasetModel.aggregate(pipeline).exec();
+    } else {
+      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
+        this.datasetModel,
+        "pid",
+        fields,
+        facets,
+        "",
+      );
+
+      data = await this.datasetModel.aggregate(pipeline).exec();
+    }
+
+    return data;
   }
 
   async updateAll(
@@ -139,8 +194,19 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    let count = 0;
+    if (this.ESClient && !filter.where) {
+      const totalDocCount = await this.datasetModel.countDocuments();
 
-    const count = await this.datasetModel.count(whereFilter).exec();
+      const { totalCount } = await this.ESClient.search(
+        whereFilter as IDatasetFields,
+        totalDocCount,
+      );
+      count = totalCount;
+    } else {
+      count = await this.datasetModel.count(whereFilter).exec();
+    }
+
     return { count };
   }
 
@@ -155,6 +221,7 @@ export class DatasetsService {
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
+
     if (!existingDataset) {
       throw new NotFoundException();
     }
@@ -182,6 +249,11 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
+    if (this.ESClient) {
+      await this.ESClient.updateInsertDocument(
+        updatedDataset.toObject() as DatasetDocument,
+      );
+    }
     // we were able to find the dataset and update it
     return updatedDataset;
   }
@@ -218,15 +290,32 @@ export class DatasetsService {
       )
       .exec();
 
+    if (this.ESClient) {
+      await this.ESClient.updateInsertDocument(
+        patchedDataset?.toObject() as DatasetDocument,
+      );
+    }
+
     // we were able to find the dataset and update it
     return patchedDataset;
   }
 
   // DELETE dataset
   async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+    if (this.ESClient) {
+      await this.ESClient.deleteDocument(id);
+    }
     return await this.datasetModel.findOneAndRemove({ pid: id });
   }
-
+  // GET datasets without _id which is used for elastic search data synchronization
+  async getDatasetsWithoutId() {
+    try {
+      const datasets = this.datasetModel.find({}, { _id: 0 }).lean().exec();
+      return datasets;
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
   // Get metadata keys
   async metadataKeys(
     filters: IFilters<DatasetDocument, IDatasetFields>,

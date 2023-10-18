@@ -22,29 +22,6 @@ services:
       - ".env.scichat-loopback:/home/node/app/.env"
     depends_on:
       - mongodb
-
-  es01:
-    depends_on:
-      - mongodb
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    ports:
-      - ${ES_PORT}:9200
-    environment:
-      - node.name=es01
-      - ES_JAVA_OPTS=-Xms2g -Xmx2g
-      - cluster.name=${CLUSTER_NAME}
-      - cluster.initial_master_nodes=es01
-      - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - bootstrap.memory_lock=true
-    mem_limit: ${MEM_LIMIT}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-
 volumes:
   mongodb_data:
-    driver: local
-
-  es01:
     driver: local
