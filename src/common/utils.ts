@@ -176,6 +176,22 @@ export const extractMetadataKeys = <T>(
   return Array.from(keys);
 };
 
+export const flattenObject = <T>(obj: T) => {
+  const result: Record<string, unknown> = {};
+
+  for (const i in obj) {
+    if (typeof obj[i] === "object" && !Array.isArray(obj[i])) {
+      const temp = flattenObject(obj[i]);
+      for (const j in temp) {
+        result[i + "." + j] = temp[j];
+      }
+    } else {
+      result[i] = obj[i];
+    }
+  }
+  return result;
+};
+
 export const handleAxiosRequestError = (
   err: unknown,
   context?: string,

@@ -6,7 +6,7 @@ import { User } from "src/users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { Request } from "express";
 import { OidcConfig } from "src/config/configuration";
-import { parseBoolean } from "src/common/utils";
+import { flattenObject, parseBoolean } from "src/common/utils";
 import { Issuer } from "openid-client";
 
 @Injectable()
@@ -75,23 +75,6 @@ export class AuthService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  flattenObject = (obj: any) => {
-    const result: Record<string, unknown> = {};
-
-    for (const i in obj) {
-      if (typeof obj[i] === "object" && !Array.isArray(obj[i])) {
-        const temp = this.flattenObject(obj[i]);
-        for (const j in temp) {
-          result[i + "." + j] = temp[j];
-        }
-      } else {
-        result[i] = obj[i];
-      }
-    }
-    return result;
-  };
-
   async additionalLogoutTasks(req: Request, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
     if (user?.authStrategy === "oidc") {
@@ -111,7 +94,7 @@ export class AuthService {
           `${oidcConfig?.issuer}/.well-known/openid-configuration`,
         );
         // Flatten the object in case the end_session url is nested.
-        const flattenTrustIssuer = this.flattenObject(trustIssuer);
+        const flattenTrustIssuer = flattenObject(trustIssuer);
 
         // Note search for "end_session" key into the flatten object
         const endSessionEndpointKey = Object.keys(flattenTrustIssuer).find(
