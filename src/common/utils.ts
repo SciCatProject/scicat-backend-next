@@ -486,108 +486,166 @@ export const createFullqueryFilter = <T>(
   return filterQuery;
 };
 
+const pipelineHandler = {
+  handleTextSearch: <T, Y>(
+    pipeline: PipelineStage[],
+    model: Model<T>,
+    fields: Y,
+    key: string,
+  ) => {
+    if (typeof fields[key as keyof Y] !== "string") return;
+    const match = {
+      $match: {
+        $or: [
+          {
+            $text: searchExpression<T>(model, key, fields[key as keyof Y]) as {
+              $search: string;
+            },
+          },
+        ],
+      },
+    };
+    return pipeline.unshift(match);
+  },
+  handleIdFieldSearch: <T, Y>(
+    pipeline: PipelineStage[],
+    model: Model<T>,
+    fields: Y,
+    key: string,
+    idField: keyof T,
+  ) => {
+    const match = {
+      $match: {
+        [idField]: searchExpression<T>(model, key, fields[key as keyof Y]),
+      },
+    };
+    pipeline.push(match);
+  },
+  handleModeSearch: <T, Y>(
+    pipeline: PipelineStage[],
+    fields: Y,
+    key: string,
+    idField: keyof T,
+  ) => {
+    const currentExpression = JSON.parse(
+      JSON.stringify(fields[key as keyof Y]),
+    );
+    if (idField in currentExpression) {
+      currentExpression["_id"] = currentExpression[idField];
+      delete currentExpression[idField];
+    }
+    const match = {
+      $match: currentExpression,
+    };
+    pipeline.push(match);
+  },
+  handleUserGroupSearch: <T, Y>(
+    pipeline: PipelineStage[],
+    model: Model<T>,
+    fields: Y,
+    key: string,
+  ) => {
+    const hasFieldAndNotGlobal =
+      fields[key as keyof Y] &&
+      (fields[key as keyof Y] as unknown as string[]).indexOf("globalaccess") <
+        0;
+
+    const hasOwnerGroupInSchema = "ownerGroup" in model.schema.paths;
+
+    if (!hasFieldAndNotGlobal || !hasOwnerGroupInSchema) {
+      return;
+    }
+
+    const ownerGroupMatch = searchExpression<T>(
+      model,
+      "ownerGroup",
+      fields[key as keyof Y],
+    );
+    const accessGroupsMatch = searchExpression<T>(
+      model,
+      "accessGroups",
+      fields[key as keyof Y],
+    );
+
+    const match = {
+      $match: {
+        $or: [
+          { ownerGroup: ownerGroupMatch },
+          { accessGroups: accessGroupsMatch },
+        ],
+      },
+    };
+
+    pipeline.push(match);
+  },
+  handleScientificQuery: <Y>(
+    pipeline: PipelineStage[],
+    fields: Y,
+    key: string,
+  ) => {
+    const match = {
+      $match: mapScientificQuery(
+        fields[key as keyof Y] as unknown as IScientificFilter[],
+      ),
+    };
+    pipeline.push(match);
+  },
+
+  handleGenericSearch: <T, Y>(
+    pipeline: PipelineStage[],
+    model: Model<T>,
+    fields: Y,
+    key: string,
+  ) => {
+    const match: Record<string, unknown> = {};
+    match[key] = searchExpression<T>(model, key, fields[key as keyof Y]);
+    const m = {
+      $match: match,
+    };
+    pipeline.push(m);
+  },
+};
+
 export const createFullfacetPipeline = <T, Y extends object>(
-  model: Model<
-    T,
-    Record<string, never>,
-    Record<string, never>,
-    Record<string, never>
-  >,
+  model: Model<T>,
   idField: keyof T,
   fields: Y,
   facets: string[],
   subField = "",
 ): PipelineStage[] => {
-  const pipeline = [];
+  const pipeline: PipelineStage[] = [];
   const facetMatch: Record<string, unknown> = {};
 
   Object.keys(fields).forEach((key) => {
-    if (facets.indexOf(key) < 0) {
-      if (key === "text") {
-        if (typeof fields[key as keyof Y] === "string") {
-          const match = {
-            $match: {
-              $or: [
-                {
-                  $text: searchExpression<T>(
-                    model,
-                    key,
-                    fields[key as keyof Y],
-                  ),
-                },
-              ],
-            },
-          };
-          pipeline.unshift(match);
-        }
-      } else if (key === idField) {
-        const match = {
-          $match: {
-            [idField]: searchExpression<T>(model, key, fields[key as keyof Y]),
-          },
-        };
-        pipeline.push(match);
-      } else if (key === "mode") {
-        // substitute potential id field in fields
-        const currentExpression = JSON.parse(
-          JSON.stringify(fields[key as keyof Y]),
-        );
-        if (idField in currentExpression) {
-          currentExpression["_id"] = currentExpression[idField];
-          delete currentExpression[idField];
-        }
-        const match = {
-          $match: currentExpression,
-        };
-
-        pipeline.push(match);
-      } else if (key === "userGroups") {
-        if (
-          fields[key as keyof Y] &&
-          (fields[key as keyof Y] as unknown as string[]).indexOf(
-            "globalaccess",
-          ) < 0 &&
-          "ownerGroup" in model.schema.paths
-        ) {
-          const match = {
-            $match: {
-              $or: [
-                {
-                  ownerGroup: searchExpression<T>(
-                    model,
-                    "ownerGroup",
-                    fields[key as keyof Y],
-                  ),
-                },
-                {
-                  accessGroups: searchExpression<T>(
-                    model,
-                    "accessGroups",
-                    fields[key as keyof Y],
-                  ),
-                },
-              ],
-            },
-          };
-          pipeline.push(match);
-        }
-      } else if (key === "scientific" || key === "sampleCharacteristics") {
-        const match = {
-          $match: mapScientificQuery(
-            fields[key as keyof Y] as unknown as IScientificFilter[],
-          ),
-        };
-        pipeline.push(match);
-      } else {
-        const match: Record<string, unknown> = {};
-        match[key] = searchExpression<T>(model, key, fields[key as keyof Y]);
-        const m = {
-          $match: match,
-        };
-        pipeline.push(m);
-      }
-    } else {
+    if (facets.includes(key)) {
       facetMatch[key] = searchExpression<T>(model, key, fields[key as keyof Y]);
+    }
+
+    switch (key) {
+      case "text":
+        pipelineHandler.handleTextSearch(pipeline, model, fields, key);
+        break;
+      case idField:
+        pipelineHandler.handleIdFieldSearch(
+          pipeline,
+          model,
+          fields,
+          key,
+          idField,
+        );
+        break;
+      case "mode":
+        pipelineHandler.handleModeSearch(pipeline, fields, key, idField);
+        break;
+      case "userGroups":
+        pipelineHandler.handleUserGroupSearch(pipeline, model, fields, key);
+        break;
+      case "scientific":
+      case "sampleCharacteristics":
+        pipelineHandler.handleScientificQuery(pipeline, fields, key);
+        break;
+      default:
+        pipelineHandler.handleGenericSearch(pipeline, model, fields, key);
     }
   });
 
@@ -601,9 +659,8 @@ export const createFullfacetPipeline = <T, Y extends object>(
           facetMatch,
         );
         return;
-      } else if (
-        facet in model.schema.discriminators[DatasetType.Derived].paths
-      ) {
+      }
+      if (facet in model.schema.discriminators[DatasetType.Derived].paths) {
         facetObject[facet] = createNewFacetPipelineStage(
           facet,
           schemaTypeOf<T>(model, facet),
@@ -611,7 +668,8 @@ export const createFullfacetPipeline = <T, Y extends object>(
         );
         return;
       }
-    } else if (facet in model.schema.paths) {
+    }
+    if (facet in model.schema.paths) {
       facetObject[facet] = createNewFacetPipelineStage(
         facet,
         schemaTypeOf<T>(model, facet),
@@ -619,7 +677,6 @@ export const createFullfacetPipeline = <T, Y extends object>(
       );
       return;
     }
-
     if (facet.startsWith("datasetlifecycle.")) {
       const lifecycleFacet = facet.split(".")[1];
       facetObject[lifecycleFacet] = createNewFacetPipelineStage(
@@ -651,9 +708,11 @@ export const createFullfacetPipeline = <T, Y extends object>(
   facetObject["all"].push({
     $count: "totalSets",
   });
-  pipeline.push({ $facet: facetObject });
+  pipeline.push({
+    $facet: facetObject as Record<string, PipelineStage.FacetPipelineStage[]>,
+  });
 
-  return pipeline as PipelineStage[];
+  return pipeline;
 };
 
 export const addCreatedByFields = <T>(
