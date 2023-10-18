@@ -161,21 +161,11 @@ async function addAllDatasets() {
   for (let index = 0; index < NUMBER_OF_DATASETS_TO_CREATE; index++) {
     allPromises.push(addDataset());
   }
-
-  await Promise.all(allPromises).then(function (values) {
-    groupedDatasets[1] = values.filter(
-      (value) => value.ownerGroup === "group1",
-    );
-    groupedDatasets[2] = values.filter(
-      (value) => value.ownerGroup === "group2",
-    );
-    groupedDatasets[3] = values.filter(
-      (value) => value.ownerGroup === "group3",
-    );
-    groupedDatasets[4] = values.filter(
-      (value) => value.ownerGroup === "group4",
-    );
-  });
+  const values = await Promise.all(allPromises);
+  groupedDatasets[1] = values.filter((value) => value.ownerGroup === "group1");
+  groupedDatasets[2] = values.filter((value) => value.ownerGroup === "group2");
+  groupedDatasets[3] = values.filter((value) => value.ownerGroup === "group3");
+  groupedDatasets[4] = values.filter((value) => value.ownerGroup === "group4");
 }
 
 async function removeAllDatasets() {
@@ -326,7 +316,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
   it("access any dataset from group1 ownerGroup as user 1", async () => {
     const randomIndex = randomIntFromInterval(0, groupedDatasets[1].length - 1);
     const randomDatasetPid = groupedDatasets[1][randomIndex].pid;
-    
+
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(randomDatasetPid))
       .set("Accept", "application/json")
@@ -345,7 +335,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       groupedDatasets[randomGroupIndex].length - 1,
     );
     const randomDatasetPid = groupedDatasets[randomGroupIndex][randomIndex].pid;
-    
+
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(randomDatasetPid))
       .set("Accept", "application/json")

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare } from "bcrypt";
@@ -64,8 +64,8 @@ export class AuthService {
       req.logout(async (err) => {
         if (err) {
           // we should provide a message
-          console.log("Logout error");
-          console.log(err);
+          Logger.error("Logout error: ", err);
+          //res.status(HttpStatus.BAD_REQUEST);
         }
       });
 

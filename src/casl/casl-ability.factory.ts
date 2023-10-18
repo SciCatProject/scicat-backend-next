@@ -11,6 +11,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { Job } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
@@ -41,6 +42,7 @@ type Subjects =
       | typeof User
       | typeof UserIdentity
       | typeof UserSettings
+      | typeof ElasticSearchActions
     >
   | "all";
 
@@ -94,6 +96,8 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // policies
       can(Action.Update, Policy);
+      // elasticSearch
+      can(Action.Manage, ElasticSearchActions);
       // -------------------------------------
       // origdatablocks
       can(Action.Manage, OrigDatablock);

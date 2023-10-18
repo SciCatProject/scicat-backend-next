@@ -482,6 +482,7 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
   return filterQuery;
 };
 
@@ -538,6 +539,7 @@ export const createFullfacetPipeline = <T, Y extends object>(
         const match = {
           $match: currentExpression,
         };
+
         pipeline.push(match);
       } else if (key === "userGroups") {
         if (
@@ -843,4 +845,13 @@ const replaceLikeOperatorRecursive = (
   }
 
   return output;
+};
+
+export const isObjectWithOneKey = (obj: object): boolean => {
+  const keys = Object.keys(obj);
+  return keys.length === 1;
+};
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
