@@ -12,7 +12,11 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Req,
+  ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
+import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
 import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
@@ -27,7 +31,7 @@ import {
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import {
   OrigDatablock,
@@ -41,6 +45,8 @@ import { validate, ValidationError } from "class-validator";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
 import { filterDescription, filterExample } from "src/common/utils";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -49,7 +55,44 @@ export class OrigDatablocksController {
   constructor(
     private readonly origDatablocksService: OrigDatablocksService,
     private readonly datasetsService: DatasetsService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
+  async checkPermissionsForOrigDatablock(request: Request, id: string) {
+    const origDatablock = await this.origDatablocksService.findOne({ _id: id });
+    if (!origDatablock) {
+      throw new BadRequestException("Invalid origDatablock Id");
+    }
+
+    return await this.checkPermissionsForDataset(
+      request,
+      origDatablock.datasetId,
+    );
+  }
+
+  async checkPermissionsForDataset(request: Request, id: string) {
+    const user: JWTUser = request.user as JWTUser;
+    const dataset = await this.datasetsService.findOne({
+      where: { pid: id },
+    });
+    if (dataset) {
+      // NOTE: We need DatasetClass instance because casl module
+      // can not recognize the type from dataset mongo database model.
+      // If other fields are needed can be added later.
+      const newDatasetClass = new DatasetClass();
+      newDatasetClass.ownerGroup = dataset.ownerGroup;
+
+      if (user) {
+        const ability = this.caslAbilityFactory.createForUser(user);
+        const canUpdate = ability.can(Action.Update, newDatasetClass);
+        if (!canUpdate) {
+          throw new ForbiddenException("Unauthorized access");
+        }
+      }
+    } else {
+      throw new BadRequestException("Invalid datasetId");
+    }
+    return dataset;
+  }
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
@@ -75,14 +118,13 @@ export class OrigDatablocksController {
       "Create a new origdataset and return its representation in SciCat",
   })
   async create(
+    @Req() request: Request,
     @Body() createOrigDatablockDto: CreateOrigDatablockDto,
   ): Promise<OrigDatablock> {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: createOrigDatablockDto.datasetId },
-    });
-    if (!dataset) {
-      throw new BadRequestException("Invalid datasetId");
-    }
+    const dataset = await this.checkPermissionsForDataset(
+      request,
+      createOrigDatablockDto.datasetId,
+    );
 
     createOrigDatablockDto = {
       ...createOrigDatablockDto,
@@ -186,9 +228,24 @@ export class OrigDatablocksController {
     isArray: true,
     description: "Return the orig datablocks requested",
   })
-  async findAll(@Query("filter") filter?: string): Promise<OrigDatablock[]> {
+  async findAll(
+    @Req() request: Request,
+    @Query("filter") filter?: string,
+  ): Promise<OrigDatablock[]> {
+    const user: JWTUser = request.user as JWTUser;
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       JSON.parse(filter ?? "{}");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        parsedFilters.where = parsedFilters.where ?? {};
+        parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
+        parsedFilters.where.userGroups.push(...user.currentGroups);
+      }
+    }
+
     return this.origDatablocksService.findAll(parsedFilters);
   }
 
@@ -214,10 +271,24 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullquery(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
+
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -246,10 +317,23 @@ export class OrigDatablocksController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   async fullqueryFiles(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<OrigDatablock[] | null> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.Manage, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
@@ -263,12 +347,26 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet")
   async fullfacet(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.facets ?? "{}"),
     };
+
     return this.origDatablocksService.fullfacet(parsedFilters);
   }
 
@@ -279,10 +377,23 @@ export class OrigDatablocksController {
   )
   @Get("/fullfacet/files")
   async fullfacetFiles(
+    @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+      }
+    }
     const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
+      fields: fields,
       limits: JSON.parse(filters.facets ?? "{}"),
     };
     const getSubFieldCount = "dataFileList";
@@ -313,8 +424,34 @@ export class OrigDatablocksController {
     description: "The origdatablock requested",
     type: OrigDatablock,
   })
-  async findById(@Param("id") id: string): Promise<OrigDatablock | null> {
-    return this.origDatablocksService.findOne({ _id: id });
+  async findById(
+    @Req() request: Request,
+    @Param("id")
+    id: string,
+  ): Promise<OrigDatablock | null> {
+    const user = request.user as JWTUser;
+    const filter = {
+      _id: id,
+      userGroups: [] as string[],
+    };
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.ListAll, OrigDatablock);
+
+      if (!canViewAll) {
+        filter.userGroups.push(...user.currentGroups);
+      }
+    }
+
+    try {
+      const data = await this.origDatablocksService.findOne(filter);
+      return data;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw new ForbiddenException(error.message);
+      }
+      throw new NotFoundException(error);
+    }
   }
 
   // PATCH /origdatablocks/:id
@@ -344,9 +481,12 @@ export class OrigDatablocksController {
     type: OrigDatablock,
   })
   async update(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
+    await this.checkPermissionsForOrigDatablock(request, id);
+
     const origdatablock = (await this.origDatablocksService.update(
       { _id: id },
       updateOrigDatablockDto,
