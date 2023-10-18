@@ -111,6 +111,7 @@ export class AppModule implements OnApplicationBootstrap {
       this.configService.get<string>("rabbitMq.enabled") === "yes"
         ? true
         : false;
+
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
       const username = this.configService.get<string>("rabbitMq.username");

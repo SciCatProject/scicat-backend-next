@@ -156,6 +156,18 @@ const configuration = () => {
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
+    elasticSearch: {
+      enabled: process.env.ELASTICSEARCH_ENABLED ?? "no",
+      username: process.env.ES_USERNAME,
+      password: process.env.ES_PASSWORD,
+      host: process.env.ES_HOST,
+      refresh: process.env.ES_REFRESH,
+      maxResultWindow: parseInt(process.env.ES_MAX_RESULT || "100000", 10),
+      fieldsLimit: parseInt(process.env.ES_FIELDS_LIMIT || "100000", 10),
+      mongoDBCollection: process.env.MONGODB_COLLECTION,
+      defaultIndex: process.env.ES_INDEX ?? "dataset",
+    },
+
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
