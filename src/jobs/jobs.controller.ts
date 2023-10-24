@@ -22,7 +22,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Job, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
@@ -30,6 +30,7 @@ import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -254,27 +255,59 @@ export class JobsController {
   /**
    * Validate if the job is performable
    */
-  async validateJob(createJobDto: CreateJobDto, request: Request) {
-    const ids = createJobDto.datasetList.map((x) => x.pid);
-    this.checkPermission(request, createJobDto.type);
-    await this.checkDatasetsExistence(ids);
-    await this.checkDatasetsState(createJobDto.type, ids);
-    await this.checkFilesExistence(createJobDto);
+  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<Object> {
+    const jc = configuration().jobConfiguration.filter((j)=> j.type == createJobDto.type);
+    if (!jc) {
+      // return error that job type does not exists
+    }
+
+    const validate = ajv.compile(jobConfiguration.template)
+
+    const valid = validate(createJobDto.jobParams);
+    if (!valid) {
+      // return error that input parameters are not correct
+    }
+    return jc[0];
   }
 
-  @AllowAny()
+  async instanceAuthentication (createJobDto: CreateJobDto, jobConfiguration: Object) : Promise<boolean> {
+    // checking if user is allowed to create job according to auth field of job configureation
+    // Accepted options
+    // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser, 
+    if (jobConfiguration.auth != "#all" ) {
+
+    } else if ( jobConfiguration["auth"]["#datasetOwner"] ) {
+       // versify that all the pids listed in the property indicated are owned by the user
+    }
+    return true;
+  }
+
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.CreateJob, JobClass),
+  )
   @Post()
+  @ApiOperation({
+    summary: "It creates a new job.",
+    description:
+      "It creates a new job.",
+  })
+  @ApiBody({
+    description: "Input fields for the job to be created",
+    required: true,
+    schema: JobSchema
+  })
   @ApiResponse({
-    status: HttpStatus.CREATED,
-    type: Job,
-    description: "Created job",
+    status: 201,
+    type: JobClass,
+    description: "Create a new job and return its representation in SciCat",
   })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<Job> {
-    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
-    await this.validateJob(jobToCreate, request);
+    await this.validateJob(createJobDto, request);
 
     const createdJob = await this.jobsService.create(jobToCreate);
 
