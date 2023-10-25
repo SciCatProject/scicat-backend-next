@@ -22,6 +22,13 @@ export interface IShould {
   };
 }
 
+export interface IBoolShould {
+  bool: {
+    should: IShould[];
+    minimum_should_match?: number;
+  };
+}
+
 export interface IFilter {
   terms?: {
     [key: string]: string[];
