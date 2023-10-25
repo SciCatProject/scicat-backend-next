@@ -53,7 +53,7 @@
     "handlebars": "^4.7.7",
     "lodash": "^4.17.21",
     "luxon": "^3.2.1",
-    "mathjs": "^11.4.0",
+    "mathjs": "^11.11.2",
     "migrate-mongo": "^11.0.0",
     "mongoose": "^7.4.3",
     "node-fetch": "^3.3.0",
@@ -124,8 +124,7 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "transformIgnorePatterns": [
-    ],
+    "transformIgnorePatterns": [],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
