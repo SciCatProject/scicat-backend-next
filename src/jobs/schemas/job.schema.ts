@@ -6,6 +6,28 @@ import { JobType } from "../job-type.enum";
 
 export type JobDocument = Job & Document;
 
+{
+  "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
+  "type" : "archive",
+  "created_by" : "user_1"
+  "created_at" : <timestamp>,
+  "status_code" : "CREATED",
+  "updaded_at": <timestamp>,
+  "updated_by": “user_1”,
+  "status_message": "Job created",
+  "updates_history" : [
+   {
+    "updaded_at": <timestamp>,
+    "updated_by": “user_1”,
+    "status_code" : "",
+    "statue_message" : ""
+   }
+  ],
+  "message_sent” : { <copy of the message posted see #7> },
+  "configuration" : {},
+  "params" : {}
+}
+
 @Schema({
   collection: "Job",
   timestamps: { createdAt: "creationTime", updatedAt: false },
@@ -30,12 +52,14 @@ export class Job {
   @Prop({ type: String, required: true })
   emailJobInitiator: string;
 
-  @ApiProperty({ description: "Type of job, e.g. archive, retrieve etc" })
+  @ApiProperty({
+    type: String, 
+    description: "Type of job as defined in the job configuration, e.g. archive, retrieve etc",
+    required: true
+  })
   @Prop({
     type: String,
     required: true,
-    enum: [JobType.Archive, JobType.Retrieve, JobType.Public],
-    default: JobType.Retrieve,
   })
   type: string;
 

@@ -27,6 +27,6 @@ export class CreateJobDto {
     description: "Job's parameters as defined by job template in configuration",
   })
   @IsObject()
-  readonly jobParams?: Record<string, unknown>;
+  readonly jobParams: Record<string, unknown>;
 
 }
