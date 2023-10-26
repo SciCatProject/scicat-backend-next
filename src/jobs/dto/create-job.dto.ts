@@ -1,17 +1,12 @@
-import { Type } from "class-transformer";
 import {
-  IsArray,
-  IsDateString,
   IsEmail,
   IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
 } from "class-validator";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { DatasetListDto } from "./dataset-list.dto";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
 
+@ApiTags("jobs")
 export class CreateJobDto {
   @ApiProperty({
     type: String,
@@ -29,4 +24,36 @@ export class CreateJobDto {
   @IsObject()
   readonly jobParams: Record<string, unknown>;
 
+  /*
+  New stuff from here
+  */
+  // Do we want to let users provide/resrve job-ids on creation?
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Id for the job to be crated.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly id?: string;
+  
+  @ApiProperty({
+    type: [String],
+    required: false,
+    default: [],
+    description: "Array of existing job ids which need to finish before this job can run.",
+  })
+  @IsOptional()
+  @IsString({ each: true })
+  readonly dependsOn?: string[]
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Email of the contact person for this job.",
+  })
+  @IsOptional()
+  @IsEmail()
+  readonly contactEmail?: string;
+  
 }
