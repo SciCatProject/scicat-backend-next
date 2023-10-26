@@ -42,6 +42,9 @@ export interface IFilter {
       lte?: string | number;
     };
   };
+  match?: {
+    [key: string]: string | number;
+  };
   nested?: {
     path: string;
     query: {

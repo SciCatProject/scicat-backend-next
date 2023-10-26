@@ -18,7 +18,6 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
-  isObjectWithOneKey,
   parseLimitFilters,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
@@ -109,7 +108,9 @@ export class DatasetsService {
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    if (!this.ESClient || !whereClause) {
+    const noFilter = Object.keys(whereClause).length === 0;
+
+    if (!this.ESClient || noFilter) {
       datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
@@ -133,13 +134,11 @@ export class DatasetsService {
   ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
-
     // NOTE: if fields contains no value, we should use mongo query to optimize performance.
     // however, fields always contain mode key, so we need to check if there's more than one key
-    const isFieldsEmpty = isObjectWithOneKey(fields);
-
+    const isFieldsEmpty = Object.keys(fields).length === 1;
     let data;
-    if (this.ESClient && !isFieldsEmpty) {
+    if (!!this.ESClient && !isFieldsEmpty) {
       const totalDocCount = await this.datasetModel.countDocuments();
 
       const { data: esPids } = await this.ESClient.search(
@@ -154,6 +153,7 @@ export class DatasetsService {
         fields,
         facets,
         "",
+        !!this.ESClient,
       );
 
       data = await this.datasetModel.aggregate(pipeline).exec();

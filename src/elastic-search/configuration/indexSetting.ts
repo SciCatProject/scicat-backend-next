@@ -44,7 +44,16 @@ export const dynamic_template:
       },
     },
   },
-
+  {
+    double_as_double: {
+      path_match: "scientificMetadata.*.*",
+      match_mapping_type: "double",
+      mapping: {
+        type: "double",
+        ignore_malformed: true,
+      },
+    },
+  },
   {
     date_as_keyword: {
       path_match: "scientificMetadata.*.*",
