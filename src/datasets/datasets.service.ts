@@ -108,9 +108,9 @@ export class DatasetsService {
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    const noFilter = Object.keys(whereClause).length === 0;
+    const isFieldsEmpty = Object.keys(whereClause).length === 0;
 
-    if (!this.ESClient || noFilter) {
+    if (!this.ESClient || isFieldsEmpty) {
       datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
