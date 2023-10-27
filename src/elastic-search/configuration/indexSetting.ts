@@ -39,17 +39,8 @@ export const dynamic_template:
       path_match: "scientificMetadata.*.*",
       match_mapping_type: "long",
       mapping: {
-        type: "long",
-        ignore_malformed: true,
-      },
-    },
-  },
-  {
-    double_as_double: {
-      path_match: "scientificMetadata.*.*",
-      match_mapping_type: "double",
-      mapping: {
         type: "double",
+        coerce: true,
         ignore_malformed: true,
       },
     },

@@ -50,7 +50,7 @@ export interface IFilter {
     query: {
       bool: {
         must: (
-          | { match?: { [key: string]: string } }
+          | { term?: { [key: string]: string } }
           | { range?: { [key: string]: { [key: string]: string | number } } }
         )[];
       };

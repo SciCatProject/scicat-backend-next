@@ -83,7 +83,7 @@ export const convertToElasticSearchQuery = (
 
     if (fieldType === "valueSI" || fieldType === "value") {
       const numberFilter = {
-        match: {
+        term: {
           [`${firstPart}.${middlePart}.value_type`]:
             typeof value === "number" ? "number" : "string",
         },
@@ -94,7 +94,7 @@ export const convertToElasticSearchQuery = (
     filter =
       esOperation === "eq"
         ? {
-            match: { [`${transformedKey}`]: value },
+            term: { [`${transformedKey}`]: value },
           }
         : { range: { [`${transformedKey}`]: { [esOperation]: value } } };
 
