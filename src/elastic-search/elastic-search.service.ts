@@ -176,6 +176,18 @@ export class ElasticSearchService implements OnModuleInit {
     return bulkResponse;
   }
 
+  async getCount(index = this.defaultIndex) {
+    try {
+      return await this.esService.count({ index });
+    } catch (error) {
+      Logger.error("getCount failed-> ElasticSearchService", error);
+      throw new HttpException(
+        `getCount failed-> ElasticSearchService ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async updateIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.close({
