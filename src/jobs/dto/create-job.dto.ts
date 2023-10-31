@@ -11,7 +11,8 @@ export class CreateJobDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Valid job type as defined in configuration.",
+    description:
+      "Valid job type as defined in configuration.",
   })
   @IsString()
   readonly type: string;
@@ -19,7 +20,8 @@ export class CreateJobDto {
   @ApiProperty({
     type: Object,
     required: true,
-    description: "Job's parameters as defined by job template in configuration",
+    description:
+      "Job's parameters as defined by job template in configuration",
   })
   @IsObject()
   readonly jobParams: Record<string, unknown>;
@@ -31,29 +33,31 @@ export class CreateJobDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Id for the job to be crated.",
+    description:
+      "Id for the job to be crated.",
   })
   @IsOptional()
   @IsString()
   readonly id?: string;
-  
+
   @ApiProperty({
     type: [String],
     required: false,
     default: [],
-    description: "Array of existing job ids which need to finish before this job can run.",
+    description:
+      "Array of existing job ids which need to finish before this job can run.",
   })
   @IsOptional()
   @IsString({ each: true })
-  readonly dependsOn?: string[]
+  readonly dependsOn?: string[];
 
   @ApiProperty({
     type: String,
     required: false,
-    description: "Email of the contact person for this job.",
+    description:
+      "Email of the contact person for this job.",
   })
   @IsOptional()
   @IsEmail()
   readonly contactEmail?: string;
-  
 }
