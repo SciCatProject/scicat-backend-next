@@ -123,9 +123,8 @@ export class DatasetsService {
         modifiers.limit,
         modifiers.skip,
       );
-
       datasets = await this.datasetModel
-        .find({ _id: { $in: esResult.data } }, null, modifiers)
+        .find({ _id: { $in: esResult.data } })
         .exec();
     }
 
@@ -135,15 +134,18 @@ export class DatasetsService {
   async fullFacet(
     filters: IFacets<IDatasetFields>,
   ): Promise<Record<string, unknown>[]> {
+    let data;
+
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
+
     // NOTE: if fields contains no value, we should use mongo query to optimize performance.
     // however, fields always contain "mode" key, so we need to check if there's more than one key
     const isFieldsEmpty = Object.keys(fields).length === 1;
 
     // NOTE: if Elastic search DB is empty we should use default mongo query
     const canPerformElasticSearchQueries = await this.isElasticSearchDBEmpty();
-    let data;
+
     if (!this.ESClient || isFieldsEmpty || !canPerformElasticSearchQueries) {
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
         this.datasetModel,
@@ -155,9 +157,10 @@ export class DatasetsService {
 
       data = await this.datasetModel.aggregate(pipeline).exec();
     } else {
+      const { count: initialCount } = await this.ESClient.getCount();
       const { totalCount, data: esPids } = await this.ESClient.search(
         fields as IDatasetFields,
-        0,
+        initialCount,
       );
 
       fields.mode = { _id: { $in: esPids } };
@@ -170,6 +173,7 @@ export class DatasetsService {
         !!this.ESClient,
       );
       data = await this.datasetModel.aggregate(pipeline).exec();
+
       // NOTE: below code is to overwrite totalCount with ES result
       data[0].all = [{ totalSets: totalCount }];
     }

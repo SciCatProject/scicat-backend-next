@@ -259,7 +259,8 @@ export class ElasticSearchService implements OnModuleInit {
       const searchOptions = {
         track_scores: true,
         body: searchQuery,
-        size: limit + skip,
+        from: skip,
+        size: limit,
         sort: [{ _score: { order: "desc" } }],
         min_score: defaultMinScore,
         track_total_hits: true,
