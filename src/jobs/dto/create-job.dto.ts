@@ -34,7 +34,7 @@ export class CreateJobDto {
     type: String,
     required: false,
     description:
-      "Id for the job to be crated.",
+      "Id for the job to be created.",
   })
   @IsOptional()
   @IsString()
