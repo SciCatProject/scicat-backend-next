@@ -160,6 +160,7 @@ export class DatasetsService {
       const facetResult = await this.ESClient.aggregate(fields);
 
       data = facetResult;
+
     }
     return data;
   }
