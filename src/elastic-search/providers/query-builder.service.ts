@@ -9,6 +9,7 @@ import {
   ObjectType,
 } from "../interfaces/es-common.type";
 import { FilterFields, QueryFields, FacetFields } from "./fields.enum";
+
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { convertToElasticSearchQuery } from "../helpers/utils";
