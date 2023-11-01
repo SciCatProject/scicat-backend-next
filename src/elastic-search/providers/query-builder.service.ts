@@ -1,12 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import {
-  IBoolShould,
-  IFilter,
-  IShould,
-  ObjectType,
-} from "../interfaces/es-common.type";
+import { IFilter, IShould, ObjectType } from "../interfaces/es-common.type";
 import { FilterFields, QueryFields } from "./fields.enum";
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
@@ -62,7 +57,7 @@ export class SearchQueryService {
 
       shouldFilter.push(ownerGroup, accessGroups);
     }
-    return { bool: { should: shouldFilter, minimum_should_match: 1 } };
+    return shouldFilter;
   }
 
   private buildTextQuery(text: string): QueryDslQueryContainer[] {
@@ -166,13 +161,19 @@ export class SearchQueryService {
 
   private constructFinalQuery(
     filter: IFilter[],
-    should: IBoolShould,
+    should: IShould[],
     query: QueryDslQueryContainer[],
   ) {
     const finalQuery = {
       query: {
         bool: {
-          filter: [...filter, should],
+          filter,
+          should: {
+            bool: {
+              should,
+              minimum_should_match: 1,
+            },
+          },
           must: query,
         },
       },

@@ -70,17 +70,11 @@ export const convertToElasticSearchQuery = (
   for (const field in scientificQuery) {
     const query = scientificQuery[field] as Record<string, unknown>;
     const operation = Object.keys(query)[0];
-    const value =
-      typeof query[operation] === "string"
-        ? (query[operation] as string).trim()
-        : query[operation];
-
+    const value = query[operation];
     const esOperation = operation.replace("$", "");
 
-    // NOTE-EXAMPLE:
-    // trasnformedKey = "scientificMetadata.someKey.value"
-    // firstPart = "scientificMetadata",
-    // middlePart = "someKey"
+    // Example: trasnformedKey = "scientificMetadata.someKey.value"
+    // firstPart = "scientificMetadata" , middlePart = "someKey"
     const { transformedKey, firstPart, middlePart } = transformMiddleKey(field);
 
     let filter = {};
