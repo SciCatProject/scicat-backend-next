@@ -57,3 +57,27 @@ export interface IFilter {
     };
   };
 }
+
+export interface IFullFacets {
+  [key: string]: {
+    terms?: {
+      field: string;
+      order: {
+        _key?: string;
+        _count?: string;
+      };
+    };
+    value_count?: {
+      field: "pid";
+    };
+  };
+}
+
+export interface ITransformedFullFacets {
+  [key: string]:
+    | {
+        _id: string;
+        count: number;
+      }
+    | { totalSets: number };
+}

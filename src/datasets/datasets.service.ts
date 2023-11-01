@@ -157,27 +157,10 @@ export class DatasetsService {
 
       data = await this.datasetModel.aggregate(pipeline).exec();
     } else {
-      const { count: initialCount } = await this.ESClient.getCount();
-      const { totalCount, data: esPids } = await this.ESClient.search(
-        fields as IDatasetFields,
-        initialCount,
-      );
+      const facetResult = await this.ESClient.aggregate(fields);
 
-      fields.mode = { _id: { $in: esPids } };
-      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
-        this.datasetModel,
-        "pid",
-        fields,
-        facets,
-        "",
-        !!this.ESClient,
-      );
-      data = await this.datasetModel.aggregate(pipeline).exec();
-
-      // NOTE: below code is to overwrite totalCount with ES result
-      data[0].all = [{ totalSets: totalCount }];
+      data = facetResult;
     }
-
     return data;
   }
 

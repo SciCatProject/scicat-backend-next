@@ -11,6 +11,7 @@ import { SearchQueryService } from "./providers/query-builder.service";
 import {
   SearchTotalHits,
   SearchRequest,
+  AggregationsAggregate,
 } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import {
@@ -24,7 +25,11 @@ import {
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
-import { transformKeysInObject, initialSyncTransform } from "./helpers/utils";
+import {
+  transformKeysInObject,
+  initialSyncTransform,
+  transformFacets,
+} from "./helpers/utils";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -287,6 +292,37 @@ export class ElasticSearchService implements OnModuleInit {
     }
   }
 
+  async aggregate(searchParam: IDatasetFields) {
+    try {
+      const searchQuery = this.searchService.buildSearchQuery(searchParam);
+      const facetPipeline = this.searchService.buildFullFacetPipeline();
+
+      const searchOptions = {
+        query: searchQuery.query,
+        size: 0,
+        aggs: facetPipeline,
+        _source: [""],
+      } as SearchRequest;
+
+      const body = await this.esService.search(searchOptions);
+
+      const transformedFacets = transformFacets(
+        body.aggregations as AggregationsAggregate,
+      );
+
+      return transformedFacets;
+    } catch (error) {
+      Logger.error(
+        "SearchService || aggregate query issue || -> aggregate",
+        error,
+      );
+
+      throw new HttpException(
+        `SearchService || aggregate query issue || -> aggregate ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
   async updateInsertDocument(data: DatasetDocument) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
@@ -349,7 +385,10 @@ export class ElasticSearchService implements OnModuleInit {
       },
       onDrop(doc) {
         console.error(doc.document._id, doc.error?.reason);
-        Logger.error("data insert faield: ", doc.document._id);
+        Logger.error(
+          "SearchService-> performBulkOperation-> data insert faield: ",
+          doc.document._id,
+        );
       },
     });
   }
