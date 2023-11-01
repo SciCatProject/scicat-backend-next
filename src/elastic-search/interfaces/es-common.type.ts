@@ -22,6 +22,13 @@ export interface IShould {
   };
 }
 
+export interface IBoolShould {
+  bool: {
+    should: IShould[];
+    minimum_should_match?: number;
+  };
+}
+
 export interface IFilter {
   terms?: {
     [key: string]: string[];
@@ -35,12 +42,15 @@ export interface IFilter {
       lte?: string | number;
     };
   };
+  match?: {
+    [key: string]: string | number;
+  };
   nested?: {
     path: string;
     query: {
       bool: {
         must: (
-          | { match?: { [key: string]: string } }
+          | { term?: { [key: string]: string } }
           | { range?: { [key: string]: { [key: string]: string | number } } }
         )[];
       };
