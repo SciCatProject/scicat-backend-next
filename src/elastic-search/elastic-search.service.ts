@@ -176,6 +176,18 @@ export class ElasticSearchService implements OnModuleInit {
     return bulkResponse;
   }
 
+  async getCount(index = this.defaultIndex) {
+    try {
+      return await this.esService.count({ index });
+    } catch (error) {
+      Logger.error("getCount failed-> ElasticSearchService", error);
+      throw new HttpException(
+        `getCount failed-> ElasticSearchService ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async updateIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.close({
@@ -247,7 +259,8 @@ export class ElasticSearchService implements OnModuleInit {
       const searchOptions = {
         track_scores: true,
         body: searchQuery,
-        size: limit + skip,
+        from: skip,
+        size: limit,
         sort: [{ _score: { order: "desc" } }],
         min_score: defaultMinScore,
         track_total_hits: true,
