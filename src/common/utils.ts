@@ -619,21 +619,21 @@ export const createFullfacetPipeline = <T, Y extends object>(
   fields: Y,
   facets: string[],
   subField = "",
-  esPids?: string[],
+  esEnabled = false,
 ): PipelineStage[] => {
-<<<<<<< HEAD
   const pipeline: PipelineStage[] = [];
   const facetMatch: Record<string, unknown> = {};
-=======
-  const pipeline = [];
-  const facetMatch: Record<string, unknown> = esPids
-    ? { _id: { $in: esPids } }
-    : {};
->>>>>>> b35ceca7 (fix: fix lint issue)
 
   Object.keys(fields).forEach((key) => {
     if (facets.includes(key)) {
       facetMatch[key] = searchExpression<T>(model, key, fields[key as keyof Y]);
+    }
+
+    if (esEnabled) {
+      if (key === "mode") {
+        pipelineHandler.handleModeSearch(pipeline, fields, key, idField);
+      }
+      return;
     }
 
     switch (key) {
@@ -927,11 +927,6 @@ const replaceLikeOperatorRecursive = (
   }
 
   return output;
-};
-
-export const isObjectWithOneKey = (obj: object): boolean => {
-  const keys = Object.keys(obj);
-  return keys.length === 1;
 };
 
 export const sleep = (ms: number) => {
