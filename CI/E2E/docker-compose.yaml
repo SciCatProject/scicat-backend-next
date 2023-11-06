@@ -64,8 +64,6 @@ services:
       - "traefik.http.routers.frontend.entrypoints=web"
 
   es01:
-    depends_on:
-      - mongodb
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     ports:
       - 9200:9200
@@ -76,7 +74,6 @@ services:
       - cluster.name=${CLUSTER_NAME}
       - cluster.initial_master_nodes=es01
       - bootstrap.memory_lock=true
-
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
