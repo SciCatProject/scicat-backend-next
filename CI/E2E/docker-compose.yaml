@@ -40,6 +40,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     volumes:
       - "./CI/E2E/backend.env:/home/node/app/.env"
     #  - "./CI/E2E/frontend.config.json:/home/node/app/dist/config/frontend.config.json"
@@ -69,7 +71,6 @@ services:
       - xpack.security.enabled=false
       - node.name=es01
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - ES_PASSWORD=password
       - cluster.name=es-cluster
       - cluster.initial_master_nodes=es01
       - bootstrap.memory_lock=true
