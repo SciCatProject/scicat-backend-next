@@ -191,10 +191,6 @@ jobs:
           sudo sysctl -w vm.max_map_count=262144
 
       - name: Run stack in docker-compose
-        env:
-          STACK_VERSION: 8.8.2
-          CLUSTER_NAME: es-cluster
-          MEM_LIMIT: 1G
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
