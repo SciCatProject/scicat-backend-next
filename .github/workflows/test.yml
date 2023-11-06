@@ -183,6 +183,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Configure sysctl limits for elastic search
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+
       - name: Run stack in docker-compose
         env:
           STACK_VERSION: 8.8.2
@@ -190,7 +197,6 @@ jobs:
           MEM_LIMIT: 4G
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password
-
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
