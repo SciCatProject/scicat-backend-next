@@ -210,6 +210,11 @@ jobs:
           path: frontend
           fetch-depth: 1
 
+      - name: Wait for Backend
+        run: |
+          npm install -g wait-on && \
+          wait-on http-get://backend:3000/api/v3/health --timeout 300000
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
