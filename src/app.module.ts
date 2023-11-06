@@ -30,6 +30,7 @@ import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
+import { HealthModule } from "./health/health.module";
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { AdminModule } from "./admin/admin.module";
     SamplesModule,
     UsersModule,
     AdminModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [
