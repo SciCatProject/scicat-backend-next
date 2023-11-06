@@ -84,7 +84,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -s -X GET http://localhost:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
+          "curl -s -X GET http://es01:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
         ]
       interval: 30s
       timeout: 10s
