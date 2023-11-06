@@ -37,6 +37,8 @@ services:
       mongodb:
         condition: service_healthy
   backend:
+    ports:
+      - 3000:3000
     build:
       context: .
       dockerfile: Dockerfile
