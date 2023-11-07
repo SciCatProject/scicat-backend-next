@@ -183,14 +183,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Run stack in docker-compose
-        env:
-          STACK_VERSION: 8.8.2
-          CLUSTER_NAME: es-cluster
-          MEM_LIMIT: 4G
-          ES_USERNAME: elastic
-          ES_PASSWORD: duo-password
+      - name: Configure sysctl limits for elastic search
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
 
+      - name: Run stack in docker-compose
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
           docker-compose pull
@@ -203,6 +203,11 @@ jobs:
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1
+
+      - name: Wait for Backend
+        run: |
+          npm install -g wait-on && \
+          wait-on http://localhost:3000/api/v3/health --timeout 200000
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
