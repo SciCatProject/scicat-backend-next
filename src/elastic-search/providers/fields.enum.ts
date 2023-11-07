@@ -10,6 +10,14 @@ export enum FilterFields {
   IsPublished = "isPublished",
 }
 
+export enum FacetFields {
+  Type = "type",
+  CreationLocation = "creationLocation",
+  OwnerGroup = "ownerGroup",
+  AccessGroups = "accessGroups",
+  Keywords = "keywords",
+}
+
 export enum QueryFields {
   DatasetName = "datasetName",
   Description = "description",

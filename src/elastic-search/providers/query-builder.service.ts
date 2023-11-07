@@ -4,10 +4,12 @@ import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interfac
 import {
   IBoolShould,
   IFilter,
+  IFullFacets,
   IShould,
   ObjectType,
 } from "../interfaces/es-common.type";
-import { FilterFields, QueryFields } from "./fields.enum";
+import { FilterFields, QueryFields, FacetFields } from "./fields.enum";
+
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { convertToElasticSearchQuery } from "../helpers/utils";
@@ -16,6 +18,7 @@ import { convertToElasticSearchQuery } from "../helpers/utils";
 export class SearchQueryService {
   readonly filterFields = [...Object.values(FilterFields)];
   readonly queryFields = [...Object.values(QueryFields)];
+  readonly facetFields = [...Object.values(FacetFields)];
   readonly textQuerySplitMethod = /[ ,]+/;
 
   public buildSearchQuery(searchParam: IDatasetFields) {
@@ -178,5 +181,27 @@ export class SearchQueryService {
       },
     };
     return finalQuery;
+  }
+
+  public buildFullFacetPipeline(facetFields = this.facetFields) {
+    const pipeline: IFullFacets = {
+      all: {
+        value_count: {
+          field: "pid",
+        },
+      },
+    };
+
+    for (const field of facetFields) {
+      pipeline[field] = {
+        terms: {
+          field: field,
+          order: {
+            _count: "desc",
+          },
+        },
+      };
+    }
+    return pipeline;
   }
 }
