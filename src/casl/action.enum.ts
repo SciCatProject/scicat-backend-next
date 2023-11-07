@@ -113,7 +113,6 @@ export enum Action {
   JobsReadAny = "jobs_read_any",
   JobsUpdateAccess = "jobs_update_access",
   JobsUpdateAny = "jobs_update_any",
-  
 
   // -------------
   // Users actions

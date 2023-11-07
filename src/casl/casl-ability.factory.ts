@@ -84,7 +84,7 @@ export class CaslAbilityFactory {
       */
 
       // -------------------------------------
-      // datasets 
+      // datasets
       // -------------------------------------
       // endpoint authorization
       can(Action.DatasetDelete, DatasetClass);
@@ -101,21 +101,20 @@ export class CaslAbilityFactory {
       can(Action.DatasetDatablockDeleteAny, DatasetClass);
 
       // -------------------------------------
-      // origdatablock 
+      // origdatablock
       // -------------------------------------
       // endpoint authorization
       can(Action.OrigdatablockDelete, DatasetClass);
       // -------------------------------------
       // data instance authorization
       can(Action.OrigdatablockDeleteAny, DatasetClass);
-
     } else {
       /*
       / unauthorized user or user that does not belong to any of the group listed in DELETE_GROUPS
       */
 
       // -------------------------------------
-      // datasets 
+      // datasets
       // -------------------------------------
       // endpoint authorization
       cannot(Action.DatasetDelete, DatasetClass);
@@ -125,14 +124,12 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetDatablockDelete, DatasetClass);
 
       // -------------------------------------
-      // origdatablock 
+      // origdatablock
       // -------------------------------------
       // endpoint authorization
       cannot(Action.OrigdatablockDelete, DatasetClass);
-
     }
 
-    
     if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -144,7 +141,7 @@ export class CaslAbilityFactory {
       //can(Action.ListAll, DatasetClass);
       can(Action.ListAll, ProposalClass);
       can(Action.ReadAll, UserIdentity);
-      
+
       // -------------------------------------
       // datasets
       // -------------------------------------
@@ -192,15 +189,14 @@ export class CaslAbilityFactory {
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
       // data instance authorization
-      can(Action.OrigdatablockReadAny, OrigDatablock,);
+      can(Action.OrigdatablockReadAny, OrigDatablock);
       can(Action.OrigdatablockCreateAny, OrigDatablock);
       can(Action.OrigdatablockUpdateAny, OrigDatablock);
-
 
       // -------------------------------------
       // user endpoint, including useridentity
@@ -218,9 +214,10 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // policies
       can(Action.Update, Policy);
-
-    } else if ( 
-      user.currentGroups.some((g) => configuration().createDatasetPrivilegedGroups.includes(g))
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetPrivilegedGroups.includes(g),
+      )
     ) {
       /**
       /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
@@ -293,7 +290,7 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetDatablockCreateAny, DatasetClass);
@@ -307,18 +304,18 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetLogbookReadOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
 
       // -------------------------------------
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
@@ -337,9 +334,10 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-
     } else if (
-      user.currentGroups.some((g) => configuration().createDatasetWithPidGroups.includes(g) ) ||
+      user.currentGroups.some((g) =>
+        configuration().createDatasetWithPidGroups.includes(g),
+      ) ||
       configuration().createDatasetWithPidGroups.includes("#all")
     ) {
       /**
@@ -417,7 +415,7 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetDatablockCreateAny, DatasetClass, {
@@ -433,18 +431,18 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetLogbookReadOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
 
       // -------------------------------------
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
@@ -465,9 +463,10 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-
     } else if (
-      user.currentGroups.some((g) => configuration().createDatasetGroups.includes(g) ) ||
+      user.currentGroups.some((g) =>
+        configuration().createDatasetGroups.includes(g),
+      ) ||
       configuration().createDatasetGroups.includes("#all")
     ) {
       /**
@@ -546,7 +545,7 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetDatablockCreateAny, DatasetClass, {
@@ -562,18 +561,18 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
       // -
       can(Action.DatasetLogbookReadOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
 
       // -------------------------------------
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
@@ -594,7 +593,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-
     } else if (user) {
       /**
       /*  authenticated users
@@ -622,7 +620,7 @@ export class CaslAbilityFactory {
       can(Action.DatasetLogbookRead, DatasetClass);
       // -------------------------------------
       // datasets data instance authorization
-      can(Action.DatasetReadManyAccess, DatasetClass)
+      can(Action.DatasetReadManyAccess, DatasetClass);
       can(Action.DatasetReadOneAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
       });
@@ -664,14 +662,14 @@ export class CaslAbilityFactory {
       });
       // -
       can(Action.DatasetLogbookReadOwner, DatasetClass, {
-        ownerGroup: { $in: user.currentGroups }
+        ownerGroup: { $in: user.currentGroups },
       });
 
       // -------------------------------------
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       cannot(Action.OrigdatablockCreate, OrigDatablock);
       cannot(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
@@ -686,7 +684,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
-
     } else {
       /**
       /*  unauthenticated users
@@ -735,7 +732,7 @@ export class CaslAbilityFactory {
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock,);
+      can(Action.OrigdatablockRead, OrigDatablock);
       cannot(Action.OrigdatablockCreate, OrigDatablock);
       cannot(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
@@ -744,9 +741,7 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
-
     }
-
 
     if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
@@ -767,9 +762,10 @@ export class CaslAbilityFactory {
       can(Action.JobsReadAny, JobClass);
       can(Action.JobsCreateAny, JobClass);
       can(Action.JobsUpdateAny, JobClass);
-
     } else if (
-      user.currentGroups.some((g) => configuration().createJobsGroups.includes(g))
+      user.currentGroups.some((g) =>
+        configuration().createJobsGroups.includes(g),
+      )
     ) {
       /**
        * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
@@ -779,23 +775,24 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      can(Action.JobsRead, JobClass,);
+      can(Action.JobsRead, JobClass);
       can(Action.JobsCreate, JobClass);
       can(Action.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsCreateAny, JobClass,{
-        ownerGroup: { $in: user.currentGroups }
+      can(Action.JobsCreateAny, JobClass, {
+        ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.JobsReadAccess, JobClass,{
-        ownerGroup: { $in: user.currentGroups }
+      can(Action.JobsReadAccess, JobClass, {
+        ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.JobsUpdateAny, JobClass,{
-        ownerGroup: { $in: user.currentGroups }
+      can(Action.JobsUpdateAny, JobClass, {
+        ownerGroup: { $in: user.currentGroups },
       });
-
     } else if (
-      user.currentGroups.some((g) => configuration().updateJobsGroups.includes(g))
+      user.currentGroups.some((g) =>
+        configuration().updateJobsGroups.includes(g),
+      )
     ) {
       /**
        * authenticated users belonging to any of the group listed in UPDATE_JOBS_GROUPS
@@ -810,10 +807,9 @@ export class CaslAbilityFactory {
       can(Action.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsUpdateAny, JobClass,{
-        ownerGroup: { $in: user.currentGroups }
+      can(Action.JobsUpdateAny, JobClass, {
+        ownerGroup: { $in: user.currentGroups },
       });
-
     } else if (user) {
       /**
        * authenticated users
@@ -823,15 +819,14 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      can(Action.JobsRead, JobClass,);
+      can(Action.JobsRead, JobClass);
       cannot(Action.JobsCreate, JobClass);
       cannot(Action.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsReadAccess, JobClass,{
-        ownerGroup: { $in: user.currentGroups }
+      can(Action.JobsReadAccess, JobClass, {
+        ownerGroup: { $in: user.currentGroups },
       });
-
     } else {
       /**
        * unauthenticated users
@@ -841,10 +836,9 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      cannot(Action.JobsRead, JobClass,);
+      cannot(Action.JobsRead, JobClass);
       cannot(Action.JobsCreate, JobClass);
       cannot(Action.JobsUpdate, JobClass);
-
     }
 
     /*
@@ -940,7 +934,7 @@ export class CaslAbilityFactory {
     //  can(Action.Manage, Instrument);
     //}
 
-    can(Action.Manage, Job);
+    //can(Action.Manage, JobClass);
 
     can(Action.Read, Logbook);
 
@@ -1017,7 +1011,9 @@ export class CaslAbilityFactory {
     //can(Action.Read, UserSettings, { userId: user._id });
     //can(Action.Update, UserSettings, { userId: user._id });
 
-    if (user.currentGroups.some((g) => configuration().deleteGroups.includes(g))) {
+    if (
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
       can(Action.Delete, OrigDatablock);
       can(Action.Delete, Datablock);
       can(Action.Delete, PublishedData);

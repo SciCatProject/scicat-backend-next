@@ -6,9 +6,9 @@ import { MailService } from "src/common/mail.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PoliciesService } from "src/policies/policies.service";
 import { JobsService } from "./jobs.service";
-import { Job } from "./schemas/job.schema";
+import { JobClass } from "./schemas/job.schema";
 
-const mockJob: Job = {
+const mockJob: JobClass = {
   _id: "testId",
   id: "testId",
   emailJobInitiator: "test@email.com",
@@ -29,7 +29,7 @@ class PoliciesServiceMock {}
 
 describe("JobsService", () => {
   let service: JobsService;
-  let jobModel: Model<Job>;
+  let model: Model<JobClass>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,7 +38,7 @@ describe("JobsService", () => {
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         JobsService,
         {
-          provide: getModelToken("Job"),
+          provide: getModelToken("JobClass"),
           useValue: {
             new: jest.fn().mockResolvedValue(mockJob),
             constructor: jest.fn().mockResolvedValue(mockJob),
@@ -53,7 +53,7 @@ describe("JobsService", () => {
     }).compile();
 
     service = module.get<JobsService>(JobsService);
-    jobModel = module.get<Model<Job>>(getModelToken("Job"));
+    model = module.get<Model<JobClass>>(getModelToken("JobClass"));
   });
 
   it("should be defined", () => {

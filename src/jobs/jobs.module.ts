@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { JobsService } from "./jobs.service";
 import { JobsController } from "./jobs.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Job, JobSchema } from "./schemas/job.schema";
+import { JobClass, JobSchema } from "./schemas/job.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
@@ -18,7 +18,7 @@ import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
     DatasetsModule,
     MongooseModule.forFeature([
       {
-        name: Job.name,
+        name: JobClass.name,
         schema: JobSchema,
       },
     ]),

@@ -20,7 +20,7 @@ import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobType } from "./job-type.enum";
-import { Job, JobDocument } from "./schemas/job.schema";
+import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable()
 export class JobsService {
@@ -30,21 +30,21 @@ export class JobsService {
   constructor(
     private configService: ConfigService,
     private datasetsService: DatasetsService,
-    @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     private mailService: MailService,
     private policiesService: PoliciesService,
   ) {
     this.smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
   }
 
-  async create(createJobDto: CreateJobDto): Promise<Job> {
+  async create(createJobDto: CreateJobDto): Promise<JobClass> {
     const createdJob = new this.jobModel(createJobDto);
     return createdJob.save();
   }
 
   async findAll(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-  ): Promise<Job[]> {
+  ): Promise<JobClass[]> {
     const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -58,7 +58,7 @@ export class JobsService {
 
   async fullquery(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-  ): Promise<Job[]> {
+  ): Promise<JobClass[]> {
     const filterQuery: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", filter.fields);
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
@@ -80,14 +80,14 @@ export class JobsService {
     return await this.jobModel.aggregate(pipeline).exec();
   }
 
-  async findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {
+  async findOne(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
     return this.jobModel.findOne(filter).exec();
   }
 
   async update(
     filter: FilterQuery<JobDocument>,
     updateJobDto: UpdateJobDto,
-  ): Promise<Job | null> {
+  ): Promise<JobClass | null> {
     return this.jobModel
       .findOneAndUpdate(filter, updateJobDto, { new: true })
       .exec();
@@ -98,7 +98,7 @@ export class JobsService {
   }
 
   @OnEvent("jobCreated")
-  async sendStartJobEmail(context: { instance: Job }) {
+  async sendStartJobEmail(context: { instance: JobClass }) {
     const ids: string[] = context.instance.datasetList.map(
       (dataset) => dataset.pid as string,
     );
@@ -142,8 +142,8 @@ export class JobsService {
   // Populate email context for finished job notification
   @OnEvent("jobUpdated")
   async sendFinishJobEmail(context: {
-    instance: Job;
-    hookState: { oldData: Job[] };
+    instance: JobClass;
+    hookState: { oldData: JobClass[] };
   }) {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job
