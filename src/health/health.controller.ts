@@ -2,7 +2,7 @@ import { Controller, Get } from "@nestjs/common";
 import {
   HealthCheck,
   HealthCheckService,
-  HttpHealthIndicator,
+  MongooseHealthIndicator,
 } from "@nestjs/terminus";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
@@ -10,7 +10,7 @@ import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private http: HttpHealthIndicator,
+    private db: MongooseHealthIndicator,
   ) {}
 
   @AllowAny()
@@ -21,8 +21,7 @@ export class HealthController {
     // For HTTP health checks, use the `http.pingCheck` function.
     return this.health.check([
       // The readiness endpoint verifies that the application is running and can connect to required services
-      async () =>
-        this.http.pingCheck("http", "http://localhost:3000/api/v3/datasets"),
+      async () => this.db.pingCheck("mongodb"),
     ]);
   }
 }
