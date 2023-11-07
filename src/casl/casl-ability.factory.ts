@@ -13,7 +13,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
-import { Job } from "src/jobs/schemas/job.schema";
+import { JobClass } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -33,7 +33,7 @@ type Subjects =
       | typeof Datablock
       | typeof DatasetClass
       | typeof Instrument
-      | typeof Job
+      | typeof JobClass
       | typeof Logbook
       | typeof OrigDatablock
       | typeof Policy
@@ -270,9 +270,14 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // data instance authorization
       can(Action.DatasetCreateAny, DatasetClass);
-      can(Action.DatasetReadAccess, DatasetClass, {
+      can(Action.DatasetReadManyAccess, DatasetClass);
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetUpdateOwner, DatasetClass, {
@@ -282,7 +287,11 @@ export class CaslAbilityFactory {
       can(Action.DatasetAttachmentCreateAny, DatasetClass);
       can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
@@ -295,7 +304,11 @@ export class CaslAbilityFactory {
       can(Action.DatasetOrigdatablockCreateAny, DatasetClass);
       can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
@@ -305,7 +318,11 @@ export class CaslAbilityFactory {
       can(Action.DatasetDatablockCreateAny, DatasetClass);
       can(Action.DatasetDatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
@@ -326,10 +343,15 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // data instance authorization
       can(Action.OrigdatablockCreateAny, OrigDatablock);
-      can(Action.OrigdatablockReadAccess, OrigDatablock, {
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         accessGroups: { $in: user.currentGroups },
-        isPublished: true,
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
       });
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
@@ -368,9 +390,14 @@ export class CaslAbilityFactory {
       can(Action.DatasetCreateOwnerWithPid, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.DatasetReadAccess, DatasetClass, {
+      can(Action.DatasetReadManyAccess, DatasetClass);
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetUpdateOwner, DatasetClass, {
@@ -382,7 +409,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
@@ -397,7 +428,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
@@ -409,7 +444,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetDatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
@@ -432,9 +471,14 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockCreateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.OrigdatablockReadAccess, OrigDatablock, {
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
@@ -475,9 +519,14 @@ export class CaslAbilityFactory {
         ownerGroup: { $in: user.currentGroups },
         pid: { $exists: false },
       });
-      can(Action.DatasetReadAccess, DatasetClass, {
+      can(Action.DatasetReadManyAccess, DatasetClass);
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetUpdateOwner, DatasetClass, {
@@ -489,7 +538,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
@@ -504,7 +557,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
@@ -516,7 +573,11 @@ export class CaslAbilityFactory {
       });
       can(Action.DatasetDatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
@@ -539,9 +600,14 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockCreateOwner, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.OrigdatablockReadAccess, OrigDatablock, {
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
       can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
@@ -583,27 +649,44 @@ export class CaslAbilityFactory {
       can(Action.DatasetLogbookRead, DatasetClass);
       // -------------------------------------
       // datasets data instance authorization
-      can(Action.DatasetReadAccess, DatasetClass, {
+      can(Action.DatasetReadManyAccess, DatasetClass)
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetReadOneAccess, DatasetClass, {
         isPublished: true,
       });
       // -
       can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetAttachmentReadAccess, DatasetClass, {
         isPublished: true,
       });
       // -
       can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       // -
       can(Action.DatasetDatablockReadAccess, DatasetClass, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.DatasetDatablockReadAccess, DatasetClass, {
         isPublished: true,
       });
       // -
@@ -621,9 +704,14 @@ export class CaslAbilityFactory {
       cannot(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
       // data instance authorization
-      can(Action.OrigdatablockReadAccess, OrigDatablock, {
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
 
@@ -654,7 +742,8 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetLogbookRead, DatasetClass);
       // -------------------------------------
       // datasets data instance authorization
-      can(Action.DatasetReadPublic, DatasetClass, {
+      can(Action.DatasetReadManyPublic, DatasetClass);
+      can(Action.DatasetReadOnePublic, DatasetClass, {
         isPublished: true,
       });
       // -
@@ -679,7 +768,8 @@ export class CaslAbilityFactory {
       cannot(Action.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
       // data instance authorization
-      can(Action.OrigdatablockReadAccess, OrigDatablock, {
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
 
@@ -743,12 +833,12 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      cannot(Action.JobsRead, JobsClass,);
-      cannot(Action.JobsCreate, JobsClass);
-      can(Action.JobsUpdate, JobsClass);
+      cannot(Action.JobsRead, JobClass);
+      cannot(Action.JobsCreate, JobClass);
+      can(Action.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsUpdateAny, JobsClass,{
+      can(Action.JobsUpdateAny, JobClass,{
         ownerGroup: { $in: user.currentGroups }
       });
 
