@@ -612,7 +612,6 @@ export const createFullfacetPipeline = <T, Y extends object>(
   fields: Y,
   facets: string[],
   subField = "",
-  esEnabled = false,
 ): PipelineStage[] => {
   const pipeline: PipelineStage[] = [];
   const facetMatch: Record<string, unknown> = {};
@@ -620,13 +619,6 @@ export const createFullfacetPipeline = <T, Y extends object>(
   Object.keys(fields).forEach((key) => {
     if (facets.includes(key)) {
       facetMatch[key] = searchExpression<T>(model, key, fields[key as keyof Y]);
-    }
-
-    if (esEnabled) {
-      if (key === "mode") {
-        pipelineHandler.handleModeSearch(pipeline, fields, key, idField);
-      }
-      return;
     }
 
     switch (key) {
