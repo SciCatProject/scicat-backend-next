@@ -4,7 +4,7 @@ import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { JobType } from "../job-type.enum";
 
-export type JobDocument = Job & Document;
+export type JobDocument = JobClass & Document;
 
 @Schema({
   collection: "Job",
@@ -13,7 +13,7 @@ export type JobDocument = Job & Document;
     getters: true,
   },
 })
-export class Job {
+export class JobClass {
   @ApiProperty({
     type: String,
     description: "Globally unique identifier of a job.",
@@ -76,6 +76,6 @@ export class Job {
   jobResultObject: Record<string, unknown>;
 }
 
-export const JobSchema = SchemaFactory.createForClass(Job);
+export const JobSchema = SchemaFactory.createForClass(JobClass);
 
 JobSchema.index({ "$**": "text" });

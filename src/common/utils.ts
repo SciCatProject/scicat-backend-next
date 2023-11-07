@@ -425,6 +425,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
+  filterQuery["$or"] = filterQuery["$or"] ?? [];
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -446,14 +447,29 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"] = [
+      filterQuery["$or"]?.push(
         {
           ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
-        },
+        }
+      );
+      filterQuery["$or"]?.push(
         {
           accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
         },
-      ];
+      );
+    } else if (key === "ownerGroup") {
+      filterQuery["$or"]?.push(
+        {
+          ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+        }
+      );
+    } else if (key === "accessGroups") {
+      filterQuery["$or"]?.push(
+        {
+          accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+        },
+      );
+
     } else if (key === "sharedWith") {
       filterQuery["$or"]?.push({
         sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),

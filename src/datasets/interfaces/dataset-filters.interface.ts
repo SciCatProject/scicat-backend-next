@@ -10,6 +10,7 @@ export interface IDatasetFields {
   type?: string[];
   creationLocation?: string[];
   ownerGroup?: string[];
+  accessGroups?: string[];
   keywords?: string[];
   isPublished?: boolean;
   scientific?: IScientificFilter[];
