@@ -208,13 +208,7 @@ jobs:
         run: |
           npm install -g wait-on && \
           wait-on http://localhost:3000/api/v3/health --timeout 200000
-        # run: |
-        #   echo "Waiting for backend to be ready..."
-        #   until curl --output /dev/null --silent --head --fail http://localhost:3000/api/v3/health; do
-        #     printf '.'
-        #     sleep 5
-        #   done
-        #   echo "Backend is up and running!"
+        #
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
