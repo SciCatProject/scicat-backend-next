@@ -16,23 +16,37 @@ const configuration = () => {
   const datasetCreationValidationRegex =
     process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
 
+  const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
+  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
   Logger.log("Config SETUP");
   Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   Logger.log("- Admin groups : " + adminGroups);
   Logger.log("- Delete groups : " + deleteGroups);
   Logger.log("- Create dataset groups : " + createDatasetGroups);
-  Logger.log("- Create dataset with pid groups : " + createDatasetWithPidGroups);
-  Logger.log("- Create dataset privileged groups : " + createDatasetPrivilegedGroups);
+  Logger.log(
+    "- Create dataset with pid groups : " + createDatasetWithPidGroups,
+  );
+  Logger.log(
+    "- Create dataset privileged groups : " + createDatasetPrivilegedGroups,
+  );
+  Logger.log("- Create job groups : " + createJobGroups);
+  Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
-    createDatasetWithPidGroups: createDatasetWithPidGroups.split(",").map((v) => v.trim()),
-    createDatasetPrivilegedGroups: createDatasetPrivilegedGroups.split(",").map((v) => v.trim()),
+    createDatasetWithPidGroups: createDatasetWithPidGroups
+      .split(",")
+      .map((v) => v.trim()),
+    createDatasetPrivilegedGroups: createDatasetPrivilegedGroups
+      .split(",")
+      .map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
+    createJobGroups: createJobGroups,
+    updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsStaticValues:
       accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],

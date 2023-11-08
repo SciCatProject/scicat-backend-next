@@ -1351,7 +1351,11 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Partial<Attachment>> {
+<<<<<<< HEAD
     await this.checkPermissionsForDatasetExtended(
+=======
+    const dataset = await this.checkPermissionsForDatasetExtended(
+>>>>>>> 59141693 (fixed linting issues. starting test fixing)
       request,
       pid,
       Action.DatasetRead,
@@ -1703,9 +1707,9 @@ export class DatasetsController {
 
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetOrigdatablockUpdate, OrigDatablock),
-  )
+  @CheckPolicies((ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockUpdate, OrigDatablock);
+  })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",

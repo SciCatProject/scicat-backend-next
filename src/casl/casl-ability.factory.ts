@@ -774,7 +774,7 @@ export class CaslAbilityFactory {
       can(Action.JobsUpdateAny, JobClass);
     } else if (
       user.currentGroups.some((g) =>
-        configuration().createJobsGroups.includes(g),
+        configuration().createJobGroups.includes(g),
       )
     ) {
       /**
@@ -801,7 +801,7 @@ export class CaslAbilityFactory {
       });
     } else if (
       user.currentGroups.some((g) =>
-        configuration().updateJobsGroups.includes(g),
+        configuration().updateJobGroups.includes(g),
       )
     ) {
       /**
