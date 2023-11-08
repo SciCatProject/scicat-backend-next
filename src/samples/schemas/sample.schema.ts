@@ -54,14 +54,14 @@ export class SampleClass extends OwnableClass {
   @Prop({ type: Object, required: false, default: {} })
   sampleCharacteristics?: Record<string, unknown>;
 
-  @ApiProperty({
-    type: Boolean,
-    default: false,
-    required: false,
-    description: "Flag is true when data are made publicly available.",
-  })
-  @Prop({ type: Boolean, required: false, default: false })
-  isPublished?: boolean;
+  // @ApiProperty({
+  //   type: Boolean,
+  //   default: false,
+  //   required: false,
+  //   description: "Flag is true when data are made publicly available.",
+  // })
+  // @Prop({ type: Boolean, required: false, default: false })
+  // isPublished?: boolean;
 }
 
 export class SampleWithAttachmentsAndDatasets extends SampleClass {
