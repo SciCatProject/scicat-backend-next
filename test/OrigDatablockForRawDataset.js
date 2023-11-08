@@ -19,7 +19,6 @@ var accessTokenIngestor = null,
   origDatablockWithValidChkAlg = null;
 
 describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
-
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -45,27 +44,30 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
 
     origDatablockData1 = {
       ...TestData.OrigDataBlockCorrect1,
-      "datasetId": null
-    }
-    const dataFileList = TestData.OrigDataBlockCorrect1.dataFileList.slice(0,-1);
+      datasetId: null,
+    };
+    const dataFileList = TestData.OrigDataBlockCorrect1.dataFileList.slice(
+      0,
+      -1,
+    );
     const origDatablocSize = dataFileList
-      .map(e => e.size)
-      .reduce((a,v) => { 
-        return a+v;
-      },0);
+      .map((e) => e.size)
+      .reduce((a, v) => {
+        return a + v;
+      }, 0);
     origDatablockData1Modified = {
       ...TestData.OrigDataBlockCorrect1,
-      'dataFileList': dataFileList,
-      'size': origDatablocSize
-    }
+      dataFileList: dataFileList,
+      size: origDatablocSize,
+    };
     origDatablockData2 = {
       ...TestData.OrigDataBlockCorrect2,
-      "datasetId": null
-    }
+      datasetId: null,
+    };
     origDatablockData3 = {
       ...TestData.OrigDataBlockCorrect3,
-      "datasetId": null
-    }
+      datasetId: null,
+    };
 
     origDatablockWithEmptyChkAlg = { ...TestData.OrigDataBlockWrongChkAlg };
   });
@@ -223,7 +225,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
   });
 
   it("0100: Should fetch all origdatablocks belonging to the new dataset 1", async () => {
-    const filter= { where: { datasetId: datasetPid1 } };
+    const filter = { where: { datasetId: datasetPid1 } };
 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
@@ -234,19 +236,13 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
-        res.body[0]["id"].should.be.oneOf([
-          origDatablockId1,
-          origDatablockId2,
-        ]);
-        res.body[1]["id"].should.be.oneOf([
-          origDatablockId1,
-          origDatablockId2,
-        ]);
+        res.body[0]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
+        res.body[1]["id"].should.be.oneOf([origDatablockId1, origDatablockId2]);
       });
   });
 
   it("0110: Should fetch all origdatablocks belonging to the new dataset 2", async () => {
-    const filter= { where: { datasetId: datasetPid2 } };
+    const filter = { where: { datasetId: datasetPid2 } };
 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
@@ -257,9 +253,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(1);
-        res.body[0]["id"].should.be.oneOf([
-          origDatablockId3,
-        ]);
+        res.body[0]["id"].should.be.oneOf([origDatablockId3]);
       });
   });
 
@@ -272,8 +266,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["size"].should.be.equal(
-          origDatablockData1.size +
-            origDatablockData2.size,
+          origDatablockData1.size + origDatablockData2.size,
         );
       });
   });
@@ -286,9 +279,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body["size"].should.be.equal(
-          origDatablockData3.size,
-        );
+        res.body["size"].should.be.equal(origDatablockData3.size);
       });
   });
 
@@ -327,16 +318,14 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
         res.body.origdatablocks[0].should.have
           .property("dataFileList")
           .and.be.instanceof(Array);
-        res.body.origdatablocks[0].dataFileList[0].path
-          .should.oneOf([
-            origDatablockData1.dataFileList[0].path,
-            origDatablockData2.dataFileList[1].path,
-          ]);
-        res.body.origdatablocks[0].dataFileList[0].size
-          .should.oneOf([
-            origDatablockData1.dataFileList[0].size,
-            origDatablockData2.dataFileList[1].size
-          ]);
+        res.body.origdatablocks[0].dataFileList[0].path.should.oneOf([
+          origDatablockData1.dataFileList[0].path,
+          origDatablockData2.dataFileList[1].path,
+        ]);
+        res.body.origdatablocks[0].dataFileList[0].size.should.oneOf([
+          origDatablockData1.dataFileList[0].size,
+          origDatablockData2.dataFileList[1].size,
+        ]);
       });
   });
 
@@ -474,10 +463,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData1.size +
-              origDatablockData2.size,
-          );
+          .and.equal(origDatablockData1.size + origDatablockData2.size);
         res.body.should.have
           .property("numberOfFiles")
           .and.equal(
@@ -497,22 +483,18 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
+          .and.equal(origDatablockData3.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
+          .and.equal(origDatablockData3.dataFileList.length);
       });
   });
 
   it("0230: should update file list and size of the origdatablock 1", async () => {
     const origDatablock1Updates = {
-      'size' : origDatablockData1Modified.size,
-      'dataFileList': origDatablockData1Modified.dataFileList,
-    }
+      size: origDatablockData1Modified.size,
+      dataFileList: origDatablockData1Modified.dataFileList,
+    };
     return request(appUrl)
       .patch("/api/v3/origdatablocks/" + origDatablockId1)
       .send(origDatablock1Updates)
@@ -528,7 +510,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           .property("dataFileList")
           .and.have.length(origDatablockData1Modified.dataFileList.length);
       });
-  })
+  });
 
   it("0240: Verify that size and numFiles fields are correct in the dataset 1, pass 2", async () => {
     return request(appUrl)
@@ -540,10 +522,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData1Modified.size +
-              origDatablockData2.size,
-          );
+          .and.equal(origDatablockData1Modified.size + origDatablockData2.size);
         res.body.should.have
           .property("numberOfFiles")
           .and.equal(
@@ -563,22 +542,18 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
+          .and.equal(origDatablockData3.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
+          .and.equal(origDatablockData3.dataFileList.length);
       });
   });
 
   it("0260: should update file list and size of the origdatablock 1 to original", async () => {
     const origDatablock1Updates = {
-      'size' : origDatablockData1.size,
-      'dataFileList': origDatablockData1.dataFileList,
-    }
+      size: origDatablockData1.size,
+      dataFileList: origDatablockData1.dataFileList,
+    };
     return request(appUrl)
       .patch("/api/v3/origdatablocks/" + origDatablockId1)
       .send(origDatablock1Updates)
@@ -594,7 +569,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           .property("dataFileList")
           .and.have.length(origDatablockData1.dataFileList.length);
       });
-  })
+  });
 
   it("0270: Verify that size and numFiles fields are correct in the dataset 1, pass 3", async () => {
     return request(appUrl)
@@ -606,10 +581,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData1.size +
-              origDatablockData2.size,
-          );
+          .and.equal(origDatablockData1.size + origDatablockData2.size);
         res.body.should.have
           .property("numberOfFiles")
           .and.equal(
@@ -629,22 +601,16 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
+          .and.equal(origDatablockData3.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
+          .and.equal(origDatablockData3.dataFileList.length);
       });
   });
 
   it("0290: should delete OrigDatablock 1", async () => {
     return request(appUrl)
-      .delete(
-        `/api/v3/OrigDatablocks/${origDatablockId1}`,
-      )
+      .delete(`/api/v3/OrigDatablocks/${origDatablockId1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
@@ -660,14 +626,10 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData2.size,
-          );
+          .and.equal(origDatablockData2.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData2.dataFileList.length,
-          );
+          .and.equal(origDatablockData2.dataFileList.length);
       });
   });
 
@@ -681,22 +643,16 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
+          .and.equal(origDatablockData3.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
+          .and.equal(origDatablockData3.dataFileList.length);
       });
   });
 
   it("0320: should delete OrigDatablock 2", async () => {
     return request(appUrl)
-      .delete(
-        `/api/v3/OrigDatablocks/${origDatablockId2}`,
-      )
+      .delete(`/api/v3/OrigDatablocks/${origDatablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
@@ -710,12 +666,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
+        res.body.should.have.property("size").and.equal(0);
+        res.body.should.have.property("numberOfFiles").and.equal(0);
       });
   });
 
@@ -729,22 +681,16 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .then((res) => {
         res.body.should.have
           .property("size")
-          .and.equal(
-            origDatablockData3.size,
-          );
+          .and.equal(origDatablockData3.size);
         res.body.should.have
           .property("numberOfFiles")
-          .and.equal(
-            origDatablockData3.dataFileList.length,
-          );
+          .and.equal(origDatablockData3.dataFileList.length);
       });
   });
 
   it("0350: should delete OrigDatablock 3", async () => {
     return request(appUrl)
-      .delete(
-        `/api/v3/OrigDatablocks/${origDatablockId3}`,
-      )
+      .delete(`/api/v3/OrigDatablocks/${origDatablockId3}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
@@ -758,12 +704,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
+        res.body.should.have.property("size").and.equal(0);
+        res.body.should.have.property("numberOfFiles").and.equal(0);
       });
   });
 
@@ -775,17 +717,13 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have
-          .property("size")
-          .and.equal(0);
-        res.body.should.have
-          .property("numberOfFiles")
-          .and.equal(0);
+        res.body.should.have.property("size").and.equal(0);
+        res.body.should.have.property("numberOfFiles").and.equal(0);
       });
   });
 
   it("0380: Should fetch no origdatablocks belonging to the dataset 1", async () => {
-    const filter= { where: { datasetId: datasetPid1 } };
+    const filter = { where: { datasetId: datasetPid1 } };
 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
@@ -800,7 +738,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
   });
 
   it("0390: Should fetch no origdatablocks belonging to the dataset 2", async () => {
-    const filter= { where: { datasetId: datasetPid2 } };
+    const filter = { where: { datasetId: datasetPid2 } };
 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)

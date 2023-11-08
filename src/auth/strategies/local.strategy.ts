@@ -51,9 +51,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       username: user.username,
       email: user.email,
     };
-    const accessGroups = await this.accessGroupService.getAccessGroups(
-      userPayload,
-    );
+    const accessGroups =
+      await this.accessGroupService.getAccessGroups(userPayload);
 
     const userIdentity = await this.usersService.findByIdUserIdentity(user._id);
     if (userIdentity === null) {

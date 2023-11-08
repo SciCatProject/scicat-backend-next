@@ -55,9 +55,8 @@ export class UserIdentitiesController {
     }
 
     const authenticatedUser: JWTUser = request.user as JWTUser;
-    const ability = await this.caslAbilityFactory.createForUser(
-      authenticatedUser,
-    );
+    const ability =
+      await this.caslAbilityFactory.createForUser(authenticatedUser);
 
     if (
       !ability.can(Action.UserReadAny, User) &&

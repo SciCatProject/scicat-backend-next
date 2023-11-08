@@ -1,4 +1,6 @@
 name: Test
+env:
+  NODE_VERSION: 18.x
 
 on:
   pull_request:
@@ -12,23 +14,46 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Install dependencies
         if: steps.cached-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+  eslint:
+    name: eslint
+    needs: [install-and-cache]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Cache node_modules
+        id: cached-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+
+      - name: run eslint
+        run: npm run lint
 
   unit_tests:
     name: Unit tests
@@ -36,20 +61,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
-
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Unit tests
         run: npm run test
@@ -60,45 +84,52 @@ jobs:
     needs: [install-and-cache]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: Build
         run: npm run build
 
   api_tests:
-    name: API tests
+    name: API tests with ElasticSearch enabled - ${{ matrix.elasticsearch_enabled }}
     needs: [install-and-cache]
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        elasticsearch_enabled: ["yes", "no"]
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore node_modules
         id: cached-node-modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
       - name: API tests
         env:
+          ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
           MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
@@ -122,6 +153,17 @@ jobs:
           CREATE_DATASET_WITH_PID_GROUPS: "group2,group3"
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
+          ES_HOST: https://localhost:9200
+          ES_USERNAME: elastic
+          ES_PASSWORD: duo-password
+          MONGODB_COLLECTION: Dataset
+          ES_MAX_RESULT: 210000
+          ES_FIELDS_LIMIT: 400000
+          ES_INDEX: "dataset"
+          ES_REFRESH: "wait_for"
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
 
         # Start mongo container and app before running api tests
         run: |
@@ -134,12 +176,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure sysctl limits for elastic search
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
 
       - name: Run stack in docker-compose
         run: |
@@ -149,17 +198,22 @@ jobs:
           docker-compose up &
 
       - name: Checkout frontend repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: scicatproject/frontend
           path: frontend
           fetch-depth: 1
 
+      - name: Wait for Backend
+        run: |
+          npm install -g wait-on && \
+          wait-on http://localhost:3000/api/v3/health --timeout 200000
+
       - name: Run Cypress tests
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: frontend
-          config-file: CI/ESS/e2e/cypress.nestjs.json
+          config-file: CI/ESS/e2e/cypress.github.ts
           install-command: npm install --omit peer
           browser: chrome
 

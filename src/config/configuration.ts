@@ -137,8 +137,6 @@ const configuration = () => {
           : false,
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
-      username: process.env.LOGBOOK_USERNAME,
-      password: process.env.LOGBOOK_PASSWORD,
     },
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
@@ -158,6 +156,18 @@ const configuration = () => {
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
+    elasticSearch: {
+      enabled: process.env.ELASTICSEARCH_ENABLED ?? "no",
+      username: process.env.ES_USERNAME,
+      password: process.env.ES_PASSWORD,
+      host: process.env.ES_HOST,
+      refresh: process.env.ES_REFRESH,
+      maxResultWindow: parseInt(process.env.ES_MAX_RESULT || "100000", 10),
+      fieldsLimit: parseInt(process.env.ES_FIELDS_LIMIT || "100000", 10),
+      mongoDBCollection: process.env.MONGODB_COLLECTION,
+      defaultIndex: process.env.ES_INDEX ?? "dataset",
+    },
+
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,

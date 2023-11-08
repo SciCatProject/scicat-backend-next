@@ -1,0 +1,106 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models",
+      "./node_modules/loopback-component-passport/lib/models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../node_modules/loopback-component-mq/lib/mixins",
+      "../node_modules/loopback-ds-timestamp-mixin",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "User": {
+    "dataSource": "mongo"
+  },
+  "AccessToken": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "Role": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "Dataset": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "RawDataset": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "DerivedDataset": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Sample": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Proposal": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Datafile": {
+    "dataSource": "transient",
+    "public": false
+  },
+  "DatasetLifecycle": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Datablock": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "MeasurementPeriod": {
+    "dataSource": "transient",
+    "public": false
+  },
+  "UserCredential": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "UserIdentity": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "ApplicationCredential": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Ownable": {
+    "dataSource": "mongo",
+    "public": false
+  },
+  "Policy": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "Job": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "DatasetAttachment": {
+    "dataSource": "mongo",
+    "public": true
+  },
+  "OrigDatablock": {
+    "dataSource": "mongo",
+    "public": true
+  }
+}

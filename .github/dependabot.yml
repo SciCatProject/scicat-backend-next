@@ -17,6 +17,7 @@ updates:
     # Increase the version requirements
     # only when required
     versioning-strategy: increase-if-necessary
+    rebase-strategy: auto
     #reviewers:
     #  - "hantsy"
     #assignees:

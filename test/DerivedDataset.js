@@ -96,7 +96,8 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("owner")
+        res.body.should.have
+          .property("owner")
           .and.be.equal(TestData.DerivedCorrect.owner);
         res.body.should.have.property("type").and.be.equal("derived");
         res.body.should.have.property("pid").and.be.string;
@@ -117,9 +118,13 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("owner").and.be.equal(derivedDatasetWithExplicitPID.owner);
+        res.body.should.have
+          .property("owner")
+          .and.be.equal(derivedDatasetWithExplicitPID.owner);
         res.body.should.have.property("type").and.be.equal("derived");
-        res.body.should.have.property("pid").and.be.equal(derivedDatasetWithExplicitPID.pid);
+        res.body.should.have
+          .property("pid")
+          .and.be.equal(derivedDatasetWithExplicitPID.pid);
         pid = res.body["pid"];
       });
   });

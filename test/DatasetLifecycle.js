@@ -46,6 +46,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(res);
+          }, 2000);
+        });
+      })
+      .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
@@ -53,7 +60,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         // NOTE: Encoding the pid because it might contain some special characters.
         pidRaw1 = encodeURIComponent(res.body["pid"]);
       });
-  });
+  }).timeout(5000);
 
   it("adds another new raw dataset", async () => {
     // modify owner
@@ -66,6 +73,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(res);
+          }, 2000);
+        });
+      })
+      .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
@@ -73,7 +87,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         // NOTE: Encoding the pid because it might contain some special characters.
         pidRaw2 = encodeURIComponent(res.body["pid"]);
       });
-  });
+  }).timeout(5000);
 
   it("Should return datasets with complex join query fulfilled", async () => {
     return request(appUrl)
@@ -81,6 +95,10 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         "/api/v3/Datasets/fullquery?fields=" +
           encodeURIComponent(
             JSON.stringify(TestData.DatasetLifecycle_query_1.fields),
+          ) +
+          "&limits=" +
+          encodeURIComponent(
+            JSON.stringify(TestData.DatasetLifecycle_query_1.limits),
           ),
       )
       .set("Accept", "application/json")

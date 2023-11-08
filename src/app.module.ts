@@ -30,6 +30,7 @@ import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
+import { HealthModule } from "./health/health.module";
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { AdminModule } from "./admin/admin.module";
     SamplesModule,
     UsersModule,
     AdminModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [
@@ -111,6 +113,7 @@ export class AppModule implements OnApplicationBootstrap {
       this.configService.get<string>("rabbitMq.enabled") === "yes"
         ? true
         : false;
+
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
       const username = this.configService.get<string>("rabbitMq.username");
@@ -156,9 +159,8 @@ export class AppModule implements OnApplicationBootstrap {
           };
 
           try {
-            const createdProposal = await this.proposalsService.create(
-              proposal,
-            );
+            const createdProposal =
+              await this.proposalsService.create(proposal);
             Logger.log(
               `Proposal created/updated: ${createdProposal.proposalId}`,
               "AppModule",

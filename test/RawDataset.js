@@ -289,7 +289,7 @@ describe("RawDataset: Raw Datasets", () => {
       .then((res) => {
         res.body.should.have.property("comment").and.be.string;
       });
-  })
+  });
 
   it("should update data quality metrics of the dataset", async () => {
     return request(appUrl)
@@ -302,7 +302,7 @@ describe("RawDataset: Raw Datasets", () => {
       .then((res) => {
         res.body.should.have.property("dataQualityMetrics");
       });
-  })
+  });
 
   it("should fail to update comment of the dataset", async () => {
     return request(appUrl)
@@ -315,7 +315,7 @@ describe("RawDataset: Raw Datasets", () => {
         res.body.message.should.contain("comment");
         res.body.message.should.contain("isString");
       });
-  })
+  });
 
   it("should fail to update data quality metrics of the dataset", async () => {
     return request(appUrl)
@@ -328,7 +328,7 @@ describe("RawDataset: Raw Datasets", () => {
         res.body.message.should.contain("dataQualityMetrics");
         res.body.message.should.contain("isNumber");
       });
-  })
+  });
 
   it("should delete this raw dataset", async () => {
     return request(appUrl)

@@ -7,4 +7,5 @@ export interface IOrigDatablockFields {
     max?: string;
   };
   dataFilelist: IDatafileFilter[];
+  userGroups?: string[];
 }

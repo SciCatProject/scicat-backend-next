@@ -53,13 +53,16 @@ export class InstrumentsController {
     @Body() createInstrumentDto: CreateInstrumentDto,
   ): Promise<Instrument> {
     try {
-      const instrument = await this.instrumentsService.create(
-        createInstrumentDto,
-      );
+      const instrument =
+        await this.instrumentsService.create(createInstrumentDto);
       return instrument;
-    } catch (e) {
+    } catch (error) {
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      // we'll proceed, but let's report it
       throw new HttpException(
-        "Instrument with the same unique name already exists",
+        `Instrument with the same unique name already exists: ${message}`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -154,6 +157,6 @@ export class InstrumentsController {
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
-    return this.instrumentsService.remove({ id });
+    return this.instrumentsService.remove({ pid: id });
   }
 }
