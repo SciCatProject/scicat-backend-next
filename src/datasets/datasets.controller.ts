@@ -122,34 +122,23 @@ export class DatasetsController {
     headers: Record<string, string>,
     queryFilter: { filter?: string },
   ) {
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (queryFilter?.filter) {
-      const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(queryFilter.filter);
+    const queryFilters = queryFilter?.filter
+      ? JSON.parse(queryFilter.filter)
+      : {};
+    const headerFilters = headers?.filter ? JSON.parse(headers.filter) : {};
+    const headerWhereFilters = headers?.where ? JSON.parse(headers.where) : {};
 
-      return jsonQueryFilters;
-    } else if (headers?.filter) {
-      const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.filter);
+    const mergedFilters = {
+      ...queryFilters,
+      ...headerFilters,
+      where: {
+        ...(queryFilters.where || {}),
+        ...(headerFilters.where || {}),
+        ...headerWhereFilters,
+      },
+    };
 
-      return jsonHeadersFilters;
-    } else if (headers?.where) {
-      const jsonHeadersWhereFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.where);
-
-      return jsonHeadersWhereFilters;
-    }
-
-    return {};
+    return mergedFilters;
   }
 
   updateMergedFiltersForList(
