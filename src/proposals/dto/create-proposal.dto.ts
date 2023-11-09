@@ -122,5 +122,5 @@ export class CreateProposalDto extends OwnableDto {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
-  readonly MeasurementPeriodList?: Record<string, unknown>;
+  readonly MeasurementPeriodList?: CreateMeasurementPeriodDto[];
 }
