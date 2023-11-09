@@ -29,8 +29,12 @@ export class ProposalsService {
   async create(createProposalDto: CreateProposalDto): Promise<ProposalClass> {
     const username = (this.request.user as JWTUser).username;
     if (createProposalDto.MeasurementPeriodList) {
-      for (let i in createProposalDto.MeasurementPeriodList) {
-        createProposalDto.MeasurementPeriodList[i] = addCreatedByFields<CreateMeasurementPeriodDto>(createProposalDto.MeasurementPeriodList[i], username);
+      for (const i in createProposalDto.MeasurementPeriodList) {
+        createProposalDto.MeasurementPeriodList[i] =
+          addCreatedByFields<CreateMeasurementPeriodDto>(
+            createProposalDto.MeasurementPeriodList[i],
+            username,
+          );
       }
     }
     const createdProposal = new this.proposalModel(
