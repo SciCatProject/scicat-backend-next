@@ -23,7 +23,19 @@ const TestData = {
     abstract: "Abstract of test proposal",
     ownerGroup: "20170251-group",
     accessGroups: [],
-    MeasurementPeriodList: [],
+    MeasurementPeriodList: [
+      {
+        instrument: "ESS3-1",
+        start: "2017-07-24T13:56:30.000Z",
+        end: "2017-07-25T13:56:30.000Z",
+        comment: "Some comment"
+      },
+      {
+        instrument: "ESS3-2",
+        start: "2017-07-28T13:56:30.000Z",
+        end: "2017-07-29T13:56:30.000Z",
+      }
+    ],
   },
 
   ProposalWring_1: {
