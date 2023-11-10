@@ -1,0 +1,30 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@your.site",
+    "password": "am2jf70TPNZsSan",
+    "role": "admin",
+    "global": true
+  },
+  {
+    "username": "ingestor",
+    "email": "scicatingestor@your.site",
+    "password": "aman",
+    "role": "ingestor",
+    "global": true
+  },
+  {
+    "username": "archiveManager",
+    "email": "scicatarchivemanager@your.site",
+    "password": "aman",
+    "role": "archivemanager",
+    "global": true
+  },
+  {
+    "username": "proposalIngestor",
+    "email": "scicatproposalingestor@your.site",
+    "password": "aman",
+    "role": "proposalingestor",
+    "global": true
+  }
+]
