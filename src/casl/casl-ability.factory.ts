@@ -76,7 +76,64 @@ export class CaslAbilityFactory {
     / - Datasets (https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization/authorization_datasets.html)
     / - OrigDatablocks (https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization/authorization_origdatablocks.html)
      */
-    if (
+    if (!user) {
+      /**
+      /*  unauthenticated users
+      **/
+
+      // -------------------------------------
+      // datasets endpoint authorization
+      cannot(Action.DatasetCreate, DatasetClass);
+      can(Action.DatasetRead, DatasetClass);
+      cannot(Action.DatasetUpdate, DatasetClass);
+      // -
+      cannot(Action.DatasetAttachmentCreate, DatasetClass);
+      can(Action.DatasetAttachmentRead, DatasetClass);
+      cannot(Action.DatasetAttachmentUpdate, DatasetClass);
+      cannot(Action.DatasetAttachmentDelete, DatasetClass);
+      // -
+      cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
+      can(Action.DatasetOrigdatablockRead, DatasetClass);
+      cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
+      // -
+      cannot(Action.DatasetDatablockCreate, DatasetClass);
+      can(Action.DatasetDatablockRead, DatasetClass);
+      cannot(Action.DatasetDatablockUpdate, DatasetClass);
+      // -
+      cannot(Action.DatasetLogbookRead, DatasetClass);
+      // -------------------------------------
+      // datasets data instance authorization
+      can(Action.DatasetReadManyPublic, DatasetClass);
+      can(Action.DatasetReadOnePublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetAttachmentReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetOrigdatablockReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetDatablockReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+
+      // -------------------------------------
+      // origdatablock
+      // -------------------------------------
+      // endpoint authorization
+      can(Action.OrigdatablockRead, OrigDatablock);
+      cannot(Action.OrigdatablockCreate, OrigDatablock);
+      cannot(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        isPublished: true,
+      });
+    } else if (
       user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
     ) {
       /*
@@ -684,66 +741,21 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
-    } else {
-      /**
-      /*  unauthenticated users
-      **/
-
-      // -------------------------------------
-      // datasets endpoint authorization
-      cannot(Action.DatasetCreate, DatasetClass);
-      can(Action.DatasetRead, DatasetClass);
-      cannot(Action.DatasetUpdate, DatasetClass);
-      // -
-      cannot(Action.DatasetAttachmentCreate, DatasetClass);
-      can(Action.DatasetAttachmentRead, DatasetClass);
-      cannot(Action.DatasetAttachmentUpdate, DatasetClass);
-      cannot(Action.DatasetAttachmentDelete, DatasetClass);
-      // -
-      cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-      can(Action.DatasetOrigdatablockRead, DatasetClass);
-      cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
-      // -
-      cannot(Action.DatasetDatablockCreate, DatasetClass);
-      can(Action.DatasetDatablockRead, DatasetClass);
-      cannot(Action.DatasetDatablockUpdate, DatasetClass);
-      // -
-      cannot(Action.DatasetLogbookRead, DatasetClass);
-      // -------------------------------------
-      // datasets data instance authorization
-      can(Action.DatasetReadManyPublic, DatasetClass);
-      can(Action.DatasetReadOnePublic, DatasetClass, {
-        isPublished: true,
-      });
-      // -
-      can(Action.DatasetAttachmentReadPublic, DatasetClass, {
-        isPublished: true,
-      });
-      // -
-      can(Action.DatasetOrigdatablockReadPublic, DatasetClass, {
-        isPublished: true,
-      });
-      // -
-      can(Action.DatasetDatablockReadPublic, DatasetClass, {
-        isPublished: true,
-      });
-
-      // -------------------------------------
-      // origdatablock
-      // -------------------------------------
-      // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock);
-      cannot(Action.OrigdatablockCreate, OrigDatablock);
-      cannot(Action.OrigdatablockUpdate, OrigDatablock);
-      // -------------------------------------
-      // data instance authorization
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        isPublished: true,
-      });
     }
 
-    if (
+    if (!user) {
+      /**
+       * unauthenticated users
+       */
+
+      // -------------------------------------
+      // jobs
+      // -------------------------------------
+      // endpoint authorization
+      cannot(Action.JobsRead, JobClass);
+      cannot(Action.JobsCreate, JobClass);
+      cannot(Action.JobsUpdate, JobClass);
+    } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
       /**
@@ -827,18 +839,6 @@ export class CaslAbilityFactory {
       can(Action.JobsReadAccess, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-    } else {
-      /**
-       * unauthenticated users
-       */
-
-      // -------------------------------------
-      // jobs
-      // -------------------------------------
-      // endpoint authorization
-      cannot(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      cannot(Action.JobsUpdate, JobClass);
     }
 
     /*

@@ -179,7 +179,7 @@ export class DatasetsController {
         mergedFilters.where["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
-          { sharedWith: { in: user.email } },
+          { sharedWith: { $in: user.email } },
           { isPublished: true },
         ];
       } else if (canViewOwner) {

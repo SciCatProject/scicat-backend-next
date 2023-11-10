@@ -29,17 +29,18 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     info: unknown,
     context: ExecutionContext,
   ) {
-    const allowAny = this.reflector.get<string[]>(
-      "allow-any",
-      context.getHandler(),
-    );
+    // const allowAny = this.reflector.get<string[]>(
+    //   "allow-any",
+    //   context.getHandler(),
+    // );
 
     if (user) {
       return user;
     }
-    if (allowAny) {
-      return null;
-    }
-    throw new UnauthorizedException();
+    // if (allowAny) {
+    //   return null;
+    // }
+    // throw new UnauthorizedException();
+    return null;
   }
 }
