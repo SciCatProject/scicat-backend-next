@@ -53,26 +53,6 @@ export class SampleClass extends OwnableClass {
   })
   @Prop({ type: Object, required: false, default: {} })
   sampleCharacteristics?: Record<string, unknown>;
-
-<<<<<<< HEAD
-  // @ApiProperty({
-  //   type: Boolean,
-  //   default: false,
-  //   required: false,
-  //   description: "Flag is true when data are made publicly available.",
-  // })
-  // @Prop({ type: Boolean, required: false, default: false })
-  // isPublished?: boolean;
-=======
-  @ApiProperty({
-    type: Boolean,
-    default: false,
-    required: false,
-    description: "Flag is true when data are made publicly available.",
-  })
-  @Prop({ type: Boolean, required: false, default: false })
-  isPublished?: boolean;
->>>>>>> b35ceca7 (fix: fix lint issue)
 }
 
 export class SampleWithAttachmentsAndDatasets extends SampleClass {

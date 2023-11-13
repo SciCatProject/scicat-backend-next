@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 37d12183 (fix: lint issue fix)
 import { ConfigService } from "@nestjs/config";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -10,22 +6,7 @@ import { MailService } from "src/common/mail.service";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { PoliciesService } from "src/policies/policies.service";
 import { JobsService } from "./jobs.service";
-<<<<<<< HEAD
 import { JobClass } from "./schemas/job.schema";
-=======
-import {ConfigService} from "@nestjs/config";
-import {getModelToken} from "@nestjs/mongoose";
-import {Test, TestingModule} from "@nestjs/testing";
-import {Model} from "mongoose";
-import {MailService} from "src/common/mail.service";
-import {DatasetsService} from "src/datasets/datasets.service";
-import {PoliciesService} from "src/policies/policies.service";
-import {JobsService} from "./jobs.service";
-import {Job} from "./schemas/job.schema";
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-import { Job } from "./schemas/job.schema";
->>>>>>> 37d12183 (fix: lint issue fix)
 
 const mockJob: JobClass = {
   _id: "testId",
@@ -38,6 +19,7 @@ const mockJob: JobClass = {
   jobStatusMessage: "testStatus",
   datasetList: [],
   jobResultObject: {},
+  ownerGroup: "testGroup",
 };
 
 class DatasetsServiceMock {}

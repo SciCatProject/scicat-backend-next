@@ -12,10 +12,6 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 37d12183 (fix: lint issue fix)
 import { DatasetsService } from "src/datasets/datasets.service";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
@@ -24,22 +20,7 @@ import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobType } from "./job-type.enum";
-<<<<<<< HEAD
 import { JobClass, JobDocument } from "./schemas/job.schema";
-=======
-import {DatasetsService} from "src/datasets/datasets.service";
-import {IDatasetFields} from "src/datasets/interfaces/dataset-filters.interface";
-import {DatasetDocument} from "src/datasets/schemas/dataset.schema";
-import {PoliciesService} from "src/policies/policies.service";
-import {Policy} from "src/policies/schemas/policy.schema";
-import {CreateJobDto} from "./dto/create-job.dto";
-import {UpdateJobDto} from "./dto/update-job.dto";
-import {JobType} from "./job-type.enum";
-import {Job, JobDocument} from "./schemas/job.schema";
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-import { Job, JobDocument } from "./schemas/job.schema";
->>>>>>> 37d12183 (fix: lint issue fix)
 
 @Injectable()
 export class JobsService {
@@ -117,15 +98,7 @@ export class JobsService {
   }
 
   @OnEvent("jobCreated")
-<<<<<<< HEAD
-<<<<<<< HEAD
   async sendStartJobEmail(context: { instance: JobClass }) {
-=======
-  async sendStartJobEmail(context: {instance: Job}) {
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-  async sendStartJobEmail(context: { instance: Job }) {
->>>>>>> 37d12183 (fix: lint issue fix)
     const ids: string[] = context.instance.datasetList.map(
       (dataset) => dataset.pid as string,
     );
@@ -169,17 +142,8 @@ export class JobsService {
   // Populate email context for finished job notification
   @OnEvent("jobUpdated")
   async sendFinishJobEmail(context: {
-<<<<<<< HEAD
     instance: JobClass;
     hookState: { oldData: JobClass[] };
-=======
-    instance: Job;
-<<<<<<< HEAD
-    hookState: {oldData: Job[]};
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-    hookState: { oldData: Job[] };
->>>>>>> 37d12183 (fix: lint issue fix)
   }) {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job

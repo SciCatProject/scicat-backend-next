@@ -12,10 +12,6 @@ import {
   HttpException,
   Req,
 } from "@nestjs/common";
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 37d12183 (fix: lint issue fix)
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
@@ -25,34 +21,11 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-<<<<<<< HEAD
 import { JobClass, JobDocument } from "./schemas/job.schema";
-=======
-import { Job, JobDocument } from "./schemas/job.schema";
->>>>>>> 37d12183 (fix: lint issue fix)
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
-<<<<<<< HEAD
-=======
-import {Request} from "express";
-import {FilterQuery} from "mongoose";
-import {JobsService} from "./jobs.service";
-import {CreateJobDto} from "./dto/create-job.dto";
-import {UpdateJobDto} from "./dto/update-job.dto";
-import {PoliciesGuard} from "src/casl/guards/policies.guard";
-import {CheckPolicies} from "src/casl/decorators/check-policies.decorator";
-import {AppAbility} from "src/casl/casl-ability.factory";
-import {Action} from "src/casl/action.enum";
-import {Job, JobDocument} from "./schemas/job.schema";
-import {ApiBearerAuth, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {IFacets, IFilters} from "src/common/interfaces/common.interface";
-import {DatasetsService} from "src/datasets/datasets.service";
-import {JobType, DatasetState} from "./job-type.enum";
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
->>>>>>> 37d12183 (fix: lint issue fix)
 import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
@@ -299,17 +272,8 @@ export class JobsController {
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-<<<<<<< HEAD
   ): Promise<JobClass> {
     const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
-=======
-  ): Promise<Job> {
-<<<<<<< HEAD
-    const jobToCreate = {...createJobDto, jobStatusMessage: "jobSubmitted"};
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
->>>>>>> 37d12183 (fix: lint issue fix)
     await this.validateJob(jobToCreate, request);
 
     const createdJob = await this.jobsService.create(jobToCreate);
@@ -343,17 +307,8 @@ export class JobsController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get("/fullquery")
   async fullquery(
-<<<<<<< HEAD
-<<<<<<< HEAD
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<JobClass[]> {
-=======
-    @Query() filters: {fields?: string; limits?: string},
-=======
-    @Query() filters: { fields?: string; limits?: string },
->>>>>>> 37d12183 (fix: lint issue fix)
-  ): Promise<Job[]> {
->>>>>>> b35ceca7 (fix: fix lint issue)
     const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -377,17 +332,8 @@ export class JobsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get(":id")
-<<<<<<< HEAD
   async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
-=======
-  async findOne(@Param("id") id: string): Promise<Job | null> {
-<<<<<<< HEAD
-    return this.jobsService.findOne({_id: id});
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-    return this.jobsService.findOne({ _id: id });
->>>>>>> 37d12183 (fix: lint issue fix)
   }
 
   @UseGuards(PoliciesGuard)
@@ -396,17 +342,8 @@ export class JobsController {
   async update(
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
-<<<<<<< HEAD
   ): Promise<JobClass | null> {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
-=======
-  ): Promise<Job | null> {
-<<<<<<< HEAD
-    const updatedJob = await this.jobsService.update({_id: id}, updateJobDto);
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
->>>>>>> 37d12183 (fix: lint issue fix)
 
     if (updatedJob) {
       this.eventEmitter.emit("jobUpdated", {

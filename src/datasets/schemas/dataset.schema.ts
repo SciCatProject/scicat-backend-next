@@ -286,26 +286,6 @@ export class DatasetClass extends OwnableClass {
   @Prop({ type: String, required: false })
   version?: string;
 
-<<<<<<< HEAD
-  // @ApiProperty({
-  //   type: Boolean,
-  //   required: true,
-  //   default: true,
-  //   description: "Flag is true when data are made publicly available.",
-  // })
-  // @Prop({ type: Boolean, required: true, default: false })
-  // isPublished: boolean;
-=======
-  @ApiProperty({
-    type: Boolean,
-    required: true,
-    default: true,
-    description: "Flag is true when data are made publicly available.",
-  })
-  @Prop({ type: Boolean, required: true, default: false })
-  isPublished: boolean;
->>>>>>> b35ceca7 (fix: fix lint issue)
-
   @ApiProperty({
     type: HistoryClass,
     required: false,
