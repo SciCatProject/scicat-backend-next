@@ -26,10 +26,6 @@ export class CreateJobDto {
   @IsObject()
   readonly jobParams: Record<string, unknown>;
 
-  /*
-  New stuff from here
-  */
-  // Do we want to let users provide/resrve job-ids on creation?
   @ApiProperty({
     type: String,
     required: false,
