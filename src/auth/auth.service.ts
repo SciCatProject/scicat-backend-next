@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare } from "bcrypt";
@@ -77,6 +77,9 @@ export class AuthService {
 
   async additionalLogoutTasks(req: Request, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
+    if (!user) {
+      throw new HttpException(`Not logged in`, HttpStatus.UNAUTHORIZED);
+    }
     if (user?.authStrategy === "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
       const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || true);
