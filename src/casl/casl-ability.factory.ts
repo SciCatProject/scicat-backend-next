@@ -843,7 +843,15 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
       }
-
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
+      cannot(Action.UserReadAny, User);
+      cannot(Action.UserCreateAny, User);
+      cannot(Action.UserUpdateAny, User);
+      cannot(Action.UserDeleteAny, User);
+      cannot(Action.UserCreateJwt, User);
       /*
         can(Action.ListOwn, ProposalClass);
   
