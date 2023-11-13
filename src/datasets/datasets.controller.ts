@@ -184,7 +184,7 @@ export class DatasetsController {
       } else if (canViewOwner) {
         mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
       } else if (canViewPublic) {
-        mergedFilters.where = [{ isPublished: true }];
+        mergedFilters.where = { isPublished: true };
       }
     }
 
