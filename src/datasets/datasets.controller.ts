@@ -1327,7 +1327,7 @@ export class DatasetsController {
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetRead, Attachment),
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
@@ -1375,7 +1375,7 @@ export class DatasetsController {
   // POST /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentCreate, Attachment),
+    ability.can(Action.DatasetAttachmentCreate, DatasetClass),
   )
   @HttpCode(HttpStatus.CREATED)
   @Post("/:pid/attachments")
@@ -1423,12 +1423,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/attachments
-  // @UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentRead, Attachment),
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
   )
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
   @Get("/:pid/attachments")
   @ApiOperation({
     summary: "It returns all the attachments for the dataset specified.",
@@ -1464,7 +1462,7 @@ export class DatasetsController {
   // PATCH /datasets/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentUpdate, Attachment),
+    ability.can(Action.DatasetAttachmentUpdate, DatasetClass),
   )
   @Put("/:pid/attachments/:aid")
   @ApiOperation({
@@ -1511,7 +1509,7 @@ export class DatasetsController {
   // DELETE /datasets/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentDelete, Attachment),
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
   )
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
@@ -1555,7 +1553,7 @@ export class DatasetsController {
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    return ability.can(Action.DatasetOrigdatablockCreate, OrigDatablock);
+    return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
   })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
@@ -1621,7 +1619,7 @@ export class DatasetsController {
   // POST /datasets/:id/origdatablocks/isValid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    return ability.can(Action.DatasetOrigdatablockCreate, OrigDatablock);
+    return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
   })
   @HttpCode(HttpStatus.OK)
   @Post("/:pid/origdatablocks/isValid")
@@ -1670,7 +1668,7 @@ export class DatasetsController {
   // GET /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    return ability.can(Action.DatasetOrigdatablockRead, OrigDatablock);
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
   })
   @Get("/:pid/origdatablocks")
   @ApiOperation({
@@ -1707,7 +1705,7 @@ export class DatasetsController {
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    return ability.can(Action.DatasetOrigdatablockUpdate, OrigDatablock);
+    return ability.can(Action.DatasetOrigdatablockUpdate, DatasetClass);
   })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
@@ -1778,7 +1776,7 @@ export class DatasetsController {
   // DELETE /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetOrigdatablockDelete, OrigDatablock),
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
   )
   @Delete("/:pid/origdatablocks/:oid")
   @ApiOperation({
@@ -1840,7 +1838,7 @@ export class DatasetsController {
   // POST /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetDatablockCreate, Datablock),
+    ability.can(Action.DatasetDatablockCreate, DatasetClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
@@ -1901,7 +1899,7 @@ export class DatasetsController {
   // GET /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetDatablockRead, Datablock),
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
   )
   @Get("/:pid/datablocks")
   @ApiOperation({
@@ -1938,7 +1936,7 @@ export class DatasetsController {
   // PATCH /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetDatablockUpdate, Datablock),
+    ability.can(Action.DatasetDatablockUpdate, DatasetClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
@@ -2008,7 +2006,7 @@ export class DatasetsController {
   // DELETE /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetDatablockDelete, Datablock),
+    ability.can(Action.DatasetDatablockDelete, DatasetClass),
   )
   @Delete("/:pid/datablocks/:did")
   @ApiOperation({
@@ -2077,7 +2075,7 @@ export class DatasetsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetLogbookRead, Logbook),
+    ability.can(Action.DatasetLogbookRead, DatasetClass),
   )
   @Get("/:pid/logbook")
   @ApiOperation({

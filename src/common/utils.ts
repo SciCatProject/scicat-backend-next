@@ -441,7 +441,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
-  filterQuery["$or"] = filterQuery["$or"];
+
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
       const currentExpression = JSON.parse(JSON.stringify(fields[key]));
