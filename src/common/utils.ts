@@ -441,6 +441,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
+  filterQuery["$or"] = [];
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -488,6 +489,9 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+  if (filterQuery["$or"]?.length === 0) {
+    delete filterQuery["$or"];
+  }
 
   return filterQuery;
 };

@@ -710,13 +710,13 @@ export class DatasetsController {
       );
 
       if (canViewAccess) {
-        fields.userGroups?.push(...user.currentGroups);
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
         // fields.sharedWith = user.email;
-        fields.isPublished = true; //are they in or?
       } else if (canViewOwner) {
-        fields.ownerGroup?.push(...user.currentGroups);
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
       } else if (canViewPublic) {
-        delete fields.userGroups;
         fields.isPublished = true;
       }
     }
@@ -791,12 +791,12 @@ export class DatasetsController {
       );
 
       if (canViewAccess) {
-        fields.userGroups?.push(...user.currentGroups);
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
         // fields.sharedWith = user.email;
-        fields.isPublished = true; //are they in or?
       } else if (canViewOwner) {
-        delete fields.userGroups;
-        fields.ownerGroup?.push(...user.currentGroups);
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
       } else if (canViewPublic) {
         fields.isPublished = true;
       }
