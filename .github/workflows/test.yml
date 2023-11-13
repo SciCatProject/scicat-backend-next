@@ -181,7 +181,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Configure sysctl limits for elastic search
         run: |
