@@ -193,13 +193,6 @@ jobs:
           sudo sysctl -w vm.max_map_count=262144
 >>>>>>> 7b5e733f (fix: replaced node version with variables)
 
-      - name: Configure sysctl limits for elastic search
-        run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-
       - name: Run stack in docker-compose
         run: |
           cp CI/E2E/docker-compose.yaml docker-compose.yaml
