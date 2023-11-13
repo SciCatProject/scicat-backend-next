@@ -49,7 +49,6 @@ import {
   MainDatasetsPublicInterceptor,
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
