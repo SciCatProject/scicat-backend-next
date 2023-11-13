@@ -19,6 +19,7 @@ const mockJob: JobClass = {
   jobStatusMessage: "testStatus",
   datasetList: [],
   jobResultObject: {},
+  ownerGroup: "testGroup",
 };
 
 class DatasetsServiceMock {}

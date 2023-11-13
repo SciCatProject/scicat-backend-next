@@ -53,6 +53,7 @@ export class SampleClass extends OwnableClass {
   })
   @Prop({ type: Object, required: false, default: {} })
   sampleCharacteristics?: Record<string, unknown>;
+<<<<<<< HEAD
 
   // @ApiProperty({
   //   type: Boolean,
@@ -62,6 +63,8 @@ export class SampleClass extends OwnableClass {
   // })
   // @Prop({ type: Boolean, required: false, default: false })
   // isPublished?: boolean;
+=======
+>>>>>>> b4ce0f1f (fix: conflict fixing)
 }
 
 export class SampleWithAttachmentsAndDatasets extends SampleClass {
