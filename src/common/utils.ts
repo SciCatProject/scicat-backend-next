@@ -441,8 +441,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
-  filterQuery["$or"] = filterQuery["$or"] ?? [];
-
+  filterQuery["$or"] = filterQuery["$or"];
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
       const currentExpression = JSON.parse(JSON.stringify(fields[key]));
@@ -715,17 +714,9 @@ export const createFullfacetPipeline = <T, Y extends object>(
   facetObject["all"].push({
     $count: "totalSets",
   });
-<<<<<<< HEAD
-<<<<<<< HEAD
   pipeline.push({
     $facet: facetObject as Record<string, PipelineStage.FacetPipelineStage[]>,
   });
-=======
-  pipeline.push({$facet: facetObject});
->>>>>>> b35ceca7 (fix: fix lint issue)
-=======
-  pipeline.push({ $facet: facetObject });
->>>>>>> 37d12183 (fix: lint issue fix)
 
   return pipeline;
 };
