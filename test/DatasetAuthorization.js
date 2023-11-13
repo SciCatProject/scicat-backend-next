@@ -203,7 +203,6 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log(res.body);
         res.body.should.be.an("array").to.have.lengthOf(1);
         res.body[0]["pid"].should.be.equal(datasetPid1);
       });
