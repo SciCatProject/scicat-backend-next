@@ -980,49 +980,49 @@ export class CaslAbilityFactory {
         ownerGroup: { $in: user.currentGroups },
       });
 
-      if (user.currentGroups.includes(Role.Admin)) {
-        can(Action.Manage, "all");
-      }
-      if (user.currentGroups.includes(Role.ArchiveManager)) {
-        //cannot(Action.Create, DatasetClass);
-        //cannot(Action.Update, DatasetClass);
-        //can(Action.Delete, DatasetClass);
-        cannot(Action.Manage, OrigDatablock);
-        cannot(Action.Create, OrigDatablock);
-        cannot(Action.Update, OrigDatablock);
-        can(Action.Delete, OrigDatablock);
-        cannot(Action.Manage, Datablock);
-        cannot(Action.Create, Datablock);
-        cannot(Action.Update, Datablock);
-        can(Action.Delete, Datablock);
-        can(Action.Delete, PublishedData);
-        //--------------------------------
-        // instrument
-        cannot(Action.InstrumentRead, Instrument);
-        cannot(Action.InstrumentCreate, Instrument);
-        cannot(Action.InstrumentUpdate, Instrument);
-        can(Action.InstrumentDelete, Instrument);
-      }
+      // if (user.currentGroups.includes(Role.Admin)) {
+      //   can(Action.Manage, "all");
+      // }
+      // if (user.currentGroups.includes(Role.ArchiveManager)) {
+      //   //cannot(Action.Create, DatasetClass);
+      //   //cannot(Action.Update, DatasetClass);
+      //   //can(Action.Delete, DatasetClass);
+      //   cannot(Action.Manage, OrigDatablock);
+      //   cannot(Action.Create, OrigDatablock);
+      //   cannot(Action.Update, OrigDatablock);
+      //   can(Action.Delete, OrigDatablock);
+      //   cannot(Action.Manage, Datablock);
+      //   cannot(Action.Create, Datablock);
+      //   cannot(Action.Update, Datablock);
+      //   can(Action.Delete, Datablock);
+      //   can(Action.Delete, PublishedData);
+      //   //--------------------------------
+      //   // instrument
+      //   cannot(Action.InstrumentRead, Instrument);
+      //   cannot(Action.InstrumentCreate, Instrument);
+      //   cannot(Action.InstrumentUpdate, Instrument);
+      //   can(Action.InstrumentDelete, Instrument);
+      // }
       //if (user.currentGroups.includes(Role.GlobalAccess)) {
       //  can(Action.Read, "all");
       //}
-      if (user.currentGroups.includes(Role.Ingestor)) {
-        can(Action.Create, Attachment);
+      // if (user.currentGroups.includes(Role.Ingestor)) {
+      //   can(Action.Create, Attachment);
 
-        //cannot(Action.Delete, DatasetClass);
-        //can(Action.Create, DatasetClass);
-        //can(Action.Update, DatasetClass);
+      //   //cannot(Action.Delete, DatasetClass);
+      //   //can(Action.Create, DatasetClass);
+      //   //can(Action.Update, DatasetClass);
 
-        can(Action.Create, Instrument);
-        can(Action.Update, Instrument);
-      }
-      if (user.currentGroups.includes(Role.ProposalIngestor)) {
-        cannot(Action.Delete, ProposalClass);
-        can(Action.Create, ProposalClass);
-        can(Action.Update, ProposalClass);
-        can(Action.Read, ProposalClass);
-        can(Action.ListAll, ProposalClass);
-      }
+      //   can(Action.Create, Instrument);
+      //   can(Action.Update, Instrument);
+      // }
+      // if (user.currentGroups.includes(Role.ProposalIngestor)) {
+      //   cannot(Action.Delete, ProposalClass);
+      //   can(Action.Create, ProposalClass);
+      //   can(Action.Update, ProposalClass);
+      //   can(Action.Read, ProposalClass);
+      //   can(Action.ListAll, ProposalClass);
+      // }
 
       //can(Action.Create, UserSettings, { userId: user._id });
       //can(Action.Read, UserSettings, { userId: user._id });
