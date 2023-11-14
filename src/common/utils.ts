@@ -489,6 +489,7 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
   if (filterQuery["$or"]?.length === 0) {
     delete filterQuery["$or"];
   }

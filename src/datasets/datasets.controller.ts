@@ -693,9 +693,7 @@ export class DatasetsController {
     const ability = this.caslAbilityFactory.createForUser(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
-    if (!canViewAny) {
-      delete fields.isPublished;
-
+    if (!canViewAny && !fields.isPublished) {
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
         DatasetClass,
@@ -704,11 +702,10 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      const canViewPublic = ability.can(
-        Action.DatasetReadManyPublic,
-        DatasetClass,
-      );
-
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
@@ -716,11 +713,11 @@ export class DatasetsController {
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
-      } else if (canViewPublic) {
-        fields.isPublished = true;
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
-
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -774,8 +771,8 @@ export class DatasetsController {
     const ability = this.caslAbilityFactory.createForUser(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
-    if (!canViewAny) {
-      delete fields.isPublished;
+    if (!canViewAny && !fields.isPublished) {
+      // delete fields.isPublished;
 
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
@@ -785,21 +782,23 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      const canViewPublic = ability.can(
-        Action.DatasetReadManyPublic,
-        DatasetClass,
-      );
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
 
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
+        // fields.isPublished = true;
         // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
-      } else if (canViewPublic) {
-        fields.isPublished = true;
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {
@@ -853,8 +852,8 @@ export class DatasetsController {
     const ability = this.caslAbilityFactory.createForUser(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
-    if (!canViewAny) {
-      delete fields.isPublished;
+    if (!canViewAny && !fields.isPublished) {
+      // delete fields.isPublished;
 
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
@@ -864,20 +863,21 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      const canViewPublic = ability.can(
-        Action.DatasetReadManyPublic,
-        DatasetClass,
-      );
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
 
       if (canViewAccess) {
         fields.userGroups?.push(...user.currentGroups);
         // fields.sharedWith = user.email;
-        fields.isPublished = true; //are they in or?
+        // fields.isPublished = true; //are they in or?
       } else if (canViewOwner) {
         fields.ownerGroup?.push(...user.currentGroups);
-      } else if (canViewPublic) {
-        fields.isPublished = true;
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
 
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
