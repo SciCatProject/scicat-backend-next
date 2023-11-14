@@ -2034,7 +2034,7 @@ export class DatasetsController {
       // remove datablock
       const res = await this.datablocksService.remove({
         _id: did,
-        pid,
+        datasetId: pid,
       });
       // all the remaining datablocks for this dataset
       const remainingDatablocks = await this.datablocksService.findAll({
