@@ -64,6 +64,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -202,6 +203,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
