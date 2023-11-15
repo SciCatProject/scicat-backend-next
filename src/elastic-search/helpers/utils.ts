@@ -10,9 +10,8 @@ export const transformKeysInObject = (obj: Record<string, unknown>) => {
   for (const [key, value] of Object.entries(obj)) {
     const newKey = transformKey(key);
 
-    const isNumberValueType = Number.isInteger(
-      (value as Record<string, unknown>)?.value,
-    );
+    const isNumberValueType =
+      typeof (value as Record<string, unknown>)?.value === "number";
     if (isNumberValueType) {
       (value as Record<string, unknown>)["value_type"] = "number";
     } else {
