@@ -1034,7 +1034,7 @@ export class CaslAbilityFactory {
         can(Action.Delete, OrigDatablock);
         can(Action.Delete, Datablock);
         can(Action.Delete, PublishedData);
-        can(Action.Delete, Instrument);
+        can(Action.InstrumentDelete, Instrument);
       }
     }
 
