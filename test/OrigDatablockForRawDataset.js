@@ -127,6 +127,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
   });
 
   it("0040: validate wrong origDatablock and expect false", async () => {
+    TestData.OrigDataBlockWrong.datasetId = datasetPid1;
     return request(appUrl)
       .post(`/api/v3/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockWrong)
