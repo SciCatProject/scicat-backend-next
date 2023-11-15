@@ -249,17 +249,18 @@ export class OrigDatablocksController {
   })
   async isValid(
     @Req() request: Request,
-    @Body() createOrigDatablock: CreateOrigDatablockDto,
+    @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     await this.checkPermissionsForOrigDatablockExtended(
       request,
-      createOrigDatablock.datasetId,
+      (createOrigDatablock as CreateOrigDatablockDto).datasetId,
       Action.OrigdatablockCreate,
     );
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
       createOrigDatablock,
     );
+
     const errorsTestOrigDatablock = await validate(dtoTestOrigDatablock);
 
     const valid = errorsTestOrigDatablock.length == 0;
