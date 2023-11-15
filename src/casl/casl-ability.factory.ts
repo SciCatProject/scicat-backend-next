@@ -8,7 +8,7 @@ import {
 import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { Role } from "src/auth/role.enum";
+// import { Role } from "src/auth/role.enum";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
@@ -164,10 +164,10 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockDelete, DatasetClass);
+        can(Action.OrigdatablockDelete, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockDeleteAny, DatasetClass);
+        can(Action.OrigdatablockDeleteAny, OrigDatablock);
       } else {
         /*
         / unauthorized user or user that does not belong to any of the group listed in DELETE_GROUPS
@@ -187,7 +187,7 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        cannot(Action.OrigdatablockDelete, DatasetClass);
+        cannot(Action.OrigdatablockDelete, OrigDatablock);
       }
 
       if (
@@ -976,9 +976,9 @@ export class CaslAbilityFactory {
       can(Action.Manage, Datablock, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.Manage, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
+      // can(Action.Manage, OrigDatablock, {
+      //   ownerGroup: { $in: user.currentGroups },
+      // });
 
       // if (user.currentGroups.includes(Role.Admin)) {
       //   can(Action.Manage, "all");

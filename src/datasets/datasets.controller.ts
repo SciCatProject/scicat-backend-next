@@ -272,7 +272,6 @@ export class DatasetsController {
           ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
           ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
       }
-
       if (!canDoAction) {
         throw new ForbiddenException("Unauthorized access");
       }
@@ -1804,7 +1803,7 @@ export class DatasetsController {
       // remove origdatablock
       const res = await this.origDatablocksService.remove({
         _id: oid,
-        pid,
+        datasetId: pid,
       });
       // all the remaining orig datablocks for this dataset
       const odb = await this.origDatablocksService.findAll({
