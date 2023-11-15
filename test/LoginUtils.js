@@ -24,7 +24,7 @@ exports.getIdAndToken = function (appUrl, user, cb) {
       if (err) {
         cb(err);
       } else {
-        cb(res.body.userId,res.body.id);
+        cb(res.body.userId, res.body.id);
       }
     });
 };
