@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
 
-let accessToken = null;
+let accessTokenIngestor = null;
 let accessTokenArchiveManager = null;
 let pid = null;
 const isESenabled = process.env.ELASTICSEARCH_ENABLED == "yes";
@@ -52,7 +52,7 @@ const scientificMetadata = ({
           password: "aman",
         },
         (tokenVal) => {
-          accessToken = tokenVal;
+          accessTokenIngestor = tokenVal;
           utils.getToken(
             appUrl,
             {
@@ -73,10 +73,9 @@ const scientificMetadata = ({
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
-
         .then((res) => {
           res.body.should.have
             .property("scientificMetadata")
@@ -100,7 +99,9 @@ const scientificMetadata = ({
             rhs: 99,
             unit: "m",
           }),
-        );
+        )
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
 
       request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -111,7 +112,9 @@ const scientificMetadata = ({
             rhs: 101,
             unit: "m",
           }),
-        );
+        )
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
 
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -124,7 +127,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -143,7 +146,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -163,7 +166,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -183,7 +186,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {

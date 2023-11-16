@@ -203,6 +203,12 @@ export class CaslAbilityFactory {
         can(Action.ReadAll, UserIdentity);
 
         // -------------------------------------
+        // elasticsearch
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.Manage, ElasticSearchActions);
+
+        // -------------------------------------
         // datasets
         // -------------------------------------
         // endpoint authorization
