@@ -115,7 +115,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateAny.should.be.equal(true);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -127,7 +127,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateAny.should.be.equal(true);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -139,8 +139,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(true);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -152,8 +151,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(false);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(true);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -165,8 +163,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(true);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -178,8 +175,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(false);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(false);
       });
   });
 
@@ -191,8 +187,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(true);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -236,8 +231,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(true);
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -249,8 +243,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(true);
+        res.body.authorization.should.be.equal(true);
       });
   });
 
@@ -262,8 +255,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.authorization.DatasetCreateOwnerNoPid.should.be.equal(false);
-        res.body.authorization.DatasetCreateOwnerWithPid.should.be.equal(false);
+        res.body.authorization.should.be.equal(false);
       });
   });
 

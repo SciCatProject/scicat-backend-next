@@ -42,6 +42,7 @@ import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
 import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "./guards/auth-check.guard";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -85,7 +86,6 @@ export class UsersController {
     }
   }
 
-  @AllowAny()
   @Post("jwt")
   @ApiOperation({
     summary: "It creates a new jwt token.",
@@ -278,33 +278,10 @@ export class UsersController {
     )) as JWTUser;
     const ability = this.caslAbilityFactory.createForUser(viewedUser);
 
-    const datasetInstance = {
-      withPid: await this.generateDatasetInstanceForPermissions(
-        viewedUser,
-        "withPid",
-      ),
-      withoutPid: await this.generateDatasetInstanceForPermissions(viewedUser),
-    };
-
-    const authorization = {
-      DatasetCreateAny: ability.can(Action.DatasetCreateAny, DatasetClass),
-      DatasetCreateOwnerNoPid: ability.can(
-        Action.DatasetCreateOwnerNoPid,
-        datasetInstance.withoutPid,
-      ),
-      DatasetCreateOwnerWithPid: ability.can(
-        Action.DatasetCreateOwnerWithPid,
-        datasetInstance.withPid,
-      ),
-    };
+    const canCreateDataset = ability.can(Action.DatasetCreate, DatasetClass);
 
     return {
-      authorization: authorization.DatasetCreateAny
-        ? { DatasetCreateAny: authorization.DatasetCreateAny }
-        : {
-            DatasetCreateOwnerNoPid: authorization.DatasetCreateOwnerNoPid,
-            DatasetCreateOwnerWithPid: authorization.DatasetCreateOwnerWithPid,
-          },
+      authorization: canCreateDataset,
     };
   }
 
