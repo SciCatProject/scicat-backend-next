@@ -990,6 +990,7 @@ export class CaslAbilityFactory {
         // -------------------------------------
         // user endpoint, including useridentity
         can(Action.UserReadAny, User);
+        can(Action.UserReadOwn, User);
         can(Action.UserCreateAny, User);
         can(Action.UserUpdateAny, User);
         can(Action.UserDeleteAny, User);
@@ -1286,8 +1287,9 @@ export class CaslAbilityFactory {
         // datasets data instance authorization
         can(Action.DatasetCreateOwnerNoPid, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
-          pid: { $exists: false },
+          pid: { $eq: "" },
         });
+
         can(Action.DatasetReadManyAccess, DatasetClass);
         can(Action.DatasetReadOneAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
@@ -1473,6 +1475,12 @@ export class CaslAbilityFactory {
         can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
           isPublished: true,
         });
+
+        cannot(Action.UserReadAny, User);
+        cannot(Action.UserCreateAny, User);
+        cannot(Action.UserUpdateAny, User);
+        cannot(Action.UserDeleteAny, User);
+        cannot(Action.UserCreateJwt, User);
       }
 
       if (!user) {
@@ -1576,11 +1584,7 @@ export class CaslAbilityFactory {
       can(Action.UserCreateOwn, User, { _id: user._id });
       can(Action.UserUpdateOwn, User, { _id: user._id });
       can(Action.UserDeleteOwn, User, { _id: user._id });
-      cannot(Action.UserReadAny, User);
-      cannot(Action.UserCreateAny, User);
-      cannot(Action.UserUpdateAny, User);
-      cannot(Action.UserDeleteAny, User);
-      cannot(Action.UserCreateJwt, User);
+
       /*
         can(Action.ListOwn, ProposalClass);
   
