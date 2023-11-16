@@ -146,11 +146,11 @@ jobs:
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: admin,ingestor,archivemanager
-          CREATE_DATASET_GROUPS: group1,group2,group3
+          ADMIN_GROUPS: admin,ingestor
           DELETE_GROUPS: archivemanager
+          CREATE_DATASET_GROUPS: group1,group2,group3
+          CREATE_DATASET_WITH_PID_GROUPS: "group2"
           ACCESS_GROUPS_STATIC_VALUES: "ess"
-          CREATE_DATASET_WITH_PID_GROUPS: "group2,group3"
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
           ES_HOST: https://localhost:9200
