@@ -21,12 +21,12 @@ const TestData = {
     lastname: "proposer",
     title: "A complete test proposal",
     abstract: "Abstract of test proposal",
-    ownerGroup: "20170251-group",
+    ownerGroup: "proposalingestor",
     accessGroups: [],
     MeasurementPeriodList: [],
   },
 
-  ProposalWring_1: {
+  ProposalWrong_1: {
     proposalId: "20170267",
     pi_email: "pi@uni.edu",
     pi_firstname: "principal",

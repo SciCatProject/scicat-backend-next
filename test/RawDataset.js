@@ -68,6 +68,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -114,6 +115,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -283,7 +285,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchComment)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -296,7 +298,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchDataQualityMetrics)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -309,7 +311,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchCommentInvalid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(400)
       .then((res) => {
         res.body.message.should.contain("comment");
@@ -322,7 +324,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchDataQualityMetricsInvalid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(400)
       .then((res) => {
         res.body.message.should.contain("dataQualityMetrics");
@@ -352,7 +354,7 @@ describe("RawDataset: Raw Datasets", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessProposalToken}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
