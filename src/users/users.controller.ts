@@ -41,8 +41,7 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
 import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
-import { AuthenticatedPoliciesGuard } from "./guards/auth-check.guard";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 
 @ApiBearerAuth()
 @ApiTags("users")

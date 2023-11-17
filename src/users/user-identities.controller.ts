@@ -17,7 +17,7 @@ import { UserIdentitiesService } from "./user-identities.service";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
-import { AuthenticatedPoliciesGuard } from "./guards/auth-check.guard";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 
 @ApiBearerAuth()
 @ApiTags("user identities")
