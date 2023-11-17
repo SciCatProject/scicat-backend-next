@@ -15,6 +15,7 @@ import {
   ForbiddenException,
   ConflictException,
   BadRequestException,
+  Logger,
   InternalServerErrorException,
 } from "@nestjs/common";
 import { Request } from "express";
@@ -32,6 +33,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
@@ -79,9 +81,9 @@ export class ProposalsController {
   ): ProposalClass {
     const proposalInstance = new ProposalClass();
     proposalInstance.accessGroups = proposal.accessGroups || [];
-    proposalInstance.ownerGroup = proposal.ownerGroup;
-    proposalInstance.proposalId = proposal.proposalId;
-    proposalInstance.email = proposal.email;
+    proposalInstance.ownerGroup = proposal.ownerGroup || "";
+    proposalInstance.proposalId = proposal.proposalId || "";
+    proposalInstance.email = proposal.email || "";
     proposalInstance.isPublished =
       "isPublished" in proposal ? proposal.isPublished : false;
 
@@ -92,7 +94,6 @@ export class ProposalsController {
     group: Action,
     proposal: ProposalClass | CreateProposalDto,
     request: Request,
-    error: Error,
   ) {
     const proposalInstance = this.generateProposalInstanceForPermissions(
       proposal as ProposalClass,
@@ -155,10 +156,11 @@ export class ProposalsController {
           );
 
         default:
-          throw error;
+          Logger.error("Permission for the action is not specified");
+          return false;
       }
     } catch (error) {
-      throw InternalServerErrorException;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -167,13 +169,18 @@ export class ProposalsController {
     id: string,
     group: Action,
   ) {
-    const customError = new ForbiddenException("Unauthorized access");
-
     const proposal = await this.proposalsService.findOne({
       proposalId: id,
     });
     if (proposal) {
-      await this.permissionChecker(group, proposal, request, customError);
+      const canDoAction = await this.permissionChecker(
+        group,
+        proposal,
+        request,
+      );
+      if (!canDoAction) {
+        throw new ForbiddenException("Unauthorized access");
+      }
     }
 
     return proposal;
@@ -184,15 +191,13 @@ export class ProposalsController {
     proposal: CreateProposalDto,
     group: Action,
   ) {
-    const customError = new ForbiddenException(
-      "Unauthorized to create this proposal",
-    );
     if (!proposal) {
       throw new BadRequestException("Not able to create this proposal");
     }
-
-    await this.permissionChecker(group, proposal, request, customError);
-
+    const canDoAction = await this.permissionChecker(group, proposal, request);
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to create this proposal");
+    }
     return proposal;
   }
   updateFiltersForList(
@@ -203,16 +208,32 @@ export class ProposalsController {
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.ListAll, ProposalClass);
-      const canViewTheirOwn = ability.can(Action.ListOwn, ProposalClass);
 
-      if (!canViewAll && canViewTheirOwn) {
-        if (!mergedFilters.where) {
-          mergedFilters.where = {};
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        mergedFilters.where = mergedFilters.where || {};
+        if (canViewAccess) {
+          mergedFilters.where["$or"] = [
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+          ];
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+        } else if (canViewPublic) {
+          mergedFilters.where.isPublished = true;
         }
-        mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-        ];
       }
     }
 
@@ -386,12 +407,31 @@ export class ProposalsController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {
-        fields.userGroups = fields.userGroups ?? [];
-        fields.userGroups.push(...user.currentGroups);
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
       }
     }
 
@@ -399,7 +439,6 @@ export class ProposalsController {
       fields,
       limits,
     };
-
     return this.proposalsService.fullquery(parsedFilters);
   }
 
@@ -439,12 +478,31 @@ export class ProposalsController {
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {
-        fields.userGroups = fields.userGroups ?? [];
-        fields.userGroups.push(...user.currentGroups);
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
       }
     }
 
@@ -457,7 +515,7 @@ export class ProposalsController {
   }
 
   // GET /proposals/:id
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
@@ -486,7 +544,6 @@ export class ProposalsController {
       proposalId,
       Action.ProposalsRead,
     );
-
     return proposal;
   }
 

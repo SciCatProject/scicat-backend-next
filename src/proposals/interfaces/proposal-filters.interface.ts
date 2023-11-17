@@ -16,5 +16,7 @@ export interface IProposalFields {
   firstname?: IProposalFieldObject;
   lastname?: IProposalFieldObject;
   endTime?: IDateRange;
+  ownerGroup?: string[];
   userGroups?: string[];
+  isPublished?: boolean;
 }
