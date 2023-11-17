@@ -899,7 +899,7 @@ export class CaslAbilityFactory {
         can(Action.OrigdatablockDeleteAny, OrigDatablock);
       } else {
         /*
-        / unauthorized user or user that does not belong to any of the group listed in DELETE_GROUPS
+        /  user that does not belong to any of the group listed in DELETE_GROUPS
         */
 
         // -------------------------------------
@@ -928,7 +928,7 @@ export class CaslAbilityFactory {
 
         // this tests should be all removed, once we are done with authorization review
         //can(Action.ListAll, DatasetClass);
-        can(Action.ListAll, ProposalClass);
+        // can(Action.ListAll, ProposalClass);
         can(Action.ReadAll, UserIdentity);
 
         // -------------------------------------
@@ -1586,6 +1586,156 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
       }
+
+      if (!user) {
+        /**
+         * unauthenticated users
+         */
+
+        // -------------------------------------
+        // proposals
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.ProposalsRead, ProposalClass);
+        cannot(Action.ProposalsCreate, ProposalClass);
+        cannot(Action.ProposalsUpdate, ProposalClass);
+        cannot(Action.ProposalsDelete, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        cannot(Action.ProposalsAttachmentCreate, ProposalClass);
+        cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
+        cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+
+        // -------------------------------------
+        // data instance authorization
+        can(Action.ProposalsReadManyPublic, ProposalClass);
+        can(Action.ProposalsReadOnePublic, ProposalClass, {
+          isPublished: true,
+        });
+        can(Action.ProposalsAttachmentReadPublic, ProposalClass, {
+          isPublished: true,
+        });
+      } else if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        // -------------------------------------
+        // proposals
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.ProposalsRead, ProposalClass);
+        can(Action.ProposalsCreate, ProposalClass);
+        can(Action.ProposalsUpdate, ProposalClass);
+        can(Action.ProposalsDelete, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        can(Action.ProposalsAttachmentCreate, ProposalClass);
+        can(Action.ProposalsAttachmentUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentDelete, ProposalClass);
+        // -------------------------------------
+        // data instance authorization
+        can(Action.ProposalsReadAny, ProposalClass);
+        can(Action.ProposalsCreateAny, ProposalClass);
+        can(Action.ProposalsUpdateAny, ProposalClass);
+        can(Action.ProposalsDeleteAny, ProposalClass);
+        can(Action.ProposalsAttachmentReadAny, ProposalClass);
+        can(Action.ProposalsAttachmentCreateAny, ProposalClass);
+        can(Action.ProposalsAttachmentUpdateAny, ProposalClass);
+        can(Action.ProposalsAttachmentDeleteAny, ProposalClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          configuration().proposalGroups.includes(g),
+        )
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
+         */
+
+        // -------------------------------------
+        // proposals
+        // -------------------------------------
+        // endpoint authorization
+
+        can(Action.ProposalsRead, ProposalClass);
+        can(Action.ProposalsCreate, ProposalClass);
+        can(Action.ProposalsUpdate, ProposalClass);
+        cannot(Action.ProposalsDelete, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        can(Action.ProposalsAttachmentCreate, ProposalClass);
+        can(Action.ProposalsAttachmentUpdate, ProposalClass);
+        can(Action.ProposalsAttachmentDelete, ProposalClass);
+        // -------------------------------------
+        // data instance authorization
+        can(Action.ProposalsCreateAny, ProposalClass);
+        can(Action.ProposalsReadManyAccess, ProposalClass);
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          isPublished: true,
+        });
+        //-
+        can(Action.ProposalsAttachmentCreateAny, ProposalClass);
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          isPublished: true,
+        });
+        can(Action.ProposalsAttachmentUpdateOwner, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentDeleteOwner, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (user) {
+        /**
+         * authenticated users
+         */
+
+        // -------------------------------------
+        // proposals
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.ProposalsRead, ProposalClass);
+        cannot(Action.ProposalsCreate, ProposalClass);
+        cannot(Action.ProposalsUpdate, ProposalClass);
+        cannot(Action.ProposalsDelete, ProposalClass);
+        can(Action.ProposalsAttachmentRead, ProposalClass);
+        cannot(Action.ProposalsAttachmentCreate, ProposalClass);
+        cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
+        cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+        // -------------------------------------
+        // data instance authorization
+        can(Action.ProposalsReadManyAccess, ProposalClass);
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsReadOneAccess, ProposalClass, {
+          isPublished: true,
+        });
+        // -
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+          isPublished: true,
+        });
+      }
+
       can(Action.UserReadOwn, User, { _id: user._id });
       can(Action.UserCreateOwn, User, { _id: user._id });
       can(Action.UserUpdateOwn, User, { _id: user._id });
@@ -1702,6 +1852,7 @@ export class CaslAbilityFactory {
 
       can(Action.Manage, Policy, { ownerGroup: { $in: user.currentGroups } });
 
+<<<<<<< HEAD
       can(Action.Read, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
@@ -1710,6 +1861,8 @@ export class CaslAbilityFactory {
       });
 >>>>>>> bae7f375 (fix: conflict fix)
 
+=======
+>>>>>>> cf3d75fa (fix: added permission for proposal)
       can(Action.Read, PublishedData);
       can(Action.Update, PublishedData);
       can(Action.Create, PublishedData);

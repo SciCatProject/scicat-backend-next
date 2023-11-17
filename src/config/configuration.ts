@@ -19,6 +19,8 @@ const configuration = () => {
   const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
   const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
+  const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
+
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
@@ -45,6 +47,7 @@ const configuration = () => {
       .map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
+    proposalGroups: proposalGroups,
     createJobGroups: createJobGroups,
     updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
