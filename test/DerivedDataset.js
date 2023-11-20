@@ -58,6 +58,22 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
     );
   });
 
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete("/api/v3/datasets/" + encodeURIComponent(item.pid))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200);
+
+    return response;
+  }
+
+  async function processArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
+
   // check if dataset is valid
   it("0100: check if valid derived dataset is valid", async () => {
     return request(appUrl)
@@ -331,5 +347,16 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
+  });
+  it("0250: delete all dataset as archivemanager", async () => {
+    return await request(appUrl)
+      .get("/api/v3/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        return processArray(res.body);
+      });
   });
 });

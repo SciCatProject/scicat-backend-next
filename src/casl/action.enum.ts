@@ -108,6 +108,8 @@ export enum Action {
   ProposalsAttachmentRead = "proposals_attachment_read",
   ProposalsAttachmentUpdate = "proposals_attachment_update",
   ProposalsAttachmentDelete = "proposals_attachment_delete",
+  ProposalsDatasetRead = "proposals_dataset_read",
+
   // individual actions
   ProposalsCreateOwner = "proposals_create_owner",
   ProposalsCreateAny = "proposals_create_any",
@@ -132,6 +134,44 @@ export enum Action {
   ProposalsAttachmentUpdateAny = "proposals_attachment_update_any",
   ProposalsAttachmentDeleteOwner = "proposals_attachment_delete_owner",
   ProposalsAttachmentDeleteAny = "proposals_attachment_delete_any",
+
+  // Samples
+  // endpoint authorization actions
+  SamplesCreate = "samples_create",
+  SamplesRead = "samples_read",
+  SamplesUpdate = "samples_update",
+  SamplesDelete = "samples_delete",
+  SamplesAttachmentCreate = "samples_attachment_create",
+  SamplesAttachmentRead = "samples_attachment_read",
+  SamplesAttachmentUpdate = "samples_attachment_update",
+  SamplesAttachmentDelete = "samples_attachment_delete",
+  SamplesDatasetRead = "samples_dataset_read",
+
+  // individual actions
+  SamplesCreateOwner = "samples_create_owner",
+  SamplesCreateAny = "samples_create_any",
+  SamplesReadManyPublic = "samples_read_many_public",
+  SamplesReadManyAccess = "samples_read_many_access",
+  SamplesReadManyOwner = "samples_read_many_owner",
+  SamplesReadOnePublic = "samples_read_one_public",
+  SamplesReadOneAccess = "samples_read_one_access",
+  SamplesReadOneOwner = "samples_read_one_owner",
+  SamplesReadAny = "samples_read_any",
+
+  SamplesUpdateOwner = "samples_update_owner",
+  SamplesUpdateAny = "samples_update_any",
+  SamplesDeleteOwner = "samples_delete_owner",
+  SamplesDeleteAny = "samples_delete_any",
+  SamplesAttachmentCreateOwner = "samples_attachment_create_owner",
+  SamplesAttachmentCreateAny = "samples_attachment_create_any",
+  SamplesAttachmentReadPublic = "samples_attachment_read_public",
+  SamplesAttachmentReadAccess = "samples_attachment_read_access",
+  SamplesAttachmentReadOwner = "samples_attachment_read_owner",
+  SamplesAttachmentReadAny = "samples_attachment_read_any",
+  SamplesAttachmentUpdateOwner = "samples_attachment_update_owner",
+  SamplesAttachmentUpdateAny = "samples_attachment_update_any",
+  SamplesAttachmentDeleteOwner = "samples_attachment_delete_owner",
+  SamplesAttachmentDeleteAny = "samples_attachment_delete_any",
 
   // --------------
   // Jobs

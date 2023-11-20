@@ -184,7 +184,6 @@ export class ProposalsController {
         throw new ForbiddenException("Unauthorized access");
       }
     }
-
     return proposal;
   }
 
@@ -207,6 +206,8 @@ export class ProposalsController {
     mergedFilters: IFilters<ProposalDocument, IProposalFields>,
   ): IFilters<ProposalDocument, IProposalFields> {
     const user: JWTUser = request.user as JWTUser;
+    mergedFilters.where = mergedFilters.where || {};
+
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
@@ -223,19 +224,19 @@ export class ProposalsController {
           Action.ProposalsReadManyPublic,
           ProposalClass,
         );
-        mergedFilters.where = mergedFilters.where || {};
         if (canViewAccess) {
           mergedFilters.where["$or"] = [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
           ];
-          // fields.sharedWith = user.email;
         } else if (canViewOwner) {
           mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
         } else if (canViewPublic) {
           mergedFilters.where.isPublished = true;
         }
       }
+    } else {
+      mergedFilters.where.isPublished = true;
     }
 
     return mergedFilters;
@@ -630,7 +631,7 @@ export class ProposalsController {
   // POST /proposals/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentCreate, Attachment),
+    ability.can(Action.ProposalsAttachmentCreate, ProposalClass),
   )
   @Post("/:pid/attachments")
   @ApiOperation({
@@ -664,6 +665,7 @@ export class ProposalsController {
       proposalId,
       Action.ProposalsAttachmentCreate,
     );
+
     const createAttachment = {
       ...createAttachmentDto,
       proposalId: proposalId,
@@ -674,7 +676,7 @@ export class ProposalsController {
   // GET /proposals/:pid/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentRead, Attachment),
+    ability.can(Action.ProposalsAttachmentRead, ProposalClass),
   )
   @Get("/:pid/attachments")
   @ApiOperation({
@@ -710,7 +712,7 @@ export class ProposalsController {
   // PATCH /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentUpdate, Attachment),
+    ability.can(Action.ProposalsAttachmentUpdate, ProposalClass),
   )
   @Patch("/:pid/attachments/:aid")
   @ApiOperation({
@@ -757,7 +759,7 @@ export class ProposalsController {
   // DELETE /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentDelete, Attachment),
+    ability.can(Action.ProposalsAttachmentDelete, ProposalClass),
   )
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
@@ -801,7 +803,7 @@ export class ProposalsController {
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+    ability.can(Action.ProposalsDatasetRead, ProposalClass),
   )
   @Get("/:pid/datasets")
   @ApiOperation({

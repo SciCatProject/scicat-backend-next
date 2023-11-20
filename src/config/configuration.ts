@@ -20,6 +20,7 @@ const configuration = () => {
   const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
+  const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
@@ -45,9 +46,10 @@ const configuration = () => {
     createDatasetPrivilegedGroups: createDatasetPrivilegedGroups
       .split(",")
       .map((v) => v.trim()),
+    proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
+    sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
-    proposalGroups: proposalGroups,
     createJobGroups: createJobGroups,
     updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/

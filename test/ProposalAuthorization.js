@@ -6,6 +6,7 @@ const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
 let accessToken = null,
+  accessTokenArchiveManager = null,
   accessTokenIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null;
@@ -48,6 +49,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       },
       (tokenVal) => {
         accessToken = tokenVal;
+
         utils.getToken(
           appUrl,
           {
@@ -72,7 +74,17 @@ describe("ProposalAuthorization: Test access to proposal", () => {
                   },
                   (tokenVal) => {
                     accessTokenUser2 = tokenVal;
-                    done();
+                    utils.getToken(
+                      appUrl,
+                      {
+                        username: "archiveManager",
+                        password: "aman",
+                      },
+                      (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                      },
+                    );
                   },
                 );
               },
@@ -336,7 +348,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -345,7 +357,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -354,7 +366,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
