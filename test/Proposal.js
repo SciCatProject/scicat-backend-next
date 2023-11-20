@@ -43,6 +43,7 @@ describe("Proposal: Simple Proposal", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200);
+
     return response;
   }
 
@@ -228,14 +229,15 @@ describe("Proposal: Simple Proposal", () => {
       .expect(200);
   });
 
-  it("0130: remove all existing proposals", async () => {
-    const proposals = await request(appUrl)
+  it("0130: admin can remove all existing proposals", async () => {
+    return await request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .then((res) => res.body);
-    return processArray(proposals);
+      .then((res) => {
+        return processArray(res.body);
+      });
   });
 });
