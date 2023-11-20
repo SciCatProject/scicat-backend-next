@@ -172,12 +172,14 @@ export class ProposalsController {
     const proposal = await this.proposalsService.findOne({
       proposalId: id,
     });
+
     if (proposal) {
       const canDoAction = await this.permissionChecker(
         group,
         proposal,
         request,
       );
+
       if (!canDoAction) {
         throw new ForbiddenException("Unauthorized access");
       }
@@ -207,8 +209,7 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
-
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
           Action.ProposalsReadManyAccess,

@@ -144,7 +144,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       .expect(401);
   });
 
-  it("proposal ingestors can list all proposals", async () => {
+  it("admin can list all proposals", async () => {
     return request(appUrl)
       .get("/api/v3/proposals")
       .set("Accept", "application/json")
