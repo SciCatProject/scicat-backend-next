@@ -7,6 +7,7 @@ const { TestData } = require("./TestData");
 var accessToken = null;
 var pid = null;
 var minPid = null;
+var randomPid = null;
 var accessProposalToken = null;
 var accessTokenArchiveManager = null;
 
@@ -147,8 +148,11 @@ describe("RawDataset: Raw Datasets", () => {
         res.body.should.have
           .property("datasetName")
           .and.equal(TestData.RawCorrectRandom.datasetName);
+
+        randomPid = encodeURIComponent(res.body["pid"]);
       });
   });
+
   it("tries to add an incomplete raw dataset", async () => {
     const rawDatasetWithIncorrectEmail = {
       ...TestData.RawCorrectRandom,
@@ -341,6 +345,15 @@ describe("RawDataset: Raw Datasets", () => {
       .expect("Content-Type", /json/);
   });
 
+  it("should delete this raw dataset", async () => {
+    return request(appUrl)
+      .delete("/api/v3/datasets/" + randomPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(200)
+      .expect("Content-Type", /json/);
+  });
+
   it("should delete this minimal raw dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + minPid)
@@ -354,7 +367,7 @@ describe("RawDataset: Raw Datasets", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });

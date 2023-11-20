@@ -6,6 +6,7 @@ const { TestData } = require("./TestData");
 
 let accessTokenProposalIngestor = null,
   accessTokenIngestor = null,
+  accessTokenArchiveManager = null,
   defaultProposalId = null,
   proposalId = null,
   attachmentId = null;
@@ -28,7 +29,17 @@ describe("Proposal: Simple Proposal", () => {
           },
           (tokenVal) => {
             accessTokenIngestor = tokenVal;
-            done();
+            utils.getToken(
+              appUrl,
+              {
+                username: "archiveManager",
+                password: "aman",
+              },
+              (tokenVal) => {
+                accessTokenArchiveManager = tokenVal;
+                done();
+              },
+            );
           },
         );
       },
@@ -41,7 +52,7 @@ describe("Proposal: Simple Proposal", () => {
     const response = await request(appUrl)
       .delete("/api/v3/Proposals/" + item.proposalId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
 
     return response;
