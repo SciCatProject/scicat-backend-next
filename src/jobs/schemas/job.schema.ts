@@ -6,27 +6,27 @@ import { JobType } from "../job-type.enum";
 
 export type JobDocument = JobClass & Document;
 
-{
-  "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
-  "type" : "archive",
-  "created_by" : "user_1"
-  "created_at" : <timestamp>,
-  "status_code" : "CREATED",
-  "updaded_at": <timestamp>,
-  "updated_by": “user_1”,
-  "status_message": "Job created",
-  "updates_history" : [
-   {
-    "updaded_at": <timestamp>,
-    "updated_by": “user_1”,
-    "status_code" : "",
-    "statue_message" : ""
-   }
-  ],
-  "message_sent” : { <copy of the message posted see #7> },
-  "configuration" : {},
-  "params" : {}
-}
+//{
+//  "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
+//  "type" : "archive",
+//  "created_by" : "user_1"
+//  "created_at" : <timestamp>,
+//  "status_code" : "CREATED",
+//  "updaded_at": <timestamp>,
+//  "updated_by": “user_1”,
+//  "status_message": "Job created",
+//  "updates_history" : [
+//   {
+//    "updaded_at": <timestamp>,
+//    "updated_by": “user_1”,
+//    "status_code" : "",
+//    "statue_message" : ""
+//   }
+//  ],
+//  "message_sent” : { <copy of the message posted see #7> },
+//  "configuration" : {},
+//  "params" : {}
+//}
 
 
 @Schema({
