@@ -523,11 +523,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-<<<<<<< HEAD
-  it("another full query for datasets for user 2 ", async () => {
-=======
   it("0350: full query for datasets for user 2", async () => {
->>>>>>> ee857f39 (FIxed all linting, started testing DatasetAuthorization)
     const fields = {
       isPublished: true,
     };
