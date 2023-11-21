@@ -1017,8 +1017,8 @@ export class CaslAbilityFactory {
         // -------------------------------------
         // policies
         can(Action.Update, Policy);
-        can(Action.Delete, Policy);
-        can(Action.Manage, Policy);
+        can(Action.Read, Policy);
+        can(Action.Create, Policy);
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetPrivilegedGroups.includes(g),
