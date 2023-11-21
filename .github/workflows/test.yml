@@ -173,6 +173,7 @@ jobs:
           cp functionalAccounts.json.test functionalAccounts.json
           docker-compose up --build -d
           npm run test:api
+<<<<<<< HEAD
 
   e2e_tests:
     name: E2E Tests
@@ -234,3 +235,5 @@ jobs:
         with:
           name: cypress-videos
           path: frontend/cypress/videos/
+=======
+>>>>>>> d075bc93 (fix: commented out  e2e test)
