@@ -70,6 +70,11 @@
     "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.0"
   },
+  "overrides": {
+   "pac-resolver": {
+      "degenerator": "~5"
+   }	   
+  },
   "devDependencies": {
     "@faker-js/faker": "^8.0.1",
     "@nestjs/cli": "^10.0.5",
