@@ -39,7 +39,7 @@ const dataset3 = {
   accessGroups: ["group3"],
 };
 
-describe("DatasetAuthorization: Test access to dataset", () => {
+describe("0300: DatasetAuthorization: Test access to dataset", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -99,7 +99,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
     done();
   });
 
-  it("adds dataset 1", async () => {
+  it("0010: adds dataset 1", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -117,7 +117,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("adds dataset 2", async () => {
+  it("0020: adds dataset 2", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -135,7 +135,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("adds dataset 3", async () => {
+  it("0030: adds dataset 3", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
@@ -153,7 +153,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("adds a new origDatablock on the published dataset", async () => {
+  it("0040: adds a new origDatablock on the published dataset", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${encodedDatasetPid1}/origdatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
@@ -169,7 +169,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("adds a new datablock on the published dataset", async () => {
+  it("0050: adds a new datablock on the published dataset", async () => {
     const randomArchiveId = Math.random().toString(36).slice(2);
 
     return request(appUrl)
@@ -187,7 +187,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("adds a new attachment on the published dataset", async () => {
+  it("0060: adds a new attachment on the published dataset", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${encodedDatasetPid1}/attachments`)
       .send(TestData.AttachmentCorrect)
@@ -197,7 +197,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("list of public datasets, aka as unauthenticated user", async () => {
+  it("0070: list of public datasets, aka as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
@@ -208,7 +208,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access public dataset as unauthenticated user", async () => {
+  it("0080: access public dataset as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -219,7 +219,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access private dataset as unauthenticated user", async () => {
+  it("0090: access private dataset as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -227,7 +227,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(403);
   });
 
-  it("list of datasets for ingestor", async () => {
+  it("0100: list of datasets for ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
@@ -239,7 +239,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("datasets counts for ingestor", async () => {
+  it("0110: datasets counts for ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -251,7 +251,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 as ingestor", async () => {
+  it("0120: access dataset 1 as ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -263,7 +263,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("full query for datasets for ingestor", async () => {
+  it("0130: full query for datasets for ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
@@ -275,7 +275,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 2 as ingestor", async () => {
+  it("0140: access dataset 2 as ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -287,7 +287,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 3 as ingestor", async () => {
+  it("0150: access dataset 3 as ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
@@ -299,7 +299,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("list of datasets for user 1", async () => {
+  it("0160: list of datasets for user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
@@ -312,7 +312,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("datasets count for user 1", async () => {
+  it("0170: datasets count for user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -324,7 +324,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 as user 1", async () => {
+  it("0180: access dataset 1 as user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -336,7 +336,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 2 as user 1", async () => {
+  it("0190: access dataset 2 as user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -348,7 +348,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 3 as user 1", async () => {
+  it("0200: access dataset 3 as user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
@@ -357,7 +357,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(403);
   });
 
-  it("full query for datasets for user 1", async () => {
+  it("0210: full query for datasets for user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
@@ -370,7 +370,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("list of datasets for user 2", async () => {
+  it("0220: list of datasets for user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
@@ -383,7 +383,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("datasets count for user 2", async () => {
+  it("0230: datasets count for user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -395,7 +395,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 as user 2", async () => {
+  it("0240: access dataset 1 as user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -407,7 +407,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 2 as user 2", async () => {
+  it("0250: access dataset 2 as user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -416,7 +416,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(403);
   });
 
-  it("access dataset 3 as user 2", async () => {
+  it("0260: access dataset 3 as user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
@@ -428,7 +428,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("full query for datasets for user 2", async () => {
+  it("0270: full query for datasets for user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
@@ -441,7 +441,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("list of datasets for user 3", async () => {
+  it("0280: list of datasets for user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
@@ -453,7 +453,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("datasets count for user 3", async () => {
+  it("0290: datasets count for user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -465,7 +465,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 as user 3", async () => {
+  it("0300: access dataset 1 as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -477,7 +477,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 2 as user 3", async () => {
+  it("0310: access dataset 2 as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -489,7 +489,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 3 as user 3", async () => {
+  it("0320: access dataset 3 as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
@@ -501,7 +501,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("full query for datasets for user 3", async () => {
+  it("0330: full query for datasets for user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
@@ -513,7 +513,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("update dataset 2 to be published", async () => {
+  it("0340: update dataset 2 to be published", async () => {
     return request(appUrl)
       .patch(`/api/v3/Datasets/${encodedDatasetPid2}`)
       .send({ isPublished: true })
@@ -523,7 +523,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("another full query for datasets for user 2 ", async () => {
+  it("0350: full query for datasets for user 2", async () => {
     const fields = {
       isPublished: true,
     };
@@ -543,7 +543,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("full facet for datasets for user 2", async () => {
+  it("0360: full facet for datasets for user 2", async () => {
     const fields = {
       isPublished: true,
     };
@@ -562,7 +562,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 origdatablocks as user 3", async () => {
+  it("0370: access dataset 1 origdatablocks as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/origdatablocks")
       .set("Accept", "application/json")
@@ -574,7 +574,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 datablocks as user 3", async () => {
+  it("0380: access dataset 1 datablocks as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/datablocks")
       .set("Accept", "application/json")
@@ -586,7 +586,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 attachments as user 3", async () => {
+  it("0390: access dataset 1 attachments as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
       .set("Accept", "application/json")
@@ -598,7 +598,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("access dataset 1 thumbnail as user 3", async () => {
+  it("0400: access dataset 1 thumbnail as user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")
       .set("Accept", "application/json")
@@ -607,7 +607,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect(200);
   });
 
-  it("should delete dataset 1", async () => {
+  it("0410: should delete dataset 1", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
@@ -616,7 +616,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("should delete dataset 2", async () => {
+  it("0420: should delete dataset 2", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
@@ -625,7 +625,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("should delete dataset 3", async () => {
+  it("0430: should delete dataset 3", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")

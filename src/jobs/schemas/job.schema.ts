@@ -4,7 +4,7 @@ import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { JobType } from "../job-type.enum";
 
-export type JobDocument = Job & Document;
+export type JobDocument = JobClass & Document;
 
 @Schema({
   collection: "Job",
@@ -13,7 +13,7 @@ export type JobDocument = Job & Document;
     getters: true,
   },
 })
-export class Job {
+export class JobClass {
   @ApiProperty({
     type: String,
     description: "Globally unique identifier of a job.",
@@ -74,8 +74,19 @@ export class Job {
   @ApiProperty({ description: "Detailed return value after job is finished." })
   @Prop({ type: Object, required: false })
   jobResultObject: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    description:
+      "Defines the group which owns the data, and therefore has unrestricted access to this data. Usually a pgroup like p12151",
+  })
+  @Prop({
+    type: String,
+    index: true,
+  })
+  ownerGroup: string;
 }
 
-export const JobSchema = SchemaFactory.createForClass(Job);
+export const JobSchema = SchemaFactory.createForClass(JobClass);
 
 JobSchema.index({ "$**": "text" });

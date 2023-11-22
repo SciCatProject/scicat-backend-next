@@ -9,14 +9,13 @@ import { IFilters } from "src/common/interfaces/common.interface";
 import {
   addCreatedByFields,
   addUpdatedByField,
+  createFullqueryFilter,
   extractMetadataKeys,
-  mapScientificQuery,
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateSampleDto } from "./dto/create-sample.dto";
 import { UpdateSampleDto } from "./dto/update-sample.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
-import { SampleField } from "./sample-field.enum";
 import { SampleClass, SampleDocument } from "./schemas/sample.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -52,32 +51,13 @@ export class SamplesService {
   async fullquery(
     filter: IFilters<SampleDocument, ISampleFields>,
   ): Promise<SampleClass[]> {
-    const modifiers: QueryOptions = {};
-    let filterQuery: FilterQuery<SampleDocument> = {};
-
-    if (filter) {
-      const { limit, skip, sort } = parseLimitFilters(filter.limits);
-      modifiers.limit = limit;
-      modifiers.skip = skip;
-      modifiers.sort = sort;
-
-      if (filter.fields) {
-        const fields = filter.fields;
-        Object.keys(fields).forEach((key) => {
-          if (key === SampleField.Text) {
-            const text = fields[key];
-            if (text) {
-              filterQuery.$text = { $search: text };
-            }
-          } else if (key === SampleField.Characteristics) {
-            filterQuery = {
-              ...filterQuery,
-              ...mapScientificQuery(fields[key]),
-            };
-          }
-        });
-      }
-    }
+    const filterQuery: FilterQuery<SampleDocument> =
+      createFullqueryFilter<SampleDocument>(
+        this.sampleModel,
+        "sampleId",
+        filter.fields,
+      );
+    const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
     return this.sampleModel.find(filterQuery, null, modifiers).exec();
   }

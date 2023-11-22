@@ -4,7 +4,9 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-let accessToken = null,
+let accessTokenProposalIngestor = null,
+  accessTokenIngestor = null,
+  accessTokenArchiveManager = null,
   defaultProposalId = null,
   proposalId = null,
   attachmentId = null;
@@ -18,8 +20,28 @@ describe("Proposal: Simple Proposal", () => {
         password: "aman",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
-        done();
+        accessTokenProposalIngestor = tokenVal;
+        utils.getToken(
+          appUrl,
+          {
+            username: "ingestor",
+            password: "aman",
+          },
+          (tokenVal) => {
+            accessTokenIngestor = tokenVal;
+            utils.getToken(
+              appUrl,
+              {
+                username: "archiveManager",
+                password: "aman",
+              },
+              (tokenVal) => {
+                accessTokenArchiveManager = tokenVal;
+                done();
+              },
+            );
+          },
+        );
       },
     );
   });
@@ -30,7 +52,7 @@ describe("Proposal: Simple Proposal", () => {
     const response = await request(appUrl)
       .delete("/api/v3/Proposals/" + item.proposalId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200);
 
     return response;
@@ -38,15 +60,15 @@ describe("Proposal: Simple Proposal", () => {
 
   async function processArray(array) {
     for (const item of array) {
-      deleteProposal(item);
+      await deleteProposal(item);
     }
   }
 
-  it("remove potentially existing proposals to guarantee uniqueness", async () => {
+  it("0010: remove potentially existing proposals to guarantee uniqueness", async () => {
     return request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -56,11 +78,12 @@ describe("Proposal: Simple Proposal", () => {
   });
 
   // check if proposal is valid
-  it("check if minimal proposal is valid", async () => {
+  it("0020: check if minimal proposal is valid", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals/isValid")
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -68,12 +91,12 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("adds a new proposal with minimal data", async () => {
+  it("0030: adds a new proposal with minimal data", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals")
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -84,21 +107,22 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("cannot add new proposal with same proposal id", async () => {
+  it("0040: cannot add new proposal with same proposal id", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals")
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(409);
   });
 
   // check if proposal is valid
-  it("check if complete proposal is valid", async () => {
+  it("0050: check if complete proposal is valid", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals/isValid")
       .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -106,12 +130,12 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("adds a new proposal with complete data", async () => {
+  it("0060: adds a new proposal with complete data", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals")
       .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -123,11 +147,12 @@ describe("Proposal: Simple Proposal", () => {
   });
 
   // check if proposal with additional field is valid
-  it("check if complete proposal with extra field is valid", async () => {
+  it("0070: check if complete proposal with extra field is valid", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals/isValid")
-      .send(TestData.ProposalWring_1)
+      .send(TestData.ProposalWrong_1)
       .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -135,12 +160,12 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("adds a new complete proposal with an extra field, which should fail", async () => {
+  it("0080: adds a new complete proposal with an extra field, which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals")
-      .send(TestData.ProposalWring_1)
+      .send(TestData.ProposalWrong_1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -148,11 +173,11 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("should fetch this new proposal", async () => {
+  it("0090: should fetch this new proposal", async () => {
     return request(appUrl)
       .get("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -161,14 +186,14 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("should add a new attachment to this proposal", async () => {
+  it("0100: should add a new attachment to this proposal", async () => {
     let testAttachment = { ...TestData.AttachmentCorrect };
     testAttachment.proposalId = defaultProposalId;
     return request(appUrl)
       .post("/api/v3/Proposals/" + proposalId + "/attachments")
       .send(testAttachment)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -192,11 +217,11 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("should fetch this proposal attachment", async () => {
+  it("0110: should fetch this proposal attachment", async () => {
     return request(appUrl)
       .get("/api/v3/Proposals/" + proposalId + "/attachments")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -205,26 +230,25 @@ describe("Proposal: Simple Proposal", () => {
       });
   });
 
-  it("should delete this proposal attachment", async () => {
+  it("0120: should delete this proposal attachment", async () => {
     return request(appUrl)
       .delete(
         "/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId,
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
       .expect(200);
   });
 
-  it("remove all existing proposals", async () => {
-    return request(appUrl)
+  it("0130: admin can remove all existing proposals", async () => {
+    return await request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        // now remove all these entries
-        processArray(res.body);
+        return processArray(res.body);
       });
   });
 });

@@ -20,12 +20,11 @@ let instrumentPid1 = null,
   instrumentPid4 = null,
   encodedInstrumentPid4 = null;
 
-
 const InstrumentCorrect1 = {
   ...TestData.InstrumentCorrect1,
   name: "ESS instrument one",
 };
-  
+
 const InstrumentCorrect2 = {
   ...TestData.InstrumentCorrect2,
   name: "ESS instrument two",
@@ -35,7 +34,7 @@ const InstrumentCorrect3 = {
   ...TestData.InstrumentCorrect3,
   name: "Another instrument at ESS, number three",
 };
-  
+
 const InstrumentCorrect4 = {
   ...TestData.InstrumentCorrect3,
   uniqueName: "ESS3-2",
@@ -111,7 +110,9 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.equal(InstrumentCorrect1.name);
+        res.body.should.have
+          .property("name")
+          .and.equal(InstrumentCorrect1.name);
         instrumentPid1 = res.body["pid"];
         encodedInstrumentPid1 = encodeURIComponent(instrumentPid1);
       });
@@ -126,7 +127,9 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.equal(InstrumentCorrect2.name);
+        res.body.should.have
+          .property("name")
+          .and.equal(InstrumentCorrect2.name);
         instrumentPid2 = res.body["pid"];
         encodedInstrumentPid2 = encodeURIComponent(instrumentPid2);
       });
@@ -141,7 +144,9 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.equal(InstrumentCorrect3.name);
+        res.body.should.have
+          .property("name")
+          .and.equal(InstrumentCorrect3.name);
         instrumentPid3 = res.body["pid"];
         encodedInstrumentPid3 = encodeURIComponent(instrumentPid3);
       });
@@ -156,7 +161,9 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("name").and.equal(InstrumentCorrect4.name);
+        res.body.should.have
+          .property("name")
+          .and.equal(InstrumentCorrect4.name);
         instrumentPid4 = res.body["pid"];
         encodedInstrumentPid4 = encodeURIComponent(instrumentPid4);
       });
@@ -176,8 +183,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-  it("retrieve instruments with \"ESS instrument\" in name using loopback style \"like\" operator", async () => {
-    const query = { where: { name: { like: "ESS instrument" }}};
+  it('retrieve instruments with "ESS instrument" in name using loopback style "like" operator', async () => {
+    const query = { where: { name: { like: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/Instruments")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -202,8 +209,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //     });
   // });
 
-  it("retrieve one instrument with \"ESS instrument\" in name using loopback style \"like\" operator", async () => {
-    const query = { where: { name: { like: "ESS instrument" }}};
+  it('retrieve one instrument with "ESS instrument" in name using loopback style "like" operator', async () => {
+    const query = { where: { name: { like: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/Instruments/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -215,8 +222,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-  it("retrieve instruments with \"ESS instrument\" in instrument name using mongo regex operator", async () => {
-    const query = { where: { name: { "$regex": "ESS instrument" }}};
+  it('retrieve instruments with "ESS instrument" in instrument name using mongo regex operator', async () => {
+    const query = { where: { name: { $regex: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -241,8 +248,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //     });
   // });
 
-  it("retrieve one instruments with \"ESS instrument\" in instrument name using mongo regex operator", async () => {
-    const query = { where: { name: { "$regex": "ESS instrument" }}};
+  it('retrieve one instruments with "ESS instrument" in instrument name using mongo regex operator', async () => {
+    const query = { where: { name: { $regex: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -254,9 +261,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-
-  it("retrieve instruments with \"Another instrument\" in instrument name using loopback style \"like\" operator", async () => {
-    const query = { where: { name: { like: "Another instrument" }}};
+  it('retrieve instruments with "Another instrument" in instrument name using loopback style "like" operator', async () => {
+    const query = { where: { name: { like: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -269,8 +275,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-  it("retrieve one instrument with \"Another instrument\" in instrument name using loopback style \"like\" operator", async () => {
-    const query = { where: { name: { like: "Another instrument" }}};
+  it('retrieve one instrument with "Another instrument" in instrument name using loopback style "like" operator', async () => {
+    const query = { where: { name: { like: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -295,8 +301,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //     });
   // });
 
-  it("retrieve instruments with \"Another instrument\" in instrument name using mongo \"regex\" operator", async () => {
-    const query = { where: { name: { "$regex": "Another instrument" }}};
+  it('retrieve instruments with "Another instrument" in instrument name using mongo "regex" operator', async () => {
+    const query = { where: { name: { $regex: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -309,8 +315,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-  it("retrieve one instrument with \"Another instrument\" in instrument name using mongo \"regex\" operator", async () => {
-    const query = { where: { name: { "$regex": "Another instrument" }}};
+  it('retrieve one instrument with "Another instrument" in instrument name using mongo "regex" operator', async () => {
+    const query = { where: { name: { $regex: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -335,8 +341,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //     });
   // });
 
-  it("retrieve instruments with \"another\" and \"instrument\" in name using \"regex\" operator", async () => {
-    const query = { where: { name: { "$regex": "[Aa]nother instrument" }}};
+  it('retrieve instruments with "another" and "instrument" in name using "regex" operator', async () => {
+    const query = { where: { name: { $regex: "[Aa]nother instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -350,8 +356,8 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       });
   });
 
-  it("retrieve one instrument with \"another\" and \"instrument\" in description using \"regex\" operator", async () => {
-    const query = { where: { name: { "$regex": "[Aa]nother instrument" }}};
+  it('retrieve one instrument with "another" and "instrument" in description using "regex" operator', async () => {
+    const query = { where: { name: { $regex: "[Aa]nother instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
       .set({ Authorization: `Bearer ${accessTokenIngestor}` })
@@ -411,5 +417,4 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .expect(200)
       .expect("Content-Type", /json/);
   });
-
 });

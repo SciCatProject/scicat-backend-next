@@ -8,4 +8,7 @@ export interface IOrigDatablockFields {
   };
   dataFilelist: IDatafileFilter[];
   userGroups?: string[];
+  ownerGroup?: string[];
+  accessGroups?: string[];
+  isPublished?: boolean;
 }
