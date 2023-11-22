@@ -7,33 +7,6 @@ import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
 
-//{
-//  * "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
-//  * "type" : "archive",
-// ----
-// taken care extending ownableClass
-//  "created_by" : "user_1"
-//  "created_at" : <timestamp>,
-//  "updaded_at": <timestamp>,
-//  "updated_by": “user_1”,
-// ----
-//  * "status_code" : "CREATED",
-//  * "status_message": "Job created",
-//  ==> "update_history" : [records]
-//  *"updates_history" : [
-//   {
-//    "updaded_at": <timestamp>,
-//    "updated_by": “user_1”,
-//    "status_code" : "",
-//    "statue_message" : ""
-//   }
-//  ],
-//  "message_sent” : { <copy of the message posted see #7> },
-//  "configuration" : {},
-//  "params" : {}
-//}
-
-
 @Schema({
   collection: "Job",
   minimize: false, /* function? dataset schema has it*/
@@ -74,6 +47,7 @@ export class JobClass extends OwnableClass{
   })
   type: string;
 
+  // status code
   @ApiProperty({
     type: String,
     required: false, 
@@ -85,6 +59,7 @@ export class JobClass extends OwnableClass{
   })
   status_code: string;
 
+  // update 
   @ApiProperty({
     type: String,
     required: false, 
@@ -96,6 +71,7 @@ export class JobClass extends OwnableClass{
   })
   status_message: string;
 
+  // history of status codes		
   @ApiProperty({
     type: [Object],
     required: false,
@@ -108,58 +84,46 @@ export class JobClass extends OwnableClass{
   })
   status_history: Record<string, string>[];
 
-
-
-
-  // email
+  // messages
   @ApiProperty({
-    type: String,
-    description: "The email of the person initiating the job request.",
+    type: Object,
+    required: false,
+    description:
+        "This is the equivalent object of the message sent to external service.",
   })
-  @Prop({ type: string, required: false })
-  emailJobInitiator: string;
+  @Prop({ 
+    type: Object, 
+    required: false 
+  })
+  message_sent: Record<string,unknown>;
 
-  // action
+  // configuration
   @ApiProperty({
-    type: String, 
-    description: "Type of job as defined in the job configuration, e.g. archive, retrieve, etc",
-    required: true
+    type: Object,
+    required: false,
+    description:
+        "This is the equivalent object of the job configuration used to create this job.",
   })
-  @Prop({
-    type: String,
-    required: true,
+  @Prop({ 
+    type: Object, 
+    required: false 
   })
-  type: string;
+  // definition NOT VALUE
+  configuration: Record<string,unknown>;
 
-  
-  // removed execution time as this functionality is not foreseen for now
-  // removed destinationPath as not forseen for this example
-  // does the status of job lifecycle concern the update of a job lifecycle?
-
-  /*
-   * updateJob
-   */
-
-  @ApiProperty({ description: "Defines current status of job lifecycle." })
-  @Prop({ type: string, required: false })
-  jobStatusMessage: string;
-
+  // parameters
   @ApiProperty({
-  type: [String]
-  description:
-      "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected.",
+    type: Object,
+    required: false,
+    description:
+        "This is the equivalent object of the jobs parameters provided by the user.",
   })
-  @Prop({ type: [Object], required: false })
-  datasetList: Record<string, unknown>[];
-
-  @ApiProperty({ description: "Detailed return value after job is finished." })
-  @Prop({ type: Object, required: false })
-  jobResultObject: Record<string, unknown>;
-
-  /*
-   * callback to user
-   */
-
+  @Prop({ 
+    type: Object, 
+    required: false 
+  })
+  parameters: Record<string,unknown>;
+  // in case email is needed it goes into params, and other values too
 
 }
 export const JobSchema = SchemaFactory.createForClass(Job);
