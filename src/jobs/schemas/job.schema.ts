@@ -19,7 +19,8 @@ export type JobDocument = JobClass & Document;
 // ----
 //  * "status_code" : "CREATED",
 //  * "status_message": "Job created",
-//  "updates_history" : [
+//  ==> "update_history" : [records]
+//  *"updates_history" : [
 //   {
 //    "updaded_at": <timestamp>,
 //    "updated_by": “user_1”,
