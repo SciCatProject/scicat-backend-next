@@ -54,7 +54,6 @@ export class JobClass {
   default: () => uuidv4()
   })
   _id: string;
-  id?: string;
 
   // email
   @ApiProperty({
