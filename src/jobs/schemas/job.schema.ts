@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import { JobType } from "../job-type.enum";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
@@ -127,6 +126,6 @@ export class JobClass extends OwnableClass{
   // in case email is needed it goes into params, and other values too
 
 }
-export const JobSchema = SchemaFactory.createForClass(Job);
+export const JobSchema = SchemaFactory.createForClass(JobClass);
 
 JobSchema.index({ "$**": "text" });
