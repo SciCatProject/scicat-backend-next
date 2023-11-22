@@ -3,58 +3,43 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { JobType } from "../job-type.enum";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 
-export type JobDocument = Job & Document;
+export type JobDocument = JobClass & Document;
 
-{
-  "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
-  "type" : "archive",
-  "created_by" : "user_1"
-  "created_at" : <timestamp>,
-  "status_code" : "CREATED",
-  "updaded_at": <timestamp>,
-  "updated_by": “user_1”,
-  "status_message": "Job created",
-  "updates_history" : [
-   {
-    "updaded_at": <timestamp>,
-    "updated_by": “user_1”,
-    "status_code" : "",
-    "statue_message" : ""
-   }
-  ],
-  "message_sent” : { <copy of the message posted see #7> },
-  "configuration" : {},
-  "params" : {}
-}
 
 @Schema({
   collection: "Job",
-  timestamps: { createdAt: "creationTime", updatedAt: false },
+  minimize: false, /* function? dataset schema has it*/
+  timestamps: { createdAt: "DateTime", updatedAt: false },
   toJSON: {
     getters: true,
   },
 })
-export class Job {
+export class JobClass extends OwnableClass{
+
   @ApiProperty({
     type: String,
+    default: () => uuidv4(),
     description: "Globally unique identifier of a job.",
-    readOnly: true,
   })
-  @Prop({ type: String, default: () => uuidv4() })
+  @Prop({
+    type: String,
+    unique: true,
+    required: true,
+    default: () => uuidv4(),
+  })
+  id: string;
+
+  @Prop({
+    type: String,
+  })
   _id: string;
 
-  id?: string;
-
-  @ApiProperty({
-    description: "The email of the person initiating the job request.",
-  })
-  @Prop({ type: String, required: true })
-  emailJobInitiator: string;
-
+  // type
   @ApiProperty({
     type: String, 
-    description: "Type of job as defined in the job configuration, e.g. archive, retrieve etc",
+    description: "Type of job as defined in the job configuration, e.g. archive, retrieve, etc",
     required: true
   })
   @Prop({
@@ -63,43 +48,85 @@ export class Job {
   })
   type: string;
 
+  // status code
   @ApiProperty({
-    description:
-      "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339. This is handled automatically by mongoose with timestamps flag.",
+    type: String,
+    required: false, 
+    description: "Defines the current status code of the job." 
   })
-  @Prop({ type: Date })
-  creationTime: Date;
+  @Prop({ 
+    type: String, 
+    required: false 
+  })
+  status_code: string;
 
+  // update 
   @ApiProperty({
-    description:
-      "Time when job should be executed. If not specified then the Job will be executed asap. Format according to chapter 5.6 internet date/time format in RFC 3339.",
+    type: String,
+    required: false, 
+    description: "stores the latest message received with the last status update for the job." 
   })
-  @Prop({ type: Date, required: false })
-  executionTime: Date;
+  @Prop({ 
+    type: String, 
+    required: false 
+  })
+  status_message: string;
 
+  // history of status codes		
   @ApiProperty({
+    type: [Object],
+    required: false,
     description:
-      "Object of key-value pairs defining job input parameters, e.g. 'destinationPath' for retrieve jobs or 'tapeCopies' for archive jobs.",
+        "Array of status updates containing status code and message",
   })
-  @Prop({ type: Object, required: false })
-  jobParams: Record<string, unknown>;
+  @Prop({ 
+    type: [Object], 
+    required: false 
+  })
+  status_history: Record<string, string>[];
 
-  @ApiProperty({ description: "Defines current status of job lifecycle." })
-  @Prop({ type: String, required: false })
-  jobStatusMessage: string;
-
+  // messages
   @ApiProperty({
+    type: Object,
+    required: false,
     description:
-      "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected.",
+        "This is the equivalent object of the message sent to external service.",
   })
-  @Prop({ type: [Object], required: false })
-  datasetList: Record<string, unknown>[];
+  @Prop({ 
+    type: Object, 
+    required: false 
+  })
+  message_sent: Record<string,unknown>;
 
-  @ApiProperty({ description: "Detailed return value after job is finished." })
-  @Prop({ type: Object, required: false })
-  jobResultObject: Record<string, unknown>;
+  // configuration
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+        "This is the equivalent object of the job configuration used to create this job.",
+  })
+  @Prop({ 
+    type: Object, 
+    required: false 
+  })
+  // definition NOT VALUE
+  configuration: Record<string,unknown>;
+
+  // parameters
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+        "This is the equivalent object of the jobs parameters provided by the user.",
+  })
+  @Prop({ 
+    type: Object, 
+    required: false 
+  })
+  parameters: Record<string,unknown>;
+  // in case email is needed it goes into params, and other values too
+
 }
-
 export const JobSchema = SchemaFactory.createForClass(Job);
 
 JobSchema.index({ "$**": "text" });
