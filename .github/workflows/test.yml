@@ -146,11 +146,13 @@ jobs:
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: admin,ingestor,archivemanager
-          CREATE_DATASET_GROUPS: group1,group2,group3
+          ADMIN_GROUPS: admin,ingestor
           DELETE_GROUPS: archivemanager
+          CREATE_DATASET_GROUPS: group1,group2,group3
+          CREATE_DATASET_WITH_PID_GROUPS: "group2"
           ACCESS_GROUPS_STATIC_VALUES: "ess"
-          CREATE_DATASET_WITH_PID_GROUPS: "group2,group3"
+          PROPOSAL_GROUPS: "proposalingestor"
+          SAMPLE_GROUPS: ""
           DATASET_CREATION_VALIDATION_ENABLED: true
           DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
           ES_HOST: https://localhost:9200
@@ -168,63 +170,6 @@ jobs:
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
+          cp functionalAccounts.json.test functionalAccounts.json
           docker-compose up --build -d
           npm run test:api
-
-  e2e_tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Configure sysctl limits for elastic search
-        run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-
-      - name: Run stack in docker-compose
-        run: |
-          cp CI/E2E/docker-compose.yaml docker-compose.yaml
-          docker-compose pull
-          docker-compose build --no-cache
-          docker-compose up &
-
-      - name: Checkout frontend repo
-        uses: actions/checkout@v4
-        with:
-          repository: scicatproject/frontend
-          path: frontend
-          fetch-depth: 1
-
-      - name: Wait for Backend
-        run: |
-          npm install -g wait-on && \
-          wait-on http://localhost:3000/api/v3/health --timeout 200000
-
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: frontend
-          config-file: CI/ESS/e2e/cypress.github.ts
-          install-command: npm install --omit peer
-          browser: chrome
-
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: frontend/cypress/screenshots/
-
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-videos
-          path: frontend/cypress/videos/

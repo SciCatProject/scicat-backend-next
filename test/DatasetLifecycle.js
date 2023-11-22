@@ -284,7 +284,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       await request(appUrl)
         .delete("/api/v3/policies/" + item)
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
         .expect(200);
     }
   });

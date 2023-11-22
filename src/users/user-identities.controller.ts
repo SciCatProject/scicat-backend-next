@@ -12,12 +12,12 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { UserIdentity } from "./schemas/user-identity.schema";
 import { UserIdentitiesService } from "./user-identities.service";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 
 @ApiBearerAuth()
 @ApiTags("user identities")
@@ -28,7 +28,7 @@ export class UserIdentitiesController {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -87,7 +87,7 @@ export class UserIdentitiesController {
     return identity;
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @Get("/isValidEmail")
   async isValidEmail(
     // NOTE: This now supports both headers filter and query filter.
