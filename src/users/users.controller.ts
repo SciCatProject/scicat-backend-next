@@ -53,18 +53,6 @@ export class UsersController {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  async generateDatasetInstanceForPermissions(
-    user: JWTUser,
-    pid?: string,
-  ): Promise<DatasetClass> {
-    const datasetInstance = new DatasetClass();
-    datasetInstance._id = "";
-    datasetInstance.pid = pid || "";
-    datasetInstance.accessGroups = user.currentGroups || [];
-    datasetInstance.ownerGroup = user.currentGroups[0] || "";
-
-    return datasetInstance;
-  }
   async checkUserAuthorization(
     request: Request,
     actions: Action[],
