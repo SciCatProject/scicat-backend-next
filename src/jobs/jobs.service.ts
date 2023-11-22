@@ -1,13 +1,24 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { REQUEST } from "@nestjs/core";
 import { OnEvent } from "@nestjs/event-emitter";
 import { InjectModel } from "@nestjs/mongoose";
+import { Request } from "express";
 import { readFileSync } from "fs";
 import { compile } from "handlebars";
-import { FilterQuery, Model, PipelineStage, QueryOptions } from "mongoose";
+import { FilterQuery, Model, PipelineStage, QueryOptions, UpdateQuery } from "mongoose";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { MailService } from "src/common/mail.service";
 import {
+  addCreatedByFields,
+  addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
@@ -18,33 +29,31 @@ import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
 import { PoliciesService } from "src/policies/policies.service";
 import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobDto } from "./dto/update-job.dto";
-import { JobType } from "./job-type.enum";
-import { Job, JobDocument } from "./schemas/job.schema";
+import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
+import { JobClass, JobDocument } from "./schemas/job.schema";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class JobsService {
-  private domainName = process.env.HOST;
-  private smtpMessageFrom;
-
   constructor(
     private configService: ConfigService,
     private datasetsService: DatasetsService,
-    @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     private mailService: MailService,
     private policiesService: PoliciesService,
-  ) {
-    this.smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
-  }
+    @Inject(REQUEST) private request: Request,
+  ) {}
 
-  async create(createJobDto: CreateJobDto): Promise<Job> {
-    const createdJob = new this.jobModel(createJobDto);
+  async create(createJobDto: CreateJobDto): Promise<JobDocument> {
+    const username = (this.request.user as JWTUser).username;
+    const createdJob = new this.jobModel(
+      addCreatedByFields(createJobDto, username),
+    );
     return createdJob.save();
   }
 
   async findAll(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-  ): Promise<Job[]> {
+  ): Promise<JobClass[]> {
     const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
@@ -58,7 +67,7 @@ export class JobsService {
 
   async fullquery(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-  ): Promise<Job[]> {
+  ): Promise<JobDocument[]> {
     const filterQuery: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", filter.fields);
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
@@ -80,17 +89,31 @@ export class JobsService {
     return await this.jobModel.aggregate(pipeline).exec();
   }
 
-  async findOne(filter: FilterQuery<JobDocument>): Promise<Job | null> {
+  async findOne(filter: FilterQuery<JobDocument>): Promise<JobDocument | null> {
     return this.jobModel.findOne(filter).exec();
   }
 
-  async update(
-    filter: FilterQuery<JobDocument>,
-    updateJobDto: UpdateJobDto,
-  ): Promise<Job | null> {
-    return this.jobModel
-      .findOneAndUpdate(filter, updateJobDto, { new: true })
+  async statusUpdate(updateJobStatusDto: UpdateJobStatusDto): Promise<JobDocument | null> {
+    const id = updateJobStatusDto.id;
+    const existingJob = await this.jobModel.findOne({ pid: id }).exec();
+    if (!existingJob) {
+      throw new NotFoundException(`Job #${id} not found`);
+    }
+
+    const username = (this.request.user as JWTUser).username;
+
+    const updatedJob = await this.jobModel
+      .findOneAndUpdate(
+        { pid: id },
+        addUpdatedByField(
+          updateJobStatusDto as UpdateQuery<JobDocument>,
+          username,
+        ),
+        { new: true },
+      )
       .exec();
+
+    return updatedJob;
   }
 
   async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
@@ -98,9 +121,9 @@ export class JobsService {
   }
 
   @OnEvent("jobCreated")
-  async sendStartJobEmail(context: { instance: Job }) {
+  async sendStartJobEmail(context: { instance: JobClass }) {
     const ids: string[] = context.instance.datasetList.map(
-      (dataset) => dataset.pid as string,
+      (dataset: DatasetDocument) => dataset.pid as string,
     );
     const to: string = context.instance.emailJobInitiator;
     const jobType: string = context.instance.type;
@@ -142,8 +165,8 @@ export class JobsService {
   // Populate email context for finished job notification
   @OnEvent("jobUpdated")
   async sendFinishJobEmail(context: {
-    instance: Job;
-    hookState: { oldData: Job[] };
+    instance: JobClass;
+    hookState: { oldData: JobClass[] };
   }) {
     // Iterate through list of jobs that were updated
     // Iterate in case of bulk update send out email to each job
@@ -286,7 +309,7 @@ export class JobsService {
       });
       if (!dataset) {
         throw new NotFoundException(
-          "Could not dataset with pid " + datasetId,
+          "Could not find dataset with pid " + datasetId,
           "JobsService",
         );
       }
