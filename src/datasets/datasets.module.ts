@@ -12,6 +12,7 @@ import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.mod
 import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
+import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PoliciesModule } from "src/policies/policies.module";
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
+    ElasticSearchModule,
     forwardRef(() => LogbooksModule),
     MongooseModule.forFeatureAsync([
       {

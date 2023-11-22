@@ -7,6 +7,7 @@ import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
 
+
 @Schema({
   collection: "Job",
   minimize: false, /* function? dataset schema has it*/

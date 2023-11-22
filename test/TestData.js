@@ -602,13 +602,16 @@ const TestData = {
   DatasetLifecycle_query_1: {
     fields: {
       ownerGroup: ["p12345", "p10029"],
-      text: "'ultimate test'",
+      text: "ultimate test",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
       },
       "datasetlifecycle.archiveStatusMessage": "datasetCreated",
-      keywords: ["energy", "protein"],
+      keywords: ["sls", "protein"],
+    },
+    limits: {
+      skip: 0,
     },
   },
 
@@ -625,12 +628,12 @@ const TestData = {
   DatasetLifecycle_query_3: {
     fields: {
       ownerGroup: ["p12345", "p10029"],
-      text: "'ultimate test'",
+      text: "ultimate test",
       creationTime: {
         begin: "2011-09-13",
         end: "2011-09-15",
       },
-      keywords: ["energy", "protein"],
+      keywords: ["sls", "protein"],
     },
     facets: [
       "type",
@@ -754,11 +757,36 @@ const TestData = {
   PatchCommentInvalid: {
     comment: 1,
   },
-  
+
   PatchDataQualityMetricsInvalid: {
     dataQualityMetrics: "test",
   },
-
+  ScientificMetadataForElasticSearch: {
+    ownerGroup: faker.company.name(),
+    creationLocation: faker.location.city(),
+    principalInvestigator: faker.internet.userName(),
+    type: "raw",
+    creationTime: faker.date.past(),
+    sourceFolder: faker.system.directoryPath(),
+    owner: faker.internet.userName(),
+    contactEmail: faker.internet.email(),
+    scientificMetadata: {
+      with_unit_and_value_si: {
+        value: 100,
+        unit: "meters",
+        valueSI: 100,
+        unitSI: "m",
+      },
+      with_number: {
+        value: 111,
+        unit: "",
+      },
+      with_string: {
+        value: "222",
+        unit: "",
+      },
+    },
+  },
 };
 
 module.exports = { TestData };

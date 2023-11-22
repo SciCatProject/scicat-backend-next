@@ -523,7 +523,7 @@ describe("DatasetAuthorization: Test access to dataset", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("full query for datasets for user 2", async () => {
+  it("another full query for datasets for user 2 ", async () => {
     const fields = {
       isPublished: true,
     };

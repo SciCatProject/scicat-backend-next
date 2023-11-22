@@ -1,4 +1,4 @@
-import { Injectable, Inject, Scope } from "@nestjs/common";
+import { Injectable, Inject, Scope, ForbiddenException } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -42,7 +42,13 @@ export class OrigDatablocksService {
   async findAll(
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock[]> {
-    const whereFilter: FilterQuery<OrigDatablockDocument> = filter.where ?? {};
+    const whereFilter: FilterQuery<OrigDatablockDocument> =
+      createFullqueryFilter<OrigDatablockDocument>(
+        this.origDatablockModel,
+        "_id",
+        filter.where as FilterQuery<OrigDatablockDocument>,
+      );
+
     const fieldsProjection: FilterQuery<OrigDatablockDocument> =
       filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
@@ -61,7 +67,20 @@ export class OrigDatablocksService {
   async findOne(
     filter: FilterQuery<OrigDatablockDocument>,
   ): Promise<OrigDatablock | null> {
-    return this.origDatablockModel.findOne(filter).exec();
+    const whereFilter: FilterQuery<OrigDatablockDocument> =
+      createFullqueryFilter<OrigDatablockDocument>(
+        this.origDatablockModel,
+        "_id",
+        filter as FilterQuery<OrigDatablockDocument>,
+      );
+
+    const origdatablock = await this.origDatablockModel.findOne(whereFilter);
+
+    if (!origdatablock) {
+      throw new ForbiddenException("Unauthorized access");
+    }
+
+    return origdatablock;
   }
 
   async fullquery(

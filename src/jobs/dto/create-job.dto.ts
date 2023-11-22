@@ -1,42 +1,59 @@
-import { Type } from "class-transformer";
 import {
-  IsArray,
-  IsDateString,
   IsEmail,
   IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
 } from "class-validator";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { DatasetListDto } from "./dataset-list.dto";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
 
+@ApiTags("jobs")
 export class CreateJobDto {
-  @IsEmail()
-  readonly emailJobInitiator: string;
-
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Valid job type as defined in configuration.",
+  })
   @IsString()
   readonly type: string;
 
-  @IsDateString()
-  @IsOptional()
-  readonly executionTime?: Date;
-
+  @ApiProperty({
+    type: Object,
+    required: true,
+    description:
+      "Job's parameters as defined by job template in configuration",
+  })
   @IsObject()
-  @IsOptional()
-  readonly jobParams?: Record<string, unknown>;
+  readonly jobParams: Record<string, unknown>;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Id for the job to be created.",
+  })
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  readonly jobStatusMessage?: string;
+  readonly id?: string;
 
-  @IsArray()
+  @ApiProperty({
+    type: [String],
+    required: false,
+    default: [],
+    description:
+      "Array of existing job ids which need to finish before this job can run.",
+  })
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => DatasetListDto)
-  readonly datasetList: IDatasetList[];
+  @IsString({ each: true })
+  readonly dependsOn?: string[];
 
-  @IsObject()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Email of the contact person for this job.",
+  })
   @IsOptional()
-  readonly jobResultObject?: Record<string, unknown>;
+  @IsEmail()
+  readonly contactEmail?: string;
 }

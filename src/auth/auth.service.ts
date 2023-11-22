@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare } from "bcrypt";
@@ -6,7 +6,7 @@ import { User } from "src/users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { Request } from "express";
 import { OidcConfig } from "src/config/configuration";
-import { parseBoolean } from "src/common/utils";
+import { flattenObject, parseBoolean } from "src/common/utils";
 import { Issuer } from "openid-client";
 
 @Injectable()
@@ -58,46 +58,63 @@ export class AuthService {
       "expressSessionSecret",
     );
 
+    const logoutResult = await this.additionalLogoutTasks(req, logoutURL);
+
     if (expressSessionSecret) {
       req.logout(async (err) => {
         if (err) {
           // we should provide a message
-          console.log("Logout error");
-          console.log(err);
+          Logger.error("Logout error: ", err);
           //res.status(HttpStatus.BAD_REQUEST);
         }
-        return await this.additionalLogoutTasks(req, logoutURL);
       });
-    } else {
-      return await this.additionalLogoutTasks(req, logoutURL);
-    }
-    if (logoutURL) {
-      return { logout: "successful", logoutURL: logoutURL };
-    }
 
-    return { logout: "successful" };
+      return logoutResult;
+    } else {
+      return logoutResult;
+    }
   }
 
   async additionalLogoutTasks(req: Request, logoutURL: string) {
     const user = req.user as Omit<User, "password">;
-    if (user?.authStrategy == "oidc") {
+    if (user?.authStrategy === "oidc") {
       const oidcConfig = this.configService.get<OidcConfig>("oidc");
-      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || false);
+      const autoLogout: boolean = parseBoolean(oidcConfig?.autoLogout || true);
+
       if (autoLogout) {
+        if (logoutURL) {
+          return {
+            logout: "successful",
+            logoutURL: logoutURL,
+          };
+        }
+
+        // If there is no LOGOUT_URL set try to get one from the issuer
         const trustIssuer = await Issuer.discover(
           `${oidcConfig?.issuer}/.well-known/openid-configuration`,
         );
-        const end_session_endpoint = trustIssuer.metadata.end_session_endpoint;
-        if (end_session_endpoint) {
-          return {
-            logout: "successful",
-            logoutURL:
-              end_session_endpoint +
-              (logoutURL ? "?post_logout_redirect_uri=" + logoutURL : ""),
-          };
+        // Flatten the object in case the end_session url is nested.
+        const flattenTrustIssuer = flattenObject(trustIssuer);
+
+        // Note search for "end_session" key into the flatten object
+        const endSessionEndpointKey = Object.keys(flattenTrustIssuer).find(
+          (key) => key.includes("end_session"),
+        );
+
+        if (endSessionEndpointKey) {
+          // Get the end_session endpoint value
+          const endSessionEndpoint = flattenTrustIssuer[endSessionEndpointKey];
+
+          if (endSessionEndpoint) {
+            return {
+              logout: "successful",
+              logoutURL: endSessionEndpoint,
+            };
+          }
         }
       }
     }
-    return;
+
+    return { logout: "successful" };
   }
 }

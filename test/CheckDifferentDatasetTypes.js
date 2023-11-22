@@ -39,7 +39,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
 
   // get counts
 
-  it("should get count of datasets", async () => {
+  it("0010: should get count of datasets", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -52,7 +52,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should get count of raw datasets", async () => {
+  it("0020: should get count of raw datasets", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -66,7 +66,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should get count of derived datasets", async () => {
+  it("0030: should get count of derived datasets", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -81,7 +81,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
   });
 
   // check if dataset is valid
-  it("check if raw dataset is valid", async () => {
+  it("0040: check if raw dataset is valid", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
@@ -93,7 +93,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check if derived dataset is valid", async () => {
+  it("0050: check if derived dataset is valid", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
@@ -105,7 +105,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check if wrong derived dataset is recognized as invalid", async () => {
+  it("0060: check if wrong derived dataset is recognized as invalid", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
@@ -117,7 +117,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check if wrong typed dataset is recognized as invalid", async () => {
+  it("0070: check if wrong typed dataset is recognized as invalid", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DatasetWrong)
@@ -130,15 +130,16 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
   });
 
   // add dataset and check what happened to counts
-  it("adds a new raw dataset", async () => {
-    return request(appUrl)
+  it("0080: adds a new raw dataset", function (done) {
+    request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .then((res) => {
+      .end((err, res) => {
+        if (err) return done(err);
         res.body.should.have.property("__v").and.to.be.a("number");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
@@ -146,11 +147,12 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
           .property("ownerEmail")
           .and.equal(TestData.RawCorrect.ownerEmail);
         pidRaw1 = encodeURIComponent(res.body.pid);
+        done();
       });
   });
 
   // get counts again
-  it("check for correct new count of datasets", async () => {
+  it("0090: check for correct new count of datasets", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -163,7 +165,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check for count of raw datasets which should be 1", async () => {
+  it("0100: check for count of raw datasets which should be 1", async () => {
     const filter = { where: { type: "raw" } };
 
     return request(appUrl)
@@ -179,7 +181,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check for unchanged count of derived datasets", async () => {
+  it("0110: check for unchanged count of derived datasets", async () => {
     const filter = { where: { type: "derived" } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
@@ -194,7 +196,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should add a second raw dataset", async () => {
+  it("0120: should add a second raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
@@ -211,27 +213,11 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new dataset count should be incremented", async () => {
+  it("0130: new dataset count should be incremented", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - countDataset).should.equal(2);
-      });
-  });
-
-  it("new raw dataset count should be incremented", async () => {
-    const filter = { where: { type: "raw" } };
-
-    return request(appUrl)
-      .get("/api/v3/Datasets/count")
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
-      .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -240,7 +226,25 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new derived dataset count should be unchanged", async () => {
+  it("0140: new raw dataset count should be incremented", function (done) {
+    const filter = { where: { type: "raw" } };
+
+    request(appUrl)
+      .get("/api/v3/Datasets/count")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .query({ filter: JSON.stringify(filter) })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .end((err, res) => {
+        if (err) return done(err);
+        res.body.should.have.property("count").and.to.be.a("number");
+        (res.body.count - countRawDataset).should.equal(2);
+        done();
+      });
+  });
+
+  it("0150: new derived dataset count should be unchanged", async () => {
     const filter = { where: { type: "derived" } };
 
     return request(appUrl)
@@ -256,7 +260,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("adds a new derived dataset", async () => {
+  it("0160: adds a new derived dataset", function (done) {
     request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
@@ -264,15 +268,17 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
-      .then((res) => {
+      .end((err, res) => {
+        if (err) return done(err);
         res.body.should.have.property("__v").and.to.be.a("number");
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
         pidDerived1 = encodeURIComponent(res.body["pid"]);
+        done();
       });
   });
 
-  it("new dataset count should be incremented", function (done) {
+  it("0170: new dataset count should be incremented", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -287,7 +293,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new raw dataset count should be unchanged", function (done) {
+  it("0180: new raw dataset count should be unchanged", function (done) {
     const filter = { where: { type: "raw" } };
 
     request(appUrl)
@@ -305,7 +311,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new derived dataset count should be incremented", function (done) {
+  it("0190: new derived dataset count should be incremented", function (done) {
     const filter = { where: { type: "derived" } };
 
     request(appUrl)
@@ -323,7 +329,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should delete the first raw dataset", function (done) {
+  it("0200: should delete the first raw dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
@@ -336,7 +342,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should delete the second raw dataset", function (done) {
+  it("0210: should delete the second raw dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
@@ -349,7 +355,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should delete the derived dataset", function (done) {
+  it("0220: should delete the derived dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidDerived1)
       .set("Accept", "application/json")
@@ -362,7 +368,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("check for the default policies to have been created", async () => {
+  it("0230: heck for the default policies to have been created", async () => {
     // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
     const start = new Date();
     start.setHours(start.getHours(), 0, 0, 0);
@@ -382,7 +388,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("should delete the default policies created with datasets", async () => {
+  it("0240: should delete the default policies created with datasets", async () => {
     for (const item of policyIds) {
       await request(appUrl)
         .delete("/api/v3/policies/" + item)
@@ -392,7 +398,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     }
   });
 
-  it("new dataset count should be back to old count", function (done) {
+  it("0250: new dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -407,7 +413,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new raw dataset count should be back to old count", function (done) {
+  it("0260: new raw dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -423,7 +429,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("new derived dataset count should be back to old count", function (done) {
+  it("0270: new derived dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
