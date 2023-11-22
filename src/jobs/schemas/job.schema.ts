@@ -3,18 +3,22 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { JobType } from "../job-type.enum";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
 
 //{
-//  "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
-//  "type" : "archive",
+//  * "id" : "7289ee0e-4739-11ee-bcae-0b150b8afb9e",
+//  * "type" : "archive",
+// ----
+// taken care extending ownableClass
 //  "created_by" : "user_1"
 //  "created_at" : <timestamp>,
-//  "status_code" : "CREATED",
 //  "updaded_at": <timestamp>,
 //  "updated_by": “user_1”,
-//  "status_message": "Job created",
+// ----
+//  * "status_code" : "CREATED",
+//  * "status_message": "Job created",
 //  "updates_history" : [
 //   {
 //    "updaded_at": <timestamp>,
@@ -37,23 +41,74 @@ export type JobDocument = JobClass & Document;
     getters: true,
   },
 })
+export class JobClass extends OwnableClass{
 
-export class JobClass {
-
-  /*
-   * createJob
-   */
-
- @ApiProperty({
+  @ApiProperty({
     type: String,
+    default: () => uuidv4(),
     description: "Globally unique identifier of a job.",
-    readOnly: true,
   })
   @Prop({
-  type: string,
-  default: () => uuidv4()
+    type: String,
+    unique: true,
+    required: true,
+    default: () => uuidv4(),
+  })
+  id: string;
+
+  @Prop({
+    type: String,
   })
   _id: string;
+
+  // type
+  @ApiProperty({
+    type: String, 
+    description: "Type of job as defined in the job configuration, e.g. archive, retrieve, etc",
+    required: true
+  })
+  @Prop({
+    type: String,
+    required: true,
+  })
+  type: string;
+
+  @ApiProperty({
+    type: String,
+    required: false, 
+    description: "Defines the current status code of the job." 
+  })
+  @Prop({ 
+    type: String, 
+    required: false 
+  })
+  status_code: string;
+
+  @ApiProperty({
+    type: String,
+    required: false, 
+    description: "stores the latest message received with the last status update for the job." 
+  })
+  @Prop({ 
+    type: String, 
+    required: false 
+  })
+  status_message: string;
+
+  @ApiProperty({
+    type: [Object],
+    required: false,
+    description:
+        "Array of status updates containing status code and message",
+  })
+  @Prop({ 
+    type: [Object], 
+    required: false 
+  })
+  status_history: Record<string, string>[];
+
+
+
 
   // email
   @ApiProperty({
@@ -75,12 +130,6 @@ export class JobClass {
   })
   type: string;
 
-  @ApiProperty({
-    description:
-      "Time when job is created. This is handled automatically by mongoose with timestamps flag. Format according to chapter 5.6 internet date/time format in RFC 3339.",
-  })
-  @Prop({ type: Date })
-  creationTime: Date;
   
   // removed execution time as this functionality is not foreseen for now
   // removed destinationPath as not forseen for this example
