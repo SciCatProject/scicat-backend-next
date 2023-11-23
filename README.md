@@ -81,7 +81,6 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `DATASET_CREATION_VALIDATION_REGEX` [string] Regular expression validation for new dataset request. Default value: ""
 - `PROPOSAL_GROUPS` [string] _Optional_ Comma separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
 - `SAMPLE_GROUPS` [string] _Optional_ Comma separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-
 - `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat, user"
 - `ACCESS_GROUPS_SERVICE_TOKEN` [string] _Optional_ Authentication token used if access groups are obtained from a third party service. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
 - `ACCESS_GROUP_SERVICE_API_URL` [string] _Optional_ URL of the service providing the users' access groups. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
