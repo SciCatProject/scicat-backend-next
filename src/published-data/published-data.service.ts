@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model } from "mongoose";
+import { FilterQuery, Model, QueryOptions } from "mongoose";
 import {
   parseLimitFilters,
   addCreatedByFields,
@@ -66,8 +66,13 @@ export class PublishedDataService {
       .exec();
   }
 
-  async count(filter: FilterQuery<PublishedDataDocument>): Promise<ICount> {
-    const count = await this.publishedDataModel.count(filter).exec();
+  async countDocuments(
+    filter: FilterQuery<PublishedDataDocument>,
+    options?: QueryOptions,
+  ): Promise<ICount> {
+    const count = await this.publishedDataModel
+      .countDocuments(filter, options)
+      .exec();
     return { count };
   }
 
