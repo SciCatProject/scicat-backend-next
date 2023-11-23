@@ -20,7 +20,6 @@ let accessTokenIngestor = null,
   accessTokenArchiveManager = null,
   userIdArchiveManager = null;
 
-
 describe("2300: User Authorization: test that user authorization are correct", () => {
   beforeEach((done) => {
     utils.getIdAndToken(
@@ -29,7 +28,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
         username: "ingestor",
         password: "aman",
       },
-      (idVal,tokenVal) => {
+      (idVal, tokenVal) => {
         accessTokenIngestor = tokenVal;
         userIdIngestor = idVal;
         utils.getIdAndToken(
@@ -38,7 +37,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
             username: "user1",
             password: "a609316768619f154ef58db4d847b75e",
           },
-          (idVal,tokenVal) => {
+          (idVal, tokenVal) => {
             accessTokenUser1 = tokenVal;
             userIdUser1 = idVal;
             utils.getIdAndToken(
@@ -47,7 +46,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                 username: "user2",
                 password: "f522d1d715970073a6413474ca0e0f63",
               },
-              (idVal,tokenVal) => {
+              (idVal, tokenVal) => {
                 accessTokenUser2 = tokenVal;
                 userIdUser2 = idVal;
                 utils.getIdAndToken(
@@ -56,7 +55,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                     username: "user3",
                     password: "70dc489e8ee823ae815e18d664424df2",
                   },
-                  (idVal,tokenVal) => {
+                  (idVal, tokenVal) => {
                     accessTokenUser3 = tokenVal;
                     userIdUser3 = idVal;
                     utils.getIdAndToken(
@@ -65,7 +64,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                         username: "user4",
                         password: "0014890e7020f515b92b767227ef2dfa",
                       },
-                      (idVal,tokenVal) => {
+                      (idVal, tokenVal) => {
                         accessTokenUser4 = tokenVal;
                         userIdUser4 = idVal;
                         utils.getIdAndToken(
@@ -74,7 +73,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                             username: "archiveManager",
                             password: "aman",
                           },
-                          (idVal,tokenVal) => {
+                          (idVal, tokenVal) => {
                             accessTokenArchiveManager = tokenVal;
                             userIdArchiveManager = idVal;
                             utils.getIdAndToken(
@@ -83,7 +82,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                                 username: "admin",
                                 password: "am2jf70TPNZsSan",
                               },
-                              (idVal,tokenVal) => {
+                              (idVal, tokenVal) => {
                                 accessTokenAdmin = tokenVal;
                                 userIdAdmin = idVal;
                                 done();
@@ -281,7 +280,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.jwt.should.be.a('string');
+        res.body.jwt.should.be.a("string");
       });
   });
 
@@ -293,7 +292,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.jwt.should.be.a('string');
+        res.body.jwt.should.be.a("string");
       });
   });
 
@@ -305,7 +304,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.jwt.should.be.a('string');
+        res.body.jwt.should.be.a("string");
       });
   });
 
@@ -317,7 +316,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.username.should.be.equal('admin');
+        res.body.username.should.be.equal("admin");
       });
   });
 
@@ -329,7 +328,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.username.should.be.equal('user1');
+        res.body.username.should.be.equal("user1");
       });
   });
 
@@ -341,7 +340,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.username.should.be.equal('user1');
+        res.body.username.should.be.equal("user1");
       });
   });
 
@@ -383,7 +382,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.profile.username.should.be.equal('admin');
+        res.body.profile.username.should.be.equal("admin");
       });
   });
 
@@ -395,7 +394,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.profile.username.should.be.equal('user1');
+        res.body.profile.username.should.be.equal("user1");
       });
   });
 
@@ -407,7 +406,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.profile.username.should.be.equal('user1');
+        res.body.profile.username.should.be.equal("user1");
       });
   });
 
@@ -522,7 +521,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
   });
 
   it("0400: admin should be able to view user 1 user identity through userIdentity endpoint", async () => {
-    const query = { where: { userId: userIdUser1 } };    
+    const query = { where: { userId: userIdUser1 } };
     return request(appUrl)
       .get(`/api/v3/userIdentities/findOne`)
       .set("Accept", "application/json")
@@ -536,7 +535,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
   });
 
   it("0410: user1 should be able to view his/her user identity through userIdentity endpoint", async () => {
-    const query = { where: { userId: userIdUser1 } };    
+    const query = { where: { userId: userIdUser1 } };
     return request(appUrl)
       .get(`/api/v3/userIdentities/findOne`)
       .set("Accept", "application/json")
@@ -550,7 +549,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
   });
 
   it("0420: user1 should not be able to view admin user identity through userIdentity endpoint", async () => {
-    const query = { where: { userId: userIdAdmin } };    
+    const query = { where: { userId: userIdAdmin } };
     return request(appUrl)
       .get(`/api/v3/userIdentities/findOne`)
       .set("Accept", "application/json")
@@ -669,5 +668,4 @@ describe("2300: User Authorization: test that user authorization are correct", (
       })
       .expect(401);
   });
-
 });

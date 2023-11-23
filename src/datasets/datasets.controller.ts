@@ -49,7 +49,6 @@ import {
   MainDatasetsPublicInterceptor,
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -97,6 +96,7 @@ import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import configuration from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -158,23 +158,126 @@ export class DatasetsController {
   ): IFilters<DatasetDocument, IDatasetFields> {
     const user: JWTUser = request.user as JWTUser;
 
-    if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
-      const canViewTheirOwn = ability.can(Action.ListOwn, DatasetClass);
-      if (!canViewAll && canViewTheirOwn) {
-        if (!mergedFilters.where) {
-          mergedFilters.where = {};
-        }
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
+    const canViewAccess = ability.can(
+      Action.DatasetReadManyAccess,
+      DatasetClass,
+    );
+    const canViewPublic = ability.can(
+      Action.DatasetReadManyPublic,
+      DatasetClass,
+    );
+
+    if (!canViewAny) {
+      if (!mergedFilters.where) {
+        mergedFilters.where = {};
+      }
+      if (canViewAccess) {
         mergedFilters.where["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
+          { sharedWith: { $in: user.email } },
           { isPublished: true },
         ];
+      } else if (canViewOwner) {
+        mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
+      } else if (canViewPublic) {
+        mergedFilters.where = { isPublished: true };
       }
     }
 
     return mergedFilters;
+  }
+
+  async checkPermissionsForDatasetExtended(
+    request: Request,
+    id: string,
+    group: Action,
+  ) {
+    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const user: JWTUser = request.user as JWTUser;
+
+    if (dataset) {
+      const datasetInstance =
+        await this.generateDatasetInstanceForPermissions(dataset);
+
+      const ability = this.caslAbilityFactory.createForUser(user);
+
+      let canDoAction = false;
+
+      if (group == Action.DatasetRead) {
+        canDoAction =
+          ability.can(Action.DatasetReadAny, DatasetClass) ||
+          ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+          ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+          ability.can(Action.DatasetReadOnePublic, datasetInstance);
+      } else if (group == Action.DatasetAttachmentRead) {
+        canDoAction =
+          ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
+          ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
+          ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
+          ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
+      } else if (group == Action.DatasetAttachmentCreate) {
+        canDoAction =
+          ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
+          ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
+      } else if (group == Action.DatasetAttachmentUpdate) {
+        canDoAction =
+          ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
+          ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
+      } else if (group == Action.DatasetAttachmentDelete) {
+        canDoAction =
+          ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
+          ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
+      } else if (group == Action.DatasetOrigdatablockRead) {
+        canDoAction =
+          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+          ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
+          ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
+          ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
+      } else if (group == Action.DatasetOrigdatablockCreate) {
+        canDoAction =
+          ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
+          ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
+      } else if (group == Action.DatasetOrigdatablockUpdate) {
+        canDoAction =
+          ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
+          ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
+      } else if (group == Action.DatasetOrigdatablockDelete) {
+        canDoAction =
+          ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
+          ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
+      } else if (group == Action.DatasetDatablockRead) {
+        canDoAction =
+          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+          ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
+          ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
+          ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
+      } else if (group == Action.DatasetDatablockCreate) {
+        canDoAction =
+          ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
+          ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
+      } else if (group == Action.DatasetDatablockUpdate) {
+        canDoAction =
+          ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
+          ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
+      } else if (group == Action.DatasetDatablockDelete) {
+        canDoAction =
+          ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
+          ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
+      } else if (group == Action.DatasetLogbookRead) {
+        canDoAction =
+          ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
+          ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
+      }
+      if (!canDoAction) {
+        throw new ForbiddenException("Unauthorized access");
+      }
+    }
+
+    return dataset;
   }
 
   async checkPermissionsForDataset(request: Request, id: string) {
@@ -182,25 +285,17 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
 
     if (dataset) {
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance = new DatasetClass();
-      datasetInstance._id = dataset._id;
-      datasetInstance.pid = dataset.pid;
-      datasetInstance.accessGroups = dataset.accessGroups || [];
-      datasetInstance.ownerGroup = dataset.ownerGroup;
-      datasetInstance.sharedWith = dataset.sharedWith;
-      datasetInstance.isPublished = dataset.isPublished || false;
-      datasetInstance.owner = dataset.owner;
-      datasetInstance.ownerEmail = dataset.ownerEmail;
-      if (user) {
-        const ability = this.caslAbilityFactory.createForUser(user);
-        const canView =
-          ability.can(Action.Manage, datasetInstance) ||
-          ability.can(Action.Read, datasetInstance);
-        if (!canView && !dataset.isPublished) {
-          throw new ForbiddenException("Unauthorized access");
-        }
-      } else if (!dataset.isPublished) {
+      const datasetInstance =
+        await this.generateDatasetInstanceForPermissions(dataset);
+
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canView =
+        ability.can(Action.DatasetReadAny, DatasetClass) ||
+        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+        ability.can(Action.DatasetReadOnePublic, datasetInstance);
+
+      if (!canView) {
         throw new ForbiddenException("Unauthorized access");
       }
     }
@@ -209,29 +304,42 @@ export class DatasetsController {
   }
 
   getUserPermissionsFromGroups(user: JWTUser) {
-    const createDatasetWithPidGroupsString =
-      process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
-    const createDatasetWithPidGroups: string[] =
-      createDatasetWithPidGroupsString
-        ? createDatasetWithPidGroupsString.split(",").map((v) => v.trim())
-        : [];
-
-    const stringAdminGroups = process.env.ADMIN_GROUPS || "";
-    const adminGroups: string[] = stringAdminGroups
-      ? stringAdminGroups.split(",").map((v) => v.trim())
-      : [];
-
-    const isPartOfAdminGroups = user.currentGroups.some((g) =>
-      adminGroups.includes(g),
+    const userIsAdmin = user.currentGroups.some((g) =>
+      configuration().adminGroups.includes(g),
     );
-    const userCanCreateDatasetWithPid = createDatasetWithPidGroups.some(
-      (value) => user.currentGroups.includes(value),
-    );
+    const userCanCreateDatasetPrivileged =
+      configuration().createDatasetPrivilegedGroups.some((value) =>
+        user.currentGroups.includes(value),
+      );
+    const userCanCreateDatasetWithPid =
+      configuration().createDatasetWithPidGroups.some((value) =>
+        user.currentGroups.includes(value),
+      );
+    const userCanCreateDatasetWithoutPid =
+      configuration().createDatasetGroups.some((value) =>
+        user.currentGroups.includes(value),
+      );
 
     return {
-      isPartOfAdminGroups,
+      userIsAdmin,
+      userCanCreateDatasetPrivileged,
       userCanCreateDatasetWithPid,
+      userCanCreateDatasetWithoutPid,
     };
+  }
+
+  async generateDatasetInstanceForPermissions(
+    dataset: CreateRawDatasetDto | CreateDerivedDatasetDto | DatasetClass,
+  ): Promise<DatasetClass> {
+    const datasetInstance = new DatasetClass();
+    datasetInstance._id = "";
+    datasetInstance.pid = dataset.pid || "";
+    datasetInstance.accessGroups = dataset.accessGroups || [];
+    datasetInstance.ownerGroup = dataset.ownerGroup;
+    datasetInstance.sharedWith = dataset.sharedWith;
+    datasetInstance.isPublished = dataset.isPublished || false;
+
+    return datasetInstance;
   }
 
   async checkPermissionsForDatasetCreate(
@@ -242,63 +350,36 @@ export class DatasetsController {
 
     if (dataset) {
       // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance = new DatasetClass();
-      datasetInstance._id = "";
-      datasetInstance.pid = dataset.pid || "";
-      datasetInstance.accessGroups = dataset.accessGroups || [];
-      datasetInstance.ownerGroup = dataset.ownerGroup;
-      datasetInstance.sharedWith = dataset.sharedWith;
-      datasetInstance.isPublished = dataset.isPublished || false;
-      datasetInstance.owner = dataset.owner;
-      datasetInstance.ownerEmail = dataset.ownerEmail;
-      if (user) {
-        const { isPartOfAdminGroups, userCanCreateDatasetWithPid } =
-          this.getUserPermissionsFromGroups(user);
-        if (
-          datasetInstance.pid &&
-          !userCanCreateDatasetWithPid &&
-          !isPartOfAdminGroups
-        ) {
-          throw new ForbiddenException(
-            "Unauthorized to create datasets with explicit PID",
-          );
-        } else {
-          // NOTE: If it can create dataset but not part of ADMIN_GROUPS and not part of CREATE_DATASET_WITH_PID_GROUPS,
-          // then we make sure that pid is not provided by user but it is generated by the system.
-          if (!isPartOfAdminGroups && !userCanCreateDatasetWithPid) {
-            delete dataset.pid;
-          }
+      const datasetInstance =
+        await this.generateDatasetInstanceForPermissions(dataset);
+      // instantiate the casl matrix for the user
+      const ability = this.caslAbilityFactory.createForUser(user);
+      // check if he/she can create this dataset
+      const canCreate =
+        ability.can(Action.DatasetCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
+        ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
 
-          const ability = this.caslAbilityFactory.createForUser(user);
-          const canCreate = ability.can(Action.Create, datasetInstance);
-
-          if (!canCreate) {
-            throw new ForbiddenException("Unauthorized to create this dataset");
-          }
-
-          const datasetCreationValidationEnabled =
-            process.env.DATASET_CREATION_VALIDATION_ENABLED;
-
-          const datasetCreationValidationRegex =
-            process.env.DATASET_CREATION_VALIDATION_REGEX;
-
-          if (
-            datasetCreationValidationEnabled &&
-            datasetCreationValidationRegex &&
-            dataset.pid
-          ) {
-            const re = new RegExp(datasetCreationValidationRegex);
-
-            if (!re.test(dataset.pid)) {
-              throw new BadRequestException(
-                "PID is not following required standards",
-              );
-            }
-          }
-        }
-      } else {
-        throw new ForbiddenException("Unauthorized to create datasets");
+      if (!canCreate) {
+        throw new ForbiddenException("Unauthorized to create this dataset");
       }
+
+      // now checks if we need to validate the pid
+      if (
+        configuration().datasetCreationValidationEnabled &&
+        configuration().datasetCreationValidationRegex &&
+        dataset.pid
+      ) {
+        const re = new RegExp(configuration().datasetCreationValidationRegex);
+
+        if (!re.test(dataset.pid)) {
+          throw new BadRequestException(
+            "PID is not following required standards",
+          );
+        }
+      }
+    } else {
+      throw new ForbiddenException("Unauthorized to create datasets");
     }
 
     return dataset;
@@ -307,7 +388,7 @@ export class DatasetsController {
   // POST /datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, DatasetClass),
+    ability.can(Action.DatasetCreate, DatasetClass),
   )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
@@ -423,12 +504,15 @@ export class DatasetsController {
     return outputDatasetDto;
   }
 
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetCreate, DatasetClass),
+  )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
-  @AllowAny()
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
   @ApiOperation({
@@ -453,16 +537,24 @@ export class DatasetsController {
     description:
       "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
-  async isValid(@Body() createDataset: unknown): Promise<{ valid: boolean }> {
+  async isValid(
+    @Req() request: Request,
+    @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+  ): Promise<{ valid: boolean }> {
+    const datasetDTO = await this.checkPermissionsForDatasetCreate(
+      request,
+      createDatasetDto,
+    );
+
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
-      createDataset,
+      createDatasetDto,
     );
     const errorsTestRawCorrect = await validate(dtoTestRawCorrect);
 
     const dtoTestDerivedCorrect = plainToInstance(
       CreateDerivedDatasetDto,
-      createDataset,
+      createDatasetDto,
     );
     const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
 
@@ -473,7 +565,10 @@ export class DatasetsController {
   }
 
   // GET /datasets
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
   @ApiOperation({
@@ -508,6 +603,7 @@ export class DatasetsController {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
+    // this should be implemented at database level
     const datasets = await this.datasetsService.findAll(mergedFilters);
     if (datasets && datasets.length > 0) {
       const includeFilters = mergedFilters.include ?? [];
@@ -551,7 +647,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/fullquery
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
   @ApiOperation({
@@ -589,18 +688,35 @@ export class DatasetsController {
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
-    if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
 
-      // NOTE: If we have published true we don't add groups at all
-      if (!canViewAll && !fields.isPublished) {
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+
+    if (!canViewAny && !fields.isPublished) {
+      const canViewAccess = ability.can(
+        Action.DatasetReadManyAccess,
+        DatasetClass,
+      );
+      const canViewOwner = ability.can(
+        Action.DatasetReadManyOwner,
+        DatasetClass,
+      );
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
+      if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        fields.sharedWith = user.email;
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
-
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -610,7 +726,10 @@ export class DatasetsController {
   }
 
   // GET /fullfacets
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
   @ApiOperation({
@@ -648,15 +767,37 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
-      // NOTE: If we have published true we don't add groups at all
-      if (!canViewAll && !fields.isPublished) {
+    if (!canViewAny && !fields.isPublished) {
+      // delete fields.isPublished;
+
+      const canViewAccess = ability.can(
+        Action.DatasetReadManyAccess,
+        DatasetClass,
+      );
+      const canViewOwner = ability.can(
+        Action.DatasetReadManyOwner,
+        DatasetClass,
+      );
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
+
+      if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
+        // fields.isPublished = true;
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {
@@ -667,7 +808,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/metadataKeys
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/metadataKeys")
   @ApiOperation({
@@ -703,13 +847,36 @@ export class DatasetsController {
   ): Promise<string[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
-    if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, DatasetClass);
-      if (!canViewAll && !fields.isPublished) {
-        fields.userGroups = fields.userGroups ?? [];
-        fields.userGroups.push(...user.currentGroups);
+
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+
+    if (!canViewAny && !fields.isPublished) {
+      // delete fields.isPublished;
+
+      const canViewAccess = ability.can(
+        Action.DatasetReadManyAccess,
+        DatasetClass,
+      );
+      const canViewOwner = ability.can(
+        Action.DatasetReadManyOwner,
+        DatasetClass,
+      );
+      // const canViewPublic = ability.can(
+      //   Action.DatasetReadManyPublic,
+      //   DatasetClass,
+      // );
+
+      if (canViewAccess) {
+        fields.userGroups?.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+        // fields.isPublished = true; //are they in or?
+      } else if (canViewOwner) {
+        fields.ownerGroup?.push(...user.currentGroups);
       }
+      // else if (canViewPublic) {
+      //   fields.isPublished = true;
+      // }
     }
 
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
@@ -720,7 +887,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/findOne
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns the first dataset found.",
@@ -746,6 +916,8 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
+    const user: JWTUser = request.user as JWTUser;
+
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -753,7 +925,10 @@ export class DatasetsController {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
-    const dataset = await this.datasetsService.findOne(mergedFilters);
+    const dataset = (await this.datasetsService.findOne(
+      mergedFilters,
+    )) as DatasetClass;
+
     if (dataset) {
       const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
@@ -787,7 +962,7 @@ export class DatasetsController {
   // GET /datasets/count
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, DatasetClass),
+    ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/count")
   @ApiOperation({
@@ -825,7 +1000,10 @@ export class DatasetsController {
 
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Read, DatasetClass),
   )
@@ -858,7 +1036,7 @@ export class DatasetsController {
   // body: modified fields
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, DatasetClass),
+    ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
@@ -896,6 +1074,7 @@ export class DatasetsController {
       "Update an existing dataset and return its representation in SciCat",
   })
   async findByIdAndUpdate(
+    @Req() request: Request,
     @Param("pid") pid: string,
     @Body()
     updateDatasetDto:
@@ -919,13 +1098,29 @@ export class DatasetsController {
         : PartialUpdateDerivedDatasetDto,
     );
 
+    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(foundDataset);
+
+    // instantiate the casl matrix for the user
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+    // check if he/she can create this dataset
+    const canUpdate =
+      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+      ability.can(Action.DatasetUpdateOwner, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
     return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
   }
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, DatasetClass),
+    ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
@@ -965,9 +1160,16 @@ export class DatasetsController {
       "Update an existing dataset and return its representation in SciCat",
   })
   async findByIdAndReplace(
-    @Param("pid") id: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Body() updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass | null> {
+    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+
+    if (!foundDataset) {
+      throw new NotFoundException();
+    }
+
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     const outputDto = await this.validateDataset(
       updateDatasetDto,
@@ -976,8 +1178,23 @@ export class DatasetsController {
         : UpdateDerivedDatasetDto,
     );
 
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(foundDataset);
+
+    // instantiate the casl matrix for the user
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+    // check if he/she can create this dataset
+    const canUpdate =
+      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+      ability.can(Action.DatasetUpdateOwner, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
     return this.datasetsService.findByIdAndReplace(
-      id,
+      pid,
       outputDto as UpdateRawDatasetDto | UpdateDerivedDatasetDto,
     );
   }
@@ -985,7 +1202,7 @@ export class DatasetsController {
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, DatasetClass),
+    ability.can(Action.DatasetDelete, DatasetClass),
   )
   @Delete("/:pid")
   @ApiOperation({
@@ -1001,13 +1218,37 @@ export class DatasetsController {
     status: 200,
     description: "No value is returned",
   })
-  async findByIdAndDelete(@Param("pid") id: string): Promise<unknown> {
-    return this.datasetsService.findByIdAndDelete(id);
+  async findByIdAndDelete(
+    @Req() request: Request,
+    @Param("pid") pid: string,
+  ): Promise<unknown> {
+    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+
+    if (!foundDataset) {
+      throw new NotFoundException();
+    }
+
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(foundDataset);
+
+    // instantiate the casl matrix for the user
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+    // check if he/she can create this dataset
+    const canUpdate =
+      ability.can(Action.DatasetDeleteAny, DatasetClass) ||
+      ability.can(Action.DatasetDeleteOwner, datasetInstance);
+
+    if (!canUpdate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
+    return this.datasetsService.findByIdAndDelete(pid);
   }
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, DatasetClass),
+    ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @Post("/:pid/appendToArrayField")
   @ApiOperation({
@@ -1038,34 +1279,30 @@ export class DatasetsController {
   })
   async appendToArrayField(
     @Req() request: Request,
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
-    const loggedInUser: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(loggedInUser);
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
     const datasetToUpdate = await this.datasetsService.findOne({
-      where: { pid: id },
+      where: { pid: pid },
     });
 
     if (!datasetToUpdate) {
       throw new NotFoundException();
     }
 
-    const datasetInstance = new DatasetClass();
-    datasetInstance._id = datasetToUpdate._id;
-    datasetInstance.pid = datasetToUpdate.pid;
-    datasetInstance.accessGroups = datasetToUpdate.accessGroups || [];
-    datasetInstance.ownerGroup = datasetToUpdate.ownerGroup;
-    datasetInstance.sharedWith = datasetToUpdate.sharedWith;
-    datasetInstance.isPublished = datasetToUpdate.isPublished || false;
-    datasetInstance.owner = datasetToUpdate.owner;
-    datasetInstance.ownerEmail = datasetToUpdate.ownerEmail;
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(datasetToUpdate);
 
-    const canUpdate = ability.can(Action.Update, datasetInstance);
+    // check if he/she can create this dataset
+    const canUpdate =
+      ability.can(Action.DatasetDeleteAny, DatasetClass) ||
+      ability.can(Action.DatasetDeleteOwner, datasetInstance);
 
     if (!canUpdate) {
-      throw new ForbiddenException();
+      throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
     const parsedData = JSON.parse(data);
@@ -1076,11 +1313,14 @@ export class DatasetsController {
       },
     };
 
-    return this.datasetsService.findByIdAndUpdate(id, updateQuery);
+    return this.datasetsService.findByIdAndUpdate(pid, updateQuery);
   }
 
   // GET /datasets/:id/thumbnail
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetRead, DatasetClass),
+  )
   // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
   @ApiOperation({
@@ -1090,7 +1330,7 @@ export class DatasetsController {
   })
   @ApiParam({
     name: "pid",
-    description: "Id of the dataset",
+    description: "Persistent identifier of the dataset",
     type: String,
   })
   @ApiResponse({
@@ -1100,12 +1340,16 @@ export class DatasetsController {
   })
   async thumbnail(
     @Req() request: Request,
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
   ): Promise<Partial<Attachment>> {
-    await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetRead,
+    );
 
     const attachment = await this.attachmentsService.findOne(
-      { datasetId: id },
+      { datasetId: pid },
       { _id: false, thumbnail: true },
     );
 
@@ -1119,7 +1363,7 @@ export class DatasetsController {
   // POST /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, Attachment),
+    ability.can(Action.DatasetAttachmentCreate, DatasetClass),
   )
   @HttpCode(HttpStatus.CREATED)
   @Post("/:pid/attachments")
@@ -1131,7 +1375,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset we would like to create a new attachment for",
+      "Persisten identifier of the dataset we would like to create a new attachment for",
     type: String,
   })
   @ApiExtraModels(CreateAttachmentDto)
@@ -1145,14 +1389,20 @@ export class DatasetsController {
       "Returns the new attachment for the dataset identified by the pid specified",
   })
   async createAttachment(
-    @Param("pid") id: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentCreate,
+    );
+
     if (dataset) {
       const createAttachment: CreateAttachmentDto = {
         ...createAttachmentDto,
-        datasetId: id,
+        datasetId: pid,
         ownerGroup: dataset.ownerGroup,
       };
       return this.attachmentsService.create(createAttachment);
@@ -1161,9 +1411,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/attachments
-  // @UseGuards(PoliciesGuard)
-  @AllowAny()
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetAttachmentRead, DatasetClass),
+  )
   @Get("/:pid/attachments")
   @ApiOperation({
     summary: "It returns all the attachments for the dataset specified.",
@@ -1173,7 +1424,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to retrieve all the attachments",
+      "Persisten Identifier of the dataset for which we would like to retrieve all the attachments",
     type: String,
   })
   @ApiResponse({
@@ -1185,17 +1436,21 @@ export class DatasetsController {
   })
   async findAllAttachments(
     @Req() request: Request,
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
   ): Promise<Attachment[]> {
-    await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentRead,
+    );
 
-    return this.attachmentsService.findAll({ datasetId: id });
+    return this.attachmentsService.findAll({ datasetId: pid });
   }
 
   // PATCH /datasets/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, Attachment),
+    ability.can(Action.DatasetAttachmentUpdate, DatasetClass),
   )
   @Put("/:pid/attachments/:aid")
   @ApiOperation({
@@ -1206,13 +1461,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to update the attachment specified",
+      "Persisten identifier of the dataset for which we would like to update the attachment specified",
     type: String,
   })
   @ApiParam({
     name: "aid",
     description:
-      "Id of the attachment of this dataset that we would like to patch",
+      "Identifier of the attachment of this dataset that we would like to patch",
     type: String,
   })
   @ApiResponse({
@@ -1222,12 +1477,19 @@ export class DatasetsController {
     description: "Returns the attachment updated.",
   })
   async findOneAttachmentAndUpdate(
-    @Param("pid") datasetId: string,
-    @Param("aid") attachmentId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentUpdate,
+    );
+
     return this.attachmentsService.findOneAndUpdate(
-      { _id: attachmentId, datasetId: datasetId },
+      { _id: aid, datasetId: pid },
       updateAttachmentDto,
     );
   }
@@ -1235,7 +1497,7 @@ export class DatasetsController {
   // DELETE /datasets/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, Attachment),
+    ability.can(Action.DatasetAttachmentDelete, DatasetClass),
   )
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
@@ -1246,13 +1508,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to delete the attachment specified",
+      "Persistent identifier of the dataset for which we would like to delete the attachment specified",
     type: String,
   })
   @ApiParam({
     name: "aid",
     description:
-      "Id of the attachment of this dataset that we would like to delete",
+      "Identifier of the attachment of this dataset that we would like to delete",
     type: String,
   })
   @ApiResponse({
@@ -1260,19 +1522,26 @@ export class DatasetsController {
     description: "No value is returned.",
   })
   async findOneAttachmentAndRemove(
-    @Param("pid") datasetId: string,
-    @Param("aid") attachmentId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("aid") aid: string,
   ): Promise<unknown> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetAttachmentDelete,
+    );
+
     return this.attachmentsService.findOneAndRemove({
-      _id: attachmentId,
-      datasetId,
+      _id: aid,
+      pid,
     });
   }
 
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
-    return ability.can(Action.Create, OrigDatablock);
+    return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
   })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
@@ -1288,7 +1557,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset we would like to create a new original datablock for",
+      "PErsistent identifier of the dataset we would like to create a new original datablock for",
     type: String,
   })
   @ApiExtraModels(CreateDatasetOrigDatablockDto)
@@ -1301,14 +1570,20 @@ export class DatasetsController {
     description: "It returns the new original datablock created",
   })
   async createOrigDatablock(
-    @Param("pid") id: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockCreate,
+    );
+
     if (dataset) {
       const createOrigDatablock: CreateOrigDatablockDto = {
         ...createDatasetOrigDatablockDto,
-        datasetId: id,
+        datasetId: pid,
         ownerGroup: dataset.ownerGroup,
         accessGroups: dataset.accessGroups,
         instrumentGroup: dataset.instrumentGroup,
@@ -1330,7 +1605,10 @@ export class DatasetsController {
   }
 
   // POST /datasets/:id/origdatablocks/isValid
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
+  })
   @HttpCode(HttpStatus.OK)
   @Post("/:pid/origdatablocks/isValid")
   @ApiOperation({
@@ -1341,7 +1619,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset we would like to create a new original datablock for",
+      "Persistent identifier of the dataset we would like to create a new original datablock for",
     type: String,
   })
   @ApiExtraModels(CreateDatasetOrigDatablockDto)
@@ -1351,11 +1629,19 @@ export class DatasetsController {
   @ApiResponse({
     status: 201,
     description:
-      "IT returns true if the values passed in are a valid original datablock",
+      "It returns true if the values passed in are a valid original datablock",
   })
   async origDatablockIsValid(
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockCreate,
+    );
+
     const dtoTestOrigDatablock = plainToInstance(
       CreateDatasetOrigDatablockDto,
       createOrigDatablock,
@@ -1368,11 +1654,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/origdatablocks
-  @AllowAny()
-  // @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, OrigDatablock),
-  )
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
+  })
   @Get("/:pid/origdatablocks")
   @ApiOperation({
     summary: "It returns all the origDatablock for the dataset specified.",
@@ -1382,7 +1667,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to retrieve all the original datablocks",
+      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
     type: String,
   })
   @ApiResponse({
@@ -1394,18 +1679,22 @@ export class DatasetsController {
   })
   async findAllOrigDatablocks(
     @Req() request: Request,
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
   ): Promise<OrigDatablock[]> {
-    await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockRead,
+    );
 
-    return this.origDatablocksService.findAll({ where: { datasetId: id } });
+    return this.origDatablocksService.findAll({ where: { datasetId: pid } });
   }
 
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, OrigDatablock),
-  )
+  @CheckPolicies((ability: AppAbility) => {
+    return ability.can(Action.DatasetOrigdatablockUpdate, DatasetClass);
+  })
   @UseInterceptors(
     new MultiUTCTimeInterceptor<OrigDatablock, DataFile>("dataFileList", [
       "time",
@@ -1421,13 +1710,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to update the original datablocks specified",
+      "Persistent identifier of the dataset for which we would like to update the original datablocks specified",
     type: String,
   })
   @ApiParam({
     name: "oid",
     description:
-      "Id of the original datablock of this dataset that we would like to patch",
+      "Identifier of the original datablock of this dataset that we would like to patch",
     type: String,
   })
   @ApiResponse({
@@ -1438,23 +1727,27 @@ export class DatasetsController {
       "Updated values of the original datablock with id specified associated with the dataset with the pid specified",
   })
   async findOneOrigDatablockAndUpdate(
-    @Param("pid") datasetId: string,
-    @Param("oid") origDatablockId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("oid") oid: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: datasetId },
-    });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockUpdate,
+    );
+
     const origDatablockBeforeUpdate = await this.origDatablocksService.findOne({
-      _id: origDatablockId,
+      _id: oid,
     });
     if (dataset && origDatablockBeforeUpdate) {
       const origDatablock = await this.origDatablocksService.update(
-        { _id: origDatablockId, datasetId },
+        { _id: oid, pid },
         updateOrigdatablockDto,
       );
       if (origDatablock) {
-        await this.datasetsService.findByIdAndUpdate(datasetId, {
+        await this.datasetsService.findByIdAndUpdate(pid, {
           size:
             dataset.size - origDatablockBeforeUpdate.size + origDatablock.size,
           numberOfFiles:
@@ -1471,7 +1764,7 @@ export class DatasetsController {
   // DELETE /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, OrigDatablock),
+    ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
   )
   @Delete("/:pid/origdatablocks/:oid")
   @ApiOperation({
@@ -1482,13 +1775,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to delete the original datablock specified",
+      "PErsistent identifier of the dataset for which we would like to delete the original datablock specified",
     type: String,
   })
   @ApiParam({
-    name: "aid",
+    name: "oid",
     description:
-      "Id of the original datablock of this dataset that we would like to delete",
+      "Identifier of the original datablock of this dataset that we would like to delete",
     type: String,
   })
   @ApiResponse({
@@ -1496,21 +1789,25 @@ export class DatasetsController {
     description: "No value is returned",
   })
   async findOneOrigDatablockAndRemove(
-    @Param("pid") datasetId: string,
-    @Param("oid") origDatablockId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("oid") oid: string,
   ): Promise<unknown> {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: datasetId },
-    });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetOrigdatablockDelete,
+    );
+
     if (dataset) {
       // remove origdatablock
       const res = await this.origDatablocksService.remove({
-        _id: origDatablockId,
-        datasetId,
+        _id: oid,
+        datasetId: pid,
       });
-      // all the remaing orig datablocks for this dataset
+      // all the remaining orig datablocks for this dataset
       const odb = await this.origDatablocksService.findAll({
-        where: { datasetId: datasetId },
+        where: { datasetId: pid },
       });
       // update dataset size and files number
       const updateDatasetDto: PartialUpdateDatasetDto = {
@@ -1528,7 +1825,9 @@ export class DatasetsController {
 
   // POST /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Datablock))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockCreate, DatasetClass),
+  )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
   )
@@ -1541,7 +1840,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset we would like to create a new datablock for",
+      "Persistent identifier of the dataset we would like to create a new datablock for",
     type: String,
   })
   @ApiExtraModels(CreateDatasetDatablockDto)
@@ -1554,20 +1853,26 @@ export class DatasetsController {
     description: "It returns the new datablock created",
   })
   async createDatablock(
-    @Param("pid") id: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockCreate,
+    );
+
     if (dataset) {
       const createDatablock: CreateDatablockDto = {
         ...createDatablockDto,
-        datasetId: id,
+        datasetId: pid,
         ownerGroup: dataset.ownerGroup,
         accessGroups: dataset.accessGroups,
         instrumentGroup: dataset.instrumentGroup,
       };
       const datablock = await this.datablocksService.create(createDatablock);
-      await this.datasetsService.findByIdAndUpdate(id, {
+      await this.datasetsService.findByIdAndUpdate(pid, {
         packedSize: (dataset.packedSize ?? 0) + datablock.packedSize,
         numberOfFilesArchived:
           dataset.numberOfFilesArchived + datablock.dataFileList.length,
@@ -1580,9 +1885,10 @@ export class DatasetsController {
   }
 
   // GET /datasets/:id/datablocks
-  @AllowAny()
-  // @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Datablock))
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockRead, DatasetClass),
+  )
   @Get("/:pid/datablocks")
   @ApiOperation({
     summary: "It returns all the datablock for the dataset specified.",
@@ -1592,7 +1898,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to retrieve all the datablocks",
+      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
     type: String,
   })
   @ApiResponse({
@@ -1604,16 +1910,22 @@ export class DatasetsController {
   })
   async findAllDatablocks(
     @Req() request: Request,
-    @Param("pid") id: string,
+    @Param("pid") pid: string,
   ): Promise<Datablock[]> {
-    await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockRead,
+    );
 
-    return this.datablocksService.findAll({ datasetId: id });
+    return this.datablocksService.findAll({ datasetId: pid });
   }
 
   // PATCH /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Datablock))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockUpdate, DatasetClass),
+  )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<Datablock, DataFile>("dataFileList", ["time"]),
   )
@@ -1626,13 +1938,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to update the datablocks specified",
+      "PErsistent identifier of the dataset for which we would like to update the datablocks specified",
     type: String,
   })
   @ApiParam({
-    name: "oid",
+    name: "did",
     description:
-      "Id of the datablock of this dataset that we would like to patch",
+      "Identifier of the datablock of this dataset that we would like to patch",
     type: String,
   })
   @ApiResponse({
@@ -1643,23 +1955,27 @@ export class DatasetsController {
       "Updated values of the datablock with id specified associated with the dataset with the pid specified",
   })
   async findOneDatablockAndUpdate(
-    @Param("pid") datasetId: string,
-    @Param("did") datablockId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("did") did: string,
     @Body() updateDatablockDto: UpdateDatablockDto,
   ): Promise<Datablock | null> {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: datasetId },
-    });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockUpdate,
+    );
+
     const datablockBeforeUpdate = await this.datablocksService.findOne({
-      _id: datablockId,
+      _id: did,
     });
     if (dataset && datablockBeforeUpdate) {
       const datablock = await this.datablocksService.update(
-        { _id: datablockId, datasetId },
+        { _id: did, pid },
         updateDatablockDto,
       );
       if (datablock) {
-        await this.datasetsService.findByIdAndUpdate(datasetId, {
+        await this.datasetsService.findByIdAndUpdate(pid, {
           packedSize:
             (dataset.packedSize ?? 0) -
             datablockBeforeUpdate.packedSize +
@@ -1677,7 +1993,9 @@ export class DatasetsController {
 
   // DELETE /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Datablock))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetDatablockDelete, DatasetClass),
+  )
   @Delete("/:pid/datablocks/:did")
   @ApiOperation({
     summary: "It deletes the datablock from the dataset.",
@@ -1687,13 +2005,13 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to delete the datablock specified",
+      "Persistent identifier of the dataset for which we would like to delete the datablock specified",
     type: String,
   })
   @ApiParam({
-    name: "aid",
+    name: "did",
     description:
-      "Id of the datablock of this dataset that we would like to delete",
+      "Identifier of the datablock of this dataset that we would like to delete",
     type: String,
   })
   @ApiResponse({
@@ -1701,21 +2019,25 @@ export class DatasetsController {
     description: "No value is returned",
   })
   async findOneDatablockAndRemove(
-    @Param("pid") datasetId: string,
-    @Param("did") datablockId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
+    @Param("did") did: string,
   ): Promise<unknown> {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: datasetId },
-    });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetDatablockDelete,
+    );
+
     if (dataset) {
       // remove datablock
       const res = await this.datablocksService.remove({
-        _id: datablockId,
-        datasetId,
+        _id: did,
+        datasetId: pid,
       });
       // all the remaining datablocks for this dataset
       const remainingDatablocks = await this.datablocksService.findAll({
-        datasetId: datasetId,
+        datasetId: pid,
       });
       // update dataset size and files number
       const updateDatasetDto: PartialUpdateDatasetDto = {
@@ -1740,7 +2062,9 @@ export class DatasetsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.DatasetLogbookRead, DatasetClass),
+  )
   @Get("/:pid/logbook")
   @ApiOperation({
     summary: "Retrive logbook associated with dataset.",
@@ -1749,7 +2073,7 @@ export class DatasetsController {
   @ApiParam({
     name: "pid",
     description:
-      "Id of the dataset for which we would like to delete the datablock specified",
+      "Persistent identifier of the dataset for which we would like to delete the datablock specified",
     type: String,
   })
   @ApiResponse({
@@ -1759,12 +2083,16 @@ export class DatasetsController {
     description: "It returns all messages from specificied Logbook room",
   })
   async findLogbookByPid(
-    @Param("pid") datasetId: string,
+    @Req() request: Request,
+    @Param("pid") pid: string,
     @Query("filters") filters: string,
   ) {
-    const dataset = await this.datasetsService.findOne({
-      where: { pid: datasetId },
-    });
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      pid,
+      Action.DatasetLogbookRead,
+    );
+
     const proposalId = dataset?.proposalId;
 
     if (!proposalId) return null;

@@ -182,7 +182,7 @@ describe("Sample: Simple Sample", () => {
     return request(appUrl)
       .delete("/api/v3/Samples/" + sampleId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });

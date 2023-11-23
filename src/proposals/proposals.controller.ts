@@ -14,6 +14,9 @@ import {
   Req,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
+  Logger,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -30,6 +33,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
@@ -48,7 +52,6 @@ import {
   IFilters,
   ILimitsFilter,
 } from "src/common/interfaces/common.interface";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
 import {
@@ -60,6 +63,7 @@ import {
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -72,25 +76,167 @@ export class ProposalsController {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
+  private generateProposalInstanceForPermissions(
+    proposal: ProposalClass | CreateProposalDto,
+  ): ProposalClass {
+    const proposalInstance = new ProposalClass();
+    proposalInstance.accessGroups = proposal.accessGroups || [];
+    proposalInstance.ownerGroup = proposal.ownerGroup || "";
+    proposalInstance.proposalId = proposal.proposalId || "";
+    proposalInstance.email = proposal.email || "";
+    proposalInstance.isPublished =
+      "isPublished" in proposal ? proposal.isPublished : false;
+
+    return proposalInstance;
+  }
+
+  private async permissionChecker(
+    group: Action,
+    proposal: ProposalClass | CreateProposalDto,
+    request: Request,
+  ) {
+    const proposalInstance = this.generateProposalInstanceForPermissions(
+      proposal as ProposalClass,
+    );
+
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+
+    try {
+      switch (group) {
+        case Action.ProposalsCreate:
+          return (
+            ability.can(Action.ProposalsCreateAny, ProposalClass) ||
+            ability.can(Action.ProposalsCreateOwner, proposalInstance)
+          );
+        case Action.ProposalsRead:
+          return (
+            ability.can(Action.ProposalsReadAny, ProposalClass) ||
+            ability.can(Action.ProposalsReadOneOwner, proposalInstance) ||
+            ability.can(Action.ProposalsReadOneAccess, proposalInstance) ||
+            ability.can(Action.ProposalsReadOnePublic, proposalInstance)
+          );
+        case Action.ProposalsUpdate:
+          return (
+            ability.can(Action.ProposalsUpdateAny, ProposalClass) ||
+            ability.can(Action.ProposalsUpdateOwner, proposalInstance)
+          );
+        case Action.ProposalsDelete:
+          return (
+            ability.can(Action.ProposalsDeleteAny, ProposalClass) ||
+            ability.can(Action.ProposalsDeleteOwner, proposalInstance)
+          );
+        case Action.ProposalsAttachmentCreate:
+          return (
+            ability.can(Action.ProposalsAttachmentCreateAny, ProposalClass) ||
+            ability.can(Action.ProposalsAttachmentCreateOwner, proposalInstance)
+          );
+        case Action.ProposalsAttachmentRead:
+          return (
+            ability.can(Action.ProposalsAttachmentReadAny, ProposalClass) ||
+            ability.can(
+              Action.ProposalsAttachmentReadOwner,
+              proposalInstance,
+            ) ||
+            ability.can(
+              Action.ProposalsAttachmentReadPublic,
+              proposalInstance,
+            ) ||
+            ability.can(Action.ProposalsAttachmentReadAccess, proposalInstance)
+          );
+        case Action.ProposalsAttachmentUpdate:
+          return (
+            ability.can(Action.ProposalsAttachmentUpdateAny, ProposalClass) ||
+            ability.can(Action.ProposalsAttachmentUpdateOwner, proposalInstance)
+          );
+        case Action.ProposalsAttachmentDelete:
+          return (
+            ability.can(Action.ProposalsAttachmentDeleteAny, ProposalClass) ||
+            ability.can(Action.ProposalsAttachmentDeleteOwner, proposalInstance)
+          );
+
+        default:
+          Logger.error("Permission for the action is not specified");
+          return false;
+      }
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  private async checkPermissionsForProposal(
+    request: Request,
+    id: string,
+    group: Action,
+  ) {
+    const proposal = await this.proposalsService.findOne({
+      proposalId: id,
+    });
+
+    if (proposal) {
+      const canDoAction = await this.permissionChecker(
+        group,
+        proposal,
+        request,
+      );
+
+      if (!canDoAction) {
+        throw new ForbiddenException("Unauthorized access");
+      }
+    }
+    return proposal;
+  }
+
+  private async checkPermissionsForProposalCreate(
+    request: Request,
+    proposal: CreateProposalDto,
+    group: Action,
+  ) {
+    if (!proposal) {
+      throw new BadRequestException("Not able to create this proposal");
+    }
+    const canDoAction = await this.permissionChecker(group, proposal, request);
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to create this proposal");
+    }
+    return proposal;
+  }
   updateFiltersForList(
     request: Request,
     mergedFilters: IFilters<ProposalDocument, IProposalFields>,
   ): IFilters<ProposalDocument, IProposalFields> {
     const user: JWTUser = request.user as JWTUser;
+    mergedFilters.where = mergedFilters.where || {};
+
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
-      const canViewTheirOwn = ability.can(Action.ListOwn, ProposalClass);
-
-      if (!canViewAll && canViewTheirOwn) {
-        if (!mergedFilters.where) {
-          mergedFilters.where = {};
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          mergedFilters.where["$or"] = [
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+          ];
+        } else if (canViewOwner) {
+          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+        } else if (canViewPublic) {
+          mergedFilters.where.isPublished = true;
         }
-        mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-        ];
       }
+    } else {
+      mergedFilters.where.isPublished = true;
     }
 
     return mergedFilters;
@@ -99,7 +245,7 @@ export class ProposalsController {
   // POST /proposals
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, ProposalClass),
+    ability.can(Action.ProposalsCreate, ProposalClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
@@ -127,10 +273,14 @@ export class ProposalsController {
     @Req() request: Request,
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<ProposalClass> {
-    const existingProposal = await this.findById(
+    const proposalDTO = await this.checkPermissionsForProposalCreate(
       request,
-      createProposalDto.proposalId,
+      createProposalDto,
+      Action.ProposalsCreate,
     );
+    const existingProposal = await this.proposalsService.findOne({
+      proposalId: createProposalDto.proposalId,
+    });
 
     if (existingProposal) {
       throw new ConflictException(
@@ -138,10 +288,13 @@ export class ProposalsController {
       );
     }
 
-    return this.proposalsService.create(createProposalDto);
+    return this.proposalsService.create(proposalDTO);
   }
 
-  @AllowAny()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.ProposalsCreate, ProposalClass),
+  )
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
   @ApiOperation({
@@ -159,7 +312,7 @@ export class ProposalsController {
       "Check if the proposal provided pass validation. It return true if the validation is passed",
   })
   async isValid(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Req() request: Request,
     @Body() createProposal: unknown,
   ): Promise<{ valid: boolean }> {
     const validatorOptions: ValidatorOptions = {
@@ -179,7 +332,7 @@ export class ProposalsController {
   // GET /proposals
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, ProposalClass),
+    ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get()
   @ApiOperation({
@@ -215,7 +368,7 @@ export class ProposalsController {
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, ProposalClass),
+    ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/fullquery")
   @ApiOperation({
@@ -256,12 +409,31 @@ export class ProposalsController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {
-        fields.userGroups = fields.userGroups ?? [];
-        fields.userGroups.push(...user.currentGroups);
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
       }
     }
 
@@ -269,14 +441,13 @@ export class ProposalsController {
       fields,
       limits,
     };
-
     return this.proposalsService.fullquery(parsedFilters);
   }
 
   // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, ProposalClass),
+    ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/fullfacet")
   @ApiOperation({
@@ -309,12 +480,31 @@ export class ProposalsController {
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, ProposalClass);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      // NOTE: If we have published true we don't add groups at all
       if (!canViewAll) {
-        fields.userGroups = fields.userGroups ?? [];
-        fields.userGroups.push(...user.currentGroups);
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
       }
     }
 
@@ -327,9 +517,9 @@ export class ProposalsController {
   }
 
   // GET /proposals/:id
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, ProposalClass),
+    ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/:pid")
   @ApiOperation({
@@ -351,41 +541,18 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
   ): Promise<ProposalClass | null> {
-    const proposal = await this.proposalsService.findOne({
-      proposalId: proposalId,
-    });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (proposal) {
-      // NOTE: We need ProposalClass instance because casl module can not recognize the type from proposal mongo database model. If other fields are needed can be added later.
-      const proposalInstance = new ProposalClass();
-      proposalInstance._id = proposal._id;
-      proposalInstance.accessGroups = proposal.accessGroups;
-      proposalInstance.ownerGroup = proposal.ownerGroup;
-      proposalInstance.proposalId = proposal.proposalId;
-      proposalInstance.email = proposal.email;
-
-      if (user) {
-        const ability = this.caslAbilityFactory.createForUser(user);
-        const canView =
-          ability.can(Action.Manage, proposalInstance) ||
-          ability.can(Action.Read, proposalInstance);
-
-        if (!canView) {
-          throw new ForbiddenException("Unauthorized access");
-        }
-      } else {
-        throw new ForbiddenException("Unauthorized access");
-      }
-    }
-
+    const proposal = await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsRead,
+    );
     return proposal;
   }
 
   // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, ProposalClass),
+    ability.can(Action.ProposalsUpdate, ProposalClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
@@ -415,9 +582,15 @@ export class ProposalsController {
       "Update an existing proposal and return its representation in SciCat",
   })
   async update(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
     @Body() updateProposalDto: UpdateProposalDto,
   ): Promise<ProposalClass | null> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsUpdate,
+    );
     return this.proposalsService.update(
       { proposalId: proposalId },
       updateProposalDto,
@@ -425,9 +598,9 @@ export class ProposalsController {
   }
 
   // DELETE /proposals/:id
-  @UseGuards()
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, ProposalClass),
+    ability.can(Action.ProposalsDelete, ProposalClass),
   )
   @Delete("/:pid")
   @ApiOperation({
@@ -443,14 +616,22 @@ export class ProposalsController {
     status: 200,
     description: "No value is returned",
   })
-  async remove(@Param("pid") proposalId: string): Promise<unknown> {
+  async remove(
+    @Req() request: Request,
+    @Param("pid") proposalId: string,
+  ): Promise<unknown> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsDelete,
+    );
     return this.proposalsService.remove({ proposalId: proposalId });
   }
 
   // POST /proposals/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, Attachment),
+    ability.can(Action.ProposalsAttachmentCreate, ProposalClass),
   )
   @Post("/:pid/attachments")
   @ApiOperation({
@@ -475,9 +656,16 @@ export class ProposalsController {
       "Create a new attachment for the proposal identified by the pid specified",
   })
   async createAttachment(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsAttachmentCreate,
+    );
+
     const createAttachment = {
       ...createAttachmentDto,
       proposalId: proposalId,
@@ -487,7 +675,9 @@ export class ProposalsController {
 
   // GET /proposals/:pid/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.ProposalsAttachmentRead, ProposalClass),
+  )
   @Get("/:pid/attachments")
   @ApiOperation({
     summary: "It returns all the attachments for the proposal specified.",
@@ -508,15 +698,21 @@ export class ProposalsController {
       "Array with all the attachments associated with the proposal with the pid specified",
   })
   async findAllAttachments(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
   ): Promise<Attachment[]> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsAttachmentRead,
+    );
     return this.attachmentsService.findAll({ proposalId: proposalId });
   }
 
   // PATCH /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, Attachment),
+    ability.can(Action.ProposalsAttachmentUpdate, ProposalClass),
   )
   @Patch("/:pid/attachments/:aid")
   @ApiOperation({
@@ -544,10 +740,16 @@ export class ProposalsController {
       "Update values of the attachment with id specified associated with the proposal with the pid specified",
   })
   async findOneAttachmentAndUpdate(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsAttachmentUpdate,
+    );
     return this.attachmentsService.findOneAndUpdate(
       { _id: attachmentId, proposalId: proposalId },
       updateAttachmentDto,
@@ -557,7 +759,7 @@ export class ProposalsController {
   // DELETE /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, Attachment),
+    ability.can(Action.ProposalsAttachmentDelete, ProposalClass),
   )
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
@@ -583,9 +785,15 @@ export class ProposalsController {
       "Remove the attachment with id specified associated with the proposal with the pid specified",
   })
   async findOneAttachmentAndRemove(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
   ): Promise<unknown> {
+    await this.checkPermissionsForProposal(
+      request,
+      proposalId,
+      Action.ProposalsAttachmentDelete,
+    );
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
       proposalId: proposalId,
@@ -595,7 +803,7 @@ export class ProposalsController {
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, DatasetClass),
+    ability.can(Action.ProposalsDatasetRead, ProposalClass),
   )
   @Get("/:pid/datasets")
   @ApiOperation({
@@ -618,8 +826,44 @@ export class ProposalsController {
       "Array with all the datasets associated with the proposal with the pid specified",
   })
   async findAllDatasets(
+    @Req() request: Request,
     @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
-    return this.datasetsService.findAll({ where: { proposalId } });
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const fields: IDatasetFields = JSON.parse("{}");
+
+    if (!canViewAny) {
+      const canViewAccess = ability.can(
+        Action.DatasetReadManyAccess,
+        DatasetClass,
+      );
+      const canViewOwner = ability.can(
+        Action.DatasetReadManyOwner,
+        DatasetClass,
+      );
+      const canViewPublic = ability.can(
+        Action.DatasetReadManyPublic,
+        DatasetClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = user.currentGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = user.currentGroups ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
+      }
+    }
+
+    const dataset = await this.datasetsService.fullquery({
+      where: { proposalId },
+      fields: fields,
+    });
+
+    return dataset;
   }
 }

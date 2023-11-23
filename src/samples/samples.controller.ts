@@ -11,6 +11,11 @@ import {
   UseInterceptors,
   HttpCode,
   HttpStatus,
+  Logger,
+  InternalServerErrorException,
+  ForbiddenException,
+  BadRequestException,
+  Req,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -27,7 +32,7 @@ import {
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import {
   SampleClass,
@@ -41,7 +46,10 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFilters } from "src/common/interfaces/common.interface";
+import {
+  IFilters,
+  ILimitsFilter,
+} from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
@@ -50,6 +58,9 @@ import {
   samplesFullQueryDescriptionFields,
   samplesFullQueryExampleFields,
 } from "src/common/utils";
+import { Request } from "express";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -59,12 +70,166 @@ export class SamplesController {
     private readonly attachmentsService: AttachmentsService,
     private readonly datasetsService: DatasetsService,
     private readonly samplesService: SamplesService,
+    private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
+  private generateSampleInstanceForPermissions(
+    sample: SampleClass | CreateSampleDto,
+  ): SampleClass {
+    const sampleInstance = new SampleClass();
+    sampleInstance.accessGroups = sample.accessGroups || [];
+    sampleInstance.ownerGroup = sample.ownerGroup || "";
+    sampleInstance.sampleId = sample.sampleId || "";
+    sampleInstance.isPublished = sample.isPublished || false;
+
+    return sampleInstance;
+  }
+  private async permissionChecker(
+    group: Action,
+    sample: SampleClass | CreateSampleDto,
+    request: Request,
+  ) {
+    const sampleInstance = this.generateSampleInstanceForPermissions(
+      sample as SampleClass,
+    );
+
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+
+    try {
+      switch (group) {
+        case Action.SamplesCreate:
+          return (
+            ability.can(Action.SamplesCreateAny, SampleClass) ||
+            ability.can(Action.SamplesCreateOwner, sampleInstance)
+          );
+        case Action.SamplesRead:
+          return (
+            ability.can(Action.SamplesReadAny, SampleClass) ||
+            ability.can(Action.SamplesReadOneOwner, sampleInstance) ||
+            ability.can(Action.SamplesReadOneAccess, sampleInstance) ||
+            ability.can(Action.SamplesReadOnePublic, sampleInstance)
+          );
+        case Action.SamplesUpdate:
+          return (
+            ability.can(Action.SamplesUpdateAny, SampleClass) ||
+            ability.can(Action.SamplesUpdateOwner, sampleInstance)
+          );
+        case Action.SamplesDelete:
+          return (
+            ability.can(Action.SamplesDeleteAny, SampleClass) ||
+            ability.can(Action.SamplesDeleteOwner, sampleInstance)
+          );
+        case Action.SamplesAttachmentCreate:
+          return (
+            ability.can(Action.SamplesAttachmentCreateAny, SampleClass) ||
+            ability.can(Action.SamplesAttachmentCreateOwner, sampleInstance)
+          );
+        case Action.SamplesAttachmentRead:
+          return (
+            ability.can(Action.SamplesAttachmentReadAny, SampleClass) ||
+            ability.can(Action.SamplesAttachmentReadOwner, sampleInstance) ||
+            ability.can(Action.SamplesAttachmentReadPublic, sampleInstance) ||
+            ability.can(Action.SamplesAttachmentReadAccess, sampleInstance)
+          );
+        case Action.SamplesAttachmentUpdate:
+          return (
+            ability.can(Action.SamplesAttachmentUpdateAny, SampleClass) ||
+            ability.can(Action.SamplesAttachmentUpdateOwner, sampleInstance)
+          );
+        case Action.SamplesAttachmentDelete:
+          return (
+            ability.can(Action.SamplesAttachmentDeleteAny, SampleClass) ||
+            ability.can(Action.SamplesAttachmentDeleteOwner, sampleInstance)
+          );
+
+        default:
+          Logger.error("Permission for the action is not specified");
+          return false;
+      }
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  private async checkPermissionsForSample(
+    request: Request,
+    id: string,
+    group: Action,
+  ) {
+    const sample = await this.samplesService.findOne({
+      sampleId: id,
+    });
+
+    if (sample) {
+      const canDoAction = await this.permissionChecker(group, sample, request);
+
+      if (!canDoAction) {
+        throw new ForbiddenException("Unauthorized access");
+      }
+    }
+
+    return sample;
+  }
+
+  private async checkPermissionsForSampleCreate(
+    request: Request,
+    sample: CreateSampleDto,
+    group: Action,
+  ) {
+    if (!sample) {
+      throw new BadRequestException("Not able to create this sample");
+    }
+    const canDoAction = await this.permissionChecker(group, sample, request);
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to create this sample");
+    }
+    return sample;
+  }
+
+  updateFiltersForList(
+    request: Request,
+    mergedFilters: IFilters<SampleDocument, ISampleFields>,
+  ): IFilters<SampleDocument, ISampleFields> {
+    const user: JWTUser = request.user as JWTUser;
+    mergedFilters.where = mergedFilters.where || {};
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.SamplesReadManyAccess,
+          SampleClass,
+        );
+        const canViewOwner = ability.can(
+          Action.SamplesReadManyOwner,
+          SampleClass,
+        );
+        const canViewPublic = ability.can(
+          Action.SamplesReadManyPublic,
+          SampleClass,
+        );
+
+        if (canViewAccess) {
+          mergedFilters.where["$or"] = [
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+          ];
+        } else if (canViewOwner) {
+          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+        } else if (canViewPublic) {
+          mergedFilters.where.isPublished = true;
+        }
+      }
+    } else {
+      mergedFilters.where.isPublished = true;
+    }
+    return mergedFilters;
+  }
   // POST /samples
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, SampleClass),
+    ability.can(Action.SamplesCreate, SampleClass),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<SampleClass>(
@@ -87,13 +252,23 @@ export class SamplesController {
     type: SampleClass,
     description: "Create a new sample and return its representation in SciCat",
   })
-  async create(@Body() createSampleDto: CreateSampleDto): Promise<SampleClass> {
-    return this.samplesService.create(createSampleDto);
+  async create(
+    @Req() request: Request,
+    @Body() createSampleDto: CreateSampleDto,
+  ): Promise<SampleClass> {
+    const sampleDTO = await this.checkPermissionsForSampleCreate(
+      request,
+      createSampleDto,
+      Action.SamplesCreate,
+    );
+    return this.samplesService.create(sampleDTO);
   }
 
   // GET /samples
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesRead, SampleClass),
+  )
   @Get()
   @ApiOperation({
     summary: "It returns a list of samples",
@@ -114,16 +289,20 @@ export class SamplesController {
     isArray: true,
     description: "Return the samples requested",
   })
-  async findAll(@Query("filter") filters?: string): Promise<SampleClass[]> {
-    const sampleFilters: IFilters<SampleDocument, ISampleFields> = JSON.parse(
-      filters ?? "{}",
-    );
+  async findAll(
+    @Req() request: Request,
+    @Query("filter") filters?: string,
+  ): Promise<SampleClass[]> {
+    const sampleFilters: IFilters<SampleDocument, ISampleFields> =
+      this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
     return this.samplesService.findAll(sampleFilters);
   }
 
   // GET /samples/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesRead, SampleClass),
+  )
   @Get("/fullquery")
   @ApiOperation({
     summary: "It returns a list of samples matching the query provided.",
@@ -155,18 +334,52 @@ export class SamplesController {
     description: "Return samples requested",
   })
   async fullquery(
+    @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
   ): Promise<SampleClass[]> {
-    const parsedFilters = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
+    const user: JWTUser = request.user as JWTUser;
+    const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
+    const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.SamplesReadManyAccess,
+          SampleClass,
+        );
+        const canViewOwner = ability.can(
+          Action.SamplesReadManyOwner,
+          SampleClass,
+        );
+        const canViewPublic = ability.can(
+          Action.SamplesReadManyPublic,
+          SampleClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
+      }
+    }
+    const parsedFilters: IFilters<SampleDocument, ISampleFields> = {
+      fields,
+      limits,
     };
     return this.samplesService.fullquery(parsedFilters);
   }
 
   // GET /samples/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesRead, SampleClass),
+  )
   @Get("/metadataKeys")
   @ApiOperation({
     summary:
@@ -191,13 +404,44 @@ export class SamplesController {
     description: "Return sample metadata keys requested",
   })
   async metadataKeys(
-    @Query() { filters }: { filters: string },
+    @Req() request: Request,
+    @Query() filters: { fields?: string; limits?: string },
   ): Promise<string[]> {
-    const parsedInput = JSON.parse(filters ?? "{}");
+    const user: JWTUser = request.user as JWTUser;
 
-    const parsedFilters = {
-      fields: parsedInput.fields ?? {},
-      limits: parsedInput.limits ?? {},
+    const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
+    const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
+    if (user) {
+      const ability = this.caslAbilityFactory.createForUser(user);
+      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.SamplesReadManyAccess,
+          SampleClass,
+        );
+        const canViewOwner = ability.can(
+          Action.SamplesReadManyOwner,
+          SampleClass,
+        );
+        const canViewPublic = ability.can(
+          Action.SamplesReadManyPublic,
+          SampleClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
+      }
+    }
+    const parsedFilters: IFilters<SampleDocument, ISampleFields> = {
+      fields,
+      limits,
     };
 
     return this.samplesService.metadataKeys(parsedFilters);
@@ -205,7 +449,9 @@ export class SamplesController {
 
   // GET /samples/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesRead, SampleClass),
+  )
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns a sample matching the query provided.",
@@ -262,7 +508,9 @@ export class SamplesController {
 
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, SampleClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesRead, SampleClass),
+  )
   @Get("/:id")
   @ApiOperation({
     summary: "It returns the sample requested.",
@@ -278,14 +526,18 @@ export class SamplesController {
     type: SampleClass,
     description: "Return sample with id specified",
   })
-  async findById(@Param("id") id: string): Promise<SampleClass | null> {
+  async findById(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<SampleClass | null> {
+    await this.checkPermissionsForSample(request, id, Action.SamplesRead);
     return this.samplesService.findOne({ sampleId: id });
   }
 
   // PATCH /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, SampleClass),
+    ability.can(Action.SamplesUpdate, SampleClass),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<SampleClass>(
@@ -314,16 +566,18 @@ export class SamplesController {
       "Update an existing sample and return its representation in SciCat",
   })
   async update(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() updateSampleDto: UpdateSampleDto,
   ): Promise<SampleClass | null> {
+    await this.checkPermissionsForSample(request, id, Action.SamplesUpdate);
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
 
   // DELETE /samples/:id
   @UseGuards()
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, SampleClass),
+    ability.can(Action.SamplesDelete, SampleClass),
   )
   @Delete("/:id")
   @ApiOperation({
@@ -339,14 +593,18 @@ export class SamplesController {
     status: HttpStatus.OK,
     description: "No value is returned",
   })
-  async remove(@Param("id") id: string): Promise<unknown> {
+  async remove(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<unknown> {
+    await this.checkPermissionsForSample(request, id, Action.SamplesDelete);
     return this.samplesService.remove({ sampleId: id });
   }
 
   // POST /samples/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, Attachment),
+    ability.can(Action.SamplesAttachmentDelete, SampleClass),
   )
   @Post("/:id/attachments")
   @ApiOperation({
@@ -370,9 +628,15 @@ export class SamplesController {
       "Create a new attachment related to sample id provided and return its representation in SciCat",
   })
   async createAttachments(
+    @Req() request: Request,
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
+    await this.checkPermissionsForSample(
+      request,
+      id,
+      Action.SamplesAttachmentDelete,
+    );
     const sample = await this.samplesService.findOne({ sampleId: id });
     if (sample) {
       const createAttachment: CreateAttachmentDto = {
@@ -387,7 +651,9 @@ export class SamplesController {
 
   // GET /samples/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesAttachmentRead, SampleClass),
+  )
   @Get("/:id/attachments")
   @ApiOperation({
     summary: "It returns the attachments related to a specific sample.",
@@ -405,7 +671,15 @@ export class SamplesController {
     type: Attachment,
     description: "Return attachments related with sample id specified",
   })
-  async findAllAttachments(@Param("id") id: string): Promise<Attachment[]> {
+  async findAllAttachments(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<Attachment[]> {
+    await this.checkPermissionsForSample(
+      request,
+      id,
+      Action.SamplesAttachmentRead,
+    );
     return this.attachmentsService.findAll({ sampleId: id });
   }
 
@@ -432,7 +706,9 @@ export class SamplesController {
 
   // GET /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Attachment))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.SamplesAttachmentRead, SampleClass),
+  )
   @Get("/:id/attachments/:fk")
   @ApiOperation({
     summary: "It returns the attachment related to a specific sample.",
@@ -456,9 +732,15 @@ export class SamplesController {
       "Return one specific attachment by id(fk) related to specified sample id.",
   })
   async findOneAttachment(
+    @Req() request: Request,
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
   ): Promise<Attachment | null> {
+    await this.checkPermissionsForSample(
+      request,
+      sampleId,
+      Action.SamplesAttachmentRead,
+    );
     return this.attachmentsService.findOne({
       id: attachmentId,
       sampleId: sampleId,
@@ -468,7 +750,7 @@ export class SamplesController {
   // DELETE /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, Attachment),
+    ability.can(Action.SamplesAttachmentDelete, SampleClass),
   )
   @Delete("/:id/attachments/:fk")
   @ApiOperation({
@@ -492,9 +774,15 @@ export class SamplesController {
     description: "No value is returned",
   })
   async findOneAttachmentAndRemove(
+    @Req() request: Request,
     @Param("id") sampleId: string,
     @Param("fk") attachmentId: string,
   ): Promise<unknown> {
+    await this.checkPermissionsForSample(
+      request,
+      sampleId,
+      Action.SamplesAttachmentDelete,
+    );
     return this.attachmentsService.findOneAndRemove({
       _id: attachmentId,
       sampleId: sampleId,
@@ -517,7 +805,7 @@ export class SamplesController {
   // GET /samples/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, DatasetClass),
+    ability.can(Action.SamplesDatasetRead, SampleClass),
   )
   @Get("/:id/datasets")
   @ApiOperation({
@@ -537,10 +825,44 @@ export class SamplesController {
     description: "Return all datasets related with sample id specified",
   })
   async findAllDatasets(
+    @Req() request: Request,
     @Param("id") sampleId: string,
   ): Promise<DatasetClass[] | null> {
-    const cond = { where: { sampleId: sampleId } };
-    return this.datasetsService.findAll(cond);
+    const user: JWTUser = request.user as JWTUser;
+    const ability = this.caslAbilityFactory.createForUser(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const fields: IDatasetFields = JSON.parse("{}");
+
+    if (!canViewAny) {
+      const canViewAccess = ability.can(
+        Action.DatasetReadManyAccess,
+        DatasetClass,
+      );
+      const canViewOwner = ability.can(
+        Action.DatasetReadManyOwner,
+        DatasetClass,
+      );
+      const canViewPublic = ability.can(
+        Action.DatasetReadManyPublic,
+        DatasetClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = user.currentGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = user.currentGroups ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
+      }
+    }
+
+    const dataset = await this.datasetsService.fullquery({
+      where: { sampleId },
+      fields: fields,
+    });
+    return dataset;
   }
 
   // PATCH /samples/:id/datasets/:fk

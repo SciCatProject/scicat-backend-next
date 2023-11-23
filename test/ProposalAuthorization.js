@@ -5,7 +5,9 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessToken = null,
+  accessTokenArchiveManager = null,
+  accessTokenIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null;
 
@@ -42,28 +44,49 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     utils.getToken(
       appUrl,
       {
-        username: "proposalIngestor",
+        username: "ingestor",
         password: "aman",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessToken = tokenVal;
+
         utils.getToken(
           appUrl,
           {
-            username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            username: "proposalIngestor",
+            password: "aman",
           },
           (tokenVal) => {
-            accessTokenUser1 = tokenVal;
+            accessTokenIngestor = tokenVal;
             utils.getToken(
               appUrl,
               {
-                username: "user3",
-                password: "70dc489e8ee823ae815e18d664424df2",
+                username: "user1",
+                password: "a609316768619f154ef58db4d847b75e",
               },
               (tokenVal) => {
-                accessTokenUser2 = tokenVal;
-                done();
+                accessTokenUser1 = tokenVal;
+                utils.getToken(
+                  appUrl,
+                  {
+                    username: "user3",
+                    password: "70dc489e8ee823ae815e18d664424df2",
+                  },
+                  (tokenVal) => {
+                    accessTokenUser2 = tokenVal;
+                    utils.getToken(
+                      appUrl,
+                      {
+                        username: "archiveManager",
+                        password: "aman",
+                      },
+                      (tokenVal) => {
+                        accessTokenArchiveManager = tokenVal;
+                        done();
+                      },
+                    );
+                  },
+                );
               },
             );
           },
@@ -133,11 +156,11 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       .expect(401);
   });
 
-  it("proposal ingestors can list all proposals", async () => {
+  it("admin can list all proposals", async () => {
     return request(appUrl)
       .get("/api/v3/proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -145,11 +168,11 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("access proposal 1 as proposal ingestor", async () => {
+  it("access proposal 1 as admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -157,11 +180,11 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("full query for proposals for proposal ingestor", async () => {
+  it("full query for proposals for admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -169,11 +192,11 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("access proposal 2 as proposal ingestor", async () => {
+  it("access proposal 2 as admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -181,11 +204,11 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("access proposal 3 as ingestor", async () => {
+  it("access proposal 3 as admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessToken}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -208,7 +231,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
 
   it("access proposal 1 as user 1", async () => {
     return request(appUrl)
-      .get("/api/v3/proposals/" + encodedProposalPid1)
+      .get("/api/v3/proposals/" + 20170268)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
@@ -325,7 +348,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -334,7 +357,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -343,7 +366,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .delete("/api/v3/Proposals/" + proposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });

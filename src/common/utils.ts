@@ -441,6 +441,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
+  filterQuery["$or"] = [];
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -462,14 +463,20 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"] = [
-        {
-          ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
-        },
-        {
-          accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
-        },
-      ];
+      filterQuery["$or"]?.push({
+        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+      });
+      filterQuery["$or"]?.push({
+        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+      });
+    } else if (key === "ownerGroup") {
+      filterQuery["$or"]?.push({
+        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+      });
+    } else if (key === "accessGroups") {
+      filterQuery["$or"]?.push({
+        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+      });
     } else if (key === "sharedWith") {
       filterQuery["$or"]?.push({
         sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),
@@ -482,6 +489,10 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
+  if (filterQuery["$or"]?.length === 0) {
+    delete filterQuery["$or"];
+  }
 
   return filterQuery;
 };
@@ -888,7 +899,10 @@ const replaceLikeOperatorRecursive = (
     if (k == "like" && typeof input[k] !== "object") {
       // we have encountered a loopback operator like
       output["$regex"] = input[k];
-    } else if (k == "$or" || k == "$and" || k == "$in") {
+    } else if (
+      Array.isArray(input[k]) &&
+      (k == "$or" || k == "$and" || k == "$in")
+    ) {
       output[k] = (input[k] as Array<unknown>).map((v) =>
         typeof v === "string"
           ? v
