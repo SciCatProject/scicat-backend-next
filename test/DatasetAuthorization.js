@@ -4,12 +4,14 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
+const { v4: uuidv4 } = require("uuid");
 
 let accessTokenIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenArchiveManager = null;
+  accessTokenArchiveManager = null,
+  accessTokenAdmin = null;
 
 let datasetPid1 = null,
   encodedDatasetPid1 = null,
@@ -81,7 +83,17 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
-                        done();
+                        utils.getToken(
+                          appUrl,
+                          {
+                            username: "admin",
+                            password: "am2jf70TPNZsSan",
+                          },
+                          (tokenVal) => {
+                            accessTokenAdmin = tokenVal;
+                            done();
+                          },
+                        );
                       },
                     );
                   },
@@ -632,5 +644,191 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(200)
       .expect("Content-Type", /json/);
+  });
+
+  it("0500: admin can add a new raw dataset with specified pid", async () => {
+    const datasetWithPid = {
+      ...TestData.RawCorrect,
+      pid: uuidv4(),
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(datasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+      });
+  });
+
+  it("0510: admin cannot add a new incomplete raw dataset with specified pid", async () => {
+    const incompleteDatasetWithPid = {
+      ...TestData.RawWrong_1,
+      pid: uuidv4(),
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(incompleteDatasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
+  });
+
+  it("0520: admin can add a new raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+      });
+  });
+
+  it("0530: admin cannot add a new incomplete raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(TestData.RawWrong_1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
+  });
+
+  it("0610: user with create dataset groups only should not be able to add a new raw dataset with specified pid", async () => {
+    const datasetWithPid = {
+      ...TestData.RawCorrect,
+      pid: uuidv4(),
+      ownerGroup: "group1",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(datasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
+  });
+
+  it("0620: user with create dataset groups only should be able to add a new raw dataset without specified pid", async () => {
+    const datasetWithPid = {
+      ...TestData.RawCorrect,
+      ownerGroup: "group1",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(datasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+      });
+  });
+
+  it("0630: user with create dataset groups only cannot add a new incomplete raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawWrong_1, ownerGroup: "group1" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
+  });
+
+  it("0700: user with the right access groups can add a new raw dataset with specified pid", async () => {
+    const datasetWithPid = {
+      ...TestData.RawCorrect,
+      pid: uuidv4(),
+      ownerGroup: "group2",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(datasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+      });
+  });
+
+  it("0710: user with the right access groups cannot add a new incomplete raw dataset with specified pid", async () => {
+    const incompleteDatasetWithPid = {
+      ...TestData.RawWrong_1,
+      pid: uuidv4(),
+      ownerGroup: "group2",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(incompleteDatasetWithPid)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
+  });
+
+  it("0720: user with the right access groups can add a new raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawCorrect, ownerGroup: "group2" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("type").and.equal("raw");
+      });
+  });
+
+  it("0730: user with the right access groups cannot add a new incomplete raw dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send({ ...TestData.RawWrong_1, ownerGroup: "group2" })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.statusCode.should.not.be.equal(200);
+        res.body.should.not.have.property("pid");
+      });
   });
 });
