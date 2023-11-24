@@ -13,7 +13,6 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  HttpException,
   Req,
 } from "@nestjs/common";
 import { Request } from "express";
@@ -43,39 +42,6 @@ export class PoliciesController {
     private readonly policiesService: PoliciesService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (queryFilter?.filter) {
-      const jsonQueryFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(queryFilter.filter);
-
-      return jsonQueryFilters;
-    } else if (headers?.filter) {
-      const jsonHeadersFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(headers.filter);
-
-      return jsonHeadersFilters;
-    } else if (headers?.where) {
-      const jsonHeadersWhereFilters: IFilters<PolicyDocument, IPolicyFilter> =
-        JSON.parse(headers.where);
-
-      return jsonHeadersWhereFilters;
-    }
-
-    return {};
-  }
 
   updateMergedFiltersForList(
     request: Request,
@@ -122,11 +88,12 @@ export class PoliciesController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<Policy[]> {
+    const parsedQueryFilter = JSON.parse(queryFilter.filter ?? "{}");
     const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
+      this.updateMergedFiltersForList(request, parsedQueryFilter) as Record<
+        string,
+        unknown
+      >,
     ) as IFilters<PolicyDocument, IPolicyFilter>;
 
     return this.policiesService.findAll(mergedFilters);
