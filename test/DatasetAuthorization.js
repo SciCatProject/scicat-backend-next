@@ -1332,7 +1332,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0800: user with create dataset priviledged groups can add a new raw dataset", async () => {
+  it("0800: user with create dataset privileged groups can add a new raw dataset", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group3",
@@ -1352,7 +1352,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0801: user with create dataset priviledged groups cannot add a new incomplete raw dataset", async () => {
+  it("0801: user with create dataset privileged groups cannot add a new incomplete raw dataset", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group3",
@@ -1370,7 +1370,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0802: user with create dataset priviledged groups can add a new raw dataset with specified pid", async () => {
+  it("0802: user with create dataset privileged groups can add a new raw dataset with specified pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: uuidv4(),
@@ -1391,7 +1391,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0803: user with create dataset priviledged groups cannot add a new raw dataset with specified invalid pid", async () => {
+  it("0803: user with create dataset privileged groups cannot add a new raw dataset with specified invalid pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1410,7 +1410,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0804: user with create dataset priviledged groups cannot add a new invalid raw dataset with specified pid", async () => {
+  it("0804: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: uuidv4(),
@@ -1429,7 +1429,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0805: user with create dataset priviledged groups cannot add a new invalid raw dataset with specified invalid pid", async () => {
+  it("0805: user with create dataset privileged groups cannot add a new invalid raw dataset with specified invalid pid", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1448,7 +1448,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0810: user with create dataset priviledged groups can add a new raw dataset with different owner group", async () => {
+  it("0810: user with create dataset privileged groups can add a new raw dataset with different owner group", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group1",
@@ -1468,7 +1468,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0820: user with create dataset priviledged groups cannot add a new incomplete raw dataset with different owner group", async () => {
+  it("0820: user with create dataset privileged groups cannot add a new incomplete raw dataset with different owner group", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group1",
@@ -1486,7 +1486,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0830: user with create dataset priviledged groups can add a new raw dataset with specified pid and different owner group", async () => {
+  it("0830: user with create dataset privileged groups can add a new raw dataset with specified pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: uuidv4(),
@@ -1507,7 +1507,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0840: user with create dataset priviledged groups cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
+  it("0840: user with create dataset privileged groups cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1526,7 +1526,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0850: user with create dataset priviledged groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
+  it("0850: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: uuidv4(),
@@ -1545,7 +1545,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0860: user with create dataset priviledged groups cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
+  it("0860: user with create dataset privileged groups cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
