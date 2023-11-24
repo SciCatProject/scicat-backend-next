@@ -34,6 +34,8 @@ import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
+  private domainName = process.env.HOST;
+  private smtpMessageFrom;
   constructor(
     private configService: ConfigService,
     private datasetsService: DatasetsService,
@@ -41,7 +43,9 @@ export class JobsService {
     private mailService: MailService,
     private policiesService: PoliciesService,
     @Inject(REQUEST) private request: Request,
-  ) {}
+  ) {
+    this.smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
+  }
 
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
@@ -122,31 +126,9 @@ export class JobsService {
 
   @OnEvent("jobCreated")
   async sendStartJobEmail(context: { instance: JobClass }) {
-    const ids: string[] = context.instance.datasetList.map(
-      (dataset: DatasetDocument) => dataset.pid as string,
-    );
-    const to: string = context.instance.emailJobInitiator;
+    const to: string = context.instance.contactEmail;
+    const cc: string = "";
     const jobType: string = context.instance.type;
-    await this.markDatasetsAsScheduled(ids, jobType);
-
-    const filter: IFilters<DatasetDocument, IDatasetFields> = {
-      where: {
-        pid: {
-          $in: ids,
-        },
-      },
-    };
-
-    const jobData = ["archive", "retrieve"].includes(jobType)
-      ? (await this.datasetsService.findAll(filter)).map((dataset) => ({
-          pid: dataset.pid,
-          ownerGroup: dataset.ownerGroup,
-          sourceFolder: dataset.sourceFolder,
-          size: dataset.size,
-          archivable: dataset.datasetlifecycle?.archivable,
-          retrievable: dataset.datasetlifecycle?.retrievable,
-        }))
-      : [];
 
     const emailContext = {
       domainName: this.domainName,
@@ -154,12 +136,9 @@ export class JobsService {
       jobSubmissionNotification: {
         jobId: context.instance.id,
         jobType,
-        jobData,
       },
     };
-
-    const policy = await this.getPolicy(ids[0]);
-    await this.applyPolicyAndSendEmail(jobType, policy, emailContext, to);
+    await this.sendEmail(to, cc, emailContext);
   }
 
   // Populate email context for finished job notification
@@ -261,84 +240,6 @@ export class JobsService {
         );
       }
     });
-  }
-
-  async markDatasetsAsScheduled(ids: string[], jobType: string) {
-    const statusMessage = {
-      retrieve: "scheduledForRetrieval",
-      archive: "scheduledForArchiving",
-    };
-    const filter = {
-      pid: {
-        $in: ids,
-      },
-    };
-
-    switch (jobType) {
-      case JobType.Archive: {
-        const values = {
-          $set: {
-            "datasetlifecycle.archivable": false,
-            "datasetlifecycle.retrievable": false,
-            [`datasetlifecycle.${jobType}StatusMessage`]:
-              statusMessage[jobType],
-          },
-        };
-        await this.datasetsService.updateAll(filter, values);
-        break;
-      }
-      case JobType.Retrieve: {
-        const values = {
-          $set: {
-            [`datasetlifecycle.${jobType}StatusMessage`]:
-              statusMessage[jobType],
-          },
-        };
-        await this.datasetsService.updateAll(filter, values);
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
-  async getPolicy(datasetId: string): Promise<Partial<Policy>> {
-    try {
-      const dataset = await this.datasetsService.findOne({
-        where: { pid: datasetId },
-      });
-      if (!dataset) {
-        throw new NotFoundException(
-          "Could not find dataset with pid " + datasetId,
-          "JobsService",
-        );
-      }
-      const policy = await this.policiesService.findOne({
-        ownerGroup: dataset.ownerGroup,
-      });
-
-      if (policy) {
-        return policy;
-      }
-    } catch (error) {
-      const message = "Error when looking for Policy of pgroup " + error;
-      Logger.error("Dataset ID: " + datasetId, "JobsService");
-      Logger.error(message);
-    }
-
-    Logger.log(
-      "No policy found for dataset with id: " + datasetId,
-      "JobsService",
-    );
-    Logger.log("Returning default policy instead", "JobsService");
-    // this should not happen anymore, but kept as additional safety belt
-    const defaultPolicy: Partial<Policy> = {
-      archiveEmailNotification: true,
-      retrieveEmailNotification: true,
-      archiveEmailsToBeNotified: [],
-      retrieveEmailsToBeNotified: [],
-    };
-    return defaultPolicy;
   }
 
   async applyPolicyAndSendEmail(
