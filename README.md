@@ -73,7 +73,15 @@ More information are provided in the official documentation.
 
 Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
 
-- `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat,user"
+- `ADMIN_GROUPS` [string] _Optional_ Comma separated list of admin groups with admin permission assigned to the listed users. Example: "admin, ingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `CREATE_DATASET_GROUPS` [string] _Optional_ Comma seperated list of create dataset groups. Users belong to the listed groups can create dataset with/without PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `CREATE_DATASET_WITH_PID_GROUPS` [string] _Optional_ Comma seperated list of create dataset with pid groups. Users belong to the listed groups can create dataset with PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `DELETE_GROUPS` [string] _Optional_ Comma seperated list of delete groups. Users belong to the listed groups can delete any dataset, origDatablocks, datablocks etc. For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `DATASET_CREATION_VALIDATION_ENABLED` [boolean] Flag to enable/disable dataset validation to validate if requested new dataset is valid with given regular expression. Preconfigure **DATASET_CREATION_VALIDATION_REGEX** variable is required. Default value: false
+- `DATASET_CREATION_VALIDATION_REGEX` [string] Regular expression validation for new dataset request. Default value: ""
+- `PROPOSAL_GROUPS` [string] _Optional_ Comma separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `SAMPLE_GROUPS` [string] _Optional_ Comma separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
+- `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat, user"
 - `ACCESS_GROUPS_SERVICE_TOKEN` [string] _Optional_ Authentication token used if access groups are obtained from a third party service. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
 - `ACCESS_GROUP_SERVICE_API_URL` [string] _Optional_ URL of the service providing the users' access groups. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
 - `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
@@ -117,6 +125,15 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `SMTP_SECURE` [string] _Optional_ Secure of SMTP server.
 - `POLICY_PUBLICATION_SHIFT` [integer] _Optional_ Embargo period expressed in years. Default value: 3 years
 - `POLICY_RETENTION_SHIFT` [integer] _Optional_ Retention period (aka how long the facility will hold on to data) expressed in years. Default value: -1 (data will be hold indefinitely)
+
+- `ELASTICSEARCH_ENABLED` [string] Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". Defaults to "no"
+- `ES_HOST` [string] Host of Elasticsearch server instance
+- `ES_USERNAME` [string] _Optional_ Elasticsearch username that can be customized when loads Elasticsearch server. Default value: 'elastic'
+- `ES_PASSWORD` [string] Elasticsearch password that can be customized when loads Elasticsearch server.
+- `MONGODB_COLLECTION` [string] Collection name to be mapped into specified Elasticsearch index. Used for data synchronization between mongoDB and Elasticsearch index.
+- `ES_MAX_RESULT` [number] Maximum records can be indexed into Elasticsearch. Default value: 10000
+- `ES_FIELDS_LIMIT` [number] The total number of fields in an index. Default value: 1000
+- `ES_REFRESH` [string] If set to `wait_for` Elasticsearch will wait till data is insereted to specificied index then return response. Unless you have a good reason to wait for the change to become visible, always use `false` (the default setting).
 
 ## Migrating from the old SciCat Backend
 
