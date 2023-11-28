@@ -41,7 +41,7 @@ import {
 } from "./interfaces/published-data.interface";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { RegisteredInterceptor } from "./interceptors/registered.interceptor";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, QueryOptions } from "mongoose";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
@@ -133,26 +133,24 @@ export class PublishedDataController {
   async count(
     @Query() filter?: { filter: string; fields: string },
   ): Promise<ICount> {
-    const jsonFilters: IPublishedDataFilters =
-      filter && filter.filter ? JSON.parse(filter.filter) : {};
-    const jsonFields: FilterQuery<PublishedDataDocument> =
-      filter && filter.fields ? JSON.parse(filter.fields) : {};
-    const whereFilters: FilterQuery<PublishedDataDocument> =
-      jsonFilters && jsonFilters.where
-        ? {
-            ...jsonFilters.where,
-            ...jsonFields,
-          }
-        : {
-            ...jsonFields,
-          };
-    const publishedDataFilters: IPublishedDataFilters = {
-      where: whereFilters,
+    const jsonFilters: IPublishedDataFilters = filter?.filter
+      ? JSON.parse(filter.filter)
+      : {};
+    const jsonFields: FilterQuery<PublishedDataDocument> = filter?.fields
+      ? JSON.parse(filter.fields)
+      : {};
+
+    const filters: FilterQuery<PublishedDataDocument> = {
+      ...jsonFilters.where,
+      ...jsonFields,
     };
-    if (jsonFilters && jsonFilters.limits) {
-      publishedDataFilters.limits = jsonFilters.limits;
-    }
-    return this.publishedDataService.count(publishedDataFilters);
+
+    const options: QueryOptions = {
+      limit: jsonFilters?.limits?.limit,
+      skip: jsonFilters?.limits?.skip,
+    };
+
+    return this.publishedDataService.countDocuments(filters, options);
   }
 
   // GET /publisheddata/formpopulate
