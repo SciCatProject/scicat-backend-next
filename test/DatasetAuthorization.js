@@ -677,9 +677,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -717,9 +717,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -736,9 +736,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -755,9 +755,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -793,9 +793,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -833,9 +833,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -852,9 +852,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -871,9 +871,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -909,9 +909,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -928,9 +928,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -947,9 +947,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -966,9 +966,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -985,9 +985,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1003,9 +1003,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1021,9 +1021,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1040,9 +1040,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1059,9 +1059,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1078,9 +1078,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1097,9 +1097,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1135,9 +1135,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1175,9 +1175,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1194,9 +1194,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1213,9 +1213,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1231,9 +1231,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1249,9 +1249,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1268,9 +1268,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1287,9 +1287,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(403)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1306,9 +1306,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1325,9 +1325,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1363,9 +1363,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1403,9 +1403,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1422,9 +1422,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1441,9 +1441,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1479,9 +1479,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1519,9 +1519,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1538,9 +1538,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
@@ -1557,9 +1557,9 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.statusCode.should.not.be.equal(200);
         res.body.should.not.have.property("pid");
       });
   });
