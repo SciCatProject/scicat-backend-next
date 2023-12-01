@@ -12,7 +12,6 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
-
 export const convertArrayToSI = (
   inputValue: number[],
   inputUnit: string,
@@ -20,14 +19,14 @@ export const convertArrayToSI = (
   try {
       const newUnit = unit(inputUnit).toSI().toJSON().unit;
       if(inputValue && inputValue.length){
-	  const value = Array.from(
-	      inputValue,
-	      (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
-	  );
-	  return { valueSI: value, unitSI: newUnit };
+        const value = Array.from(
+          inputValue,
+          (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
+        );
+        return { valueSI: value, unitSI: newUnit };
       }
       else {
-	  return { valueSI: inputValue, unitSI: newUnit };
+        return { valueSI: inputValue, unitSI: newUnit };
       }
  } catch (error) {
     console.error(error);
