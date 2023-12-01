@@ -30,7 +30,6 @@
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.test functionalAccounts.json"
   },
   "dependencies": {
-    "@angular/cli": "^17.0.5",
     "@casl/ability": "^6.3.2",
     "@elastic/elasticsearch": "^8.9.0",
     "@nestjs-modules/mailer": "^1.8.1",
@@ -72,9 +71,9 @@
     "uuid": "^9.0.0"
   },
   "overrides": {
-    "pac-resolver": {
+   "pac-resolver": {
       "degenerator": "~5"
-    }
+   }	   
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.1",
