@@ -18,17 +18,17 @@ export const convertArrayToSI = (
   inputUnit: string,
 ): { valueSI: number[]; unitSI: string } => {
   try {
-    if(inputValue && inputValue.length){
-       const newUnit = unit(inputUnit).toSI().toJSON().unit;
-       const value = Array.from(
-	       inputValue,
-	       (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
-       );
-      return { valueSI: value, unitSI: newUnit };
-   }
-    else {
-    return { valueSI: inputValue, unitSI: inputUnit };
-    }
+      const newUnit = unit(inputUnit).toSI().toJSON().unit;
+      if(inputValue && inputValue.length){
+	  const value = Array.from(
+	      inputValue,
+	      (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
+	  );
+	  return { valueSI: value, unitSI: newUnit };
+      }
+      else {
+	  return { valueSI: inputValue, unitSI: newUnit };
+      }
  } catch (error) {
     console.error(error);
     return { valueSI: inputValue, unitSI: inputUnit };
