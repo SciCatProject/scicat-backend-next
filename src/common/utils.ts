@@ -19,12 +19,12 @@ export const convertArrayToSI = (
 ): { valueSI: number[]; unitSI: string } => {
   try {
     if(inputValue && inputValue.length){
-       const quantity = unit(inputValue[0], inputUnit).toSI().toJSON();
+       const newUnit = unit(inputUnit).toSI().toJSON().unit;
        const value = Array.from(
 	       inputValue,
-	       (iValue) => unit(iValue, inputUnit).toSI().toJSON().value
+	       (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
        );
-      return { valueSI: value, unitSI: quantity.unit };
+      return { valueSI: value, unitSI: newUnit };
    }
     else {
     return { valueSI: inputValue, unitSI: inputUnit };
@@ -41,7 +41,7 @@ export const convertToSI = (
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    const quantity = unit(inputValue, inputUnit).toSI().toJSON();
+    const quantity = unit(inputValue, inputUnit).to(unit(inputUnit).toSI().toJSON().unit).toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
     console.error(error);
