@@ -21,11 +21,10 @@ export const convertArrayToSI = (
     if (inputValue && inputValue.length) {
       const value = Array.from(
         inputValue,
-        (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value
+        (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value,
       );
       return { valueSI: value, unitSI: newUnit };
-    }
-    else {
+    } else {
       return { valueSI: inputValue, unitSI: newUnit };
     }
   } catch (error) {
@@ -39,7 +38,8 @@ export const convertToSI = (
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    const quantity = unit(inputValue, inputUnit).to(unit(inputUnit).toSI().toJSON().unit).toJSON();
+    const quantity = unit(inputValue, inputUnit)
+      .to(unit(inputUnit).toSI().toJSON().unit).toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
     console.error(error);
@@ -67,15 +67,15 @@ export const appendSIUnitToPhysicalQuantity = <T extends object>(object: T) => {
         ] as unknown as number;
       }
     });
-    if (value !== undefined && Array.isArray(value) && unit && unit.length > 0) {
+    if (value !== undefined &&
+      Array.isArray(value) && unit && unit.length > 0) {
       const { valueSI, unitSI } = convertArrayToSI(value, unit);
       updatedObject[key as keyof T] = {
         ...instance,
         valueSI,
         unitSI,
       };
-    }
-    else if (value !== undefined && unit && unit.length > 0) {
+    } else if (value !== undefined && unit && unit.length > 0) {
       const { valueSI, unitSI } = convertToSI(value, unit);
       updatedObject[key as keyof T] = {
         ...instance,
