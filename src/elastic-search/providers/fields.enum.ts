@@ -22,3 +22,10 @@ export enum QueryFields {
   DatasetName = "datasetName",
   Description = "description",
 }
+
+export enum SortFields {
+  DatasetName = "datasetName",
+  DatasetNameKeyword = "datasetName.keyword",
+  ScientificMetadata = "scientificMetadata",
+  ScientificMetadataRunNumberValue = "scientificMetadata.runnumber.value",
+}
