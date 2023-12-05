@@ -150,6 +150,7 @@ jobs:
           DELETE_GROUPS: archivemanager
           CREATE_DATASET_GROUPS: group1,group2,group3
           CREATE_DATASET_WITH_PID_GROUPS: "group2"
+          CREATE_DATASET_PRIVILEGED_GROUPS: "group3"
           ACCESS_GROUPS_STATIC_VALUES: "ess"
           PROPOSAL_GROUPS: "proposalingestor"
           SAMPLE_GROUPS: ""
