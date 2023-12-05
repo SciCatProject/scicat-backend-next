@@ -122,9 +122,12 @@ export class DatasetsService {
         filter.fields as IDatasetFields,
         modifiers.limit,
         modifiers.skip,
+        modifiers.sort,
       );
+
       datasets = await this.datasetModel
         .find({ _id: { $in: esResult.data } })
+        .sort(modifiers.sort)
         .exec();
     }
 
