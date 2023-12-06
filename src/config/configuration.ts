@@ -15,6 +15,7 @@ const configuration = () => {
   Logger.log("- Create dataset groups : " + createDatasetGroups);
 
   return {
+    jobConfiguration: [],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
