@@ -26,34 +26,4 @@ export class CreateJobDto {
   @IsObject()
   readonly jobParams: Record<string, unknown>;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Id for the job to be created.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly id?: string;
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    default: [],
-    description:
-      "Array of existing job ids which need to finish before this job can run.",
-  })
-  @IsOptional()
-  @IsString({ each: true })
-  readonly dependsOn?: string[];
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Email of the contact person for this job.",
-  })
-  @IsOptional()
-  @IsEmail()
-  readonly contactEmail?: string;
 }
