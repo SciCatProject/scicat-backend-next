@@ -13,7 +13,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
-import { Job } from "src/jobs/schemas/job.schema";
+import { JobClass } from "src/jobs/schemas/job.schema";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Policy } from "src/policies/schemas/policy.schema";
@@ -32,7 +32,7 @@ type Subjects =
       | typeof Datablock
       | typeof DatasetClass
       | typeof Instrument
-      | typeof Job
+      | typeof JobClass
       | typeof Logbook
       | typeof OrigDatablock
       | typeof Policy
@@ -163,7 +163,7 @@ export class CaslAbilityFactory {
     //  can(Action.Manage, Instrument);
     //}
 
-    can(Action.Manage, Job);
+    can(Action.Manage, JobClass);
 
     can(Action.Read, Logbook);
 

@@ -21,7 +21,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Job, JobClass, JobDocument } from "./schemas/job.schema";
+import { JobSchema, JobClass, JobDocument } from "./schemas/job.schema";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
@@ -242,15 +242,16 @@ export class JobsController {
    * Check the the user is authenticated when requesting other job types than public job
    */
   checkPermission = (request: Request, type: string) => {
-    const unauthenticated = request.user === null;
-    if (unauthenticated && type !== JobType.Public) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    // const unauthenticated = request.user === null;
+    // if (unauthenticated && type !== "public") {
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.UNAUTHORIZED,
+    //     },
+    //     HttpStatus.UNAUTHORIZED,
+    //   );
+    // }
+    return; // TODO stub
   };
 
   /**
@@ -326,6 +327,7 @@ export class JobsController {
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
+    // run all actions in the config
     return jobInstance;
   }
 
@@ -354,13 +356,15 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<string> {
+    // Load configuration, validate that request matches the current configuration
     const jobInstance = await this.validateJob(createJobDto, request);
+    // Check authorization
     await this.instanceAuthorization(createJobDto,jobInstance);
 
-
+    // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
 
-    // perform the action that is specified in the create portion of hte job configuration
+    // perform the action that is specified in the create portion of the job configuration
     const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
     
     // update job instance with results of job create action

@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { JobConfig, loadJobConfig } from "./jobconfig";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -14,8 +15,9 @@ const configuration = () => {
   Logger.log("- Delete groups : " + deleteGroups);
   Logger.log("- Create dataset groups : " + createDatasetGroups);
 
+  const job_configs = loadJobConfig("jobconfig.json");
   return {
-    jobConfiguration: [],
+    jobConfiguration: job_configs,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),

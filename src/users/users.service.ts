@@ -42,6 +42,7 @@ export class UsersService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // TODO move this into configuration.ts
     let functionalAccounts =
       this.configService.get<CreateUserDto[]>("functionalAccounts");
 
