@@ -27,7 +27,7 @@ or the SciCat team at ESS.
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
 2. `npm install`
 3. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
-4. _Optional_ Add _functionalAccounts.json_ file to project root folder. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
+4. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
 5. `npm run start:dev`
 6. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 7. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
@@ -36,7 +36,7 @@ or the SciCat team at ESS.
 
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
 2. docker-compose -f docker-compose.dev.yaml up -d
-3. _Optional_ Mount _functionalAccounts.json_ file to a volume in the container. If not set up, the functional accounts in [functionalAccounts.json.example](/functionalAccounts.json.example) will be created automatically.
+3. _Optional_ Mount [functionalAccounts.json](#local-user-accounts) file to a volume in the container to create local users.
 4. _Optional_ change the container env variables
 5. Attach to the container
 6. `npm run start:dev`
@@ -68,6 +68,14 @@ If SciCat runs in a containeraized environment, like docker or kubernetes, you c
 2. define the necessary environment variables directly in your container.
 
 More information are provided in the official documentation.
+
+### Local User Accounts
+
+Providing a file called _functionalAccounts.json_ at the root of the project, locally or in the container, will
+automatically create the specified accounts on startup. If this file is not provided, no local users will be created.
+
+Follow the structure of [functionalAccounts.json.minimal.example](/functionalAccounts.json.minimal.example) to create
+your own _functionalAccounts.json_ file.
 
 ## Environment variables
 
