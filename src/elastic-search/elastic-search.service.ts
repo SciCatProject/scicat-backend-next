@@ -12,6 +12,7 @@ import {
   SearchTotalHits,
   SearchRequest,
   AggregationsAggregate,
+  SortOrder,
 } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import {
@@ -30,6 +31,8 @@ import {
   initialSyncTransform,
   transformFacets,
 } from "./helpers/utils";
+
+import { SortFields } from "./providers/fields.enum";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -255,6 +258,7 @@ export class ElasticSearchService implements OnModuleInit {
     searchParam: IDatasetFields,
     limit = 20,
     skip = 0,
+    sort?: Record<string, SortOrder>,
   ): Promise<{ totalCount: number; data: string[] }> {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
@@ -263,14 +267,47 @@ export class ElasticSearchService implements OnModuleInit {
 
       const searchOptions = {
         track_scores: true,
-        body: searchQuery,
+        sort: [{ _score: { order: "desc" } }],
+        query: searchQuery.query,
         from: skip,
         size: limit,
-        sort: [{ _score: { order: "desc" } }],
         min_score: defaultMinScore,
         track_total_hits: true,
         _source: [""],
       } as SearchRequest;
+
+      if (sort) {
+        const sortField = Object.keys(sort)[0];
+        const sortDirection = Object.values(sort)[0];
+
+        // NOTE: To sort datasetName field we need to use datasetName.keyword field,
+        // as elasticsearch does not have good support for text type field sorting
+        const isDatasetName = sortField === SortFields.DatasetName;
+        const fieldForSorting = isDatasetName
+          ? SortFields.DatasetNameKeyword
+          : sortField;
+
+        const isNestedField = fieldForSorting.includes(
+          SortFields.ScientificMetadata,
+        );
+
+        if (isNestedField) {
+          searchOptions.sort = [
+            {
+              [`${SortFields.ScientificMetadataRunNumberValue}`]: {
+                order: sortDirection,
+                nested: {
+                  path: SortFields.ScientificMetadata,
+                },
+              },
+            },
+          ];
+        } else {
+          searchOptions.sort = [
+            { [fieldForSorting]: { order: sortDirection } },
+          ];
+        }
+      }
 
       const body = await this.esService.search(searchOptions);
 
