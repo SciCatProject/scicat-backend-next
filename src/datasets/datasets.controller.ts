@@ -91,6 +91,7 @@ import {
   fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
+import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -103,6 +104,7 @@ import configuration from "src/config/configuration";
   CreateAttachmentDto,
   CreateDerivedDatasetDto,
   CreateRawDatasetDto,
+  HistoryClass,
   TechniqueClass,
   RelationshipClass,
 )

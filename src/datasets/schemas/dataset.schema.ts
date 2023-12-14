@@ -287,11 +287,13 @@ export class DatasetClass extends OwnableClass {
   version?: string;
 
   @ApiProperty({
-    type: HistoryClass,
+    type: "array",
+    items: { $ref: getSchemaPath(HistoryClass) },
     required: false,
+    default: [],
     description: "List of objects containing old and new values.",
   })
-  @Prop({ type: [HistorySchema], required: false })
+  @Prop({ type: [HistorySchema], required: false, default: [] })
   history?: HistoryClass[];
 
   @ApiProperty({
