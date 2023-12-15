@@ -175,3 +175,52 @@ jobs:
           cp functionalAccounts.json.test functionalAccounts.json
           docker-compose up --build -d
           npm run test:api
+
+  generate_and_test_openapi_client:
+    name: Generate an test OpenAPI Client libraries
+    needs: [install-and-cache]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout your code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Generate your OpenAPI document (if you don't write it manually)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        id: cached-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+
+      # Todo: May need reworking in order to not block
+      - name: Start Backend for later tests and generate openapi.json
+        run: npm run start
+
+      # Use the action to generate a client package
+      # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
+      # https://github.com/openapi-generators/openapitools-generator-action
+      # https://openapi-generator.tech/docs/generators/
+      - name: Generate Python Client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: python-nextgen
+          openapi-file: openapi.json
+          config-file: .github/openapi/python-generator-config.yml
+
+      # Run the test the generated client
+      - name: Run tests with the client
+        run: |
+          cd openapi/python
+          echo "Run some tests"
+
+      # Upload code to its own repository
+      - name: Git Push to its client libraries repository
+        run: |
+          ./git_push.sh

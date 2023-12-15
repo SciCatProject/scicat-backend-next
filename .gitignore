@@ -7,6 +7,10 @@ loggers.json
 # Configs
 .env
 
+# OpenAPI
+openapi
+openapi.json
+
 # Logs
 logs
 *.log
