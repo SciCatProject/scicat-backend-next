@@ -16,7 +16,7 @@ import {
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import { PartialUpdatePublishedDataDto, UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -227,7 +227,7 @@ export class PublishedDataController {
   @Patch("/:id")
   async update(
     @Param("id") id: string,
-    @Body() updatePublishedDataDto: UpdatePublishedDataDto,
+    @Body() updatePublishedDataDto: PartialUpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
     return this.publishedDataService.update(
       { doi: id },
@@ -437,7 +437,7 @@ export class PublishedDataController {
     @Body() data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { _id, doi, ...publishedData } = data;
+    const { doi, ...publishedData } = data;
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 

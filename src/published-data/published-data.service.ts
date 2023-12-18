@@ -10,7 +10,7 @@ import {
   createFullqueryFilter,
 } from "src/common/utils";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import { PartialUpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import {
   ICount,
   IPublishedDataFilters,
@@ -84,7 +84,7 @@ export class PublishedDataService {
 
   async update(
     filter: FilterQuery<PublishedDataDocument>,
-    updatePublishedDataDto: UpdatePublishedDataDto,
+    updatePublishedDataDto: PartialUpdatePublishedDataDto,
   ): Promise<PublishedData | null> {
     const username = (this.request.user as JWTUser).username;
     return this.publishedDataModel
