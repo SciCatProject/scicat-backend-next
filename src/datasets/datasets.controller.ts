@@ -60,7 +60,7 @@ import { UpdateOrigDatablockDto } from "src/origdatablocks/dto/update-origdatabl
 import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
-import { UpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
+import { PartialUpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
 import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
@@ -1960,7 +1960,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Param("did") did: string,
-    @Body() updateDatablockDto: UpdateDatablockDto,
+    @Body() updateDatablockDto: PartialUpdateDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
