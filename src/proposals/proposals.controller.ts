@@ -41,7 +41,7 @@ import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { PartialUpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -743,7 +743,7 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
-    @Body() updateAttachmentDto: UpdateAttachmentDto,
+    @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForProposal(
       request,
