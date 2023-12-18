@@ -21,7 +21,7 @@ import {
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
-import { UpdateProposalDto } from "./dto/update-proposal.dto";
+import { PartialUpdateProposalDto } from "./dto/update-proposal.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -571,9 +571,9 @@ export class ProposalsController {
     description: "Id of the proposal to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateProposalDto)
+  @ApiExtraModels(PartialUpdateProposalDto)
   @ApiBody({
-    type: UpdateProposalDto,
+    type: PartialUpdateProposalDto,
   })
   @ApiResponse({
     status: 200,
@@ -584,7 +584,7 @@ export class ProposalsController {
   async update(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-    @Body() updateProposalDto: UpdateProposalDto,
+    @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
     await this.checkPermissionsForProposal(
       request,
