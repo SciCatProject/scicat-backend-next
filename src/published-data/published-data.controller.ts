@@ -16,7 +16,10 @@ import {
 } from "@nestjs/common";
 import { PublishedDataService } from "./published-data.service";
 import { CreatePublishedDataDto } from "./dto/create-published-data.dto";
-import { PartialUpdatePublishedDataDto, UpdatePublishedDataDto } from "./dto/update-published-data.dto";
+import {
+  PartialUpdatePublishedDataDto,
+  UpdatePublishedDataDto,
+} from "./dto/update-published-data.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
