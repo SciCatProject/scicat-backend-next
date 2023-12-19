@@ -1,5 +1,4 @@
 import { Logger } from "@nestjs/common";
-
 const configuration = () => {
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
@@ -37,6 +36,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
+    nodeEnv: process.env.NODE_ENV,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -100,6 +100,12 @@ const configuration = () => {
           : false,
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
+    },
+    grayLog: {
+      server: process.env.GRAYLOG_SERVER,
+      port: process.env.GRAYLOG_PORT,
+      env: process.env.NODE_ENV,
+      enabled: process.env.GRAYLOG_ENABLED === "true" ?? false,
     },
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
