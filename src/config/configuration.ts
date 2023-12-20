@@ -104,6 +104,7 @@ const configuration = () => {
     grayLog: {
       server: process.env.GRAYLOG_SERVER,
       port: process.env.GRAYLOG_PORT,
+      service: process.env.GRAYLOG_SERVICE,
       env: process.env.NODE_ENV,
       enabled: process.env.GRAYLOG_ENABLED === "true" ?? false,
     },
