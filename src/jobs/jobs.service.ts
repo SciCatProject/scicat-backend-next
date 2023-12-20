@@ -1,21 +1,15 @@
 import {
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
   Scope,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
-import { OnEvent } from "@nestjs/event-emitter";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { readFileSync } from "fs";
-import { compile } from "handlebars";
 import { FilterQuery, Model, PipelineStage, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
-import { MailService } from "src/common/mail.service";
 import {
   addCreatedByFields,
   addUpdatedByField,
@@ -23,29 +17,16 @@ import {
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
-import { DatasetsService } from "src/datasets/datasets.service";
-import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
-import { PoliciesService } from "src/policies/policies.service";
-import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
-  private domainName = process.env.HOST;
-  private smtpMessageFrom;
   constructor(
-    private configService: ConfigService,
-    private datasetsService: DatasetsService,
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
-    private mailService: MailService,
-    private policiesService: PoliciesService,
     @Inject(REQUEST) private request: Request,
-  ) {
-    this.smtpMessageFrom = this.configService.get<string>("smtp.messageFrom");
-  }
+  ) {}
 
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
@@ -122,182 +103,5 @@ export class JobsService {
 
   async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
     return this.jobModel.findOneAndRemove(filter).exec();
-  }
-
-  @OnEvent("jobCreated")
-  async sendStartJobEmail(context: { instance: JobClass }) {
-    const to: string = context.instance.contactEmail;
-    const cc: string = "";
-    const jobType: string = context.instance.type;
-
-    const emailContext = {
-      domainName: this.domainName,
-      subject: `Your ${jobType} job submitted successfully`,
-      jobSubmissionNotification: {
-        jobId: context.instance.id,
-        jobType,
-      },
-    };
-    await this.sendEmail(to, cc, emailContext);
-  }
-
-  // Populate email context for finished job notification
-  @OnEvent("jobUpdated")
-  async sendFinishJobEmail(context: {
-    instance: JobClass;
-    hookState: { oldData: JobClass[] };
-  }) {
-    // Iterate through list of jobs that were updated
-    // Iterate in case of bulk update send out email to each job
-    context.hookState.oldData.forEach(async (oldData) => {
-      const currentData = await this.findOne({ id: oldData.id });
-      //Check that statusMessage has changed. Only run on finished job
-      if (
-        currentData &&
-        currentData.jobStatusMessage !== oldData.jobStatusMessage &&
-        currentData.jobStatusMessage.indexOf("finish") !== -1
-      ) {
-        const ids = currentData.datasetList.map(
-          (dataset) => dataset.pid as string,
-        );
-        const to = currentData.emailJobInitiator;
-        const {
-          type: jobType,
-          id: jobId,
-          jobStatusMessage,
-          jobResultObject,
-        } = currentData;
-        const failure = jobStatusMessage.indexOf("finishedSuccessful") === -1;
-        const filter = {
-          where: {
-            pid: {
-              $in: ids,
-            },
-          },
-        };
-
-        const datasets = (await this.datasetsService.findAll(filter)).map(
-          (dataset) => ({
-            pid: dataset.pid,
-            ownerGroup: dataset.ownerGroup,
-            sourceFolder: dataset.sourceFolder,
-            size: dataset.size,
-            archiveStatusMessage:
-              dataset.datasetlifecycle?.archiveStatusMessage,
-            retrieveStatusMessage:
-              dataset.datasetlifecycle?.retrieveStatusMessage,
-            archiveReturnMessage:
-              dataset.datasetlifecycle?.archiveReturnMessage,
-            retrieveReturnMessage:
-              dataset.datasetlifecycle?.retrieveReturnMessage,
-            retrievable: dataset.datasetlifecycle?.retrievable,
-          }),
-        );
-
-        // split result into good and bad
-        const good = datasets.filter((dataset) => dataset.retrievable);
-        const bad = datasets.filter((dataset) => !dataset.retrievable);
-
-        // add cc message in case of failure to scicat archivemanager
-        const cc =
-          bad.length > 0 && this.smtpMessageFrom ? this.smtpMessageFrom : "";
-        const creationTime = currentData.creationTime
-          .toISOString()
-          .replace(/T/, " ")
-          .replace(/\..+/, "");
-        const additionalMsg =
-          jobType === JobType.Retrieve && good.length > 0
-            ? "You can now use the command 'datasetRetriever' to move the retrieved datasets to their final destination."
-            : "";
-
-        const emailContext = {
-          domainName: this.domainName,
-          subject: ` Your ${jobType} job from ${creationTime} is finished ${
-            failure ? "with failure" : "successfully"
-          }`,
-          jobFinishedNotification: {
-            jobId,
-            jobType,
-            failure,
-            creationTime,
-            jobStatusMessage,
-            jobResultObject: jobResultObject,
-            datasets: {
-              good,
-              bad,
-            },
-            additionalMsg,
-          },
-        };
-
-        const policy = await this.getPolicy(ids[0]);
-        await this.applyPolicyAndSendEmail(
-          jobType,
-          policy,
-          emailContext,
-          to,
-          cc,
-        );
-      }
-    });
-  }
-
-  async applyPolicyAndSendEmail(
-    jobType: string,
-    policy: Partial<Policy>,
-    emailContext: Record<string, unknown>,
-    to: string,
-    cc = "",
-  ) {
-    const { failure } = emailContext;
-
-    switch (jobType) {
-      case JobType.Archive: {
-        const { archiveEmailNotification, archiveEmailsToBeNotified } = policy;
-        if (archiveEmailsToBeNotified) {
-          to += "," + archiveEmailsToBeNotified.join();
-        }
-
-        // Always notify on failure
-        if (archiveEmailNotification || failure) {
-          await this.sendEmail(to, cc, emailContext);
-        }
-        break;
-      }
-      case JobType.Retrieve: {
-        const { retrieveEmailNotification, retrieveEmailsToBeNotified } =
-          policy;
-
-        if (retrieveEmailsToBeNotified) {
-          to += "," + retrieveEmailsToBeNotified.join();
-        }
-
-        // Always notify on failure
-        if (retrieveEmailNotification || failure) {
-          await this.sendEmail(to, cc, emailContext);
-        }
-        break;
-      }
-      default: {
-        // For other jobs like reset job
-        await this.sendEmail(to, cc, emailContext);
-        break;
-      }
-    }
-  }
-
-  async sendEmail(
-    to: string,
-    cc: string,
-    emailContext: Record<string, unknown>,
-  ) {
-    const htmlTemplate = readFileSync(
-      "src/common/email-templates/job-template.html",
-      "utf-8",
-    );
-    const emailTemplate = compile(htmlTemplate);
-    const email = emailTemplate(emailContext);
-    const subject = emailContext.subject as string;
-    await this.mailService.sendMail(to, cc, subject, null, email);
   }
 }
