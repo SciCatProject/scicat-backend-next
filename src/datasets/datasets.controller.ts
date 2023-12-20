@@ -98,6 +98,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import configuration from "src/config/configuration";
+import { DatasetType } from "./dataset-type.enum";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -469,7 +470,6 @@ export class DatasetsController {
       | UpdateDerivedDatasetDto
     >,
   ) {
-    const type = inputDatasetDto.type;
     const validateOptions: ValidatorOptions = {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -480,14 +480,19 @@ export class DatasetsController {
       },
     };
 
-    if (type !== "raw" && type !== "derived") {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Wrong dataset type!",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+    if (
+      inputDatasetDto instanceof
+      (CreateRawDatasetDto || CreateDerivedDatasetDto)
+    ) {
+      if (!(inputDatasetDto.type in DatasetType)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "Wrong dataset type!",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     const outputDatasetDto = plainToInstance(dto, inputDatasetDto);
@@ -1089,13 +1094,10 @@ export class DatasetsController {
       throw new NotFoundException();
     }
 
-    // NOTE: Type is a must have because validation is based on it
-    const datasetType = updateDatasetDto.type ?? foundDataset.type;
-
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     await this.validateDataset(
-      { ...updateDatasetDto, type: datasetType },
-      datasetType === "raw"
+      updateDatasetDto,
+      foundDataset.type === "raw"
         ? PartialUpdateRawDatasetDto
         : PartialUpdateDerivedDatasetDto,
     );
@@ -1175,7 +1177,7 @@ export class DatasetsController {
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     const outputDto = await this.validateDataset(
       updateDatasetDto,
-      updateDatasetDto.type === "raw"
+      foundDataset.type === "raw"
         ? UpdateRawDatasetDto
         : UpdateDerivedDatasetDto,
     );
