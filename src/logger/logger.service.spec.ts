@@ -9,7 +9,7 @@ import { ConfigService } from "@nestjs/config";
 import { setLogger, GrayLogLogger } from "@user-office-software/duo-logger";
 import { GrayLogger } from "./logger.service";
 
-describe("ElasticSearchService", () => {
+describe("LoggerService", () => {
   let service: GrayLogger;
 
   const mockConfigService = {
