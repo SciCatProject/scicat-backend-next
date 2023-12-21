@@ -386,7 +386,6 @@ export class OrigDatablocksController {
 
     logger.logInfo("Original datablocks data is downloaded", {
       user: user,
-      data: result,
     });
 
     return result;

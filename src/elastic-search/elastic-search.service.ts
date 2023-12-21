@@ -94,7 +94,6 @@ export class ElasticSearchService implements OnModuleInit {
       logger.logInfo("ElasticSearch Connected.", {
         host: this.host,
         username: this.username,
-        password: this.password,
         index: this.defaultIndex,
       });
     } catch (error) {
