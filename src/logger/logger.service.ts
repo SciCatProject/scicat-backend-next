@@ -8,9 +8,11 @@ export class GrayLogger extends ConsoleLogger {
   private port: string;
   private env: string;
   private service: string;
+  private facility: string;
   private grayLogEnabled: boolean;
   constructor(private readonly configService: ConfigService) {
     super();
+    this.facility = this.configService.get<string>("grayLog.facility") || "";
     this.server = this.configService.get<string>("grayLog.server") || "";
     this.port = this.configService.get<string>("grayLog.port") || "";
     this.env = this.configService.get<string>("nodeEnv") || "unset";
@@ -18,9 +20,9 @@ export class GrayLogger extends ConsoleLogger {
     this.grayLogEnabled =
       this.configService.get<boolean>("grayLog.enabled") || false;
     if (this.grayLogEnabled) {
-      if (!this.server || !this.port) {
+      if (!this.server || !this.port || !this.facility) {
         Logger.error(
-          "GrayLogger is enabled but server/port environment variable is not configured",
+          "GrayLogger is enabled but facility/server/port environment variable is not configured",
           "GrayLogger Initilazation failed",
         );
       } else {
@@ -29,7 +31,7 @@ export class GrayLogger extends ConsoleLogger {
             this.server,
             parseInt(this.port),
             {
-              facility: "DMSC",
+              facility: this.facility,
               environment: this.env,
               service: this.service,
             },

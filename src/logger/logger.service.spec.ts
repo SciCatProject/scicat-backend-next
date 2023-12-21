@@ -23,6 +23,8 @@ describe("LoggerService", () => {
           return true;
         case "nodeEnv":
           return "fake";
+        case "grayLog.facility":
+          return "fake";
         case "grayLog.service":
           return "test-service";
         default:
@@ -58,7 +60,7 @@ describe("LoggerService", () => {
     expect(GrayLogLogger).toHaveBeenCalledWith(
       "fake-server",
       1234,
-      { facility: "DMSC", environment: "fake", service: "test-service" },
+      { facility: "fake", environment: "fake", service: "test-service" },
       [],
     );
   });
