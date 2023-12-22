@@ -1,9 +1,10 @@
-import { loadJobConfig, getRegisteredCreateActions, registerCreateAction} from "./jobconfig";
+import { loadJobConfig, getRegisteredCreateActions} from "./jobconfig";
 import { LogJobAction } from "./actions/logaction";
+import { registerDefaultActions } from "./configuration";
 
 describe("Job configuration", () => {
-    // TODO should be done automatically on init
-    registerCreateAction(LogJobAction.type, (data) => new LogJobAction(data))
+    // TODO should be done automatically on init?
+    registerDefaultActions();
 
     it("LogJobAction should be registered", async () => {
         const actions = getRegisteredCreateActions();

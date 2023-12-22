@@ -12,6 +12,40 @@
       "action": {
         "type": "log"
       }
+    },
+    "post": [
+    {
+      "action": {
+        "type": "email",
+        "mailer": {
+          "host": "smtp.myinstitution.ext",
+          "port": 465,
+          "secure": true,
+          "auth": {
+            "user": "scicatuser",
+            "pass": ""
+          }
+        },
+        "to": "{{ join job.recipients ' '}}",
+        "subject": "Archive job {{job.pid}} has completed.",
+        "body": "Dear {{job.owner}},\n\nArchive job {{job.pid}} has completed. Results: {{job.status}}\n"
+      }
+    },
+    {
+      "filter": {
+        "status": "SUCCESSFUL"
+      },
+      "action": {
+        "type": "url",
+        "url": "myscicat.myinstitution.ext/datablock/archived",
+        "verb": "post",
+        "headers": {
+          "AuthBearer": "{{secrets.jwt_token}}"
+        },
+        "body": "{ structure to create archive files }"
+      }
     }
-  }
+  ]
+}
+
 ]

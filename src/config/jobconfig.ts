@@ -19,7 +19,17 @@ import { ApiProperty } from "@nestjs/swagger";
 import * as yaml from 'js-yaml';
 import { JobClass } from "../jobs/schemas/job.schema";
 import { CreateJobDto } from "../jobs/dto/create-job.dto";
+import { UpdateJobStatusDto } from "../jobs/dto/update-jobstatus.dto";
 
+
+/**
+ * Job types with special meanings in SciCat
+ */
+export enum JobType {
+    Archive = "archive",
+    Retrieve = "retrieve",
+    Reset = "reset",
+}
 
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
@@ -29,13 +39,13 @@ export class JobConfig {
 
     create: JobCreateAction[];
     // read: JobReadAction[];
-    // update: JobUpdateAction[];
+    update: JobUpdateAction[];
 
-    constructor(type: string, create: JobCreateAction[]=[], read=[], update=[]) {
+    constructor(type: string, create: JobCreateAction[]=[], read=[], update: JobUpdateAction[]=[]) {
         this.type = type;
         this.create = create;
         // this.read = read;
-        // this.update = update;
+        this.update = update;
     }
 
     /**
@@ -46,8 +56,8 @@ export class JobConfig {
     static parse(data: Record<string, any>) {
         const type = data["type"];
         const create = "create" in data ? oneOrMore(data["create"]).map((json) => parseCreateAction(json["action"])) : [];
-        const read = undefined;
-        const update = undefined;
+        const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
+        const update = "update" in data ? oneOrMore(data["update"]).map((json) => parseUpdateAction(json["action"])) : [];
         return new JobConfig(type, create, read, update);
     }
 }
@@ -78,22 +88,58 @@ export interface JobAction<DtoType> {
 }
 
 export type JobCreateAction = JobAction<CreateJobDto>;
+// export type JobReadAction = JobAction<ReadJobDto>;
+export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
 
 
 /// Action registration
 
-type JobCreateActionCtor = (json: Record<string,any>) => JobCreateAction;
+type JobActionCtor<T> = (json: Record<string,any>) => JobAction<T>;
 
-const createActions: Record<string, JobCreateActionCtor> = {};
+const createActions: Record<string, JobActionCtor<CreateJobDto>> = {};
+// const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
+const updateActions: Record<string, JobActionCtor<UpdateJobStatusDto>> = {};
 /**
  * Registers an action to handle jobs of a particular type
  * @param action 
  */
-export function registerCreateAction(action_type: string, action: JobCreateActionCtor ) {
+export function registerCreateAction(action_type: string, action: JobActionCtor<CreateJobDto> ) {
     createActions[action_type] = action;
 }
-export function getRegisteredCreateActions() {
+/**
+ * List of action types with a registered action
+ * @returns 
+ */
+export function getRegisteredCreateActions(): string[] {
     return Object.keys(createActions);
+}
+// /**
+//  * Registers an action to handle jobs of a particular type
+//  * @param action 
+//  */
+// export function registerReadAction(action_type: string, action: JobActionCtor<ReadJobDto> ) {
+//     reportErroreadActions[action_type] = action;
+// }
+// /**
+//  * List of action types with a registered action
+//  * @returns 
+//  */
+// export function getRegisteredReadActions(): string[] {
+//     return Object.keys(readActions);
+// }
+/**
+ * Registers an action to handle jobs of a particular type
+ * @param action 
+ */
+export function registerUpdateAction(action_type: string, action: JobActionCtor<UpdateJobStatusDto> ) {
+    updateActions[action_type] = action;
+}
+/**
+ * List of action types with a registered action
+ * @returns 
+ */
+export function getRegisteredUpdateActions(): string[] {
+    return Object.keys(updateActions);
 }
 /// Parsing
 
@@ -134,5 +180,41 @@ function parseCreateAction(data: Record<string, any>): JobCreateAction {
         throw SyntaxError(`No handler found for actions of type ${type}`)
 
     return createActions[type](data);
+}
+// /**
+//  * Given a JSON object configuring a JobConfigAction.
+//  * 
+//  * This is dispatched to registered constructors (see registerCreateAction) based on
+//  * the "type" field of data. Other parameters are action-specific.
+//  * @param data JSON configuration data
+//  * @returns 
+//  */
+// function parseReadAction(data: Record<string, any>): JobReadAction {
+//     if(!("type" in data))
+//         throw SyntaxError(`No action.type in ${JSON.stringify(data)}`);
+    
+//     const type = data.type;
+//     if(!(type in readActions))
+//         throw SyntaxError(`No handler found for actions of type ${type}`)
+
+//     return readActions[type](data);
+// }
+/**
+ * Given a JSON object configuring a JobConfigAction.
+ * 
+ * This is dispatched to registered constructors (see registerUpdateAction) based on
+ * the "type" field of data. Other parameters are action-specific.
+ * @param data JSON configuration data
+ * @returns 
+ */
+function parseUpdateAction(data: Record<string, any>): JobUpdateAction {
+    if(!("type" in data))
+        throw SyntaxError(`No action.type in ${JSON.stringify(data)}`);
+    
+    const type = data.type;
+    if(!(type in updateActions))
+        throw SyntaxError(`No handler found for actions of type ${type}`)
+
+    return updateActions[type](data);
 }
 

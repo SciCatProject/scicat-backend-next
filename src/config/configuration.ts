@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { JobConfig, loadJobConfig, registerCreateAction } from "./jobconfig";
+import { JobConfig, loadJobConfig, registerCreateAction, registerUpdateAction } from "./jobconfig";
 import { LogJobAction } from "./actions/logaction";
 
 const configuration = () => {
@@ -17,7 +17,7 @@ const configuration = () => {
   Logger.log("- Create dataset groups : " + createDatasetGroups);
 
   // Register built-in job actions
-  registerCreateAction(LogJobAction.type, (data) => new LogJobAction(data))
+  registerDefaultActions();
   const job_configs = loadJobConfig("jobconfig.json");
 
   return {
@@ -192,6 +192,14 @@ const configuration = () => {
     },
   };
 };
+
+/**
+ * Registers built-in JobActions. Should be called exactly once.
+ */
+export function registerDefaultActions() {
+  registerCreateAction(LogJobAction.type, (data) => new LogJobAction(data));
+  registerUpdateAction(LogJobAction.type, (data) => new LogJobAction(data));
+}
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
 
