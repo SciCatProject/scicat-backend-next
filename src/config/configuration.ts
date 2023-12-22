@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common";
-import { JobConfig, loadJobConfig } from "./jobconfig";
+import { JobConfig, loadJobConfig, registerCreateAction } from "./jobconfig";
+import { LogJobAction } from "./actions/logaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -10,12 +11,15 @@ const configuration = () => {
     process.env.CREATE_DATASET_GROUPS || ("all" as string);
 
   Logger.log("Config SETUP");
-  Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
+  Logger.log("- Access groups static values : " + accessGroupsStaticValues);
   Logger.log("- Admin groups : " + adminGroups);
   Logger.log("- Delete groups : " + deleteGroups);
   Logger.log("- Create dataset groups : " + createDatasetGroups);
 
+  // Register built-in job actions
+  registerCreateAction(LogJobAction.type, (data) => new LogJobAction(data))
   const job_configs = loadJobConfig("jobconfig.json");
+
   return {
     jobConfiguration: job_configs,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],

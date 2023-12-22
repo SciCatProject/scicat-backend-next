@@ -1,79 +1,17 @@
-{
-  "type": "archive",
-  "actions": {
+[
+  {
+    "type": "archive",
     "create": [
       {
-        "authorization": "all",
-        "method": {
-          "type": "url",
-          "url": "afsd",
-          "verb": "get"
+        "action": {
+          "type": "log"
         }
       }
     ],
-    "update": [
-      {
-        "authorization": "archiver_service",
-        "validate": [
-          {
-            "type": "job",
-            "field": "status",
-            "allowed": [
-              "IN_PROGRESS",
-              "SUCCESSFUL",
-              "FAILED"
-            ],
-            "transitions": {
-              "CREATED": [
-                "IN_PROGRESS"
-              ],
-              "IN_PROGRESS": [
-                "SUCCESSFUL",
-                "FAILED"
-              ]
-            }
-          }
-        ],
-        "method": {
-          "type": "rabbitmq",
-          "server": "myrabbitmq.myinstitution.ext",
-          "queue": "archive_updates",
-          "templates": {
-            "status": "{{job.status}}",
-            "message": "{{job.message}}",
-            "job": "{{job.id}}",
-            "token": "{{secrets.jwt_token}}"
-          }
-        }
+    "update": {
+      "action": {
+        "type": "log"
       }
-    ],
-    "post": [
-      {
-        "method": {
-          "type": "email",
-          "smtp": {
-            "url": "myemailserver.myinstitution.ext",
-            "user": "scicatuser"
-          },
-          "to": "{{ join job.recipients ' '}}",
-          "subject": "Archive job {{job.pid}} has completed.",
-          "body": "Dear {{job.owner}},\n\nArchive job {{job.pid}} has completed. Results: {{job.status}}\n"
-        }
-      },
-      {
-        "filter": {
-          "status": "SUCCESSFUL"
-        },
-        "method": {
-          "type": "url",
-          "url": "myscicat.myinstitution.ext/datablock/archived",
-          "verb": "post",
-          "headers": {
-            "AuthBearer": "{{secrets.jwt_token}}"
-          },
-          "body": "{ structure to create archive files }"
-        }
-      }
-    ]
+    }
   }
-}
+]
