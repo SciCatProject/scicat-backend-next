@@ -65,7 +65,10 @@ export class ElasticSearchService implements OnModuleInit {
     this.defaultIndex =
       this.configService.get<string>("elasticSearch.defaultIndex") || "";
 
-    if (!this.host || !this.username || !this.password || !this.defaultIndex) {
+    if (
+      this.esEnabled &&
+      (!this.host || !this.username || !this.password || !this.defaultIndex)
+    ) {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
       );
