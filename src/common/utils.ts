@@ -17,7 +17,10 @@ export const convertToSI = (
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    const quantity = unit(inputValue, inputUnit).toSI().toJSON();
+    // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
+    const quantity = unit(inputValue, inputUnit)
+      .to(unit(inputUnit).toSI().toJSON().unit)
+      .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
     console.error(error);
