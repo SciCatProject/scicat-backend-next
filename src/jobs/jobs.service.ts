@@ -52,7 +52,7 @@ export class JobsService {
 
   async fullquery(
     filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-  ): Promise<JobDocument[]> {
+  ): Promise<JobClass[] | null> {
     const filterQuery: FilterQuery<JobDocument> =
       createFullqueryFilter<JobDocument>(this.jobModel, "id", filter.fields);
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
@@ -74,11 +74,11 @@ export class JobsService {
     return await this.jobModel.aggregate(pipeline).exec();
   }
 
-  async findOne(filter: FilterQuery<JobDocument>): Promise<JobDocument | null> {
+  async findOne(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
     return this.jobModel.findOne(filter).exec();
   }
 
-  async statusUpdate(updateJobStatusDto: UpdateJobStatusDto): Promise<JobDocument | null> {
+  async statusUpdate(updateJobStatusDto: UpdateJobStatusDto): Promise<JobClass | null> {
     const id = updateJobStatusDto.id;
     const existingJob = await this.jobModel.findOne({ pid: id }).exec();
     if (!existingJob) {
@@ -101,7 +101,7 @@ export class JobsService {
     return updatedJob;
   }
 
-  async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
-    return this.jobModel.findOneAndRemove(filter).exec();
+  async delete(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
+    return this.jobModel.findOneAndDelete(filter).exec();
   }
 }
