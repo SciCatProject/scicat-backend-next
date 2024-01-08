@@ -9,14 +9,18 @@ import {
 import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { GrayLogger } from "./logger/logger.service";
+import { AllExceptionsFilter, GrayLogger } from "./logger/logger.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
 
-  app.useLogger(app.get(GrayLogger));
+  const grayLogger = app.get<GrayLogger>(GrayLogger);
+
+  app.useLogger(grayLogger);
+
+  app.useGlobalFilters(new AllExceptionsFilter(grayLogger));
 
   app.enableCors();
   app.setGlobalPrefix("api/v3");

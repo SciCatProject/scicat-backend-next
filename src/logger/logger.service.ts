@@ -1,9 +1,23 @@
-import { Injectable, ConsoleLogger, Logger } from "@nestjs/common";
+import {
+  Injectable,
+  ConsoleLogger,
+  Logger,
+  LoggerService,
+} from "@nestjs/common";
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from "@nestjs/common";
+
 import { ConfigService } from "@nestjs/config";
 import { GrayLogLogger, setLogger } from "@user-office-software/duo-logger";
 
 @Injectable()
-export class GrayLogger extends ConsoleLogger {
+export class GrayLogger extends ConsoleLogger implements LoggerService {
+  private grayLogger: GrayLogLogger | null = null;
   private server: string;
   private port: string;
   private env: string;
@@ -26,19 +40,86 @@ export class GrayLogger extends ConsoleLogger {
           "GrayLogger Initilazation failed",
         );
       } else {
-        setLogger(
-          new GrayLogLogger(
-            this.server,
-            parseInt(this.port),
-            {
-              facility: this.facility,
-              environment: this.env,
-              service: this.service,
-            },
-            [],
-          ),
-        );
+        this.grayLogger = new GrayLogLogger(this.server, parseInt(this.port), {
+          facility: this.facility,
+          environment: this.env,
+          service: this.service,
+        });
+
+        setLogger(this.grayLogger);
       }
     }
+  }
+  log(message: string, context?: Record<string, unknown> | string) {
+    if (this.grayLogger) {
+      this.grayLogger.logInfo(message, { context });
+    }
+
+    super.log(message, context);
+  }
+
+  error(
+    message: string,
+    trace?: string,
+    context?: Record<string, unknown> | string,
+  ) {
+    if (this.grayLogger) {
+      this.grayLogger.logError(message, { trace, context });
+    }
+    super.error(message, trace, context);
+  }
+
+  warn(message: string, context?: Record<string, unknown> | string) {
+    if (this.grayLogger) {
+      this.grayLogger.logWarn(message, { context });
+    }
+    super.warn(message, context);
+  }
+
+  debug(message: string, context?: Record<string, unknown> | string) {
+    if (this.grayLogger) {
+      this.grayLogger.logDebug(message, { context });
+    }
+    super.debug(message, context);
+  }
+
+  exception(
+    message: string,
+    exception: unknown,
+    context?: Record<string, unknown>,
+  ) {
+    if (this.grayLogger) {
+      this.grayLogger.logException(message, { exception, ...context });
+    }
+  }
+}
+@Catch()
+@Injectable()
+export class AllExceptionsFilter implements ExceptionFilter {
+  constructor(private readonly logger: GrayLogger) {}
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const message =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : "Internal server error";
+
+    this.logger.exception("An exception occurred", exception, {
+      requestUrl: request.url,
+      statusCode: status,
+    });
+    response.status(status).json({
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      message,
+    });
   }
 }
