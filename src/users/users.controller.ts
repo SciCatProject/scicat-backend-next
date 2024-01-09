@@ -101,6 +101,58 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
+  )
+  @UseInterceptors(CreateUserSettingsInterceptor)
+  @Get("/my/self")
+  async getMyUser(
+    @Req() request: Request,
+  ): Promise<Omit<User, "password"> | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      (request.user as JWTUser)._id
+    );
+    return this.usersService.findById(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
+  )
+  @Get("/my/identity")
+  async getMyUserIdentity(
+    @Req() request: Request,
+  ): Promise<UserIdentity | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId
+    );
+    return this.usersService.findByIdUserIdentity(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies(
+    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
+  )
+  @Get("/my/settings")
+  async getMySettings(
+    @Req() request: Request,
+  ): Promise<UserSettings | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId,
+    );
+    return this.usersService.findByIdUserSettings(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
