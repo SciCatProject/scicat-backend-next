@@ -40,11 +40,16 @@ export class GrayLogger extends ConsoleLogger implements LoggerService {
           "GrayLogger Initilazation failed",
         );
       } else {
-        this.grayLogger = new GrayLogLogger(this.server, parseInt(this.port), {
-          facility: this.facility,
-          environment: this.env,
-          service: this.service,
-        });
+        this.grayLogger = new GrayLogLogger(
+          this.server,
+          parseInt(this.port),
+          {
+            facility: this.facility,
+            environment: this.env,
+            service: this.service,
+          },
+          [],
+        );
 
         setLogger(this.grayLogger);
       }
