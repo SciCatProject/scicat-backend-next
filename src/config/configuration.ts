@@ -21,6 +21,8 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
+  const grayLogLevels = process.env.GRAYLOG_LOG_LEVELS || ("" as string);
+
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
@@ -108,6 +110,7 @@ const configuration = () => {
       facility: process.env.GRAYLOG_FACILITY,
       env: process.env.NODE_ENV,
       enabled: process.env.GRAYLOG_ENABLED === "true" ?? false,
+      levels: grayLogLevels.split(",").map((v) => v.trim()) ?? [],
     },
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)

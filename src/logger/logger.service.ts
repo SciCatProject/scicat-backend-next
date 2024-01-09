@@ -15,6 +15,13 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { GrayLogLogger, setLogger } from "@user-office-software/duo-logger";
 
+enum LEVEL {
+  INFO = "info",
+  ERROR = "error",
+  WARN = "warn",
+  DEBUG = "debug",
+  EXCEPTION = "exception",
+}
 @Injectable()
 export class CustomLogger extends ConsoleLogger implements LoggerService {
   private grayLogger: GrayLogLogger | null = null;
@@ -24,6 +31,7 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
   private service: string;
   private facility: string;
   private grayLogEnabled: boolean;
+  private grayLogLevels: string[];
   constructor(private readonly configService: ConfigService) {
     super();
     this.facility = this.configService.get<string>("grayLog.facility") || "";
@@ -33,11 +41,14 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
     this.service = this.configService.get<string>("grayLog.service") || "unset";
     this.grayLogEnabled =
       this.configService.get<boolean>("grayLog.enabled") || false;
+    this.grayLogLevels =
+      this.configService.get<[string]>("grayLog.levels") || [];
+
     if (this.grayLogEnabled) {
       if (!this.server || !this.port || !this.facility) {
         Logger.error(
           "GrayLogger is enabled but facility/server/port environment variable is not configured",
-          "GrayLogger Initilazation failed",
+          "GrayLogger",
         );
       } else {
         this.grayLogger = new GrayLogLogger(
@@ -50,16 +61,18 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
           },
           [],
         );
-
         setLogger(this.grayLogger);
+        super.log(
+          `Enabled GrayLogger levels: ${this.grayLogLevels}`,
+          "GrayLogger",
+        );
       }
     }
   }
   log(message: string, context?: Record<string, unknown> | string) {
-    if (this.grayLogger) {
+    if (this.grayLogger && this.grayLogLevels.includes(LEVEL.INFO)) {
       this.grayLogger.logInfo(message, { context });
     }
-
     super.log(message, context);
   }
 
@@ -68,7 +81,7 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
     trace?: string,
     context?: Record<string, unknown> | string,
   ) {
-    if (this.grayLogger) {
+    if (this.grayLogger && this.grayLogLevels.includes(LEVEL.ERROR)) {
       this.grayLogger.logError(message, { trace, context });
     }
     super.error(message, trace, context);
@@ -82,7 +95,7 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
   }
 
   debug(message: string, context?: Record<string, unknown> | string) {
-    if (this.grayLogger) {
+    if (this.grayLogger && this.grayLogLevels.includes(LEVEL.DEBUG)) {
       this.grayLogger.logDebug(message, { context });
     }
     super.debug(message, context);
@@ -93,8 +106,8 @@ export class CustomLogger extends ConsoleLogger implements LoggerService {
     exception: unknown,
     context?: Record<string, unknown>,
   ) {
-    if (this.grayLogger) {
-      this.grayLogger.logException(message, { exception, ...context });
+    if (this.grayLogger && this.grayLogLevels.includes(LEVEL.EXCEPTION)) {
+      this.grayLogger.logException(message, exception, context);
     }
   }
 }
@@ -117,14 +130,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : "Internal server error";
 
-    this.logger.exception("An exception occurred", exception, {
+    this.logger.exception(JSON.stringify(message), exception, {
       requestUrl: request.url,
+      requestUser: request.user,
       statusCode: status,
     });
-    response.status(status).json({
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      message,
-    });
+    response.status(status).json(message);
   }
 }
