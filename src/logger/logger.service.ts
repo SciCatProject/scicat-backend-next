@@ -16,7 +16,7 @@ import { ConfigService } from "@nestjs/config";
 import { GrayLogLogger, setLogger } from "@user-office-software/duo-logger";
 
 @Injectable()
-export class GrayLogger extends ConsoleLogger implements LoggerService {
+export class CustomLogger extends ConsoleLogger implements LoggerService {
   private grayLogger: GrayLogLogger | null = null;
   private server: string;
   private port: string;
@@ -101,7 +101,7 @@ export class GrayLogger extends ConsoleLogger implements LoggerService {
 @Catch()
 @Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: GrayLogger) {}
+  constructor(private readonly logger: CustomLogger) {}
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();

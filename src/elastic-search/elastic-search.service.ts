@@ -33,7 +33,6 @@ import {
 } from "./helpers/utils";
 
 import { SortFields } from "./providers/fields.enum";
-import { logger } from "@user-office-software/duo-logger";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -70,10 +69,6 @@ export class ElasticSearchService implements OnModuleInit {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
       );
-      logger.logError(
-        "Missing ENVIRONMENT variables for elastic search connection",
-        {},
-      );
     }
   }
 
@@ -91,16 +86,8 @@ export class ElasticSearchService implements OnModuleInit {
       }
       this.connected = true;
       Logger.log("Elasticsearch Connected", "SerchService");
-      logger.logInfo("ElasticSearch Connected.", {
-        host: this.host,
-        username: this.username,
-        index: this.defaultIndex,
-      });
     } catch (error) {
       Logger.error(error, "onModuleInit failed-> ElasticSearchService");
-      logger.logError("Initial connection to ElasticSearch failed.", {
-        error,
-      });
     }
   }
 

@@ -7,10 +7,10 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 
 import { setLogger, GrayLogLogger } from "@user-office-software/duo-logger";
-import { GrayLogger } from "./logger.service";
+import { CustomLogger } from "./logger.service";
 
 describe("LoggerService", () => {
-  let service: GrayLogger;
+  let service: CustomLogger;
 
   const mockConfigService = {
     get: jest.fn().mockImplementation((key: string) => {
@@ -36,21 +36,21 @@ describe("LoggerService", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        GrayLogger,
+        CustomLogger,
         {
           provide: ConfigService,
           useValue: mockConfigService,
         },
       ],
     }).compile();
-    service = module.get<GrayLogger>(GrayLogger);
+    service = module.get<CustomLogger>(CustomLogger);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should properly load GrayLogger", () => {
+  it("should properly load CustomLogger", () => {
     expect(service).toBeDefined();
   });
 
