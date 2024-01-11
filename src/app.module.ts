@@ -31,7 +31,7 @@ import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
-import { LoggerModule } from "./logger/logger.module";
+import { LoggerModule } from "./loggers/logger.module";
 
 @Module({
   imports: [

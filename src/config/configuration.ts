@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 const configuration = () => {
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
@@ -21,12 +20,10 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
-  const grayLogLevels = process.env.GRAYLOG_LOG_LEVELS || ("" as string);
-
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups);
+  // Logger.log("- Delete groups : " + deleteGroups );
   // Logger.log("- Create dataset groups : " + createDatasetGroups);
   // Logger.log(
   //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
@@ -38,6 +35,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
+    loggerConfigs: [],
     nodeEnv: process.env.NODE_ENV,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -83,6 +81,7 @@ const configuration = () => {
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
+
     oidc: {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
@@ -110,7 +109,6 @@ const configuration = () => {
       facility: process.env.GRAYLOG_FACILITY,
       env: process.env.NODE_ENV,
       enabled: process.env.GRAYLOG_ENABLED === "true" ?? false,
-      levels: grayLogLevels.split(",").map((v) => v.trim()) ?? [],
     },
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)

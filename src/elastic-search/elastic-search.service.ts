@@ -165,7 +165,7 @@ export class ElasticSearchService implements OnModuleInit {
       );
       return HttpStatus.CREATED;
     } catch (error) {
-      Logger.error("createIndex failed-> ElasticSearchService", error);
+      console.error("createIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `createIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -192,7 +192,7 @@ export class ElasticSearchService implements OnModuleInit {
     try {
       return await this.esService.count({ index });
     } catch (error) {
-      Logger.error("getCount failed-> ElasticSearchService", error);
+      console.error("getCount failed-> ElasticSearchService", error);
       throw new HttpException(
         `getCount failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -227,7 +227,7 @@ export class ElasticSearchService implements OnModuleInit {
         "Elasticsearch",
       );
     } catch (error) {
-      Logger.error("updateIndex failed-> ElasticSearchService", error);
+      console.error("updateIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `updateIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -239,7 +239,7 @@ export class ElasticSearchService implements OnModuleInit {
     try {
       return await this.esService.indices.getSettings({ index });
     } catch (error) {
-      Logger.error("getIndexSettings failed-> ElasticSearchService", error);
+      console.error("getIndexSettings failed-> ElasticSearchService", error);
       throw new HttpException(
         `getIndexSettings failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -256,7 +256,7 @@ export class ElasticSearchService implements OnModuleInit {
       );
       return { success: true, message: `Index ${index} deleted` };
     } catch (error) {
-      Logger.error("deleteIndex failed-> ElasticSearchService", error);
+      console.error("deleteIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `deleteIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -330,7 +330,7 @@ export class ElasticSearchService implements OnModuleInit {
         data,
       };
     } catch (error) {
-      Logger.error("SearchService || search query issue || -> search", error);
+      console.error("SearchService || search query issue || -> search", error);
 
       throw new HttpException(
         `SearchService || search query issue || -> search ${error}`,
@@ -359,7 +359,7 @@ export class ElasticSearchService implements OnModuleInit {
 
       return transformedFacets;
     } catch (error) {
-      Logger.error(
+      console.error(
         "SearchService || aggregate query issue || -> aggregate",
         error,
       );
@@ -433,11 +433,7 @@ export class ElasticSearchService implements OnModuleInit {
         ];
       },
       onDrop(doc) {
-        console.error(doc.document._id, doc.error?.reason);
-        Logger.error(
-          `SearchService-> performBulkOperation-> data insert faield: ${doc.document._id} `,
-          "ElasticSearch",
-        );
+        console.debug(`${doc.document._id}`, doc.error?.reason);
       },
     });
   }
