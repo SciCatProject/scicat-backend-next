@@ -236,8 +236,8 @@ export class PoliciesService implements OnModuleInit {
       manager: ownerEmail
         ? ownerEmail.split(",")
         : defaultManager
-        ? defaultManager
-        : [""],
+          ? defaultManager
+          : [""],
       tapeRedundancy: tapeRedundancy ? tapeRedundancy : "low",
       autoArchive: false,
       autoArchiveDelay: 7,
