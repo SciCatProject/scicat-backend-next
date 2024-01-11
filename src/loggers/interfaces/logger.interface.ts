@@ -10,15 +10,16 @@ export interface Logger {
   ): void;
 }
 
+export interface LoggerMethods {
+  log?: string;
+  error?: string;
+  warn?: string;
+  debug?: string;
+  exception?: string;
+}
 export interface LoggerConfig {
   type: string;
   modulePath: string;
   config?: Record<string, unknown>;
-  methods?: {
-    log?: string;
-    error?: string;
-    warn?: string;
-    debug?: string;
-    exception?: string;
-  };
+  methods?: LoggerMethods;
 }

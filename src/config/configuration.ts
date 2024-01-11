@@ -36,7 +36,6 @@ const configuration = () => {
 
   return {
     loggerConfigs: [],
-    nodeEnv: process.env.NODE_ENV,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -102,14 +101,7 @@ const configuration = () => {
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
     },
-    grayLog: {
-      server: process.env.GRAYLOG_SERVER,
-      port: process.env.GRAYLOG_PORT,
-      service: process.env.GRAYLOG_SERVICE,
-      facility: process.env.GRAYLOG_FACILITY,
-      env: process.env.NODE_ENV,
-      enabled: process.env.GRAYLOG_ENABLED === "true" ?? false,
-    },
+
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
       : undefined,

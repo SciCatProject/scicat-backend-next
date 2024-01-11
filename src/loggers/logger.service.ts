@@ -8,14 +8,18 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Logger, LoggerConfig } from "./interfaces/logger.interface";
+import {
+  Logger,
+  LoggerConfig,
+  LoggerMethods,
+} from "./interfaces/logger.interface";
 import * as fs from "fs";
 
 @Injectable()
 export class ScicatLogger implements OnModuleInit {
   private loggers: {
     logger: Logger;
-    methods?: Record<string, unknown>;
+    methods?: LoggerMethods;
   }[] = [];
   constructor(private configService: ConfigService) {}
 
