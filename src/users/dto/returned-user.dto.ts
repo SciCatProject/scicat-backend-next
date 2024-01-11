@@ -21,7 +21,7 @@ export class ReturnedUserDto {
   })
   readonly emailVerified: boolean;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: "Where the info of this user are stored",
   })
   readonly realm: string;

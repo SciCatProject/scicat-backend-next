@@ -97,8 +97,7 @@ export class UsersController {
   @Post("login")
   @ApiOperation({
     summary: "Functional accounts login.",
-    description:
-      "It allows to login with functional (local) accounts.",
+    description: "It allows to login with functional (local) accounts.",
   })
   @ApiResponse({
     status: 201,
@@ -113,9 +112,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
-  )
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/my/self")
   @ApiOperation({
@@ -129,43 +126,35 @@ export class UsersController {
     description:
       "Create a new JWT token for anonymous or the user that is currently logged in",
   })
-  async getMyUser(
-    @Req() request: Request,
-  ): Promise<ReturnedUserDto | null> {
-    const authenticatedUserId: string = (request.user as JWTUser)._id
+  async getMyUser(@Req() request: Request): Promise<ReturnedUserDto | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
     await this.checkUserAuthorization(
       request,
       [Action.UserReadOwn],
-      (request.user as JWTUser)._id
+      (request.user as JWTUser)._id,
     );
     return this.usersService.findById(authenticatedUserId);
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
-  )
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @Get("/my/identity")
   async getMyUserIdentity(
     @Req() request: Request,
   ): Promise<UserIdentity | null> {
-    const authenticatedUserId: string = (request.user as JWTUser)._id
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
     await this.checkUserAuthorization(
       request,
       [Action.UserReadOwn],
-      authenticatedUserId
+      authenticatedUserId,
     );
     return this.usersService.findByIdUserIdentity(authenticatedUserId);
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(Action.UserReadOwn, User),
-  )
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @Get("/my/settings")
-  async getMySettings(
-    @Req() request: Request,
-  ): Promise<UserSettings | null> {
+  async getMySettings(@Req() request: Request): Promise<UserSettings | null> {
     const authenticatedUserId: string = (request.user as JWTUser)._id;
     await this.checkUserAuthorization(
       request,
