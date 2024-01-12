@@ -23,19 +23,10 @@ import { UpdateJobStatusDto } from "../jobs/dto/update-jobstatus.dto";
 
 
 /**
- * Job types with special meanings in SciCat
- */
-export enum JobType {
-    Archive = "archive",
-    Retrieve = "retrieve",
-    Reset = "reset",
-}
-
-/**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
 export class JobConfig {
-    type: string;
+    jobType: string;
 
     create: JobCreateAction[];
     // read: JobReadAction[];
@@ -54,7 +45,7 @@ export class JobConfig {
      * @returns
      */
     static parse(data: Record<string, any>) {
-        const type = data["type"];
+        const type = data["jobType"];
         const create = "create" in data ? oneOrMore(data["create"]).map((json) => parseCreateAction(json["action"])) : [];
         const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
         const update = "update" in data ? oneOrMore(data["update"]).map((json) => parseUpdateAction(json["action"])) : [];
@@ -76,7 +67,7 @@ export interface JobAction<DtoType> {
      * 
      * Not to be confused with JobConfig.type
      */
-    //type: string;
+    //actionType: string;
     /**
      * Validate the DTO, throwing an error for problems
      */
@@ -99,6 +90,7 @@ type JobActionCtor<T> = (json: Record<string,any>) => JobAction<T>;
 const createActions: Record<string, JobActionCtor<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
 const updateActions: Record<string, JobActionCtor<UpdateJobStatusDto>> = {};
+
 /**
  * Registers an action to handle jobs of a particular type
  * @param action 
@@ -141,8 +133,9 @@ export function registerUpdateAction(action_type: string, action: JobActionCtor<
 export function getRegisteredUpdateActions(): string[] {
     return Object.keys(updateActions);
 }
-/// Parsing
 
+
+/// Parsing
 
 /**
  * Load jobconfig.json file.
@@ -167,15 +160,15 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
  * Given a JSON object configuring a JobConfigAction.
  * 
  * This is dispatched to registered constructors (see registerCreateAction) based on
- * the "type" field of data. Other parameters are action-specific.
+ * the "actionType" field of data. Other parameters are action-specific.
  * @param data JSON configuration data
  * @returns 
  */
 function parseCreateAction(data: Record<string, any>): JobCreateAction {
-    if(!("type" in data))
-        throw SyntaxError(`No action.type in ${JSON.stringify(data)}`);
+    if(!("actionType" in data))
+        throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
     
-    const type = data.type;
+    const type = data.actionType;
     if(!(type in createActions))
         throw SyntaxError(`No handler found for actions of type ${type}`)
 
@@ -190,14 +183,14 @@ function parseCreateAction(data: Record<string, any>): JobCreateAction {
 //  * @returns 
 //  */
 // function parseReadAction(data: Record<string, any>): JobReadAction {
-//     if(!("type" in data))
-//         throw SyntaxError(`No action.type in ${JSON.stringify(data)}`);
+//     if(!("actionType" in data))
+//         throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
     
-//     const type = data.type;
+//     const type = data.actionType;
 //     if(!(type in readActions))
 //         throw SyntaxError(`No handler found for actions of type ${type}`)
 
-//     return readActions[type](data);
+//     return readActions[actionType](data);
 // }
 /**
  * Given a JSON object configuring a JobConfigAction.
@@ -208,10 +201,10 @@ function parseCreateAction(data: Record<string, any>): JobCreateAction {
  * @returns 
  */
 function parseUpdateAction(data: Record<string, any>): JobUpdateAction {
-    if(!("type" in data))
-        throw SyntaxError(`No action.type in ${JSON.stringify(data)}`);
+    if(!("actionType" in data))
+        throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
     
-    const type = data.type;
+    const type = data.actionType;
     if(!(type in updateActions))
         throw SyntaxError(`No handler found for actions of type ${type}`)
 

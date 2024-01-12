@@ -1,22 +1,22 @@
 [
   {
-    "type": "archive",
+    "jobType": "archive",
     "create": [
       {
         "action": {
-          "type": "log"
+          "actionType": "log"
         }
       }
     ],
     "update": {
       "action": {
-        "type": "log"
+        "actionType": "log"
       }
     },
     "post": [
     {
       "action": {
-        "type": "email",
+        "actionType": "email",
         "mailer": {
           "host": "smtp.myinstitution.ext",
           "port": 465,
