@@ -1534,7 +1534,7 @@ export class DatasetsController {
       Action.DatasetAttachmentDelete,
     );
 
-    return this.attachmentsService.findOneAndRemove({
+    return this.attachmentsService.findOneAndDelete({
       _id: aid,
       pid,
     });

@@ -94,7 +94,7 @@ export class JobsService {
   }
 
   async remove(filter: FilterQuery<JobDocument>): Promise<unknown> {
-    return this.jobModel.findOneAndRemove(filter).exec();
+    return this.jobModel.findOneAndDelete(filter).exec();
   }
 
   @OnEvent("jobCreated")

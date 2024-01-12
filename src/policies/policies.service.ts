@@ -122,7 +122,7 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async count(where: FilterQuery<PolicyDocument>): Promise<{ count: number }> {
-    const count = await this.policyModel.count(where).exec();
+    const count = await this.policyModel.countDocuments(where).exec();
     return { count };
   }
 
@@ -143,7 +143,7 @@ export class PoliciesService implements OnModuleInit {
   }
 
   async remove(filter: FilterQuery<PolicyDocument>): Promise<unknown> {
-    return this.policyModel.findOneAndRemove(filter).exec();
+    return this.policyModel.findOneAndDelete(filter).exec();
   }
 
   async updateWhere(ownerGroupList: string, data: UpdatePolicyDto) {

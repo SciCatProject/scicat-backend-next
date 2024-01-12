@@ -99,6 +99,6 @@ export class PublishedDataService {
   }
 
   async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
-    return this.publishedDataModel.findOneAndRemove(filter).exec();
+    return this.publishedDataModel.findOneAndDelete(filter).exec();
   }
 }

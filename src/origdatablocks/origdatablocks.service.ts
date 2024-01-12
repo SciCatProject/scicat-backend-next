@@ -160,6 +160,6 @@ export class OrigDatablocksService {
   }
 
   async remove(filter: FilterQuery<OrigDatablockDocument>): Promise<unknown> {
-    return this.origDatablockModel.findOneAndRemove(filter).exec();
+    return this.origDatablockModel.findOneAndDelete(filter).exec();
   }
 }
