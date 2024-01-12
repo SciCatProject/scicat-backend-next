@@ -8,6 +8,8 @@ import { Request } from "express";
 import { OidcConfig } from "src/config/configuration";
 import { flattenObject, parseBoolean } from "src/common/utils";
 import { Issuer } from "openid-client";
+import { ReturnedAuthLoginDto } from "./dto/returnedLogin.dto";
+import { ReturnedUserDto } from "src/users/dto/returned-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -38,7 +40,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<User, "password">): Promise<Record<string, unknown>> {
+  async login(user: Omit<User, "password">): Promise<ReturnedAuthLoginDto> {
     const expiresIn = this.configService.get<number>("jwt.expiresIn");
     const accessToken = this.jwtService.sign(user, { expiresIn });
     return {
@@ -48,7 +50,7 @@ export class AuthService {
       ttl: expiresIn,
       created: new Date().toISOString(),
       userId: user._id,
-      user,
+      user: user as ReturnedUserDto,
     };
   }
 

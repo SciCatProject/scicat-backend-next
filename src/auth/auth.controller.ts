@@ -25,6 +25,7 @@ import { OidcAuthGuard } from "./guards/oidc.guard";
 import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { OidcConfig } from "src/config/configuration";
+import { ReturnedAuthLoginDto } from "./dto/returnedLogin.dto";
 
 @ApiBearerAuth()
 @ApiTags("auth")
@@ -41,7 +42,7 @@ export class AuthController {
   @Post("login")
   async login(
     @Req() req: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<ReturnedAuthLoginDto> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
@@ -56,7 +57,7 @@ export class AuthController {
   @Post("msad")
   async msadLogin(
     @Req() req: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<ReturnedAuthLoginDto> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
@@ -71,7 +72,7 @@ export class AuthController {
   @Post("ldap")
   async ldapLogin(
     @Req() req: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<ReturnedAuthLoginDto> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
