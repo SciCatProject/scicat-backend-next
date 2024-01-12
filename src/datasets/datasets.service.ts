@@ -125,8 +125,6 @@ export class DatasetsService {
         modifiers.sort,
       );
 
-      console.log("es-filter", whereClause);
-
       datasets = await this.datasetModel
         .find({ _id: { $in: esResult.data } })
         .sort(modifiers.sort)
