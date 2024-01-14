@@ -242,16 +242,15 @@ export class JobsController {
    * Check the the user is authenticated when requesting other job types than public job
    */
   checkPermission = (request: Request, type: string) => {
-    // const unauthenticated = request.user === null;
-    // if (unauthenticated && type !== "public") {
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.UNAUTHORIZED,
-    //     },
-    //     HttpStatus.UNAUTHORIZED,
-    //   );
-    // }
-    return; // TODO stub
+    const unauthenticated = request.user === null;
+    if (unauthenticated && type !== "public") {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   };
 
   /**
@@ -294,43 +293,42 @@ export class JobsController {
   }
 
   async instanceAuthorization (createJobDto: CreateJobDto, jobConfiguration: Record<string, any>) : Promise<boolean> {
-    // // checking if user is allowed to create job according to auth field of job configureation
-    // // Accepted options
-    // // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser, 
-    // let res = false;
-    // if (jobConfiguration.auth.auth != JobsAuth.All ) {
-    //   // nothing to do here
-    //   res = true;
-    // } else if ( jobConfiguration.auth.auth == JobsAuth.DatasetOwner ) {
-    //    // versify that all the pids listed in the property indicated are owned by the user
-    //   const field = jobConfiguration.auth.field;
-    //   let datasetIds = ( typeof createJobDto.jobParams[field] === "string" ? Array(createJobDto.jobParams[field]) : createJobDto.jobParams[field] ) as Array<string>;
-    //   if (!Array.isArray(datasetIds)) {
-    //     throw new HttpException(
-    //       {
-    //         status: HttpStatus.BAD_REQUEST,
-    //         message:
-    //           "Invalid dataset ids list",
-    //       },
-    //       HttpStatus.BAD_REQUEST,
-    //     );
-    //   }
+    // checking if user is allowed to create job according to auth field of job configureation
+    // Accepted options
+    // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser, 
+    let res = false;
+    if (jobConfiguration.auth.auth != JobsAuth.All ) {
+      // nothing to do here
+      res = true;
+    } else if ( jobConfiguration.auth.auth == JobsAuth.DatasetOwner ) {
+       // versify that all the pids listed in the property indicated are owned by the user
+      const field = jobConfiguration.auth.field;
+      let datasetIds = ( typeof createJobDto.jobParams[field] === "string" ? Array(createJobDto.jobParams[field]) : createJobDto.jobParams[field] ) as Array<string>;
+      if (!Array.isArray(datasetIds)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message:
+              "Invalid dataset ids list",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-    //   const numberOfDatasets = await this.datasetsService.count({"where":{"pid":{"in":datasetIds},"ownerGroup" : {"in":user.currentGroups}}});
-    //   const datasetsNotOwner = datasetIds.length - numberOfDatasets.count;
-    //   if (datasetsNotOwner > 0) {
-    //     throw new HttpException(
-    //       {
-    //         status: HttpStatus.BAD_REQUEST,
-    //         message:
-    //           "Unauthorized acces to " + datasetsNotOwner + " datasets out of " + datasetIds.length,
-    //       },
-    //       HttpStatus.BAD_REQUEST,
-    //     );
-    //   }
-    // } 
-    // return res;
-    return true;
+      const numberOfDatasets = await this.datasetsService.count({"where":{"pid":{"in":datasetIds},"ownerGroup" : {"in":user.currentGroups}}});
+      const datasetsNotOwner = datasetIds.length - numberOfDatasets.count;
+      if (datasetsNotOwner > 0) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message:
+              "Unauthorized acces to " + datasetsNotOwner + " datasets out of " + datasetIds.length,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } 
+    return res;
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
