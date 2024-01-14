@@ -16,7 +16,6 @@
 import { Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { ApiProperty } from "@nestjs/swagger";
-import * as yaml from 'js-yaml';
 import { JobClass } from "../jobs/schemas/job.schema";
 import { CreateJobDto } from "../jobs/dto/create-job.dto";
 import { UpdateJobStatusDto } from "../jobs/dto/update-jobstatus.dto";
@@ -32,8 +31,8 @@ export class JobConfig {
     // read: JobReadAction[];
     update: JobUpdateAction[];
 
-    constructor(type: string, create: JobCreateAction[]=[], read=[], update: JobUpdateAction[]=[]) {
-        this.type = type;
+    constructor(jobType: string, create: JobCreateAction[]=[], read=[], update: JobUpdateAction[]=[]) {
+        this.jobType = jobType;
         this.create = create;
         // this.read = read;
         this.update = update;
@@ -67,9 +66,9 @@ export interface JobAction<DtoType> {
      * 
      * Not to be confused with JobConfig.type
      */
-    //actionType: string;
+    //readonly actionType: string;
     /**
-     * Validate the DTO, throwing an error for problems
+     * Validate the DTO, throwing an HttpException for problems
      */
     validate: (dto: DtoType) => Promise<void>;
     /**

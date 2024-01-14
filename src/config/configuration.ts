@@ -1,6 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { JobConfig, loadJobConfig, registerCreateAction, registerUpdateAction } from "./jobconfig";
 import { LogJobAction } from "./actions/logaction";
+import { EmailJobAction } from "./actions/emailaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -18,7 +19,7 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs = loadJobConfig("jobconfig.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig("jobconfig.json");
 
   return {
     jobConfiguration: job_configs,
@@ -197,8 +198,9 @@ const configuration = () => {
  * Registers built-in JobActions. Should be called exactly once.
  */
 export function registerDefaultActions() {
-  registerCreateAction(LogJobAction.type, (data) => new LogJobAction(data));
-  registerUpdateAction(LogJobAction.type, (data) => new LogJobAction(data));
+  registerCreateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
+  registerUpdateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
+  registerCreateAction(EmailJobAction.actionType, (data) => new EmailJobAction(data));
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

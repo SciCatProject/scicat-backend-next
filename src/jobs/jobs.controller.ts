@@ -21,7 +21,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { JobSchema, JobClass, JobDocument } from "./schemas/job.schema";
+import { JobClass, JobDocument } from "./schemas/job.schema";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
@@ -257,35 +257,40 @@ export class JobsController {
   /**
    * Validate if the job is performable
    */
-  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<Object> {
-    // // it should return a single job configuration
-    // const jc = configuration().jobConfiguration.filter((j)=> j.type == createJobDto.type);
-    // if (!jc) {
-    //   // return error that job type does not exists
-    // }
+  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<void> {
+    // it should return a single job configuration
+    const jobConfigs = await configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter((j)=> j.jobType == createJobDto.type);
+    if (matchingConfig.length != 1) {
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message:
+            "Invalid job type: " + createJobDto.type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const jc = matchingConfig[0];
 
-    // // retrieve jobParams template from job configuration and validate them
-    // const validate = ajv.compile(jc.create.template) // this needs to be adjusted to the final job configuration structure
-
-    // const valid = validate(createJobDto.jobParams);
-    // if (!valid) {
-    //   // return error that input parameters are not correct
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.BAD_REQUEST,
-    //       message:
-    //         "Invalid job input. Please check job configuration." + validate.errors,
-    //     },
-    //     HttpStatus.BAD_REQUEST,
-    //   );
-    // }
-
-    // // finalize job instance configuration
-
-
-    // // returns job instance configuration
-    // return jc[0];
-    return createJobDto;
+    await Promise.all(
+      jc.create.map((action) => {
+        return action.validate(createJobDto).catch( (err) => {
+          if( err instanceof HttpException) {
+            throw err;
+          }
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                `Invalid job input. Action ${action.actionType} unable to validate ${createJobDto.type} job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        });
+      })
+    );
   }
 
   async instanceAuthorization (createJobDto: CreateJobDto, jobConfiguration: Record<string, any>) : Promise<boolean> {
@@ -329,7 +334,38 @@ export class JobsController {
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
-    // run all actions in the config
+    // it should return a single job configuration
+    const jobConfigs = await configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter((j)=> j.jobType == jobInstance.type);
+    if (matchingConfig.length != 1) {
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message:
+            "Invalid job type: " + jobInstance.type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const jc = matchingConfig[0];
+
+    for(var action of jc.create) {
+      jobInstance = await (action.performJob(jobInstance).catch(
+        (err) => {
+          if( err instanceof HttpException) {
+            throw err;
+          }
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                `Invalid job input. Action ${action.actionType} unable to validate ${jobInstance.type} job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }));
+    }
     return jobInstance;
   }
 

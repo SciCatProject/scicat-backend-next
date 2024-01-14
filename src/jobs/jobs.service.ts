@@ -18,7 +18,6 @@ import {
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { JobType } from "../config/jobconfig";
 import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
