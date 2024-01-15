@@ -52,6 +52,6 @@ export class DatablocksService {
   }
 
   async remove(filter: FilterQuery<DatablockDocument>): Promise<unknown> {
-    return this.datablockModel.findOneAndRemove(filter).exec();
+    return this.datablockModel.findOneAndDelete(filter).exec();
   }
 }

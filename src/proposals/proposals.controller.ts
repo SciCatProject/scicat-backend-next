@@ -794,7 +794,7 @@ export class ProposalsController {
       proposalId,
       Action.ProposalsAttachmentDelete,
     );
-    return this.attachmentsService.findOneAndRemove({
+    return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
       proposalId: proposalId,
     });

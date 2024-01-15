@@ -199,7 +199,7 @@ export class DatasetsService {
       );
       count = totalCount;
     } else {
-      count = await this.datasetModel.count(whereFilter).exec();
+      count = await this.datasetModel.countDocuments(whereFilter).exec();
     }
 
     return { count };
@@ -300,7 +300,7 @@ export class DatasetsService {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }
-    return await this.datasetModel.findOneAndRemove({ pid: id });
+    return await this.datasetModel.findOneAndDelete({ pid: id });
   }
   // GET datasets without _id which is used for elastic search data synchronization
   async getDatasetsWithoutId() {
