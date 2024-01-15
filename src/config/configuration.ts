@@ -1,4 +1,7 @@
 import { Logger } from "@nestjs/common";
+import { JobConfig, loadJobConfig, registerCreateAction, registerUpdateAction } from "./jobconfig";
+import { LogJobAction } from "./actions/logaction";
+import { EmailJobAction } from "./actions/emailaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -23,7 +26,7 @@ const configuration = () => {
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
   // Logger.log("Config SETUP");
-  // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
+  // Logger.log("- Access groups static values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
   // Logger.log("- Delete groups : " + deleteGroups);
   // Logger.log("- Create dataset groups : " + createDatasetGroups);
@@ -36,8 +39,12 @@ const configuration = () => {
   // Logger.log("- Create job groups : " + createJobGroups);
   // Logger.log("- Update job groups : " + updateJobGroups);
 
+  // Register built-in job actions
+  registerDefaultActions();
+  const job_configs: Promise<JobConfig[]> = loadJobConfig("jobconfig.json");
+
   return {
-    jobConfiguration: [],
+    jobConfiguration: job_configs,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -149,6 +156,15 @@ const configuration = () => {
     },
   };
 };
+
+/**
+ * Registers built-in JobActions. Should be called exactly once.
+ */
+export function registerDefaultActions() {
+  registerCreateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
+  registerUpdateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
+  registerCreateAction(EmailJobAction.actionType, (data) => new EmailJobAction(data));
+}
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
 

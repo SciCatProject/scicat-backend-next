@@ -1,4 +1,5 @@
 export enum Action {
+  // Dataset actions
   Manage = "manage",
   Create = "create",
   Read = "read",
@@ -205,4 +206,6 @@ export enum Action {
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
   InstrumentDelete = "instrument_delete",
+  // Job actions
+  JobCreate = "job_create",
 }

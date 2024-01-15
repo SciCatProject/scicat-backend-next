@@ -22,7 +22,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsAuth } from "./jobs-auth.enum";
@@ -243,7 +243,7 @@ export class JobsController {
    */
   checkPermission = (request: Request, type: string) => {
     const unauthenticated = request.user === null;
-    if (unauthenticated && type !== JobType.Public) {
+    if (unauthenticated && type !== "public") {
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,
@@ -256,34 +256,40 @@ export class JobsController {
   /**
    * Validate if the job is performable
    */
-  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<Object> {
+  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<void> {
     // it should return a single job configuration
-    const jc = configuration().jobConfiguration.filter((j)=> j.type == createJobDto.type);
-    if (!jc) {
+    const jobConfigs = await configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter((j)=> j.jobType == createJobDto.type);
+    if (matchingConfig.length != 1) {
       // return error that job type does not exists
-    }
-
-    // retrieve jobParams template from job configuration and validate them
-    const validate = ajv.compile(jc.create.template) // this needs to be adjusted to the final job configuration structure
-
-    const valid = validate(createJobDto.jobParams);
-    if (!valid) {
-      // return error that input parameters are not correct
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
           message:
-            "Invalid job input. Please check job configuration." + validate.errors,
+            "Invalid job type: " + createJobDto.type,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
+    const jc = matchingConfig[0];
 
-    // finalize job instance configuration
-
-
-    // returns job instance configuration
-    return jc[0];
+    await Promise.all(
+      jc.create.map((action) => {
+        return action.validate(createJobDto).catch( (err) => {
+          if( err instanceof HttpException) {
+            throw err;
+          }
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                `Invalid job input. Action ${action.actionType} unable to validate ${createJobDto.type} job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        });
+      })
+    );
   }
 
   async instanceAuthorization (createJobDto: CreateJobDto, jobConfiguration: Record<string, any>) : Promise<boolean> {
@@ -326,13 +332,45 @@ export class JobsController {
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
+    // it should return a single job configuration
+    const jobConfigs = await configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter((j)=> j.jobType == jobInstance.type);
+    if (matchingConfig.length != 1) {
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message:
+            "Invalid job type: " + jobInstance.type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const jc = matchingConfig[0];
+
+    for(var action of jc.create) {
+      jobInstance = await (action.performJob(jobInstance).catch(
+        (err) => {
+          if( err instanceof HttpException) {
+            throw err;
+          }
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                `Invalid job input. Action ${action.actionType} unable to validate ${jobInstance.type} job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }));
+    }
     return jobInstance;
   }
 
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.CreateJob, JobClass),
+    ability.can(Action.JobCreate, JobClass),
   )
   @Post()
   @ApiOperation({
@@ -343,7 +381,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be created",
     required: true,
-    schema: JobClass
+    schema: CreateJobDto
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -354,18 +392,22 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass> {
+    // Load configuration, validate that request matches the current configuration
     const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
     await this.validateJob(jobToCreate, request);
 
+    // Check authorization
+    await this.instanceAuthorization(createJobDto, jobToCreate);
 
-    const createdJobInstance = await this.jobsService.create(jobInstance);
+    // Create actual job in database
+    const createdJobInstance = await this.jobsService.create(jobToCreate);
 
-    // perform the action that is specified in the create portion of hte job configuration
+    // perform the action that is specified in the create portion of the job configuration
     const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
     
     // update job instance with results of job create action
 
-    return createdJobInstance._id;
+    return createdJobInstance;
   }
 
   @UseGuards(PoliciesGuard)
