@@ -21,8 +21,8 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { Job, JobClass, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { JobClass, JobDocument } from "./schemas/job.schema";
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsAuth } from "./jobs-auth.enum";
@@ -346,16 +346,16 @@ export class JobsController {
     schema: JobClass
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: JobClass,
-    description: "Create a new job and return its representation in SciCat",
+    description: "Created job",
   })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-  ): Promise<string> {
-    const jobInstance = await this.validateJob(createJobDto, request);
-    await this.instanceAuthorization(createJobDto,jobInstance);
+  ): Promise<JobClass> {
+    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
+    await this.validateJob(jobToCreate, request);
 
 
     const createdJobInstance = await this.jobsService.create(jobInstance);
@@ -369,14 +369,14 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get()
   @ApiQuery({
     name: "filter",
     description: "Database filters to apply when retrieve all jobs",
     required: false,
   })
-  async findAll(@Query("filter") filter?: string): Promise<Job[]> {
+  async findAll(@Query("filter") filter?: string): Promise<JobClass[]> {
     const parsedFilter: IFilters<
       JobDocument,
       FilterQuery<JobDocument>
@@ -385,11 +385,11 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get("/fullquery")
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<Job[]> {
+  ): Promise<JobClass[]> {
     const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
       fields: JSON.parse(filters.fields ?? "{}"),
       limits: JSON.parse(filters.limits ?? "{}"),
@@ -398,7 +398,7 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -411,16 +411,35 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Job))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
   @Get(":id")
-  async findOne(@Param("id") id: string): Promise<Job | null> {
+  async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
-  @Post("statusUpdate")
-  async statusUpdate(statusUpdate: statusUpdate) {
-    // validate input
-    // extratc job id
-    // update status and history
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
+  @Patch(":id")
+  async update(
+    @Param("id") id: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ): Promise<JobClass | null> {
+    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
+
+    if (updatedJob) {
+      this.eventEmitter.emit("jobUpdated", {
+        instance: updatedJob,
+        hookState: { oldData: [updatedJob] },
+      });
+    }
+
+    return updatedJob;
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @Delete(":id")
+  async remove(@Param("id") id: string): Promise<unknown> {
+    return this.jobsService.remove({ _id: id });
   }
 }

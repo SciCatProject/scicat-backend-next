@@ -14,6 +14,7 @@ export type HistoryDocument = HistoryClass & Document;
 })
 export class HistoryClass {
   @ApiProperty({
+    name: "id",
     type: String,
     required: true,
     default: uuidv4(),
@@ -26,13 +27,6 @@ export class HistoryClass {
     required: true,
     default: uuidv4(),
   })
-  /*
-  id: string;
-
-  @Prop({
-    type: String,
-  })
-  */
   _id: string;
 
   /*
@@ -60,9 +54,8 @@ export class HistoryClass {
   updatedAt: Date;
 
   @ApiProperty({
-    type: Date,
+    type: String,
     required: true,
-    default: Date.now(),
     description: "Username of the user that performed the update.",
   })
   @Prop({

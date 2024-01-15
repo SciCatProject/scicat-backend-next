@@ -1,8 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import { IFilter, IShould, ObjectType } from "../interfaces/es-common.type";
-import { FilterFields, QueryFields } from "./fields.enum";
+import {
+  IBoolShould,
+  IFilter,
+  IFullFacets,
+  IShould,
+  ObjectType,
+} from "../interfaces/es-common.type";
+import { FilterFields, QueryFields, FacetFields } from "./fields.enum";
+
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
 import { convertToElasticSearchQuery } from "../helpers/utils";
@@ -11,6 +18,7 @@ import { convertToElasticSearchQuery } from "../helpers/utils";
 export class SearchQueryService {
   readonly filterFields = [...Object.values(FilterFields)];
   readonly queryFields = [...Object.values(QueryFields)];
+  readonly facetFields = [...Object.values(FacetFields)];
   readonly textQuerySplitMethod = /[ ,]+/;
 
   public buildSearchQuery(searchParam: IDatasetFields) {
@@ -57,7 +65,7 @@ export class SearchQueryService {
 
       shouldFilter.push(ownerGroup, accessGroups);
     }
-    return shouldFilter;
+    return { bool: { should: shouldFilter, minimum_should_match: 1 } };
   }
 
   private buildTextQuery(text: string): QueryDslQueryContainer[] {
@@ -161,23 +169,39 @@ export class SearchQueryService {
 
   private constructFinalQuery(
     filter: IFilter[],
-    should: IShould[],
+    should: IBoolShould,
     query: QueryDslQueryContainer[],
   ) {
     const finalQuery = {
       query: {
         bool: {
-          filter,
-          should: {
-            bool: {
-              should,
-              minimum_should_match: 1,
-            },
-          },
+          filter: [...filter, should],
           must: query,
         },
       },
     };
     return finalQuery;
+  }
+
+  public buildFullFacetPipeline(facetFields = this.facetFields) {
+    const pipeline: IFullFacets = {
+      all: {
+        value_count: {
+          field: "pid",
+        },
+      },
+    };
+
+    for (const field of facetFields) {
+      pipeline[field] = {
+        terms: {
+          field: field,
+          order: {
+            _count: "desc",
+          },
+        },
+      };
+    }
+    return pipeline;
   }
 }

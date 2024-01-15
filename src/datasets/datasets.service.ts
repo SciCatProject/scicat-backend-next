@@ -18,7 +18,6 @@ import {
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
-  isObjectWithOneKey,
   parseLimitFilters,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
@@ -109,7 +108,12 @@ export class DatasetsService {
     };
     const modifiers: QueryOptions = parseLimitFilters(filter.limits);
 
-    if (!this.ESClient || !whereClause) {
+    const isFieldsEmpty = Object.keys(whereClause).length === 0;
+
+    // NOTE: if Elastic search DB is empty we should use default mongo query
+    const canPerformElasticSearchQueries = await this.isElasticSearchDBEmpty();
+
+    if (!this.ESClient || isFieldsEmpty || !canPerformElasticSearchQueries) {
       datasets = await this.datasetModel
         .find(whereClause, null, modifiers)
         .exec();
@@ -118,10 +122,12 @@ export class DatasetsService {
         filter.fields as IDatasetFields,
         modifiers.limit,
         modifiers.skip,
+        modifiers.sort,
       );
 
       datasets = await this.datasetModel
-        .find({ _id: { $in: esResult.data } }, null, modifiers)
+        .find({ _id: { $in: esResult.data } })
+        .sort(modifiers.sort)
         .exec();
     }
 
@@ -131,23 +137,19 @@ export class DatasetsService {
   async fullFacet(
     filters: IFacets<IDatasetFields>,
   ): Promise<Record<string, unknown>[]> {
+    let data;
+
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
 
     // NOTE: if fields contains no value, we should use mongo query to optimize performance.
-    // however, fields always contain mode key, so we need to check if there's more than one key
-    const isFieldsEmpty = isObjectWithOneKey(fields);
+    // however, fields always contain "mode" key, so we need to check if there's more than one key
+    const isFieldsEmpty = Object.keys(fields).length === 1;
 
-    let data;
-    if (this.ESClient && !isFieldsEmpty) {
-      const totalDocCount = await this.datasetModel.countDocuments();
+    // NOTE: if Elastic search DB is empty we should use default mongo query
+    const canPerformElasticSearchQueries = await this.isElasticSearchDBEmpty();
 
-      const { data: esPids } = await this.ESClient.search(
-        fields as IDatasetFields,
-        totalDocCount,
-      );
-
-      fields.mode = { _id: { $in: esPids } };
+    if (!this.ESClient || isFieldsEmpty || !canPerformElasticSearchQueries) {
       const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
         this.datasetModel,
         "pid",
@@ -158,17 +160,10 @@ export class DatasetsService {
 
       data = await this.datasetModel.aggregate(pipeline).exec();
     } else {
-      const pipeline = createFullfacetPipeline<DatasetDocument, IDatasetFields>(
-        this.datasetModel,
-        "pid",
-        fields,
-        facets,
-        "",
-      );
+      const facetResult = await this.ESClient.aggregate(fields);
 
-      data = await this.datasetModel.aggregate(pipeline).exec();
+      data = facetResult;
     }
-
     return data;
   }
 
@@ -487,5 +482,11 @@ export class DatasetsService {
         }
       }
     }
+  }
+
+  async isElasticSearchDBEmpty() {
+    if (!this.ESClient) return;
+    const count = await this.ESClient.getCount();
+    return count.count > 0;
   }
 }

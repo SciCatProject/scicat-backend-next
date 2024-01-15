@@ -11,10 +11,10 @@ export class AccessGroupFromStaticValuesService extends AccessGroupService {
   }
 
   async getAccessGroups(): Promise<string[]> {
-    Logger.log(
-      "Static access group getAccessGroups : " +
-        this.staticAccessGroups.join(","),
-    );
+    // Logger.log(
+    //   "Static access group getAccessGroups : " +
+    //     this.staticAccessGroups.join(","),
+    // );
     return this.staticAccessGroups;
   }
 }

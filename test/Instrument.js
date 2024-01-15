@@ -204,7 +204,11 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.pid.should.be.oneOf([ instrumentId1, instrumentId2, instrumentId3 ]);
+        res.body.pid.should.be.oneOf([
+          instrumentId1,
+          instrumentId2,
+          instrumentId3,
+        ]);
       });
   });
 
@@ -223,7 +227,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.pid.should.be.oneOf([ instrumentId1, instrumentId2 ]);
+        res.body.pid.should.be.oneOf([instrumentId1, instrumentId2]);
         res.body.customMetadata.main_user.should.be.equal("ESS");
       });
   });
@@ -231,7 +235,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
   it("0130: should fetch all instruments which main user containing the word 'somebody' as ingestor", async () => {
     const filter = {
       where: {
-        "customMetadata.main_user": {like : "somebody"},
+        "customMetadata.main_user": { like: "somebody" },
       },
     };
 
@@ -300,7 +304,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
   it("0170: should fetch same instrument by name", async () => {
     const filter = {
       where: {
-        name: newName
+        name: newName,
       },
     };
 
