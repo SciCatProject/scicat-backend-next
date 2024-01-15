@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional } from "class-validator";
 
 export class ReturnedUserDto {
   @ApiProperty({
@@ -18,13 +19,17 @@ export class ReturnedUserDto {
 
   @ApiProperty({
     description: "Email has been verified",
+    required: false,
   })
-  readonly emailVerified: boolean;
+  @IsOptional()
+  readonly emailVerified?: boolean;
 
   @ApiProperty({
     description: "Where the info of this user are stored",
+    required: false,
   })
-  readonly realm: string;
+  @IsOptional()
+  readonly realm?: string;
 
   @ApiProperty({
     description: "Strategy used to authenticate this user",
