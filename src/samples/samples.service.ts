@@ -133,6 +133,6 @@ export class SamplesService {
   }
 
   async remove(filter: FilterQuery<SampleDocument>): Promise<unknown> {
-    return this.sampleModel.findOneAndRemove(filter).exec();
+    return this.sampleModel.findOneAndDelete(filter).exec();
   }
 }

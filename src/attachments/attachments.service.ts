@@ -51,9 +51,9 @@ export class AttachmentsService {
       .exec();
   }
 
-  async findOneAndRemove(
+  async findOneAndDelete(
     filter: FilterQuery<AttachmentDocument>,
   ): Promise<unknown> {
-    return this.attachmentModel.findOneAndRemove(filter).exec();
+    return this.attachmentModel.findOneAndDelete(filter).exec();
   }
 }

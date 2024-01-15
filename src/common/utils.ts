@@ -250,14 +250,14 @@ export const parseLimitFilters = (
 ): {
   limit: number;
   skip: number;
-  sort: { [key: string]: "asc" | "desc" } | string;
+  sort?: { [key: string]: "asc" | "desc" } | string;
 } => {
   if (!limits) {
-    return { limit: 100, skip: 0, sort: "" };
+    return { limit: 100, skip: 0 };
   }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
-  let sort: { [key: string]: "asc" | "desc" } | string = "";
+  let sort;
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
     if (direction === "asc" || direction === "desc") {
@@ -275,7 +275,7 @@ export const parseLimitFiltersForPipeline = (
   if (!limits) {
     pipelineStages.push({ $skip: 0 }, { $limit: 100 });
   } else {
-    const { limit = 100, skip = 0, order } = limits;
+    const { limit = 100, skip = 0, order = null } = limits;
 
     pipelineStages.push({ $skip: skip }, { $limit: limit });
 
@@ -356,12 +356,7 @@ export const createNewFacetPipelineStage = (
 };
 
 export const schemaTypeOf = <T>(
-  model: Model<
-    T,
-    Record<string, never>,
-    Record<string, never>,
-    Record<string, never>
-  >,
+  model: Model<T>,
   key: string,
   value: unknown = null,
 ): string => {
@@ -388,12 +383,7 @@ export const schemaTypeOf = <T>(
 };
 
 export const searchExpression = <T>(
-  model: Model<
-    T,
-    Record<string, never>,
-    Record<string, never>,
-    Record<string, never>
-  >,
+  model: Model<T>,
   fieldName: string,
   value: unknown,
 ): unknown => {
@@ -434,12 +424,7 @@ export const searchExpression = <T>(
 };
 
 export const createFullqueryFilter = <T>(
-  model: Model<
-    T,
-    Record<string, never>,
-    Record<string, never>,
-    Record<string, never>
-  >,
+  model: Model<T>,
   idField: keyof T,
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {

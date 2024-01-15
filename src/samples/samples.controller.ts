@@ -783,7 +783,7 @@ export class SamplesController {
       sampleId,
       Action.SamplesAttachmentDelete,
     );
-    return this.attachmentsService.findOneAndRemove({
+    return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
       sampleId: sampleId,
     });
