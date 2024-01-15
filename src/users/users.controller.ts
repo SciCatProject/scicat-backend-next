@@ -23,12 +23,11 @@ import {
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { UserIdentity } from "./schemas/user-identity.schema";
 import { UsersService } from "./users.service";
 import { CreateUserJWT } from "./dto/create-user-jwt.dto";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
@@ -42,7 +41,9 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
 import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
-//import { AuthController } from "src/auth/auth.controller";
+import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
+import { ReturnedUserDto } from "./dto/returned-user.dto";
+import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -64,17 +65,16 @@ export class UsersController {
     viewedUserSchema._id = viewedUserId;
     viewedUserSchema.id = viewedUserId;
 
-    const ability =
-      await this.caslAbilityFactory.createForUser(authenticatedUser);
+    const ability = this.caslAbilityFactory.createForUser(authenticatedUser);
     // const authorized = actions.map( action =>
     //   ability.can(action, viewedUserSchema)
     // ) as Array<Boolean>;
+
     if (!actions.some((action) => ability.can(action, viewedUserSchema))) {
       throw new ForbiddenException("Access Forbidden or Unauthorized");
     }
   }
 
-  @AllowAny()
   @Post("jwt")
   @ApiOperation({
     summary: "It creates a new jwt token.",
@@ -95,13 +95,76 @@ export class UsersController {
   @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post("login")
+  @ApiOperation({
+    summary: "Functional accounts login.",
+    description: "It allows to login with functional (local) accounts.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: ReturnedAuthLoginDto,
+    description:
+      "Create a new JWT token for anonymous or the user that is currently logged in",
+  })
   async login(
     @Req() req: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<ReturnedAuthLoginDto> {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @UseInterceptors(CreateUserSettingsInterceptor)
+  @Get("/my/self")
+  @ApiOperation({
+    summary: "Returns the information of the user currently logged in.",
+    description:
+      "This allows endpoint allows to retrieve the user record for the user currently logged.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: ReturnedUserDto,
+    description:
+      "Create a new JWT token for anonymous or the user that is currently logged in",
+  })
+  async getMyUser(@Req() request: Request): Promise<ReturnedUserDto | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      (request.user as JWTUser)._id,
+    );
+    return this.usersService.findById(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @Get("/my/identity")
+  async getMyUserIdentity(
+    @Req() request: Request,
+  ): Promise<UserIdentity | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId,
+    );
+    return this.usersService.findByIdUserIdentity(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @Get("/my/settings")
+  async getMySettings(@Req() request: Request): Promise<UserSettings | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId,
+    );
+    return this.usersService.findByIdUserSettings(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -112,7 +175,7 @@ export class UsersController {
   async findById(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<Omit<User, "password"> | null> {
+  ): Promise<ReturnedUserDto | null> {
     await this.checkUserAuthorization(
       request,
       [Action.UserReadAny, Action.UserReadOwn],
@@ -121,7 +184,7 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -140,7 +203,7 @@ export class UsersController {
     return this.usersService.findByIdUserIdentity(id);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserCreateOwn, User) ||
@@ -160,7 +223,7 @@ export class UsersController {
     return this.usersService.createUserSettings(id, createUserSettingsDto);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -179,7 +242,7 @@ export class UsersController {
     return this.usersService.findByIdUserSettings(id);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
@@ -202,7 +265,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
@@ -225,7 +288,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserDeleteOwn, User) ||
@@ -244,7 +307,7 @@ export class UsersController {
     return this.usersService.findOneAndRemoveUserSettings(id);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
     return (
       ability.can(Action.UserReadOwn, User) ||
@@ -261,12 +324,17 @@ export class UsersController {
       [Action.UserReadAny, Action.UserReadOwn],
       id,
     );
+
     const viewedUser = (await this.usersService.findById2JWTUser(
       id,
     )) as JWTUser;
-    const ability = await this.caslAbilityFactory.createForUser(viewedUser);
+    const ability = this.caslAbilityFactory.createForUser(viewedUser);
 
-    return { authorization: ability.can(Action.Create, DatasetClass) };
+    const canCreateDataset = ability.can(Action.DatasetCreate, DatasetClass);
+
+    return {
+      authorization: canCreateDataset,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -284,7 +352,7 @@ export class UsersController {
     return this.authService.logout(req);
   }
 
-  @UseGuards(PoliciesGuard)
+  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.UserCreateJwt, User),
   )

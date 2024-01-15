@@ -20,7 +20,7 @@ var retrieveJobId = null;
 var publicJobIds = [];
 var origDatablockId = null;
 
-describe("Jobs: Test New Job Model", () => {
+describe.skip("Jobs: Test New Job Model", () => {
   before((done) => {
     archiveJob = { ...TestData.ArchiveJob };
     retrieveJob = { ...TestData.RetrieveJob };

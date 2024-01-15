@@ -16,6 +16,7 @@ import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { CreateMeasurementPeriodDto } from "./dto/create-measurement-period.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProposalsService {
@@ -27,6 +28,15 @@ export class ProposalsService {
 
   async create(createProposalDto: CreateProposalDto): Promise<ProposalClass> {
     const username = (this.request.user as JWTUser).username;
+    if (createProposalDto.MeasurementPeriodList) {
+      for (const i in createProposalDto.MeasurementPeriodList) {
+        createProposalDto.MeasurementPeriodList[i] =
+          addCreatedByFields<CreateMeasurementPeriodDto>(
+            createProposalDto.MeasurementPeriodList[i],
+            username,
+          );
+      }
+    }
     const createdProposal = new this.proposalModel(
       addCreatedByFields<CreateProposalDto>(createProposalDto, username),
     );

@@ -11,6 +11,8 @@ import { SearchQueryService } from "./providers/query-builder.service";
 import {
   SearchTotalHits,
   SearchRequest,
+  AggregationsAggregate,
+  SortOrder,
 } from "@elastic/elasticsearch/lib/api/types";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import {
@@ -24,7 +26,13 @@ import {
 } from "src/datasets/schemas/dataset.schema";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
-import { transformKeysInObject, initialSyncTransform } from "./helpers/utils";
+import {
+  transformKeysInObject,
+  initialSyncTransform,
+  transformFacets,
+} from "./helpers/utils";
+
+import { SortFields } from "./providers/fields.enum";
 
 @Injectable()
 export class ElasticSearchService implements OnModuleInit {
@@ -57,7 +65,10 @@ export class ElasticSearchService implements OnModuleInit {
     this.defaultIndex =
       this.configService.get<string>("elasticSearch.defaultIndex") || "";
 
-    if (!this.host || !this.username || !this.password || !this.defaultIndex) {
+    if (
+      this.esEnabled &&
+      (!this.host || !this.username || !this.password || !this.defaultIndex)
+    ) {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
       );
@@ -176,6 +187,18 @@ export class ElasticSearchService implements OnModuleInit {
     return bulkResponse;
   }
 
+  async getCount(index = this.defaultIndex) {
+    try {
+      return await this.esService.count({ index });
+    } catch (error) {
+      Logger.error("getCount failed-> ElasticSearchService", error);
+      throw new HttpException(
+        `getCount failed-> ElasticSearchService ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async updateIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.close({
@@ -238,6 +261,7 @@ export class ElasticSearchService implements OnModuleInit {
     searchParam: IDatasetFields,
     limit = 20,
     skip = 0,
+    sort?: Record<string, SortOrder>,
   ): Promise<{ totalCount: number; data: string[] }> {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
@@ -246,13 +270,47 @@ export class ElasticSearchService implements OnModuleInit {
 
       const searchOptions = {
         track_scores: true,
-        body: searchQuery,
-        size: limit + skip,
         sort: [{ _score: { order: "desc" } }],
+        query: searchQuery.query,
+        from: skip,
+        size: limit,
         min_score: defaultMinScore,
         track_total_hits: true,
         _source: [""],
       } as SearchRequest;
+
+      if (sort) {
+        const sortField = Object.keys(sort)[0];
+        const sortDirection = Object.values(sort)[0];
+
+        // NOTE: To sort datasetName field we need to use datasetName.keyword field,
+        // as elasticsearch does not have good support for text type field sorting
+        const isDatasetName = sortField === SortFields.DatasetName;
+        const fieldForSorting = isDatasetName
+          ? SortFields.DatasetNameKeyword
+          : sortField;
+
+        const isNestedField = fieldForSorting.includes(
+          SortFields.ScientificMetadata,
+        );
+
+        if (isNestedField) {
+          searchOptions.sort = [
+            {
+              [`${SortFields.ScientificMetadataRunNumberValue}`]: {
+                order: sortDirection,
+                nested: {
+                  path: SortFields.ScientificMetadata,
+                },
+              },
+            },
+          ];
+        } else {
+          searchOptions.sort = [
+            { [fieldForSorting]: { order: sortDirection } },
+          ];
+        }
+      }
 
       const body = await this.esService.search(searchOptions);
 
@@ -274,6 +332,37 @@ export class ElasticSearchService implements OnModuleInit {
     }
   }
 
+  async aggregate(searchParam: IDatasetFields) {
+    try {
+      const searchQuery = this.searchService.buildSearchQuery(searchParam);
+      const facetPipeline = this.searchService.buildFullFacetPipeline();
+
+      const searchOptions = {
+        query: searchQuery.query,
+        size: 0,
+        aggs: facetPipeline,
+        _source: [""],
+      } as SearchRequest;
+
+      const body = await this.esService.search(searchOptions);
+
+      const transformedFacets = transformFacets(
+        body.aggregations as AggregationsAggregate,
+      );
+
+      return transformedFacets;
+    } catch (error) {
+      Logger.error(
+        "SearchService || aggregate query issue || -> aggregate",
+        error,
+      );
+
+      throw new HttpException(
+        `SearchService || aggregate query issue || -> aggregate ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
   async updateInsertDocument(data: DatasetDocument) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
@@ -336,7 +425,10 @@ export class ElasticSearchService implements OnModuleInit {
       },
       onDrop(doc) {
         console.error(doc.document._id, doc.error?.reason);
-        Logger.error("data insert faield: ", doc.document._id);
+        Logger.error(
+          "SearchService-> performBulkOperation-> data insert faield: ",
+          doc.document._id,
+        );
       },
     });
   }

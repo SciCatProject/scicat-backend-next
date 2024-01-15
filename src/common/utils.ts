@@ -17,7 +17,10 @@ export const convertToSI = (
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    const quantity = unit(inputValue, inputUnit).toSI().toJSON();
+    // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
+    const quantity = unit(inputValue, inputUnit)
+      .to(unit(inputUnit).toSI().toJSON().unit)
+      .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
     console.error(error);
@@ -441,6 +444,7 @@ export const createFullqueryFilter = <T>(
   fields: FilterQuery<T> = {},
 ): FilterQuery<T> => {
   let filterQuery: FilterQuery<T> = {};
+  filterQuery["$or"] = [];
 
   Object.keys(fields).forEach((key) => {
     if (key === "mode") {
@@ -462,14 +466,20 @@ export const createFullqueryFilter = <T>(
         ...mapScientificQuery(fields[key]),
       };
     } else if (key === "userGroups") {
-      filterQuery["$or"] = [
-        {
-          ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
-        },
-        {
-          accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
-        },
-      ];
+      filterQuery["$or"]?.push({
+        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+      });
+      filterQuery["$or"]?.push({
+        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+      });
+    } else if (key === "ownerGroup") {
+      filterQuery["$or"]?.push({
+        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+      });
+    } else if (key === "accessGroups") {
+      filterQuery["$or"]?.push({
+        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+      });
     } else if (key === "sharedWith") {
       filterQuery["$or"]?.push({
         sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),
@@ -482,6 +492,10 @@ export const createFullqueryFilter = <T>(
       );
     }
   });
+
+  if (filterQuery["$or"]?.length === 0) {
+    delete filterQuery["$or"];
+  }
 
   return filterQuery;
 };
@@ -888,7 +902,10 @@ const replaceLikeOperatorRecursive = (
     if (k == "like" && typeof input[k] !== "object") {
       // we have encountered a loopback operator like
       output["$regex"] = input[k];
-    } else if (k == "$or" || k == "$and" || k == "$in") {
+    } else if (
+      Array.isArray(input[k]) &&
+      (k == "$or" || k == "$and" || k == "$in")
+    ) {
       output[k] = (input[k] as Array<unknown>).map((v) =>
         typeof v === "string"
           ? v
@@ -904,11 +921,6 @@ const replaceLikeOperatorRecursive = (
   }
 
   return output;
-};
-
-export const isObjectWithOneKey = (obj: object): boolean => {
-  const keys = Object.keys(obj);
-  return keys.length === 1;
 };
 
 export const sleep = (ms: number) => {

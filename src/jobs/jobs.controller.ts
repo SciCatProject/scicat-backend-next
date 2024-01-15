@@ -22,7 +22,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsAuth } from "./jobs-auth.enum";
@@ -384,28 +384,30 @@ export class JobsController {
     schema: CreateJobDto
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: JobClass,
-    description: "Create a new job and return its representation in SciCat",
+    description: "Created job",
   })
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-  ): Promise<string> {
+  ): Promise<JobClass> {
     // Load configuration, validate that request matches the current configuration
-    const jobInstance = await this.validateJob(createJobDto, request);
+    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
+    await this.validateJob(jobToCreate, request);
+
     // Check authorization
-    await this.instanceAuthorization(createJobDto,jobInstance);
+    await this.instanceAuthorization(createJobDto, jobToCreate);
 
     // Create actual job in database
-    const createdJobInstance = await this.jobsService.create(jobInstance);
+    const createdJobInstance = await this.jobsService.create(jobToCreate);
 
     // perform the action that is specified in the create portion of the job configuration
     const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
     
     // update job instance with results of job create action
 
-    return createdJobInstance._id;
+    return createdJobInstance;
   }
 
   @UseGuards(PoliciesGuard)
@@ -457,10 +459,29 @@ export class JobsController {
     return this.jobsService.findOne({ _id: id });
   }
 
-  @Post("statusUpdate")
-  async statusUpdate(statusUpdate: statusUpdate) {
-    // validate input
-    // extratc job id
-    // update status and history
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
+  @Patch(":id")
+  async update(
+    @Param("id") id: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ): Promise<JobClass | null> {
+    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
+
+    if (updatedJob) {
+      this.eventEmitter.emit("jobUpdated", {
+        instance: updatedJob,
+        hookState: { oldData: [updatedJob] },
+      });
+    }
+
+    return updatedJob;
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @Delete(":id")
+  async remove(@Param("id") id: string): Promise<unknown> {
+    return this.jobsService.remove({ _id: id });
   }
 }

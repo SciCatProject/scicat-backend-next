@@ -287,20 +287,13 @@ export class DatasetClass extends OwnableClass {
   version?: string;
 
   @ApiProperty({
-    type: Boolean,
-    required: true,
-    default: true,
-    description: "Flag is true when data are made publicly available.",
-  })
-  @Prop({ type: Boolean, required: true, default: false })
-  isPublished: boolean;
-
-  @ApiProperty({
-    type: HistoryClass,
+    type: "array",
+    items: { $ref: getSchemaPath(HistoryClass) },
     required: false,
+    default: [],
     description: "List of objects containing old and new values.",
   })
-  @Prop({ type: [HistorySchema], required: false })
+  @Prop({ type: [HistorySchema], required: false, default: [] })
   history?: HistoryClass[];
 
   @ApiProperty({
