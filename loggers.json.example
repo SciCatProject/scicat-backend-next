@@ -3,7 +3,6 @@
     "type": "DefaultLogger",
     "modulePath": "./loggingProviders/defaultLogger",
     "config": {},
-    "methods": {}
   },
   {
     "type": "GrayLogger",
@@ -15,12 +14,5 @@
       "service": "scicat-backend-next",
       "port": 9999
     },
-    "methods": {
-      "log": "logInfo",
-      "error": "logError",
-      "warn": "logWarn",
-      "debug": "logDebug",
-      "exception": "logException"
-    }
   }
 ]

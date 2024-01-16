@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import {
   ExceptionFilter,
@@ -8,29 +7,16 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import {
-  Logger,
-  LoggerConfig,
-  LoggerMethods,
-} from "./interfaces/logger.interface";
-import * as fs from "fs";
+import { Logger, LoggerConfig } from "./interfaces/logger.interface";
 
 @Injectable()
-export class ScicatLogger implements OnModuleInit {
-  private loggers: {
-    logger: Logger;
-    methods?: LoggerMethods;
-  }[] = [];
+export class ScicatLogger implements Logger, OnModuleInit {
+  private loggers: Logger[] = [];
   constructor(private configService: ConfigService) {}
 
   async onModuleInit() {
-    let loggerConfigs = this.configService.get<LoggerConfig[]>("loggerConfigs");
-
-    const filePath = "loggers.json";
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, "utf8");
-      loggerConfigs = JSON.parse(data);
-    }
+    const loggerConfigs =
+      this.configService.get<LoggerConfig[]>("loggerConfigs");
 
     if (!loggerConfigs || loggerConfigs.length < 1) {
       console.log('No logger configs found in "loggers.json"');
@@ -41,10 +27,7 @@ export class ScicatLogger implements OnModuleInit {
             const LoggerClass = await import(loggerConfig.modulePath);
             const logger = new LoggerClass.default(loggerConfig.config);
 
-            this.loggers.push({
-              logger: logger.getLogger(),
-              methods: loggerConfig.methods,
-            });
+            this.loggers.push(logger);
           } catch (err) {
             console.error(err);
           }
@@ -53,47 +36,36 @@ export class ScicatLogger implements OnModuleInit {
     }
   }
 
-  private handleLogForwarding(method: string, ...args: unknown[]): void {
-    for (const { logger, methods } of this.loggers as any) {
-      let targetMethod = method;
-
-      if (methods && Object.keys(methods).length > 0 && methods[method]) {
-        targetMethod = methods[method];
-      }
-
+  private handleLogForwarding(method: keyof Logger, ...args: unknown[]): void {
+    for (const logger of this.loggers) {
       try {
-        if (logger[targetMethod]) {
-          logger[targetMethod](...args);
-        }
+        // eslint-disable-next-line @typescript-eslint/ban-types -- We need to call the method dynamically
+        (logger[method] as Function)(...args);
       } catch (error) {
         console.error(error);
       }
     }
   }
-  log(message: string, context?: Record<string, unknown> | string) {
+  log(message: string, context: Record<string, unknown>) {
     this.handleLogForwarding("log", message, context);
   }
 
-  error(
-    message: string,
-    trace?: string,
-    context?: Record<string, unknown> | string,
-  ): void {
-    this.handleLogForwarding("error", message, context, trace);
+  error(message: string, context: Record<string, unknown>): void {
+    this.handleLogForwarding("error", message, context);
   }
 
-  warn(message: string, context?: Record<string, unknown> | string): void {
+  warn(message: string, context: Record<string, unknown>): void {
     this.handleLogForwarding("warn", message, context);
   }
 
-  debug(message: string, context?: Record<string, unknown> | string) {
+  debug(message: string, context: Record<string, unknown>) {
     this.handleLogForwarding("debug", message, context);
   }
 
   exception(
     message: string,
     exception: unknown,
-    context?: Record<string, unknown>,
+    context: Record<string, unknown>,
   ) {
     this.handleLogForwarding("exception", message, exception, context);
   }

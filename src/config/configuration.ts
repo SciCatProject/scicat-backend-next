@@ -1,3 +1,5 @@
+import * as fs from "fs";
+
 const configuration = () => {
   const accessGroupsStaticValues =
     process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
@@ -20,6 +22,22 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
+  const defaulgLogger = {
+    type: "DefaultLogger",
+    modulePath: "./loggingProviders/defaultLogger",
+    config: {},
+  };
+  const jsonConfigMap: { [key: string]: object[] } = {};
+  const jsonConfigFileList = ["loggers"];
+  for (const fileName of jsonConfigFileList) {
+    const filePath = `${fileName}.json`;
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      jsonConfigMap[fileName] = JSON.parse(data);
+      break;
+    }
+  }
+
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
@@ -35,7 +53,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
-    loggerConfigs: [],
+    loggerConfigs: jsonConfigMap.loggers ?? [defaulgLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
