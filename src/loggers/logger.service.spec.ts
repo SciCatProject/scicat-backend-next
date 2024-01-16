@@ -6,20 +6,6 @@ class MockDefaultLogger {
   getLogger = jest.fn();
 }
 
-jest.mock("fs", () => ({
-  existsSync: jest.fn().mockReturnValue(true),
-  readFileSync: jest.fn().mockReturnValue(
-    JSON.stringify([
-      {
-        type: "DefaultLogger",
-        modulePath: "./loggingProviders/defaultLogger",
-        config: {},
-        methods: {},
-      },
-    ]),
-  ),
-}));
-
 jest.mock("./loggingProviders/defaultLogger", () => {
   return {
     __esModule: true,
@@ -31,7 +17,13 @@ describe("LoggerService", () => {
   let service: ScicatLogger;
 
   const mockConfigService = {
-    get: jest.fn().mockImplementation(() => []),
+    get: jest.fn().mockImplementation(() => [
+      {
+        type: "DefaultLogger",
+        modulePath: "./loggingProviders/defaultLogger",
+        config: {},
+      },
+    ]),
   };
 
   beforeEach(async () => {
