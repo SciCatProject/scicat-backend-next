@@ -668,4 +668,139 @@ describe("2300: User Authorization: test that user authorization are correct", (
       })
       .expect(401);
   });
+
+  it("0530: admin should be able to view her user profile", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/self`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.username.should.be.equal("admin");
+        res.body.id.should.be.equal(userIdAdmin);
+      });
+  });
+
+  it("0540: admin should be able to view her user identity", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/identity`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdAdmin);
+        res.body.profile.username.should.be.equal("admin");
+      });
+  });
+
+  it("0550: admin should be able to view her user settings", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/settings`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdAdmin);
+      });
+  });
+
+  it("0560: ingestor should be able to view her user profile", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/self`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.username.should.be.equal("ingestor");
+        res.body.id.should.be.equal(userIdIngestor);
+      });
+  });
+
+  it("0570: ingestor should be able to view her user identity", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/identity`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdIngestor);
+        res.body.profile.username.should.be.equal("ingestor");
+      });
+  });
+
+  it("0580: ingestor should be able to view her user settings", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/settings`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdIngestor);
+      });
+  });
+
+  it("0590: user 1 should be able to view her user profile", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/self`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.username.should.be.equal("user1");
+        res.body.id.should.be.equal(userIdUser1);
+      });
+  });
+
+  it("0600: user 1 should be able to view her user identity", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/identity`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdUser1);
+        res.body.profile.username.should.be.equal("user1");
+      });
+  });
+
+  it("0610: user 1 should be able to view her user settings", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/settings`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.userId.should.be.equal(userIdUser1);
+      });
+  });
+
+  it("0620: anonymous user should not be able to view her non exisiting user profile", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/self`)
+      .set("Accept", "application/json")
+      .expect(401);
+  });
+
+  it("0630: anonymous user should not be able to view her non existing user identity", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/identity`)
+      .set("Accept", "application/json")
+      .expect(401);
+  });
+
+  it("0640: anonymous user should not be able to view her non exisiting user settings", async () => {
+    return request(appUrl)
+      .get(`/api/v3/users/my/settings`)
+      .set("Accept", "application/json")
+      .expect(401);
+  });
 });

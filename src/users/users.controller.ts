@@ -42,6 +42,8 @@ import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
 import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
+import { ReturnedUserDto } from "./dto/returned-user.dto";
+import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -93,10 +95,73 @@ export class UsersController {
   @AllowAny()
   @UseGuards(LocalAuthGuard)
   @Post("login")
+  @ApiOperation({
+    summary: "Functional accounts login.",
+    description: "It allows to login with functional (local) accounts.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: ReturnedAuthLoginDto,
+    description:
+      "Create a new JWT token for anonymous or the user that is currently logged in",
+  })
   async login(
     @Req() req: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<ReturnedAuthLoginDto> {
     return await this.authService.login(req.user as Omit<User, "password">);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @UseInterceptors(CreateUserSettingsInterceptor)
+  @Get("/my/self")
+  @ApiOperation({
+    summary: "Returns the information of the user currently logged in.",
+    description:
+      "This allows endpoint allows to retrieve the user record for the user currently logged.",
+  })
+  @ApiResponse({
+    status: 201,
+    type: ReturnedUserDto,
+    description:
+      "Create a new JWT token for anonymous or the user that is currently logged in",
+  })
+  async getMyUser(@Req() request: Request): Promise<ReturnedUserDto | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      (request.user as JWTUser)._id,
+    );
+    return this.usersService.findById(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @Get("/my/identity")
+  async getMyUserIdentity(
+    @Req() request: Request,
+  ): Promise<UserIdentity | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId,
+    );
+    return this.usersService.findByIdUserIdentity(authenticatedUserId);
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @Get("/my/settings")
+  async getMySettings(@Req() request: Request): Promise<UserSettings | null> {
+    const authenticatedUserId: string = (request.user as JWTUser)._id;
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserReadOwn],
+      authenticatedUserId,
+    );
+    return this.usersService.findByIdUserSettings(authenticatedUserId);
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
@@ -110,7 +175,7 @@ export class UsersController {
   async findById(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<Omit<User, "password"> | null> {
+  ): Promise<ReturnedUserDto | null> {
     await this.checkUserAuthorization(
       request,
       [Action.UserReadAny, Action.UserReadOwn],
@@ -239,7 +304,7 @@ export class UsersController {
       [Action.UserUpdateAny, Action.UserUpdateOwn],
       id,
     );
-    return this.usersService.findOneAndRemoveUserSettings(id);
+    return this.usersService.findOneAndDeleteUserSettings(id);
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)

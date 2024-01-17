@@ -26,6 +26,7 @@ import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
 import { UserPayload } from "src/auth/interfaces/userPayload.interface";
 import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
+import { ReturnedUserDto } from "./dto/returned-user.dto";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -197,8 +198,9 @@ export class UsersService implements OnModuleInit {
       : this.userModel.findOne(filter).exec();
   }
 
-  async findById(id: string): Promise<Omit<User, "password"> | null> {
-    return this.userModel.findById(id).exec();
+  async findById(id: string): Promise<ReturnedUserDto | null> {
+    const user = await this.userModel.findById(id).exec();
+    return user as ReturnedUserDto;
   }
 
   async findById2JWTUser(id: string): Promise<JWTUser | null> {
@@ -272,8 +274,8 @@ export class UsersService implements OnModuleInit {
       .exec();
   }
 
-  async findOneAndRemoveUserSettings(userId: string): Promise<unknown> {
-    return this.userSettingsModel.findOneAndRemove({ userId }).exec();
+  async findOneAndDeleteUserSettings(userId: string): Promise<unknown> {
+    return this.userSettingsModel.findOneAndDelete({ userId }).exec();
   }
 
   async createUserJWT(
