@@ -161,9 +161,9 @@ const configuration = () => {
  * Registers built-in JobActions. Should be called exactly once.
  */
 export function registerDefaultActions() {
-  registerCreateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
-  registerUpdateAction(LogJobAction.actionType, (data) => new LogJobAction(data));
-  registerCreateAction(EmailJobAction.actionType, (data) => new EmailJobAction(data));
+  registerCreateAction(LogJobAction);
+  registerUpdateAction(LogJobAction);
+  registerCreateAction(EmailJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

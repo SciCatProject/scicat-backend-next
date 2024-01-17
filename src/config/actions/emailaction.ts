@@ -7,6 +7,7 @@ import { JobAction, registerCreateAction } from "../jobconfig";
 import { JobClass } from "../../jobs/schemas/job.schema";
 import { createTransport, Transporter } from "nodemailer";
 import { compile, TemplateDelegate } from "handlebars";
+import { JobActionClass } from "../../config/jobconfig";
 
 
 const exampleConfig = {
@@ -38,8 +39,7 @@ const exampleConfig = {
 /**
  * Send an email following a job
  */
-export class EmailJobAction<T> implements JobAction<T> {
-    static readonly actionType = "email";
+export class EmailJobAction<T> implements JobAction<T>{
     private mailService: Transporter;
     private toTemplate: TemplateDelegate<JobClass>;
     private from: string;
@@ -47,6 +47,12 @@ export class EmailJobAction<T> implements JobAction<T> {
     private subjectTemplate: TemplateDelegate<JobClass>;
     private htmlTemplate?: TemplateDelegate<JobClass>;
     private textTemplate?: TemplateDelegate<JobClass>;
+
+    public static readonly actionType = "email";
+
+    getActionType(): string {
+        return EmailJobAction.actionType;
+    }
     
     constructor(data: Record<string, any>) {
         this.mailService = createTransport(data["mailer"]);

@@ -283,7 +283,7 @@ export class JobsController {
             {
               status: HttpStatus.BAD_REQUEST,
               message:
-                `Invalid job input. Action ${action.actionType} unable to validate ${createJobDto.type} job due to ${err}`,
+                `Invalid job input. Action ${action.getActionType()} unable to validate ${createJobDto.type} job due to ${err}`,
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -358,7 +358,7 @@ export class JobsController {
             {
               status: HttpStatus.BAD_REQUEST,
               message:
-                `Invalid job input. Action ${action.actionType} unable to validate ${jobInstance.type} job due to ${err}`,
+                `Invalid job input. Action ${action.getActionType()} unable to validate ${jobInstance.type} job due to ${err}`,
             },
             HttpStatus.BAD_REQUEST,
           );

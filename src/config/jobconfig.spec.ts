@@ -15,11 +15,11 @@ describe("Job configuration", () => {
         const config = await loadJobConfig(path);
         expect(config).toBeDefined();
         expect(config.length).toBe(1);
-        expect(config[0].type).toBe("archive");
+        expect(config[0].jobType).toBe("archive");
         expect(config[0].create.length).toBe(1);
         var create = config[0].create[0];
         expect(create instanceof LogJobAction);
-        expect(create.constructor.type).toBe("log");
+        expect(create.constructor.actionType).toBe("log");
         create.validate({"config":null});
     });
   });

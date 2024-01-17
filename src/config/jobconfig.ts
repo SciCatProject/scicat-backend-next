@@ -19,7 +19,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { JobClass } from "../jobs/schemas/job.schema";
 import { CreateJobDto } from "../jobs/dto/create-job.dto";
 import { UpdateJobStatusDto } from "../jobs/dto/update-jobstatus.dto";
-
+import {oneOrMore} from "../common/utils";
 
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
@@ -52,21 +52,10 @@ export class JobConfig {
     }
 }
 
-function oneOrMore<T>(x: T[]|T): T[]  {
-    return Array.isArray(x) ? x : [x];
-}
-
 /**
  * Superclass for all responses to Job changes
  */
 export interface JobAction<DtoType> {
-    // TODO should this be static? how to type that?
-    /**
-     * Action type, eg "url".
-     * 
-     * Not to be confused with JobConfig.type
-     */
-    //readonly actionType: string;
     /**
      * Validate the DTO, throwing an HttpException for problems
      */
@@ -75,6 +64,21 @@ export interface JobAction<DtoType> {
      * Respond to the action
      */
     performJob: (job: JobClass) => Promise<JobClass>;
+    /**
+     * Return the actionType for this action. This should match the class's
+     * static actionType (used for constructing the class from the configuration file)
+     */
+    getActionType(): string;
+}
+/**
+ * Describes the constructor and static members for JobAction implementations
+ */
+export interface JobActionClass<DtoType> {
+    /**
+     * Action type, eg "url". Matched during parsing of the action
+     */
+    readonly actionType: string;
+    new(json: Record<string,any>): JobAction<DtoType>;
 }
 
 export type JobCreateAction = JobAction<CreateJobDto>;
@@ -84,18 +88,18 @@ export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
 
 /// Action registration
 
-type JobActionCtor<T> = (json: Record<string,any>) => JobAction<T>;
+// type JobActionCtor<T> = (json: Record<string,any>) => JobAction<T>;
 
-const createActions: Record<string, JobActionCtor<CreateJobDto>> = {};
+const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
-const updateActions: Record<string, JobActionCtor<UpdateJobStatusDto>> = {};
+const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
  * @param action 
  */
-export function registerCreateAction(action_type: string, action: JobActionCtor<CreateJobDto> ) {
-    createActions[action_type] = action;
+export function registerCreateAction(action: JobActionClass<CreateJobDto> ) {
+    createActions[action.actionType] = action;
 }
 /**
  * List of action types with a registered action
@@ -122,8 +126,8 @@ export function getRegisteredCreateActions(): string[] {
  * Registers an action to handle jobs of a particular type
  * @param action 
  */
-export function registerUpdateAction(action_type: string, action: JobActionCtor<UpdateJobStatusDto> ) {
-    updateActions[action_type] = action;
+export function registerUpdateAction(action: JobActionClass<UpdateJobStatusDto> ) {
+    updateActions[action.actionType] = action;
 }
 /**
  * List of action types with a registered action
@@ -171,7 +175,7 @@ function parseCreateAction(data: Record<string, any>): JobCreateAction {
     if(!(type in createActions))
         throw SyntaxError(`No handler found for actions of type ${type}`)
 
-    return createActions[type](data);
+    return new createActions[type](data);
 }
 // /**
 //  * Given a JSON object configuring a JobConfigAction.
@@ -207,6 +211,6 @@ function parseUpdateAction(data: Record<string, any>): JobUpdateAction {
     if(!(type in updateActions))
         throw SyntaxError(`No handler found for actions of type ${type}`)
 
-    return updateActions[type](data);
+    return new updateActions[type](data);
 }
 

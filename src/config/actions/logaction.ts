@@ -8,7 +8,11 @@ import { JobAction } from "../jobconfig";
 import { JobClass } from "../../jobs/schemas/job.schema";
 
 export class LogJobAction<T> implements JobAction<T>{
-    static readonly actionType = "log";
+    public static readonly actionType = "log";
+
+    getActionType(): string {
+        return LogJobAction.actionType;
+    }
     
     async validate(dto: T) {
         Logger.log("Validating CREATE job: "+JSON.stringify(dto));
