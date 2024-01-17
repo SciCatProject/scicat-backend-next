@@ -27,16 +27,24 @@ const configuration = () => {
     modulePath: "./loggingProviders/defaultLogger",
     config: {},
   };
-  const jsonConfigMap: { [key: string]: object[] } = {};
-  const jsonConfigFileList = ["loggers"];
-  for (const fileName of jsonConfigFileList) {
-    const filePath = `${fileName}.json`;
+  const jsonConfigMap: { [key: string]: object[] | boolean } = {};
+  const jsonConfigFileList: { [key: string]: string } = {
+    loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+  };
+  Object.keys(jsonConfigFileList).forEach((key) => {
+    const filePath = jsonConfigFileList[key];
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, "utf8");
-      jsonConfigMap[fileName] = JSON.parse(data);
-      break;
+      try {
+        jsonConfigMap[key] = JSON.parse(data);
+      } catch (error) {
+        console.error(
+          "Error json config file parsing " + filePath + " : " + error,
+        );
+        jsonConfigMap[key] = false;
+      }
     }
-  }
+  });
 
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
@@ -53,7 +61,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
-    loggerConfigs: jsonConfigMap.loggers ?? [defaulgLogger],
+    loggerConfigs: jsonConfigMap.loggers || [defaulgLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),

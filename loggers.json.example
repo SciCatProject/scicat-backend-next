@@ -2,7 +2,7 @@
   {
     "type": "DefaultLogger",
     "modulePath": "./loggingProviders/defaultLogger",
-    "config": {},
+    "config": {}
   },
   {
     "type": "GrayLogger",
@@ -13,6 +13,6 @@
       "server": "localhost",
       "service": "scicat-backend-next",
       "port": 9999
-    },
+    }
   }
 ]
