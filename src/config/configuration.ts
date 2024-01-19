@@ -22,7 +22,7 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
-  const defaulgLogger = {
+  const defaultLogger = {
     type: "DefaultLogger",
     modulePath: "./loggingProviders/defaultLogger",
     config: {},
@@ -61,7 +61,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
-    loggerConfigs: jsonConfigMap.loggers || [defaulgLogger],
+    loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
