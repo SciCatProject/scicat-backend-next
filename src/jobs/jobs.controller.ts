@@ -274,7 +274,7 @@ export class JobsController {
     const jc = matchingConfig[0];
 
     await Promise.all(
-      jc.create.map((action) => {
+      jc.create.actions.map((action) => {
         return action.validate(createJobDto).catch( (err) => {
           if( err instanceof HttpException) {
             throw err;
@@ -464,7 +464,7 @@ export class JobsController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body() updateJobDto: UpdateJobDto,
+    @Body() updateJobDto: UpdateJobStatusDto,
   ): Promise<JobClass | null> {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 

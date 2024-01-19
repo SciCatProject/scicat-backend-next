@@ -16,10 +16,12 @@ describe("Job configuration", () => {
         expect(config).toBeDefined();
         expect(config.length).toBe(1);
         expect(config[0].jobType).toBe("archive");
-        expect(config[0].create.length).toBe(1);
-        var create = config[0].create[0];
-        expect(create instanceof LogJobAction);
-        expect(create.constructor.actionType).toBe("log");
-        create.validate({"config":null});
+        expect(config[0].create).toBeDefined();
+        var create = config[0].create;
+        expect(create.actions.length).toBe(1);
+        var action = create.actions[0]
+        expect(action instanceof LogJobAction);
+        expect(action.getActionType()).toBe("log");
+        action.validate({"config": null});
     });
   });

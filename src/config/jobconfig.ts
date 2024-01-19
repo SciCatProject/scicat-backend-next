@@ -27,11 +27,14 @@ import {oneOrMore} from "../common/utils";
 export class JobConfig {
     jobType: string;
 
-    create: JobCreateAction[];
+    create: JobOperation<CreateJobDto>;
     // read: JobReadAction[];
-    update: JobUpdateAction[];
+    update: JobOperation<UpdateJobStatusDto>;
 
-    constructor(jobType: string, create: JobCreateAction[]=[], read=[], update: JobUpdateAction[]=[]) {
+    constructor(jobType: string,
+        create: JobOperation<CreateJobDto>, read=undefined,
+        update: JobOperation<UpdateJobStatusDto>)
+    {
         this.jobType = jobType;
         this.create = create;
         // this.read = read;
@@ -45,11 +48,49 @@ export class JobConfig {
      */
     static parse(data: Record<string, any>) {
         const type = data["jobType"];
-        const create = "create" in data ? oneOrMore(data["create"]).map((json) => parseCreateAction(json["action"])) : [];
+        const create = JobOperation.parse<CreateJobDto>(createActions, data["create"]);
         const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
-        const update = "update" in data ? oneOrMore(data["update"]).map((json) => parseUpdateAction(json["action"])) : [];
+        const update = JobOperation.parse<UpdateJobStatusDto>(updateActions, data["update"]);
         return new JobConfig(type, create, read, update);
     }
+}
+
+export class JobOperation<DtoType> {
+    auth: Record<string, any>|undefined; //TODO replace with actual auth schema
+    actions: JobAction<DtoType>[];
+
+    constructor(actions: JobAction<DtoType>[]=[], auth: Record<string, any> | undefined) {
+        this.actions = actions;
+        this.auth = auth;
+    }
+
+    static parse<DtoType>(actionList:  Record<string, JobActionClass<DtoType>>, data: Record<string, any>): JobOperation<DtoType> {
+        const auth = data["auth"];
+        const actionsData: any[] = oneOrMore(data["actions"] || []);
+        const actions = actionsData.map(json => parseAction<DtoType>(actionList, json));
+        return new JobOperation<DtoType>(actions, auth);
+    }
+}
+
+/**
+ * Given a JSON object configuring a JobConfigAction.
+ * 
+ * This is dispatched to registered constructors (see registerCreateAction) based on
+ * the "actionType" field of data. Other parameters are action-specific.
+ * @param data JSON configuration data
+ * @returns 
+ */
+function parseAction<DtoType>(actionList:  Record<string, JobActionClass<DtoType>>, data: Record<string, any>): JobAction<DtoType> {
+    if(!("actionType" in data))
+        throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
+    
+    const type = data.actionType;
+    if(!(type in actionList)) {
+        throw SyntaxError(`No handler found for actions of type ${type}`)
+    }
+    
+    const actionClass = actionList[type];
+    return new actionClass(data);
 }
 
 /**

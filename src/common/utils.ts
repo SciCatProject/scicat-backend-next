@@ -914,11 +914,11 @@ export const sleep = (ms: number) => {
 
 /**
  * Accepts either an object or array of objects.
- * 
+ *
  * Note that T should not extend Array (eg no nested arrays)
  * @param x object or array of objects
  * @returns array containing x
  */
-export function oneOrMore<T>(x: T[]|T): T[]  {
+export function oneOrMore<T>(x: T[] | T): T[] {
   return Array.isArray(x) ? x : [x];
 }
