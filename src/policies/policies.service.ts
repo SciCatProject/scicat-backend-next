@@ -183,7 +183,7 @@ export class PoliciesService implements OnModuleInit {
           try {
             // allow all functional users
             return await this.policyModel
-              .updateOne({ ownerGroup }, data, { new: true })
+              .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();
@@ -202,7 +202,7 @@ export class PoliciesService implements OnModuleInit {
 
           try {
             return await this.policyModel
-              .updateOne({ ownerGroup }, data, { new: true })
+              .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();

@@ -68,7 +68,7 @@ export class PublishedDataService {
 
   async countDocuments(
     filter: FilterQuery<PublishedDataDocument>,
-    options?: QueryOptions,
+    options?: object,
   ): Promise<ICount> {
     const count = await this.publishedDataModel
       .countDocuments(filter, options)
