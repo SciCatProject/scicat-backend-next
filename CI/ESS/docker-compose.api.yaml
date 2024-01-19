@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: bitnami/mongodb:4.2
+    image: mongo:latest
     volumes:
       - mongodb_data:/bitnami
     ports:
