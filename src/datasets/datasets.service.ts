@@ -171,9 +171,7 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
     updateDatasetDto: Record<string, unknown>,
   ): Promise<unknown> {
-    return this.datasetModel
-      .updateMany(filter, updateDatasetDto, { new: true })
-      .exec();
+    return this.datasetModel.updateMany(filter, updateDatasetDto, {}).exec();
   }
 
   async findOne(
