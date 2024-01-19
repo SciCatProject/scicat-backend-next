@@ -109,6 +109,6 @@ export class ProposalsService {
   }
 
   async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {
-    return this.proposalModel.findOneAndRemove(filter).exec();
+    return this.proposalModel.findOneAndDelete(filter).exec();
   }
 }

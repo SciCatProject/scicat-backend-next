@@ -101,7 +101,7 @@ export class JobsService {
     return updatedJob;
   }
 
-  async delete(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
+  async remove(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
     return this.jobModel.findOneAndDelete(filter).exec();
   }
 }

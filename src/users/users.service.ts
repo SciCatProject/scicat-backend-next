@@ -275,8 +275,8 @@ export class UsersService implements OnModuleInit {
       .exec();
   }
 
-  async findOneAndRemoveUserSettings(userId: string): Promise<unknown> {
-    return this.userSettingsModel.findOneAndRemove({ userId }).exec();
+  async findOneAndDeleteUserSettings(userId: string): Promise<unknown> {
+    return this.userSettingsModel.findOneAndDelete({ userId }).exec();
   }
 
   async createUserJWT(

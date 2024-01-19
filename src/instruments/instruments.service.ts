@@ -56,6 +56,6 @@ export class InstrumentsService {
   }
 
   async remove(filter: FilterQuery<InstrumentDocument>): Promise<unknown> {
-    return this.instrumentModel.findOneAndRemove(filter).exec();
+    return this.instrumentModel.findOneAndDelete(filter).exec();
   }
 }

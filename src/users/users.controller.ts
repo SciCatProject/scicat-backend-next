@@ -304,7 +304,7 @@ export class UsersController {
       [Action.UserUpdateAny, Action.UserUpdateOwn],
       id,
     );
-    return this.usersService.findOneAndRemoveUserSettings(id);
+    return this.usersService.findOneAndDeleteUserSettings(id);
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)

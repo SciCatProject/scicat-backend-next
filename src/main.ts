@@ -20,7 +20,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle("SciCat backend API")
     .setDescription("This is the API for the SciCat Backend")
-    .setVersion("4.0.0")
+    .setVersion("" + process.env.npm_package_version)
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
