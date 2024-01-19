@@ -58,7 +58,7 @@ export class EmailJobAction<T> implements JobAction<T> {
     this.from = data["from"];
     this.ccTemplate = "cc" in data ? compile(data["cc"]) : undefined;
     this.subjectTemplate = compile(data["subject"]);
-    this.htmlTemplate = "html" in data? compile(data["html"]) : undefined;
+    this.htmlTemplate = "html" in data ? compile(data["html"]) : undefined;
     this.textTemplate = "text" in data ? compile(data["text"]) : undefined;
   }
 
@@ -86,5 +86,4 @@ export class EmailJobAction<T> implements JobAction<T> {
 
     return job;
   }
-
 }

@@ -1,13 +1,14 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  Scope,
-} from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, PipelineStage, QueryOptions, UpdateQuery } from "mongoose";
+import {
+  FilterQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -78,7 +79,9 @@ export class JobsService {
     return this.jobModel.findOne(filter).exec();
   }
 
-  async statusUpdate(updateJobStatusDto: UpdateJobStatusDto): Promise<JobClass | null> {
+  async statusUpdate(
+    updateJobStatusDto: UpdateJobStatusDto,
+  ): Promise<JobClass | null> {
     const id = updateJobStatusDto.id;
     const existingJob = await this.jobModel.findOne({ pid: id }).exec();
     if (!existingJob) {

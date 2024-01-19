@@ -1,5 +1,10 @@
 import { Logger } from "@nestjs/common";
-import { JobConfig, loadJobConfig, registerCreateAction, registerUpdateAction } from "./jobconfig";
+import {
+  JobConfig,
+  loadJobConfig,
+  registerCreateAction,
+  registerUpdateAction,
+} from "./jobconfig";
 import { LogJobAction } from "./actions/logaction";
 import { EmailJobAction } from "./actions/emailaction";
 
