@@ -2,6 +2,10 @@
     {
         "type": "beautify",
         "create" : {
+            "auth": {
+                "auth" : "#all", // #all, Job 
+                "field" : ""
+            },
             "template": {
                 "type": "object",
                 "properties": {
@@ -14,10 +18,6 @@
                 "additionalProperties": false
             },        
             "actions": [
-                "auth": {
-                    "auth" : "#all", // #all, Job 
-                    "field" : ""
-                },
                 {
                     "name": "no_action",
                     "template": {
