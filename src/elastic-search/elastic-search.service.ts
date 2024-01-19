@@ -271,8 +271,8 @@ export class ElasticSearchService implements OnModuleInit {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
     try {
+      const isSortEmpty = !sort || JSON.stringify(sort) === "{}";
       const searchQuery = this.searchService.buildSearchQuery(searchParam);
-
       const searchOptions = {
         track_scores: true,
         sort: [{ _score: { order: "desc" } }],
@@ -284,7 +284,7 @@ export class ElasticSearchService implements OnModuleInit {
         _source: [""],
       } as SearchRequest;
 
-      if (sort) {
+      if (!isSortEmpty) {
         const sortField = Object.keys(sort)[0];
         const sortDirection = Object.values(sort)[0];
 
