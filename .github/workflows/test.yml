@@ -178,7 +178,7 @@ jobs:
           npm run test:api
 
   generate_and_test_openapi_client:
-    name: Generate an test OpenAPI Client libraries
+    name: Generate and test OpenAPI Client libraries
     needs: [install-and-cache]
     runs-on: ubuntu-latest
 
@@ -227,6 +227,9 @@ jobs:
           SAMPLE_GROUPS: ""
           DATASET_CREATION_VALIDATION_ENABLED: false
           MONGODB_COLLECTION: Dataset
+          ES_PASSWORD: duo-password
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
           MEM_LIMIT: 4G
 
         # Start mongo container and app before starting
