@@ -1,0 +1,102 @@
+name: Generate & Publish OpenAPI Client
+env:
+  NODE_VERSION: 18.x
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  generate-openapi-definition:
+    name: Generate the OpenAPI definition and cache it
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        if: steps.cached-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Cache OpenAPI definition
+        id: cached-openapi-definition
+        uses: actions/cache@v3
+        with:
+          path: ./
+          key: openapi.json
+
+      - name: Generate OpenAPI definition
+        env:
+          EXIT_AFTER_OPENAPI_GENERATION: true
+          ELASTICSEARCH_ENABLED: false
+          MONGODB_URI: mongodb://localhost:27017/scicat
+          EXPRESS_SESSION_SECRET: a_scicat_secret
+          JWT_SECRET: a_scicat_secret
+          PORT: 3000
+          HTTP_MAX_REDIRECTS: 5
+          HTTP_TIMEOUT: 5000
+          JWT_EXPIRES_IN: 3600
+          LOGGING_DISABLED: true
+          SITE: PSI
+          PID_PREFIX: PID.SAMPLE.PREFIX
+          DOI_PREFIX: DOI.SAMPLE.PREFIX
+          METADATA_KEYS_RETURN_LIMIT: 100
+          METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
+          ADMIN_GROUPS: ingestor
+          DELETE_GROUPS: ingestor
+          CREATE_DATASET_GROUPS: ingestor
+          CREATE_DATASET_WITH_PID_GROUPS: ingestor
+          CREATE_DATASET_PRIVILEGED_GROUPS: ingestor
+          ACCESS_GROUPS_STATIC_VALUES: "ess"
+          PROPOSAL_GROUPS: ingestor
+          SAMPLE_GROUPS: ""
+          DATASET_CREATION_VALIDATION_ENABLED: false
+          MONGODB_COLLECTION: Dataset
+          MEM_LIMIT: 4G
+
+        # Start mongo container and app before starting
+        run: |
+          cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
+          cp functionalAccounts.json.test functionalAccounts.json
+          docker-compose up --build -d
+          npm run start
+
+  generate-and-push:
+    name: Run install and cache
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        generator: [python-next, typescript]
+    steps:
+      - name: Restore OpenAPI definition
+        id: cached-openapi-definition
+        uses: actions/cache@v3
+        with:
+          path: ./
+          key: openapi.json
+
+      # Use the action to generate a client package
+      # This uses the default path for the openapi document and thus assumes there is an openapi.json in the current workspace.
+      # https://github.com/openapi-generators/openapitools-generator-action
+      # https://openapi-generator.tech/docs/generators/
+      - name: Generate Client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: ${{ matrix.generator }}
+          openapi-file: openapi.json
+          config-file: .github/openapi/${{ matrix.generator }}-config.yml
+
+      # Checkout client and force upload changes
+      - name: Git Push to its client library repository
+        run: |
+          cd ${{ matrix.generator }}
+          /bin/sh ./git_push.sh

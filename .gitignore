@@ -8,7 +8,7 @@ loggers.json
 .env
 
 # OpenAPI
-openapi
+/openapi
 openapi.json
 
 # Logs
