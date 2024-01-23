@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        generator: [python-next, typescript]
+        generator: ${{ toJSON(env.REPOSITORY_VAR) }}
     steps:
       - name: Restore OpenAPI definition
         id: cached-openapi-definition
