@@ -29,7 +29,7 @@ jobs:
 
       - name: Cache OpenAPI definition
         id: cached-openapi-definition
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./
           key: openapi.json
@@ -79,7 +79,7 @@ jobs:
     steps:
       - name: Restore OpenAPI definition
         id: cached-openapi-definition
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./
           key: openapi.json
