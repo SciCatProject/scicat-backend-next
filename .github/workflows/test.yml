@@ -233,8 +233,6 @@ jobs:
 
         # Start mongo container and app before starting
         run: |
-          cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
-          cp functionalAccounts.json.test functionalAccounts.json
           docker-compose up --build -d
           npm run start
 
