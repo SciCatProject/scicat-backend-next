@@ -1,0 +1,9 @@
+services:
+  mongodb:
+    image: bitnami/mongodb:4.2
+    volumes:
+      - mongodb_data:/bitnami
+
+volumes:
+  mongodb_data:
+    driver: local

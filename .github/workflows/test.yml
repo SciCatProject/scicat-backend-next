@@ -233,11 +233,13 @@ jobs:
 
         # Start mongo container and app before starting
         run: |
+          cp docker-compose.mongo.yaml docker-compose.yaml
           docker-compose up --build -d
-          npm run start
+          npm run start &
 
       - name: Fetch Bearer Token
-        run: ACCESS_TOKEN=$(curl -d 'username=ingestor' -d 'password=aman' http://localhost:3000/api/v3/auth/login | jq -r ".access_token")
+        run: |
+          ACCESS_TOKEN=$(curl --retry 30 --retry-connrefused --retry-delay 20 -d 'username=ingestor' -d 'password=aman' http://localhost:3000/api/v3/auth/login | jq -r ".access_token")
 
       # Test the generated OpenAPI definition
       # https://github.com/marketplace/actions/schemathesis
