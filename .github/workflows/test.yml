@@ -202,7 +202,6 @@ jobs:
       # Generate OpenAPI definition
       - name: Start Backend for later tests and generate openapi.json
         env:
-          EXIT_AFTER_OPENAPI_GENERATION: true
           ELASTICSEARCH_ENABLED: false
           MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
