@@ -1,4 +1,4 @@
-export enum Action {
+export enum Action {  // Should we call this Operations instead?
   // Dataset actions
   Manage = "manage",
   Create = "create",
@@ -76,7 +76,6 @@ export enum Action {
   DatasetDatablockDeleteAny = "dataset_datablock_delete_any",
   DatasetLogbookReadOwner = "dataset_logbook_read_owner",
   DatasetLogbookReadAny = "dataset_logbook_read_any",
-  //
   // -------------
   // Origdatablock
   // endpoint authorization actions
@@ -98,7 +97,7 @@ export enum Action {
   OrigdatablockUpdateAny = "origdatablock_update_any",
   OrigdatablockDeleteOwner = "origdatablock_delete_owner",
   OrigdatablockDeleteAny = "origdatablock_delete_any",
-
+  // -------------
   // Proposals
   // endpoint authorization actions
   ProposalsCreate = "proposals_create",
@@ -110,7 +109,6 @@ export enum Action {
   ProposalsAttachmentUpdate = "proposals_attachment_update",
   ProposalsAttachmentDelete = "proposals_attachment_delete",
   ProposalsDatasetRead = "proposals_dataset_read",
-
   // individual actions
   ProposalsCreateOwner = "proposals_create_owner",
   ProposalsCreateAny = "proposals_create_any",
@@ -135,7 +133,7 @@ export enum Action {
   ProposalsAttachmentUpdateAny = "proposals_attachment_update_any",
   ProposalsAttachmentDeleteOwner = "proposals_attachment_delete_owner",
   ProposalsAttachmentDeleteAny = "proposals_attachment_delete_any",
-
+  // -------------
   // Samples
   // endpoint authorization actions
   SamplesCreate = "samples_create",
@@ -147,7 +145,6 @@ export enum Action {
   SamplesAttachmentUpdate = "samples_attachment_update",
   SamplesAttachmentDelete = "samples_attachment_delete",
   SamplesDatasetRead = "samples_dataset_read",
-
   // individual actions
   SamplesCreateOwner = "samples_create_owner",
   SamplesCreateAny = "samples_create_any",
@@ -158,7 +155,6 @@ export enum Action {
   SamplesReadOneAccess = "samples_read_one_access",
   SamplesReadOneOwner = "samples_read_one_owner",
   SamplesReadAny = "samples_read_any",
-
   SamplesUpdateOwner = "samples_update_owner",
   SamplesUpdateAny = "samples_update_any",
   SamplesDeleteOwner = "samples_delete_owner",
@@ -173,15 +169,12 @@ export enum Action {
   SamplesAttachmentUpdateAny = "samples_attachment_update_any",
   SamplesAttachmentDeleteOwner = "samples_attachment_delete_owner",
   SamplesAttachmentDeleteAny = "samples_attachment_delete_any",
-
   // --------------
   // Jobs
-  // --------------
   // endpoint authorization
   JobsCreate = "jobs_create",
   JobsRead = "jobs_read",
   JobsUpdate = "jobs_update",
-  // --------------
   // data instance authorization
   JobsCreateOwner = "jobs_create_owner",
   JobsCreateAny = "jobs_create_any",
@@ -189,7 +182,6 @@ export enum Action {
   JobsReadAny = "jobs_read_any",
   JobsUpdateAccess = "jobs_update_access",
   JobsUpdateAny = "jobs_update_any",
-
   // -------------
   // Users actions
   UserReadOwn = "user_read_own",
@@ -201,11 +193,10 @@ export enum Action {
   UserDeleteOwn = "user_delete_own",
   UserDeleteAny = "user_delete_any",
   UserCreateJwt = "user_create_jwt",
+  // -------------
   // Instrument actions
   InstrumentRead = "instrument_read",
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
   InstrumentDelete = "instrument_delete",
-  // Job actions
-  JobCreate = "job_create",
 }

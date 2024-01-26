@@ -53,6 +53,8 @@ export class EmailJobAction<T> implements JobAction<T> {
   }
 
   constructor(data: Record<string, any>) {
+    data = exampleConfig;   // TEMP
+
     this.mailService = createTransport(data["mailer"]);
     this.toTemplate = compile(data["to"]);
     this.from = data["from"];

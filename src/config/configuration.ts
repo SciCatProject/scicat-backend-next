@@ -46,7 +46,7 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs: Promise<JobConfig[]> = loadJobConfig("jobconfig.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/config/jobconfig.json");
 
   return {
     jobConfiguration: job_configs,
