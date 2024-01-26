@@ -128,7 +128,7 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
-      - name: API tests
+      - name: Start backend
         env:
           ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
           MONGODB_URI: mongodb://localhost:27017/scicat
@@ -172,80 +172,31 @@ jobs:
 
         # Start mongo container and app before running api tests
         run: |
-          cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           cp functionalAccounts.json.test functionalAccounts.json
-          docker-compose up --build -d
-          npm run test:api
-
-  generate_and_test_openapi_client:
-    name: Generate and test OpenAPI Client libraries
-    needs: [install-and-cache]
-    runs-on: ubuntu-latest
-
-    steps:
-      # Checkout your code
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore node_modules
-        id: cached-node-modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
-
-      # Generate OpenAPI definition
-      - name: Start Backend for later tests and generate openapi.json
-        env:
-          ELASTICSEARCH_ENABLED: false
-          MONGODB_URI: mongodb://localhost:27017/scicat
-          EXPRESS_SESSION_SECRET: a_scicat_secret
-          JWT_SECRET: a_scicat_secret
-          PORT: 3000
-          HTTP_MAX_REDIRECTS: 5
-          HTTP_TIMEOUT: 5000
-          JWT_EXPIRES_IN: 3600
-          LOGGING_DISABLED: true
-          SITE: PSI
-          PID_PREFIX: PID.SAMPLE.PREFIX
-          DOI_PREFIX: DOI.SAMPLE.PREFIX
-          METADATA_KEYS_RETURN_LIMIT: 100
-          METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: ingestor
-          DELETE_GROUPS: ingestor
-          CREATE_DATASET_GROUPS: ingestor
-          CREATE_DATASET_WITH_PID_GROUPS: ingestor
-          CREATE_DATASET_PRIVILEGED_GROUPS: ingestor
-          ACCESS_GROUPS_STATIC_VALUES: "ess"
-          PROPOSAL_GROUPS: ingestor
-          SAMPLE_GROUPS: ""
-          DATASET_CREATION_VALIDATION_ENABLED: false
-          MONGODB_COLLECTION: Dataset
-          ES_PASSWORD: duo-password
-          STACK_VERSION: 8.8.2
-          CLUSTER_NAME: es-cluster
-          MEM_LIMIT: 4G
-
-        # Start mongo container and app before starting
-        run: |
-          cp docker-compose.mongo.yaml docker-compose.yaml
-          docker-compose up --build -d
+          docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
           npm run start &
 
-      - name: Fetch Bearer Token
-        run: |
-          ACCESS_TOKEN=$(curl --retry 30 --retry-connrefused --retry-delay 20 -d 'username=ingestor' -d 'password=aman' http://localhost:3000/api/v3/auth/login | jq -r ".access_token")
-
-      # Test the generated OpenAPI definition
-      # https://github.com/marketplace/actions/schemathesis
-      - name: Run schemathesis against the backend
-        uses: schemathesis/action@v1
+      - name: Generate openapi client
+        uses: openapi-generators/openapitools-generator-action@v1
         with:
-          schema: 'http://127.0.0.1:3000/explorer-json'
-          wait-for-schema: '60'  # max wait time in seconds
-          args: '-H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+          generator: python-nextgen
+          openapi-file: openapi.json
+          config-file: .github/openapi/python-nextgen-config.yml
+          command-args: "--skip-validate-spec --ignore-file-override openapi/\"$1\"/test**"
+
+      - name: Test jest
+        run: npm run test:api:jest
+
+      - name: Test mocha
+        run: npm run test:api:mocha
+
+      - name: Test OpenAPI
+        run: |
+          cd openapi/python-nextgen
+          python3 -m venv .venv
+          source venv/bin/activate
+          python3 -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f test-requirements.txt ]; then pip install -r requirements.txt; fi
+          pytest
