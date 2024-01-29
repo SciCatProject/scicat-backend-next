@@ -24,7 +24,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
@@ -85,8 +85,8 @@ export class PoliciesController {
 
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ListAll, Policy);
-      const canViewTheirOwn = ability.can(Action.ListOwn, Policy);
+      const canViewAll = ability.can(AuthOp.ListAll, Policy);
+      const canViewTheirOwn = ability.can(AuthOp.ListOwn, Policy);
       if (!canViewAll && canViewTheirOwn) {
         if (!mergedFilters.where) {
           mergedFilters.where = {};
@@ -102,14 +102,14 @@ export class PoliciesController {
     return mergedFilters;
   }
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Create, Policy))
   @Post()
   async create(@Body() createPolicyDto: CreatePolicyDto): Promise<Policy> {
     return this.policiesService.create(createPolicyDto);
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, Policy))
   @Get()
   @ApiQuery({
     name: "filter",
@@ -133,7 +133,7 @@ export class PoliciesController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, Policy))
   @Get("/count")
   async count(@Query("where") where?: string): Promise<{ count: number }> {
     const parsedWhere: FilterQuery<PolicyDocument> = JSON.parse(where ?? "{}");
@@ -141,7 +141,7 @@ export class PoliciesController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Update, Policy))
   @UseInterceptors(HistoryInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post("/updateWhere")
@@ -153,14 +153,14 @@ export class PoliciesController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, Policy))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<Policy | null> {
     return this.policiesService.findOne({ _id: id });
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Update, Policy))
   @Patch(":id")
   async update(
     @Param("id") id: string,
@@ -170,7 +170,7 @@ export class PoliciesController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Policy))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Delete, Policy))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.policiesService.remove({ _id: id });

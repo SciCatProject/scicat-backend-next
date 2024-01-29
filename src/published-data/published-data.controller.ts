@@ -28,7 +28,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import {
   PublishedData,
   PublishedDataDocument,
@@ -70,7 +70,7 @@ export class PublishedDataController {
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Create, PublishedData),
+    ability.can(AuthOp.Create, PublishedData),
   )
   @Post()
   async create(
@@ -156,7 +156,7 @@ export class PublishedDataController {
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, PublishedData),
+    ability.can(AuthOp.Read, PublishedData),
   )
   @Get("/formpopulate")
   @ApiQuery({
@@ -222,7 +222,7 @@ export class PublishedDataController {
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, PublishedData),
+    ability.can(AuthOp.Update, PublishedData),
   )
   @Patch("/:id")
   async update(
@@ -238,7 +238,7 @@ export class PublishedDataController {
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Delete, PublishedData),
+    ability.can(AuthOp.Delete, PublishedData),
   )
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<unknown> {
@@ -248,7 +248,7 @@ export class PublishedDataController {
   // POST /publisheddata/:id/register
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, PublishedData),
+    ability.can(AuthOp.Update, PublishedData),
   )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
@@ -429,7 +429,7 @@ export class PublishedDataController {
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, PublishedData),
+    ability.can(AuthOp.Update, PublishedData),
   )
   @Post("/:id/resync")
   async resync(

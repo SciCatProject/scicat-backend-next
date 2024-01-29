@@ -20,7 +20,7 @@ import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
   ApiBearerAuth,
@@ -447,7 +447,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.JobsCreate, JobClass),
+    ability.can(AuthOp.JobsCreate, JobClass),
   )
   @Post()
   @ApiOperation({
@@ -485,7 +485,7 @@ export class JobsController {
 
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get()
   @ApiQuery({
     name: "filter",
@@ -514,7 +514,7 @@ export class JobsController {
   // }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -527,7 +527,7 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
@@ -553,7 +553,7 @@ export class JobsController {
   // }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Delete, JobClass))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });

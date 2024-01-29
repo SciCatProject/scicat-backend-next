@@ -36,7 +36,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
@@ -91,7 +91,7 @@ export class ProposalsController {
   }
 
   private async permissionChecker(
-    group: Action,
+    group: AuthOp,
     proposal: ProposalClass | CreateProposalDto,
     request: Request,
   ) {
@@ -104,55 +104,55 @@ export class ProposalsController {
 
     try {
       switch (group) {
-        case Action.ProposalsCreate:
+        case AuthOp.ProposalsCreate:
           return (
-            ability.can(Action.ProposalsCreateAny, ProposalClass) ||
-            ability.can(Action.ProposalsCreateOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsCreateAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsCreateOwner, proposalInstance)
           );
-        case Action.ProposalsRead:
+        case AuthOp.ProposalsRead:
           return (
-            ability.can(Action.ProposalsReadAny, ProposalClass) ||
-            ability.can(Action.ProposalsReadOneOwner, proposalInstance) ||
-            ability.can(Action.ProposalsReadOneAccess, proposalInstance) ||
-            ability.can(Action.ProposalsReadOnePublic, proposalInstance)
+            ability.can(AuthOp.ProposalsReadAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsReadOneOwner, proposalInstance) ||
+            ability.can(AuthOp.ProposalsReadOneAccess, proposalInstance) ||
+            ability.can(AuthOp.ProposalsReadOnePublic, proposalInstance)
           );
-        case Action.ProposalsUpdate:
+        case AuthOp.ProposalsUpdate:
           return (
-            ability.can(Action.ProposalsUpdateAny, ProposalClass) ||
-            ability.can(Action.ProposalsUpdateOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsUpdateAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsUpdateOwner, proposalInstance)
           );
-        case Action.ProposalsDelete:
+        case AuthOp.ProposalsDelete:
           return (
-            ability.can(Action.ProposalsDeleteAny, ProposalClass) ||
-            ability.can(Action.ProposalsDeleteOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsDeleteAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsDeleteOwner, proposalInstance)
           );
-        case Action.ProposalsAttachmentCreate:
+        case AuthOp.ProposalsAttachmentCreate:
           return (
-            ability.can(Action.ProposalsAttachmentCreateAny, ProposalClass) ||
-            ability.can(Action.ProposalsAttachmentCreateOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsAttachmentCreateAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsAttachmentCreateOwner, proposalInstance)
           );
-        case Action.ProposalsAttachmentRead:
+        case AuthOp.ProposalsAttachmentRead:
           return (
-            ability.can(Action.ProposalsAttachmentReadAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsAttachmentReadAny, ProposalClass) ||
             ability.can(
-              Action.ProposalsAttachmentReadOwner,
+              AuthOp.ProposalsAttachmentReadOwner,
               proposalInstance,
             ) ||
             ability.can(
-              Action.ProposalsAttachmentReadPublic,
+              AuthOp.ProposalsAttachmentReadPublic,
               proposalInstance,
             ) ||
-            ability.can(Action.ProposalsAttachmentReadAccess, proposalInstance)
+            ability.can(AuthOp.ProposalsAttachmentReadAccess, proposalInstance)
           );
-        case Action.ProposalsAttachmentUpdate:
+        case AuthOp.ProposalsAttachmentUpdate:
           return (
-            ability.can(Action.ProposalsAttachmentUpdateAny, ProposalClass) ||
-            ability.can(Action.ProposalsAttachmentUpdateOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsAttachmentUpdateAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsAttachmentUpdateOwner, proposalInstance)
           );
-        case Action.ProposalsAttachmentDelete:
+        case AuthOp.ProposalsAttachmentDelete:
           return (
-            ability.can(Action.ProposalsAttachmentDeleteAny, ProposalClass) ||
-            ability.can(Action.ProposalsAttachmentDeleteOwner, proposalInstance)
+            ability.can(AuthOp.ProposalsAttachmentDeleteAny, ProposalClass) ||
+            ability.can(AuthOp.ProposalsAttachmentDeleteOwner, proposalInstance)
           );
 
         default:
@@ -167,7 +167,7 @@ export class ProposalsController {
   private async checkPermissionsForProposal(
     request: Request,
     id: string,
-    group: Action,
+    group: AuthOp,
   ) {
     const proposal = await this.proposalsService.findOne({
       proposalId: id,
@@ -190,7 +190,7 @@ export class ProposalsController {
   private async checkPermissionsForProposalCreate(
     request: Request,
     proposal: CreateProposalDto,
-    group: Action,
+    group: AuthOp,
   ) {
     if (!proposal) {
       throw new BadRequestException("Not able to create this proposal");
@@ -210,18 +210,18 @@ export class ProposalsController {
 
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
+          AuthOp.ProposalsReadManyAccess,
           ProposalClass,
         );
         const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
+          AuthOp.ProposalsReadManyOwner,
           ProposalClass,
         );
         const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
+          AuthOp.ProposalsReadManyPublic,
           ProposalClass,
         );
         if (canViewAccess) {
@@ -245,7 +245,7 @@ export class ProposalsController {
   // POST /proposals
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsCreate, ProposalClass),
+    ability.can(AuthOp.ProposalsCreate, ProposalClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
@@ -276,7 +276,7 @@ export class ProposalsController {
     const proposalDTO = await this.checkPermissionsForProposalCreate(
       request,
       createProposalDto,
-      Action.ProposalsCreate,
+      AuthOp.ProposalsCreate,
     );
     const existingProposal = await this.proposalsService.findOne({
       proposalId: createProposalDto.proposalId,
@@ -293,7 +293,7 @@ export class ProposalsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsCreate, ProposalClass),
+    ability.can(AuthOp.ProposalsCreate, ProposalClass),
   )
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
@@ -332,7 +332,7 @@ export class ProposalsController {
   // GET /proposals
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsRead, ProposalClass),
+    ability.can(AuthOp.ProposalsRead, ProposalClass),
   )
   @Get()
   @ApiOperation({
@@ -368,7 +368,7 @@ export class ProposalsController {
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsRead, ProposalClass),
+    ability.can(AuthOp.ProposalsRead, ProposalClass),
   )
   @Get("/fullquery")
   @ApiOperation({
@@ -409,19 +409,19 @@ export class ProposalsController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
+          AuthOp.ProposalsReadManyAccess,
           ProposalClass,
         );
         const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
+          AuthOp.ProposalsReadManyOwner,
           ProposalClass,
         );
         const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
+          AuthOp.ProposalsReadManyPublic,
           ProposalClass,
         );
         if (canViewAccess) {
@@ -447,7 +447,7 @@ export class ProposalsController {
   // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsRead, ProposalClass),
+    ability.can(AuthOp.ProposalsRead, ProposalClass),
   )
   @Get("/fullfacet")
   @ApiOperation({
@@ -480,19 +480,19 @@ export class ProposalsController {
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
+          AuthOp.ProposalsReadManyAccess,
           ProposalClass,
         );
         const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
+          AuthOp.ProposalsReadManyOwner,
           ProposalClass,
         );
         const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
+          AuthOp.ProposalsReadManyPublic,
           ProposalClass,
         );
         if (canViewAccess) {
@@ -519,7 +519,7 @@ export class ProposalsController {
   // GET /proposals/:id
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsRead, ProposalClass),
+    ability.can(AuthOp.ProposalsRead, ProposalClass),
   )
   @Get("/:pid")
   @ApiOperation({
@@ -544,7 +544,7 @@ export class ProposalsController {
     const proposal = await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsRead,
+      AuthOp.ProposalsRead,
     );
     return proposal;
   }
@@ -552,7 +552,7 @@ export class ProposalsController {
   // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsUpdate, ProposalClass),
+    ability.can(AuthOp.ProposalsUpdate, ProposalClass),
   )
   @UseInterceptors(
     new MultiUTCTimeInterceptor<ProposalClass, MeasurementPeriodClass>(
@@ -589,7 +589,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsUpdate,
+      AuthOp.ProposalsUpdate,
     );
     return this.proposalsService.update(
       { proposalId: proposalId },
@@ -600,7 +600,7 @@ export class ProposalsController {
   // DELETE /proposals/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsDelete, ProposalClass),
+    ability.can(AuthOp.ProposalsDelete, ProposalClass),
   )
   @Delete("/:pid")
   @ApiOperation({
@@ -623,7 +623,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsDelete,
+      AuthOp.ProposalsDelete,
     );
     return this.proposalsService.remove({ proposalId: proposalId });
   }
@@ -631,7 +631,7 @@ export class ProposalsController {
   // POST /proposals/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentCreate, ProposalClass),
+    ability.can(AuthOp.ProposalsAttachmentCreate, ProposalClass),
   )
   @Post("/:pid/attachments")
   @ApiOperation({
@@ -663,7 +663,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsAttachmentCreate,
+      AuthOp.ProposalsAttachmentCreate,
     );
 
     const createAttachment = {
@@ -676,7 +676,7 @@ export class ProposalsController {
   // GET /proposals/:pid/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentRead, ProposalClass),
+    ability.can(AuthOp.ProposalsAttachmentRead, ProposalClass),
   )
   @Get("/:pid/attachments")
   @ApiOperation({
@@ -704,7 +704,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsAttachmentRead,
+      AuthOp.ProposalsAttachmentRead,
     );
     return this.attachmentsService.findAll({ proposalId: proposalId });
   }
@@ -712,7 +712,7 @@ export class ProposalsController {
   // PATCH /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentUpdate, ProposalClass),
+    ability.can(AuthOp.ProposalsAttachmentUpdate, ProposalClass),
   )
   @Patch("/:pid/attachments/:aid")
   @ApiOperation({
@@ -748,7 +748,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsAttachmentUpdate,
+      AuthOp.ProposalsAttachmentUpdate,
     );
     return this.attachmentsService.findOneAndUpdate(
       { _id: attachmentId, proposalId: proposalId },
@@ -759,7 +759,7 @@ export class ProposalsController {
   // DELETE /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsAttachmentDelete, ProposalClass),
+    ability.can(AuthOp.ProposalsAttachmentDelete, ProposalClass),
   )
   @Delete("/:pid/attachments/:aid")
   @ApiOperation({
@@ -792,7 +792,7 @@ export class ProposalsController {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
-      Action.ProposalsAttachmentDelete,
+      AuthOp.ProposalsAttachmentDelete,
     );
     return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
@@ -803,7 +803,7 @@ export class ProposalsController {
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.ProposalsDatasetRead, ProposalClass),
+    ability.can(AuthOp.ProposalsDatasetRead, ProposalClass),
   )
   @Get("/:pid/datasets")
   @ApiOperation({
@@ -831,20 +831,20 @@ export class ProposalsController {
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 
     if (!canViewAny) {
       const canViewAccess = ability.can(
-        Action.DatasetReadManyAccess,
+        AuthOp.DatasetReadManyAccess,
         DatasetClass,
       );
       const canViewOwner = ability.can(
-        Action.DatasetReadManyOwner,
+        AuthOp.DatasetReadManyOwner,
         DatasetClass,
       );
       const canViewPublic = ability.can(
-        Action.DatasetReadManyPublic,
+        AuthOp.DatasetReadManyPublic,
         DatasetClass,
       );
       if (canViewAccess) {

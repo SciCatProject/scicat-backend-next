@@ -1,4 +1,5 @@
-export enum Action {  // Should we call this Operations instead?
+/** Strings representing authorization groups for the various CRUD operations */
+export enum AuthOp {
   // Dataset actions
   Manage = "manage",
   Create = "create",
