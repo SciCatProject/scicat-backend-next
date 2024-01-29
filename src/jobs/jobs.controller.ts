@@ -265,7 +265,7 @@ export class JobsController {
    * Check that the dataset ids list is valid
    */
   checkDatasetIds = (jobConfiguration: Record<string, any>) => {
-    const field = jobConfiguration.auth.field;
+    const field = "datasetIds"; //TODO make this an enum
     const datasetIds = (
       typeof jobConfiguration.jobParams[field] === "string"
         ? Array(jobConfiguration.jobParams[field])

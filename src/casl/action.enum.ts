@@ -11,7 +11,7 @@ export enum Action {  // Should we call this Operations instead?
   ListAll = "listall",
   // ---------------
   // Datasets
-  // endpoint authorization actions
+  // endpoint authorization
   DatasetCreate = "dataset_create",
   DatasetRead = "dataset_read",
   DatasetUpdate = "dataset_update",
@@ -29,7 +29,7 @@ export enum Action {  // Should we call this Operations instead?
   DatasetDatablockUpdate = "dataset_datablock_update",
   DatasetDatablockDelete = "dataset_datablock_delete",
   DatasetLogbookRead = "dataset_logbook_read",
-  // data instance actions
+  // data instance authorization
   DatasetCreateOwnerNoPid = "dataset_create_owner_no_pid",
   DatasetCreateOwnerWithPid = "dataset_create_owner_with_pid",
   DatasetCreateAny = "dataset_create_any",
