@@ -159,7 +159,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const oidcUser: IUserInfoMapping = {
       id: userinfo["sub"] || (userinfo["user_id"] as string) || "",
       username: userinfo["sub"] || "",
-      displayName: userinfo["given_name"] || "",
+      displayName: userinfo["name"] || "",
       familyName: userinfo["family_name"] || "",
       email: userinfo["email"] || "",
       thumbnailPhoto: (userinfo["thumbnailPhoto"] as string) || "",
