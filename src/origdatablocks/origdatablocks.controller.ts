@@ -47,6 +47,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "src/datasets/dto/create-derived-dataset.dto";
+import { logger } from "@user-office-software/duo-logger";
 
 @ApiBearerAuth()
 @ApiTags("origdatablocks")
@@ -381,7 +382,13 @@ export class OrigDatablocksController {
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    return this.origDatablocksService.fullquery(parsedFilters);
+    const result = await this.origDatablocksService.fullquery(parsedFilters);
+
+    logger.logInfo("Original datablocks data is downloaded", {
+      user: user,
+    });
+
+    return result;
   }
 
   // GET /origdatablocks/fullquery/files

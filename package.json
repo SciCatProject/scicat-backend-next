@@ -45,6 +45,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^7.1.7",
     "@nestjs/terminus": "^10.1.1",
+    "@user-office-software/duo-logger": "^2.1.1",
     "@user-office-software/duo-message-broker": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",

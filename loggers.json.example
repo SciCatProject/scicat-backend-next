@@ -1,0 +1,18 @@
+[
+  {
+    "type": "DefaultLogger",
+    "modulePath": "./loggingProviders/defaultLogger",
+    "config": {}
+  },
+  {
+    "type": "GrayLogger",
+    "modulePath": "./loggingProviders/grayLogger",
+    "config": {
+      "facility": "scicatOfficial",
+      "environment": "test",
+      "server": "localhost",
+      "service": "scicat-backend-next",
+      "port": 9999
+    }
+  }
+]
