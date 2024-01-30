@@ -75,6 +75,6 @@ export interface IUserInfoMapping {
   familyName: string;
   email: string;
   thumbnailPhoto: string;
-  groups: string[];
-  [key: string]: string | string[];
+  groups?: string[];
+  [key: string]: string | string[] | undefined;
 }

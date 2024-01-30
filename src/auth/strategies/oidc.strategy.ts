@@ -85,11 +85,17 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     };
     const accessGroups =
       await this.accessGroupService.getAccessGroups(userPayload);
-    userProfile.accessGroups = [...accessGroups, ...userProfile.groups];
+
+    if (userProfile.groups && userProfile.groups.length > 0) {
+      userProfile.accessGroups = [...accessGroups, ...userProfile.groups];
+    } else {
+      userProfile.accessGroups = accessGroups;
+    }
+    delete userProfile.groups;
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
-        { username: `oidc.${userProfile.username}` },
+        { username: userProfile.username },
         { email: userProfile.email as string },
       ],
     };
@@ -126,6 +132,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       await this.usersService.updateUserIdentity(
         {
           profile: userProfile,
+          externalId: userProfile.id,
         },
         user._id,
       );
