@@ -85,7 +85,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     };
     const accessGroups =
       await this.accessGroupService.getAccessGroups(userPayload);
-    userProfile.accessGroups = [...accessGroups, ...userProfile.accessGroups];
+    userProfile.accessGroups = [...accessGroups, ...userProfile.groups];
 
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
