@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import * as fs from "fs";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -22,10 +22,34 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
+  const defaultLogger = {
+    type: "DefaultLogger",
+    modulePath: "./loggingProviders/defaultLogger",
+    config: {},
+  };
+  const jsonConfigMap: { [key: string]: object[] | boolean } = {};
+  const jsonConfigFileList: { [key: string]: string } = {
+    loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+  };
+  Object.keys(jsonConfigFileList).forEach((key) => {
+    const filePath = jsonConfigFileList[key];
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      try {
+        jsonConfigMap[key] = JSON.parse(data);
+      } catch (error) {
+        console.error(
+          "Error json config file parsing " + filePath + " : " + error,
+        );
+        jsonConfigMap[key] = false;
+      }
+    }
+  });
+
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups);
+  // Logger.log("- Delete groups : " + deleteGroups );
   // Logger.log("- Create dataset groups : " + createDatasetGroups);
   // Logger.log(
   //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
@@ -37,6 +61,7 @@ const configuration = () => {
   // Logger.log("- Update job groups : " + updateJobGroups);
 
   return {
+    loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -81,6 +106,7 @@ const configuration = () => {
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
+
     oidc: {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
@@ -101,6 +127,7 @@ const configuration = () => {
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
     },
+
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
       : undefined,

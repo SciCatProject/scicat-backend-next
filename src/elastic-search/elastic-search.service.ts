@@ -71,6 +71,7 @@ export class ElasticSearchService implements OnModuleInit {
     ) {
       Logger.error(
         "Missing ENVIRONMENT variables for elastic search connection",
+        "ElasticSearch",
       );
     }
   }
@@ -88,9 +89,9 @@ export class ElasticSearchService implements OnModuleInit {
         await this.createIndex(this.defaultIndex);
       }
       this.connected = true;
-      Logger.log("Elasticsearch Connected");
+      Logger.log("Elasticsearch Connected", "ElasticSearch");
     } catch (error) {
-      Logger.error("onModuleInit failed-> ElasticSearchService", error);
+      Logger.error(error, "onModuleInit failed-> ElasticSearchService");
     }
   }
 
@@ -161,10 +162,12 @@ export class ElasticSearchService implements OnModuleInit {
       await this.esService.indices.open({
         index,
       });
-      Logger.log(`Elasticsearch Index Created-> Index: ${index}`);
+      Logger.log(
+        `Elasticsearch Index Created-> Index: ${index}`,
+        "Elasticsearch",
+      );
       return HttpStatus.CREATED;
     } catch (error) {
-      Logger.error("createIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `createIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -191,7 +194,6 @@ export class ElasticSearchService implements OnModuleInit {
     try {
       return await this.esService.count({ index });
     } catch (error) {
-      Logger.error("getCount failed-> ElasticSearchService", error);
       throw new HttpException(
         `getCount failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -221,9 +223,11 @@ export class ElasticSearchService implements OnModuleInit {
       await this.esService.indices.open({
         index,
       });
-      Logger.log(`Elasticsearch Index Updated-> Index: ${index}`);
+      Logger.log(
+        `Elasticsearch Index Updated-> Index: ${index}`,
+        "Elasticsearch",
+      );
     } catch (error) {
-      Logger.error("updateIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `updateIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -235,7 +239,6 @@ export class ElasticSearchService implements OnModuleInit {
     try {
       return await this.esService.indices.getSettings({ index });
     } catch (error) {
-      Logger.error("getIndexSettings failed-> ElasticSearchService", error);
       throw new HttpException(
         `getIndexSettings failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -246,10 +249,12 @@ export class ElasticSearchService implements OnModuleInit {
   async deleteIndex(index = this.defaultIndex) {
     try {
       await this.esService.indices.delete({ index });
-      Logger.log(`Elasticsearch Index Deleted-> Index: ${index} `);
+      Logger.log(
+        `Elasticsearch Index Deleted-> Index: ${index} `,
+        "Elasticsearch",
+      );
       return { success: true, message: `Index ${index} deleted` };
     } catch (error) {
-      Logger.error("deleteIndex failed-> ElasticSearchService", error);
       throw new HttpException(
         `deleteIndex failed-> ElasticSearchService ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -323,8 +328,6 @@ export class ElasticSearchService implements OnModuleInit {
         data,
       };
     } catch (error) {
-      Logger.error("SearchService || search query issue || -> search", error);
-
       throw new HttpException(
         `SearchService || search query issue || -> search ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -352,11 +355,6 @@ export class ElasticSearchService implements OnModuleInit {
 
       return transformedFacets;
     } catch (error) {
-      Logger.error(
-        "SearchService || aggregate query issue || -> aggregate",
-        error,
-      );
-
       throw new HttpException(
         `SearchService || aggregate query issue || -> aggregate ${error}`,
         HttpStatus.BAD_REQUEST,
@@ -383,10 +381,14 @@ export class ElasticSearchService implements OnModuleInit {
       });
 
       Logger.log(
-        `Elasticsearch Document Update/inserted-> Document_id: ${data.pid} update/inserted on index: ${this.defaultIndex}`,
+        `Document Update/inserted-> Document_id: ${data.pid} update/inserted on index: ${this.defaultIndex}`,
+        "Elasticsearch",
       );
     } catch (error) {
-      Logger.error("updateDocument failed-> ElasticSearchService", error);
+      throw new HttpException(
+        `updateDocument failed-> ElasticSearchService ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -398,10 +400,14 @@ export class ElasticSearchService implements OnModuleInit {
         refresh: this.refresh,
       });
       Logger.log(
-        `Elasticsearch Document Deleted-> Document_id: ${id} deleted on index: ${this.defaultIndex}`,
+        `Document Deleted-> Document_id: ${id} deleted on index: ${this.defaultIndex}`,
+        "Elasticsearch",
       );
     } catch (error) {
-      Logger.error("deleteDocument failed-> ElasticSearchService", error);
+      throw new HttpException(
+        `deleteDocument failed-> ElasticSearchService ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -424,11 +430,7 @@ export class ElasticSearchService implements OnModuleInit {
         ];
       },
       onDrop(doc) {
-        console.error(doc.document._id, doc.error?.reason);
-        Logger.error(
-          "SearchService-> performBulkOperation-> data insert faield: ",
-          doc.document._id,
-        );
+        console.debug(`${doc.document._id}`, doc.error?.reason);
       },
     });
   }
