@@ -23,7 +23,7 @@ jobs:
 
       - name: Cache node_modules
         id: cached-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
@@ -47,7 +47,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Cache node_modules
         id: cached-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Restore node_modules
         id: cached-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
@@ -93,7 +93,7 @@ jobs:
 
       - name: Restore node_modules
         id: cached-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
@@ -122,7 +122,7 @@ jobs:
 
       - name: Restore node_modules
         id: cached-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
