@@ -25,7 +25,7 @@ import { AccessGroupService } from "../access-group-provider/access-group.servic
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { IUserInfoMapping } from "src/common/interfaces/common.interface";
 
-type UserInfoResPonseWithGroups = UserinfoResponse & {
+type UserInfoResponseWithGroups = UserinfoResponse & {
   groups: string[];
 };
 
@@ -71,7 +71,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
   }
 
   async validate(tokenset: TokenSet): Promise<Omit<User, "password">> {
-    const userinfo: UserInfoResPonseWithGroups =
+    const userinfo: UserInfoResponseWithGroups =
       await this.client.userinfo(tokenset);
     const oidcConfig = this.configService.get<OidcConfig>("oidc");
 
@@ -152,7 +152,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       : "no photo";
   }
 
-  parseUserInfo(userinfo: UserInfoResPonseWithGroups) {
+  parseUserInfo(userinfo: UserInfoResponseWithGroups) {
     type OidcProfile = Profile & UserProfile;
     const profile = {} as OidcProfile;
 

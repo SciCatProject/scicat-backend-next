@@ -25,9 +25,6 @@ export class UserProfile {
 
   @Prop({ type: [String] })
   accessGroups: string[];
-
-  @Prop()
-  groups?: string[];
 }
 
 export const UserProfileSchema = SchemaFactory.createForClass(UserProfile);
