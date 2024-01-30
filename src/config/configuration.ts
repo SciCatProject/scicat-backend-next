@@ -92,6 +92,16 @@ const configuration = () => {
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
       returnURL: process.env.OIDC_RETURN_URL,
+      userInfoMapping: {
+        id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
+        username: process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME,
+        displayName: process.env.OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME,
+        familyName: process.env.OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME,
+        emails: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAILS,
+        email: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAIL,
+        thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAIL_PHOTO,
+        groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUPS,
+      },
     },
     logbook: {
       enabled:

@@ -23,6 +23,11 @@ import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
 import { UserPayload } from "../interfaces/userPayload.interface";
+import { IUserInfoMapping } from "src/common/interfaces/common.interface";
+
+type UserInfoResPonseWithGroups = UserinfoResponse & {
+  groups: string[];
+};
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -66,7 +71,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
   }
 
   async validate(tokenset: TokenSet): Promise<Omit<User, "password">> {
-    const userinfo: UserinfoResponse = await this.client.userinfo(tokenset);
+    const userinfo: UserInfoResPonseWithGroups =
+      await this.client.userinfo(tokenset);
     const oidcConfig = this.configService.get<OidcConfig>("oidc");
 
     const userProfile = this.parseUserInfo(userinfo);
@@ -131,34 +137,57 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     return returnUser;
   }
 
-  getUserPhoto(userinfo: UserinfoResponse) {
-    return userinfo.thumbnailPhoto
+  getUserPhoto(thumbnailPhoto: string) {
+    return thumbnailPhoto
       ? "data:image/jpeg;base64," +
-          Buffer.from(userinfo.thumbnailPhoto as string, "binary").toString(
-            "base64",
-          )
+          Buffer.from(thumbnailPhoto, "binary").toString("base64")
       : "no photo";
   }
 
-  parseUserInfo(userinfo: UserinfoResponse) {
+  parseUserInfo(userinfo: UserInfoResPonseWithGroups) {
     type OidcProfile = Profile & UserProfile;
     const profile = {} as OidcProfile;
 
+    const newUserInfoFields =
+      this.configService.get<IUserInfoMapping>("oidc.userInfoMapping") || {};
+
+    // To dynamically map user info fields based on environment variables,
+    // set mappings like OIDC_USERINFO_MAPPING_FIELD_USERNAME=family_name.
+    // This assigns userinfo.family_name to oidcUser.username.
+
+    const oidcUser: IUserInfoMapping = {
+      id: userinfo["sub"] || (userinfo["user_id"] as string) || "",
+      username: userinfo["sub"] || "",
+      displayName: userinfo["given_name"] || "",
+      familyName: userinfo["family_name"] || "",
+      email: userinfo["email"] || "",
+      thumbnailPhoto: (userinfo["thumbnailPhoto"] as string) || "",
+      groups: userinfo["groups"] || [],
+    };
+
+    Object.entries(newUserInfoFields).forEach(([sourceField, targetField]) => {
+      if (
+        typeof targetField === "string" &&
+        oidcUser.hasOwnProperty(sourceField)
+      ) {
+        oidcUser[sourceField] = userinfo[targetField] as string;
+      }
+    });
+
     // Prior to OpenID Connect Basic Client Profile 1.0 - draft 22, the "sub"
     // claim was named "user_id".  Many providers still use the old name, so
-    // fallback to that.
-    const userId = userinfo.sub || (userinfo.user_id as string);
-    if (!userId) {
+    // fallback to that. https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+
+    if (!oidcUser.id) {
       throw new Error("Could not find sub or user_id in userinfo response");
     }
 
-    profile.id = userId;
-    profile.username = userinfo.preferred_username ?? userinfo.name ?? "";
-    profile.displayName = userinfo.name ?? "";
-    profile.emails = userinfo.email ? [{ value: userinfo.email }] : [];
-    profile.email = userinfo.email ?? "";
-    profile.thumbnailPhoto = this.getUserPhoto(userinfo);
+    profile.displayName = oidcUser.displayName + oidcUser.familyName;
+    profile.emails = oidcUser.email ? [{ value: oidcUser.email }] : [];
+    profile.thumbnailPhoto = this.getUserPhoto(oidcUser.thumbnailPhoto);
 
-    return profile;
+    const oidcUserProfile = { ...oidcUser, ...profile };
+
+    return oidcUserProfile;
   }
 }
