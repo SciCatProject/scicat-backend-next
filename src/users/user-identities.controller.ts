@@ -2,7 +2,6 @@ import {
   Controller,
   ForbiddenException,
   Get,
-  Headers,
   NotFoundException,
   Query,
   Req,
@@ -39,18 +38,12 @@ export class UserIdentitiesController {
     // NOTE: This now supports both headers filter and query filter.
     // There is a loopback config file where we have this as a setting on the frontend.
     // In the future if we fully migrate to the new backend we can only support query filters.
-    @Headers() headers: Record<string, string>,
     @Req() request: Request,
     @Query("filter") queryFilters?: string,
   ): Promise<UserIdentity | null> {
     const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
     let filter = {};
-    if (headers.filter) {
-      const parsedFilter = JSON.parse(headers.filter);
-      if (parsedFilter.where) {
-        filter = parsedFilter.where;
-      }
-    } else if (parsedQueryFilters.where) {
+    if (parsedQueryFilters.where) {
       filter = parsedQueryFilters.where;
     }
 
@@ -93,17 +86,11 @@ export class UserIdentitiesController {
     // NOTE: This now supports both headers filter and query filter.
     // There is a loopback config file where we have this as a setting on the frontend.
     // In the future if we fully migrate to the new backend we can only support query filters.
-    @Headers() headers: Record<string, string>,
     @Query("filter") queryFilters?: string,
   ): Promise<boolean | null> {
     const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
     let filter = {};
-    if (headers.filter) {
-      const parsedFilter = JSON.parse(headers.filter);
-      if (parsedFilter.where) {
-        filter = parsedFilter.where;
-      }
-    } else if (parsedQueryFilters.where) {
+    if (parsedQueryFilters.where) {
       filter = parsedQueryFilters.where;
     }
 
