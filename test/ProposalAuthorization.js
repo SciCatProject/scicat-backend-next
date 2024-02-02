@@ -5,9 +5,9 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessToken = null,
+let accessTokenProposalIngestor= null,
   accessTokenArchiveManager = null,
-  accessTokenIngestor = null,
+  accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null;
 
@@ -44,20 +44,20 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor= tokenVal;
 
         utils.getToken(
           appUrl,
           {
             username: "proposalIngestor",
-            password: "aman",
+            password: "7d8cd858fb9d0e4f5d91c34fd4016167",
           },
           (tokenVal) => {
-            accessTokenIngestor = tokenVal;
+            accessTokenProposalIngestor = tokenVal;
             utils.getToken(
               appUrl,
               {
@@ -105,7 +105,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       .post("/api/v3/proposals")
       .send(proposal1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -121,7 +121,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       .post("/api/v3/proposals")
       .send(proposal2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -137,7 +137,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
       .post("/api/v3/proposals")
       .send(proposal3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -160,7 +160,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -172,7 +172,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -184,7 +184,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -196,7 +196,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -208,7 +208,7 @@ describe("ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {

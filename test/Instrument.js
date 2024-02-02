@@ -4,7 +4,7 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenUser1 = null,
   instrumentId1 = null,
@@ -21,11 +21,11 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -56,7 +56,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -74,7 +74,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -92,7 +92,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentCorrect3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -110,7 +110,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400);
   });
 
@@ -119,7 +119,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .post("/api/v3/Instruments")
       .send(TestData.InstrumentWrong1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400);
   });
 
@@ -136,7 +136,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/" + instrumentId1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -151,7 +151,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/" + instrumentId2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -166,7 +166,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -184,7 +184,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -200,7 +200,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/findOne")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -222,7 +222,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/findOne")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -242,7 +242,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -270,7 +270,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .patch("/api/v3/Instruments/" + instrumentId2)
       .send({ name: newName })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -284,7 +284,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .patch("/api/v3/Instruments/" + instrumentId2)
       .send({ uniqueName: newName })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400);
   });
 
@@ -292,7 +292,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/" + instrumentId2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -311,7 +311,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .get("/api/v3/Instruments/")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -328,7 +328,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
     return request(appUrl)
       .delete("/api/v3/Instruments/" + instrumentId1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(403);
   });
 

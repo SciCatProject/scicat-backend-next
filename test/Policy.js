@@ -4,11 +4,11 @@
 var utils = require("./LoginUtils");
 
 var accessTokenArchiveManager = null;
-var accessToken = null,
+var accessTokenAdminIngestor = null,
   id = null;
 
 var testdataset = {
-  manager: ["ingestor"],
+  manager: ["adminIngestor"],
   tapeRedundancy: "low",
   //"tapeRetentionTime": 3,
   autoArchiveDelay: 7,
@@ -25,11 +25,11 @@ describe("Policy: Simple Policy tests", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -50,7 +50,7 @@ describe("Policy: Simple Policy tests", () => {
       .post("/api/v3/Policies")
       .send(testdataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -64,7 +64,7 @@ describe("Policy: Simple Policy tests", () => {
     return request(appUrl)
       .get("/api/v3/Policies/" + id)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -74,7 +74,7 @@ describe("Policy: Simple Policy tests", () => {
       .patch("/api/v3/Policies/" + id)
       .send({ ownerGroup: "test_test" })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });

@@ -5,7 +5,7 @@ const { Test } = require("mocha");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessToken = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 var accessTokenUser1 = null;
 var accessTokenUser2 = null;
@@ -18,11 +18,11 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -80,7 +80,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -93,7 +93,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrectMin)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -109,7 +109,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -131,7 +131,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets")
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -219,7 +219,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -232,7 +232,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
@@ -253,7 +253,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       )
       .query(JSON.stringify(filter))
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -275,7 +275,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
         )}`,
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(pid);
@@ -294,7 +294,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
         "/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -314,7 +314,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
         "/api/v3/Datasets?filter=" + encodeURIComponent(JSON.stringify(filter)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -352,7 +352,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
     return await request(appUrl)
       .get("/api/v3/datasets")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

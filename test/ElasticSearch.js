@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
 
-let accessTokenIngestor = null;
+let accessTokenAdminIngestor = null;
 let accessTokenArchiveManager = null;
 let pid = null;
 const isESenabled = process.env.ELASTICSEARCH_ENABLED == "yes";
@@ -48,11 +48,11 @@ const scientificMetadata = ({
       utils.getToken(
         appUrl,
         {
-          username: "ingestor",
-          password: "aman",
+          username: "adminIngestor",
+          password: "13f4242dc691a3ee3bb5ca2006edcdf7",
         },
         (tokenVal) => {
-          accessTokenIngestor = tokenVal;
+          accessTokenAdminIngestor = tokenVal;
           utils.getToken(
             appUrl,
             {
@@ -73,7 +73,7 @@ const scientificMetadata = ({
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -101,7 +101,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
 
       request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -114,7 +114,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
 
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -127,7 +127,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -146,7 +146,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -166,7 +166,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -186,7 +186,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {

@@ -9,7 +9,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
   let pidRaw1 = null;
   let pidRaw2 = null;
   let pidDerived1 = null;
-  let accessToken = null;
+  let accessTokenAdminIngestor = null;
   let accessTokenArchiveManager = null;
   let policyIds = [];
 
@@ -17,16 +17,16 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: "6d3b76392e6f41b087c11f8b77e3f9de",
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -43,7 +43,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -56,7 +56,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -70,7 +70,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -86,7 +86,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -99,7 +99,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -112,7 +112,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -125,7 +125,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DatasetWrong)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -139,7 +139,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
@@ -160,7 +160,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -175,7 +175,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -190,7 +190,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -205,7 +205,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -221,7 +221,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -236,7 +236,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -254,7 +254,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -269,7 +269,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
@@ -286,7 +286,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
@@ -303,7 +303,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -321,7 +321,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -383,7 +383,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
         `/api/v3/Policies?filter=${encodeURIComponent(JSON.stringify(filter))}`,
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -406,7 +406,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .end((err, res) => {
@@ -421,7 +421,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "raw" } })
       .expect(200)
       .expect("Content-Type", /json/)
@@ -437,7 +437,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "derived" } })
       .expect(200)
       .expect("Content-Type", /json/)

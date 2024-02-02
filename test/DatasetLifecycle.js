@@ -4,7 +4,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pidRaw1 = null;
@@ -17,11 +17,11 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -42,7 +42,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -69,7 +69,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       .post("/api/v3/Datasets")
       .send(raw2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -102,7 +102,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -126,7 +126,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -147,7 +147,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -162,7 +162,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -185,7 +185,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -206,7 +206,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -231,7 +231,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   //       archiveStatusMessage: "Testing embedded case",
   //     })
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -249,7 +249,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   //       datasetId: pidRaw1,
   //     })
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/);
   // });
@@ -270,7 +270,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         `/api/v3/Policies?filter=${encodeURIComponent(JSON.stringify(filter))}`,
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

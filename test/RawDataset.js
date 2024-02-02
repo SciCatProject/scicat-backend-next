@@ -4,7 +4,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessToken = null;
+var accessTokenAdminIngestor = null;
 var pid = null;
 var minPid = null;
 var randomPid = null;
@@ -18,16 +18,16 @@ describe("RawDataset: Raw Datasets", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "proposalIngestor",
-            password: "aman",
+            password: "7d8cd858fb9d0e4f5d91c34fd4016167",
           },
           (tokenVal) => {
             accessProposalToken = tokenVal;
@@ -35,7 +35,7 @@ describe("RawDataset: Raw Datasets", () => {
               appUrl,
               {
                 username: "archiveManager",
-                password: "aman",
+                password: "6d3b76392e6f41b087c11f8b77e3f9de",
               },
               (tokenVal) => {
                 accessTokenArchiveManager = tokenVal;
@@ -69,7 +69,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -82,7 +82,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrectMin)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -99,7 +99,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -116,7 +116,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -129,7 +129,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawWrong_1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
@@ -141,7 +141,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrectRandom)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -163,7 +163,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(rawDatasetWithIncorrectEmail)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(400)
       .then((res) => {
@@ -176,7 +176,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(rawDatasetWithIncorrectEmail)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(400)
       .then((res) => {
@@ -190,7 +190,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(rawDatasetWithIncorrectEmail)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(400)
       .then((res) => {
@@ -205,7 +205,7 @@ describe("RawDataset: Raw Datasets", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawWrong_2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
@@ -226,7 +226,7 @@ describe("RawDataset: Raw Datasets", () => {
       )
       .query(JSON.stringify(filter))
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -250,7 +250,7 @@ describe("RawDataset: Raw Datasets", () => {
           )}`,
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -275,7 +275,7 @@ describe("RawDataset: Raw Datasets", () => {
           )}`,
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(200)
         .expect("Content-Type", /json/)
         .then((res) => {
@@ -289,7 +289,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchComment)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -302,7 +302,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchDataQualityMetrics)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -315,7 +315,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchCommentInvalid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400)
       .then((res) => {
         res.body.message.should.contain("comment");
@@ -328,7 +328,7 @@ describe("RawDataset: Raw Datasets", () => {
       .patch("/api/v3/datasets/" + pid)
       .send(TestData.PatchDataQualityMetricsInvalid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400)
       .then((res) => {
         res.body.message.should.contain("dataQualityMetrics");

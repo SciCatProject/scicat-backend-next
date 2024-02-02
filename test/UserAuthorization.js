@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   userIdIngestor = null,
   accessTokenAdmin = null,
   userIdAdmin = null,
@@ -25,11 +25,11 @@ describe("2300: User Authorization: test that user authorization are correct", (
     utils.getIdAndToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (idVal, tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         userIdIngestor = idVal;
         utils.getIdAndToken(
           appUrl,
@@ -71,7 +71,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                           appUrl,
                           {
                             username: "archiveManager",
-                            password: "aman",
+                            password: "6d3b76392e6f41b087c11f8b77e3f9de",
                           },
                           (idVal, tokenVal) => {
                             accessTokenArchiveManager = tokenVal;
@@ -80,7 +80,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                               appUrl,
                               {
                                 username: "admin",
-                                password: "am2jf70TPNZsSan",
+                                password: "27f5fd86ae68fe740eef42b8bbd1d7d5",
                               },
                               (idVal, tokenVal) => {
                                 accessTokenAdmin = tokenVal;
@@ -111,7 +111,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/${userIdIngestor}/authorization/dataset/create`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -711,7 +711,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/self`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -724,7 +724,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/identity`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -737,7 +737,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/settings`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

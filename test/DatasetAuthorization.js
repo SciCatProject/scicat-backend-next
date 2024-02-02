@@ -6,7 +6,7 @@ const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 const { v4: uuidv4 } = require("uuid");
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
@@ -46,16 +46,16 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            password: TestData.Accounts["user1"]["password"],
           },
           (tokenVal) => {
             accessTokenUser1 = tokenVal;
@@ -63,7 +63,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
               appUrl,
               {
                 username: "user2",
-                password: "f522d1d715970073a6413474ca0e0f63",
+                password: TestData.Accounts["user2"]["password"],
               },
               (tokenVal) => {
                 accessTokenUser2 = tokenVal;
@@ -71,7 +71,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
                   appUrl,
                   {
                     username: "user3",
-                    password: "70dc489e8ee823ae815e18d664424df2",
+                    password: TestData.Accounts["user3"]["password"],
                   },
                   (tokenVal) => {
                     accessTokenUser3 = tokenVal;
@@ -79,7 +79,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: "aman",
+                        password: TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
@@ -87,7 +87,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
                           appUrl,
                           {
                             username: "admin",
-                            password: "am2jf70TPNZsSan",
+                            password: TestData.Accounts["admin"]["password"],
                           },
                           (tokenVal) => {
                             accessTokenAdmin = tokenVal;
@@ -111,12 +111,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
     done();
   });
 
-  it("0010: adds dataset 1", async () => {
+  it("0010: adds dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -129,12 +129,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0020: adds dataset 2", async () => {
+  it("0020: adds dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -147,12 +147,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0030: adds dataset 3", async () => {
+  it("0030: adds dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -165,12 +165,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0040: adds a new origDatablock on the published dataset", async () => {
+  it("0040: adds a new origDatablock on the published dataset as Admin Ingestor", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${encodedDatasetPid1}/origdatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -181,14 +181,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0050: adds a new datablock on the published dataset", async () => {
+  it("0050: adds a new datablock on the published dataset as Admin Ingestor", async () => {
     const randomArchiveId = Math.random().toString(36).slice(2);
 
     return request(appUrl)
       .post(`/api/v3/datasets/${encodedDatasetPid1}/datablocks`)
       .send({ ...TestData.DataBlockCorrect, archiveId: randomArchiveId })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -199,12 +199,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0060: adds a new attachment on the published dataset", async () => {
+  it("0060: adds a new attachment on the published dataset as Admin Ingestor", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${encodedDatasetPid1}/attachments`)
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/);
   });
@@ -239,11 +239,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .expect(403);
   });
 
-  it("0100: list of datasets for ingestor", async () => {
+  it("0100: list of datasets for Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -251,11 +251,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0110: datasets counts for ingestor", async () => {
+  it("0110: datasets counts for Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -263,11 +263,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0120: access dataset 1 as ingestor", async () => {
+  it("0120: access dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -275,11 +275,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0130: full query for datasets for ingestor", async () => {
+  it("0130: full query for datasets for Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -287,11 +287,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0140: access dataset 2 as ingestor", async () => {
+  it("0140: access dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -299,11 +299,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0150: access dataset 3 as ingestor", async () => {
+  it("0150: access dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -525,12 +525,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0340: update dataset 2 to be published", async () => {
+  it("0340: update dataset 2 to be published as Admin Ingestor", async () => {
     return request(appUrl)
       .patch(`/api/v3/Datasets/${encodedDatasetPid2}`)
       .send({ isPublished: true })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -687,7 +687,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0502: admin can add a new raw dataset with specified pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "admin",
     };
 
@@ -803,7 +803,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0530: admin can add a new raw dataset with specified pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -843,7 +843,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0550: admin cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -919,7 +919,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0602: user with create dataset groups only can not add a new raw dataset with specified pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -957,7 +957,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0604: user with create dataset groups only cannot add a new invalid raw dataset with specified pid", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1031,7 +1031,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0630: user with create dataset groups only cannot add a new raw dataset with specified pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1069,7 +1069,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0650: user with create dataset groups only cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1145,7 +1145,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0702: user with create dataset with pid groups can add a new raw dataset with specified pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1185,7 +1185,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0704: user with create dataset with pid groups cannot add a new invalid raw dataset with specified pid", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1259,7 +1259,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0730: user with create dataset with pid groups cannot add a new raw dataset with specified pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1297,7 +1297,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0750: user with create dataset with pid groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1373,7 +1373,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0802: user with create dataset privileged groups can add a new raw dataset with specified pid", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group3",
     };
 
@@ -1413,7 +1413,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0804: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group3",
     };
 
@@ -1489,7 +1489,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0830: user with create dataset privileged groups can add a new raw dataset with specified pid and different owner group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1529,7 +1529,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0850: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: uuidv4(),
+      pid: "testing/" + uuidv4(),
       ownerGroup: "group1",
     };
 

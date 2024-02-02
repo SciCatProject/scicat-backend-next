@@ -3,7 +3,7 @@
 
 var utils = require("./LoginUtils");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pid = null;
@@ -153,16 +153,16 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: "bc35db76848cf9fbb7f40b6661644e97",
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -185,7 +185,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //         "%22%7D%7D",
   //     )
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -202,7 +202,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //         "%22%7D%7D",
   //     )
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -241,7 +241,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //     .post("/api/v3/RawDatasets")
   //     .send(testraw)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -289,7 +289,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -313,7 +313,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -331,7 +331,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid + "/datablocks/count")
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -344,7 +344,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {

@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let accessTokenProposalIngestor = null,
-  accessTokenIngestor = null,
+  accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   defaultProposalId = null,
   proposalId = null,
@@ -17,23 +17,23 @@ describe("Proposal: Simple Proposal", () => {
       appUrl,
       {
         username: "proposalIngestor",
-        password: "aman",
+        password: "7d8cd858fb9d0e4f5d91c34fd4016167",
       },
       (tokenVal) => {
         accessTokenProposalIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
-            username: "ingestor",
-            password: "aman",
+            username: "adminIngestor",
+            password: "13f4242dc691a3ee3bb5ca2006edcdf7",
           },
           (tokenVal) => {
-            accessTokenIngestor = tokenVal;
+            accessTokenAdminIngestor = tokenVal;
             utils.getToken(
               appUrl,
               {
                 username: "archiveManager",
-                password: "aman",
+                password: "6d3b76392e6f41b087c11f8b77e3f9de",
               },
               (tokenVal) => {
                 accessTokenArchiveManager = tokenVal;
@@ -244,7 +244,7 @@ describe("Proposal: Simple Proposal", () => {
     return await request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

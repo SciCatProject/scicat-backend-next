@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 describe("Users: Login with functional accounts", () => {
-  it("Ingestor login fails with incorrect credentials", async () => {
+  it("Admin ingestor login fails with incorrect credentials", async () => {
     return request(appUrl)
       .post("/api/v3/Users/Login?include=user")
       .send({
-        username: "ingestor",
-        password: "asd123",
+        username: "adminIngestor",
+        password: "7fdcde6002ac5bb3ee3a196cd2424f31",
       })
       .set("Accept", "application/json")
       .then((res) => {
@@ -18,8 +18,8 @@ describe("Users: Login with functional accounts", () => {
     return request(appUrl)
       .post("/api/v3/Users/Login?include=user")
       .send({
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       })
       .set("Accept", "application/json")
       .expect(201)

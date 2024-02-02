@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
@@ -46,11 +46,11 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -106,7 +106,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .post("/api/v3/Instruments")
       .send(InstrumentCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -123,7 +123,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .post("/api/v3/Instruments")
       .send(InstrumentCorrect2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -140,7 +140,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .post("/api/v3/Instruments")
       .send(InstrumentCorrect3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -157,7 +157,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
       .post("/api/v3/Instruments")
       .send(InstrumentCorrect4)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -173,7 +173,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: InstrumentCorrect1.name } };
     return request(appUrl)
       .get("/api/v3/Instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -187,7 +187,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { like: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/Instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -200,7 +200,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //   const query = { where: { name: { like: "ESS instrument" }}};
   //   return request(appUrl)
   //     .get("/api/v3/Instruments/count")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
   //     .set("Accept", "application/json")
   //     .expect("Content-Type", /json/)
@@ -213,7 +213,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { like: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/Instruments/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -226,7 +226,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -239,7 +239,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //   const query = { where: { name: { "$regex": "ESS instrument" }}};
   //   return request(appUrl)
   //     .get("/api/v3/instruments/count")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
   //     .set("Accept", "application/json")
   //     .expect("Content-Type", /json/)
@@ -252,7 +252,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "ESS instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -265,7 +265,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { like: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -279,7 +279,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { like: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -292,7 +292,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //   const query = { where: { name: { like: "Another instrument" }}};
   //   return request(appUrl)
   //     .get("/api/v3/instruments/count")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
   //     .set("Accept", "application/json")
   //     .expect("Content-Type", /json/)
@@ -305,7 +305,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -319,7 +319,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "Another instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -332,7 +332,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //   const query = { where: { name: { "$regex": "Another instrument" }}};
   //   return request(appUrl)
   //     .get("/api/v3/instruments/count")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
   //     .set("Accept", "application/json")
   //     .expect("Content-Type", /json/)
@@ -345,7 +345,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "[Aa]nother instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -360,7 +360,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
     const query = { where: { name: { $regex: "[Aa]nother instrument" } } };
     return request(appUrl)
       .get("/api/v3/instruments/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -373,7 +373,7 @@ describe("InstrumentFilter: Test retrieving instruments using filtering capabili
   //   const query = { where: { name: { "$regex": "[Aa]nother] instrument" }}};
   //   return request(appUrl)
   //     .get("/api/v3/instruments/count")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .query("filter=" + encodeURIComponent(JSON.stringify(query)))
   //     .set("Accept", "application/json")
   //     .expect("Content-Type", /json/)

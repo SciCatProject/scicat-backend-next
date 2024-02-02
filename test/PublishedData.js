@@ -7,7 +7,7 @@ const sandbox = require("sinon").createSandbox();
 
 var accessTokenArchiveManager = null;
 var idOrigDatablock = null;
-let accessToken = null,
+let accessTokenAdminIngestor = null,
   defaultPid = null,
   pid = null,
   pidnonpublic = null,
@@ -38,16 +38,16 @@ describe("PublishedData: Test of access to published data", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: "6d3b76392e6f41b087c11f8b77e3f9de",
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -68,7 +68,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/PublishedData")
       .send(publishedData)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("publisher").and.be.string;
@@ -94,7 +94,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -111,7 +111,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/Datasets")
       .send(testdataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -127,7 +127,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .post("/api/v3/PublishedData/" + doi + "/register")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -136,7 +136,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -149,7 +149,7 @@ describe("PublishedData: Test of access to published data", () => {
   //   return request(appUrl)
   //     .post("/api/v3/PublishedData/" + doi + "/resync")
   //     .send(modifiedPublishedData)
-  //     .set({ Authorization: `Bearer ${accessToken}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .set("Accept", "application/json")
   //     .expect(201)
   //     .expect("Content-Type", /json/)
@@ -166,7 +166,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/PublishedData/" + doi)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/);
   });
@@ -176,7 +176,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/Datasets")
       .send(nonpublictestdataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -192,7 +192,7 @@ describe("PublishedData: Test of access to published data", () => {
   //   return request(appUrl)
   //     .put("/api/v3/PublishedData/" + doi + "/datasets/rel/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessToken}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -232,7 +232,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -244,7 +244,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pidnonpublic)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -257,7 +257,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/OrigDatablocks")
       .send(origDataBlock)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -279,7 +279,7 @@ describe("PublishedData: Test of access to published data", () => {
       .post("/api/v3/Datasets/" + pid + "/attachments")
       .send(testAttachment)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -309,7 +309,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid + "/attachments")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -410,7 +410,7 @@ describe("PublishedData: Test of access to published data", () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pid + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200);
   });
 

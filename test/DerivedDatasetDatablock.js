@@ -3,7 +3,7 @@ var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to derived Datasets", () => {
-  let accessTokenIngestor = null;
+  let accessTokenAdminIngestor = null;
   let accessTokenArchiveManager = null;
 
   let datasetPid = null;
@@ -15,11 +15,11 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -40,7 +40,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -67,7 +67,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -84,7 +84,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(500)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -99,7 +99,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
       .post(`/api/v3/datasets/${datasetPid}/datablocks`)
       .send(testdata)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -113,7 +113,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -127,7 +127,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -159,7 +159,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -176,7 +176,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -209,7 +209,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get(`/api/v3/Datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -221,7 +221,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

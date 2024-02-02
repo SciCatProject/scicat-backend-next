@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { faker } = require("@faker-js/faker");
 
+const RawTestAccounts = require('../functionalAccounts.json');
+const TestAccounts = Object.fromEntries(RawTestAccounts.map(account => [account.username, account]));
+
 const TestData = {
+  Accounts: TestAccounts,
+
   ProposalCorrectMin: {
     proposalId: "20170266",
     email: "proposer@uni.edu",

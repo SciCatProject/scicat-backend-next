@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
@@ -93,11 +93,11 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -153,7 +153,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .post("/api/v3/Datasets")
       .send(RawCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -175,7 +175,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .post("/api/v3/Datasets")
       .send(RawCorrect2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -197,7 +197,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .post("/api/v3/Datasets")
       .send(RawCorrect3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -219,7 +219,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       .post("/api/v3/Datasets")
       .send(RawCorrect4)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -240,7 +240,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: RawCorrect1.datasetName } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -254,7 +254,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -267,7 +267,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -280,7 +280,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -297,7 +297,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -310,7 +310,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -323,7 +323,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -340,7 +340,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -354,7 +354,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -367,7 +367,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -380,7 +380,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -394,7 +394,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -407,7 +407,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -422,7 +422,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -439,7 +439,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -454,7 +454,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -469,7 +469,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -486,7 +486,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -501,7 +501,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -514,7 +514,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -528,7 +528,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -541,7 +541,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -554,7 +554,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -568,7 +568,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -581,7 +581,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -596,7 +596,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -613,7 +613,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -628,7 +628,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -643,7 +643,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -660,7 +660,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -675,7 +675,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
@@ -697,7 +697,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -718,7 +718,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -739,7 +739,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -765,7 +765,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
       .then((res) => {

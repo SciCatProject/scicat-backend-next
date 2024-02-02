@@ -6,7 +6,7 @@ var utils = require("./LoginUtils");
 
 const NUMBER_OF_DATASETS_TO_CREATE = 100;
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
@@ -121,7 +121,7 @@ function addDataset() {
     .post("/api/v3/Datasets")
     .send(dataset)
     .set("Accept", "application/json")
-    .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+    .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
     .expect(200)
     .expect("Content-Type", /json/)
     .then((result) => {
@@ -188,11 +188,11 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -221,7 +221,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: "aman",
+                        password: "6d3b76392e6f41b087c11f8b77e3f9de",
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
@@ -256,7 +256,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -277,7 +277,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodeURIComponent(randomDatasetPid))
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
@@ -289,7 +289,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {

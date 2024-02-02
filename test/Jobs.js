@@ -4,7 +4,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pid1 = null;
@@ -32,11 +32,11 @@ describe.skip("Jobs: Test New Job Model", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
@@ -57,7 +57,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -78,7 +78,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -111,7 +111,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(archiveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -127,7 +127,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(empty)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -150,7 +150,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(nonExistDataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res, err) => {
@@ -165,7 +165,7 @@ describe.skip("Jobs: Test New Job Model", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -189,7 +189,7 @@ describe.skip("Jobs: Test New Job Model", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -214,7 +214,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(409)
       .expect("Content-Type", /json/)
       .then((res, err) => {
@@ -236,7 +236,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -259,7 +259,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -284,7 +284,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Content-Type", "application/x-www-form-urlencoded")
       .expect(200)
       .then((res) => {
@@ -298,7 +298,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(TestData.ArchiveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(409)
       .expect("Content-Type", /json/)
       .then((res, err) => {
@@ -330,7 +330,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res, err) => {
@@ -346,7 +346,7 @@ describe.skip("Jobs: Test New Job Model", () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -368,7 +368,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -389,7 +389,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -413,7 +413,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -432,7 +432,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -451,7 +451,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -472,7 +472,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -530,7 +530,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post(`/api/v3/datasets/${pid1}/OrigDatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -547,7 +547,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(409)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -562,7 +562,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         isPublished: true,
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -575,7 +575,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(409)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -590,7 +590,7 @@ describe.skip("Jobs: Test New Job Model", () => {
         isPublished: true,
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(200)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -616,7 +616,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -673,7 +673,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(201)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -727,7 +727,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(400)
       .expect("Content-Type", /json/)
       .then((res) => {
