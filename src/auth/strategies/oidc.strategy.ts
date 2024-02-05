@@ -13,9 +13,10 @@ import { UsersService } from "src/users/users.service";
 import {
   Strategy,
   Client,
-  UserinfoResponse,
   TokenSet,
   Issuer,
+  IdTokenClaims,
+  UserinfoResponse,
 } from "openid-client";
 import { AuthService } from "../auth.service";
 import { Profile } from "passport";
@@ -23,11 +24,16 @@ import { UserProfile } from "src/users/schemas/user-profile.schema";
 import { OidcConfig } from "src/config/configuration";
 import { AccessGroupService } from "../access-group-provider/access-group.service";
 import { UserPayload } from "../interfaces/userPayload.interface";
-import { IUserInfoMapping } from "src/common/interfaces/common.interface";
+import {
+  IOidcUserInfoMapping,
+  IOidcUserQueryMapping,
+} from "../interfaces/oidc-user.interface";
 
-type UserInfoResponseWithGroups = UserinfoResponse & {
-  groups: string[];
-};
+type extendedIdTokenClaims = IdTokenClaims &
+  UserinfoResponse & {
+    groups?: string[];
+  };
+type OidcProfile = Profile & UserProfile;
 
 export class BuildOpenIdClient {
   constructor(private configService: ConfigService) {}
@@ -71,11 +77,12 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
   }
 
   async validate(tokenset: TokenSet): Promise<Omit<User, "password">> {
-    const userinfo: UserInfoResponseWithGroups =
-      await this.client.userinfo(tokenset);
+    const userinfo: extendedIdTokenClaims = tokenset.claims();
+
     const oidcConfig = this.configService.get<OidcConfig>("oidc");
 
     const userProfile = this.parseUserInfo(userinfo);
+
     const userPayload: UserPayload = {
       userId: userProfile.id,
       username: userProfile.username,
@@ -86,13 +93,11 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     userProfile.accessGroups =
       await this.accessGroupService.getAccessGroups(userPayload);
 
-    const userFilter: FilterQuery<UserDocument> = {
-      $or: [
-        { username: userProfile.username },
-        { email: userProfile.email as string },
-      ],
-    };
+    const userFilter: FilterQuery<UserDocument> =
+      this.parseQueryFilter(userProfile);
+
     let user = await this.usersService.findOne(userFilter);
+
     if (!user) {
       const createUser: CreateUserDto = {
         username: userProfile.username,
@@ -113,7 +118,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
         credentials: {},
         externalId: userProfile.id,
         profile: userProfile,
-        provider: "oidc",
+        provider: userProfile.provider || "oidc",
         userId: newUser._id,
       };
 
@@ -122,10 +127,15 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
       user = newUser;
     } else {
+      await this.usersService.updateUser(
+        { username: userProfile.username },
+        user._id,
+      );
       await this.usersService.updateUserIdentity(
         {
           profile: userProfile,
           externalId: userProfile.id,
+          provider: userProfile.provider || "oidc",
         },
         user._id,
       );
@@ -145,35 +155,45 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       : "no photo";
   }
 
-  parseUserInfo(userinfo: UserInfoResponseWithGroups) {
-    type OidcProfile = Profile & UserProfile;
+  parseUserInfo(userinfo: extendedIdTokenClaims) {
     const profile = {} as OidcProfile;
 
-    const newUserInfoFields =
-      this.configService.get<IUserInfoMapping>("oidc.userInfoMapping") || {};
+    const customUserInfoFields = this.configService.get<IOidcUserInfoMapping>(
+      "oidc.userInfoMapping",
+    );
 
     // To dynamically map user info fields based on environment variables,
     // set mappings like OIDC_USERINFO_MAPPING_FIELD_USERNAME=family_name.
     // This assigns userinfo.family_name to oidcUser.username.
 
-    const oidcUser: IUserInfoMapping = {
-      id: userinfo["sub"] || (userinfo["user_id"] as string) || "",
-      username: userinfo["sub"] || "",
-      displayName: userinfo["name"] || "",
-      familyName: userinfo["family_name"] || "",
-      email: userinfo["email"] || "",
-      thumbnailPhoto: (userinfo["thumbnailPhoto"] as string) || "",
-      groups: userinfo["groups"] || [],
+    const oidcUser: IOidcUserInfoMapping = {
+      id: userinfo["sub"] ?? (userinfo["user_id"] as string) ?? "",
+      username: userinfo["preferred_username"] ?? userinfo["name"] ?? "",
+      displayName: userinfo["name"] ?? "",
+      familyName: userinfo["family_name"] ?? "",
+      email: userinfo["email"] ?? "",
+      thumbnailPhoto: (userinfo["thumbnailPhoto"] as string) ?? "",
+      provider: userinfo["iss"] ?? "",
+      groups: userinfo["groups"] ?? [],
     };
 
-    Object.entries(newUserInfoFields).forEach(([sourceField, targetField]) => {
-      if (
-        typeof targetField === "string" &&
-        oidcUser.hasOwnProperty(sourceField)
-      ) {
-        oidcUser[sourceField] = userinfo[targetField] as string;
-      }
-    });
+    if (customUserInfoFields) {
+      Object.entries(customUserInfoFields).forEach(
+        ([sourceField, targetField]) => {
+          if (typeof targetField === "string" && targetField in userinfo) {
+            oidcUser[sourceField] = userinfo[targetField] as string;
+          } else if (Array.isArray(targetField) && targetField.length) {
+            const values = targetField
+              .filter((field) => field in userinfo)
+              .map((field) => userinfo[field] as string);
+
+            if (values.length) {
+              oidcUser[sourceField] = values.join("_");
+            }
+          }
+        },
+      );
+    }
 
     // Prior to OpenID Connect Basic Client Profile 1.0 - draft 22, the "sub"
     // claim was named "user_id".  Many providers still use the old name, so
@@ -183,12 +203,56 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       throw new Error("Could not find sub or user_id in userinfo response");
     }
 
-    profile.displayName = oidcUser.displayName + oidcUser.familyName;
     profile.emails = oidcUser.email ? [{ value: oidcUser.email }] : [];
     profile.thumbnailPhoto = this.getUserPhoto(oidcUser.thumbnailPhoto);
+    profile.oidcClaims = userinfo;
 
     const oidcUserProfile = { ...oidcUser, ...profile };
-
     return oidcUserProfile;
+  }
+
+  parseQueryFilter(userProfile: OidcProfile) {
+    const userQueryMappingFilter =
+      this.configService.get<IOidcUserQueryMapping>("oidc.userQueryMapping");
+
+    const operator = userQueryMappingFilter?.operator
+      ? "$" + userQueryMappingFilter?.operator.toLowerCase()
+      : undefined;
+
+    const filter = userQueryMappingFilter?.filter?.length
+      ? userQueryMappingFilter.filter.reduce(
+          (acc: Record<string, unknown>[], mapping: string) => {
+            if (!mapping.includes(":")) {
+              Logger.error(
+                "OIDC_USERQUERY_MAPPING_FILTER must follow the format 'name:name, email:email'",
+                mapping,
+              );
+            }
+            const [filterField, userProfileField] = mapping.split(":");
+            if (userProfileField in userProfile) {
+              acc.push({
+                [filterField]:
+                  userProfile[userProfileField as keyof UserProfile],
+              });
+            }
+            return acc;
+          },
+          [],
+        )
+      : undefined;
+
+    const userFilter: FilterQuery<UserDocument> =
+      !operator || !filter || filter.length < 1
+        ? {
+            $or: [
+              { username: userProfile.username },
+              { email: userProfile.email },
+            ],
+          }
+        : {
+            [operator]: filter,
+          };
+
+    return userFilter;
   }
 }

@@ -27,6 +27,7 @@ import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
 import { UserPayload } from "src/auth/interfaces/userPayload.interface";
 import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -201,6 +202,13 @@ export class UsersService implements OnModuleInit {
   async findById(id: string): Promise<ReturnedUserDto | null> {
     const user = await this.userModel.findById(id).exec();
     return user as ReturnedUserDto;
+  }
+
+  async updateUser(
+    updateUserDto: UpdateUserDto,
+    id: string,
+  ): Promise<User | null> {
+    return this.userModel.findOneAndUpdate({ _id: id }, updateUserDto).exec();
   }
 
   async findById2JWTUser(id: string): Promise<JWTUser | null> {

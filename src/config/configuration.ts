@@ -26,6 +26,11 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
+  const oidcUserQueryMappingFilter =
+    process.env.OIDC_USERFILTER_MAPPING_FILTER || ("" as string);
+  const oidcUsernameFieldMapping =
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
+
   const defaultLogger = {
     type: "DefaultLogger",
     modulePath: "./loggingProviders/defaultLogger",
@@ -133,13 +138,20 @@ const configuration = () => {
       returnURL: process.env.OIDC_RETURN_URL,
       userInfoMapping: {
         id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
-        username: process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME,
+        username:
+          oidcUsernameFieldMapping.split(",").map((v) => v.trim()) ?? [],
         displayName: process.env.OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME,
         familyName: process.env.OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME,
         emails: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAILS,
         email: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAIL,
         thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAIL_PHOTO,
         groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUPS,
+        provider: process.env.OIDC_USERINFO_MAPPING_FIELD_PROVIDER,
+      },
+      userQueryMapping: {
+        operator: process.env.OIDC_USERINFO_MAPPING_OPERATOR || "",
+        filter:
+          oidcUserQueryMappingFilter.split(",").map((v) => v.trim()) ?? [],
       },
     },
     logbook: {

@@ -67,14 +67,3 @@ export interface IDatafileFilter {
   gid?: string;
   perm?: string;
 }
-
-export interface IUserInfoMapping {
-  id: string;
-  username: string;
-  displayName: string;
-  familyName: string;
-  email: string;
-  thumbnailPhoto: string;
-  groups?: string[];
-  [key: string]: string | string[] | undefined;
-}
