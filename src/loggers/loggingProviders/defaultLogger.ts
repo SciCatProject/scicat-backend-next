@@ -13,10 +13,10 @@ export default class DefaultLogger implements Logger {
     this.logger.error(message, context);
   }
   warn(message: string, context: Record<string, unknown>): void {
-    this.logger.error(message, context);
+    this.logger.warn(message, context);
   }
   debug(message: string, context: Record<string, unknown>): void {
-    this.logger.error(message, context);
+    this.logger.debug(message, context);
   }
   exception(
     message: string,
