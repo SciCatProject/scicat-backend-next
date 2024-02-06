@@ -26,8 +26,9 @@ const configuration = () => {
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
 
-  const oidcUserQueryMappingFilter =
-    process.env.OIDC_USERFILTER_MAPPING_FILTER || ("" as string);
+  const oidcUserQueryFilter =
+    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+
   const oidcUsernameFieldMapping =
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
@@ -148,10 +149,9 @@ const configuration = () => {
         groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUPS,
         provider: process.env.OIDC_USERINFO_MAPPING_FIELD_PROVIDER,
       },
-      userQueryMapping: {
-        operator: process.env.OIDC_USERINFO_MAPPING_OPERATOR || "",
-        filter:
-          oidcUserQueryMappingFilter.split(",").map((v) => v.trim()) ?? [],
+      userQuery: {
+        operator: process.env.OIDC_USERQUERY_OPERATOR || "",
+        filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [],
       },
     },
     logbook: {

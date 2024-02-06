@@ -8,7 +8,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { FilterQuery } from "mongoose";
 import { CreateUserIdentityDto } from "src/users/dto/create-user-identity.dto";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
-import { User, UserDocument } from "src/users/schemas/user.schema";
+import { User, UserDocument, UserSchema } from "src/users/schemas/user.schema";
 import { UsersService } from "src/users/users.service";
 import {
   Strategy,
@@ -208,19 +208,24 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     profile.oidcClaims = userinfo;
 
     const oidcUserProfile = { ...oidcUser, ...profile };
+
     return oidcUserProfile;
   }
 
   parseQueryFilter(userProfile: OidcProfile) {
-    const userQueryMappingFilter =
-      this.configService.get<IOidcUserQueryMapping>("oidc.userQueryMapping");
+    const userQuery =
+      this.configService.get<IOidcUserQueryMapping>("oidc.userQuery");
+    const allowedOperators = ["and", "or"];
+    const defaultFilter = {
+      $or: [{ username: userProfile.username }, { email: userProfile.email }],
+    };
+    const operator =
+      userQuery?.operator && allowedOperators.includes(userQuery.operator)
+        ? "$" + userQuery.operator.toLowerCase()
+        : undefined;
 
-    const operator = userQueryMappingFilter?.operator
-      ? "$" + userQueryMappingFilter?.operator.toLowerCase()
-      : undefined;
-
-    const filter = userQueryMappingFilter?.filter?.length
-      ? userQueryMappingFilter.filter.reduce(
+    const filter = userQuery?.filter.length
+      ? userQuery.filter.reduce(
           (acc: Record<string, unknown>[], mapping: string) => {
             if (!mapping.includes(":")) {
               Logger.error(
@@ -228,8 +233,12 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
                 mapping,
               );
             }
+
             const [filterField, userProfileField] = mapping.split(":");
-            if (userProfileField in userProfile) {
+            if (
+              userProfileField in userProfile &&
+              UserSchema.path(filterField)
+            ) {
               acc.push({
                 [filterField]:
                   userProfile[userProfileField as keyof UserProfile],
@@ -243,12 +252,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
 
     const userFilter: FilterQuery<UserDocument> =
       !operator || !filter || filter.length < 1
-        ? {
-            $or: [
-              { username: userProfile.username },
-              { email: userProfile.email },
-            ],
-          }
+        ? defaultFilter
         : {
             [operator]: filter,
           };
