@@ -14,7 +14,7 @@ export const accessGroupServiceFactory = {
   imports: [ConfigModule],
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
-    Logger.debug("Service factory starting");
+    Logger.debug("Service factory starting", "accessGroupServiceFactory");
     const accessGroupsStaticConfig = configService.get(
       "accessGroupsStaticConfig",
     );
@@ -27,20 +27,30 @@ export const accessGroupServiceFactory = {
 
     const accessGroupServices: AccessGroupService[] = [];
     if (accessGroupsStaticConfig?.enabled == true) {
+      Logger.log(
+        JSON.stringify(accessGroupsStaticConfig),
+        "loading static processor",
+      );
       accessGroupServices.push(
         new AccessGroupFromStaticValuesService(accessGroupsStaticConfig.value),
       );
     }
     if (accessGroupsOIDCPayloadConfig?.enabled == true) {
-      Logger.log("loading oidc processor");
+      Logger.log(
+        JSON.stringify(accessGroupsOIDCPayloadConfig),
+        "loading oidc processor",
+      );
       accessGroupServices.push(
         new AccessGroupFromPayloadService(configService),
       );
     }
-    Logger.log(accessGroupsGraphQlConfig);
 
     if (accessGroupsGraphQlConfig?.enabled == true) {
-      Logger.log("loading graphql processor");
+      Logger.log(
+        JSON.stringify(accessGroupsGraphQlConfig),
+        "loading graphql processor",
+      );
+
       import(accessGroupsGraphQlConfig.responseProcessorSrc).then(
         (rpModule) => {
           const gh = rpModule.graphHandler;

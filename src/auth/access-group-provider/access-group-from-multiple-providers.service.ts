@@ -16,7 +16,7 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
     userPayload: UserPayload,
   ): Promise<string[]> {
     const accessGroups: string[] = [];
-    Logger.log("get groups from multiple providers");
+
     for (const accessGroupProvider of this.accessGroupProviders) {
       const accessGroupsFromProvider =
         await accessGroupProvider.getAccessGroups(userPayload);

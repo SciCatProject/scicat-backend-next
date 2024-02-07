@@ -31,12 +31,12 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
       const accessGroups = this.responseProcessor(response);
 
       Logger.log(
-        "Access groups from graphql api call getAccessGroups: " +
-          accessGroups.join(","),
+        accessGroups,
+        "AccessGroupFromGraphQLApiService getAccessGroups:",
       );
       return accessGroups;
-    } catch (e) {
-      Logger.error("GraphQL", e);
+    } catch (error) {
+      Logger.error(error, "AccessGroupFromGraphQLApiService");
       return [];
     }
   }
