@@ -17,9 +17,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
     //const defaultAccessGroups: string[] = [];
     let accessGroups: string[] = [];
 
-    const accessGroupsProperty = this.configService.get(
-      "oidc.accessGroupProperty",
-    );
+    const accessGroupsProperty = userPayload.accessGroupProperty;
     if (accessGroupsProperty) {
       const payload: Record<string, unknown> | undefined = userPayload.payload;
       if (
