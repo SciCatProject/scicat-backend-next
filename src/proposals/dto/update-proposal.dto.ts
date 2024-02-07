@@ -9,7 +9,6 @@ import {
   ValidateNested,
 } from "class-validator";
 import { OwnableDto } from "../../common/dto/ownable.dto";
-import { MeasurementPeriodClass } from "../schemas/measurement-period.schema";
 import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
 
 @ApiTags("proposals")
@@ -103,7 +102,7 @@ export class UpdateProposalDto extends OwnableDto {
   readonly endTime?: Date;
 
   @ApiProperty({
-    type: MeasurementPeriodClass,
+    type: CreateMeasurementPeriodDto,
     isArray: true,
     required: false,
     description:
