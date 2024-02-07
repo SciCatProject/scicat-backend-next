@@ -9,6 +9,7 @@ import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 // import { Role } from "src/auth/role.enum";
+import configuration from "src/config/configuration";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { ElasticSearchActions } from "src/elastic-search/dto";
@@ -24,7 +25,6 @@ import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
-import configuration from "src/config/configuration";
 
 type Subjects =
   | string
@@ -978,6 +978,7 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // data instance authorization
       can(Action.ProposalsCreateAny, ProposalClass);
+      can(Action.ProposalsUpdateAny, ProposalClass);
       can(Action.ProposalsReadManyAccess, ProposalClass);
       can(Action.ProposalsReadOneAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
