@@ -219,44 +219,38 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const defaultFilter = {
       $or: [{ username: userProfile.username }, { email: userProfile.email }],
     };
-    const operator =
-      userQuery?.operator && allowedOperators.includes(userQuery.operator)
-        ? "$" + userQuery.operator.toLowerCase()
-        : undefined;
 
-    const filter = userQuery?.filter.length
-      ? userQuery.filter.reduce(
-          (acc: Record<string, unknown>[], mapping: string) => {
-            if (!mapping.includes(":")) {
-              Logger.error(
-                "OIDC_USERQUERY_MAPPING_FILTER must follow the format 'name:name, email:email'",
-                mapping,
-              );
-            }
+    if (
+      !userQuery?.operator ||
+      (userQuery?.filter && userQuery.filter.length < 1)
+    ) {
+      return defaultFilter;
+    }
 
-            const [filterField, userProfileField] = mapping.split(":");
-            if (
-              userProfileField in userProfile &&
-              UserSchema.path(filterField)
-            ) {
-              acc.push({
-                [filterField]:
-                  userProfile[userProfileField as keyof UserProfile],
-              });
-            }
-            return acc;
-          },
-          [],
-        )
-      : undefined;
+    const operator = "$" + userQuery.operator.toLowerCase();
+    const filter = userQuery.filter.reduce(
+      (acc: Record<string, unknown>[], mapping: string) => {
+        const [filterField, userProfileField] = mapping.split(":");
+        if (userProfileField in userProfile && UserSchema.path(filterField)) {
+          acc.push({
+            [filterField]: userProfile[userProfileField as keyof UserProfile],
+          });
+        }
+        return acc;
+      },
+      [],
+    );
 
-    const userFilter: FilterQuery<UserDocument> =
-      !operator || !filter || filter.length < 1
-        ? defaultFilter
-        : {
-            [operator]: filter,
-          };
+    if (filter.length === 0 || !allowedOperators.includes(operator)) {
+      Logger.error(
+        userQuery,
+        "Custom user query error, falling back to default filter.",
+      );
+      return defaultFilter;
+    }
 
-    return userFilter;
+    const customFilter = { [operator]: filter };
+
+    return customFilter;
   }
 }

@@ -29,11 +29,9 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
             ? (payload[accessGroupsProperty] as string[])
             : [];
       }
+      Logger.log(accessGroups, "AccessGroupFromPayloadService");
     }
 
-    Logger.log(
-      "Access groups AccessGroupFromPayloadService : " + accessGroups.join(","),
-    );
     return accessGroups;
   }
 }
