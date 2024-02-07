@@ -28,13 +28,15 @@ describe("AccessGroupFromPayloadService", () => {
   });
 
   it("Should resolve access groups", async () => {
-    const expected = ["AAA", "BBB"];
-    const actual = await service.getAccessGroups({
+    const userPayload = {
       userId: "test_user",
+      accessGroupProperty: "testGroups",
       payload: {
-        access_group_property: expected,
+        testGroups: ["AAA", "BBB"],
       },
-    } as UserPayload);
+    };
+    const expected = userPayload.payload.testGroups;
+    const actual = await service.getAccessGroups(userPayload as UserPayload);
     expect(actual).toEqual(expected);
   });
 });
