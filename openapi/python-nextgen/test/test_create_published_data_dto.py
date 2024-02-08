@@ -37,7 +37,7 @@ def make_instance(include_optional):
             publisher='scicat',
             publication_year=1.337,
             title='Title',
-            url='http://scicat.com',
+            url='http://scicat.invalid',
             abstract='Abstract',
             data_description='Description',
             resource_type='raw',

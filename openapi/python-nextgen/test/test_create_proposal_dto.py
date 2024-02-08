@@ -36,10 +36,10 @@ def make_instance(include_optional):
             ],
             instrument_group='instrument',
             proposal_id=str(random.randint(0, 99999)),
-            pi_email='pi@email.com',
+            pi_email='pi@email.invalid',
             pi_firstname='P',
             pi_lastname='I',
-            email='pi@email.com',
+            email='pi@email.invalid',
             firstname='P',
             lastname='I',
             title='Title',
@@ -75,7 +75,7 @@ def make_instance(include_optional):
         return CreateProposalDto(
             owner_group='ingestor',
             proposal_id=str(random.randint(0, 99999)),
-            email='pi@email.com',
+            email='pi@email.invalid',
             title='Title',
         )
 

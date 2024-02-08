@@ -37,11 +37,11 @@ def make_instance(include_optional):
             instrument_group='instrument',
             pid=str(random.randint(0, 99999)),
             owner='ingestor',
-            owner_email='pi@email.com',
+            owner_email='pi@email.invalid',
             orcid_of_owner='',
-            contact_email='pi@email.com',
+            contact_email='pi@email.invalid',
             source_folder='/',
-            source_folder_host='http://host.com',
+            source_folder_host='http://host.invalid',
             size=1.337,
             packed_size=1.337,
             number_of_files=1.337,
@@ -86,7 +86,7 @@ def make_instance(include_optional):
         return CreateDerivedDatasetDto(
             owner_group='ingestor',
             owner='ingestor',
-            contact_email='e@mail.com',
+            contact_email='e@mail.invalid',
             source_folder='/',
             number_of_files_archived=1.337,
             creation_time=datetime.datetime.strptime(

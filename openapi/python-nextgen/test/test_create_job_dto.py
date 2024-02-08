@@ -25,7 +25,7 @@ def make_instance(include_optional):
         optional params are included """
     if include_optional:
         return CreateJobDto(
-            email_job_initiator='pi@email.com',
+            email_job_initiator='pi@email.invalid',
             type='',
             execution_time=datetime.datetime.strptime(
                 '2013-10-20 19:20:30.00',
@@ -37,7 +37,7 @@ def make_instance(include_optional):
         )
     else:
         return CreateJobDto(
-            email_job_initiator='pi@email.com',
+            email_job_initiator='pi@email.invalid',
             type='',
             dataset_list=[],
         )
