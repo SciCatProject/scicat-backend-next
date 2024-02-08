@@ -102,9 +102,84 @@ jobs:
       - name: Build
         run: npm run build
 
+  generate_openapi:
+    name: Generate OpenAPI definition and generate clients
+    needs: [ install-and-cache ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        id: cached-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+
+      - name: Start backend
+        env:
+          EXIT_AFTER_OPENAPI_GENERATION: true
+          ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
+          MONGODB_URI: mongodb://localhost:27017/scicat
+          EXPRESS_SESSION_SECRET: a_scicat_secret
+          JWT_SECRET: a_scicat_secret
+          PORT: 3000
+          HTTP_MAX_REDIRECTS: 5
+          HTTP_TIMEOUT: 5000
+          JWT_EXPIRES_IN: 3600
+          LOGGING_DISABLED: True
+          # NOTE: The SITE variable is set to PSI because of the PublishedData test.
+          # Testing /register endpoint expects to have it as PSI for that specific scenario.
+          # Old backend was modifying this at runtime but with NestJS we need to investigate little bit more if there is a bit better and more elegant solution.
+          SITE: PSI
+          PID_PREFIX: PID.SAMPLE.PREFIX
+          DOI_PREFIX: DOI.SAMPLE.PREFIX
+          METADATA_KEYS_RETURN_LIMIT: 100
+          METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
+          ADMIN_GROUPS: admin,ingestor
+          DELETE_GROUPS: archivemanager
+          CREATE_DATASET_GROUPS: group1,group2,group3
+          CREATE_DATASET_WITH_PID_GROUPS: "group2"
+          CREATE_DATASET_PRIVILEGED_GROUPS: "group3"
+          ACCESS_GROUPS_STATIC_VALUES: "ess"
+          PROPOSAL_GROUPS: "proposalingestor"
+          SAMPLE_GROUPS: ""
+          DATASET_CREATION_VALIDATION_ENABLED: true
+          DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
+          ES_HOST: https://localhost:9200
+          ES_USERNAME: elastic
+          ES_PASSWORD: duo-password
+          MONGODB_COLLECTION: Dataset
+          ES_MAX_RESULT: 210000
+          ES_FIELDS_LIMIT: 400000
+          ES_INDEX: "dataset"
+          ES_REFRESH: "wait_for"
+          STACK_VERSION: 8.8.2
+          CLUSTER_NAME: es-cluster
+          MEM_LIMIT: 4G
+
+        # Start mongo container and app before running api tests
+        run: |
+          docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
+          npm run start
+
+      - name: Generate openapi client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: python-nextgen
+          openapi-file: openapi.json
+          config-file: .github/openapi/python-nextgen-config.yml
+          command-args: "--skip-validate-spec --ignore-file-override openapi/python-nextgen/test**"
+
   api_tests:
     name: API tests with ElasticSearch enabled - ${{ matrix.elasticsearch_enabled }}
-    needs: [install-and-cache]
+    needs: [generate_openapi]
     runs-on: ubuntu-latest
 
     strategy:
@@ -175,14 +250,6 @@ jobs:
           cp functionalAccounts.json.test functionalAccounts.json
           docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
           npm run start &
-
-      - name: Generate openapi client
-        uses: openapi-generators/openapitools-generator-action@v1
-        with:
-          generator: python-nextgen
-          openapi-file: openapi.json
-          config-file: .github/openapi/python-nextgen-config.yml
-          command-args: "--skip-validate-spec --ignore-file-override openapi/\"$1\"/test**"
 
       - name: Test jest
         run: npm run test:api:jest
