@@ -6,23 +6,23 @@ export default class DefaultLogger implements Logger {
   constructor() {
     this.logger = new LocalLogger();
   }
-  log(message: string, context: Record<string, unknown>): void {
-    this.logger.log(message, context);
+  log(message: string, context?: Record<string, unknown>): void {
+    this.logger.log(message, context ?? "");
   }
-  error(message: string, context: Record<string, unknown>): void {
-    this.logger.error(message, context);
+  error(message: string, context?: Record<string, unknown>): void {
+    this.logger.error(message, context ?? "");
   }
-  warn(message: string, context: Record<string, unknown>): void {
-    this.logger.error(message, context);
+  warn(message: string, context?: Record<string, unknown>): void {
+    this.logger.error(message, context ?? "");
   }
-  debug(message: string, context: Record<string, unknown>): void {
-    this.logger.error(message, context);
+  debug(message: string, context?: Record<string, unknown>): void {
+    this.logger.error(message, context ?? "");
   }
   exception(
     message: string,
     exception: unknown,
     context: Record<string, unknown>,
   ): void {
-    this.logger.error(message, exception, context);
+    this.logger.error(message, exception, context ?? "");
   }
 }

@@ -21,6 +21,7 @@ import {
   InternalServerErrorException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import {
@@ -1030,6 +1031,12 @@ export class DatasetsController {
     @Param("pid") id: string,
   ): Promise<DatasetClass | null> {
     const dataset = await this.checkPermissionsForDataset(request, id);
+    if (dataset) {
+      Logger.log("Dataset accessed", {
+        pid: id,
+        isPublished: dataset.isPublished,
+      });
+    }
 
     return dataset;
   }
