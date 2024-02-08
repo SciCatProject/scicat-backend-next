@@ -125,7 +125,7 @@ jobs:
       - name: Start backend
         env:
           EXIT_AFTER_OPENAPI_GENERATION: true
-          ELASTICSEARCH_ENABLED: yes
+          ELASTICSEARCH_ENABLED: no
           MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
@@ -166,7 +166,7 @@ jobs:
 
         # Start mongo container and app before running api tests
         run: |
-          docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
+          docker-compose up --build -d -f CI/E2E/docker-compose-mongo.yaml
           npm run start
 
       - name: Generate openapi client
@@ -175,7 +175,7 @@ jobs:
           generator: python-nextgen
           openapi-file: openapi.json
           config-file: .github/openapi/python-nextgen-config.yml
-          command-args: "--skip-validate-spec --ignore-file-override openapi/python-nextgen/test**"
+          command-args: "--ignore-file-override openapi/python-nextgen/test**"
 
   api_tests:
     name: API tests with ElasticSearch enabled - ${{ matrix.elasticsearch_enabled }}
@@ -255,7 +255,9 @@ jobs:
         run: npm run test:api:jest
 
       - name: Test mocha
-        run: npm run test:api:mocha
+        run: |
+          wait-on http://localhost:3000/explorer/
+          npm run test:api:mocha
 
       - name: Test OpenAPI
         run: |
