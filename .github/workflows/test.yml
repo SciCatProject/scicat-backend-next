@@ -125,7 +125,7 @@ jobs:
       - name: Start backend
         env:
           EXIT_AFTER_OPENAPI_GENERATION: true
-          ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
+          ELASTICSEARCH_ENABLED: yes
           MONGODB_URI: mongodb://localhost:27017/scicat
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
