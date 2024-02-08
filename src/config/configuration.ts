@@ -21,7 +21,8 @@ const configuration = () => {
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
-  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string)
+  const samplePrivilegedGroups =
+    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -74,7 +75,9 @@ const configuration = () => {
       .map((v) => v.trim()),
     proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
     sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
-    samplePrivilegedGroups: samplePrivilegedGroups.split(",").map((v) => v.trim()),
+    samplePrivilegedGroups: samplePrivilegedGroups
+      .split(",")
+      .map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,

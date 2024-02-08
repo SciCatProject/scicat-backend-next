@@ -1095,7 +1095,6 @@ export class CaslAbilityFactory {
         // -------------------------------------
         // data instance authorization
         can(Action.SampleDeleteAny, SampleClass);
-      
       } else {
         // -------------------------------------
         // users that do not belong to any of the group listed in DELETE_GROUPS
@@ -1139,7 +1138,9 @@ export class CaslAbilityFactory {
         can(Action.SampleAttachmentUpdateAny, SampleClass);
         can(Action.SampleAttachmentDeleteAny, SampleClass);
       } else if (
-        user.currentGroups.some((g) => configuration().samplePrivilegedGroups.includes(g))
+        user.currentGroups.some((g) =>
+          configuration().samplePrivilegedGroups.includes(g),
+        )
       ) {
         // -------------------------------------
         // users belonging to any of the group listed in SAMPLE_GROUPS
@@ -1189,7 +1190,9 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
       } else if (
-        user.currentGroups.some((g) => configuration().sampleGroups.includes(g)) ||
+        user.currentGroups.some((g) =>
+          configuration().sampleGroups.includes(g),
+        ) ||
         configuration().sampleGroups.includes("#all")
       ) {
         // -------------------------------------
