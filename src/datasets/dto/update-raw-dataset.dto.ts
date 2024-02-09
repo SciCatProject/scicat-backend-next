@@ -1,48 +1,73 @@
-import { PartialType } from "@nestjs/swagger";
-import { Exclude } from "class-transformer";
-import { IsOptional } from "class-validator";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { CreateRawDatasetDto } from "./create-raw-dataset.dto";
+import { IsDateString, IsOptional, IsString } from "class-validator";
+import { UpdateDatasetDto } from "./update-dataset.dto";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 
-export class UpdateRawDatasetDto extends CreateRawDatasetDto {
-  @IsOptional()
-  @Exclude()
-  readonly _id?: string;
+export class UpdateRawDatasetDto extends UpdateDatasetDto {
+  /* we need to discuss if the naming is adequate. */
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
+  })
+  @IsString()
+  readonly principalInvestigator: string;
 
+  @ApiProperty({
+    type: Date,
+    required: false,
+    description:
+      "End time of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
+  })
   @IsOptional()
-  @Exclude()
-  declare readonly pid?: string;
+  @IsDateString()
+  readonly endTime?: Date;
 
-  @IsOptional()
-  @Exclude()
-  readonly createdAt?: string;
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset.",
+  })
+  @IsString()
+  readonly creationLocation: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Defines the format of the data files in this dataset, e.g Nexus Version x.y.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly updatedAt?: string;
+  @IsString()
+  readonly dataFormat?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The ID of the proposal to which the dataset belongs.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly createdBy?: string;
+  @IsString()
+  readonly proposalId?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of the sample used when collecting the data.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly updatedBy?: string;
+  @IsString()
+  readonly sampleId?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "ID of the instrument where the data was created.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly history?: string;
-
-  @IsOptional()
-  attachments?: Attachment[];
-
-  @IsOptional()
-  origdatablocks?: OrigDatablock[];
-
-  @IsOptional()
-  datablocks?: Datablock[];
+  @IsString()
+  readonly instrumentId: string;
 
   @IsOptional()
   investigator?: string;
@@ -61,5 +86,5 @@ export class UpdateRawDatasetDto extends CreateRawDatasetDto {
 }
 
 export class PartialUpdateRawDatasetDto extends PartialType(
-  CreateRawDatasetDto,
+  UpdateRawDatasetDto,
 ) {}

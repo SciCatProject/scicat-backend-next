@@ -18,7 +18,7 @@ import { DatasetDocument } from "src/datasets/schemas/dataset.schema";
 import { PoliciesService } from "src/policies/policies.service";
 import { Policy } from "src/policies/schemas/policy.schema";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobDto } from "./dto/update-job.dto";
+import { PartialUpdateJobDto } from "./dto/update-job.dto";
 import { JobType } from "./job-type.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
@@ -86,7 +86,7 @@ export class JobsService {
 
   async update(
     filter: FilterQuery<JobDocument>,
-    updateJobDto: UpdateJobDto,
+    updateJobDto: PartialUpdateJobDto,
   ): Promise<JobClass | null> {
     return this.jobModel
       .findOneAndUpdate(filter, updateJobDto, { new: true })

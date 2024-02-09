@@ -1,4 +1,18 @@
+import { IsDateString, IsObject, IsOptional, IsString } from "class-validator";
 import { PartialType } from "@nestjs/swagger";
-import { CreateJobDto } from "./create-job.dto";
 
-export class UpdateJobDto extends PartialType(CreateJobDto) {}
+export class UpdateJobDto {
+  @IsDateString()
+  @IsOptional()
+  readonly executionTime?: Date;
+
+  @IsString()
+  @IsOptional()
+  readonly jobStatusMessage?: string;
+
+  @IsObject()
+  @IsOptional()
+  readonly jobResultObject?: Record<string, unknown>;
+}
+
+export class PartialUpdateJobDto extends PartialType(UpdateJobDto) {}
