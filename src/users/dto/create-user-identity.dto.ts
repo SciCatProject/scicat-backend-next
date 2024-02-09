@@ -6,11 +6,5 @@ export class CreateUserIdentityDto extends UpdateUserIdentityDto {
   readonly authStrategy?: string;
 
   @ApiProperty()
-  readonly externalId?: string;
-
-  @ApiProperty()
-  readonly provider?: string;
-
-  @ApiProperty()
   readonly userId: string;
 }
