@@ -11,7 +11,10 @@ import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
-import { UpdatePolicyDto } from "./dto/update-policy.dto";
+import {
+  PartialUpdatePolicyDto,
+  UpdatePolicyDto,
+} from "./dto/update-policy.dto";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -131,7 +134,7 @@ export class PoliciesService implements OnModuleInit {
 
   async update(
     filter: FilterQuery<PolicyDocument>,
-    updatePolicyDto: UpdatePolicyDto,
+    updatePolicyDto: PartialUpdatePolicyDto,
   ): Promise<Policy | null> {
     const username = (this.request.user as JWTUser).username;
     return this.policyModel

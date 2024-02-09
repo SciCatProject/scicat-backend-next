@@ -12,7 +12,7 @@ import {
   addUpdatedByField,
 } from "src/common/utils";
 import { CreateProposalDto } from "./dto/create-proposal.dto";
-import { UpdateProposalDto } from "./dto/update-proposal.dto";
+import { PartialUpdateProposalDto } from "./dto/update-proposal.dto";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -93,7 +93,7 @@ export class ProposalsService {
 
   async update(
     filter: FilterQuery<ProposalDocument>,
-    updateProposalDto: UpdateProposalDto,
+    updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
     const username = (this.request.user as JWTUser).username;
 
