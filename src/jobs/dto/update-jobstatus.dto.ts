@@ -1,4 +1,4 @@
-import { ApiProperty,  ApiTags } from "@nestjs/swagger";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
@@ -6,8 +6,7 @@ export class UpdateJobStatusDto {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Id for the job to be updated.",
+    description: "Id for the job to be updated.",
   })
   @IsString()
   readonly id: string;
@@ -15,8 +14,7 @@ export class UpdateJobStatusDto {
   @ApiProperty({
     type: String,
     required: true,
-    description:
-      "Updated job status code for the current status.",
+    description: "Updated job status code for the current status.",
   })
   @IsString()
   readonly jobStatus: string;
@@ -24,8 +22,7 @@ export class UpdateJobStatusDto {
   @ApiProperty({
     type: String,
     required: false,
-    description:
-      "Additional message about the current job status.",
+    description: "Additional message about the current job status.",
   })
   @IsString()
   @IsOptional()
@@ -34,8 +31,7 @@ export class UpdateJobStatusDto {
   @ApiProperty({
     type: String,
     required: false,
-    description:
-      "JWT token for archiver service.",
+    description: "JWT token for archiver service.",
   })
   @IsString()
   @IsOptional()

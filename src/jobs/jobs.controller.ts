@@ -22,7 +22,14 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsAuth } from "./jobs-auth.enum";
@@ -30,8 +37,6 @@ import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
-
-
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -256,17 +261,21 @@ export class JobsController {
   /**
    * Validate if the job is performable
    */
-  async validateJob(createJobDto: CreateJobDto, request: Request) : Promise<void> {
+  async validateJob(
+    createJobDto: CreateJobDto,
+    request: Request,
+  ): Promise<void> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter((j)=> j.jobType == createJobDto.type);
+    const matchingConfig = jobConfigs.filter(
+      (j) => j.jobType == createJobDto.type,
+    );
     if (matchingConfig.length != 1) {
       // return error that job type does not exists
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message:
-            "Invalid job type: " + createJobDto.type,
+          message: "Invalid job type: " + createJobDto.type,
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -274,99 +283,114 @@ export class JobsController {
     const jc = matchingConfig[0];
 
     await Promise.all(
-      jc.create.map((action) => {
-        return action.validate(createJobDto).catch( (err) => {
-          if( err instanceof HttpException) {
+      jc.create.actions.map((action) => {
+        return action.validate(createJobDto).catch((err) => {
+          if (err instanceof HttpException) {
             throw err;
           }
           throw new HttpException(
             {
               status: HttpStatus.BAD_REQUEST,
-              message:
-                `Invalid job input. Action ${action.actionType} unable to validate ${createJobDto.type} job due to ${err}`,
+              message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+                createJobDto.type
+              } job due to ${err}`,
             },
             HttpStatus.BAD_REQUEST,
           );
         });
-      })
+      }),
     );
   }
 
-  async instanceAuthorization (createJobDto: CreateJobDto, jobConfiguration: Record<string, any>) : Promise<boolean> {
+  async instanceAuthorization(
+    createJobDto: CreateJobDto,
+    jobConfiguration: Record<string, any>,
+  ): Promise<boolean> {
     // checking if user is allowed to create job according to auth field of job configureation
     // Accepted options
-    // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser, 
+    // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser,
     let res = false;
-    if (jobConfiguration.auth.auth != JobsAuth.All ) {
+    if (jobConfiguration.auth.auth != JobsAuth.All) {
       // nothing to do here
       res = true;
-    } else if ( jobConfiguration.auth.auth == JobsAuth.DatasetOwner ) {
-       // versify that all the pids listed in the property indicated are owned by the user
+    } else if (jobConfiguration.auth.auth == JobsAuth.DatasetOwner) {
+      // versify that all the pids listed in the property indicated are owned by the user
       const field = jobConfiguration.auth.field;
-      let datasetIds = ( typeof createJobDto.jobParams[field] === "string" ? Array(createJobDto.jobParams[field]) : createJobDto.jobParams[field] ) as Array<string>;
+      const datasetIds = (
+        typeof createJobDto.jobParams[field] === "string"
+          ? Array(createJobDto.jobParams[field])
+          : createJobDto.jobParams[field]
+      ) as Array<string>;
       if (!Array.isArray(datasetIds)) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message:
-              "Invalid dataset ids list",
+            message: "Invalid dataset ids list",
           },
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      const numberOfDatasets = await this.datasetsService.count({"where":{"pid":{"in":datasetIds},"ownerGroup" : {"in":user.currentGroups}}});
+      const numberOfDatasets = await this.datasetsService.count({
+        where: {
+          pid: { in: datasetIds },
+          ownerGroup: { in: user.currentGroups },
+        },
+      });
       const datasetsNotOwner = datasetIds.length - numberOfDatasets.count;
       if (datasetsNotOwner > 0) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
             message:
-              "Unauthorized acces to " + datasetsNotOwner + " datasets out of " + datasetIds.length,
+              "Unauthorized acces to " +
+              datasetsNotOwner +
+              " datasets out of " +
+              datasetIds.length,
           },
           HttpStatus.BAD_REQUEST,
         );
       }
-    } 
+    }
     return res;
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter((j)=> j.jobType == jobInstance.type);
+    const matchingConfig = jobConfigs.filter(
+      (j) => j.jobType == jobInstance.type,
+    );
     if (matchingConfig.length != 1) {
       // return error that job type does not exists
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message:
-            "Invalid job type: " + jobInstance.type,
+          message: "Invalid job type: " + jobInstance.type,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
     const jc = matchingConfig[0];
 
-    for(var action of jc.create) {
-      jobInstance = await (action.performJob(jobInstance).catch(
-        (err) => {
-          if( err instanceof HttpException) {
-            throw err;
-          }
-          throw new HttpException(
-            {
-              status: HttpStatus.BAD_REQUEST,
-              message:
-                `Invalid job input. Action ${action.actionType} unable to validate ${jobInstance.type} job due to ${err}`,
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }));
+    for (var action of jc.create) {
+      jobInstance = await action.performJob(jobInstance).catch((err) => {
+        if (err instanceof HttpException) {
+          throw err;
+        }
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+              jobInstance.type
+            } job due to ${err}`,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
     }
     return jobInstance;
   }
-
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -375,13 +399,12 @@ export class JobsController {
   @Post()
   @ApiOperation({
     summary: "It creates a new job.",
-    description:
-      "It creates a new job.",
+    description: "It creates a new job.",
   })
   @ApiBody({
     description: "Input fields for the job to be created",
     required: true,
-    schema: CreateJobDto
+    schema: CreateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -403,8 +426,9 @@ export class JobsController {
     const createdJobInstance = await this.jobsService.create(jobToCreate);
 
     // perform the action that is specified in the create portion of the job configuration
-    const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
-    
+    const jobServiceResponse =
+      await this.performJobCreateAction(createdJobInstance);
+
     // update job instance with results of job create action
 
     return createdJobInstance;
@@ -464,7 +488,7 @@ export class JobsController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body() updateJobDto: UpdateJobDto,
+    @Body() updateJobDto: UpdateJobStatusDto,
   ): Promise<JobClass | null> {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 

@@ -6,7 +6,6 @@ import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
 
-
 @Schema({
   collection: "Job",
   minimize: false,
@@ -15,13 +14,11 @@ export type JobDocument = JobClass & Document;
     getters: true,
   },
 })
-export class JobClass extends OwnableClass{
-
+export class JobClass extends OwnableClass {
   @ApiProperty({
     type: String,
     default: () => uuidv4(),
-    description:
-      "Globally unique identifier of a job.",
+    description: "Globally unique identifier of a job.",
   })
   @Prop({
     type: String,
@@ -52,17 +49,16 @@ export class JobClass extends OwnableClass{
   // status code
   @ApiProperty({
     type: String,
-    required: false, 
-    description:
-      "Defines the current status code of the job.",
+    required: false,
+    description: "Defines the current status code of the job.",
   })
-  @Prop({ 
+  @Prop({
     type: String,
     required: false,
   })
   statusCode: string;
 
-  // update 
+  // update
   @ApiProperty({
     type: String,
     required: false,
@@ -75,12 +71,11 @@ export class JobClass extends OwnableClass{
   })
   statusMessage: string;
 
-  // history of status codes		
+  // history of status codes
   @ApiProperty({
     type: [Object],
     required: false,
-    description:
-      "Array of status updates containing status code and message",
+    description: "Array of status updates containing status code and message",
   })
   @Prop({
     type: [Object],
@@ -99,7 +94,7 @@ export class JobClass extends OwnableClass{
     type: Object,
     required: false,
   })
-  messageSent: Record<string,unknown>;
+  messageSent: Record<string, unknown>;
 
   // configuration definition (schema)
   @ApiProperty({
@@ -112,7 +107,7 @@ export class JobClass extends OwnableClass{
     type: Object,
     required: false,
   })
-  configuration: Record<string,unknown>;
+  configuration: Record<string, unknown>;
 
   // parameters (instance)
   @ApiProperty({
@@ -125,7 +120,7 @@ export class JobClass extends OwnableClass{
     type: Object,
     required: false,
   })
-  parameters: Record<string,unknown>;
+  parameters: Record<string, unknown>;
   // in case email is needed it goes into params, and other values too
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);
