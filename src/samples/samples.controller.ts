@@ -16,6 +16,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Req,
+  Header,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -61,6 +62,7 @@ import {
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -236,7 +238,7 @@ export class SamplesController {
       "sampleCharacteristics",
     ),
   )
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiOperation({
     summary: "It creates a new sample.",
@@ -512,6 +514,7 @@ export class SamplesController {
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id")
+  @Header('content-type', 'application/json')
   @ApiOperation({
     summary: "It returns the sample requested.",
     description: "It returns the sample requested through the id specified.",
@@ -630,23 +633,29 @@ export class SamplesController {
   async createAttachments(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
+    @Body() createAttachmentDto: CreateSubAttachmentDto,
   ): Promise<Attachment | null> {
-    await this.checkPermissionsForSample(
+    console.log("Create Attachement");
+    const sample = await this.checkPermissionsForSample(
       request,
       id,
-      Action.SampleAttachmentDelete,
+      Action.SampleAttachmentCreate,
     );
-    const sample = await this.samplesService.findOne({ sampleId: id });
-    if (sample) {
-      const createAttachment: CreateAttachmentDto = {
-        ...createAttachmentDto,
-        sampleId: id,
-        ownerGroup: sample.ownerGroup,
-      };
-      return this.attachmentsService.create(createAttachment);
+    console.log("Sample",sample);
+    if (!sample) {
+      throw new BadRequestException("Not able to create attachement for this sample");
     }
-    return null;
+    console.log("ready to go");
+    const createAttachment: CreateAttachmentDto = {
+      ...createAttachmentDto,
+      sampleId: id,
+      ownerGroup: sample.ownerGroup,
+      accessGroups: sample.accessGroups
+    };
+    console.log(createAttachment);
+    const temp = await this.attachmentsService.create(createAttachment);
+    console.log(temp);
+    return temp;
   }
 
   // GET /samples/:id/attachments

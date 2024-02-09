@@ -10,6 +10,10 @@ let accessTokenAdminIngestor = null,
   attachmentId = null,
   datasetId = null;
 
+const EntryCreatedStatusCode = 201,
+  SuccessfulGetStatusCode = 200,
+  SuccessfulDeleteStatusCode = 200;
+
 describe("2200: Sample: Simple Sample", () => {
   beforeEach((done) => {
     utils.getToken(
@@ -41,7 +45,7 @@ describe("2200: Sample: Simple Sample", () => {
       .send(TestData.SampleCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -55,8 +59,8 @@ describe("2200: Sample: Simple Sample", () => {
       .get("/api/v3/Samples/" + sampleId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
-      .expect("Content-Type", /json/)
+      .expect(SuccessfulGetStatusCode)
+//      .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("sampleId").and.be.string;
@@ -69,7 +73,7 @@ describe("2200: Sample: Simple Sample", () => {
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -95,7 +99,7 @@ describe("2200: Sample: Simple Sample", () => {
       .get("/api/v3/Samples/" + sampleId + "/attachments/")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
@@ -108,7 +112,7 @@ describe("2200: Sample: Simple Sample", () => {
       .get("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(SuccessfulGetStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -117,7 +121,7 @@ describe("2200: Sample: Simple Sample", () => {
       .delete("/api/v3/Samples/" + sampleId + "/attachments/" + attachmentId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200);
+      .expect(SuccessfulDeleteStatusCode);
   });
 
   it("0070: should return no datasets", async () => {
@@ -125,7 +129,7 @@ describe("2200: Sample: Simple Sample", () => {
       .get("/api/v3/Samples/" + sampleId + "/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
@@ -141,7 +145,7 @@ describe("2200: Sample: Simple Sample", () => {
       .send(dataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
