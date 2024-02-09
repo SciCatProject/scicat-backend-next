@@ -25,6 +25,7 @@ const mockProposal: ProposalClass = {
   MeasurementPeriodList: [],
   createdAt: new Date(),
   updatedAt: new Date(),
+  isPublished: false,
 };
 
 describe("ProposalsService", () => {

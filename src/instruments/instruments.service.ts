@@ -4,7 +4,7 @@ import { FilterQuery, Model } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { parseLimitFilters } from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
-import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
+import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 
 @Injectable()
@@ -48,7 +48,7 @@ export class InstrumentsService {
 
   async update(
     filter: FilterQuery<InstrumentDocument>,
-    updateInstrumentDto: UpdateInstrumentDto,
+    updateInstrumentDto: PartialUpdateInstrumentDto,
   ): Promise<Instrument | null> {
     return this.instrumentModel
       .findOneAndUpdate(filter, updateInstrumentDto, { new: true })

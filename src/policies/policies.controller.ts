@@ -19,7 +19,7 @@ import {
 import { Request } from "express";
 import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
-import { UpdatePolicyDto } from "./dto/update-policy.dto";
+import { PartialUpdatePolicyDto } from "./dto/update-policy.dto";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -164,7 +164,7 @@ export class PoliciesController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body() updatePolicyDto: UpdatePolicyDto,
+    @Body() updatePolicyDto: PartialUpdatePolicyDto,
   ): Promise<Policy | null> {
     return this.policiesService.update({ _id: id }, updatePolicyDto);
   }

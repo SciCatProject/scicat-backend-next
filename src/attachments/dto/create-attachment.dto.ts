@@ -1,17 +1,10 @@
 import { IsOptional, IsString } from "class-validator";
-import { OwnableDto } from "src/common/dto/ownable.dto";
+import { UpdateAttachmentDto } from "./update-attachment.dto";
 
-export class CreateAttachmentDto extends OwnableDto {
+export class CreateAttachmentDto extends UpdateAttachmentDto {
   @IsOptional()
   @IsString()
   readonly id?: string;
-
-  @IsOptional()
-  @IsString()
-  readonly thumbnail?: string;
-
-  @IsString()
-  readonly caption: string;
 
   @IsOptional()
   @IsString()

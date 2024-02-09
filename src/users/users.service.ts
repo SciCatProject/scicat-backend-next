@@ -22,7 +22,10 @@ import {
   UserSettingsDocument,
 } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import {
+  PartialUpdateUserSettingsDto,
+  UpdateUserSettingsDto,
+} from "./dto/update-user-settings.dto";
 import { UpdateUserIdentityDto } from "./dto/update-user-identity.dto";
 import { UserPayload } from "src/auth/interfaces/userPayload.interface";
 import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
@@ -267,7 +270,7 @@ export class UsersService implements OnModuleInit {
 
   async findOneAndUpdateUserSettings(
     userId: string,
-    updateUserSettingsDto: UpdateUserSettingsDto,
+    updateUserSettingsDto: UpdateUserSettingsDto | PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     return this.userSettingsModel
       .findOneAndUpdate({ userId }, updateUserSettingsDto, { new: true })

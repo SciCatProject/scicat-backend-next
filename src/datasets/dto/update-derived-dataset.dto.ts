@@ -1,49 +1,60 @@
-import { PartialType } from "@nestjs/swagger";
-import { Exclude } from "class-transformer";
-import { IsOptional } from "class-validator";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { CreateDerivedDatasetDto } from "./create-derived-dataset.dto";
+import { UpdateDatasetDto } from "./update-dataset.dto";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { IsObject, IsOptional, IsString } from "class-validator";
 
-export class UpdateDerivedDatasetDto extends CreateDerivedDatasetDto {
-  @IsOptional()
-  @Exclude()
-  readonly _id?: string;
+export class UpdateDerivedDatasetDto extends UpdateDatasetDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
+  })
+  @IsString()
+  readonly investigator: string;
 
-  @IsOptional()
-  @Exclude()
-  declare readonly pid?: string;
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description:
+      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
+  })
+  @IsString({
+    each: true,
+  })
+  readonly inputDatasets: string[];
 
-  @IsOptional()
-  @Exclude()
-  readonly createdAt?: string;
+  @ApiProperty({
+    type: [String],
+    required: true,
+    description:
+      "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data.",
+  })
+  @IsString({
+    each: true,
+  })
+  readonly usedSoftware: string[];
 
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+      "The creation process of the derived data will usually depend on input job parameters. The full structure of these input parameters are stored here.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly updatedAt?: string;
+  @IsObject()
+  readonly jobParameters?: Record<string, unknown>;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "The output job logfile. Keep the size of this log data well below 15 MB.",
+  })
   @IsOptional()
-  @Exclude()
-  readonly createdBy?: string;
-
-  @IsOptional()
-  @Exclude()
-  readonly updatedBy?: string;
-
-  @IsOptional()
-  @Exclude()
-  readonly history?: string;
-
-  @IsOptional()
-  attachments?: Attachment[];
-
-  @IsOptional()
-  origdatablocks?: OrigDatablock[];
-
-  @IsOptional()
-  datablocks?: Datablock[];
+  @IsString()
+  readonly jobLogData?: string;
 }
+
 export class PartialUpdateDerivedDatasetDto extends PartialType(
-  CreateDerivedDatasetDto,
+  UpdateDerivedDatasetDto,
 ) {}

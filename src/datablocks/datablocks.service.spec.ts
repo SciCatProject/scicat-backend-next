@@ -19,6 +19,7 @@ const mockDatablock: Datablock = {
   updatedBy: "testUser",
   createdAt: new Date(),
   updatedAt: new Date(),
+  isPublished: false,
   dataFileList: [
     {
       path: "testFile.hdf5",

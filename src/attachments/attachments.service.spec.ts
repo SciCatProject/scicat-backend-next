@@ -19,6 +19,7 @@ const mockAttachment: Attachment = {
   updatedBy: "testUser",
   createdAt: new Date(),
   updatedAt: new Date(),
+  isPublished: false,
 };
 
 describe("AttachmentsService", () => {

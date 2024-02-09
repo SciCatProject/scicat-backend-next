@@ -18,7 +18,7 @@ import {
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
-import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -585,7 +585,7 @@ export class OrigDatablocksController {
     description:
       "OrigDatablock object that needs to be updated. Only the origdatablock object fields that needs to be updated, should be passed in.",
     required: true,
-    type: UpdateOrigDatablockDto,
+    type: PartialUpdateOrigDatablockDto,
   })
   @ApiResponse({
     status: 200,
@@ -595,7 +595,7 @@ export class OrigDatablocksController {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() updateOrigDatablockDto: UpdateOrigDatablockDto,
+    @Body() updateOrigDatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     await this.checkPermissionsForOrigDatablock(
       request,

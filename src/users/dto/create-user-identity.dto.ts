@@ -1,18 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { UserProfile } from "../schemas/user-profile.schema";
+import { UpdateUserIdentityDto } from "./update-user-identity.dto";
 
-export class CreateUserIdentityDto {
+export class CreateUserIdentityDto extends UpdateUserIdentityDto {
   @ApiProperty()
   readonly authStrategy?: string;
 
   @ApiProperty()
-  readonly credentials?: Record<string, unknown>;
-
-  @ApiProperty()
   readonly externalId?: string;
-
-  @ApiProperty()
-  readonly profile: UserProfile;
 
   @ApiProperty()
   readonly provider?: string;

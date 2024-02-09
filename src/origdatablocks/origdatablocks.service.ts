@@ -13,7 +13,7 @@ import {
   parseLimitFiltersForPipeline,
 } from "src/common/utils";
 import { CreateOrigDatablockDto } from "./dto/create-origdatablock.dto";
-import { UpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
+import { PartialUpdateOrigDatablockDto } from "./dto/update-origdatablock.dto";
 import { IOrigDatablockFields } from "./interfaces/origdatablocks.interface";
 import {
   OrigDatablock,
@@ -147,7 +147,7 @@ export class OrigDatablocksService {
 
   async update(
     filter: FilterQuery<OrigDatablockDocument>,
-    updateOrigdatablockDto: UpdateOrigDatablockDto,
+    updateOrigdatablockDto: PartialUpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const username = (this.request.user as JWTUser).username;
     return this.origDatablockModel

@@ -1,8 +1,9 @@
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { IsObject, IsOptional, IsString } from "class-validator";
+import { IsString } from "class-validator";
+import { UpdateInstrumentDto } from "./update-instrument.dto";
 
 @ApiTags("instruments")
-export class CreateInstrumentDto {
+export class CreateInstrumentDto extends UpdateInstrumentDto {
   @ApiProperty({
     type: String,
     uniqueItems: true,
@@ -10,20 +11,4 @@ export class CreateInstrumentDto {
   })
   @IsString()
   readonly uniqueName: string;
-
-  @ApiProperty({
-    type: String,
-    required: true,
-  })
-  @IsString()
-  readonly name: string;
-
-  @ApiProperty({
-    type: Object,
-    required: false,
-    default: {},
-  })
-  @IsOptional()
-  @IsObject()
-  readonly customMetadata?: Record<string, unknown>;
 }

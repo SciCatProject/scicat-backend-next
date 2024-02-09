@@ -4,7 +4,7 @@ import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { CreateAttachmentDto } from "./dto/create-attachment.dto";
-import { UpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
@@ -39,7 +39,7 @@ export class AttachmentsService {
 
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
-    updateAttachmentDto: UpdateAttachmentDto,
+    updateAttachmentDto: PartialUpdateAttachmentDto,
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
     return this.attachmentModel

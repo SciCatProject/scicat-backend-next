@@ -16,7 +16,7 @@ import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobDto } from "./dto/update-job.dto";
+import { PartialUpdateJobDto } from "./dto/update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -341,7 +341,7 @@ export class JobsController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body() updateJobDto: UpdateJobDto,
+    @Body() updateJobDto: PartialUpdateJobDto,
   ): Promise<JobClass | null> {
     const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
 

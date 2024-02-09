@@ -1,4 +1,10 @@
-import { PartialType } from "@nestjs/swagger";
-import { CreateUserIdentityDto } from "./create-user-identity.dto";
+import { ApiProperty } from "@nestjs/swagger";
+import { UserProfile } from "../schemas/user-profile.schema";
 
-export class UpdateUserIdentityDto extends PartialType(CreateUserIdentityDto) {}
+export class UpdateUserIdentityDto {
+  @ApiProperty()
+  readonly profile: UserProfile;
+
+  @ApiProperty()
+  readonly credentials?: Record<string, unknown>;
+}
