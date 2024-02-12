@@ -128,7 +128,7 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
 
-      - name: Start backend
+      - name: API tests
         env:
           ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
           MONGODB_URI: mongodb://localhost:27017/scicat
@@ -175,15 +175,7 @@ jobs:
           cp functionalAccounts.json.test functionalAccounts.json
           docker-compose -f CI/ESS/docker-compose.api.yaml up --build -d
           until curl -s -f -o /dev/null "localhost:27017"; do sleep 5; done
-          npm run start &
-
-      - name: Test jest
-        run: npm run test:api:jest
-
-      - name: Test mocha
-        run: |
-          wait-on http://localhost:3000/explorer/
-          npm run test:api:mocha
+          npm run test:api
 
   generate_openapi:
     name: Generate OpenAPI definition and generate clients
