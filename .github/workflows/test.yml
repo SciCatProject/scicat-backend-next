@@ -256,10 +256,10 @@ jobs:
       - name: Generate openapi client
         uses: openapi-generators/openapitools-generator-action@v1
         with:
-          generator: python-nextgen
+          generator: python-pydantic-v1
           openapi-file: openapi.json
-          config-file: .github/openapi/python-nextgen-config.yml
-          command-args: "--ignore-file-override openapi/python-nextgen/test**"
+          config-file: .github/openapi/python-config.yml
+          command-args: "--ignore-file-override openapi/python/test**"
 
   openapi_tests:
     name: OpenAPI tests with ElasticSearch enabled
@@ -331,7 +331,7 @@ jobs:
 
       - name: Test OpenAPI
         run: |
-          cd openapi/python-nextgen
+          cd openapi/python
           python3 -m venv .venv
           source .venv/bin/activate
           python3 -m pip install --upgrade pip
