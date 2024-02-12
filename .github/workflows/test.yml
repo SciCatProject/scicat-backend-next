@@ -173,7 +173,7 @@ jobs:
         # Start mongo container and app before running api tests
         run: |
           cp functionalAccounts.json.test functionalAccounts.json
-          docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
+          docker-compose -f CI/ESS/docker-compose.api.yaml up --build -d
           until curl -s -f -o /dev/null "localhost:27017"; do sleep 5; done
           npm run start &
 
@@ -249,7 +249,7 @@ jobs:
 
         # Start mongo container and app before running api tests
         run: |
-          docker-compose up --build -d -f CI/E2E/docker-compose-mongo.yaml
+          docker-compose -f CI/ESS/docker-compose.api.yaml up --build -d
           until curl -s -f -o /dev/null "localhost:27017"; do sleep 5; done
           npm run start
 
@@ -325,7 +325,7 @@ jobs:
         # Start mongo container and app before running api tests
         run: |
           cp functionalAccounts.json.test functionalAccounts.json
-          docker-compose up --build -d -f CI/ESS/docker-compose.api.yaml
+          docker-compose -f CI/ESS/docker-compose.api.yaml up --build -d
           until curl -s -f -o /dev/null "localhost:27017"; do sleep 5; done
           npm run start &
 
