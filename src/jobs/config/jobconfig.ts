@@ -16,10 +16,15 @@
 import { Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { ApiProperty } from "@nestjs/swagger";
-import { JobClass } from "../jobs/schemas/job.schema";
-import { CreateJobDto } from "../jobs/dto/create-job.dto";
-import { UpdateJobStatusDto } from "../jobs/dto/update-jobstatus.dto";
-import { oneOrMore } from "../common/utils";
+import { JobClass } from "../schemas/job.schema";
+import { CreateJobDto } from "../dto/create-job.dto";
+import { UpdateJobStatusDto } from "../dto/update-jobstatus.dto";
+import { oneOrMore } from "../../common/utils";
+import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
+import { AuthOp } from "src/casl/authop.enum";
+import { JobsAuth } from "../types/jobs-auth.enum";
+import Ajv from "ajv";
+import { JobConfigSchema } from "./jobConfig.schema" ;
 
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
@@ -29,18 +34,18 @@ export class JobConfig {
 
   create: JobOperation<CreateJobDto>;
   // read: JobReadAction[];
-  update: JobOperation<UpdateJobStatusDto>;
+  // update: JobOperation<UpdateJobStatusDto>;
 
   constructor(
     jobType: string,
     create: JobOperation<CreateJobDto>,
     read = undefined,
-    update: JobOperation<UpdateJobStatusDto>,
+    update = undefined  // JobOperation<UpdateJobStatusDto>,
   ) {
     this.jobType = jobType;
     this.create = create;
     // this.read = read;
-    this.update = update;
+    // this.update = update;
   }
 
   /**
@@ -49,16 +54,17 @@ export class JobConfig {
    * @returns
    */
   static parse(data: Record<string, any>) {
-    const type = data["jobType"];
+    const type = data[JobsConfigSchema.JobType];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
-      data["create"],
+      data[AuthOp.Create],
     );
     const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
-    const update = JobOperation.parse<UpdateJobStatusDto>(
-      updateActions,
-      data["update"],
-    );
+    const update = undefined;
+    // const update = JobOperation.parse<UpdateJobStatusDto>(
+    //   updateActions,
+    //   data[AuthOp.Update],
+    // );
     return new JobConfig(type, create, read, update);
   }
 }
@@ -79,8 +85,9 @@ export class JobOperation<DtoType> {
     actionList: Record<string, JobActionClass<DtoType>>,
     data: Record<string, any>,
   ): JobOperation<DtoType> {
-    const auth = data["auth"];
-    const actionsData: any[] = oneOrMore(data["actions"] || []);
+    // if Auth is not defined, default to #authenticated
+    const auth = data[JobsConfigSchema.Auth] ? data[JobsConfigSchema.Auth] : JobsAuth.Authenticated;
+    const actionsData: any[] = oneOrMore(data[JobsConfigSchema.Actions] || []);
     const actions = actionsData.map((json) =>
       parseAction<DtoType>(actionList, json),
     );
@@ -100,10 +107,10 @@ function parseAction<DtoType>(
   actionList: Record<string, JobActionClass<DtoType>>,
   data: Record<string, any>,
 ): JobAction<DtoType> {
-  if (!("actionType" in data))
+  if (!(JobsConfigSchema.ActionType in data))
     throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
 
-  const type = data.actionType;
+  const type = data[JobsConfigSchema.ActionType];
   if (!(type in actionList)) {
     throw SyntaxError(`No handler found for actions of type ${type}`);
   }
@@ -143,7 +150,7 @@ export interface JobActionClass<DtoType> {
 
 export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
-export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
+// export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
 
 /// Action registration
 
@@ -151,7 +158,7 @@ export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
 
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
-const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
+// const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
@@ -164,8 +171,15 @@ export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
  * List of action types with a registered action
  * @returns
  */
-export function getRegisteredCreateActions(): string[] {
+export function getRegisteredCreateActions() {
   return Object.keys(createActions);
+}
+/**
+ * Validate the registered actions
+ * @returns
+ */
+export function validateCreateActions() {
+  // TODO
 }
 // /**
 //  * Registers an action to handle jobs of a particular type
@@ -185,18 +199,18 @@ export function getRegisteredCreateActions(): string[] {
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerUpdateAction(
-  action: JobActionClass<UpdateJobStatusDto>,
-) {
-  updateActions[action.actionType] = action;
-}
+// export function registerUpdateAction(
+//   action: JobActionClass<UpdateJobStatusDto>,
+// ) {
+//   updateActions[action.actionType] = action;
+// }
 /**
  * List of action types with a registered action
  * @returns
  */
-export function getRegisteredUpdateActions(): string[] {
-  return Object.keys(updateActions);
-}
+// export function getRegisteredUpdateActions(): string[] {
+//   return Object.keys(updateActions);
+// }
 
 /// Parsing
 
@@ -210,7 +224,16 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
   const json = await fs.promises.readFile(filePath, "utf8");
   let data = JSON.parse(json);
 
-  // TODO validate schema
+  // Validate schema
+  const ajv = new Ajv();
+  const validate = ajv.compile(JobConfigSchema);
+
+  console.log(data);
+  if (validate(data)) {
+    console.log("Schema is valid!");
+  } else {
+    console.log(validate.errors);
+  }
 
   if (!Array.isArray(data)) {
     data = [data];
@@ -227,11 +250,11 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
  * @param data JSON configuration data
  * @returns
  */
-function parseCreateAction(data: Record<string, any>): JobCreateAction {
-  if (!("actionType" in data))
+function parseCreateAction(data: Record<string, any>): JobCreateAction {  // TODO is this needed ?
+  if (!(JobsConfigSchema.ActionType in data))
     throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
 
-  const type = data.actionType;
+  const type = data[JobsConfigSchema.ActionType];
   if (!(type in createActions))
     throw SyntaxError(`No handler found for actions of type ${type}`);
 
@@ -263,13 +286,13 @@ function parseCreateAction(data: Record<string, any>): JobCreateAction {
  * @param data JSON configuration data
  * @returns
  */
-function parseUpdateAction(data: Record<string, any>): JobUpdateAction {
-  if (!("actionType" in data))
-    throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
+// function parseUpdateAction(data: Record<string, any>): JobUpdateAction {
+//   if (!("actionType" in data))
+//     throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
 
-  const type = data.actionType;
-  if (!(type in updateActions))
-    throw SyntaxError(`No handler found for actions of type ${type}`);
+//   const type = data.actionType;
+//   if (!(type in updateActions))
+//     throw SyntaxError(`No handler found for actions of type ${type}`);
 
-  return new updateActions[type](data);
-}
+//   return new updateActions[type](data);
+// }

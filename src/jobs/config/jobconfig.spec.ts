@@ -1,6 +1,6 @@
 import { loadJobConfig, getRegisteredCreateActions } from "./jobconfig";
-import { LogJobAction } from "./actions/logaction";
-import { registerDefaultActions } from "./configuration";
+import { LogJobAction } from "../actions/logaction";
+import { registerDefaultActions } from "../../config/configuration";
 
 describe("Job configuration", () => {
   // TODO should be done automatically on init?

@@ -32,7 +32,8 @@ import {
 } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { JobsAuth } from "./jobs-auth.enum";
+import { JobsAuth } from "./types/jobs-auth.enum";
+import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
@@ -265,7 +266,7 @@ export class JobsController {
    * Check that the dataset ids list is valid
    */
   checkDatasetIds = (jobConfiguration: Record<string, any>) => {
-    const field = "datasetIds"; //TODO make this an enum
+    const field = JobsConfigSchema.DatasetIds;
     const datasetIds = (
       typeof jobConfiguration.jobParams[field] === "string"
         ? Array(jobConfiguration.jobParams[field])
@@ -340,10 +341,10 @@ export class JobsController {
     // Accepted options:
     // #all, #datasetOwner, #datasetOwnerOrAccess, #authenticated,
 
-    if (jobConfiguration.auth.auth != JobsAuth.All) {
+    if (jobConfiguration.jobParams.auth != JobsAuth.All) {
       // nothing to do here
       return true;
-    } else if (jobConfiguration.auth.auth == JobsAuth.DatasetOwner) {
+    } else if (jobConfiguration.jobParams.auth == JobsAuth.DatasetOwner) {
       // verify that all the pids listed in the property indicated are owned by the user
       const datasetIds = this.checkDatasetIds(jobConfiguration);
       const numberOfDatasets = await this.datasetsService.count({
@@ -359,7 +360,7 @@ export class JobsController {
           {
             status: HttpStatus.BAD_REQUEST,
             message:
-              "Unauthorized acces to " +
+              "Unauthorized access to " +
               datasetsNotOwner +
               " datasets out of " +
               datasetIds.length,
@@ -367,15 +368,20 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
-    } else if (jobConfiguration.auth.auth == JobsAuth.DatasetAccess) {
+    } else if (jobConfiguration.jobParams.auth == JobsAuth.DatasetAccess) {
       // verify that all the pids listed in the property indicated are accessible by the user
       const datasetIds = this.checkDatasetIds(jobConfiguration);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
           pid: { in: datasetIds },
-          accessGroups: { in: user.currentGroups },
+          $or: [
+            { ownerGroup: { in: user.currentGroups } },
+            { accessGroups: { in: user.currentGroups } },
+            { isPublished: true }  // TODO
+          ]     
         },
       });
+
       const datasetsNoAccess = datasetIds.length - numberOfDatasets.count;
 
       if (datasetsNoAccess > 0) {
@@ -392,9 +398,9 @@ export class JobsController {
         );
       }
       return true;
-    } else if (jobConfiguration.auth.auth == JobsAuth.Authenticated) {
+    } else if (jobConfiguration.jobParams.auth == JobsAuth.Authenticated) {
       // verify that the user is authenticated
-      this.checkAuthentication(user, jobConfiguration.type);
+      this.checkAuthentication(user, jobConfiguration.jobParams.type);
       return true;
     }
     return false;
@@ -468,19 +474,19 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass> {
-    // Load configuration
+    // TODO Is jobStatusMessage needed anywhere ?
     const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
     // Validate that request matches the current configuration
-    await this.validateJob(jobToCreate, request);
+    await this.validateJob(createJobDto, request);
     // Check job authorization
     await this.instanceAuthorization(jobToCreate, request.user as JWTUser);
     // Create actual job in database
-    const createdJobInstance = await this.jobsService.create(jobToCreate);
+    const createdJobInstance = await this.jobsService.create(createJobDto);
     // Perform the action that is specified in the create portion of the job configuration
     const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
     // Update job instance with results of job create action
-
-    return createdJobInstance;
+    // return await this.jobsService.update(jobServiceResponse);
+    return jobServiceResponse; // or createdJobInstance ?
   }
 
 

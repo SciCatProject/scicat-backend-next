@@ -1,6 +1,5 @@
 /** Strings representing authorization groups for the various CRUD operations */
 export enum AuthOp {
-  // Dataset actions
   Manage = "manage",
   Create = "create",
   Read = "read",
@@ -79,12 +78,12 @@ export enum AuthOp {
   DatasetLogbookReadAny = "dataset_logbook_read_any",
   // -------------
   // Origdatablock
-  // endpoint authorization actions
+  // endpoint authorization
   OrigdatablockCreate = "origdatablock_create",
   OrigdatablockRead = "origdatablock_read",
   OrigdatablockUpdate = "origdatablock_update",
   OrigdatablockDelete = "origdatablock_delete",
-  // individual actions
+  // individual
   OrigdatablockCreateOwner = "origdatablock_create_owner",
   OrigdatablockCreateAny = "origdatablock_create_any",
   OrigdatablockReadManyPublic = "origdatablock_read_many_public",
@@ -100,7 +99,7 @@ export enum AuthOp {
   OrigdatablockDeleteAny = "origdatablock_delete_any",
   // -------------
   // Proposals
-  // endpoint authorization actions
+  // endpoint authorization
   ProposalsCreate = "proposals_create",
   ProposalsRead = "proposals_read",
   ProposalsUpdate = "proposals_update",
@@ -110,7 +109,7 @@ export enum AuthOp {
   ProposalsAttachmentUpdate = "proposals_attachment_update",
   ProposalsAttachmentDelete = "proposals_attachment_delete",
   ProposalsDatasetRead = "proposals_dataset_read",
-  // individual actions
+  // individual
   ProposalsCreateOwner = "proposals_create_owner",
   ProposalsCreateAny = "proposals_create_any",
   ProposalsReadManyPublic = "proposals_read_many_public",
@@ -136,7 +135,7 @@ export enum AuthOp {
   ProposalsAttachmentDeleteAny = "proposals_attachment_delete_any",
   // -------------
   // Samples
-  // endpoint authorization actions
+  // endpoint authorization
   SamplesCreate = "samples_create",
   SamplesRead = "samples_read",
   SamplesUpdate = "samples_update",
@@ -146,7 +145,7 @@ export enum AuthOp {
   SamplesAttachmentUpdate = "samples_attachment_update",
   SamplesAttachmentDelete = "samples_attachment_delete",
   SamplesDatasetRead = "samples_dataset_read",
-  // individual actions
+  // individual
   SamplesCreateOwner = "samples_create_owner",
   SamplesCreateAny = "samples_create_any",
   SamplesReadManyPublic = "samples_read_many_public",
@@ -184,7 +183,7 @@ export enum AuthOp {
   JobsUpdateAccess = "jobs_update_access",
   JobsUpdateAny = "jobs_update_any",
   // -------------
-  // Users actions
+  // Users
   UserReadOwn = "user_read_own",
   UserReadAny = "user_read_any",
   UserCreateOwn = "user_create_own",
@@ -195,7 +194,7 @@ export enum AuthOp {
   UserDeleteAny = "user_delete_any",
   UserCreateJwt = "user_create_jwt",
   // -------------
-  // Instrument actions
+  // Instrument
   InstrumentRead = "instrument_read",
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
