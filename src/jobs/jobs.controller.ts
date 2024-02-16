@@ -335,18 +335,18 @@ export class JobsController {
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorization(
-    jobConfiguration: CreateJobDto,
+    jobCreateDto: CreateJobDto,
     user: JWTUser,
   ): Promise<boolean> {
     // Accepted options:
     // #all, #datasetOwner, #datasetOwnerOrAccess, #authenticated,
 
-    if (jobConfiguration.jobParams.auth != JobsAuth.All) {
+    if (jobCreateDto.jobParams.auth != JobsAuth.All) {
       // nothing to do here
       return true;
-    } else if (jobConfiguration.jobParams.auth == JobsAuth.DatasetOwner) {
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.DatasetOwner) {
       // verify that all the pids listed in the property indicated are owned by the user
-      const datasetIds = this.checkDatasetIds(jobConfiguration);
+      const datasetIds = this.checkDatasetIds(jobCreateDto);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
           pid: { in: datasetIds },
@@ -368,9 +368,9 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
-    } else if (jobConfiguration.jobParams.auth == JobsAuth.DatasetAccess) {
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.DatasetAccess) {
       // verify that all the pids listed in the property indicated are accessible by the user
-      const datasetIds = this.checkDatasetIds(jobConfiguration);
+      const datasetIds = this.checkDatasetIds(jobCreateDto);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
           pid: { in: datasetIds },
@@ -398,9 +398,9 @@ export class JobsController {
         );
       }
       return true;
-    } else if (jobConfiguration.jobParams.auth == JobsAuth.Authenticated) {
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.Authenticated) {
       // verify that the user is authenticated
-      this.checkAuthentication(user, jobConfiguration.jobParams.type);
+      this.checkAuthentication(user, jobCreateDto.type);
       return true;
     }
     return false;

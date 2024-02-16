@@ -30,27 +30,28 @@ export class EmailJobAction<T> implements JobAction<T> {
   constructor(data: Record<string, any>) {
     Logger.log("Initializing EmailJobAction. Params: " + JSON.stringify(data), "EmailJobAction");
 
+    if (!data["mailer"]) {
+      throw new NotFoundException("Param 'mailer' is undefined");
+    }
+    if (!data["to"]) {
+      throw new NotFoundException("Param 'to' is undefined");
+    }
+    if (!data["from"]) {
+      throw new NotFoundException("Param 'from' is undefined");
+    }
+    if (!data["subject"]) {
+      throw new NotFoundException("Param 'subject' is undefined");
+    }
+    if (!data["body"]) {
+      throw new NotFoundException("Param 'body' is undefined");
+    }
+    Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
+
     this.mailService = createTransport(data["mailer"]);
     this.toTemplate = compile(data["to"]);
     this.from = data["from"];
     this.subjectTemplate = compile(data["subject"]);
     this.bodyTemplate = compile(data["body"]);
-
-    if (!this.mailService) {
-      throw new NotFoundException("Mailer is undefined");
-    }
-    if (!this.toTemplate) {
-      throw new NotFoundException("To is undefined");
-    }
-    if (!this.from) {
-      throw new NotFoundException("From is undefined");
-    }
-    if (!this.subjectTemplate) {
-      throw new NotFoundException("Subject is undefined");
-    }
-    if (!this.bodyTemplate) {
-      throw new NotFoundException("Body is undefined");
-    }
   }
 
   async validate(dto: T) {
@@ -58,6 +59,8 @@ export class EmailJobAction<T> implements JobAction<T> {
   }
 
   async performJob(job: JobClass) {
+    Logger.log("Performing EmailJobAction: " + JSON.stringify(job), "EmailJobAction");
+
     // Fill templates
     const mail: any = {
       to: this.toTemplate(job),
