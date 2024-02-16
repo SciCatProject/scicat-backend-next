@@ -335,7 +335,7 @@ export class JobsController {
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorization(
-    jobConfiguration: Record<string, any>,
+    jobConfiguration: CreateJobDto,
     user: JWTUser,
   ): Promise<boolean> {
     // Accepted options:
@@ -474,12 +474,10 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass> {
-    // TODO Is jobStatusMessage needed anywhere ?
-    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
     // Validate that request matches the current configuration
     await this.validateJob(createJobDto, request);
     // Check job authorization
-    await this.instanceAuthorization(jobToCreate, request.user as JWTUser);
+    await this.instanceAuthorization(createJobDto, request.user as JWTUser);
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(createJobDto);
     // Perform the action that is specified in the create portion of the job configuration

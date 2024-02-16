@@ -35,10 +35,6 @@ export class EmailJobAction<T> implements JobAction<T> {
     this.from = data["from"];
     this.subjectTemplate = compile(data["subject"]);
     this.bodyTemplate = compile(data["body"]);
-  }
-
-  async validate(dto: T) {
-    Logger.log("Validating EmailJobAction: " + JSON.stringify(dto), "EmailJobAction");
 
     if (!this.mailService) {
       throw new NotFoundException("Mailer is undefined");
@@ -55,17 +51,10 @@ export class EmailJobAction<T> implements JobAction<T> {
     if (!this.bodyTemplate) {
       throw new NotFoundException("Body is undefined");
     }
+  }
 
-    // TODO ??
-    if (!(dto as CreateJobDto).jobParams.pid) {
-      throw new NotFoundException("Job pid is undefined");
-    }
-    if (!(dto as CreateJobDto).jobParams.owner) {
-      throw new NotFoundException("Job owner is undefined");
-    }
-    if (!(dto as CreateJobDto).jobParams.status) {
-      throw new NotFoundException("Job status is undefined");
-    }
+  async validate(dto: T) {
+    Logger.log("Validating EmailJobAction: " + JSON.stringify(dto), "EmailJobAction");
   }
 
   async performJob(job: JobClass) {

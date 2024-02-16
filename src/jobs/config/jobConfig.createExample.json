@@ -19,8 +19,8 @@
           },
           "to": "{{ join job.recipients ' '}}",
           "from": "scicat@example.com",
-          "subject": "Archive job {{job.pid}} has completed.",
-          "body": "Dear {{job.owner}},\n\nArchive job {{job.pid}} has completed. Results: {{job.status}}\n"
+          "subject": "Archive job {{job.id}} has completed.",
+          "body": "Dear {{job.createdBy}},\n\nArchive job {{job.id}} has completed. Results: {{job.statusMessage}}\n"
         }
       ]
     }
