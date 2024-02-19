@@ -1228,7 +1228,9 @@ export class CaslAbilityFactory {
         can(Action.SampleReadOneAccess, SampleClass, {
           isPublished: true,
         });
-        can(Action.SampleAttachmentCreateAny, SampleClass);
+        can(Action.SampleAttachmentCreateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
         can(Action.SampleAttachmentReadAccess, SampleClass, {
           ownerGroup: { $in: user.currentGroups },
         });

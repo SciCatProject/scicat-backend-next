@@ -63,6 +63,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
+import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -113,6 +114,10 @@ export class SamplesController {
             ability.can(Action.SampleReadOnePublic, sampleInstance)
           );
         case Action.SampleUpdate:
+          console.log(user);
+          console.log(sampleInstance);
+          console.log(ability.can(Action.SampleUpdateAny, SampleClass));
+          console.log(ability.can(Action.SampleUpdateOwner, sampleInstance));
           return (
             ability.can(Action.SampleUpdateAny, SampleClass) ||
             ability.can(Action.SampleUpdateOwner, sampleInstance)
@@ -164,10 +169,11 @@ export class SamplesController {
     });
 
     if (sample) {
+      console.log(sample.description);
       const canDoAction = await this.permissionChecker(group, sample, request);
 
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
+        throw new ForbiddenException("Unauthorized to update this sample");
       }
     }
 
@@ -194,7 +200,8 @@ export class SamplesController {
     mergedFilters: IFilters<SampleDocument, ISampleFields>,
   ): IFilters<SampleDocument, ISampleFields> {
     const user: JWTUser = request.user as JWTUser;
-    mergedFilters.where = mergedFilters.where || {};
+    //mergedFilters.where = mergedFilters.where || {};
+    let authorizationFilter : Record<string,any>= {'where': {}};
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
@@ -213,19 +220,31 @@ export class SamplesController {
         );
 
         if (canViewAccess) {
-          mergedFilters.where["$or"] = [
+          authorizationFilter.where["$or"] = [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
+            { isPublished: true }
           ];
         } else if (canViewOwner) {
-          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          authorizationFilter.where = { ownerGroup: { $in: user.currentGroups } };
         } else if (canViewPublic) {
-          mergedFilters.where.isPublished = true;
+          authorizationFilter.where.isPublished = true;
         }
       }
     } else {
-      mergedFilters.where.isPublished = true;
+      authorizationFilter.where.isPublished = true;
     }
+    if (mergedFilters.where) {
+      mergedFilters.where = {
+        '$and' : [
+          authorizationFilter.where,
+          mergedFilters.where
+        ]
+      };
+    } else {
+      mergedFilters.where = authorizationFilter.where;
+    }
+
     return mergedFilters;
   }
   // POST /samples
@@ -573,6 +592,7 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() updateSampleDto: UpdateSampleDto,
   ): Promise<SampleClass | null> {
+    console.log("Sample patch ------");
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
@@ -643,7 +663,7 @@ export class SamplesController {
     );
     console.log("Sample",sample);
     if (!sample) {
-      throw new BadRequestException("Not able to create attachement for this sample");
+      throw new BadRequestException("Not able to create attachment for this sample");
     }
     console.log("ready to go");
     const createAttachment: CreateAttachmentDto = {
