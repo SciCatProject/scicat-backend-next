@@ -39,6 +39,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { Logger } from "@nestjs/common";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -474,6 +475,7 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass> {
+    Logger.log("creating job!")
     // Validate that request matches the current configuration
     await this.validateJob(createJobDto, request);
     // Check job authorization

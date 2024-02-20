@@ -194,6 +194,7 @@ export function getRegisteredCreateActions() {
 
 /// Parsing
 
+var jobConfig: JobConfig[] | null = null; // singleton
 /**
  * Load jobconfig.json file.
  * Expects one or more JobConfig configurations (see JobConfig.parse)
@@ -201,6 +202,10 @@ export function getRegisteredCreateActions() {
  * @returns
  */
 export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
+  if( jobConfig !== null){
+    return jobConfig;
+  }
+
   const json = await fs.promises.readFile(filePath, "utf8");
   let data = JSON.parse(json);
 
@@ -219,5 +224,6 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
     data = [data];
   }
 
-  return data.map(JobConfig.parse);
+  jobConfig = await data.map(JobConfig.parse);
+  return jobConfig!;
 }
