@@ -37,9 +37,11 @@ let accessTokenAdminIngestor = null,
 
 const EntryCreatedStatusCode = 201,
   CreationForbiddenStatusCode = 403,
+  DeleteForbiddenStatusCode = 403,
   SuccessfulGetStatusCode = 200,
   SuccessfulPatchStatusCode = 200,
   SuccessfulDeleteStatusCode = 200;
+  
 
   
 describe("2250: Sample Authorization", () => {
@@ -1054,36 +1056,44 @@ describe("2250: Sample Authorization", () => {
   });
 
   it("0450: adds an attachment as Archive Manager to sample 1, which should fail", async () => {
+    const attachment = defineAttachment("Sample 1 which should fail");
+
     return request(appUrl)
       .post("/api/v3/Samples/" + sampleId1 + "/attachments")
-      .send(TestData.AttachmentCorrect)
+      .send(attachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(CreationForbiddenStatusCode);
   });
 
   it("0460: adds an attachment as Archive Manager to sample 2, which should fail", async () => {
+    const attachment = defineAttachment("Sample 2 which should fail");
+
     return request(appUrl)
       .post("/api/v3/Samples/" + sampleId2 + "/attachments")
-      .send(TestData.AttachmentCorrect)
+      .send(attachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(CreationForbiddenStatusCode);
   });
 
   it("0470: adds an attachment as Archive Manager to sample 3, which should fail", async () => {
+    const attachment = defineAttachment("Sample 3 which should fail");
+
     return request(appUrl)
       .post("/api/v3/Samples/" + sampleId3 + "/attachments")
-      .send(TestData.AttachmentCorrect)
+      .send(attachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(CreationForbiddenStatusCode);
   });
 
   it("0480: adds an attachment as Archive Manager to sample 4, which should fail", async () => {
+    const attachment = defineAttachment("Sample 4 which should fail");
+
     return request(appUrl)
       .post("/api/v3/Samples/" + sampleId4 + "/attachments")
-      .send(TestData.AttachmentCorrect)
+      .send(attachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(CreationForbiddenStatusCode);
@@ -3619,552 +3629,540 @@ describe("2250: Sample Authorization", () => {
   });
 
 
-  // // delete sample attachment
-  // it("4000: delete attachment 1 from sample 1 as Unauthenticated User, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1 + "/attachment/" + attachmentId1)
-  //     .set("Accept", "application/json")
-  //     .expect(400);
-  // });
+  // delete sample attachment
+  it("4000: delete attachment 1 from sample 1 as Unauthenticated User, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
+      .set("Accept", "application/json")
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4010: delete attachment 10 from sample 10 as Unauthenticated User, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .expect(400);
-  // });
+  it("4010: delete attachment 10 from sample 10 as Unauthenticated User, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4020: delete attachment 1 from sample 1 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1 + "/attachment/" + attachmentId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })
-  //     .expect(400);
-  // });
+  it("4020: delete attachment 1 from sample 1 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4030: delete attachment 2 from sample 2 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2 + "/attachment/" + attachmentId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })
-  //     .expect(400);
-  // });
+  it("4030: delete attachment 2 from sample 2 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2 + "/attachments/" + attachmentId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4040: delete attachment 10 from sample 10 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })      
-  //     .expect(400);
-  // });
+  it("4040: delete attachment 10 from sample 10 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })      
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4050: delete attachment 2 from sample 2 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2 + "/attachment/" + attachmentId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })
-  //     .expect(400);
-  // });
+  it("4050: delete attachment 2 from sample 2 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2 + "/attachments/" + attachmentId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4060: delete attachment 4 from sample 4 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4 + "/attachment/" + attachmentId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })
-  //     .expect(400);
-  // });
+  it("4060: delete attachment 4 from sample 4 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4 + "/attachments/" + attachmentId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4070: delete attachment 10 from sample 10 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })      
-  //     .expect(400);
-  // });
+  it("4070: delete attachment 10 from sample 10 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })      
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4080: delete attachment 2 from sample 2 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2 + "/attachment/" + attachmentId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(400);
-  // });
+  it("4080: delete attachment 2 from sample 2 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2 + "/attachments/" + attachmentId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4090: delete attachment 4 from sample 4 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4 + "/attachment/" + attachmentId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(400);
-  // });
+  it("4090: delete attachment 4 from sample 4 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4 + "/attachments/" + attachmentId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4100: delete attachment 10 from sample 10 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })      
-  //     .expect(400);
-  // });
+  it("4100: delete attachment 10 from sample 10 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })      
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4110: delete attachment 3 from sample 3 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3 + "/attachment/" + attachmentId3)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("4110: delete attachment 3 from sample 3 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3 + "/attachments/" + attachmentId3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4120: delete attachment 4 from sample 4 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4 + "/attachment/" + attachmentId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("4120: delete attachment 4 from sample 4 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4 + "/attachments/" + attachmentId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4130: delete attachment 5 from sample 5 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId5 + "/attachment/" + attachmentId5)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("4130: delete attachment 5 from sample 5 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId5 + "/attachments/" + attachmentId5)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4140: delete attachment 10 from sample 10 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })      
-  //     .expect(400);
-  // });
+  it("4140: delete attachment 10 from sample 10 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })      
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4150: delete attachment 3 from sample 3 as User 1", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3 + "/attachment/" + attachmentId3)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  //   });
+  it("4150: delete attachment 3 from sample 3 as User 1", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3 + "/attachments/" + attachmentId3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+    });
 
-  // it("4160: delete attachment 4 from sample 4 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4 + "/attachment/" + attachmentId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("4160: delete attachment 4 from sample 4 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4 + "/attachments/" + attachmentId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4170: delete attachment 6 from sample 6 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId6 + "/attachment/" + attachmentId6)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("4170: delete attachment 6 from sample 6 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId6 + "/attachments/" + attachmentId6)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4180: delete attachment 9 from sample 9 as User 1", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId9 + "/attachment/" + attachmentId9)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  //   });
+  it("4180: delete attachment 9 from sample 9 as User 1", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId9 + "/attachments/" + attachmentId9)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+    });
 
-  // it("4190: delete attachment 10 from sample 10 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })      
-  //     .expect(400);
-  // });
+  it("4190: delete attachment 10 from sample 10 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })      
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("4200: delete attachment 2 from sample 2 as Sample Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2 + "/attachment/" + attachmentId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4200: delete attachment 2 from sample 2 as Sample Ingestor", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2 + "/attachments/" + attachmentId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4210: delete attachment 5 from sample 5 as Sample Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId5 + "/attachment/" + attachmentId5)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4210: delete attachment 5 from sample 5 as Sample Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId5 + "/attachments/" + attachmentId5)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
   
-  // it("4220: delete attachment 7 from sample 7 as Sample Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId7 + "/attachment/" + attachmentId7)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4220: delete attachment 7 from sample 7 as Sample Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId7 + "/attachments/" + attachmentId7)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
   
-  // it("4230: delete attachment 8 from sample 8 as Sample Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId8 + "/attachment/" + attachmentId8)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4230: delete attachment 8 from sample 8 as Sample Ingestor, wich should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId8 + "/attachments/" + attachmentId8)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
   
-  // it("4240: delete attachment 1 from sample 1 as Admin Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1 + "/attachment/" + attachmentId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4240: delete attachment 1 from sample 1 as Admin Ingestor", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
   
-  // it("4250: delete attachment 3_2 from sample 3 as Admin Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3 + "/attachment/" + attachmentId3_2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4250: delete attachment 3_2 from sample 3 as Admin Ingestor", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3 + "/attachments/" + attachmentId3_2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4250: delete attachment 6 from sample 6 as Admin Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId6 + "/attachment/" + attachmentId6)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4260: delete attachment 6 from sample 6 as Admin Ingestor", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId6 + "/attachments/" + attachmentId6)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4240: delete attachment 1 from sample 1 as Admin Ingestor", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1 + "/attachment/" + attachmentId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4270: delete attachment 4 from sample 4 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4 + "/attachments/" + attachmentId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4250: delete attachment 4 from sample 4 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4 + "/attachment/" + attachmentId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4280: delete attachment 7_2 from sample 7 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId7 + "/attachments/" + attachmentId7_2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4260: delete attachment 7_2 from sample 7 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId7 + "/attachment/" + attachmentId7_2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("4290: delete attachment 10 from sample 10 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("4270: delete attachment 10 from sample 10 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10 + "/attachment/" + attachmentId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  // delete sample
+  it("5000: delete sample 1 as Admin Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // // delete sample
-  // it("5000: delete sample 1 as Admin Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(400);
-  // });
+  it("5010: delete sample 2 as Admin Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5010: delete sample 2 as Admin Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(400);
-  // });
+  it("5020: delete public sample 10 as Admin Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5020: delete public sample 10 as Admin Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(400);
-  // });
+  it("5030: delete sample 1 as Sample Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5030: delete sample 1 as Sample Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(400);
-  // });
+  it("5040: delete sample 2 as Sample Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5040: delete sample 2 as Sample Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(400);
-  // });
+  it("5050: delete public sample 10 as Sample Ingestor, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5050: delete public sample 10 as Sample Ingestor, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
-  //     .expect(400);
-  // });
+  it("5060: delete sample 2 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5060: delete sample 2 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("5070: delete sample 3 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5070: delete sample 3 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("5080: delete sample 6 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId6)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5080: delete sample 6 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId6)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("5090: delete public sample 10 as User 1, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5090: delete public sample 10 as User 1, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser1}` })
-  //     .expect(400);
-  // });
+  it("5000: delete sample 3 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5000: delete sample 3 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("5010: delete sample 4 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5010: delete sample 4 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("5020: delete sample 5 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId5)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5020: delete sample 5 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId5)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("5030: delete public sample 10 as User 2, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5030: delete public sample 10 as User 2, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser2}` })
-  //     .expect(400);
-  // });
+  it("5040: delete sample 1 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5040: delete sample 1 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(400);
-  // });
+  it("5050: delete sample 2 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5050: delete sample 2 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(400);
-  // });
+  it("5060: delete public sample 10 as User 3, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5060: delete public sample 10 as User 3, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser3}` })
-  //     .expect(400);
-  // });
+  it("5070: delete sample 1 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5070: delete sample 1 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })
-  //     .expect(400);
-  // });
+  it("5080: delete sample 4 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5080: delete sample 4 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })
-  //     .expect(400);
-  // });
+  it("5090: delete public sample 10 as User 4, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5090: delete public sample 10 as User 4, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser4}` })
-  //     .expect(400);
-  // });
+  it("5100: delete sample 2 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5100: delete sample 2 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })
-  //     .expect(400);
-  // });
+  it("5110: delete sample 5 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId5)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5110: delete sample 5 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId5)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })
-  //     .expect(400);
-  // });
+  it("5120: delete public sample 10 as User 5, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5120: delete public sample 10 as User 5, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenUser5}` })
-  //     .expect(400);
-  // });
+  it("5130: delete sample 1 as Unauthenticated User, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5130: delete sample 1 as Unauthenticated User, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .expect(400);
-  // });
+  it("5140: delete public sample 10 as Unauthenticated User, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .expect(DeleteForbiddenStatusCode);
+  });
 
-  // it("5140: delete public sample 10 as Unauthenticated User, which should fail", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .expect(400);
-  // });
+  it("5150: delete sample 1 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5150: delete sample 1 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId1)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5160: delete sample 2 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5160: delete sample 2 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5170: delete sample 3 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId3)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5170: delete sample 3 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId3)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5180: delete sample 4 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId4)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5180: delete sample 4 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId4)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5190: delete sample 5 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId5)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5190: delete sample 5 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId5)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5200: delete sample 6 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId6)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5200: delete sample 6 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId6)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5210: delete sample 7 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId7)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5210: delete sample 7 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId7)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5220: delete sample 8 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId8)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5220: delete sample 8 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId8)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5230: delete sample 9 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId9)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
-  // it("5230: delete sample 9 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId9)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
-
-  // it("5240: delete public sample 10 as Archive Manager", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/samples/" + sampleId10)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  it("5240: delete public sample 10 as Archive Manager", async () => {
+    return request(appUrl)
+      .delete("/api/v3/samples/" + sampleId10)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+  });
 });

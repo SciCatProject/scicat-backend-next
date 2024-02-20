@@ -128,6 +128,11 @@ export class SamplesController {
             ability.can(Action.SampleDeleteOwner, sampleInstance)
           );
         case Action.SampleAttachmentCreate:
+          console.log("SampleAttachmentCreate ----------------------------------");
+          console.log(user);
+          console.log(sampleInstance);
+          console.log(ability.can(Action.SampleAttachmentDeleteAny, SampleClass));
+          console.log(ability.can(Action.SampleAttachmentDeleteOwner, sampleInstance));
           return (
             ability.can(Action.SampleAttachmentCreateAny, SampleClass) ||
             ability.can(Action.SampleAttachmentCreateOwner, sampleInstance)

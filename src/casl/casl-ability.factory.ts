@@ -1091,10 +1091,12 @@ export class CaslAbilityFactory {
         // -------------------------------------
         // endpoint authorization
         can(Action.SampleDelete, SampleClass);
+        can(Action.SampleAttachmentDelete, SampleClass);
 
         // -------------------------------------
         // data instance authorization
         can(Action.SampleDeleteAny, SampleClass);
+        can(Action.SampleAttachmentDeleteAny, SampleClass);
       } else {
         // -------------------------------------
         // users that do not belong to any of the group listed in DELETE_GROUPS
@@ -1259,8 +1261,12 @@ export class CaslAbilityFactory {
         can(Action.SampleAttachmentRead, SampleClass);
         cannot(Action.SampleAttachmentCreate, SampleClass);
         cannot(Action.SampleAttachmentUpdate, SampleClass);
-        cannot(Action.SampleAttachmentDelete, SampleClass);
-
+        if (
+          !user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+        ) {
+          cannot(Action.SampleAttachmentDelete, SampleClass);
+        }
+        
         // -------------------------------------
         // data instance authorization
         can(Action.SampleReadManyAccess, SampleClass);
