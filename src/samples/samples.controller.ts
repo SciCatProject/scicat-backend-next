@@ -114,10 +114,6 @@ export class SamplesController {
             ability.can(Action.SampleReadOnePublic, sampleInstance)
           );
         case Action.SampleUpdate:
-          console.log(user);
-          console.log(sampleInstance);
-          console.log(ability.can(Action.SampleUpdateAny, SampleClass));
-          console.log(ability.can(Action.SampleUpdateOwner, sampleInstance));
           return (
             ability.can(Action.SampleUpdateAny, SampleClass) ||
             ability.can(Action.SampleUpdateOwner, sampleInstance)
@@ -128,11 +124,6 @@ export class SamplesController {
             ability.can(Action.SampleDeleteOwner, sampleInstance)
           );
         case Action.SampleAttachmentCreate:
-          console.log("SampleAttachmentCreate ----------------------------------");
-          console.log(user);
-          console.log(sampleInstance);
-          console.log(ability.can(Action.SampleAttachmentDeleteAny, SampleClass));
-          console.log(ability.can(Action.SampleAttachmentDeleteOwner, sampleInstance));
           return (
             ability.can(Action.SampleAttachmentCreateAny, SampleClass) ||
             ability.can(Action.SampleAttachmentCreateOwner, sampleInstance)
@@ -174,7 +165,6 @@ export class SamplesController {
     });
 
     if (sample) {
-      console.log(sample.description);
       const canDoAction = await this.permissionChecker(group, sample, request);
 
       if (!canDoAction) {
@@ -597,7 +587,6 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() updateSampleDto: UpdateSampleDto,
   ): Promise<SampleClass | null> {
-    console.log("Sample patch ------");
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
@@ -660,27 +649,22 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateSubAttachmentDto,
   ): Promise<Attachment | null> {
-    console.log("Create Attachement");
     const sample = await this.checkPermissionsForSample(
       request,
       id,
       Action.SampleAttachmentCreate,
     );
-    console.log("Sample",sample);
     if (!sample) {
       throw new BadRequestException("Not able to create attachment for this sample");
     }
-    console.log("ready to go");
     const createAttachment: CreateAttachmentDto = {
       ...createAttachmentDto,
       sampleId: id,
       ownerGroup: sample.ownerGroup,
       accessGroups: sample.accessGroups
     };
-    console.log(createAttachment);
-    const temp = await this.attachmentsService.create(createAttachment);
-    console.log(temp);
-    return temp;
+    const createdAttachment = await this.attachmentsService.create(createAttachment);
+    return createdAttachment;
   }
 
   // GET /samples/:id/attachments
@@ -716,27 +700,6 @@ export class SamplesController {
     );
     return this.attachmentsService.findAll({ sampleId: id });
   }
-
-  /*
-  // PATCH /samples/:id/attachments/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, Attachment),
-  )
-  @Patch("/:id/attachments/:fk")
-  async findOneAttachmentAndUpdate(
-    @Param("id") sampleId: string,
-    @Param("fk") attachmentId: string,
-    @Body() updateAttachmentDto: UpdateAttachmentDto,
-  ): Promise<Attachment | null> {
-    console.log("SampleId: ", sampleId);
-    console.log("AttachmentIs: ", attachmentId);
-    return this.attachmentsService.findOneAndUpdate(
-      { id: attachmentId, sampleId: sampleId },
-      updateAttachmentDto,
-    );
-  }
-  */
 
   // GET /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
