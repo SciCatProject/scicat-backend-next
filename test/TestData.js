@@ -5,6 +5,17 @@ const RawTestAccounts = require('../functionalAccounts.json');
 const TestAccounts = Object.fromEntries(RawTestAccounts.map(account => [account.username, account]));
 
 const TestData = {
+
+  EntryCreatedStatusCode : 201,
+  EntryValidStatusCode : 200,
+  CreationForbiddenStatusCode : 403,
+  DeleteForbiddenStatusCode : 403,
+  SuccessfulGetStatusCode : 200,
+  SuccessfulPatchStatusCode : 200,
+  SuccessfulDeleteStatusCode : 200,
+  BadRequestStatusCode: 400,
+  AccessForbiddenStatusCode : 403,
+
   Accounts: TestAccounts,
 
   ProposalCorrectMin: {

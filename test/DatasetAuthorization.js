@@ -117,7 +117,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(dataset1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.equal("group4");
@@ -135,7 +135,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(dataset2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.equal("group1");
@@ -153,7 +153,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(dataset3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.equal("group2");
@@ -171,7 +171,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -189,7 +189,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send({ ...TestData.DataBlockCorrect, archiveId: randomArchiveId })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -205,7 +205,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -213,6 +213,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -225,7 +226,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid1);
       });
@@ -236,7 +237,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0100: list of datasets for Admin Ingestor", async () => {
@@ -244,7 +245,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
@@ -256,7 +257,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(3);
@@ -269,7 +270,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid1);
       });
@@ -280,7 +281,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
@@ -293,7 +294,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid2);
       });
@@ -305,18 +306,18 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it("0160: list of datasets for user 1", async () => {
+  it("0160: list of datasets for User 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -324,57 +325,57 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0170: datasets count for user 1", async () => {
+  it("0170: datasets count for User 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it("0180: access dataset 1 as user 1", async () => {
+  it("0180: access dataset 1 as User 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
-  it("0190: access dataset 2 as user 1", async () => {
+  it("0190: access dataset 2 as User 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid2);
       });
   });
 
-  it("0200: access dataset 3 as user 1", async () => {
+  it("0200: access dataset 3 as User 1, which should fail as forbidden", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("0210: full query for datasets for user 1", async () => {
+  it("0210: full query for datasets for User 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -382,12 +383,12 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0220: list of datasets for user 2", async () => {
+  it("0220: list of datasets for User 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -395,57 +396,57 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0230: datasets count for user 2", async () => {
+  it("0230: datasets count for User 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it("0240: access dataset 1 as user 2", async () => {
+  it("0240: access dataset 1 as User 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
-  it("0250: access dataset 2 as user 2", async () => {
+  it("0250: access dataset 2 as User 2, which should fail as forbidden", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("0260: access dataset 3 as user 2", async () => {
+  it("0260: access dataset 3 as User 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it("0270: full query for datasets for user 2", async () => {
+  it("0270: full query for datasets for User 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -453,72 +454,72 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0280: list of datasets for user 3", async () => {
+  it("0280: list of datasets for User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
 
-  it("0290: datasets count for user 3", async () => {
+  it("0290: datasets count for User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(3);
       });
   });
 
-  it("0300: access dataset 1 as user 3", async () => {
+  it("0300: access dataset 1 as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid1);
       });
   });
 
-  it("0310: access dataset 2 as user 3", async () => {
+  it("0310: access dataset 2 as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid2);
       });
   });
 
-  it("0320: access dataset 3 as user 3", async () => {
+  it("0320: access dataset 3 as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it("0330: full query for datasets for user 3", async () => {
+  it("0330: full query for datasets for User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -531,11 +532,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send({ isPublished: true })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0350: full query for datasets for user 2", async () => {
+  it("0350: full query for datasets for User 2", async () => {
     const fields = {
       isPublished: true,
     };
@@ -548,14 +549,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
 
-  it("0360: full facet for datasets for user 2", async () => {
+  it("0360: full facet for datasets for User 2", async () => {
     const fields = {
       isPublished: true,
     };
@@ -567,86 +568,86 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body[0].all[0].totalSets.should.be.equal(2);
       });
   });
 
-  it("0370: access dataset 1 origdatablocks as user 3", async () => {
+  it("0370: access dataset 1 origdatablocks as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/origdatablocks")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
 
-  it("0380: access dataset 1 datablocks as user 3", async () => {
+  it("0380: access dataset 1 datablocks as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/datablocks")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
 
-  it("0390: access dataset 1 attachments as user 3", async () => {
+  it("0390: access dataset 1 attachments as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
 
-  it("0400: access dataset 1 thumbnail as user 3", async () => {
+  it("0400: access dataset 1 thumbnail as User 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/thumbnail")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200);
+      .expect(TestData.SuccessfulGetStatusCode);
   });
 
-  it("0410: should delete dataset 1", async () => {
+  it("0410: should delete dataset 1 as Archive Manager", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0420: should delete dataset 2", async () => {
+  it("0420: should delete dataset 2 as Archive Manager", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0430: should delete dataset 3", async () => {
+  it("0430: should delete dataset 3 as Archive Manager", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("0500: admin can add a new raw dataset", async () => {
+  it("0500: add a new raw dataset as Admin", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "admin",
@@ -657,7 +658,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -666,7 +667,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0501: admin cannot add a new incomplete raw dataset", async () => {
+  it("0501: add a new incomplete raw dataset as Admin, which should fail as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "admin",
@@ -677,14 +678,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0502: admin can add a new raw dataset with specified pid", async () => {
+  it("0502: add a new raw dataset with specified pid as Admin", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -696,7 +697,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
@@ -705,7 +706,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0503: admin cannot add a new raw dataset with specified invalid pid", async () => {
+  it("0503: add a new raw dataset with specified invalid pid as Admin, which should fail as bad request", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -717,14 +718,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0504: admin cannot add a new invalid raw dataset with specified pid", async () => {
+  it("0504: add a new invalid raw dataset with specified pid as Admin, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: uuidv4(),
@@ -736,14 +737,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0505: admin cannot add a new invalid raw dataset with specified invalid pid", async () => {
+  it("0505: add a new invalid raw dataset with specified invalid pid as Admin, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -755,14 +756,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0510: admin can add a new raw dataset with different owner group", async () => {
+  it("0510: add a new raw dataset with different owner group as Admin", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group1",
@@ -773,7 +774,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -782,7 +783,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0520: admin cannot add a new incomplete raw dataset with different owner group", async () => {
+  it("0520: add a new incomplete raw dataset with different owner group as Admin, which should fail as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group1",
@@ -793,14 +794,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0530: admin can add a new raw dataset with specified pid and different owner group", async () => {
+  it("0530: add a new raw dataset with specified pid and different owner group as Admin", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -812,7 +813,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
@@ -821,7 +822,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0540: admin cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
+  it("0540: add a new raw dataset with specified invalid pid and different owner group as Admin, which should fail as bad request", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -833,14 +834,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0550: admin cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
+  it("0550: add a new invalid raw dataset with specified pid and different owner group as Admin, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -852,14 +853,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0560: admin cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
+  it("0560: add a new invalid raw dataset with specified invalid pid and different owner group as Admin, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -871,14 +872,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0600: user with create dataset groups only can add a new raw dataset", async () => {
+  it("0600: add a new raw dataset as User 1 which belongs to a create dataset group", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group1",
@@ -889,7 +890,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -898,7 +899,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0601: user with create dataset groups only cannot add a new incomplete raw dataset", async () => {
+  it("0601: add a new incomplete raw dataset as User 1 which belongs to a create dataset group", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group1",
@@ -909,14 +910,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0602: user with create dataset groups only can not add a new raw dataset with specified pid", async () => {
+  it("0602: add a new raw dataset with specified pid as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -928,14 +929,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0603: user with create dataset groups only cannot add a new raw dataset with specified invalid pid", async () => {
+  it("0603: add a new raw dataset with specified invalid pid as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -947,14 +948,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0604: user with create dataset groups only cannot add a new invalid raw dataset with specified pid", async () => {
+  it("0604: add a new invalid raw dataset with specified pid as User 1 which belongs to a create dataset group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -966,14 +967,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0605: user with create dataset groups only cannot add a new invalid raw dataset with specified invalid pid", async () => {
+  it("0605: add a new invalid raw dataset with specified invalid pid as User 1 which belongs to a create dataset group, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -985,14 +986,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0610: user with create dataset groups only can not add a new raw dataset with different owner group", async () => {
+  it("0610: add a new raw dataset with different owner group as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group2",
@@ -1003,14 +1004,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0620: user with create dataset groups only cannot add a new incomplete raw dataset with different owner group", async () => {
+  it("0620: add a new incomplete raw dataset with different owner group as User 1 which belongs to a create dataset group, which should fail as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group2",
@@ -1021,14 +1022,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0630: user with create dataset groups only cannot add a new raw dataset with specified pid and different owner group", async () => {
+  it("0630: add a new raw dataset with specified pid and different owner group as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -1040,14 +1041,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0640: user with create dataset groups only cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
+  it("0640: add a new raw dataset with specified invalid pid and different owner group as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1059,14 +1060,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0650: user with create dataset groups only cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
+  it("0650: add a new invalid raw dataset with specified pid and different owner group as User 1 which belongs to a ", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -1078,14 +1079,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0660: user with create dataset groups only cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
+  it("0660: add a new invalid raw dataset with specified invalid pid and different owner group as User 1 which belongs to a create dataset group, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1097,14 +1098,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0700: user with create dataset with pid groups can add a new raw dataset", async () => {
+  it("0700: add a new raw dataset as User 2 which belongs to a create dataset with pid group", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group2",
@@ -1115,7 +1116,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -1124,7 +1125,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0701: user with create dataset with pid groups cannot add a new incomplete raw dataset", async () => {
+  it("0701: add a new incomplete raw dataset as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group2",
@@ -1135,14 +1136,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0702: user with create dataset with pid groups can add a new raw dataset with specified pid", async () => {
+  it("0702: add a new raw dataset with specified pid as User 2 which belongs to a create dataset with pid group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -1154,7 +1155,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
@@ -1163,7 +1164,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0703: user with create dataset with pid groups cannot add a new raw dataset with specified invalid pid", async () => {
+  it("0703: add a new raw dataset with specified invalid pid as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1175,14 +1176,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0704: user with create dataset with pid groups cannot add a new invalid raw dataset with specified pid", async () => {
+  it("0704: add a new invalid raw dataset with specified pid as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -1194,14 +1195,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0705: user with create dataset with pid groups cannot add a new invalid raw dataset with specified invalid pid", async () => {
+  it("0705: add a new invalid raw dataset with specified invalid pid as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1213,14 +1214,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0710: user with create dataset with pid groups can not add a new raw dataset with different owner group", async () => {
+  it("0710: add a new raw dataset with different owner group as User 2 which belongs to a create dataset with pid group, which should fail as forbidden", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group1",
@@ -1231,14 +1232,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0720: user with create dataset with pid groups cannot add a new incomplete raw dataset with different owner group", async () => {
+  it("0720: add a new incomplete raw dataset with different owner group as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group1",
@@ -1249,14 +1250,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0730: user with create dataset with pid groups cannot add a new raw dataset with specified pid and different owner group", async () => {
+  it("0730: add a new raw dataset with specified pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -1268,14 +1269,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0740: user with create dataset with pid groups cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
+  it("0740: add a new raw dataset with specified invalid pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1287,14 +1288,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0750: user with create dataset with pid groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
+  it("0750: add a new invalid raw dataset with specified pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -1306,14 +1307,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0760: user with create dataset with pid groups cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
+  it("0760: add a new invalid raw dataset with specified invalid pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1325,14 +1326,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0800: user with create dataset privileged groups can add a new raw dataset", async () => {
+  it("0800: add a new raw dataset as User 3 which belongs to a create dataset privileged group", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group3",
@@ -1343,7 +1344,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -1352,7 +1353,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0801: user with create dataset privileged groups cannot add a new incomplete raw dataset", async () => {
+  it("0801: add a new incomplete raw dataset as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group3",
@@ -1363,14 +1364,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0802: user with create dataset privileged groups can add a new raw dataset with specified pid", async () => {
+  it("0802: add a new raw dataset with specified pid as User 3 which belongs to a create dataset privileged group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -1382,7 +1383,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
@@ -1391,7 +1392,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0803: user with create dataset privileged groups cannot add a new raw dataset with specified invalid pid", async () => {
+  it("0803: add a new raw dataset with specified invalid pid as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1403,14 +1404,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0804: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid", async () => {
+  it("0804: add a new invalid raw dataset with specified pid as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -1422,14 +1423,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0805: user with create dataset privileged groups cannot add a new invalid raw dataset with specified invalid pid", async () => {
+  it("0805: add a new invalid raw dataset with specified invalid pid as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1441,14 +1442,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0810: user with create dataset privileged groups can add a new raw dataset with different owner group", async () => {
+  it("0810: add a new raw dataset with different owner group as User 3 which belongs to a create dataset privileged group", async () => {
     const newDataset = {
       ...TestData.RawCorrect,
       ownerGroup: "group1",
@@ -1459,7 +1460,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.be.string;
@@ -1468,7 +1469,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0820: user with create dataset privileged groups cannot add a new incomplete raw dataset with different owner group", async () => {
+  it("0820: add a new incomplete raw dataset with different owner group as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const newDataset = {
       ...TestData.RawWrong_1,
       ownerGroup: "group1",
@@ -1479,14 +1480,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0830: user with create dataset privileged groups can add a new raw dataset with specified pid and different owner group", async () => {
+  it("0830: add a new raw dataset with specified pid and different owner group as User 3 which belongs to a create dataset privileged group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "testing/" + uuidv4(),
@@ -1498,7 +1499,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(datasetWithPid.pid);
@@ -1507,7 +1508,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  it("0840: user with create dataset privileged groups cannot add a new raw dataset with specified invalid pid and different owner group", async () => {
+  it("0840: add a new raw dataset with specified invalid pid and different owner group as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
       pid: "this-is-invalid-pid-1",
@@ -1519,14 +1520,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(datasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0850: user with create dataset privileged groups cannot add a new invalid raw dataset with specified pid and different owner group", async () => {
+  it("0850: add a new invalid raw dataset with specified pid and different owner group as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
       pid: "testing/" + uuidv4(),
@@ -1538,14 +1539,14 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
       });
   });
 
-  it("0860: user with create dataset privileged groups cannot add a new invalid raw dataset with specified invalid pid and different owner group", async () => {
+  it("0860: add a new invalid raw dataset with specified invalid pid and different owner group as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithInvalidPid = {
       ...TestData.RawWrong_1,
       pid: "this-is-invalid-pid-1",
@@ -1557,7 +1558,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .send(invalidDatasetWithInvalidPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("pid");
