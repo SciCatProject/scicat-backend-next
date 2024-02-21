@@ -20,7 +20,7 @@ import {
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
-import { UpdateSampleDto } from "./dto/update-sample.dto";
+import { PartialUpdateSampleDto } from "./dto/update-sample.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -572,9 +572,9 @@ export class SamplesController {
     description: "Id of the sample to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateSampleDto)
+  @ApiExtraModels(PartialUpdateSampleDto)
   @ApiBody({
-    type: UpdateSampleDto,
+    type: PartialUpdateSampleDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -585,7 +585,7 @@ export class SamplesController {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() updateSampleDto: UpdateSampleDto,
+    @Body() updateSampleDto: PartialUpdateSampleDto,
   ): Promise<SampleClass | null> {
     await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
     return this.samplesService.update({ sampleId: id }, updateSampleDto);

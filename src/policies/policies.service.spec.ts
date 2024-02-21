@@ -28,6 +28,7 @@ const mockPolicy: Policy = {
   updatedBy: "testUser",
   createdAt: new Date(),
   updatedAt: new Date(),
+  isPublished: false,
 };
 
 describe("PoliciesService", () => {
