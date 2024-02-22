@@ -216,9 +216,20 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     const userQuery =
       this.configService.get<IOidcUserQueryMapping>("oidc.userQuery");
     const allowedOperators = ["and", "or"];
-    const defaultFilter = {
-      $or: [{ username: userProfile.username }, { email: userProfile.email }],
-    };
+    const defaultFilter =
+      userQuery && allowedOperators.includes(userQuery.operator)
+        ? {
+            [`$${userQuery.operator}`]: [
+              { username: userProfile.username },
+              { email: userProfile.email },
+            ],
+          }
+        : {
+            $or: [
+              { username: userProfile.username },
+              { email: userProfile.email },
+            ],
+          };
 
     if (
       !userQuery?.operator ||
@@ -226,7 +237,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     ) {
       return defaultFilter;
     }
-
     const operator = "$" + userQuery.operator.toLowerCase();
     const filter = userQuery.filter.reduce(
       (acc: Record<string, unknown>[], mapping: string) => {
@@ -241,16 +251,16 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
       [],
     );
 
-    if (filter.length === 0 || !allowedOperators.includes(operator)) {
-      Logger.error(
-        userQuery,
-        "Custom user query error, falling back to default filter.",
+    if (filter.length === 0 || !allowedOperators.includes(userQuery.operator)) {
+      Logger.log(
+        `Executing default userQuery filter: $${JSON.stringify(defaultFilter)}`,
+        "OidcStrategy",
       );
       return defaultFilter;
     }
 
     const customFilter = { [operator]: filter };
-
+    Logger.log(userQuery, "Executing custom userQuery filter", "OidcStrategy");
     return customFilter;
   }
 }

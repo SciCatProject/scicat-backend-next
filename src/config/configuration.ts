@@ -140,18 +140,18 @@ const configuration = () => {
       userInfoMapping: {
         id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
         username:
-          oidcUsernameFieldMapping.split(",").map((v) => v.trim()) ?? [],
+          oidcUsernameFieldMapping.split(",").map((v) => v.trim()) ?? [], // Example: "iss, username"
         displayName: process.env.OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME,
         familyName: process.env.OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME,
         emails: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAILS,
         email: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAIL,
-        thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAIL_PHOTO,
-        groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUPS,
+        thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO,
+        groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUP, // Example: groups
         provider: process.env.OIDC_USERINFO_MAPPING_FIELD_PROVIDER,
       },
       userQuery: {
-        operator: process.env.OIDC_USERQUERY_OPERATOR || "",
-        filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [],
+        operator: process.env.OIDC_USERQUERY_OPERATOR || "or", // Example: "or" or "and"
+        filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [], // Example: "username:username, email:email"
       },
     },
     logbook: {
