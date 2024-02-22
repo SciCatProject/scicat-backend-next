@@ -13,8 +13,13 @@ const TestData = {
   SuccessfulGetStatusCode : 200,
   SuccessfulPatchStatusCode : 200,
   SuccessfulDeleteStatusCode : 200,
+  SuccessfulPostStatusCode : 200,
   BadRequestStatusCode: 400,
   AccessForbiddenStatusCode : 403,
+  UnauthorizedStatusCode : 401,
+  ConflictStatusCode : 409,
+  ApplicationErrorStatusCode : 500,
+
 
   Accounts: TestAccounts,
 

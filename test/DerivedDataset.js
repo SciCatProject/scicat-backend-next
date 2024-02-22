@@ -10,8 +10,8 @@ var accessTokenArchiveManager = null;
 var accessTokenUser1 = null;
 var accessTokenUser2 = null;
 var pid = null;
-var explicitPid = "B69A6239-5FD1-4244-8363-58C2DA1B6915";
 var minPid = null;
+var explicitPid = null;
 
 describe("0700: DerivedDataset: Derived Datasets", () => {
   beforeEach((done) => {
@@ -19,7 +19,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       appUrl,
       {
         username: "adminIngestor",
-        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenAdminIngestor = tokenVal;
@@ -27,7 +27,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
           appUrl,
           {
             username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            password: TestData.Accounts["user1"]["password"],
           },
           (tokenVal) => {
             accessTokenUser1 = tokenVal;
@@ -35,7 +35,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
               appUrl,
               {
                 username: "user2",
-                password: "f522d1d715970073a6413474ca0e0f63",
+                password: TestData.Accounts["user2"]["password"],
               },
               (tokenVal) => {
                 accessTokenUser2 = tokenVal;
@@ -43,7 +43,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
                   appUrl,
                   {
                     username: "archiveManager",
-                    password: "aman",
+                    password: TestData.Accounts["archiveManager"]["password"],
                   },
                   (tokenVal) => {
                     accessTokenArchiveManager = tokenVal;
@@ -63,7 +63,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .delete("/api/v3/datasets/" + encodeURIComponent(item.pid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
 
     return response;
   }
@@ -81,7 +81,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
@@ -94,13 +94,13 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(TestData.DerivedCorrectMin)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
-        minPid = encodeURIComponent(res.body["pid"]);
+        minPid = res.body["pid"];
       });
   });
 
@@ -110,7 +110,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -125,14 +125,14 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0130: should be able to add new derived dataset with explicit pid", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "9b1bb7eb-5aae-4d86-8aff-9b034b60e1d8",
+      pid: "testing/9b1bb7eb-5aae-4d86-8aff-9b034b60e1d8",
     };
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -149,21 +149,21 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0135: should not be able to add new derived dataset with user that is not in create dataset list", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "fcab185e-4600-49ae-bcd5-41b2f9934d82",
+      pid: "testing/fcab185e-4600-49ae-bcd5-41b2f9934d82",
     };
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
 
   it("0140: should not be able to add new derived dataset with group that is not part of allowed groups", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "fcab185e-4600-49ae-bcd5-41b2f9934d82",
+      pid: "testing/fcab185e-4600-49ae-bcd5-41b2f9934d82",
       ownerGroup: "group1",
     };
     return request(appUrl)
@@ -171,7 +171,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(403)
+      .expect(TestData.CreationForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -186,7 +186,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -194,14 +194,14 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
       ownerGroup: "group2",
-      pid: explicitPid,
+      pid: "testing/fb47507e-d17c-11ee-9244-dfa68db8ec5a",
     };
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(derivedDatasetWithExplicitPID)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -220,7 +220,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(false);
@@ -233,6 +233,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .send(TestData.DerivedWrong)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.be.equal(200);
@@ -254,7 +255,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .query(JSON.stringify(filter))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
@@ -276,7 +277,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body.should.have.property("pid").and.equal(pid);
       });
@@ -295,7 +296,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
@@ -315,7 +316,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array");
@@ -327,33 +328,34 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
       .delete("/api/v3/Datasets/" + encodeURIComponent(pid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
   it("0230: should delete a minimal derived dataset", async () => {
     return request(appUrl)
-      .delete("/api/v3/Datasets/" + minPid)
+      .delete("/api/v3/Datasets/" + encodeURIComponent(minPid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
   it("0240: should delete a derived dataset with explicit PID", async () => {
     return request(appUrl)
-      .delete("/api/v3/Datasets/" + explicitPid)
+      .delete("/api/v3/Datasets/" + encodeURIComponent(explicitPid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
+
   it("0250: delete all dataset as archivemanager", async () => {
     return await request(appUrl)
       .get("/api/v3/datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         return processArray(res.body);

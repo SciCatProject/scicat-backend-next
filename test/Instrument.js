@@ -22,7 +22,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       appUrl,
       {
         username: "adminIngestor",
-        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenAdminIngestor = tokenVal;
@@ -30,7 +30,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -38,7 +38,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
               appUrl,
               {
                 username: "user1",
-                password: "a609316768619f154ef58db4d847b75e",
+                password: TestData.Accounts["user1"]["password"],
               },
               (tokenVal) => {
                 accessTokenUser1 = tokenVal;
@@ -57,7 +57,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -75,7 +75,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -93,7 +93,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -111,7 +111,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(400);
+      .expect(TestData.BadRequestStatusCode);
   });
 
   it("0050: adds invalid instrument as ingestor, which should fail because it is missing the uniqeName", async () => {
@@ -120,7 +120,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentWrong1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(400);
+      .expect(TestData.BadRequestStatusCode);
   });
 
   it("0060: adds instrument #2 as user1 (non admin), which should fail", async () => {
@@ -129,7 +129,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0070: should fetch instrument #1 as ingestor", async () => {
@@ -137,7 +137,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments/" + instrumentId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -152,7 +152,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments/" + instrumentId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -167,7 +167,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(3);
@@ -186,7 +186,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(2);
@@ -201,7 +201,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments/findOne")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.pid.should.be.oneOf([
@@ -224,7 +224,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.pid.should.be.oneOf([instrumentId1, instrumentId2]);
@@ -244,7 +244,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(1);
@@ -258,7 +258,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(3);
@@ -271,7 +271,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send({ name: newName })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("name").and.be.equal(newName);
@@ -285,7 +285,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send({ uniqueName: newName })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(400);
+      .expect(TestData.BadRequestStatusCode);
   });
 
   it("0160: should fetch same instrument by id as ingestor", async () => {
@@ -293,7 +293,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .get("/api/v3/Instruments/" + instrumentId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("name").and.be.equal(newName);
@@ -313,7 +313,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.length(1);
@@ -329,7 +329,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .delete("/api/v3/Instruments/" + instrumentId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0190: should delete instrument #1 as user allowed to delete", async () => {
@@ -337,7 +337,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .delete("/api/v3/Instruments/" + instrumentId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0200: should delete instrument #2 as user allowed to delete", async () => {
@@ -345,7 +345,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .delete("/api/v3/Instruments/" + instrumentId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0210: should delete instrument #3 as user allowed to delete", async () => {
@@ -353,6 +353,6 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .delete("/api/v3/Instruments/" + instrumentId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 });

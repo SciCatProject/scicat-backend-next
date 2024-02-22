@@ -49,7 +49,7 @@ const scientificMetadata = ({
         appUrl,
         {
           username: "adminIngestor",
-          password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+          password: TestData.Accounts["adminIngestor"]["password"],
         },
         (tokenVal) => {
           accessTokenAdminIngestor = tokenVal;
@@ -57,7 +57,7 @@ const scientificMetadata = ({
             appUrl,
             {
               username: "archiveManager",
-              password: "aman",
+              password: TestData.Accounts["archiveManager"]["password"],
             },
             (tokenVal) => {
               accessTokenArchiveManager = tokenVal;
@@ -74,7 +74,7 @@ const scientificMetadata = ({
         .send(TestData.ScientificMetadataForElasticSearch)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(200)
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have
@@ -128,7 +128,7 @@ const scientificMetadata = ({
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(200)
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -147,7 +147,7 @@ const scientificMetadata = ({
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(200)
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -167,7 +167,7 @@ const scientificMetadata = ({
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(200)
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -187,7 +187,7 @@ const scientificMetadata = ({
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(200)
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have
@@ -202,7 +202,7 @@ const scientificMetadata = ({
         .delete("/api/v3/datasets/" + pid)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-        .expect(200)
+        .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/);
     });
   },
