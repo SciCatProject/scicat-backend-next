@@ -3,6 +3,7 @@
 
 const { faker } = require("@faker-js/faker");
 var utils = require("./LoginUtils");
+const { TestData } = require("./TestData");
 
 const NUMBER_OF_DATASETS_TO_CREATE = 100;
 
@@ -122,7 +123,7 @@ function addDataset() {
     .send(dataset)
     .set("Accept", "application/json")
     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-    .expect(200)
+    .expect(TestData.EntryCreatedStatusCode)
     .expect("Content-Type", /json/)
     .then((result) => {
       if (result.body) {
@@ -148,7 +149,7 @@ function removeDataset(datasetPid) {
     .delete("/api/v3/datasets/" + encodeURIComponent(datasetPid))
     .set("Accept", "application/json")
     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-    .expect(200)
+    .expect(TestData.SuccessfulDeleteStatusCode)
     .expect("Content-Type", /json/)
     .then((result) => {
       return result.body;
@@ -183,13 +184,13 @@ async function removeAllDatasets() {
   return Promise.all(allPromises);
 }
 
-describe("Randomized Datasets: permission test with bigger amount of data", async () => {
+describe("1700: Randomized Datasets: permission test with bigger amount of data", async () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
         username: "adminIngestor",
-        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenAdminIngestor = tokenVal;
@@ -197,7 +198,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
           appUrl,
           {
             username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            password: TestData.Accounts["user1"]["password"],
           },
           (tokenVal) => {
             accessTokenUser1 = tokenVal;
@@ -205,7 +206,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
               appUrl,
               {
                 username: "user2",
-                password: "f522d1d715970073a6413474ca0e0f63",
+                password: TestData.Accounts["user2"]["password"],
               },
               (tokenVal) => {
                 accessTokenUser2 = tokenVal;
@@ -213,7 +214,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
                   appUrl,
                   {
                     username: "user3",
-                    password: "70dc489e8ee823ae815e18d664424df2",
+                    password: TestData.Accounts["user3"]["password"],
                   },
                   (tokenVal) => {
                     accessTokenUser3 = tokenVal;
@@ -221,7 +222,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: "6d3b76392e6f41b087c11f8b77e3f9de",
+                        password: TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
@@ -238,7 +239,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
     );
   });
 
-  it("access private dataset as unauthenticated user", async () => {
+  it("0010: access private dataset as unauthenticated user", async () => {
     await addAllDatasets();
     const randomGroup = randomIntFromInterval(1, 4);
 
@@ -249,15 +250,15 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       )
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("list of datasets for ingestor", async () => {
+  it("0020: list of datasets for ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be
@@ -266,7 +267,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       });
   });
 
-  it("access any dataset as ingestor", async () => {
+  it("0030: access any dataset as ingestor", async () => {
     const randomGroupIndex = randomIntFromInterval(1, 4);
     const randomIndex = randomIntFromInterval(
       0,
@@ -279,18 +280,18 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(randomDatasetPid);
       });
   });
 
-  it("full query for datasets for ingestor", async () => {
+  it("0040: full query for datasets for ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/fullquery")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be
@@ -299,12 +300,12 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       });
   });
 
-  it("list of datasets for user 1", async () => {
+  it("0050: list of datasets for user 1", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be
@@ -313,7 +314,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       });
   });
 
-  it("access any dataset from group1 ownerGroup as user 1", async () => {
+  it("0060: access any dataset from group1 ownerGroup as user 1", async () => {
     const randomIndex = randomIntFromInterval(0, groupedDatasets[1].length - 1);
     const randomDatasetPid = groupedDatasets[1][randomIndex].pid;
 
@@ -322,13 +323,13 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(randomDatasetPid);
       });
   });
 
-  it("access dataset from another ownerGroup as user 1", async () => {
+  it("0070: access dataset from another ownerGroup as user 1", async () => {
     const randomGroupIndex = faker.helpers.arrayElement(["2", "3", "4"]);
     const randomIndex = randomIntFromInterval(
       0,
@@ -341,15 +342,15 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("list of datasets for user 2", async () => {
+  it("0080: list of datasets for user 2", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be
@@ -358,7 +359,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       });
   });
 
-  it("access any dataset from group2 ownerGroup as user 2", async () => {
+  it("0090: access any dataset from group2 ownerGroup as user 2", async () => {
     const randomIndex = randomIntFromInterval(0, groupedDatasets[2].length - 1);
     const randomDatasetPid = groupedDatasets[2][randomIndex].pid;
 
@@ -367,13 +368,13 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(randomDatasetPid);
       });
   });
 
-  it("access dataset from another ownerGroup as user 2", async () => {
+  it("0100: access dataset from another ownerGroup as user 2", async () => {
     const randomGroupIndex = faker.helpers.arrayElement(["1", "3", "4"]);
     const randomIndex = randomIntFromInterval(
       0,
@@ -386,15 +387,15 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("list of datasets for user 3", async () => {
+  it("0110: list of datasets for user 3", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be
@@ -403,7 +404,7 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       });
   });
 
-  it("access any dataset from group3 ownerGroup as user 3", async () => {
+  it("0120: access any dataset from group3 ownerGroup as user 3", async () => {
     const randomIndex = randomIntFromInterval(0, groupedDatasets[3].length - 1);
     const randomDatasetPid = groupedDatasets[3][randomIndex].pid;
 
@@ -412,13 +413,13 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["pid"].should.be.equal(randomDatasetPid);
       });
   });
 
-  it("access dataset from another ownerGroup as user 3", async () => {
+  it("0130: access dataset from another ownerGroup as user 3", async () => {
     const randomGroupIndex = faker.helpers.arrayElement(["1", "2", "4"]);
     const randomIndex = randomIntFromInterval(
       0,
@@ -431,10 +432,10 @@ describe("Randomized Datasets: permission test with bigger amount of data", asyn
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("should remove all created random datasets", async () => {
+  it("0140: should remove all created random datasets", async () => {
     return await removeAllDatasets().then((values) => {
       values.length.should.be.equal(NUMBER_OF_DATASETS_TO_CREATE);
     });

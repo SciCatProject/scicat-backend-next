@@ -35,15 +35,6 @@ let accessTokenAdminIngestor = null,
   attachmentId9 = null,
   attachmentId10 = null;
 
-// const EntryCreatedStatusCode = 201,
-//   TestData.CreationForbiddenStatusCode = 403,
-//   TestData.DeleteForbiddenStatusCode = 403,
-//   TestData.SuccessfulGetStatusCode = 200,
-//   TestData.SuccessfulPatchStatusCode = 200,
-//   TestData.SuccessfulDeleteStatusCode = 200;
-  
-
-  
 describe("2250: Sample Authorization", () => {
   beforeEach((done) => {
     utils.getToken(

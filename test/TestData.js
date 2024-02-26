@@ -19,6 +19,7 @@ const TestData = {
   UnauthorizedStatusCode : 401,
   ConflictStatusCode : 409,
   ApplicationErrorStatusCode : 500,
+  LoginSuccessfulStatusCode : 201,
 
 
   Accounts: TestAccounts,

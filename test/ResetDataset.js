@@ -2,6 +2,7 @@
 "use strict";
 
 var utils = require("./LoginUtils");
+const { TestData } = require("./TestData");
 
 var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
@@ -148,13 +149,13 @@ var testArchiveId2 =
 var foundId1 = null;
 var foundId2 = null;
 
-describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
+describe("2100: ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
         username: "adminIngestor",
-        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenAdminIngestor = tokenVal;
@@ -162,7 +163,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
           appUrl,
           {
             username: "archiveManager",
-            password: "bc35db76848cf9fbb7f40b6661644e97",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;

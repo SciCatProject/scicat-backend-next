@@ -2,7 +2,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-describe("RawDatasetDatablock: Test Datablocks and their relation to raw Datasets", () => {
+describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw Datasets", () => {
   var accessTokenAdminIngestor = null;
   var accessTokenArchiveManager = null;
 
@@ -15,7 +15,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       appUrl,
       {
         username: "adminIngestor",
-        password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenAdminIngestor = tokenVal;
@@ -23,7 +23,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
           appUrl,
           {
             username: "archiveManager",
-            password: "6d3b76392e6f41b087c11f8b77e3f9de",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -34,13 +34,13 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
     );
   });
 
-  it("adds a new raw dataset", async () => {
+  it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -51,13 +51,13 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("adds a new datablock to the existing raw dataset", () => {
+  it("0020: adds a new datablock to the existing raw dataset", () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -68,33 +68,33 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("adds the same datablock again which should fail because it is already stored", async () => {
+  it("0030: adds the same datablock again which should fail because it is already stored", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(500)
+      .expect(TestData.ApplicationErrorStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
       });
   });
 
-  it("adds a new datablock which should fail because wrong functional account", async () => {
+  it("0040: adds a new datablock which should fail because wrong functional account", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${datasetPid}/Datablocks`)
       .send(TestData.DataBlockCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(403)
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
       });
   });
 
-  it("adds a second datablock for same dataset", async () => {
+  it("0050: adds a second datablock for same dataset", async () => {
     let testdata = { ...TestData.DataBlockCorrect };
     testdata.archiveId = "some-other-archive-id-that-is-different";
 
@@ -103,7 +103,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       .send(testdata)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size");
@@ -112,19 +112,19 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("Should fetch all datablocks belonging to the new dataset", async () => {
+  it("0060: Should fetch all datablocks belonging to the new dataset", async () => {
     return request(appUrl)
       .get(`/api/v3/datasets/${datasetPid}/datablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
       });
   });
 
-  it("should fetch one dataset including related data", async () => {
+  it("0070: should fetch one dataset including related data", async () => {
     var limits = {
       skip: 0,
       limit: 10,
@@ -148,7 +148,7 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(decodeURIComponent(datasetPid));
@@ -160,12 +160,12 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+  it("0080: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -183,21 +183,21 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("should delete first datablock", async () => {
+  it("0090: should delete first datablock", async () => {
     return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+  it("0100: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -215,21 +215,21 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("should delete second datablock", async () => {
+  it("0110: should delete second datablock", async () => {
     return request(appUrl)
       .delete(`/api/v3/datasets/${datasetPid}/Datablocks/${datablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("The size and numFiles fields in the dataset should be correctly updated", async () => {
+  it("0120: The size and numFiles fields in the dataset should be correctly updated", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + datasetPid)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
@@ -239,12 +239,12 @@ describe("RawDatasetDatablock: Test Datablocks and their relation to raw Dataset
       });
   });
 
-  it("should delete the newly created dataset", async () => {
+  it("0130: should delete the newly created dataset", async () => {
     return request(appUrl)
       .delete(`/api/v3/Datasets/${datasetPid}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 });

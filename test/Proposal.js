@@ -11,13 +11,13 @@ let accessTokenProposalIngestor = null,
   proposalId = null,
   attachmentId = null;
 
-describe("Proposal: Simple Proposal", () => {
+describe("1500: Proposal: Simple Proposal", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
         username: "proposalIngestor",
-        password: "7d8cd858fb9d0e4f5d91c34fd4016167",
+        password: TestData.Accounts["proposalIngestor"]["password"],
       },
       (tokenVal) => {
         accessTokenProposalIngestor = tokenVal;
@@ -25,7 +25,7 @@ describe("Proposal: Simple Proposal", () => {
           appUrl,
           {
             username: "adminIngestor",
-            password: "13f4242dc691a3ee3bb5ca2006edcdf7",
+            password: TestData.Accounts["adminIngestor"]["password"],
           },
           (tokenVal) => {
             accessTokenAdminIngestor = tokenVal;
@@ -33,7 +33,7 @@ describe("Proposal: Simple Proposal", () => {
               appUrl,
               {
                 username: "archiveManager",
-                password: "6d3b76392e6f41b087c11f8b77e3f9de",
+                password: TestData.Accounts["archiveManager"]["password"],
               },
               (tokenVal) => {
                 accessTokenArchiveManager = tokenVal;
@@ -53,7 +53,7 @@ describe("Proposal: Simple Proposal", () => {
       .delete("/api/v3/Proposals/" + item.proposalId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
 
     return response;
   }
@@ -69,7 +69,7 @@ describe("Proposal: Simple Proposal", () => {
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         // now remove all these entries
@@ -84,7 +84,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
@@ -97,7 +97,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
@@ -113,7 +113,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalCorrectMin)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(409);
+      .expect(TestData.ConflictStatusCode);
   });
 
   // check if proposal is valid
@@ -123,7 +123,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
@@ -136,7 +136,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalCorrectComplete)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
@@ -153,7 +153,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalWrong_1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(false);
@@ -166,7 +166,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(TestData.ProposalWrong_1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(400)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.statusCode.should.not.equal(200);
@@ -178,7 +178,7 @@ describe("Proposal: Simple Proposal", () => {
       .get("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("createdBy").and.be.string;
@@ -194,7 +194,7 @@ describe("Proposal: Simple Proposal", () => {
       .send(testAttachment)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -222,7 +222,7 @@ describe("Proposal: Simple Proposal", () => {
       .get("/api/v3/Proposals/" + proposalId + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array);
@@ -237,7 +237,7 @@ describe("Proposal: Simple Proposal", () => {
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0130: admin can remove all existing proposals", async () => {
@@ -245,7 +245,7 @@ describe("Proposal: Simple Proposal", () => {
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         return processArray(res.body);

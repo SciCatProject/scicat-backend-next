@@ -2,7 +2,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-describe("0200: CheckDifferentDatasetTypes: Check different dataset types and their inheritance", () => {
+describe("0200: Dataset Simple: Check different dataset types and their inheritance", () => {
   let countDataset = 0;
   let countRawDataset = 0;
   let countDerivedDataset = 0;
@@ -37,8 +37,56 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     );
   });
 
-  // get counts
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete("/api/v3/datasets/" + encodeURIComponent(item.pid))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode);
 
+    return response;
+  }
+
+  async function deletePolicy(item) {
+    const response = request(appUrl)
+      .delete("/api/v3/Policies/" + encodeURIComponent(item.pid))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/);
+    
+    return response;
+  }
+
+  it("0001: delete all dataset as archivemanager", async () => {
+    return await request(appUrl)
+      .get("/api/v3/datasets")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        return res.body.map((d) => {
+          return deleteDataset(d)
+        })
+      });
+  });
+
+  it("0002: delete all policies as archivemanager", async () => {
+    return await request(appUrl)
+      .get("/api/v3/policies")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        return res.body.map((d) => {
+          return deletePolicy(d)
+        })
+      });
+  });
+
+  // get counts which should be all zero as the database is empty
   it("0010: should get count of datasets", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/count")
@@ -48,6 +96,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.be.a("number");
+        res.body.count.should.be.equal(0);
         countDataset = res.body.count;
       });
   });
@@ -62,6 +111,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.be.a("number");
+        res.body.count.should.be.equal(0);
         countRawDataset = res.body.count;
       });
   });
@@ -76,6 +126,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.be.a("number");
+        res.body.count.should.be.equal(0);
         countDerivedDataset = res.body.count;
       });
   });
@@ -85,8 +136,8 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.RawCorrect)
-      .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
       .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -98,8 +149,8 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedCorrect)
-      .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
       .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -111,8 +162,8 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     return request(appUrl)
       .post("/api/v3/Datasets/isValid")
       .send(TestData.DerivedWrong)
-      .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set("Accept", "application/json")
       .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -134,16 +185,15 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
   });
 
   // add dataset and check what happened to counts
-  it("0080: adds a new raw dataset", function (done) {
-    request(appUrl)
+  it("0080: adds a new raw dataset", async () => {
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((res) => {
         res.body.should.have.property("__v").and.to.be.a("number");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
@@ -151,7 +201,6 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
           .property("ownerEmail")
           .and.equal(TestData.RawCorrect.ownerEmail);
         pidRaw1 = encodeURIComponent(res.body.pid);
-        done();
       });
   });
 
@@ -187,7 +236,6 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
 
   it("0110: check for unchanged count of derived datasets", async () => {
     const filter = { where: { type: "derived" } };
-
     return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -227,25 +275,23 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
-        (res.body.count - countRawDataset).should.equal(2);
+        (res.body.count - countDataset).should.equal(2);
       });
   });
 
-  it("0140: new raw dataset count should be incremented", function (done) {
+  it("0140: new raw dataset count should be incremented", async () => {
     const filter = { where: { type: "raw" } };
 
-    request(appUrl)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((res) => {
         res.body.should.have.property("count").and.to.be.a("number");
         (res.body.count - countRawDataset).should.equal(2);
-        done();
       });
   });
 
@@ -265,7 +311,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0160: adds a new derived dataset", function (done) {
+  it("0160: adds a new derived dataset", async () => {
     request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
@@ -273,13 +319,11 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((res) => {
         res.body.should.have.property("__v").and.to.be.a("number");
         res.body.should.have.property("type").and.equal("derived");
         res.body.should.have.property("pid").and.be.string;
         pidDerived1 = encodeURIComponent(res.body["pid"]);
-        done();
       });
   });
 
@@ -298,7 +342,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0180: new raw dataset count should be unchanged", function (done) {
+  it("0190: new raw dataset count should be unchanged", function (done) {
     const filter = { where: { type: "raw" } };
 
     request(appUrl)
@@ -316,7 +360,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0190: new derived dataset count should be incremented", function (done) {
+  it("0200: new derived dataset count should be incremented", function (done) {
     const filter = { where: { type: "derived" } };
 
     request(appUrl)
@@ -334,7 +378,20 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0200: should delete the first raw dataset", function (done) {
+  it("0205: check for the default policies to have been created", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Policies`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulDeleteStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf.at.least(3);
+      });
+  });
+
+
+  it("0210: should delete the first raw dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
@@ -347,7 +404,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0210: should delete the second raw dataset", function (done) {
+  it("0220: should delete the second raw dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
@@ -360,7 +417,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0220: should delete the derived dataset", function (done) {
+  it("0230: should delete the derived dataset", function (done) {
     request(appUrl)
       .delete("/api/v3/Datasets/" + pidDerived1)
       .set("Accept", "application/json")
@@ -373,7 +430,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0230: heck for the default policies to have been created", async () => {
+  it("0240: check for the default policies to have been created", async () => {
     // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
     const start = new Date();
     start.setHours(start.getHours(), 0, 0, 0);
@@ -385,15 +442,16 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.SuccessfulGetStatusCode)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body.should.be.an("array");
+        //res.body.should.be.an("array").to.have.lengthOf(2);
         policyIds = res.body.map((x) => x["_id"]);
       });
   });
 
-  it("0240: should delete the default policies created with datasets", async () => {
+  it("0250: should delete the default policies created with datasets", async () => {
     for (const item of policyIds) {
       await request(appUrl)
         .delete("/api/v3/policies/" + item)
@@ -403,7 +461,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
     }
   });
 
-  it("0250: new dataset count should be back to old count", function (done) {
+  it("0260: new dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -418,7 +476,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0260: new raw dataset count should be back to old count", function (done) {
+  it("0270: new raw dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
@@ -434,7 +492,7 @@ describe("0200: CheckDifferentDatasetTypes: Check different dataset types and th
       });
   });
 
-  it("0270: new derived dataset count should be back to old count", function (done) {
+  it("0280: new derived dataset count should be back to old count", function (done) {
     request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")

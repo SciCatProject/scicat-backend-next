@@ -631,7 +631,7 @@ export class SamplesController {
   })
   @ApiExtraModels(CreateAttachmentDto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateSubAttachmentDto,
   })
   @ApiParam({
     name: "id",
