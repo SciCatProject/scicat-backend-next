@@ -714,6 +714,18 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline;
 };
 
+export const addStatusFields = <T>(
+  obj: T,
+  msg: string,
+): T & {
+  statusMessage: string;
+} => {
+  return {
+    ...obj,
+    statusMessage: msg,
+  };
+};
+
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,

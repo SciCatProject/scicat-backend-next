@@ -23,7 +23,7 @@ import { SampleClass } from "src/samples/schemas/sample.schema";
 import { UserIdentity } from "src/users/schemas/user-identity.schema";
 import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
-import { Action } from "./action.enum";
+import { AuthOp } from "./authop.enum";
 import configuration from "src/config/configuration";
 
 type Subjects =
@@ -47,13 +47,13 @@ type Subjects =
     >
   | "all";
 
-export type AppAbility = Ability<[Action, Subjects]>;
+export type AppAbility = Ability<[AuthOp, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
   createForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Action, Subjects]>
+      Ability<[AuthOp, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
     // // admin groups
@@ -85,40 +85,40 @@ export class CaslAbilityFactory {
 
       // -------------------------------------
       // datasets endpoint authorization
-      cannot(Action.DatasetCreate, DatasetClass);
-      can(Action.DatasetRead, DatasetClass);
-      cannot(Action.DatasetUpdate, DatasetClass);
+      cannot(AuthOp.DatasetCreate, DatasetClass);
+      can(AuthOp.DatasetRead, DatasetClass);
+      cannot(AuthOp.DatasetUpdate, DatasetClass);
       // -
-      cannot(Action.DatasetAttachmentCreate, DatasetClass);
-      can(Action.DatasetAttachmentRead, DatasetClass);
-      cannot(Action.DatasetAttachmentUpdate, DatasetClass);
-      cannot(Action.DatasetAttachmentDelete, DatasetClass);
+      cannot(AuthOp.DatasetAttachmentCreate, DatasetClass);
+      can(AuthOp.DatasetAttachmentRead, DatasetClass);
+      cannot(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+      cannot(AuthOp.DatasetAttachmentDelete, DatasetClass);
       // -
-      cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-      can(Action.DatasetOrigdatablockRead, DatasetClass);
-      cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
+      cannot(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+      can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+      cannot(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
       // -
-      cannot(Action.DatasetDatablockCreate, DatasetClass);
-      can(Action.DatasetDatablockRead, DatasetClass);
-      cannot(Action.DatasetDatablockUpdate, DatasetClass);
+      cannot(AuthOp.DatasetDatablockCreate, DatasetClass);
+      can(AuthOp.DatasetDatablockRead, DatasetClass);
+      cannot(AuthOp.DatasetDatablockUpdate, DatasetClass);
       // -
-      cannot(Action.DatasetLogbookRead, DatasetClass);
+      cannot(AuthOp.DatasetLogbookRead, DatasetClass);
       // -------------------------------------
       // datasets data instance authorization
-      can(Action.DatasetReadManyPublic, DatasetClass);
-      can(Action.DatasetReadOnePublic, DatasetClass, {
+      can(AuthOp.DatasetReadManyPublic, DatasetClass);
+      can(AuthOp.DatasetReadOnePublic, DatasetClass, {
         isPublished: true,
       });
       // -
-      can(Action.DatasetAttachmentReadPublic, DatasetClass, {
+      can(AuthOp.DatasetAttachmentReadPublic, DatasetClass, {
         isPublished: true,
       });
       // -
-      can(Action.DatasetOrigdatablockReadPublic, DatasetClass, {
+      can(AuthOp.DatasetOrigdatablockReadPublic, DatasetClass, {
         isPublished: true,
       });
       // -
-      can(Action.DatasetDatablockReadPublic, DatasetClass, {
+      can(AuthOp.DatasetDatablockReadPublic, DatasetClass, {
         isPublished: true,
       });
 
@@ -126,24 +126,24 @@ export class CaslAbilityFactory {
       // origdatablock
       // -------------------------------------
       // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock);
-      cannot(Action.OrigdatablockCreate, OrigDatablock);
-      cannot(Action.OrigdatablockUpdate, OrigDatablock);
+      can(AuthOp.OrigdatablockRead, OrigDatablock);
+      cannot(AuthOp.OrigdatablockCreate, OrigDatablock);
+      cannot(AuthOp.OrigdatablockUpdate, OrigDatablock);
       // -------------------------------------
       // data instance authorization
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+      can(AuthOp.OrigdatablockReadManyAccess, OrigDatablock);
+      can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
         isPublished: true,
       });
 
-      cannot(Action.UserReadOwn, User);
-      cannot(Action.UserCreateOwn, User);
-      cannot(Action.UserUpdateOwn, User);
-      cannot(Action.UserDeleteOwn, User);
-      cannot(Action.UserReadAny, User);
-      cannot(Action.UserCreateAny, User);
-      cannot(Action.UserUpdateAny, User);
-      cannot(Action.UserDeleteAny, User);
+      cannot(AuthOp.UserReadOwn, User);
+      cannot(AuthOp.UserCreateOwn, User);
+      cannot(AuthOp.UserUpdateOwn, User);
+      cannot(AuthOp.UserDeleteOwn, User);
+      cannot(AuthOp.UserReadAny, User);
+      cannot(AuthOp.UserCreateAny, User);
+      cannot(AuthOp.UserUpdateAny, User);
+      cannot(AuthOp.UserDeleteAny, User);
     } else {
       if (
         user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
@@ -156,30 +156,30 @@ export class CaslAbilityFactory {
         // datasets
         // -------------------------------------
         // endpoint authorization
-        can(Action.DatasetDelete, DatasetClass);
+        can(AuthOp.DatasetDelete, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockDelete, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockDelete, DatasetClass);
         // -
-        can(Action.DatasetDatablockDelete, DatasetClass);
+        can(AuthOp.DatasetDatablockDelete, DatasetClass);
         // -------------------------------------
         // data instance authorization
-        can(Action.DatasetDeleteAny, DatasetClass);
+        can(AuthOp.DatasetDeleteAny, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockDeleteAny, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockDeleteAny, DatasetClass);
         // -
-        can(Action.DatasetDatablockDeleteAny, DatasetClass);
+        can(AuthOp.DatasetDatablockDeleteAny, DatasetClass);
 
         // -------------------------------------
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockDelete, OrigDatablock);
+        can(AuthOp.OrigdatablockDelete, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockDeleteAny, OrigDatablock);
+        can(AuthOp.OrigdatablockDeleteAny, OrigDatablock);
 
-        can(Action.Delete, PublishedData);
-        can(Action.Delete, Policy);
+        can(AuthOp.Delete, PublishedData);
+        can(AuthOp.Delete, Policy);
       } else {
         /*
         /  user that does not belong to any of the group listed in DELETE_GROUPS
@@ -189,17 +189,17 @@ export class CaslAbilityFactory {
         // datasets
         // -------------------------------------
         // endpoint authorization
-        cannot(Action.DatasetDelete, DatasetClass);
+        cannot(AuthOp.DatasetDelete, DatasetClass);
         // -
-        cannot(Action.DatasetOrigdatablockDelete, DatasetClass);
+        cannot(AuthOp.DatasetOrigdatablockDelete, DatasetClass);
         // -
-        cannot(Action.DatasetDatablockDelete, DatasetClass);
+        cannot(AuthOp.DatasetDatablockDelete, DatasetClass);
 
         // -------------------------------------
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        cannot(Action.OrigdatablockDelete, OrigDatablock);
+        cannot(AuthOp.OrigdatablockDelete, OrigDatablock);
       }
 
       if (
@@ -212,84 +212,84 @@ export class CaslAbilityFactory {
         // this tests should be all removed, once we are done with authorization review
         //can(Action.ListAll, DatasetClass);
         // can(Action.ListAll, ProposalClass);
-        can(Action.ReadAll, UserIdentity);
+        can(AuthOp.ReadAll, UserIdentity);
 
         // -------------------------------------
         // elasticsearch
         // -------------------------------------
         // endpoint authorization
-        can(Action.Manage, ElasticSearchActions);
+        can(AuthOp.Manage, ElasticSearchActions);
 
         // -------------------------------------
         // datasets
         // -------------------------------------
         // endpoint authorization
-        can(Action.DatasetCreate, DatasetClass);
-        can(Action.DatasetRead, DatasetClass);
-        can(Action.DatasetUpdate, DatasetClass);
+        can(AuthOp.DatasetCreate, DatasetClass);
+        can(AuthOp.DatasetRead, DatasetClass);
+        can(AuthOp.DatasetUpdate, DatasetClass);
         // -
-        can(Action.DatasetAttachmentCreate, DatasetClass);
-        can(Action.DatasetAttachmentRead, DatasetClass);
-        can(Action.DatasetAttachmentUpdate, DatasetClass);
-        can(Action.DatasetAttachmentDelete, DatasetClass);
+        can(AuthOp.DatasetAttachmentCreate, DatasetClass);
+        can(AuthOp.DatasetAttachmentRead, DatasetClass);
+        can(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+        can(AuthOp.DatasetAttachmentDelete, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockCreate, DatasetClass);
-        can(Action.DatasetOrigdatablockRead, DatasetClass);
-        can(Action.DatasetOrigdatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetDatablockCreate, DatasetClass);
-        can(Action.DatasetDatablockRead, DatasetClass);
-        can(Action.DatasetDatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetDatablockCreate, DatasetClass);
+        can(AuthOp.DatasetDatablockRead, DatasetClass);
+        can(AuthOp.DatasetDatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetLogbookRead, DatasetClass);
+        can(AuthOp.DatasetLogbookRead, DatasetClass);
         // -------------------------------------
         // data instance authorization
-        can(Action.DatasetCreateAny, DatasetClass);
-        can(Action.DatasetReadAny, DatasetClass);
-        can(Action.DatasetUpdateAny, DatasetClass);
+        can(AuthOp.DatasetCreateAny, DatasetClass);
+        can(AuthOp.DatasetReadAny, DatasetClass);
+        can(AuthOp.DatasetUpdateAny, DatasetClass);
         // -
-        can(Action.DatasetAttachmentCreateAny, DatasetClass);
-        can(Action.DatasetAttachmentReadAny, DatasetClass);
-        can(Action.DatasetAttachmentUpdateAny, DatasetClass);
-        can(Action.DatasetAttachmentDeleteAny, DatasetClass);
+        can(AuthOp.DatasetAttachmentCreateAny, DatasetClass);
+        can(AuthOp.DatasetAttachmentReadAny, DatasetClass);
+        can(AuthOp.DatasetAttachmentUpdateAny, DatasetClass);
+        can(AuthOp.DatasetAttachmentDeleteAny, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockCreateAny, DatasetClass);
-        can(Action.DatasetOrigdatablockReadAny, DatasetClass);
-        can(Action.DatasetOrigdatablockUpdateAny, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockCreateAny, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockReadAny, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockUpdateAny, DatasetClass);
         // -
-        can(Action.DatasetDatablockCreateAny, DatasetClass);
-        can(Action.DatasetDatablockReadAny, DatasetClass);
-        can(Action.DatasetDatablockUpdateAny, DatasetClass);
+        can(AuthOp.DatasetDatablockCreateAny, DatasetClass);
+        can(AuthOp.DatasetDatablockReadAny, DatasetClass);
+        can(AuthOp.DatasetDatablockUpdateAny, DatasetClass);
         // -------------------------------------
-        can(Action.DatasetLogbookReadAny, DatasetClass);
+        can(AuthOp.DatasetLogbookReadAny, DatasetClass);
 
         // -------------------------------------
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
+        can(AuthOp.OrigdatablockRead, OrigDatablock);
+        can(AuthOp.OrigdatablockCreate, OrigDatablock);
+        can(AuthOp.OrigdatablockUpdate, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockReadAny, OrigDatablock);
-        can(Action.OrigdatablockCreateAny, OrigDatablock);
-        can(Action.OrigdatablockUpdateAny, OrigDatablock);
+        can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+        can(AuthOp.OrigdatablockCreateAny, OrigDatablock);
+        can(AuthOp.OrigdatablockUpdateAny, OrigDatablock);
 
         // -------------------------------------
         // user endpoint, including useridentity
-        can(Action.UserReadAny, User);
-        can(Action.UserReadOwn, User);
-        can(Action.UserCreateAny, User);
-        can(Action.UserUpdateAny, User);
-        can(Action.UserDeleteAny, User);
-        can(Action.UserCreateJwt, User);
+        can(AuthOp.UserReadAny, User);
+        can(AuthOp.UserReadOwn, User);
+        can(AuthOp.UserCreateAny, User);
+        can(AuthOp.UserUpdateAny, User);
+        can(AuthOp.UserDeleteAny, User);
+        can(AuthOp.UserCreateJwt, User);
 
         // -------------------------------------
         // policies
-        can(Action.Update, Policy);
-        can(Action.Read, Policy);
-        can(Action.Create, Policy);
+        can(AuthOp.Update, Policy);
+        can(AuthOp.Read, Policy);
+        can(AuthOp.Create, Policy);
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetPrivilegedGroups.includes(g),
@@ -303,87 +303,87 @@ export class CaslAbilityFactory {
         // datasets
         // -------------------------------------
         // endpoint authorization
-        can(Action.DatasetCreate, DatasetClass);
-        can(Action.DatasetRead, DatasetClass);
-        can(Action.DatasetUpdate, DatasetClass);
+        can(AuthOp.DatasetCreate, DatasetClass);
+        can(AuthOp.DatasetRead, DatasetClass);
+        can(AuthOp.DatasetUpdate, DatasetClass);
         // -
-        can(Action.DatasetAttachmentCreate, DatasetClass);
-        can(Action.DatasetAttachmentRead, DatasetClass);
-        can(Action.DatasetAttachmentUpdate, DatasetClass);
-        can(Action.DatasetAttachmentDelete, DatasetClass);
+        can(AuthOp.DatasetAttachmentCreate, DatasetClass);
+        can(AuthOp.DatasetAttachmentRead, DatasetClass);
+        can(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+        can(AuthOp.DatasetAttachmentDelete, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockCreate, DatasetClass);
-        can(Action.DatasetOrigdatablockRead, DatasetClass);
-        can(Action.DatasetOrigdatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetDatablockCreate, DatasetClass);
-        can(Action.DatasetDatablockRead, DatasetClass);
-        can(Action.DatasetDatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetDatablockCreate, DatasetClass);
+        can(AuthOp.DatasetDatablockRead, DatasetClass);
+        can(AuthOp.DatasetDatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetLogbookRead, DatasetClass);
+        can(AuthOp.DatasetLogbookRead, DatasetClass);
         // -------------------------------------
         // data instance authorization
-        can(Action.DatasetCreateAny, DatasetClass);
-        can(Action.DatasetReadManyAccess, DatasetClass);
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetCreateAny, DatasetClass);
+        can(AuthOp.DatasetReadManyAccess, DatasetClass);
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetAttachmentCreateAny, DatasetClass);
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentCreateAny, DatasetClass);
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentDeleteOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentDeleteOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetOrigdatablockCreateAny, DatasetClass);
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockCreateAny, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetDatablockCreateAny, DatasetClass);
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockCreateAny, DatasetClass);
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetDatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetLogbookReadOwner, DatasetClass, {
+        can(AuthOp.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
 
@@ -391,23 +391,23 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
+        can(AuthOp.OrigdatablockRead, OrigDatablock);
+        can(AuthOp.OrigdatablockCreate, OrigDatablock);
+        can(AuthOp.OrigdatablockUpdate, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockCreateAny, OrigDatablock);
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockCreateAny, OrigDatablock);
+        can(AuthOp.OrigdatablockReadManyAccess, OrigDatablock);
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        can(AuthOp.OrigdatablockUpdateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
       } else if (
@@ -422,95 +422,95 @@ export class CaslAbilityFactory {
 
         // -------------------------------------
         // datasets endpoint authorization
-        can(Action.DatasetCreate, DatasetClass);
-        can(Action.DatasetRead, DatasetClass);
-        can(Action.DatasetUpdate, DatasetClass);
+        can(AuthOp.DatasetCreate, DatasetClass);
+        can(AuthOp.DatasetRead, DatasetClass);
+        can(AuthOp.DatasetUpdate, DatasetClass);
         // -
-        can(Action.DatasetAttachmentCreate, DatasetClass);
-        can(Action.DatasetAttachmentRead, DatasetClass);
-        can(Action.DatasetAttachmentUpdate, DatasetClass);
-        can(Action.DatasetAttachmentDelete, DatasetClass);
+        can(AuthOp.DatasetAttachmentCreate, DatasetClass);
+        can(AuthOp.DatasetAttachmentRead, DatasetClass);
+        can(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+        can(AuthOp.DatasetAttachmentDelete, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockCreate, DatasetClass);
-        can(Action.DatasetOrigdatablockRead, DatasetClass);
-        can(Action.DatasetOrigdatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetDatablockCreate, DatasetClass);
-        can(Action.DatasetDatablockRead, DatasetClass);
-        can(Action.DatasetDatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetDatablockCreate, DatasetClass);
+        can(AuthOp.DatasetDatablockRead, DatasetClass);
+        can(AuthOp.DatasetDatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetLogbookRead, DatasetClass);
+        can(AuthOp.DatasetLogbookRead, DatasetClass);
         // -------------------------------------
         // datasets data instance authorization
-        can(Action.DatasetCreateOwnerWithPid, DatasetClass, {
+        can(AuthOp.DatasetCreateOwnerWithPid, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadManyAccess, DatasetClass);
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadManyAccess, DatasetClass);
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetAttachmentCreateOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentCreateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentDeleteOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentDeleteOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetOrigdatablockCreateAny, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockCreateAny, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetDatablockCreateAny, DatasetClass, {
+        can(AuthOp.DatasetDatablockCreateAny, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetDatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetLogbookReadOwner, DatasetClass, {
+        can(AuthOp.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
 
@@ -518,25 +518,25 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
+        can(AuthOp.OrigdatablockRead, OrigDatablock);
+        can(AuthOp.OrigdatablockCreate, OrigDatablock);
+        can(AuthOp.OrigdatablockUpdate, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+        can(AuthOp.OrigdatablockCreateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadManyAccess, OrigDatablock);
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           isPublished: true,
         });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        can(AuthOp.OrigdatablockUpdateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
       } else if (
@@ -551,97 +551,97 @@ export class CaslAbilityFactory {
 
         // -------------------------------------
         // datasets endpoint authorization
-        can(Action.DatasetCreate, DatasetClass);
-        can(Action.DatasetRead, DatasetClass);
-        can(Action.DatasetUpdate, DatasetClass);
+        can(AuthOp.DatasetCreate, DatasetClass);
+        can(AuthOp.DatasetRead, DatasetClass);
+        can(AuthOp.DatasetUpdate, DatasetClass);
         // -
-        can(Action.DatasetAttachmentCreate, DatasetClass);
-        can(Action.DatasetAttachmentRead, DatasetClass);
-        can(Action.DatasetAttachmentUpdate, DatasetClass);
-        can(Action.DatasetAttachmentDelete, DatasetClass);
+        can(AuthOp.DatasetAttachmentCreate, DatasetClass);
+        can(AuthOp.DatasetAttachmentRead, DatasetClass);
+        can(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+        can(AuthOp.DatasetAttachmentDelete, DatasetClass);
         // -
-        can(Action.DatasetOrigdatablockCreate, DatasetClass);
-        can(Action.DatasetOrigdatablockRead, DatasetClass);
-        can(Action.DatasetOrigdatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetDatablockCreate, DatasetClass);
-        can(Action.DatasetDatablockRead, DatasetClass);
-        can(Action.DatasetDatablockUpdate, DatasetClass);
+        can(AuthOp.DatasetDatablockCreate, DatasetClass);
+        can(AuthOp.DatasetDatablockRead, DatasetClass);
+        can(AuthOp.DatasetDatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetLogbookRead, DatasetClass);
+        can(AuthOp.DatasetLogbookRead, DatasetClass);
         // -------------------------------------
         // datasets data instance authorization
-        can(Action.DatasetCreateOwnerNoPid, DatasetClass, {
+        can(AuthOp.DatasetCreateOwnerNoPid, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
           pid: { $eq: "" },
         });
 
-        can(Action.DatasetReadManyAccess, DatasetClass);
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadManyAccess, DatasetClass);
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetAttachmentCreateOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentCreateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetAttachmentUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentDeleteOwner, DatasetClass, {
+        can(AuthOp.DatasetAttachmentDeleteOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetOrigdatablockCreateAny, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockCreateAny, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetOrigdatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetDatablockCreateAny, DatasetClass, {
+        can(AuthOp.DatasetDatablockCreateAny, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
-        can(Action.DatasetDatablockUpdateOwner, DatasetClass, {
+        can(AuthOp.DatasetDatablockUpdateOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
         // -
-        can(Action.DatasetLogbookReadOwner, DatasetClass, {
+        can(AuthOp.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
 
@@ -649,25 +649,25 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
+        can(AuthOp.OrigdatablockRead, OrigDatablock);
+        can(AuthOp.OrigdatablockCreate, OrigDatablock);
+        can(AuthOp.OrigdatablockUpdate, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+        can(AuthOp.OrigdatablockCreateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadManyAccess, OrigDatablock);
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           isPublished: true,
         });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        can(AuthOp.OrigdatablockUpdateOwner, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
       } else if (user) {
@@ -677,68 +677,68 @@ export class CaslAbilityFactory {
 
         // -------------------------------------
         // datasets endpoint authorization
-        cannot(Action.DatasetCreate, DatasetClass);
-        can(Action.DatasetRead, DatasetClass);
-        cannot(Action.DatasetUpdate, DatasetClass);
+        cannot(AuthOp.DatasetCreate, DatasetClass);
+        can(AuthOp.DatasetRead, DatasetClass);
+        cannot(AuthOp.DatasetUpdate, DatasetClass);
         // -
-        cannot(Action.DatasetAttachmentCreate, DatasetClass);
-        can(Action.DatasetAttachmentRead, DatasetClass);
-        cannot(Action.DatasetAttachmentUpdate, DatasetClass);
-        cannot(Action.DatasetAttachmentDelete, DatasetClass);
+        cannot(AuthOp.DatasetAttachmentCreate, DatasetClass);
+        can(AuthOp.DatasetAttachmentRead, DatasetClass);
+        cannot(AuthOp.DatasetAttachmentUpdate, DatasetClass);
+        cannot(AuthOp.DatasetAttachmentDelete, DatasetClass);
         // -
-        cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-        can(Action.DatasetOrigdatablockRead, DatasetClass);
-        cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
+        cannot(AuthOp.DatasetOrigdatablockCreate, DatasetClass);
+        can(AuthOp.DatasetOrigdatablockRead, DatasetClass);
+        cannot(AuthOp.DatasetOrigdatablockUpdate, DatasetClass);
         // -
-        cannot(Action.DatasetDatablockCreate, DatasetClass);
-        can(Action.DatasetDatablockRead, DatasetClass);
-        cannot(Action.DatasetDatablockUpdate, DatasetClass);
+        cannot(AuthOp.DatasetDatablockCreate, DatasetClass);
+        can(AuthOp.DatasetDatablockRead, DatasetClass);
+        cannot(AuthOp.DatasetDatablockUpdate, DatasetClass);
         // -
-        can(Action.DatasetLogbookRead, DatasetClass);
+        can(AuthOp.DatasetLogbookRead, DatasetClass);
         // -------------------------------------
         // datasets data instance authorization
-        can(Action.DatasetReadManyAccess, DatasetClass);
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadManyAccess, DatasetClass);
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetReadOneAccess, DatasetClass, {
+        can(AuthOp.DatasetReadOneAccess, DatasetClass, {
           isPublished: true,
         });
         // -
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetAttachmentReadAccess, DatasetClass, {
+        can(AuthOp.DatasetAttachmentReadAccess, DatasetClass, {
           isPublished: true,
         });
         // -
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetOrigdatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetOrigdatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
         // -
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.DatasetDatablockReadAccess, DatasetClass, {
+        can(AuthOp.DatasetDatablockReadAccess, DatasetClass, {
           isPublished: true,
         });
         // -
-        can(Action.DatasetLogbookReadOwner, DatasetClass, {
+        can(AuthOp.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
 
@@ -746,31 +746,31 @@ export class CaslAbilityFactory {
         // origdatablock
         // -------------------------------------
         // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        cannot(Action.OrigdatablockCreate, OrigDatablock);
-        cannot(Action.OrigdatablockUpdate, OrigDatablock);
+        can(AuthOp.OrigdatablockRead, OrigDatablock);
+        cannot(AuthOp.OrigdatablockCreate, OrigDatablock);
+        cannot(AuthOp.OrigdatablockUpdate, OrigDatablock);
         // -------------------------------------
         // data instance authorization
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadManyAccess, OrigDatablock);
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           ownerGroup: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           accessGroups: { $in: user.currentGroups },
         });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        can(AuthOp.OrigdatablockReadOneAccess, OrigDatablock, {
           isPublished: true,
         });
-        cannot(Action.UserReadAny, User);
-        cannot(Action.UserCreateAny, User);
-        cannot(Action.UserUpdateAny, User);
-        cannot(Action.UserDeleteAny, User);
-        cannot(Action.UserCreateJwt, User);
+        cannot(AuthOp.UserReadAny, User);
+        cannot(AuthOp.UserCreateAny, User);
+        cannot(AuthOp.UserUpdateAny, User);
+        cannot(AuthOp.UserDeleteAny, User);
+        cannot(AuthOp.UserCreateJwt, User);
       }
-      can(Action.UserReadOwn, User, { _id: user._id });
-      can(Action.UserCreateOwn, User, { _id: user._id });
-      can(Action.UserUpdateOwn, User, { _id: user._id });
-      can(Action.UserDeleteOwn, User, { _id: user._id });
+      can(AuthOp.UserReadOwn, User, { _id: user._id });
+      can(AuthOp.UserCreateOwn, User, { _id: user._id });
+      can(AuthOp.UserUpdateOwn, User, { _id: user._id });
+      can(AuthOp.UserDeleteOwn, User, { _id: user._id });
     }
 
     // ************************************
@@ -786,9 +786,9 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      cannot(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      cannot(Action.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsRead, JobClass);
+      cannot(AuthOp.JobsCreate, JobClass);
+      cannot(AuthOp.JobsUpdate, JobClass);
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -800,14 +800,14 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      can(Action.JobsRead, JobClass);
-      can(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
+      can(AuthOp.JobsRead, JobClass);
+      can(AuthOp.JobsCreate, JobClass);
+      can(AuthOp.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsReadAny, JobClass);
-      can(Action.JobsCreateAny, JobClass);
-      can(Action.JobsUpdateAny, JobClass);
+      can(AuthOp.JobsReadAny, JobClass);
+      can(AuthOp.JobsCreateAny, JobClass);
+      can(AuthOp.JobsUpdateAny, JobClass);
     } else if (
       user.currentGroups.some((g) =>
         configuration().createJobGroups.includes(g),
@@ -821,18 +821,18 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      can(Action.JobsRead, JobClass);
-      can(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
+      can(AuthOp.JobsRead, JobClass);
+      can(AuthOp.JobsCreate, JobClass);
+      can(AuthOp.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsCreateAny, JobClass, {
+      can(AuthOp.JobsCreateAny, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.JobsReadAccess, JobClass, {
+      can(AuthOp.JobsReadAccess, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.JobsUpdateAny, JobClass, {
+      can(AuthOp.JobsUpdateAny, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
     } else if (
@@ -848,12 +848,12 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      cannot(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsRead, JobClass);
+      cannot(AuthOp.JobsCreate, JobClass);
+      can(AuthOp.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsUpdateAny, JobClass, {
+      can(AuthOp.JobsUpdateAny, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
     } else if (user) {
@@ -865,12 +865,12 @@ export class CaslAbilityFactory {
       // jobs
       // -------------------------------------
       // endpoint authorization
-      can(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      cannot(Action.JobsUpdate, JobClass);
+      can(AuthOp.JobsRead, JobClass);
+      cannot(AuthOp.JobsCreate, JobClass);
+      cannot(AuthOp.JobsUpdate, JobClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.JobsReadAccess, JobClass, {
+      can(AuthOp.JobsReadAccess, JobClass, {
         ownerGroup: { $in: user.currentGroups },
       });
     }
@@ -888,22 +888,22 @@ export class CaslAbilityFactory {
       // proposals
       // -------------------------------------
       // endpoint authorization
-      can(Action.ProposalsRead, ProposalClass);
-      cannot(Action.ProposalsCreate, ProposalClass);
-      cannot(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
-      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
-      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+      can(AuthOp.ProposalsRead, ProposalClass);
+      cannot(AuthOp.ProposalsCreate, ProposalClass);
+      cannot(AuthOp.ProposalsUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsDelete, ProposalClass);
+      can(AuthOp.ProposalsAttachmentRead, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentCreate, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentDelete, ProposalClass);
 
       // -------------------------------------
       // data instance authorization
-      can(Action.ProposalsReadManyPublic, ProposalClass);
-      can(Action.ProposalsReadOnePublic, ProposalClass, {
+      can(AuthOp.ProposalsReadManyPublic, ProposalClass);
+      can(AuthOp.ProposalsReadOnePublic, ProposalClass, {
         isPublished: true,
       });
-      can(Action.ProposalsAttachmentReadPublic, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadPublic, ProposalClass, {
         isPublished: true,
       });
     } else if (
@@ -917,12 +917,12 @@ export class CaslAbilityFactory {
       // proposals
       // -------------------------------------
       // endpoint authorization
-      can(Action.ProposalsDelete, ProposalClass);
+      can(AuthOp.ProposalsDelete, ProposalClass);
 
       // -------------------------------------
       // data instance authorization
 
-      can(Action.ProposalsDeleteAny, ProposalClass);
+      can(AuthOp.ProposalsDeleteAny, ProposalClass);
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -934,24 +934,24 @@ export class CaslAbilityFactory {
       // proposals
       // -------------------------------------
       // endpoint authorization
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
+      can(AuthOp.ProposalsRead, ProposalClass);
+      can(AuthOp.ProposalsCreate, ProposalClass);
+      can(AuthOp.ProposalsUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsDelete, ProposalClass);
+      can(AuthOp.ProposalsAttachmentRead, ProposalClass);
+      can(AuthOp.ProposalsAttachmentCreate, ProposalClass);
+      can(AuthOp.ProposalsAttachmentUpdate, ProposalClass);
+      can(AuthOp.ProposalsAttachmentDelete, ProposalClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.ProposalsReadAny, ProposalClass);
-      can(Action.ProposalsCreateAny, ProposalClass);
-      can(Action.ProposalsUpdateAny, ProposalClass);
-      cannot(Action.ProposalsDeleteAny, ProposalClass);
-      can(Action.ProposalsAttachmentReadAny, ProposalClass);
-      can(Action.ProposalsAttachmentCreateAny, ProposalClass);
-      can(Action.ProposalsAttachmentUpdateAny, ProposalClass);
-      can(Action.ProposalsAttachmentDeleteAny, ProposalClass);
+      can(AuthOp.ProposalsReadAny, ProposalClass);
+      can(AuthOp.ProposalsCreateAny, ProposalClass);
+      can(AuthOp.ProposalsUpdateAny, ProposalClass);
+      cannot(AuthOp.ProposalsDeleteAny, ProposalClass);
+      can(AuthOp.ProposalsAttachmentReadAny, ProposalClass);
+      can(AuthOp.ProposalsAttachmentCreateAny, ProposalClass);
+      can(AuthOp.ProposalsAttachmentUpdateAny, ProposalClass);
+      can(AuthOp.ProposalsAttachmentDeleteAny, ProposalClass);
     } else if (
       user.currentGroups.some((g) => {
         return configuration().proposalGroups.includes(g);
@@ -966,43 +966,43 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // endpoint authorization
 
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
-      cannot(Action.ProposalsDatasetRead, ProposalClass);
+      can(AuthOp.ProposalsRead, ProposalClass);
+      can(AuthOp.ProposalsCreate, ProposalClass);
+      can(AuthOp.ProposalsUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsDelete, ProposalClass);
+      can(AuthOp.ProposalsAttachmentRead, ProposalClass);
+      can(AuthOp.ProposalsAttachmentCreate, ProposalClass);
+      can(AuthOp.ProposalsAttachmentUpdate, ProposalClass);
+      can(AuthOp.ProposalsAttachmentDelete, ProposalClass);
+      cannot(AuthOp.ProposalsDatasetRead, ProposalClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.ProposalsCreateAny, ProposalClass);
-      can(Action.ProposalsReadManyAccess, ProposalClass);
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsCreateAny, ProposalClass);
+      can(AuthOp.ProposalsReadManyAccess, ProposalClass);
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         isPublished: true,
       });
       //-
-      can(Action.ProposalsAttachmentCreateAny, ProposalClass);
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentCreateAny, ProposalClass);
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         isPublished: true,
       });
-      can(Action.ProposalsAttachmentUpdateOwner, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentUpdateOwner, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.ProposalsAttachmentDeleteOwner, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentDeleteOwner, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
     } else if (user) {
@@ -1014,35 +1014,35 @@ export class CaslAbilityFactory {
       // proposals
       // -------------------------------------
       // endpoint authorization
-      can(Action.ProposalsRead, ProposalClass);
-      cannot(Action.ProposalsCreate, ProposalClass);
-      cannot(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
-      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
-      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-      can(Action.ProposalsDatasetRead, ProposalClass);
+      can(AuthOp.ProposalsRead, ProposalClass);
+      cannot(AuthOp.ProposalsCreate, ProposalClass);
+      cannot(AuthOp.ProposalsUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsDelete, ProposalClass);
+      can(AuthOp.ProposalsAttachmentRead, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentCreate, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentUpdate, ProposalClass);
+      cannot(AuthOp.ProposalsAttachmentDelete, ProposalClass);
+      can(AuthOp.ProposalsDatasetRead, ProposalClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.ProposalsReadManyAccess, ProposalClass);
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsReadManyAccess, ProposalClass);
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.ProposalsReadOneAccess, ProposalClass, {
+      can(AuthOp.ProposalsReadOneAccess, ProposalClass, {
         isPublished: true,
       });
       // -
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.ProposalsAttachmentReadAccess, ProposalClass, {
+      can(AuthOp.ProposalsAttachmentReadAccess, ProposalClass, {
         isPublished: true,
       });
     }
@@ -1060,23 +1060,23 @@ export class CaslAbilityFactory {
       // samples
       // -------------------------------------
       // endpoint authorization
-      can(Action.SamplesRead, SampleClass);
-      cannot(Action.SamplesCreate, SampleClass);
-      cannot(Action.SamplesUpdate, SampleClass);
-      cannot(Action.SamplesDelete, SampleClass);
-      can(Action.SamplesAttachmentRead, SampleClass);
-      cannot(Action.SamplesAttachmentCreate, SampleClass);
-      cannot(Action.SamplesAttachmentUpdate, SampleClass);
-      cannot(Action.SamplesAttachmentDelete, SampleClass);
-      cannot(Action.SamplesDatasetRead, SampleClass);
+      can(AuthOp.SamplesRead, SampleClass);
+      cannot(AuthOp.SamplesCreate, SampleClass);
+      cannot(AuthOp.SamplesUpdate, SampleClass);
+      cannot(AuthOp.SamplesDelete, SampleClass);
+      can(AuthOp.SamplesAttachmentRead, SampleClass);
+      cannot(AuthOp.SamplesAttachmentCreate, SampleClass);
+      cannot(AuthOp.SamplesAttachmentUpdate, SampleClass);
+      cannot(AuthOp.SamplesAttachmentDelete, SampleClass);
+      cannot(AuthOp.SamplesDatasetRead, SampleClass);
 
       // -------------------------------------
       // data instance authorization
-      can(Action.SamplesReadManyPublic, SampleClass);
-      can(Action.SamplesReadOnePublic, SampleClass, {
+      can(AuthOp.SamplesReadManyPublic, SampleClass);
+      can(AuthOp.SamplesReadOnePublic, SampleClass, {
         isPublished: true,
       });
-      can(Action.SamplesAttachmentReadPublic, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadPublic, SampleClass, {
         isPublished: true,
       });
     } else if (
@@ -1090,12 +1090,12 @@ export class CaslAbilityFactory {
       // samples
       // -------------------------------------
       // endpoint authorization
-      can(Action.SamplesDelete, SampleClass);
+      can(AuthOp.SamplesDelete, SampleClass);
 
       // -------------------------------------
       // data instance authorization
 
-      can(Action.SamplesDeleteAny, SampleClass);
+      can(AuthOp.SamplesDeleteAny, SampleClass);
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -1107,26 +1107,26 @@ export class CaslAbilityFactory {
       // samples
       // -------------------------------------
       // endpoint authorization
-      can(Action.SamplesRead, SampleClass);
-      can(Action.SamplesCreate, SampleClass);
-      can(Action.SamplesUpdate, SampleClass);
-      cannot(Action.SamplesDelete, SampleClass);
-      can(Action.SamplesAttachmentRead, SampleClass);
-      can(Action.SamplesAttachmentCreate, SampleClass);
-      can(Action.SamplesAttachmentUpdate, SampleClass);
-      can(Action.SamplesAttachmentDelete, SampleClass);
-      can(Action.SamplesDatasetRead, SampleClass);
+      can(AuthOp.SamplesRead, SampleClass);
+      can(AuthOp.SamplesCreate, SampleClass);
+      can(AuthOp.SamplesUpdate, SampleClass);
+      cannot(AuthOp.SamplesDelete, SampleClass);
+      can(AuthOp.SamplesAttachmentRead, SampleClass);
+      can(AuthOp.SamplesAttachmentCreate, SampleClass);
+      can(AuthOp.SamplesAttachmentUpdate, SampleClass);
+      can(AuthOp.SamplesAttachmentDelete, SampleClass);
+      can(AuthOp.SamplesDatasetRead, SampleClass);
 
       // -------------------------------------
       // data instance authorization
-      can(Action.SamplesReadAny, SampleClass);
-      can(Action.SamplesCreateAny, SampleClass);
-      can(Action.SamplesUpdateAny, SampleClass);
-      cannot(Action.SamplesDeleteAny, SampleClass);
-      can(Action.SamplesAttachmentReadAny, SampleClass);
-      can(Action.SamplesAttachmentCreateAny, SampleClass);
-      can(Action.SamplesAttachmentUpdateAny, SampleClass);
-      can(Action.SamplesAttachmentDeleteAny, SampleClass);
+      can(AuthOp.SamplesReadAny, SampleClass);
+      can(AuthOp.SamplesCreateAny, SampleClass);
+      can(AuthOp.SamplesUpdateAny, SampleClass);
+      cannot(AuthOp.SamplesDeleteAny, SampleClass);
+      can(AuthOp.SamplesAttachmentReadAny, SampleClass);
+      can(AuthOp.SamplesAttachmentCreateAny, SampleClass);
+      can(AuthOp.SamplesAttachmentUpdateAny, SampleClass);
+      can(AuthOp.SamplesAttachmentDeleteAny, SampleClass);
     } else if (
       user.currentGroups.some((g) => configuration().sampleGroups.includes(g))
     ) {
@@ -1139,44 +1139,44 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // endpoint authorization
 
-      can(Action.SamplesRead, SampleClass);
-      can(Action.SamplesCreate, SampleClass);
-      can(Action.SamplesUpdate, SampleClass);
-      cannot(Action.SamplesDelete, SampleClass);
-      can(Action.SamplesAttachmentRead, SampleClass);
-      can(Action.SamplesAttachmentCreate, SampleClass);
-      can(Action.SamplesAttachmentUpdate, SampleClass);
-      can(Action.SamplesAttachmentDelete, SampleClass);
-      can(Action.SamplesDatasetRead, SampleClass);
+      can(AuthOp.SamplesRead, SampleClass);
+      can(AuthOp.SamplesCreate, SampleClass);
+      can(AuthOp.SamplesUpdate, SampleClass);
+      cannot(AuthOp.SamplesDelete, SampleClass);
+      can(AuthOp.SamplesAttachmentRead, SampleClass);
+      can(AuthOp.SamplesAttachmentCreate, SampleClass);
+      can(AuthOp.SamplesAttachmentUpdate, SampleClass);
+      can(AuthOp.SamplesAttachmentDelete, SampleClass);
+      can(AuthOp.SamplesDatasetRead, SampleClass);
 
       // -------------------------------------
       // data instance authorization
-      can(Action.SamplesCreateAny, SampleClass);
-      can(Action.SamplesReadManyAccess, SampleClass);
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesCreateAny, SampleClass);
+      can(AuthOp.SamplesReadManyAccess, SampleClass);
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         isPublished: true,
       });
       //-
-      can(Action.SamplesAttachmentCreateAny, SampleClass);
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentCreateAny, SampleClass);
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         isPublished: true,
       });
-      can(Action.SamplesAttachmentUpdateOwner, SampleClass, {
+      can(AuthOp.SamplesAttachmentUpdateOwner, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.SamplesAttachmentDeleteOwner, SampleClass, {
+      can(AuthOp.SamplesAttachmentDeleteOwner, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
     } else if (user) {
@@ -1188,34 +1188,34 @@ export class CaslAbilityFactory {
       // samples
       // -------------------------------------
       // endpoint authorization
-      can(Action.SamplesRead, SampleClass);
-      cannot(Action.SamplesCreate, SampleClass);
-      cannot(Action.SamplesUpdate, SampleClass);
-      cannot(Action.SamplesDelete, SampleClass);
-      can(Action.SamplesAttachmentRead, SampleClass);
-      cannot(Action.SamplesAttachmentCreate, SampleClass);
-      cannot(Action.SamplesAttachmentUpdate, SampleClass);
-      cannot(Action.SamplesAttachmentDelete, SampleClass);
+      can(AuthOp.SamplesRead, SampleClass);
+      cannot(AuthOp.SamplesCreate, SampleClass);
+      cannot(AuthOp.SamplesUpdate, SampleClass);
+      cannot(AuthOp.SamplesDelete, SampleClass);
+      can(AuthOp.SamplesAttachmentRead, SampleClass);
+      cannot(AuthOp.SamplesAttachmentCreate, SampleClass);
+      cannot(AuthOp.SamplesAttachmentUpdate, SampleClass);
+      cannot(AuthOp.SamplesAttachmentDelete, SampleClass);
       // -------------------------------------
       // data instance authorization
-      can(Action.SamplesReadManyAccess, SampleClass);
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesReadManyAccess, SampleClass);
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.SamplesReadOneAccess, SampleClass, {
+      can(AuthOp.SamplesReadOneAccess, SampleClass, {
         isPublished: true,
       });
       // -
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         ownerGroup: { $in: user.currentGroups },
       });
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         accessGroups: { $in: user.currentGroups },
       });
-      can(Action.SamplesAttachmentReadAccess, SampleClass, {
+      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
         isPublished: true,
       });
     }
@@ -1224,10 +1224,10 @@ export class CaslAbilityFactory {
     // ************************************
 
     if (!user) {
-      cannot(Action.InstrumentRead, Instrument);
-      cannot(Action.InstrumentCreate, Instrument);
-      cannot(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
+      cannot(AuthOp.InstrumentRead, Instrument);
+      cannot(AuthOp.InstrumentCreate, Instrument);
+      cannot(AuthOp.InstrumentUpdate, Instrument);
+      cannot(AuthOp.InstrumentDelete, Instrument);
     } else if (
       user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
     ) {
@@ -1239,7 +1239,7 @@ export class CaslAbilityFactory {
       // instrument
       // -------------------------------------
       // endpoint authorization
-      can(Action.InstrumentDelete, Instrument);
+      can(AuthOp.InstrumentDelete, Instrument);
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -1250,15 +1250,15 @@ export class CaslAbilityFactory {
       // instrument
       // -------------------------------------
       // endpoint authorization
-      can(Action.InstrumentRead, Instrument);
-      can(Action.InstrumentCreate, Instrument);
-      can(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
+      can(AuthOp.InstrumentRead, Instrument);
+      can(AuthOp.InstrumentCreate, Instrument);
+      can(AuthOp.InstrumentUpdate, Instrument);
+      cannot(AuthOp.InstrumentDelete, Instrument);
     } else if (user) {
-      can(Action.InstrumentRead, Instrument);
-      cannot(Action.InstrumentCreate, Instrument);
-      cannot(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
+      can(AuthOp.InstrumentRead, Instrument);
+      cannot(AuthOp.InstrumentCreate, Instrument);
+      cannot(AuthOp.InstrumentUpdate, Instrument);
+      cannot(AuthOp.InstrumentDelete, Instrument);
     }
 
     // Instrument permissions
@@ -1269,11 +1269,11 @@ export class CaslAbilityFactory {
 
     //can(Action.Manage, JobClass);
 
-    can(Action.Read, Logbook);
+    can(AuthOp.Read, Logbook);
 
-    can(Action.Read, PublishedData);
-    can(Action.Update, PublishedData);
-    can(Action.Create, PublishedData);
+    can(AuthOp.Read, PublishedData);
+    can(AuthOp.Update, PublishedData);
+    can(AuthOp.Create, PublishedData);
 
     // can(Action.Manage, Attachment, {
     //   ownerGroup: { $in: user.currentGroups },

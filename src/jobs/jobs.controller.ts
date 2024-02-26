@@ -20,7 +20,7 @@ import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
   ApiBearerAuth,
@@ -32,11 +32,14 @@ import {
 } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
-import { JobsAuth } from "./jobs-auth.enum";
+import { JobsAuth } from "./types/jobs-auth.enum";
+import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { Logger } from "@nestjs/common";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -243,11 +246,12 @@ export class JobsController {
   //   }
   // }
 
+
   /**
-   * Check the the user is authenticated when requesting other job types than public job
+   * Check the user is authenticated when requesting other job types than public job
    */
-  checkPermission = (request: Request, type: string) => {
-    const unauthenticated = request.user === null;
+  checkAuthentication = (user: JWTUser, type: string) => {
+    const unauthenticated = user === null;
     if (unauthenticated && type !== "public") {
       throw new HttpException(
         {
@@ -257,6 +261,31 @@ export class JobsController {
       );
     }
   };
+
+
+  /**
+   * Check that the dataset ids list is valid
+   */
+  checkDatasetIds = (jobConfiguration: Record<string, any>) => {
+    const field = JobsConfigSchema.DatasetIds;
+    const datasetIds = (
+      typeof jobConfiguration.jobParams[field] === "string"
+        ? Array(jobConfiguration.jobParams[field])
+        : jobConfiguration.jobParams[field]
+    ) as Array<string>;
+
+    if (!Array.isArray(datasetIds)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid dataset ids list",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return datasetIds;
+  }
+
 
   /**
    * Validate if the job is performable
@@ -302,35 +331,23 @@ export class JobsController {
     );
   }
 
-  async instanceAuthorization(
-    createJobDto: CreateJobDto,
-    jobConfiguration: Record<string, any>,
-  ): Promise<boolean> {
-    // checking if user is allowed to create job according to auth field of job configureation
-    // Accepted options
-    // #all, #datasetOwner, #datasetOwnerOrAccess, #AuthenticatedUser,
-    let res = false;
-    if (jobConfiguration.auth.auth != JobsAuth.All) {
-      // nothing to do here
-      res = true;
-    } else if (jobConfiguration.auth.auth == JobsAuth.DatasetOwner) {
-      // versify that all the pids listed in the property indicated are owned by the user
-      const field = jobConfiguration.auth.field;
-      const datasetIds = (
-        typeof createJobDto.jobParams[field] === "string"
-          ? Array(createJobDto.jobParams[field])
-          : createJobDto.jobParams[field]
-      ) as Array<string>;
-      if (!Array.isArray(datasetIds)) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            message: "Invalid dataset ids list",
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
 
+  /**
+   * Checking if user is allowed to create job according to auth field of job configuration
+   */
+  async instanceAuthorization(
+    jobCreateDto: CreateJobDto,
+    user: JWTUser,
+  ): Promise<boolean> {
+    // Accepted options:
+    // #all, #datasetOwner, #datasetOwnerOrAccess, #authenticated,
+
+    if (jobCreateDto.jobParams.auth != JobsAuth.All) {
+      // nothing to do here
+      return true;
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.DatasetOwner) {
+      // verify that all the pids listed in the property indicated are owned by the user
+      const datasetIds = this.checkDatasetIds(jobCreateDto);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
           pid: { in: datasetIds },
@@ -338,12 +355,13 @@ export class JobsController {
         },
       });
       const datasetsNotOwner = datasetIds.length - numberOfDatasets.count;
+
       if (datasetsNotOwner > 0) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
             message:
-              "Unauthorized acces to " +
+              "Unauthorized access to " +
               datasetsNotOwner +
               " datasets out of " +
               datasetIds.length,
@@ -351,10 +369,48 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.DatasetAccess) {
+      // verify that all the pids listed in the property indicated are accessible by the user
+      const datasetIds = this.checkDatasetIds(jobCreateDto);
+      const numberOfDatasets = await this.datasetsService.count({
+        where: {
+          pid: { in: datasetIds },
+          $or: [
+            { ownerGroup: { in: user.currentGroups } },
+            { accessGroups: { in: user.currentGroups } },
+            { isPublished: true }  // TODO
+          ]     
+        },
+      });
+
+      const datasetsNoAccess = datasetIds.length - numberOfDatasets.count;
+
+      if (datasetsNoAccess > 0) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message:
+              "Unauthorized access to " +
+              datasetsNoAccess +
+              " datasets out of " +
+              datasetIds.length,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return true;
+    } else if (jobCreateDto.jobParams.auth == JobsAuth.Authenticated) {
+      // verify that the user is authenticated
+      this.checkAuthentication(user, jobCreateDto.type);
+      return true;
     }
-    return res;
+    return false;
   }
 
+
+  /**
+   * Send off to external service, update job in database if needed
+   */
   async performJobCreateAction(jobInstance: JobClass): Promise<JobClass> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
@@ -371,10 +427,10 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const jc = matchingConfig[0];
+    const jobActions = matchingConfig[0].create.actions;
 
-    for (var action of jc.create) {
-      jobInstance = await action.performJob(jobInstance).catch((err) => {
+    for (var action of jobActions) {
+      jobInstance = await action.performJob(jobInstance).catch((err: any) => {
         if (err instanceof HttpException) {
           throw err;
         }
@@ -392,9 +448,13 @@ export class JobsController {
     return jobInstance;
   }
 
+
+  /**
+   * Create job
+   */
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.JobCreate, JobClass),
+    ability.can(AuthOp.JobsCreate, JobClass),
   )
   @Post()
   @ApiOperation({
@@ -404,7 +464,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be created",
     required: true,
-    schema: CreateJobDto,
+    schema: new CreateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -415,27 +475,23 @@ export class JobsController {
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass> {
-    // Load configuration, validate that request matches the current configuration
-    const jobToCreate = { ...createJobDto, jobStatusMessage: "jobSubmitted" };
-    await this.validateJob(jobToCreate, request);
-
-    // Check authorization
-    await this.instanceAuthorization(createJobDto, jobToCreate);
-
+    Logger.log("creating job!")
+    // Validate that request matches the current configuration
+    await this.validateJob(createJobDto, request);
+    // Check job authorization
+    await this.instanceAuthorization(createJobDto, request.user as JWTUser);
     // Create actual job in database
-    const createdJobInstance = await this.jobsService.create(jobToCreate);
-
-    // perform the action that is specified in the create portion of the job configuration
-    const jobServiceResponse =
-      await this.performJobCreateAction(createdJobInstance);
-
-    // update job instance with results of job create action
-
-    return createdJobInstance;
+    const createdJobInstance = await this.jobsService.create(createJobDto);
+    // Perform the action that is specified in the create portion of the job configuration
+    const jobServiceResponse = await this.performJobCreateAction(createdJobInstance);
+    // Update job instance with results of job create action
+    // return await this.jobsService.update(jobServiceResponse);
+    return jobServiceResponse; // or createdJobInstance ?
   }
 
+
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get()
   @ApiQuery({
     name: "filter",
@@ -450,21 +506,21 @@ export class JobsController {
     return this.jobsService.findAll(parsedFilter);
   }
 
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
-  @Get("/fullquery")
-  async fullquery(
-    @Query() filters: { fields?: string; limits?: string },
-  ): Promise<JobClass[]> {
-    const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      limits: JSON.parse(filters.limits ?? "{}"),
-    };
-    return this.jobsService.fullquery(parsedFilters);
-  }
+  // @UseGuards(PoliciesGuard)
+  // @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  // @Get("/fullquery")
+  // async fullquery(
+  //   @Query() filters: { fields?: string; limits?: string },
+  // ): Promise<JobClass[]> {
+  //   const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+  //     fields: JSON.parse(filters.fields ?? "{}"),
+  //     limits: JSON.parse(filters.limits ?? "{}"),
+  //   };
+  //   return this.jobsService.fullquery(parsedFilters);
+  // }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -477,33 +533,33 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
+  // @UseGuards(PoliciesGuard)
+  // @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
+  // @Patch(":id")
+  // async update(
+  //   @Param("id") id: string,
+  //   @Body() updateJobDto: UpdateJobStatusDto,
+  // ): Promise<JobClass | null> {
+  //   const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
+
+  //   if (updatedJob) {
+  //     this.eventEmitter.emit("jobUpdated", {
+  //       instance: updatedJob,
+  //       hookState: { oldData: [updatedJob] },
+  //     });
+  //   }
+
+  //   return updatedJob;
+  // }
+
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
-  @Patch(":id")
-  async update(
-    @Param("id") id: string,
-    @Body() updateJobDto: UpdateJobStatusDto,
-  ): Promise<JobClass | null> {
-    const updatedJob = await this.jobsService.update({ _id: id }, updateJobDto);
-
-    if (updatedJob) {
-      this.eventEmitter.emit("jobUpdated", {
-        instance: updatedJob,
-        hookState: { oldData: [updatedJob] },
-      });
-    }
-
-    return updatedJob;
-  }
-
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Delete, JobClass))
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });

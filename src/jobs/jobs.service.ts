@@ -12,6 +12,7 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addStatusFields,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
@@ -31,9 +32,10 @@ export class JobsService {
 
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
-    const createdJob = new this.jobModel(
-      addCreatedByFields(createJobDto, username),
+    var createdJob = new this.jobModel(
+      addStatusFields(addCreatedByFields(createJobDto, username), "jobSubmitted"),
     );
+
     return createdJob.save();
   }
 

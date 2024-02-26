@@ -121,6 +121,7 @@ export class JobClass extends OwnableClass {
     required: false,
   })
   parameters: Record<string, unknown>;
+  // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);

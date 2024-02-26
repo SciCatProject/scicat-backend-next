@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { UserIdentity } from "./schemas/user-identity.schema";
@@ -31,8 +31,8 @@ export class UserIdentitiesController {
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
-      ability.can(Action.UserReadOwn, User) ||
-      ability.can(Action.UserReadAny, User),
+      ability.can(AuthOp.UserReadOwn, User) ||
+      ability.can(AuthOp.UserReadAny, User),
   )
   @Get("/findOne")
   async findOne(
@@ -59,8 +59,8 @@ export class UserIdentitiesController {
       await this.caslAbilityFactory.createForUser(authenticatedUser);
 
     if (
-      !ability.can(Action.UserReadAny, User) &&
-      ability.can(Action.UserReadOwn, User)
+      !ability.can(AuthOp.UserReadAny, User) &&
+      ability.can(AuthOp.UserReadOwn, User)
     ) {
       // this user can only see his/her user identity
       filter = { userId: authenticatedUser._id, ...filter };
@@ -78,8 +78,8 @@ export class UserIdentitiesController {
     user._id = identity.userId;
     user.id = identity.userId;
     if (
-      !ability.can(Action.UserReadOwn, user) &&
-      !ability.can(Action.UserReadAny, User)
+      !ability.can(AuthOp.UserReadOwn, user) &&
+      !ability.can(AuthOp.UserReadAny, User)
     ) {
       throw new ForbiddenException("Access Forbidden or Unauthorized");
     }

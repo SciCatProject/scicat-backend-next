@@ -3,10 +3,10 @@ import {
   JobConfig,
   loadJobConfig,
   registerCreateAction,
-  registerUpdateAction,
-} from "./jobconfig";
-import { LogJobAction } from "./actions/logaction";
-import { EmailJobAction } from "./actions/emailaction";
+  // registerUpdateAction,
+} from "../jobs/config/jobconfig";
+import { LogJobAction } from "../jobs/actions/logaction";
+import { EmailJobAction } from "../jobs/actions/emailaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -46,7 +46,7 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs: Promise<JobConfig[]> = loadJobConfig("jobconfig.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.createExample.json");
 
   return {
     jobConfiguration: job_configs,
@@ -143,7 +143,6 @@ const configuration = () => {
       mongoDBCollection: process.env.MONGODB_COLLECTION,
       defaultIndex: process.env.ES_INDEX ?? "dataset",
     },
-
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
@@ -166,9 +165,11 @@ const configuration = () => {
  * Registers built-in JobActions. Should be called exactly once.
  */
 export function registerDefaultActions() {
+  // Create
   registerCreateAction(LogJobAction);
-  registerUpdateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
+  // Update
+  // registerUpdateAction(LogJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

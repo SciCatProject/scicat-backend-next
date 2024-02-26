@@ -25,7 +25,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { Action } from "src/casl/action.enum";
+import { AuthOp } from "src/casl/authop.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFilters } from "src/common/interfaces/common.interface";
@@ -43,7 +43,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentCreate, Instrument),
+    ability.can(AuthOp.InstrumentCreate, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -70,7 +70,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(AuthOp.InstrumentRead, Instrument),
   )
   @Get()
   @ApiQuery({
@@ -88,7 +88,7 @@ export class InstrumentsController {
   // GET /instrument/findOne
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(AuthOp.InstrumentRead, Instrument),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -118,7 +118,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentRead, Instrument),
+    ability.can(AuthOp.InstrumentRead, Instrument),
   )
   @Get(":id")
   async findById(@Param("id") pid: string): Promise<Instrument | null> {
@@ -127,7 +127,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentUpdate, Instrument),
+    ability.can(AuthOp.InstrumentUpdate, Instrument),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<Instrument>("customMetadata"),
@@ -153,7 +153,7 @@ export class InstrumentsController {
 
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.InstrumentDelete, Instrument),
+    ability.can(AuthOp.InstrumentDelete, Instrument),
   )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
