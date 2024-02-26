@@ -83,7 +83,7 @@ export enum AuthOp {
   OrigdatablockRead = "origdatablock_read",
   OrigdatablockUpdate = "origdatablock_update",
   OrigdatablockDelete = "origdatablock_delete",
-  // individual
+  // data instance authorization
   OrigdatablockCreateOwner = "origdatablock_create_owner",
   OrigdatablockCreateAny = "origdatablock_create_any",
   OrigdatablockReadManyPublic = "origdatablock_read_many_public",
@@ -109,7 +109,7 @@ export enum AuthOp {
   ProposalsAttachmentUpdate = "proposals_attachment_update",
   ProposalsAttachmentDelete = "proposals_attachment_delete",
   ProposalsDatasetRead = "proposals_dataset_read",
-  // individual
+  // data instance authorization
   ProposalsCreateOwner = "proposals_create_owner",
   ProposalsCreateAny = "proposals_create_any",
   ProposalsReadManyPublic = "proposals_read_many_public",
@@ -145,7 +145,7 @@ export enum AuthOp {
   SamplesAttachmentUpdate = "samples_attachment_update",
   SamplesAttachmentDelete = "samples_attachment_delete",
   SamplesDatasetRead = "samples_dataset_read",
-  // individual
+  // data instance authorization
   SamplesCreateOwner = "samples_create_owner",
   SamplesCreateAny = "samples_create_any",
   SamplesReadManyPublic = "samples_read_many_public",
