@@ -1262,11 +1262,13 @@ export class CaslAbilityFactory {
         cannot(Action.SampleAttachmentCreate, SampleClass);
         cannot(Action.SampleAttachmentUpdate, SampleClass);
         if (
-          !user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+          !user.currentGroups.some((g) =>
+            configuration().deleteGroups.includes(g),
+          )
         ) {
           cannot(Action.SampleAttachmentDelete, SampleClass);
         }
-        
+
         // -------------------------------------
         // data instance authorization
         can(Action.SampleReadManyAccess, SampleClass);

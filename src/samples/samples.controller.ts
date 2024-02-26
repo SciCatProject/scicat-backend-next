@@ -196,7 +196,8 @@ export class SamplesController {
   ): IFilters<SampleDocument, ISampleFields> {
     const user: JWTUser = request.user as JWTUser;
     //mergedFilters.where = mergedFilters.where || {};
-    let authorizationFilter : Record<string,any>= {'where': {}};
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
@@ -218,10 +219,12 @@ export class SamplesController {
           authorizationFilter.where["$or"] = [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
-            { isPublished: true }
+            { isPublished: true },
           ];
         } else if (canViewOwner) {
-          authorizationFilter.where = { ownerGroup: { $in: user.currentGroups } };
+          authorizationFilter.where = {
+            ownerGroup: { $in: user.currentGroups },
+          };
         } else if (canViewPublic) {
           authorizationFilter.where.isPublished = true;
         }
@@ -231,10 +234,7 @@ export class SamplesController {
     }
     if (mergedFilters.where) {
       mergedFilters.where = {
-        '$and' : [
-          authorizationFilter.where,
-          mergedFilters.where
-        ]
+        $and: [authorizationFilter.where, mergedFilters.where],
       };
     } else {
       mergedFilters.where = authorizationFilter.where;
@@ -528,7 +528,7 @@ export class SamplesController {
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id")
-  @Header('content-type', 'application/json')
+  @Header("content-type", "application/json")
   @ApiOperation({
     summary: "It returns the sample requested.",
     description: "It returns the sample requested through the id specified.",
@@ -655,15 +655,18 @@ export class SamplesController {
       Action.SampleAttachmentCreate,
     );
     if (!sample) {
-      throw new BadRequestException("Not able to create attachment for this sample");
+      throw new BadRequestException(
+        "Not able to create attachment for this sample",
+      );
     }
     const createAttachment: CreateAttachmentDto = {
       ...createAttachmentDto,
       sampleId: id,
       ownerGroup: sample.ownerGroup,
-      accessGroups: sample.accessGroups
+      accessGroups: sample.accessGroups,
     };
-    const createdAttachment = await this.attachmentsService.create(createAttachment);
+    const createdAttachment =
+      await this.attachmentsService.create(createAttachment);
     return createdAttachment;
   }
 
