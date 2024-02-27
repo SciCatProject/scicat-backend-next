@@ -44,7 +44,8 @@ export class HistoryClass {
     type: Date,
     required: true,
     default: Date.now(),
-    description: "Time when the update was performed. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
+    description:
+      "Time when the update was performed. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
   @Prop({
     type: Date,
