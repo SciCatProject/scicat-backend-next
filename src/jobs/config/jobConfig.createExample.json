@@ -5,22 +5,6 @@
       "actions": [
         {
           "actionType": "log"
-        },
-        {
-          "actionType": "email",
-          "mailer": {
-            "host": "smtp.forwardemail.net",
-            "port": 465,
-            "secure": true,
-            "auth": {
-              "user": "REPLACE-WITH-YOUR-ALIAS@forwardemail.net",
-              "pass": "REPLACE-WITH-YOUR-GENERATED-PASSWORD"
-            }
-          },
-          "to": "{{ join job.recipients ' '}}",
-          "from": "scicat@example.com",
-          "subject": "Archive job {{job.id}} has completed.",
-          "body": "Dear {{job.createdBy}},\n\nArchive job {{job.id}} has completed. Results: {{job.statusMessage}}\n"
         }
       ]
     }

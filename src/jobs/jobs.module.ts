@@ -16,10 +16,23 @@ import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
     CommonModule,
     ConfigModule,
     DatasetsModule,
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: JobClass.name,
-        schema: JobSchema,
+        // schema: JobSchema,
+        useFactory: () => {
+          const schema = JobSchema;
+
+          schema.pre<JobClass>("save", function (next) {
+            // if _id is empty or different than job id,
+            // set _id to job id
+            if (!this._id) {
+              this._id = this.id;
+            }
+            next();
+          });
+          return schema;
+        },
       },
     ]),
     PoliciesModule,
