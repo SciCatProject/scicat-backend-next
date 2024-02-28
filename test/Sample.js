@@ -56,7 +56,7 @@ describe("2200: Sample: Simple Sample", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
-//      .expect("Content-Type", /json/)
+      .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("sampleId").and.be.string;
