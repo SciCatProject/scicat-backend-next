@@ -1011,9 +1011,6 @@ export class DatasetsController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
-  // @CheckPolicies((ability: AppAbility) =>
-  //   ability.can(Action.Read, DatasetClass),
-  // )
   @Get("/:pid")
   @ApiOperation({
     summary: "It returns the dataset requested.",
