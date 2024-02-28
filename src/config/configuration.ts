@@ -1,4 +1,8 @@
+import { Logger } from "@nestjs/common";
 import * as fs from "fs";
+import { merge } from "lodash";
+import localconfiguration from "./localconfiguration";
+import { boolean } from "mathjs";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -23,6 +27,12 @@ const configuration = () => {
   const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+
+  const oidcUserQueryFilter =
+    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+
+  const oidcUsernameFieldMapping =
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -62,7 +72,7 @@ const configuration = () => {
   // Logger.log("- Create job groups : " + createJobGroups);
   // Logger.log("- Update job groups : " + updateJobGroups);
 
-  return {
+  const config = {
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -83,12 +93,21 @@ const configuration = () => {
     createJobGroups: createJobGroups,
     updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
-    accessGroupsStaticValues:
-      accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
-    accessGroupService: {
+    accessGroupsGraphQlConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
       token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
       apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
+      responseProcessorSrc: process.env.ACCESS_GROUP_SERVICE_HANDLER, // ts import defining the resposne processor and query
     },
+    accessGroupsStaticConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
+      value: accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
+    },
+    accessGroupsOIDCPayloadConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
+      accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
+    },
+
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
@@ -123,6 +142,22 @@ const configuration = () => {
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
       returnURL: process.env.OIDC_RETURN_URL,
+      userInfoMapping: {
+        id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
+        username:
+          oidcUsernameFieldMapping.split(",").map((v) => v.trim()) ?? [], // Example: "iss, username"
+        displayName: process.env.OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME,
+        familyName: process.env.OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME,
+        emails: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAILS,
+        email: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAIL,
+        thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO,
+        groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUP, // Example: groups
+        provider: process.env.OIDC_USERINFO_MAPPING_FIELD_PROVIDER,
+      },
+      userQuery: {
+        operator: process.env.OIDC_USERQUERY_OPERATOR || "or", // Example: "or" or "and"
+        filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [], // Example: "username:username, email:email"
+      },
     },
     logbook: {
       enabled:
@@ -179,6 +214,7 @@ const configuration = () => {
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
   };
+  return merge(config, localconfiguration);
 };
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
