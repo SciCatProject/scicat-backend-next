@@ -156,7 +156,7 @@ jobs:
           SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
           SAMPLE_GROUPS: "group1"
           DATASET_CREATION_VALIDATION_ENABLED: true
-          DATASET_CREATION_VALIDATION_REGEX: "^github_workflow_testing\/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+          DATASET_CREATION_VALIDATION_REGEX: "^github_workflow_testing\\/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
           ES_HOST: https://localhost:9200
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password
