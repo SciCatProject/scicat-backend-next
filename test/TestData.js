@@ -22,7 +22,7 @@ const TestData = {
   LoginSuccessfulStatusCode : 201,
 
   //PidPrefix: "github_workflow_testing",
-  PidPrefix: process.env.PidPrefix,
+  PidPrefix: process.env.PID_PREFIX,
 
   Accounts: TestAccounts,
 
