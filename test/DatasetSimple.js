@@ -65,8 +65,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
-      .then((res) => {
-        return res.body.forEach(async (d) => {
+      .then(async (res) => {
+        return await res.body.forEach(async (d) => {
           return await deleteDataset(d)
         })
       });
@@ -79,8 +79,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
-      .then((res) => {
-        return res.body.forEach(async (d) => {
+      .then(async (res) => {
+        return await res.body.forEach(async (d) => {
           return await deletePolicy(d)
         })
       });
