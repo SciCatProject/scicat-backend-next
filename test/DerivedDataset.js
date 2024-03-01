@@ -4,6 +4,7 @@
 const { Test } = require("mocha");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
+const { v4: uuidv4 } = require("uuid");
 
 var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
