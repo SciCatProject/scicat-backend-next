@@ -146,7 +146,7 @@ jobs:
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: "admin,ingestor"
+          ADMIN_GROUPS: "admin,adminingestor"
           DELETE_GROUPS: "archivemanager"
           CREATE_DATASET_GROUPS: group1,group2,group3
           CREATE_DATASET_WITH_PID_GROUPS: "group2"
