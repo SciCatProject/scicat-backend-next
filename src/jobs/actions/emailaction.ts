@@ -9,7 +9,6 @@ import { JobClass } from "../schemas/job.schema";
 import { createTransport, Transporter } from "nodemailer";
 import { compile, TemplateDelegate } from "handlebars";
 
-
 /**
  * Send an email following a job
  */
@@ -27,7 +26,10 @@ export class EmailJobAction<T> implements JobAction<T> {
   }
 
   constructor(data: Record<string, any>) {
-    Logger.log("Initializing EmailJobAction. Params: " + JSON.stringify(data), "EmailJobAction");
+    Logger.log(
+      "Initializing EmailJobAction. Params: " + JSON.stringify(data),
+      "EmailJobAction",
+    );
 
     if (!data["mailer"]) {
       throw new NotFoundException("Param 'mailer' is undefined");
@@ -54,11 +56,17 @@ export class EmailJobAction<T> implements JobAction<T> {
   }
 
   async validate(dto: T) {
-    Logger.log("Validating EmailJobAction: " + JSON.stringify(dto), "EmailJobAction");
+    Logger.log(
+      "Validating EmailJobAction: " + JSON.stringify(dto),
+      "EmailJobAction",
+    );
   }
 
   async performJob(job: JobClass) {
-    Logger.log("Performing EmailJobAction: " + JSON.stringify(job), "EmailJobAction");
+    Logger.log(
+      "Performing EmailJobAction: " + JSON.stringify(job),
+      "EmailJobAction",
+    );
 
     // Fill templates
     const mail: any = {

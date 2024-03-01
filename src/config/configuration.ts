@@ -7,6 +7,7 @@ import {
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
+import { URLAction } from "src/jobs/actions/urlaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -46,7 +47,9 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.example.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig(
+    "src/jobs/config/jobConfig.example.json",
+  );
 
   return {
     jobConfiguration: job_configs,
@@ -168,6 +171,7 @@ export function registerDefaultActions() {
   // Create
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
+  registerCreateAction(URLAction);
   // Update
   registerUpdateAction(LogJobAction);
   registerUpdateAction(EmailJobAction);

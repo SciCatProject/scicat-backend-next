@@ -5,6 +5,13 @@
       "actions": [
         {
           "actionType": "log"
+        },
+        {
+          "actionType": "url",
+          "url": "http://localhost:3000/api/v3/health",
+          "headers": {
+            "accept": "application/json"
+          }
         }
       ]
     },
