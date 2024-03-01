@@ -125,7 +125,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0130: should be able to add new derived dataset with explicit pid", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "testing/9b1bb7eb-5aae-4d86-8aff-9b034b60e1d8",
+      pid: TestData.PidPrefix + "/" + uuidv4(),
     };
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -149,8 +149,9 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0135: should not be able to add new derived dataset with user that is not in create dataset list", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "testing/fcab185e-4600-49ae-bcd5-41b2f9934d82",
+      pid: TestData.PidPrefix + "/" + uuidv4(),
     };
+
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(derivedDatasetWithExplicitPID)
@@ -163,7 +164,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0140: should not be able to add new derived dataset with group that is not part of allowed groups", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-      pid: "testing/fcab185e-4600-49ae-bcd5-41b2f9934d82",
+            pid: TestData.PidPrefix + "/" + uuidv4(),
       ownerGroup: "group1",
     };
     return request(appUrl)
