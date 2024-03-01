@@ -37,8 +37,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
     );
   });
 
-  async function deleteDataset(item) {
-    const response = await request(appUrl)
+  function deleteDataset(item) {
+    const response = request(appUrl)
       .delete("/api/v3/datasets/" + encodeURIComponent(item.pid))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -47,9 +47,9 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
     return response;
   }
 
-  async function deleteAllDatasets(array) {
+  function deleteAllDatasets(array) {
     for (const item of array) {
-      await deleteDataset(item);
+      deleteDataset(item);
     }
   }
 
