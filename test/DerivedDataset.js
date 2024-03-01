@@ -196,7 +196,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
       ownerGroup: "group2",
-      pid: "testing/fb47507e-d17c-11ee-9244-dfa68db8ec5a",
+      pid: TestData.PidPrefix + "/" + uuidv4(),
     };
     return request(appUrl)
       .post("/api/v3/Datasets")
