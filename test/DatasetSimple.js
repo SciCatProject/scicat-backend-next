@@ -66,8 +66,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        return res.body.map((d) => {
-          return deleteDataset(d)
+        return res.body.map(async (d) => {
+          return await deleteDataset(d)
         })
       });
   });
@@ -80,8 +80,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        return res.body.map((d) => {
-          return deletePolicy(d)
+        return res.body.map(async (d) => {
+          return await deletePolicy(d)
         })
       });
   });
