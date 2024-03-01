@@ -47,6 +47,12 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
     return response;
   }
 
+  async function deleteAllDatasets(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
+
   async function deletePolicy(item) {
     const response = await request(appUrl)
       .delete("/api/v3/Policies/" + encodeURIComponent(item.pid))
@@ -66,9 +72,7 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then(async (res) => {
-        return await res.body.forEach(async (d) => {
-          return await deleteDataset(d)
-        })
+        return deleteAllDatasets(res.body);
       });
   });
 
