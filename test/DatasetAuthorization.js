@@ -688,7 +688,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0502: add a new raw dataset with specified pid as Admin", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "admin",
     };
 
@@ -804,7 +804,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0530: add a new raw dataset with specified pid and different owner group as Admin", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -844,7 +844,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0550: add a new invalid raw dataset with specified pid and different owner group as Admin, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -920,7 +920,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0602: add a new raw dataset with specified pid as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -958,7 +958,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0604: add a new invalid raw dataset with specified pid as User 1 which belongs to a create dataset group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1032,7 +1032,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0630: add a new raw dataset with specified pid and different owner group as User 1 which belongs to a create dataset group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1070,7 +1070,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0650: add a new invalid raw dataset with specified pid and different owner group as User 1 which belongs to a ", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1146,7 +1146,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0702: add a new raw dataset with specified pid as User 2 which belongs to a create dataset with pid group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1186,7 +1186,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0704: add a new invalid raw dataset with specified pid as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group2",
     };
 
@@ -1260,7 +1260,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0730: add a new raw dataset with specified pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as forbidden", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1298,7 +1298,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0750: add a new invalid raw dataset with specified pid and different owner group as User 2 which belongs to a create dataset with pid group, which should fail as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1374,7 +1374,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0802: add a new raw dataset with specified pid as User 3 which belongs to a create dataset privileged group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group3",
     };
 
@@ -1414,7 +1414,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0804: add a new invalid raw dataset with specified pid as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group3",
     };
 
@@ -1490,7 +1490,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0830: add a new raw dataset with specified pid and different owner group as User 3 which belongs to a create dataset privileged group", async () => {
     const datasetWithPid = {
       ...TestData.RawCorrect,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 
@@ -1530,7 +1530,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   it("0850: add a new invalid raw dataset with specified pid and different owner group as User 3 which belongs to a create dataset privileged group, which fails as bad request", async () => {
     const invalidDatasetWithPid = {
       ...TestData.RawWrong_1,
-      pid: "testing/" + uuidv4(),
+      pid: "TestData.PidPrefix" + uuidv4(),
       ownerGroup: "group1",
     };
 

@@ -21,6 +21,8 @@ const TestData = {
   ApplicationErrorStatusCode : 500,
   LoginSuccessfulStatusCode : 201,
 
+  //PidPrefix: "github_workflow_testing",
+  PidPrefix: process.env.PidPrefix,
 
   Accounts: TestAccounts,
 
