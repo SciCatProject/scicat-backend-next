@@ -319,10 +319,9 @@ export class ElasticSearchService implements OnModuleInit {
 
       const body = await this.esService.search(searchOptions);
 
-      const totalCount = (body.hits.total as SearchTotalHits)?.value || 0;
+      const totalCount = body.hits.hits.length || 0;
 
       const data = body.hits.hits.map((item) => item._id);
-
       return {
         totalCount,
         data,
