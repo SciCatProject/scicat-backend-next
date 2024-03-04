@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
-const { Test } = require("mocha");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
@@ -165,7 +164,7 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
   it("0140: should not be able to add new derived dataset with group that is not part of allowed groups", async () => {
     const derivedDatasetWithExplicitPID = {
       ...TestData.DerivedCorrect,
-            pid: TestData.PidPrefix + "/" + uuidv4(),
+      pid: TestData.PidPrefix + "/" + uuidv4(),
       ownerGroup: "group1",
     };
     return request(appUrl)

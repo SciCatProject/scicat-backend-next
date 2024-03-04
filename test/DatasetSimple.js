@@ -12,6 +12,9 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
   let accessTokenAdminIngestor = null;
   let accessTokenArchiveManager = null;
   let policyIds = [];
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+  });
 
   beforeEach((done) => {
     utils.getToken(
