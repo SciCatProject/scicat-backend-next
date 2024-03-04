@@ -6,15 +6,14 @@ const { MongoClient } = require("mongodb");
 const uri = "mongodb://localhost:27017/scicat";
 
 const client = new MongoClient(uri);
-await client.connect();
-const db = client.db("scicat");
 
 async function loadChai() {
   const { chai } = import("chai");
   chai.use(chaiHttp);
+  await client.connect();
 }
 loadChai();
 
 global.appUrl = "http://localhost:3000";
 global.request = require("supertest");
-global.db = db;
+global.db = client.db("scicat");
