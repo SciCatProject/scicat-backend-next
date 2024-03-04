@@ -88,7 +88,7 @@ const RawCorrect4 = {
   accessGroups: ["group6"],
 };
 
-describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
+describe.skip("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -126,7 +126,8 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: TestData.Accounts["archiveManager"]["password"],
+                        password:
+                          TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;

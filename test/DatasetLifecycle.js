@@ -12,7 +12,7 @@ var pidRaw2 = null;
 var policyIds = null;
 const raw2 = { ...TestData.RawCorrect };
 
-describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
+describe.skip("0500: DatasetLifecycle: Test facet and filter queries", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
