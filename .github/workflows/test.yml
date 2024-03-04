@@ -142,20 +142,21 @@ jobs:
           # Testing /register endpoint expects to have it as PSI for that specific scenario.
           # Old backend was modifying this at runtime but with NestJS we need to investigate little bit more if there is a bit better and more elegant solution.
           SITE: PSI
-          PID_PREFIX: PID.SAMPLE.PREFIX
+          PID_PREFIX: "github_workflow_testing"
           DOI_PREFIX: DOI.SAMPLE.PREFIX
           METADATA_KEYS_RETURN_LIMIT: 100
           METADATA_PARENT_INSTANCES_RETURN_LIMIT: 100
-          ADMIN_GROUPS: admin,ingestor
-          DELETE_GROUPS: archivemanager
+          ADMIN_GROUPS: "admin,adminingestor"
+          DELETE_GROUPS: "archivemanager"
           CREATE_DATASET_GROUPS: group1,group2,group3
           CREATE_DATASET_WITH_PID_GROUPS: "group2"
-          CREATE_DATASET_PRIVILEGED_GROUPS: "group3"
+          CREATE_DATASET_PRIVILEGED_GROUPS: "datasetIngestor,group3"
           ACCESS_GROUPS_STATIC_VALUES: "ess"
           PROPOSAL_GROUPS: "proposalingestor"
-          SAMPLE_GROUPS: ""
+          SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
+          SAMPLE_GROUPS: "group1"
           DATASET_CREATION_VALIDATION_ENABLED: true
-          DATASET_CREATION_VALIDATION_REGEX: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
+          DATASET_CREATION_VALIDATION_REGEX: "^github_workflow_testing/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
           ES_HOST: https://localhost:9200
           ES_USERNAME: elastic
           ES_PASSWORD: duo-password

@@ -16,6 +16,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Req,
+  Header,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -61,6 +62,8 @@ import {
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
+import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -98,49 +101,49 @@ export class SamplesController {
 
     try {
       switch (group) {
-        case Action.SamplesCreate:
+        case Action.SampleCreate:
           return (
-            ability.can(Action.SamplesCreateAny, SampleClass) ||
-            ability.can(Action.SamplesCreateOwner, sampleInstance)
+            ability.can(Action.SampleCreateAny, SampleClass) ||
+            ability.can(Action.SampleCreateOwner, sampleInstance)
           );
-        case Action.SamplesRead:
+        case Action.SampleRead:
           return (
-            ability.can(Action.SamplesReadAny, SampleClass) ||
-            ability.can(Action.SamplesReadOneOwner, sampleInstance) ||
-            ability.can(Action.SamplesReadOneAccess, sampleInstance) ||
-            ability.can(Action.SamplesReadOnePublic, sampleInstance)
+            ability.can(Action.SampleReadAny, SampleClass) ||
+            ability.can(Action.SampleReadOneOwner, sampleInstance) ||
+            ability.can(Action.SampleReadOneAccess, sampleInstance) ||
+            ability.can(Action.SampleReadOnePublic, sampleInstance)
           );
-        case Action.SamplesUpdate:
+        case Action.SampleUpdate:
           return (
-            ability.can(Action.SamplesUpdateAny, SampleClass) ||
-            ability.can(Action.SamplesUpdateOwner, sampleInstance)
+            ability.can(Action.SampleUpdateAny, SampleClass) ||
+            ability.can(Action.SampleUpdateOwner, sampleInstance)
           );
-        case Action.SamplesDelete:
+        case Action.SampleDelete:
           return (
-            ability.can(Action.SamplesDeleteAny, SampleClass) ||
-            ability.can(Action.SamplesDeleteOwner, sampleInstance)
+            ability.can(Action.SampleDeleteAny, SampleClass) ||
+            ability.can(Action.SampleDeleteOwner, sampleInstance)
           );
-        case Action.SamplesAttachmentCreate:
+        case Action.SampleAttachmentCreate:
           return (
-            ability.can(Action.SamplesAttachmentCreateAny, SampleClass) ||
-            ability.can(Action.SamplesAttachmentCreateOwner, sampleInstance)
+            ability.can(Action.SampleAttachmentCreateAny, SampleClass) ||
+            ability.can(Action.SampleAttachmentCreateOwner, sampleInstance)
           );
-        case Action.SamplesAttachmentRead:
+        case Action.SampleAttachmentRead:
           return (
-            ability.can(Action.SamplesAttachmentReadAny, SampleClass) ||
-            ability.can(Action.SamplesAttachmentReadOwner, sampleInstance) ||
-            ability.can(Action.SamplesAttachmentReadPublic, sampleInstance) ||
-            ability.can(Action.SamplesAttachmentReadAccess, sampleInstance)
+            ability.can(Action.SampleAttachmentReadAny, SampleClass) ||
+            ability.can(Action.SampleAttachmentReadOwner, sampleInstance) ||
+            ability.can(Action.SampleAttachmentReadPublic, sampleInstance) ||
+            ability.can(Action.SampleAttachmentReadAccess, sampleInstance)
           );
-        case Action.SamplesAttachmentUpdate:
+        case Action.SampleAttachmentUpdate:
           return (
-            ability.can(Action.SamplesAttachmentUpdateAny, SampleClass) ||
-            ability.can(Action.SamplesAttachmentUpdateOwner, sampleInstance)
+            ability.can(Action.SampleAttachmentUpdateAny, SampleClass) ||
+            ability.can(Action.SampleAttachmentUpdateOwner, sampleInstance)
           );
-        case Action.SamplesAttachmentDelete:
+        case Action.SampleAttachmentDelete:
           return (
-            ability.can(Action.SamplesAttachmentDeleteAny, SampleClass) ||
-            ability.can(Action.SamplesAttachmentDeleteOwner, sampleInstance)
+            ability.can(Action.SampleAttachmentDeleteAny, SampleClass) ||
+            ability.can(Action.SampleAttachmentDeleteOwner, sampleInstance)
           );
 
         default:
@@ -165,7 +168,7 @@ export class SamplesController {
       const canDoAction = await this.permissionChecker(group, sample, request);
 
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
+        throw new ForbiddenException("Unauthorized to update this sample");
       }
     }
 
@@ -192,51 +195,64 @@ export class SamplesController {
     mergedFilters: IFilters<SampleDocument, ISampleFields>,
   ): IFilters<SampleDocument, ISampleFields> {
     const user: JWTUser = request.user as JWTUser;
-    mergedFilters.where = mergedFilters.where || {};
+    //mergedFilters.where = mergedFilters.where || {};
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.SamplesReadManyAccess,
+          Action.SampleReadManyAccess,
           SampleClass,
         );
         const canViewOwner = ability.can(
-          Action.SamplesReadManyOwner,
+          Action.SampleReadManyOwner,
           SampleClass,
         );
         const canViewPublic = ability.can(
-          Action.SamplesReadManyPublic,
+          Action.SampleReadManyPublic,
           SampleClass,
         );
 
         if (canViewAccess) {
-          mergedFilters.where["$or"] = [
+          authorizationFilter.where["$or"] = [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
+            { isPublished: true },
           ];
         } else if (canViewOwner) {
-          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          authorizationFilter.where = {
+            ownerGroup: { $in: user.currentGroups },
+          };
         } else if (canViewPublic) {
-          mergedFilters.where.isPublished = true;
+          authorizationFilter.where.isPublished = true;
         }
       }
     } else {
-      mergedFilters.where.isPublished = true;
+      authorizationFilter.where.isPublished = true;
     }
+    if (mergedFilters.where) {
+      mergedFilters.where = {
+        $and: [authorizationFilter.where, mergedFilters.where],
+      };
+    } else {
+      mergedFilters.where = authorizationFilter.where;
+    }
+
     return mergedFilters;
   }
   // POST /samples
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesCreate, SampleClass),
+    ability.can(Action.SampleCreate, SampleClass),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<SampleClass>(
       "sampleCharacteristics",
     ),
   )
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   @ApiOperation({
     summary: "It creates a new sample.",
@@ -259,7 +275,7 @@ export class SamplesController {
     const sampleDTO = await this.checkPermissionsForSampleCreate(
       request,
       createSampleDto,
-      Action.SamplesCreate,
+      Action.SampleCreate,
     );
     return this.samplesService.create(sampleDTO);
   }
@@ -267,7 +283,7 @@ export class SamplesController {
   // GET /samples
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesRead, SampleClass),
+    ability.can(Action.SampleRead, SampleClass),
   )
   @Get()
   @ApiOperation({
@@ -301,7 +317,7 @@ export class SamplesController {
   // GET /samples/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesRead, SampleClass),
+    ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/fullquery")
   @ApiOperation({
@@ -342,19 +358,19 @@ export class SamplesController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.SamplesReadManyAccess,
+          Action.SampleReadManyAccess,
           SampleClass,
         );
         const canViewOwner = ability.can(
-          Action.SamplesReadManyOwner,
+          Action.SampleReadManyOwner,
           SampleClass,
         );
         const canViewPublic = ability.can(
-          Action.SamplesReadManyPublic,
+          Action.SampleReadManyPublic,
           SampleClass,
         );
         if (canViewAccess) {
@@ -378,7 +394,7 @@ export class SamplesController {
   // GET /samples/metadataKeys
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesRead, SampleClass),
+    ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/metadataKeys")
   @ApiOperation({
@@ -413,19 +429,19 @@ export class SamplesController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(Action.SamplesReadAny, SampleClass);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
-          Action.SamplesReadManyAccess,
+          Action.SampleReadManyAccess,
           SampleClass,
         );
         const canViewOwner = ability.can(
-          Action.SamplesReadManyOwner,
+          Action.SampleReadManyOwner,
           SampleClass,
         );
         const canViewPublic = ability.can(
-          Action.SamplesReadManyPublic,
+          Action.SampleReadManyPublic,
           SampleClass,
         );
         if (canViewAccess) {
@@ -450,7 +466,7 @@ export class SamplesController {
   // GET /samples/findOne
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesRead, SampleClass),
+    ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -509,9 +525,10 @@ export class SamplesController {
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesRead, SampleClass),
+    ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id")
+  @Header("content-type", "application/json")
   @ApiOperation({
     summary: "It returns the sample requested.",
     description: "It returns the sample requested through the id specified.",
@@ -530,14 +547,14 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<SampleClass | null> {
-    await this.checkPermissionsForSample(request, id, Action.SamplesRead);
+    await this.checkPermissionsForSample(request, id, Action.SampleRead);
     return this.samplesService.findOne({ sampleId: id });
   }
 
   // PATCH /samples/:id
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesUpdate, SampleClass),
+    ability.can(Action.SampleUpdate, SampleClass),
   )
   @UseInterceptors(
     new FormatPhysicalQuantitiesInterceptor<SampleClass>(
@@ -570,14 +587,14 @@ export class SamplesController {
     @Param("id") id: string,
     @Body() updateSampleDto: PartialUpdateSampleDto,
   ): Promise<SampleClass | null> {
-    await this.checkPermissionsForSample(request, id, Action.SamplesUpdate);
+    await this.checkPermissionsForSample(request, id, Action.SampleUpdate);
     return this.samplesService.update({ sampleId: id }, updateSampleDto);
   }
 
   // DELETE /samples/:id
   @UseGuards()
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesDelete, SampleClass),
+    ability.can(Action.SampleDelete, SampleClass),
   )
   @Delete("/:id")
   @ApiOperation({
@@ -597,14 +614,14 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
-    await this.checkPermissionsForSample(request, id, Action.SamplesDelete);
+    await this.checkPermissionsForSample(request, id, Action.SampleDelete);
     return this.samplesService.remove({ sampleId: id });
   }
 
   // POST /samples/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesAttachmentDelete, SampleClass),
+    ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Post("/:id/attachments")
   @ApiOperation({
@@ -614,7 +631,7 @@ export class SamplesController {
   })
   @ApiExtraModels(CreateAttachmentDto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateSubAttachmentDto,
   })
   @ApiParam({
     name: "id",
@@ -630,29 +647,33 @@ export class SamplesController {
   async createAttachments(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
+    @Body() createAttachmentDto: CreateSubAttachmentDto,
   ): Promise<Attachment | null> {
-    await this.checkPermissionsForSample(
+    const sample = await this.checkPermissionsForSample(
       request,
       id,
-      Action.SamplesAttachmentDelete,
+      Action.SampleAttachmentCreate,
     );
-    const sample = await this.samplesService.findOne({ sampleId: id });
-    if (sample) {
-      const createAttachment: CreateAttachmentDto = {
-        ...createAttachmentDto,
-        sampleId: id,
-        ownerGroup: sample.ownerGroup,
-      };
-      return this.attachmentsService.create(createAttachment);
+    if (!sample) {
+      throw new BadRequestException(
+        "Not able to create attachment for this sample",
+      );
     }
-    return null;
+    const createAttachment: CreateAttachmentDto = {
+      ...createAttachmentDto,
+      sampleId: id,
+      ownerGroup: sample.ownerGroup,
+      accessGroups: sample.accessGroups,
+    };
+    const createdAttachment =
+      await this.attachmentsService.create(createAttachment);
+    return createdAttachment;
   }
 
   // GET /samples/:id/attachments
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesAttachmentRead, SampleClass),
+    ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments")
   @ApiOperation({
@@ -678,36 +699,15 @@ export class SamplesController {
     await this.checkPermissionsForSample(
       request,
       id,
-      Action.SamplesAttachmentRead,
+      Action.SampleAttachmentRead,
     );
     return this.attachmentsService.findAll({ sampleId: id });
   }
 
-  /*
-  // PATCH /samples/:id/attachments/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Update, Attachment),
-  )
-  @Patch("/:id/attachments/:fk")
-  async findOneAttachmentAndUpdate(
-    @Param("id") sampleId: string,
-    @Param("fk") attachmentId: string,
-    @Body() updateAttachmentDto: UpdateAttachmentDto,
-  ): Promise<Attachment | null> {
-    console.log("SampleId: ", sampleId);
-    console.log("AttachmentIs: ", attachmentId);
-    return this.attachmentsService.findOneAndUpdate(
-      { id: attachmentId, sampleId: sampleId },
-      updateAttachmentDto,
-    );
-  }
-  */
-
   // GET /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesAttachmentRead, SampleClass),
+    ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments/:fk")
   @ApiOperation({
@@ -739,7 +739,7 @@ export class SamplesController {
     await this.checkPermissionsForSample(
       request,
       sampleId,
-      Action.SamplesAttachmentRead,
+      Action.SampleAttachmentRead,
     );
     return this.attachmentsService.findOne({
       id: attachmentId,
@@ -750,7 +750,7 @@ export class SamplesController {
   // DELETE /samples/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesAttachmentDelete, SampleClass),
+    ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Delete("/:id/attachments/:fk")
   @ApiOperation({
@@ -781,7 +781,7 @@ export class SamplesController {
     await this.checkPermissionsForSample(
       request,
       sampleId,
-      Action.SamplesAttachmentDelete,
+      Action.SampleAttachmentDelete,
     );
     return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
@@ -805,7 +805,7 @@ export class SamplesController {
   // GET /samples/:id/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.SamplesDatasetRead, SampleClass),
+    ability.can(Action.SampleDatasetRead, SampleClass),
   )
   @Get("/:id/datasets")
   @ApiOperation({

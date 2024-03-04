@@ -24,7 +24,9 @@ const configuration = () => {
   const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
-  const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
+  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
+  const samplePrivilegedGroups =
+    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
 
   const oidcUserQueryFilter =
     process.env.OIDC_USERQUERY_FILTER || ("" as string);
@@ -83,6 +85,9 @@ const configuration = () => {
       .map((v) => v.trim()),
     proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
     sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
+    samplePrivilegedGroups: samplePrivilegedGroups
+      .split(",")
+      .map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
