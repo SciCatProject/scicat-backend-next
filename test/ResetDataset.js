@@ -2,8 +2,9 @@
 "use strict";
 
 var utils = require("./LoginUtils");
+const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pid = null;
@@ -148,21 +149,21 @@ var testArchiveId2 =
 var foundId1 = null;
 var foundId2 = null;
 
-describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
+describe("2100: ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -185,7 +186,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //         "%22%7D%7D",
   //     )
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -202,7 +203,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //         "%22%7D%7D",
   //     )
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -241,7 +242,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //     .post("/api/v3/RawDatasets")
   //     .send(testraw)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -289,7 +290,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -313,7 +314,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -331,7 +332,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid + "/datablocks/count")
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {
@@ -344,7 +345,7 @@ describe("ResetDataset: Create Dataset and its Datablocks, then reset Datablocks
   //   return request(appUrl)
   //     .get("/api/v3/Datasets/" + pid)
   //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
   //     .expect(200)
   //     .expect("Content-Type", /json/)
   //     .then((res) => {

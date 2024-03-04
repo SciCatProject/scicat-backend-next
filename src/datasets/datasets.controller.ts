@@ -21,6 +21,7 @@ import {
   InternalServerErrorException,
   ConflictException,
   BadRequestException,
+  Header,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import {
@@ -398,7 +399,6 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
   )
-  @HttpCode(HttpStatus.OK)
   @Post()
   @ApiOperation({
     summary: "It creates a new dataset which can be a raw or derived one.",
@@ -1010,9 +1010,6 @@ export class DatasetsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
-  )
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.Read, DatasetClass),
   )
   @Get("/:pid")
   @ApiOperation({

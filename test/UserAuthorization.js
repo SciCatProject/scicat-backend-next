@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   userIdIngestor = null,
   accessTokenAdmin = null,
   userIdAdmin = null,
@@ -25,17 +25,17 @@ describe("2300: User Authorization: test that user authorization are correct", (
     utils.getIdAndToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (idVal, tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         userIdIngestor = idVal;
         utils.getIdAndToken(
           appUrl,
           {
             username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            password: TestData.Accounts["user1"]["password"],
           },
           (idVal, tokenVal) => {
             accessTokenUser1 = tokenVal;
@@ -44,7 +44,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
               appUrl,
               {
                 username: "user2",
-                password: "f522d1d715970073a6413474ca0e0f63",
+                password: TestData.Accounts["user2"]["password"],
               },
               (idVal, tokenVal) => {
                 accessTokenUser2 = tokenVal;
@@ -53,7 +53,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                   appUrl,
                   {
                     username: "user3",
-                    password: "70dc489e8ee823ae815e18d664424df2",
+                    password: TestData.Accounts["user3"]["password"],
                   },
                   (idVal, tokenVal) => {
                     accessTokenUser3 = tokenVal;
@@ -62,7 +62,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                       appUrl,
                       {
                         username: "user4",
-                        password: "0014890e7020f515b92b767227ef2dfa",
+                        password: TestData.Accounts["user4"]["password"],
                       },
                       (idVal, tokenVal) => {
                         accessTokenUser4 = tokenVal;
@@ -71,7 +71,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                           appUrl,
                           {
                             username: "archiveManager",
-                            password: "aman",
+                            password: TestData.Accounts["archiveManager"]["password"],
                           },
                           (idVal, tokenVal) => {
                             accessTokenArchiveManager = tokenVal;
@@ -80,7 +80,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
                               appUrl,
                               {
                                 username: "admin",
-                                password: "am2jf70TPNZsSan",
+                                password: TestData.Accounts["admin"]["password"],
                               },
                               (idVal, tokenVal) => {
                                 accessTokenAdmin = tokenVal;
@@ -111,8 +111,8 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/${userIdIngestor}/authorization/dataset/create`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -124,7 +124,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -136,7 +136,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -148,7 +148,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -160,7 +160,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser3}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -172,7 +172,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser4}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(false);
@@ -184,7 +184,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -196,7 +196,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0090: user 1 should not be able to check that user 2 can create a dataset", async () => {
@@ -204,7 +204,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0100: user 1 should not be able to check that user 3 can create a dataset", async () => {
@@ -212,7 +212,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser3}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0110: user 1 should not be able to check that user 4 can not create a dataset", async () => {
@@ -220,7 +220,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser4}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0120: user 2 should be able to check that he/she can create a dataset", async () => {
@@ -228,7 +228,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -240,7 +240,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser3}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(true);
@@ -252,7 +252,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser4}/authorization/dataset/create`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.authorization.should.be.equal(false);
@@ -263,21 +263,21 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/${userIdAdmin}/authorization/dataset/create`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0146: anonymous user should not be able to check that user 1 can create a dataset", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdUser2}/authorization/dataset/create`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0150: anonymous user should be able to retrieve a jwt token", async () => {
     return request(appUrl)
       .post(`/api/v3/users/jwt`)
       .set("Accept", "application/json")
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.jwt.should.be.a("string");
@@ -289,7 +289,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .post(`/api/v3/users/jwt`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.jwt.should.be.a("string");
@@ -301,7 +301,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .post(`/api/v3/users/jwt`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.jwt.should.be.a("string");
@@ -313,7 +313,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.username.should.be.equal("admin");
@@ -325,7 +325,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.username.should.be.equal("user1");
@@ -337,7 +337,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.username.should.be.equal("user1");
@@ -349,7 +349,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0220: user1 should not be able to view user2 user profile", async () => {
@@ -357,21 +357,21 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0230: anonymous user should not be able to view admin user profile", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdAdmin}`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0240: anonymous user should not be able to view user1 user profile", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdUser1}`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0250: admin should be able to view his/her user identity", async () => {
@@ -379,7 +379,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/userIdentity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.profile.username.should.be.equal("admin");
@@ -391,7 +391,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/userIdentity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.profile.username.should.be.equal("user1");
@@ -403,7 +403,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/userIdentity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.profile.username.should.be.equal("user1");
@@ -415,7 +415,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/userIdentity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0290: user1 should not be able to view user2 user identity", async () => {
@@ -423,21 +423,21 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}/userIdentity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0300: anonymous user should not be able to view admin user identity", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdAdmin}/userIdentity`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0310: anonymous user should not be able to view user1 user identity", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdUser1}/userIdentity`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0320: admin should be able to view his/her user settings", async () => {
@@ -445,7 +445,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdAdmin);
@@ -457,7 +457,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -469,7 +469,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser1}/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -481,7 +481,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdAdmin}/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0360: user1 should not be able to view user2 user settings", async () => {
@@ -489,21 +489,21 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/${userIdUser2}/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0370: anonymous user should not be able to view admin user settings", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdAdmin}/settings`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0380: anonymous user should not be able to view user1 user settings", async () => {
     return request(appUrl)
       .get(`/api/v3/users/${userIdUser1}/settings`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0390: admin should be able to view his/her user identity through userIdentity endpoint", async () => {
@@ -513,7 +513,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdAdmin);
@@ -527,7 +527,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -541,7 +541,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -555,7 +555,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0430: user1 should not be able to view user2 user identity through userIdentity endpoint", async () => {
@@ -565,7 +565,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0440: anonymous user should not be able to view admin user identity through userIdentity endpoint", async () => {
@@ -574,7 +574,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/userIdentities/findOne`)
       .set("Accept", "application/json")
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0450: anonymous user should not be able to view user1 user identity through userIdentity endpoint", async () => {
@@ -583,7 +583,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/userIdentities/findOne`)
       .set("Accept", "application/json")
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0460: admin should be able to create a custom jwt token for him/her-self", async () => {
@@ -594,7 +594,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.jwt.should.be.a("string");
@@ -609,7 +609,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.jwt.should.be.a("string");
@@ -624,7 +624,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0490: user1 should not be able to create a custom jwt token for admin user", async () => {
@@ -635,7 +635,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0500: user1 should not be able to create a custom jwt token for user2 user", async () => {
@@ -646,7 +646,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(403);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0510: anonymous user should not be create custom jwt token for admin user", async () => {
@@ -656,7 +656,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0520: anonymous user should not be able to create jwt token for view user1", async () => {
@@ -666,7 +666,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .send({
         expiresIn: "never",
       })
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0530: admin should be able to view her user profile", async () => {
@@ -674,7 +674,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/self`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.username.should.be.equal("admin");
@@ -687,7 +687,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/identity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdAdmin);
@@ -700,7 +700,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdAdmin);
@@ -711,11 +711,11 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/self`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.username.should.be.equal("ingestor");
+        res.body.username.should.be.equal("adminIngestor");
         res.body.id.should.be.equal(userIdIngestor);
       });
   });
@@ -724,12 +724,12 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/identity`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdIngestor);
-        res.body.profile.username.should.be.equal("ingestor");
+        res.body.profile.username.should.be.equal("adminIngestor");
       });
   });
 
@@ -737,8 +737,8 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/settings`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdIngestor);
@@ -750,7 +750,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/self`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.username.should.be.equal("user1");
@@ -763,7 +763,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/identity`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -776,7 +776,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       .get(`/api/v3/users/my/settings`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.userId.should.be.equal(userIdUser1);
@@ -787,20 +787,20 @@ describe("2300: User Authorization: test that user authorization are correct", (
     return request(appUrl)
       .get(`/api/v3/users/my/self`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0630: anonymous user should not be able to view her non existing user identity", async () => {
     return request(appUrl)
       .get(`/api/v3/users/my/identity`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0640: anonymous user should not be able to view her non exisiting user settings", async () => {
     return request(appUrl)
       .get(`/api/v3/users/my/settings`)
       .set("Accept", "application/json")
-      .expect(401);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 });
