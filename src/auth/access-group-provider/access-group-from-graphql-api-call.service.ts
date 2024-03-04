@@ -5,7 +5,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
-
 /**
  * This service is used to fetch access groups from a GraphQL API.
  */
@@ -27,14 +26,19 @@ export class AccessGroupFromGraphQLApiService extends AccessGroupService {
   ): Promise<string[]> {
     const userId = userPayload.userId as string;
     const query = this.graphqlTemplateQuery.replace("{{userId}}", userId);
-    const response = await this.callGraphQLApi(query);
-    const accessGroups = this.responseProcessor(response);
+    try {
+      const response = await this.callGraphQLApi(query);
+      const accessGroups = this.responseProcessor(response);
 
-    Logger.log(
-      "Access groups from graphql api call getAccessGroups: " +
-        accessGroups.join(","),
-    );
-    return accessGroups;
+      Logger.log(
+        accessGroups,
+        "AccessGroupFromGraphQLApiService getAccessGroups:",
+      );
+      return accessGroups;
+    } catch (error) {
+      Logger.error(error, "AccessGroupFromGraphQLApiService");
+      return [];
+    }
   }
 
   async callGraphQLApi(query: string): Promise<Record<string, unknown>> {

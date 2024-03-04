@@ -32,7 +32,7 @@ export class QueryableClass {
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was created. This property is added and maintained by mongoose.",
+      "Date and time when this record was created. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
   @Prop({
     type: Date,
@@ -42,7 +42,7 @@ export class QueryableClass {
   @ApiProperty({
     type: Date,
     description:
-      "Date and time when this record was updated last. This property is added and maintained by mongoose.",
+      "Date and time when this record was updated last. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
   @Prop({
     type: Date,

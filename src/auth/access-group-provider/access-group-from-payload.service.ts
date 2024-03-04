@@ -17,8 +17,7 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
     //const defaultAccessGroups: string[] = [];
     let accessGroups: string[] = [];
 
-    const accessGroupsProperty = userPayload?.accessGroupProperty;
-
+    const accessGroupsProperty = userPayload.accessGroupProperty;
     if (accessGroupsProperty) {
       const payload: Record<string, unknown> | undefined = userPayload.payload;
       if (
@@ -30,11 +29,9 @@ export class AccessGroupFromPayloadService extends AccessGroupService {
             ? (payload[accessGroupsProperty] as string[])
             : [];
       }
+      Logger.log(accessGroups, "AccessGroupFromPayloadService");
     }
 
-    Logger.log(
-      "Access groups AccessGroupFromPayloadService : " + accessGroups.join(","),
-    );
     return accessGroups;
   }
 }

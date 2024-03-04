@@ -4,7 +4,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pid1 = null;
@@ -20,7 +20,7 @@ var retrieveJobId = null;
 var publicJobIds = [];
 var origDatablockId = null;
 
-describe.skip("Jobs: Test New Job Model", () => {
+describe.skip("1100: Jobs: Test New Job Model", () => {
   before((done) => {
     archiveJob = { ...TestData.ArchiveJob };
     retrieveJob = { ...TestData.RetrieveJob };
@@ -32,16 +32,16 @@ describe.skip("Jobs: Test New Job Model", () => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -52,13 +52,13 @@ describe.skip("Jobs: Test New Job Model", () => {
     );
   });
 
-  it("adds a new raw dataset", async () => {
+  it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -73,13 +73,13 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("adds another new raw dataset", async () => {
+  it("0020: adds another new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -94,25 +94,25 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Adds a new archive job request without authentication, which should fail", async () => {
+  it("0030: Adds a new archive job request without authentication, which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(archiveJob)
       .set("Accept", "application/json")
-      .expect(401)
+      .expect(TestData.UnauthorizedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
       });
   });
 
-  it("Adds a new archive job request", async () => {
+  it("0040: Adds a new archive job request", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(archiveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
@@ -120,22 +120,22 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Adds a new archive job request contains empty datasetList, which should fail", async () => {
+  it("0050: Adds a new archive job request contains empty datasetList, which should fail", async () => {
     const empty = { ...TestData.ArchiveJob };
     empty.datasetList = [];
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(empty)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.should.have.property("error");
       });
   });
 
-  it("Adds a new archive job request on non exist dataset which should fail", async () => {
+  it("0060: Adds a new archive job request on non exist dataset which should fail", async () => {
     let nonExistDataset = {
       ...TestData.ArchiveJob,
       datasetList: [
@@ -150,8 +150,8 @@ describe.skip("Jobs: Test New Job Model", () => {
       .post("/api/v3/Jobs")
       .send(nonExistDataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res, err) => {
         if (err) {
@@ -161,12 +161,12 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Check if dataset 1 was updated by job request", async () => {
+  it("0070: Check if dataset 1 was updated by job request", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -185,12 +185,12 @@ describe.skip("Jobs: Test New Job Model", () => {
         datasetLiveCycle1 = res.body.datasetlifecycle;
       });
   });
-  it("Check if dataset 2 was updated by job request", async () => {
+  it("0080: Check if dataset 2 was updated by job request", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -209,13 +209,13 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
+  it("0090: Create retrieve job request on same dataset, which should fail as well because not yet retrievable", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(409)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.ConflictStatusCode)
       .expect("Content-Type", /json/)
       .then((res, err) => {
         if (err) {
@@ -225,7 +225,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to dataset 1, simulating the archive system response", async () => {
+  it("0100: Send an update status to dataset 1, simulating the archive system response", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid1)
       .send({
@@ -236,8 +236,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -248,7 +248,7 @@ describe.skip("Jobs: Test New Job Model", () => {
           .and.equal(false);
       });
   });
-  it("Send an update status to dataset 2, simulating the archive system response", async () => {
+  it("0110: Send an update status to dataset 2, simulating the archive system response", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid2)
       .send({
@@ -259,8 +259,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -273,7 +273,7 @@ describe.skip("Jobs: Test New Job Model", () => {
   });
 
   // change policy to suppress emails
-  it("Disable notification by email", async () => {
+  it("0120: Disable notification by email", async () => {
     return request(appUrl)
       .post("/api/v3/Policies/updateWhere")
       .send({
@@ -284,22 +284,22 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Content-Type", "application/x-www-form-urlencoded")
-      .expect(200)
+      .expect(TestData.SuccessfulPostStatusCode)
       .then((res) => {
         console.log("Result policy update:", res.body);
         //res.body.not.equal({});
       });
   });
 
-  it("Adds a new archive job request for same data which should fail", async () => {
+  it("0130: Adds a new archive job request for same data which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(TestData.ArchiveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(409)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.ConflictStatusCode)
       .expect("Content-Type", /json/)
       .then((res, err) => {
         if (err) {
@@ -309,7 +309,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to the archive job request, signal successful archiving", async () => {
+  it("0140: Send an update status to the archive job request, signal successful archiving", async () => {
     return request(appUrl)
       .patch("/api/v3/Jobs/" + archiveJobId)
       .send({
@@ -321,17 +321,17 @@ describe.skip("Jobs: Test New Job Model", () => {
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("Adds a new retrieve job request on same dataset, which should succeed now", async () => {
+  it("0150: Adds a new retrieve job request on same dataset, which should succeed now", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(TestData.RetrieveJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res, err) => {
         if (err) {
@@ -342,12 +342,12 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Read contents of dataset 1 after retrieve job and make sure that still retrievable", async () => {
+  it("0160: Read contents of dataset 1 after retrieve job and make sure that still retrievable", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -356,7 +356,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to the dataset", async () => {
+  it("0170: Send an update status to the dataset", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid1)
       .send({
@@ -368,8 +368,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested.property(
@@ -378,7 +378,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to the dataset, simulating the archive system response of finished job with partial failure", async () => {
+  it("0180: Send an update status to the dataset, simulating the archive system response of finished job with partial failure", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid1)
       .send({
@@ -389,8 +389,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -402,7 +402,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status message to the Job", async () => {
+  it("0190: Send an update status message to the Job", async () => {
     return request(appUrl)
       .patch("/api/v3/Jobs/" + retrieveJobId)
       .send({
@@ -413,15 +413,15 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("jobResultObject");
       });
   });
 
-  it("Send an update status to the datasets, simulating the archive system response of successful job", async () => {
+  it("0200: Send an update status to the datasets, simulating the archive system response of successful job", async () => {
     await request(appUrl)
       .patch("/api/v3/Datasets/" + pid1)
       .send({
@@ -432,8 +432,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -451,8 +451,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -461,7 +461,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status message to the Job", async () => {
+  it("0210: Send an update status message to the Job", async () => {
     return request(appUrl)
       .patch("/api/v3/Jobs/" + retrieveJobId)
       .send({
@@ -472,8 +472,8 @@ describe.skip("Jobs: Test New Job Model", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("jobStatusMessage").and.be.string;
@@ -525,13 +525,13 @@ describe.skip("Jobs: Test New Job Model", () => {
   //     });
   // });
 
-  it("adds a new origDatablock", async () => {
+  it("0220: adds a new origDatablock", async () => {
     return request(appUrl)
       .post(`/api/v3/datasets/${pid1}/OrigDatablocks`)
       .send(TestData.OrigDataBlockCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -542,68 +542,68 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Adds a new public job request on private datasets, which should fails", async () => {
+  it("0230: Adds a new public job request on private datasets, which should fails", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(409)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.ConflictStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
       });
   });
 
-  it("Set to true for one of the dataset", async () => {
+  it("0240: Set to true for one of the dataset", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid1)
       .send({
         isPublished: true,
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested.property("isPublished").and.equal(true);
       });
   });
 
-  it("Adds a new public job request on one public and one private dataset, which should fails", async () => {
+  it("0250: Adds a new public job request on one public and one private dataset, which should fails", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(409)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.ConflictStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
       });
   });
 
-  it("Update isPublished to true on second dataset", async () => {
+  it("0260: Update isPublished to true on second dataset", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pid2)
       .send({
         isPublished: true,
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested.property("isPublished").and.equal(true);
       });
   });
 
-  it("Adds a new public job request without authentication", async () => {
+  it("0270: Adds a new public job request without authentication", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .expect(201)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
@@ -611,13 +611,13 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Adds a new public job request with authentication", async () => {
+  it("0280: Adds a new public job request with authentication", async () => {
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
@@ -625,7 +625,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to the public job request, signal finished job with partial failure", async () => {
+  it("0290: Send an update status to the public job request, signal finished job with partial failure", async () => {
     return request(appUrl)
       .patch("/api/v3/Jobs/" + publicJobIds[0])
       .send({
@@ -663,18 +663,18 @@ describe.skip("Jobs: Test New Job Model", () => {
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("Adds a new public job request to download some selected files", async () => {
+  it("0300: Adds a new public job request to download some selected files", async () => {
     publicJob.datasetList[0].files = ["N1039-1.tif", "N1039-2.tif"];
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         //reset
@@ -685,7 +685,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("Send an update status to the public job request, signal successful job", async () => {
+  it("0310: Send an update status to the public job request, signal successful job", async () => {
     return request(appUrl)
       .patch("/api/v3/Jobs/" + publicJobIds[1])
       .send({
@@ -706,7 +706,7 @@ describe.skip("Jobs: Test New Job Model", () => {
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -721,14 +721,14 @@ describe.skip("Jobs: Test New Job Model", () => {
   //     .expect("Content-Type", /json/);
   // });
 
-  it("Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
+  it("0320: Adds a new public job request with to download some selected files that dont exist, which should fail", async () => {
     publicJob.datasetList[0].files = ["N1039-1.tif", "N1039-101.tif"];
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(publicJob)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         //reset
@@ -738,57 +738,57 @@ describe.skip("Jobs: Test New Job Model", () => {
       });
   });
 
-  it("should delete the archive Job", async () => {
+  it("0330: should delete the archive Job", async () => {
     return request(appUrl)
       .delete("/api/v3/Jobs/" + archiveJobId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete the retrieve Job", async () => {
+  it("0340: should delete the retrieve Job", async () => {
     return request(appUrl)
       .delete("/api/v3/Jobs/" + retrieveJobId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   publicJobIds.forEach((jobId) => {
-    it("should delete the public Job" + jobId, async () => {
+    it("0350: should delete the public Job" + jobId, async () => {
       return request(appUrl)
         .delete("/api/v3/Jobs/" + jobId)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-        .expect(200)
+        .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/);
     });
   });
 
-  it("should delete the originDataBlock", async () => {
+  it("0360: should delete the originDataBlock", async () => {
     return request(appUrl)
       .delete(`/api/v3/datasets/${pid1}/OrigDatablocks/` + origDatablockId)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
-  it("should delete the newly created dataset", async () => {
+  it("0370: should delete the dataset #1", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete the second newly created dataset", async () => {
+  it("0390: should delete the dataset #2", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 });

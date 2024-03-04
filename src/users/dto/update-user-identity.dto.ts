@@ -7,4 +7,10 @@ export class UpdateUserIdentityDto {
 
   @ApiProperty()
   readonly credentials?: Record<string, unknown>;
+
+  @ApiProperty()
+  readonly externalId?: string;
+
+  @ApiProperty()
+  readonly provider?: string;
 }

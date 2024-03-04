@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
 
-let accessTokenIngestor = null;
+let accessTokenAdminIngestor = null;
 let accessTokenArchiveManager = null;
 let pid = null;
 const isESenabled = process.env.ELASTICSEARCH_ENABLED == "yes";
@@ -48,16 +48,16 @@ const scientificMetadata = ({
       utils.getToken(
         appUrl,
         {
-          username: "ingestor",
-          password: "aman",
+          username: "adminIngestor",
+          password: TestData.Accounts["adminIngestor"]["password"],
         },
         (tokenVal) => {
-          accessTokenIngestor = tokenVal;
+          accessTokenAdminIngestor = tokenVal;
           utils.getToken(
             appUrl,
             {
               username: "archiveManager",
-              password: "aman",
+              password: TestData.Accounts["archiveManager"]["password"],
             },
             (tokenVal) => {
               accessTokenArchiveManager = tokenVal;
@@ -73,8 +73,8 @@ const scientificMetadata = ({
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200)
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have
@@ -101,7 +101,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
 
       request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -114,7 +114,7 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` });
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
 
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
@@ -127,8 +127,8 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200)
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -146,8 +146,8 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200)
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -166,8 +166,8 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200)
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.data.should.include(decodeURIComponent(pid));
@@ -186,8 +186,8 @@ const scientificMetadata = ({
           }),
         )
         .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-        .expect(200)
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have
@@ -202,7 +202,7 @@ const scientificMetadata = ({
         .delete("/api/v3/datasets/" + pid)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-        .expect(200)
+        .expect(TestData.SuccessfulDeleteStatusCode)
         .expect("Content-Type", /json/);
     });
   },

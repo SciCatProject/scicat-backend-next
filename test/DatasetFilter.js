@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenIngestor = null,
+let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
   accessTokenUser2 = null,
   accessTokenUser3 = null,
@@ -88,21 +88,21 @@ const RawCorrect4 = {
   accessGroups: ["group6"],
 };
 
-describe("DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
+describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "user1",
-            password: "a609316768619f154ef58db4d847b75e",
+            password: TestData.Accounts["user1"]["password"],
           },
           (tokenVal) => {
             accessTokenUser1 = tokenVal;
@@ -110,7 +110,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
               appUrl,
               {
                 username: "user2",
-                password: "f522d1d715970073a6413474ca0e0f63",
+                password: TestData.Accounts["user2"]["password"],
               },
               (tokenVal) => {
                 accessTokenUser2 = tokenVal;
@@ -118,7 +118,7 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
                   appUrl,
                   {
                     username: "user3",
-                    password: "70dc489e8ee823ae815e18d664424df2",
+                    password: TestData.Accounts["user2"]["password"],
                   },
                   (tokenVal) => {
                     accessTokenUser3 = tokenVal;
@@ -126,7 +126,8 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: "aman",
+                        password:
+                          TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
@@ -148,13 +149,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
     done();
   });
 
-  it("adds dataset 1", async () => {
+  it("0010: adds dataset 1", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(RawCorrect1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -170,13 +171,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("adds dataset 2", async () => {
+  it("0020: adds dataset 2", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(RawCorrect2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -192,13 +193,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("adds dataset 3", async () => {
+  it("0030: adds dataset 3", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(RawCorrect3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -214,13 +215,13 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("adds dataset 4", async () => {
+  it("0040: adds dataset 4", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(RawCorrect4)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -236,13 +237,14 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it("retrieve single dataset by its name", async () => {
+  it("0050: retrieve single dataset by its name", async () => {
     const query = { where: { datasetName: RawCorrect1.datasetName } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -250,39 +252,42 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+  it('0060: retrieve datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
 
-  it('count how many datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+  it('0070: count how many datasets with "correct test raw" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(3);
       });
   });
 
-  it('retrieve one dataset with "correct test raw" in dataset name using loopback style "like" operator', async () => {
+  it('0080: retrieve one dataset with "correct test raw" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([
@@ -293,39 +298,42 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+  it('0090: retrieve datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
 
-  it('count how many datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+  it('0100: count how many datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(3);
       });
   });
 
-  it('retrieve one datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
+  it('0110: retrieve one datasets with "correct test raw" in dataset name using mongo regex operator', async () => {
     const query = { where: { datasetName: { $regex: "correct test raw" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([
@@ -336,13 +344,14 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
+  it('0120: retrieve datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -350,39 +359,42 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "third correct" in dataset name using loopback style "like" operator', async () => {
+  it('0130: retrieve one dataset with "third correct" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it('count how many datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
+  it('0140: count how many datasets with "third correct" in dataset name using loopback style "like" operator', async () => {
     const query = { where: { datasetName: { like: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(1);
       });
   });
 
-  it('retrieve datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
+  it('0150: retrieve datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -390,41 +402,44 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "third correct" in dataset name using mongo "regex" operator', async () => {
+  it('0160: retrieve one dataset with "third correct" in dataset name using mongo "regex" operator', async () => {
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it('count how many datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
+  it('0170: count how many datasets with "third correct" in dataset name using mongo "regex" operator', async () => {
     const query = { where: { datasetName: { $regex: "third correct" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(1);
       });
   });
 
-  it('retrieve datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+  it('0180: retrieve datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
     const query = {
       where: { description: { like: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -433,45 +448,48 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+  it('0190: retrieve one dataset with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
     const query = {
       where: { description: { like: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([datasetPid1, datasetPid2]);
       });
   });
 
-  it('count how many datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
+  it('0200: count how many datasets with "Part of the first two dataset" in description using loopback style "like" operator', async () => {
     const query = {
       where: { description: { like: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it('retrieve datasets with "Part of the first two dataset" in description using "regex" operator', async () => {
+  it('0210: retrieve datasets with "Part of the first two dataset" in description using "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -480,43 +498,46 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
+  it('0220: retrieve one dataset with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([datasetPid1, datasetPid2]);
       });
   });
 
-  it('count how many datasets with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
+  it('0230: count how many datasets with "Part of the first two dataset" in description using mongo "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "Part of the first two datasets" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it('retrieve datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
+  it('0240: retrieve datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -524,39 +545,42 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "lifetime passed" in description using loopback style "like" operator', async () => {
+  it('0250: retrieve one dataset with "lifetime passed" in description using loopback style "like" operator', async () => {
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it('count how many datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
+  it('0260: count how many datasets with "lifetime passed" in description using loopback style "like" operator', async () => {
     const query = { where: { description: { like: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(1);
       });
   });
 
-  it('retrieve datasets with "lifetime passed" in description using "regex" operator', async () => {
+  it('0270: retrieve datasets with "lifetime passed" in description using "regex" operator', async () => {
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
@@ -564,41 +588,44 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "lifetime passed" in description using "regex" operator', async () => {
+  it('0280: retrieve one dataset with "lifetime passed" in description using "regex" operator', async () => {
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(datasetPid3);
       });
   });
 
-  it('count how many datasets with "lifetime passed" in description using "regex" operator', async () => {
+  it('0290: count how many datasets with "lifetime passed" in description using "regex" operator', async () => {
     const query = { where: { description: { $regex: "lifetime passed" } } };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(1);
       });
   });
 
-  it('retrieve datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+  it('0300: retrieve datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
     const query = {
       where: { datasetName: { $regex: "(second|third).*dataset" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -607,45 +634,48 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+  it('0310: retrieve one dataset with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
     const query = {
       where: { datasetName: { $regex: "(second|third).*dataset" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([datasetPid2, datasetPid3]);
       });
   });
 
-  it('count how many datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
+  it('0320: count how many datasets with "second" or "third" together with "dataset" in description using "regex" operator', async () => {
     const query = {
       where: { datasetName: { $regex: "(second|third).*dataset" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it('retrieve datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+  it('0330: retrieve datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -654,37 +684,39 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
       });
   });
 
-  it('retrieve one dataset with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+  it('0340: retrieve one dataset with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/findOne")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.oneOf([datasetPid1, datasetPid3]);
       });
   });
 
-  it('count how many datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
+  it('0350: count how many datasets with "cream" and "money" or "opportunity" and "decide" in description using "regex" operator', async () => {
     const query = {
       where: { description: { $regex: "(cream.*money|opportunity.*decide)" } },
     };
     return request(appUrl)
       .get("/api/v3/Datasets/count")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["count"].should.be.equal(2);
       });
   });
 
-  it("Adding GREATER_THAN condition on the fullquery endpoint should work", async () => {
+  it("0360: Adding GREATER_THAN condition on the fullquery endpoint should work", async () => {
     const fields = {
       mode: {},
       scientific: [
@@ -697,15 +729,16 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.length.should.be.equal(4);
       });
   });
 
-  it("Adding LESS_THAN condition on the fullquery endpoint should work", async () => {
+  it("0370: Adding LESS_THAN condition on the fullquery endpoint should work", async () => {
     const fields = {
       mode: {},
       scientific: [
@@ -718,15 +751,16 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.length.should.be.equal(2);
       });
   });
 
-  it("Adding EQUAL_TO_NUMERIC condition on the fullquery endpoint should work", async () => {
+  it("0380: Adding EQUAL_TO_NUMERIC condition on the fullquery endpoint should work", async () => {
     const fields = {
       mode: {},
       scientific: [
@@ -739,15 +773,16 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.length.should.be.equal(1);
       });
   });
 
-  it("Adding EQUAL_TO_STRING condition on the fullquery endpoint should work", async () => {
+  it("0390: Adding EQUAL_TO_STRING condition on the fullquery endpoint should work", async () => {
     const fields = {
       mode: {},
       scientific: [
@@ -765,47 +800,48 @@ describe("DatasetFilter: Test retrieving datasets using filtering capabilities",
           JSON.stringify(fields),
         )}`,
       )
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.length.should.be.equal(0);
       });
   });
 
-  it("should delete dataset 1", async () => {
+  it("0400: should delete dataset 1", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete dataset 2", async () => {
+  it("0410: should delete dataset 2", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete dataset 3", async () => {
+  it("0420: should delete dataset 3", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete dataset 4", async () => {
+  it("0430: should delete dataset 4", async () => {
     return request(appUrl)
       .delete("/api/v3/datasets/" + encodedDatasetPid4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 });

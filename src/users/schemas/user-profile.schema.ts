@@ -25,6 +25,9 @@ export class UserProfile {
 
   @Prop({ type: [String] })
   accessGroups: string[];
+
+  @Prop({ type: Object })
+  oidcClaims?: Record<string, unknown>;
 }
 
 export const UserProfileSchema = SchemaFactory.createForClass(UserProfile);

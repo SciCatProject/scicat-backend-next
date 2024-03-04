@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-
+const { TestData } = require("./TestData");
 var accessToken = null;
 
 describe("0100: Authorization functionalities", () => {
-  it("0010: Ingestor login fails with incorrect credentials", async () => {
+  it("0010: Admin Ingestor login fails with incorrect credentials", async () => {
     return request(appUrl)
       .post("/api/v3/auth/login")
       .send({
-        username: "ingestor",
-        password: "asd123",
+        username: "adminIngestor",
+        password: TestData.Accounts["user1"]["password"],
       })
       .set("Accept", "application/json")
       .then((res) => {
@@ -23,12 +23,12 @@ describe("0100: Authorization functionalities", () => {
       .expect(401);
   });
 
-  it("0030: Login should succeed with correct credentials", async () => {
+  it("0030: Login as Admin Ingestor should succeed with correct credentials", async () => {
     return request(appUrl)
       .post("/api/v3/auth/login")
       .send({
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       })
       .set("Accept", "application/json")
       .expect(201)
