@@ -41,7 +41,7 @@ const dataset3 = {
   accessGroups: ["group3"],
 };
 
-describe.skip("0300: DatasetAuthorization: Test access to dataset", () => {
+describe("0300: DatasetAuthorization: Test access to dataset", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,

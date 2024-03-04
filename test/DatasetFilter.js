@@ -88,7 +88,7 @@ const RawCorrect4 = {
   accessGroups: ["group6"],
 };
 
-describe.skip("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
+describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
