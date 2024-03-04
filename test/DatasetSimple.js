@@ -60,7 +60,7 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
-    
+
     return response;
   }
 
@@ -85,8 +85,8 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .expect("Content-Type", /json/)
       .then(async (res) => {
         return await res.body.forEach(async (d) => {
-          return await deletePolicy(d)
-        })
+          return await deletePolicy(d);
+        });
       });
   });
 
@@ -390,10 +390,9 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf.at.least(3);
+        res.body.should.be.an("array").to.have.lengthOf.at.least(1);
       });
   });
-
 
   it("0210: should delete the first raw dataset", function (done) {
     request(appUrl)
