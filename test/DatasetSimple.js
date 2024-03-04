@@ -316,7 +316,7 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
   });
 
   it("0160: adds a new derived dataset", async () => {
-    request(appUrl)
+    return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.DerivedCorrect)
       .set("Accept", "application/json")
@@ -331,54 +331,51 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       });
   });
 
-  it("0170: new dataset count should be incremented", function (done) {
-    request(appUrl)
+  it("0170: new dataset count should be incremented", async () => {
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countDataset).should.equal(3);
-        done();
       });
   });
 
-  it("0190: new raw dataset count should be unchanged", function (done) {
+  it("0190: new raw dataset count should be unchanged", async () => {
     const filter = { where: { type: "raw" } };
 
-    request(appUrl)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countRawDataset).should.equal(2);
-        done();
       });
   });
 
-  it("0200: new derived dataset count should be incremented", function (done) {
+  it("0200: new derived dataset count should be incremented", async () => {
     const filter = { where: { type: "derived" } };
 
-    request(appUrl)
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countDerivedDataset).should.equal(1);
-        done();
       });
   });
 
@@ -394,42 +391,39 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
       });
   });
 
-  it("0210: should delete the first raw dataset", function (done) {
-    request(appUrl)
+  it("0210: should delete the first raw dataset", async () => {
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
-      .end((err) => {
-        if (err) return done(err);
-        done();
+      .then((err) => {
+        if (err) return err;
       });
   });
 
-  it("0220: should delete the second raw dataset", function (done) {
-    request(appUrl)
+  it("0220: should delete the second raw dataset", async () => {
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
-      .end((err) => {
-        if (err) return done(err);
-        done();
+      .then((err) => {
+        if (err) return err;
       });
   });
 
-  it("0230: should delete the derived dataset", function (done) {
-    request(appUrl)
+  it("0230: should delete the derived dataset", async () => {
+    return request(appUrl)
       .delete("/api/v3/Datasets/" + pidDerived1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/)
-      .end((err) => {
-        if (err) return done(err);
-        done();
+      .then((err) => {
+        if (err) return err;
       });
   });
 
@@ -464,50 +458,47 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
     }
   });
 
-  it("0260: new dataset count should be back to old count", function (done) {
-    request(appUrl)
+  it("0260: new dataset count should be back to old count", async () => {
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countDataset).should.equal(0);
-        done();
       });
   });
 
-  it("0270: new raw dataset count should be back to old count", function (done) {
-    request(appUrl)
+  it("0270: new raw dataset count should be back to old count", async () => {
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "raw" } })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countRawDataset).should.equal(0);
-        done();
       });
   });
 
-  it("0280: new derived dataset count should be back to old count", function (done) {
-    request(appUrl)
+  it("0280: new derived dataset count should be back to old count", async () => {
+    return request(appUrl)
       .get("/api/v3/Datasets/count")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ where: { type: "derived" } })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
-      .end((err, res) => {
-        if (err) return done(err);
+      .then((err, res) => {
+        if (err) return err;
         res.body.should.have.property("count").and.be.a("number");
         (res.body.count - countDerivedDataset).should.equal(0);
-        done();
       });
   });
 });
