@@ -1,25 +1,26 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { faker } = require("@faker-js/faker");
 
-const RawTestAccounts = require('../functionalAccounts.json');
-const TestAccounts = Object.fromEntries(RawTestAccounts.map(account => [account.username, account]));
+const RawTestAccounts = require("../functionalAccounts.json");
+const TestAccounts = Object.fromEntries(
+  RawTestAccounts.map((account) => [account.username, account]),
+);
 
 const TestData = {
-
-  EntryCreatedStatusCode : 201,
-  EntryValidStatusCode : 200,
-  CreationForbiddenStatusCode : 403,
-  DeleteForbiddenStatusCode : 403,
-  SuccessfulGetStatusCode : 200,
-  SuccessfulPatchStatusCode : 200,
-  SuccessfulDeleteStatusCode : 200,
-  SuccessfulPostStatusCode : 200,
+  EntryCreatedStatusCode: 201,
+  EntryValidStatusCode: 200,
+  CreationForbiddenStatusCode: 403,
+  DeleteForbiddenStatusCode: 403,
+  SuccessfulGetStatusCode: 200,
+  SuccessfulPatchStatusCode: 200,
+  SuccessfulDeleteStatusCode: 200,
+  SuccessfulPostStatusCode: 200,
   BadRequestStatusCode: 400,
-  AccessForbiddenStatusCode : 403,
-  UnauthorizedStatusCode : 401,
-  ConflictStatusCode : 409,
-  ApplicationErrorStatusCode : 500,
-  LoginSuccessfulStatusCode : 201,
+  AccessForbiddenStatusCode: 403,
+  UnauthorizedStatusCode: 401,
+  ConflictStatusCode: 409,
+  ApplicationErrorStatusCode: 500,
+  LoginSuccessfulStatusCode: 201,
 
   //PidPrefix: "github_workflow_testing",
   PidPrefix: process.env.PID_PREFIX,
@@ -52,13 +53,13 @@ const TestData = {
         instrument: "ESS3-1",
         start: "2017-07-24T13:56:30.000Z",
         end: "2017-07-25T13:56:30.000Z",
-        comment: "Some comment"
+        comment: "Some comment",
       },
       {
         instrument: "ESS3-2",
         start: "2017-07-28T13:56:30.000Z",
         end: "2017-07-29T13:56:30.000Z",
-      }
+      },
     ],
   },
 
@@ -431,7 +432,10 @@ const TestData = {
     owner: "Max Novelli",
     description: "This is a very important sample",
     sampleCharacteristics: {
-      chemical_formula: "H2O",
+      chemical_formula: {
+        value: "H2O",
+        unit: "",
+      },
     },
     ownerGroup: "ess",
     accessGroups: ["data scientist", "instrument scientist"],
