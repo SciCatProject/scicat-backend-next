@@ -63,11 +63,31 @@ describe("2200: Sample: Simple Sample", () => {
       });
   });
 
+  it("0025: should fetch this new sample by characteristics filter", async () => {
+    const fields = {
+      characteristics: [
+        { lhs: "chemical_formula", relation: "EQUAL_TO_STRING", rhs: "H20" },
+      ],
+    };
+    return request(appUrl)
+      .get(
+        `/api/v3/Samples/fullquery?fields=${encodeURIComponent(JSON.stringify(fields))}&limits={}`,
+      )
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("owner").and.be.string;
+        res.body.should.have.property("sampleId").and.be.string;
+      });
+  });
+
   function defineAttachment(caption) {
     return {
       thumbnail: TestData.AttachmentCorrect.thumbnail,
-      caption: caption || TestData.AttachmentCorrect.caption
-    }
+      caption: caption || TestData.AttachmentCorrect.caption,
+    };
   }
 
   it("0030: should add a new attachment to this sample", async () => {
@@ -84,9 +104,7 @@ describe("2200: Sample: Simple Sample", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
+        res.body.should.have.property("caption").and.equal(attachment.caption);
         res.body.should.have
           .property("ownerGroup")
           .and.equal(TestData.SampleCorrect.ownerGroup);
