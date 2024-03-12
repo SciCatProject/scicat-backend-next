@@ -101,9 +101,14 @@ export const mapScientificQuery = (
 
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const matchKeyGeneric = `${field}.${lhs}`;
-    const matchKeyMeasurement = `${field}.${lhs}.valueSI`;
-    const matchUnit = `${field}.${lhs}.unitSI`;
+    const formattedLhs = lhs
+      .trim()
+      .replace(/[.]/g, "\\.")
+      .replace(/ /g, "_")
+      .toLowerCase();
+    const matchKeyGeneric = `${field}.${formattedLhs}`;
+    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
+    const matchUnit = `${field}.${formattedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -733,6 +738,7 @@ export const addCreatedByFields = <T>(
   createdBy: string;
   updatedBy: string;
 } => {
+  console.log("--obj", obj);
   return {
     ...obj,
     createdBy: username,
