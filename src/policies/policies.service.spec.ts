@@ -33,6 +33,7 @@ const mockPolicy: Policy = {
 
 describe("PoliciesService", () => {
   let service: PoliciesService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let policyModel: Model<Policy>;
 
   beforeEach(async () => {

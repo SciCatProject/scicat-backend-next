@@ -142,7 +142,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, "oidc") {
     }
 
     const jsonUser = JSON.parse(JSON.stringify(user));
-    const { password, ...returnUser } = jsonUser;
+    const { ...returnUser } = jsonUser;
     returnUser.userId = returnUser._id;
 
     return returnUser;

@@ -4,15 +4,15 @@ import { AuthService } from "./auth.service";
 import { ConfigService } from "@nestjs/config";
 
 class AuthServiceMock {
-  login(req: Record<string, unknown>) {
+  login() {
     return { username: "Test User", email: "testUser@gmail.com" };
   }
 
-  adLogin(req: Record<string, unknown>) {
+  adLogin() {
     return { username: "Test User", email: "testUser@gmail.com" };
   }
 
-  whoami(req: Record<string, unknown>) {
+  whoami() {
     return { username: "Test User", email: "testUser@gmail.com" };
   }
 }

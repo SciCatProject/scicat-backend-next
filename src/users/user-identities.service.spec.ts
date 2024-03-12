@@ -25,6 +25,7 @@ const mockUserIdentity: UserIdentity = {
 
 describe("UserIdentitiesService", () => {
   let service: UserIdentitiesService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userIdentityModel: Model<UserIdentity>;
 
   beforeEach(async () => {

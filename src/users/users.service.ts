@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { genSalt, hash } from "bcrypt";
-import { FilterQuery, Model, ObjectId } from "mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { CreateUserIdentityDto } from "./dto/create-user-identity.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { RolesService } from "./roles.service";
@@ -160,7 +160,7 @@ export class UsersService implements OnModuleInit {
     );
 
     if (createUserDto.authStrategy !== "local") {
-      const { password, ...sanitizedCreateUserDto } = createUserDto;
+      const { ...sanitizedCreateUserDto } = createUserDto;
       const createdUser = new this.userModel(sanitizedCreateUserDto);
       return createdUser.save();
     } else if (createUserDto.password) {

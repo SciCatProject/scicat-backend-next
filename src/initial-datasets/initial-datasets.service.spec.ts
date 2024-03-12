@@ -10,6 +10,7 @@ const mockInitialDataset: InitialDataset = {
 
 describe("InitialDatasetsService", () => {
   let service: InitialDatasetsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let initialDatasetModel: Model<InitialDataset>;
 
   beforeEach(async () => {

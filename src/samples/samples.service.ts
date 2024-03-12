@@ -31,6 +31,7 @@ export class SamplesService {
     const createdSample = new this.sampleModel(
       addCreatedByFields(createSampleDto, username),
     );
+
     return createdSample.save();
   }
 

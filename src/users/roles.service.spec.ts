@@ -19,7 +19,9 @@ const mockUserRole: UserRole = {
 
 describe("RolesService", () => {
   let service: RolesService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let roleModel: Model<Role>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userRoleModel: Model<UserRole>;
 
   beforeEach(async () => {

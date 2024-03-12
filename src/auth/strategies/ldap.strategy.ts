@@ -87,7 +87,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
 
     const foundUser = await this.usersService.findOne(userFilter);
     const jsonUser = JSON.parse(JSON.stringify(foundUser));
-    const { password, ...user } = jsonUser;
+    const { ...user } = jsonUser;
     user.userId = user._id;
 
     // update user identity if needed

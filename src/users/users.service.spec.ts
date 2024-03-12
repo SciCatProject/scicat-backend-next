@@ -62,8 +62,11 @@ const mockUserSettings: UserSettings = {
 
 describe("UsersService", () => {
   let service: UsersService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userModel: Model<User>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userIdentityModel: Model<UserIdentity>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userSettingsModel: Model<UserSettings>;
 
   beforeEach(async () => {
