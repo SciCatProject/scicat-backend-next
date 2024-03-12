@@ -11,6 +11,9 @@ let accessTokenAdminIngestor = null,
   datasetId = null;
 
 describe("2200: Sample: Simple Sample", () => {
+  before(() => {
+    db.collection("Sample").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -66,7 +69,7 @@ describe("2200: Sample: Simple Sample", () => {
   it("0025: should fetch this new sample by characteristics filter", async () => {
     const fields = {
       characteristics: [
-        { lhs: "chemical_formula", relation: "EQUAL_TO_STRING", rhs: "H20" },
+        { lhs: "chemical_formula", relation: "EQUAL_TO_STRING", rhs: "H2O" },
       ],
     };
     return request(appUrl)
@@ -78,8 +81,8 @@ describe("2200: Sample: Simple Sample", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("owner").and.be.string;
-        res.body.should.have.property("sampleId").and.be.string;
+        res.body.length.should.be.equal(1);
+        res.body[0].should.have.property("sampleId").and.equal(sampleId);
       });
   });
 
