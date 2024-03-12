@@ -147,7 +147,6 @@ export const mapScientificQuery = (
       }
     }
   });
-  console.log("scientificFilterQuery", scientificFilterQuery);
   return scientificFilterQuery;
 };
 
@@ -738,7 +737,6 @@ export const addCreatedByFields = <T>(
   createdBy: string;
   updatedBy: string;
 } => {
-  console.log("--obj", obj);
   return {
     ...obj,
     createdBy: username,
