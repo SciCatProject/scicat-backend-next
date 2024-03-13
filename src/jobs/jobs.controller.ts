@@ -465,7 +465,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be created",
     required: true,
-    schema: new CreateJobDto,
+    type: CreateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -507,7 +507,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be updated",
     required: true,
-    // schema: new UpdateJobStatusDto, // TBD
+    type: UpdateJobStatusDto, // TBD
   })
   @ApiResponse({
     status: HttpStatus.OK,
