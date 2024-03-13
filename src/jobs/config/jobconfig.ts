@@ -33,18 +33,18 @@ export class JobConfig {
 
   create: JobOperation<CreateJobDto>;
   // read: JobReadAction[];
-  // update: JobOperation<UpdateJobStatusDto>;
+  update: JobOperation<UpdateJobStatusDto>;
 
   constructor(
     jobType: string,
     create: JobOperation<CreateJobDto>,
     read = undefined,
-    update = undefined  // JobOperation<UpdateJobStatusDto>,
+    update: JobOperation<UpdateJobStatusDto>,
   ) {
     this.jobType = jobType;
     this.create = create;
     // this.read = read;
-    // this.update = update;
+    this.update = update;
   }
 
   /**
@@ -59,11 +59,10 @@ export class JobConfig {
       data[AuthOp.Create],
     );
     const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
-    const update = undefined;
-    // const update = JobOperation.parse<UpdateJobStatusDto>(
-    //   updateActions,
-    //   data[AuthOp.Update],
-    // );
+    const update = JobOperation.parse<UpdateJobStatusDto>(
+      updateActions,
+      data[AuthOp.Update],
+    );
     return new JobConfig(type, create, read, update);
   }
 }
@@ -86,7 +85,7 @@ export class JobOperation<DtoType> {
   ): JobOperation<DtoType> {
     // if Auth is not defined, default to #authenticated
     const auth = data[JobsConfigSchema.Auth] ? data[JobsConfigSchema.Auth] : JobsAuth.Authenticated;
-    const actionsData: any[] = data[JobsConfigSchema.Actions];
+    const actionsData: any[] = data[JobsConfigSchema.Actions] ? data[JobsConfigSchema.Actions] : [];
     const actions = actionsData.map((json) =>
       parseAction<DtoType>(actionList, json),
     );
@@ -129,7 +128,7 @@ export interface JobAction<DtoType> {
   /**
    * Respond to the action
    */
-  performJob: (job: JobClass) => Promise<JobClass>;
+  performJob: (job: JobClass) => Promise<void>;
   /**
    * Return the actionType for this action. This should match the class's
    * static actionType (used for constructing the class from the configuration file)
@@ -149,7 +148,7 @@ export interface JobActionClass<DtoType> {
 
 export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
-// export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
+export type JobUpdateAction = JobAction<UpdateJobStatusDto>;
 
 /// Action registration
 
@@ -157,20 +156,22 @@ export type JobCreateAction = JobAction<CreateJobDto>;
 
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
-// const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
+const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
+export function registerCreateAction(
+  action: JobActionClass<CreateJobDto>
+) {
   createActions[action.actionType] = action;
 }
 /**
  * List of action types with a registered action
  * @returns
  */
-export function getRegisteredCreateActions() {
+export function getRegisteredCreateActions(): string[] {
   return Object.keys(createActions);
 }
 
@@ -179,18 +180,18 @@ export function getRegisteredCreateActions() {
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-// export function registerUpdateAction(
-//   action: JobActionClass<UpdateJobStatusDto>,
-// ) {
-//   updateActions[action.actionType] = action;
-// }
+export function registerUpdateAction(
+  action: JobActionClass<UpdateJobStatusDto>,
+) {
+  updateActions[action.actionType] = action;
+}
 /**
  * List of action types with a registered action
  * @returns
  */
-// export function getRegisteredUpdateActions(): string[] {
-//   return Object.keys(updateActions);
-// }
+export function getRegisteredUpdateActions(): string[] {
+  return Object.keys(updateActions);
+}
 
 /// Parsing
 
@@ -202,7 +203,7 @@ var jobConfig: JobConfig[] | null = null; // singleton
  * @returns
  */
 export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
-  if( jobConfig !== null){
+  if (jobConfig !== null) {
     return jobConfig;
   }
 
@@ -213,7 +214,6 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
   const ajv = new Ajv();
   const validate = ajv.compile(JobConfigSchema);
 
-  console.log(data);
   if (validate(data)) {
     console.log("Schema is valid!");
   } else {

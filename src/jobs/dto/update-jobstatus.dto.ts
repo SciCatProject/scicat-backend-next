@@ -6,14 +6,6 @@ export class UpdateJobStatusDto {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Id for the job to be updated.",
-  })
-  @IsString()
-  readonly id: string;
-
-  @ApiProperty({
-    type: String,
-    required: true,
     description: "Updated job status code for the current status.",
   })
   @IsString()

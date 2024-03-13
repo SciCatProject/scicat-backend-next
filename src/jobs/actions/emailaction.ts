@@ -8,7 +8,6 @@ import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import { createTransport, Transporter } from "nodemailer";
 import { compile, TemplateDelegate } from "handlebars";
-import { CreateJobDto } from "../dto/create-job.dto";
 
 
 /**
@@ -71,7 +70,5 @@ export class EmailJobAction<T> implements JobAction<T> {
       mail.text = this.bodyTemplate(job);
     }
     await this.mailService.sendMail(mail);
-
-    return job;
   }
 }

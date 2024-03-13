@@ -1,5 +1,5 @@
-import { IsEmail, IsObject, IsOptional, IsString } from "class-validator";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
+import { IsObject, IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
 export class CreateJobDto {
@@ -17,5 +17,6 @@ export class CreateJobDto {
     description: "Job's parameters as defined by job template in configuration",
   })
   @IsObject()
-  readonly jobParams: Record<string, unknown>;
+  @IsOptional()
+  readonly jobParams?: Record<string, unknown>;
 }

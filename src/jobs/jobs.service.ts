@@ -35,7 +35,6 @@ export class JobsService {
     var createdJob = new this.jobModel(
       addStatusFields(addCreatedByFields(createJobDto, username), "jobSubmitted"),
     );
-
     return createdJob.save();
   }
 
@@ -82,10 +81,10 @@ export class JobsService {
   }
 
   async statusUpdate(
+    id: string,
     updateJobStatusDto: UpdateJobStatusDto,
   ): Promise<JobClass | null> {
-    const id = updateJobStatusDto.id;
-    const existingJob = await this.jobModel.findOne({ pid: id }).exec();
+    const existingJob = await this.jobModel.findOne({ id: id }).exec();
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
@@ -94,10 +93,13 @@ export class JobsService {
 
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
-        { pid: id },
-        addUpdatedByField(
-          updateJobStatusDto as UpdateQuery<JobDocument>,
-          username,
+        { id: id },
+        addStatusFields(
+          addUpdatedByField(
+            updateJobStatusDto as UpdateQuery<JobDocument>,
+            username,
+          ),
+          updateJobStatusDto.jobStatus
         ),
         { new: true },
       )
