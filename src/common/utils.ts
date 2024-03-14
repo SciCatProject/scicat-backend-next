@@ -87,15 +87,28 @@ export const convertToRequestedUnit = (
 };
 
 export const mapScientificQuery = (
+  key: string,
   scientific: IScientificFilter[] = [],
 ): Record<string, unknown> => {
   const scientificFilterQuery: Record<string, unknown> = {};
 
+  const keyToFieldMapping: Record<string, string> = {
+    scientific: "scientificMetadata",
+    characteristics: "sampleCharacteristics",
+  };
+
+  const field = keyToFieldMapping[key];
+
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const matchKeyGeneric = `scientificMetadata.${lhs}`;
-    const matchKeyMeasurement = `scientificMetadata.${lhs}.valueSI`;
-    const matchUnit = `scientificMetadata.${lhs}.unitSI`;
+    const formattedLhs = lhs
+      .trim()
+      .replace(/[.]/g, "\\.")
+      .replace(/ /g, "_")
+      .toLowerCase();
+    const matchKeyGeneric = `${field}.${formattedLhs}`;
+    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
+    const matchUnit = `${field}.${formattedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -134,7 +147,6 @@ export const mapScientificQuery = (
       }
     }
   });
-
   return scientificFilterQuery;
 };
 
@@ -448,10 +460,10 @@ export const createFullqueryFilter = <T>(
         key,
         fields[key],
       ) as typeof filterQuery.$text;
-    } else if (key === "scientific" || key === "sampleCharacteristics") {
+    } else if (key === "scientific" || key === "characteristics") {
       filterQuery = {
         ...filterQuery,
-        ...mapScientificQuery(fields[key]),
+        ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
       filterQuery["$or"]?.push({
@@ -587,6 +599,7 @@ const pipelineHandler = {
   ) => {
     const match = {
       $match: mapScientificQuery(
+        key,
         fields[key as keyof Y] as unknown as IScientificFilter[],
       ),
     };
