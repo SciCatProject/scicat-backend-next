@@ -3,7 +3,7 @@ import {
   JobConfig,
   loadJobConfig,
   registerCreateAction,
-  // registerUpdateAction,
+  registerUpdateAction,
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
@@ -46,7 +46,7 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.createExample.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.example.json");
 
   return {
     jobConfiguration: job_configs,
@@ -169,7 +169,8 @@ export function registerDefaultActions() {
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
   // Update
-  // registerUpdateAction(LogJobAction);
+  registerUpdateAction(LogJobAction);
+  registerUpdateAction(EmailJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

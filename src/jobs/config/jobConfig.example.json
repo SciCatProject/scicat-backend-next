@@ -1,0 +1,24 @@
+[
+  {
+    "jobType": "archive",
+    "create": {
+      "actions": [
+        {
+          "actionType": "log"
+        }
+      ]
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "public",
+    "create": {
+      "auth": "#all"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  }
+]

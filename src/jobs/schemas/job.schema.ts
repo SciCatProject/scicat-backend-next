@@ -107,7 +107,7 @@ export class JobClass extends OwnableClass {
     type: Object,
     required: false,
   })
-  configuration: Record<string, unknown>;
+  configuration: Record<string, unknown>;  // TBD
 
   // parameters (instance)
   @ApiProperty({
@@ -120,7 +120,7 @@ export class JobClass extends OwnableClass {
     type: Object,
     required: false,
   })
-  parameters: Record<string, unknown>;
+  jobParams: Record<string, unknown>;
   // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }

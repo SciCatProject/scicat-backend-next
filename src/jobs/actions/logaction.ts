@@ -21,7 +21,6 @@ export class LogJobAction<T> implements JobAction<T> {
 
   async performJob(job: JobClass) {
     Logger.log("Performing CREATE job: " + JSON.stringify(job), "LogJobAction");
-    return job;
   }
 
   constructor(data: Record<string, any>) {
