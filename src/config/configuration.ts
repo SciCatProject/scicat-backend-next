@@ -114,7 +114,7 @@ const configuration = () => {
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
     jwt: {
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_SECRET ?? "xxx",
       expiresIn: parseInt(process.env.JWT_EXPIRES_IN ?? "3600", 10),
       neverExpires: process.env.JWT_NEVER_EXPIRES ?? "100y",
     },
@@ -175,7 +175,7 @@ const configuration = () => {
       .METADATA_PARENT_INSTANCES_RETURN_LIMIT
       ? parseInt(process.env.METADATA_PARENT_INSTANCES_RETURN_LIMIT, 10)
       : undefined,
-    mongodbUri: process.env.MONGODB_URI,
+    mongodbUri: process.env.MONGODB_URI ?? "mongodb://localhost:27017/dacat",
     oaiProviderRoute: process.env.OAI_PROVIDER_ROUTE,
     pidPrefix: process.env.PID_PREFIX,
     port: parseInt(process.env.PORT || "3000", 10),
