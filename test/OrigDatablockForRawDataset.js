@@ -2,7 +2,7 @@
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null,
+var accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   datasetPid1 = null,
   encodedDatasetPid1 = null,
@@ -18,21 +18,21 @@ var accessTokenIngestor = null,
   origDatablockWithEmptyChkAlg = null,
   origDatablockWithValidChkAlg = null;
 
-describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
+describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -77,8 +77,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -95,8 +95,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrectRandom)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
@@ -114,8 +114,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/origdatablocks/isValid`)
       .send(origDatablockData1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(true);
@@ -132,8 +132,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/origdatablocks/isValid`)
       .send(TestData.OrigDataBlockWrong)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("valid").and.equal(false);
@@ -151,7 +151,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .send(origDatablockData1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(403)
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -161,8 +161,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/OrigDatablocks`)
       .send(origDatablockData1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -179,8 +179,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/OrigDatablocks`)
       .send(origDatablockData2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -196,8 +196,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/OrigDatablocks`)
       .send(origDatablockWithEmptyChkAlg)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
@@ -210,8 +210,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/OrigDatablocks`)
       .send(origDatablockData3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -231,9 +231,9 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
@@ -248,9 +248,9 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(1);
@@ -262,8 +262,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/Datasets/${encodedDatasetPid1}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["size"].should.be.equal(
@@ -276,8 +276,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/Datasets/${encodedDatasetPid2}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["size"].should.be.equal(origDatablockData3.size);
@@ -308,8 +308,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body["pid"].should.be.equal(decodeURIComponent(datasetPid1));
@@ -347,8 +347,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
@@ -372,8 +372,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(2);
@@ -397,8 +397,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(0);
@@ -422,8 +422,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(1);
@@ -444,8 +444,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
           encodeURIComponent(JSON.stringify(limits)),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.forEach((origdatablock) =>
@@ -458,8 +458,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -478,8 +478,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -500,8 +500,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .patch("/api/v3/origdatablocks/" + origDatablockId1)
       .send(origDatablock1Updates)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -517,8 +517,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -537,8 +537,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -559,8 +559,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .patch("/api/v3/origdatablocks/" + origDatablockId1)
       .send(origDatablock1Updates)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -576,8 +576,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -596,8 +596,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -614,15 +614,15 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .delete(`/api/v3/OrigDatablocks/${origDatablockId1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0300: Verify that size and numFiles fields are correct in the dataset 1, pass 4", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -638,8 +638,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -656,15 +656,15 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .delete(`/api/v3/OrigDatablocks/${origDatablockId2}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0330: Verify that size and numFiles fields are correct in the dataset 1, pass 5", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
@@ -676,8 +676,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have
@@ -694,15 +694,15 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .delete(`/api/v3/OrigDatablocks/${origDatablockId3}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
   it("0360: Verify that size and numFiles fields are correct in the dataset 1, pass 6", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
@@ -714,8 +714,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("size").and.equal(0);
@@ -729,9 +729,9 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(0);
@@ -744,9 +744,9 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
     return request(appUrl)
       .get(`/api/v3/OrigDatablocks`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
-      .expect(200)
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.instanceof(Array).and.to.have.length(0);
@@ -758,8 +758,8 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .post(`/api/v3/origdatablocks`)
       .send({ ...origDatablockData1, datasetId: "wrong" })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(400)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
@@ -771,7 +771,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .delete("/api/v3/Datasets/" + encodedDatasetPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
@@ -780,7 +780,7 @@ describe("OrigDatablockForRawDataset: Test OrigDatablocks and their relation to 
       .delete("/api/v3/Datasets/" + encodedDatasetPid2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 });

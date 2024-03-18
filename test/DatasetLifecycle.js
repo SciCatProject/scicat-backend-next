@@ -4,7 +4,7 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenIngestor = null;
+var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 
 var pidRaw1 = null;
@@ -12,21 +12,21 @@ var pidRaw2 = null;
 var policyIds = null;
 const raw2 = { ...TestData.RawCorrect };
 
-describe("DatasetLifecycle: Test facet and filter queries", () => {
+describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenIngestor = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -37,13 +37,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
     );
   });
 
-  it("adds a new raw dataset", async () => {
+  it("0010: adds a new raw dataset", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(TestData.RawCorrect)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         return new Promise((resolve) => {
@@ -62,15 +62,15 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   }).timeout(5000);
 
-  it("adds another new raw dataset", async () => {
+  it("0020: adds another new raw dataset", async () => {
     // modify owner
     raw2.ownerGroup = "p12345";
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(raw2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         return new Promise((resolve) => {
@@ -89,7 +89,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   }).timeout(5000);
 
-  it("Should return datasets with complex join query fulfilled", async () => {
+  it("0030: Should return datasets with complex join query fulfilled", async () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
@@ -102,8 +102,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").that.is.not.empty;
@@ -113,7 +113,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   });
 
-  it("Should return no datasets, because number of hits exhausted", async () => {
+  it("0040: Should return no datasets, because number of hits exhausted", async () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullquery?fields=" +
@@ -126,15 +126,15 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").that.is.empty;
       });
   });
 
-  it("Should return facets with complex join query fulfilled", async () => {
+  it("0050: Should return facets with complex join query fulfilled", async () => {
     return request(appUrl)
       .get(
         "/api/v3/Datasets/fullfacet?fields=" +
@@ -147,13 +147,13 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
           ),
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/);
   });
 
   // Note: make the tests with PUT instead of patch as long as replaceOnPut false
-  it("Should update archive status message from archiveManager account", async () => {
+  it("0060: Should update archive status message from archiveManager account", async () => {
     return request(appUrl)
       .patch("/api/v3/Datasets/" + pidRaw1)
       .send({
@@ -162,8 +162,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -173,7 +173,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
   });
 
   // PUT /datasets without specifying the id does not exist anymore
-  it("Should update the datasetLifecycle information for multiple datasets", async () => {
+  it("0070: Should update the datasetLifecycle information for multiple datasets", async () => {
     var filter = {
       pid: decodeURIComponent(pidRaw1),
     };
@@ -185,8 +185,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         },
       })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -202,12 +202,12 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   });
 
-  it("The history status should now include the last change for the first raw dataset", async () => {
+  it("0080: The history status should now include the last change for the first raw dataset", async () => {
     return request(appUrl)
       .get("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.nested
@@ -223,38 +223,7 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   });
 
-  // endpoint doesn't exist anymore
-  // it("Should update the datasetLifecycle information directly via embedded model API", async () => {
-  //   return request(appUrl)
-  //     .put("/api/v3/Datasets/" + pidRaw1 + "/datasetLifecycle")
-  //     .send({
-  //       archiveStatusMessage: "Testing embedded case",
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have
-  //         .property("archiveStatusMessage")
-  //         .and.equal("Testing embedded case");
-  //     });
-  // });
-
-  // endpoint doesn't exist anymore
-  // it("Should reset the embedded DatasetLifecycle status and delete Datablocks", async () => {
-  //   return request(appUrl)
-  //     .put("/api/v3/Datasets/resetArchiveStatus")
-  //     .send({
-  //       datasetId: pidRaw1,
-  //     })
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-  //     .expect(200)
-  //     .expect("Content-Type", /json/);
-  // });
-
-  it("check for the 2 default policies to have been created", async () => {
+  it("0090: check for the 2 default policies to have been created", async () => {
     // Query only newly created ones by the tests. This way we prevent removing all the policies that exist before the tests were run.
     const start = new Date();
     start.setHours(start.getHours(), 0, 0, 0);
@@ -270,8 +239,8 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
         `/api/v3/Policies?filter=${encodeURIComponent(JSON.stringify(filter))}`,
       )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenIngestor}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
@@ -279,29 +248,29 @@ describe("DatasetLifecycle: Test facet and filter queries", () => {
       });
   });
 
-  it("should delete the two policies", async () => {
+  it("0100: should delete the two policies", async () => {
     for (const item of policyIds) {
       await request(appUrl)
         .delete("/api/v3/policies/" + item)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-        .expect(200);
+        .expect(TestData.SuccessfulDeleteStatusCode);
     }
   });
 
-  it("should delete the newly created dataset", async () => {
+  it("0110: should delete the newly created dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
-  it("should delete the newly created dataset", async () => {
+  it("0120: should delete the newly created dataset", async () => {
     return request(appUrl)
       .delete("/api/v3/Datasets/" + pidRaw2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200);
+      .expect(TestData.SuccessfulDeleteStatusCode);
   });
 });

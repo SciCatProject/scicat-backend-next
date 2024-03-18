@@ -2,13 +2,14 @@
 "use strict";
 
 var utils = require("./LoginUtils");
+const { TestData } = require("./TestData");
 
 var accessTokenArchiveManager = null;
-var accessToken = null,
+var accessTokenAdminIngestor = null,
   id = null;
 
 var testdataset = {
-  manager: ["ingestor"],
+  manager: ["adminIngestor"],
   tapeRedundancy: "low",
   //"tapeRetentionTime": 3,
   autoArchiveDelay: 7,
@@ -20,21 +21,21 @@ var testdataset = {
   accessGroups: [],
 };
 
-describe("Policy: Simple Policy tests", () => {
+describe("1300: Policy: Simple Policy tests", () => {
   beforeEach((done) => {
     utils.getToken(
       appUrl,
       {
-        username: "ingestor",
-        password: "aman",
+        username: "adminIngestor",
+        password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessToken = tokenVal;
+        accessTokenAdminIngestor = tokenVal;
         utils.getToken(
           appUrl,
           {
             username: "archiveManager",
-            password: "aman",
+            password: TestData.Accounts["archiveManager"]["password"],
           },
           (tokenVal) => {
             accessTokenArchiveManager = tokenVal;
@@ -45,13 +46,13 @@ describe("Policy: Simple Policy tests", () => {
     );
   });
 
-  it("adds a new policy", async () => {
+  it("0010: adds a new policy", async () => {
     return request(appUrl)
       .post("/api/v3/Policies")
       .send(testdataset)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(201)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("manager").and.be.string;
@@ -60,31 +61,31 @@ describe("Policy: Simple Policy tests", () => {
       });
   });
 
-  it("should fetch this new policy", async () => {
+  it("0020: should fetch this new policy", async () => {
     return request(appUrl)
       .get("/api/v3/Policies/" + id)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("updates this existing policy", async () => {
+  it("0030: updates this existing policy", async () => {
     return request(appUrl)
       .patch("/api/v3/Policies/" + id)
       .send({ ownerGroup: "test_test" })
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessToken}` })
-      .expect(200)
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
   });
 
-  it("should delete this policy", async () => {
+  it("0040: should delete this policy", async () => {
     return request(appUrl)
       .delete("/api/v3/Policies/" + id)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(200)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 });

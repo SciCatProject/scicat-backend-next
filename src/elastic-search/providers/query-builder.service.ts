@@ -112,6 +112,7 @@ export class SearchQueryService {
     switch (fieldName) {
       case FilterFields.ScientificMetadata:
         const scientificFilterQuery = mapScientificQuery(
+          fieldName,
           values as IScientificFilter[],
         );
 
