@@ -6,6 +6,22 @@ import {
 } from "@nestjs/common";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
+import * as Handlebars from "handlebars";
+
+// Handlebar options for JobClass templates
+// TODO should this be moved into job.schema.ts?
+const jobTemplateOptions = {
+  allowedProtoProperties: {
+    id: true,
+    type: true,
+    statusCode: true,
+    statusMessage: true,
+    messageSent: true,
+    createdBy: true,
+    jobParams: false,
+  },
+  allowProtoPropertiesByDefault: false, // limit accessible fields for security
+};
 
 /**
  * Respond to Job events by making an HTTP call.
@@ -13,7 +29,7 @@ import { JobClass } from "../schemas/job.schema";
 export class URLAction<T> implements JobAction<T> {
   public static readonly actionType = "url";
 
-  private url: string;
+  private urlTemplate: Handlebars.TemplateDelegate<JobClass>;
   private method = "GET";
   private headers: Record<string, string> = {};
   private body: Record<string, any> | null = null;
@@ -25,14 +41,16 @@ export class URLAction<T> implements JobAction<T> {
   async validate(dto: T) {}
 
   async performJob(job: JobClass) {
-    Logger.log(`Requesting ${this.url}`, "URLAction");
+    const url = this.urlTemplate(job, jobTemplateOptions);
+    Logger.log(`Requesting ${url}`, "URLAction");
 
-    const response = await fetch(this.url, {
+    const response = await fetch(url, {
       method: this.method,
       headers: this.headers,
       body: JSON.stringify(this.body),
     });
-    Logger.log(`Request for ${this.url} returned ${response.status}`);
+
+    Logger.log(`Request for ${url} returned ${response.status}`, "URLAction");
     if (!response.ok) {
       throw new HttpException(
         {
@@ -44,7 +62,6 @@ export class URLAction<T> implements JobAction<T> {
     }
 
     // TODO do something with the response?
-
   }
 
   /**
@@ -62,7 +79,7 @@ export class URLAction<T> implements JobAction<T> {
     if (!data["url"]) {
       throw new NotFoundException("Param 'url' is undefined in url action");
     }
-    this.url = data.url;
+    this.urlTemplate = Handlebars.compile(data.url);
     if (data["method"]) {
       this.method = data.method;
     }

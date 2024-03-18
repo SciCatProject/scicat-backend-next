@@ -8,7 +8,7 @@
         },
         {
           "actionType": "url",
-          "url": "http://localhost:3000/api/v3/health",
+          "url": "http://localhost:3000/api/v3/health?jobid={{id}}",
           "headers": {
             "accept": "application/json"
           }
