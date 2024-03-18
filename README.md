@@ -89,9 +89,15 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `DATASET_CREATION_VALIDATION_REGEX` [string] Regular expression validation for new dataset request. Default value: ""
 - `PROPOSAL_GROUPS` [string] _Optional_ Comma separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
 - `SAMPLE_GROUPS` [string] _Optional_ Comma separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat, user"
+
+- `ACCESS_GROUPS_GRAPHQL_ENABLED` [string] _Optional_ Flag to enable/disable the graphql service get access groups. In order to use this service following variables needs to be configured: `ACCESS_GROUP_SERVICE_TOKEN`, `ACCESS_GROUP_SERVICE_API_URL` and `ACCESS_GROUP_SERVICE_HANDLER` respectively. Values true or false. Defaults to true.
 - `ACCESS_GROUPS_SERVICE_TOKEN` [string] _Optional_ Authentication token used if access groups are obtained from a third party service. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
 - `ACCESS_GROUP_SERVICE_API_URL` [string] _Optional_ URL of the service providing the users' access groups. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
+- `ACCESS_GROUP_SERVICE_HANDLER` [string] _Optional_ Configuration property that points to the source of a module. This module provides a specific responseProcessor function for handling GraphQL responses and a query template for making GraphQL requests
+- `ACCESS_GROUPS_STATIC_ENABLED` [string] _Optional_ Flag to enable/disable automatic assignment of predefined access groups to all users. Values true or false. Defaults to true.
+- `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat, user"
+- `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` [string] _Optional_ Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. Defaults to false
+
 - `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
 - `EXPRESS_SESSION_SECRET` [string] _Optional_ Secret used to set up express session.
 - `HTTP_MAX_REDIRECTS` [number] _Optional_ Max redirects for http requests. Defaults to 5.
@@ -110,6 +116,18 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `OIDC_SCOPE` [string] _Optional_ Space separated list of the info returned by the oidc service. Example: "openid profile email"
 - `OIDC_SUCCESS_URL` [string] _Optional_ SciCat Frontend auth-callback URL. Required in order to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback
 - `OIDC_ACCESS_GROUPS` [string] _Optional_ Functionality is still unclear.
+- `OIDC_ACCESS_GROUPS_PROPERTY` [string] _Optional_ Target field to get the access groups value from OIDC response.
+- `OIDC_USERINFO_MAPPING_FIELD_USERNAME` [string] _Optional_ comma-separated list. Specifies the fields from the OIDC response to concatenate and use as the user's profile username. For example, setting `OIDC_USERINFO_MAPPING_FIELD_USERNAME="iss, sub"` combines the iss (issuer) and sub (subject) values from the OIDC response, resulting in a username like `myIssuer_myUserName`. This allows for customizable username definitions based on OIDC response attributes. Defaults to "preferred_username" || "name"
+- `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME` [string] _Optional_ Specifies the fields from the OIDC response and use as the user's profile displayname. For example, setting `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME="preferred_username"` use displayName value from the OIDC response, resulting in a displayname like `myPreferredName`. This allows for customizable displayname definitions based on OIDC response attributes. Defaults to "name"
+- `OIDC_USERINFO_MAPPING_FIELD_EMAIL` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "email"
+- `OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "family_name"
+- `OIDC_USERINFO_MAPPING_FIELD_ID` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "sub" || "user_id"
+- `OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "thumbnailPhoto"
+- `OIDC_USERINFO_MAPPING_FIELD_PROVIDER` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "iss"
+- `OIDC_USERINFO_MAPPING_FIELD_GROUP` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "groups"
+- `OIDC_USERQUERY_OPERATOR` [string] _Optional_ Specifies the operator ("or" or "and") for UserModel.findOne queries, determining the logic used to match fields like "username" or "email". Example: `UserModel.findOne({$or: {"username":"testUser", "email":"test@test.com"}})`. Defaults to "or"
+- `OIDC_USERQUERY_FILTER` [string] _Optional_ Defines key-value pairs for UserModel.findOne queries, using a "key:value" format. Values should correspond to fields in the userProfile object. For instance,` OIDC_USERQUERY_FILTER="username:sub, email:email"` maps to `userProfile.sub` and `userProfile.email` respectively. Defaults to "username:username, email:email"
+
 - `LOGBOOK_ENABLED` [string] _Optional_ Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
 - `LOGBOOK_BASE_URL` [string] _Optional_ The base URL to the Logbook API. Only required if Logbook is enabled.
 

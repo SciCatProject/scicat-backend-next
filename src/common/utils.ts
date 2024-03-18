@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/quotes */
 import { Logger } from "@nestjs/common";
+import { inspect } from "util";
 import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
@@ -86,15 +87,28 @@ export const convertToRequestedUnit = (
 };
 
 export const mapScientificQuery = (
+  key: string,
   scientific: IScientificFilter[] = [],
 ): Record<string, unknown> => {
   const scientificFilterQuery: Record<string, unknown> = {};
 
+  const keyToFieldMapping: Record<string, string> = {
+    scientific: "scientificMetadata",
+    characteristics: "sampleCharacteristics",
+  };
+
+  const field = keyToFieldMapping[key];
+
   scientific.forEach((scientificFilter) => {
     const { lhs, relation, rhs, unit } = scientificFilter;
-    const matchKeyGeneric = `scientificMetadata.${lhs}`;
-    const matchKeyMeasurement = `scientificMetadata.${lhs}.valueSI`;
-    const matchUnit = `scientificMetadata.${lhs}.unitSI`;
+    const formattedLhs = lhs
+      .trim()
+      .replace(/[.]/g, "\\.")
+      .replace(/ /g, "_")
+      .toLowerCase();
+    const matchKeyGeneric = `${field}.${formattedLhs}`;
+    const matchKeyMeasurement = `${field}.${formattedLhs}.valueSI`;
+    const matchUnit = `${field}.${formattedLhs}.unitSI`;
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
@@ -133,7 +147,6 @@ export const mapScientificQuery = (
       }
     }
   });
-
   return scientificFilterQuery;
 };
 
@@ -211,7 +224,9 @@ export const handleAxiosRequestError = (
     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
     // http.ClientRequest in node.js
     console.error(error.request);
-    Logger.error({ request: error.request }, context);
+
+    // Inspect is needed to deal with circular references issue.
+    Logger.error({ request: inspect(error.request) }, context);
   } else {
     // Something happened in setting up the request that triggered an Error
     Logger.error("Error: " + error.message, context);
@@ -253,11 +268,11 @@ export const parseLimitFilters = (
   sort?: { [key: string]: "asc" | "desc" } | string;
 } => {
   if (!limits) {
-    return { limit: 100, skip: 0 };
+    return { limit: 100, skip: 0, sort: {} };
   }
   const limit = limits.limit ? limits.limit : 100;
   const skip = limits.skip ? limits.skip : 0;
-  let sort;
+  let sort = {};
   if (limits.order) {
     const [field, direction] = limits.order.split(":");
     if (direction === "asc" || direction === "desc") {
@@ -445,10 +460,10 @@ export const createFullqueryFilter = <T>(
         key,
         fields[key],
       ) as typeof filterQuery.$text;
-    } else if (key === "scientific" || key === "sampleCharacteristics") {
+    } else if (key === "scientific" || key === "characteristics") {
       filterQuery = {
         ...filterQuery,
-        ...mapScientificQuery(fields[key]),
+        ...mapScientificQuery(key, fields[key]),
       };
     } else if (key === "userGroups") {
       filterQuery["$or"]?.push({
@@ -584,6 +599,7 @@ const pipelineHandler = {
   ) => {
     const match = {
       $match: mapScientificQuery(
+        key,
         fields[key as keyof Y] as unknown as IScientificFilter[],
       ),
     };

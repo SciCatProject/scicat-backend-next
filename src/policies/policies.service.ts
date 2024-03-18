@@ -11,13 +11,20 @@ import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
-import { UpdatePolicyDto } from "./dto/update-policy.dto";
+import {
+  PartialUpdatePolicyDto,
+  UpdatePolicyDto,
+} from "./dto/update-policy.dto";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { UsersService } from "src/users/users.service";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";
-import { addCreatedByFields, addUpdatedByField } from "src/common/utils";
+import {
+  addCreatedByFields,
+  addUpdatedByField,
+  parseLimitFilters,
+} from "src/common/utils";
 import { REQUEST } from "@nestjs/core";
 
 @Injectable()
@@ -100,19 +107,14 @@ export class PoliciesService implements OnModuleInit {
 
   async findAll(filter: IPolicyFilter): Promise<Policy[]> {
     const whereFilter: FilterQuery<PolicyDocument> = filter.where ?? {};
-    let limit = 100;
-    let skip = 0;
-    let sort = {};
-    if (filter.limit) {
-      limit = filter.limit;
-    }
-    if (filter.skip) {
-      skip = filter.skip;
-    }
-    if (filter.order) {
-      const [field, direction] = filter.order.split(":");
-      sort = { [field]: direction };
-    }
+
+    const limits = {
+      limit: filter.limit as number,
+      skip: filter.skip as number,
+      order: filter.order as string,
+    };
+    const { limit, skip, sort } = parseLimitFilters(limits);
+
     return this.policyModel
       .find(whereFilter)
       .limit(limit)
@@ -132,7 +134,7 @@ export class PoliciesService implements OnModuleInit {
 
   async update(
     filter: FilterQuery<PolicyDocument>,
-    updatePolicyDto: UpdatePolicyDto,
+    updatePolicyDto: PartialUpdatePolicyDto,
   ): Promise<Policy | null> {
     const username = (this.request.user as JWTUser).username;
     return this.policyModel
@@ -184,7 +186,7 @@ export class PoliciesService implements OnModuleInit {
           try {
             // allow all functional users
             return await this.policyModel
-              .updateOne({ ownerGroup }, data, { new: true })
+              .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();
@@ -203,7 +205,7 @@ export class PoliciesService implements OnModuleInit {
 
           try {
             return await this.policyModel
-              .updateOne({ ownerGroup }, data, { new: true })
+              .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
             throw new InternalServerErrorException();

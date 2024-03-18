@@ -14,7 +14,7 @@ import {
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateSampleDto } from "./dto/create-sample.dto";
-import { UpdateSampleDto } from "./dto/update-sample.dto";
+import { PartialUpdateSampleDto } from "./dto/update-sample.dto";
 import { ISampleFields } from "./interfaces/sample-filters.interface";
 import { SampleClass, SampleDocument } from "./schemas/sample.schema";
 
@@ -121,7 +121,7 @@ export class SamplesService {
 
   async update(
     filter: FilterQuery<SampleDocument>,
-    updateSampleDto: UpdateSampleDto,
+    updateSampleDto: PartialUpdateSampleDto,
   ): Promise<SampleClass | null> {
     const username = (this.request.user as JWTUser).username;
 

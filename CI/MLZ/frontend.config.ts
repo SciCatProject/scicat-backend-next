@@ -4,17 +4,17 @@ export default {
   retrieveDestinations: [
     {
       option: "MLZ",
-      location: "/home/out"
+      location: "/home/out",
     },
     {
-      option: "MLZ S3 (Testphase)"
-    }
+      option: "MLZ S3 (Testphase)",
+    },
   ],
   accessTokenPrefix: "Bearer ",
   lbTokenPrefix: "Bearer ",
   externalAuthEndpoint: "",
   editMetadataEnabled: true,
-  editSampleEnabled: true,
+  addSampleEnabled: true,
   editPublishedData: true,
   scienceSearchEnabled: true,
   facility: "MLZ",
@@ -33,74 +33,74 @@ export default {
       name: "select",
       order: 0,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "datasetName",
       order: 1,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "runNumber",
       order: 2,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "sourceFolder",
       order: 3,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "size",
       order: 4,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "creationTime",
       order: 5,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "type",
       order: 6,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "image",
       order: 7,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "metadata",
       order: 8,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "proposalId",
       order: 9,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "ownerGroup",
       order: 10,
       type: "standard",
-      enabled: true
+      enabled: true,
     },
     {
       name: "dataStatus",
       order: 11,
       type: "standard",
-      enabled: true
-    }
+      enabled: true,
+    },
   ],
   logbookEnabled: true,
   metadataPreviewEnabled: true,
@@ -121,8 +121,9 @@ export default {
   metadataStructure: "",
   loginFormEnabled: true,
   oAuth2Endpoints: [
-	  {
-		  displayText: "MLZ",
-		  authURL: "api/v3/auth/oidc"}
-  ]
+    {
+      displayText: "MLZ",
+      authURL: "api/v3/auth/oidc",
+    },
+  ],
 };

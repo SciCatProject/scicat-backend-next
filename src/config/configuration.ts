@@ -7,6 +7,10 @@ import {
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
+import * as fs from "fs";
+import { merge } from "lodash";
+import localconfiguration from "./localconfiguration";
+import { boolean } from "mathjs";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -28,12 +32,44 @@ const configuration = () => {
   const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
-  const sampleGroups = process.env.SAMPLE_GROUPS || ("" as string);
+  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
+  const samplePrivilegedGroups =
+    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+
+  const oidcUserQueryFilter =
+    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+
+  const oidcUsernameFieldMapping =
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
+
+  const defaultLogger = {
+    type: "DefaultLogger",
+    modulePath: "./loggingProviders/defaultLogger",
+    config: {},
+  };
+  const jsonConfigMap: { [key: string]: object[] | boolean } = {};
+  const jsonConfigFileList: { [key: string]: string } = {
+    loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+  };
+  Object.keys(jsonConfigFileList).forEach((key) => {
+    const filePath = jsonConfigFileList[key];
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      try {
+        jsonConfigMap[key] = JSON.parse(data);
+      } catch (error) {
+        console.error(
+          "Error json config file parsing " + filePath + " : " + error,
+        );
+        jsonConfigMap[key] = false;
+      }
+    }
+  });
 
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups static values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups);
+  // Logger.log("- Delete groups : " + deleteGroups );
   // Logger.log("- Create dataset groups : " + createDatasetGroups);
   // Logger.log(
   //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
@@ -48,8 +84,9 @@ const configuration = () => {
   registerDefaultActions();
   const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.example.json");
 
-  return {
+  const config = {
     jobConfiguration: job_configs,
+    loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -61,17 +98,29 @@ const configuration = () => {
       .map((v) => v.trim()),
     proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
     sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
+    samplePrivilegedGroups: samplePrivilegedGroups
+      .split(",")
+      .map((v) => v.trim()),
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
     updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
-    accessGroupsStaticValues:
-      accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
-    accessGroupService: {
+    accessGroupsGraphQlConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
       token: process.env.ACCESS_GROUP_SERVICE_TOKEN,
       apiUrl: process.env.ACCESS_GROUP_SERVICE_API_URL,
+      responseProcessorSrc: process.env.ACCESS_GROUP_SERVICE_HANDLER, // ts import defining the resposne processor and query
     },
+    accessGroupsStaticConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
+      value: accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
+    },
+    accessGroupsOIDCPayloadConfig: {
+      enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
+      accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
+    },
+
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
@@ -94,6 +143,7 @@ const configuration = () => {
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
+
     oidc: {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
@@ -105,6 +155,22 @@ const configuration = () => {
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
       returnURL: process.env.OIDC_RETURN_URL,
+      userInfoMapping: {
+        id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
+        username:
+          oidcUsernameFieldMapping.split(",").map((v) => v.trim()) ?? [], // Example: "iss, username"
+        displayName: process.env.OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME,
+        familyName: process.env.OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME,
+        emails: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAILS,
+        email: process.env.OIDC_USERINFO_MAPPING_FIELD_EMAIL,
+        thumbnailPhoto: process.env.OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO,
+        groups: process.env.OIDC_USERINFO_MAPPING_FIELD_GROUP, // Example: groups
+        provider: process.env.OIDC_USERINFO_MAPPING_FIELD_PROVIDER,
+      },
+      userQuery: {
+        operator: process.env.OIDC_USERQUERY_OPERATOR || "or", // Example: "or" or "and"
+        filter: oidcUserQueryFilter.split(",").map((v) => v.trim()) ?? [], // Example: "username:username, email:email"
+      },
     },
     logbook: {
       enabled:
@@ -114,6 +180,7 @@ const configuration = () => {
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
     },
+
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
       : undefined,
@@ -159,6 +226,7 @@ const configuration = () => {
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
   };
+  return merge(config, localconfiguration);
 };
 
 /**

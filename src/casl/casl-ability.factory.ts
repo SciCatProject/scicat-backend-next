@@ -210,8 +210,8 @@ export class CaslAbilityFactory {
         */
 
         // this tests should be all removed, once we are done with authorization review
-        //can(Action.ListAll, DatasetClass);
-        // can(Action.ListAll, ProposalClass);
+        //can(AuthOp.ListAll, DatasetClass);
+        // can(AuthOp.ListAll, ProposalClass);
         can(AuthOp.ReadAll, UserIdentity);
 
         // -------------------------------------
@@ -1050,175 +1050,249 @@ export class CaslAbilityFactory {
     // ************************************
     // SAMPLES AUTHORIZATION
     // ************************************
-
     if (!user) {
-      /**
-       * unauthenticated users
-       */
+      // -------------------------------------
+      // unauthenticated users
+      // -------------------------------------
 
       // -------------------------------------
-      // samples
-      // -------------------------------------
       // endpoint authorization
-      can(AuthOp.SamplesRead, SampleClass);
-      cannot(AuthOp.SamplesCreate, SampleClass);
-      cannot(AuthOp.SamplesUpdate, SampleClass);
-      cannot(AuthOp.SamplesDelete, SampleClass);
-      can(AuthOp.SamplesAttachmentRead, SampleClass);
-      cannot(AuthOp.SamplesAttachmentCreate, SampleClass);
-      cannot(AuthOp.SamplesAttachmentUpdate, SampleClass);
-      cannot(AuthOp.SamplesAttachmentDelete, SampleClass);
-      cannot(AuthOp.SamplesDatasetRead, SampleClass);
+      can(AuthOp.SampleRead, SampleClass);
+      cannot(AuthOp.SampleCreate, SampleClass);
+      cannot(AuthOp.SampleUpdate, SampleClass);
+      cannot(AuthOp.SampleDelete, SampleClass);
+      can(AuthOp.SampleAttachmentRead, SampleClass);
+      cannot(AuthOp.SampleAttachmentCreate, SampleClass);
+      cannot(AuthOp.SampleAttachmentUpdate, SampleClass);
+      cannot(AuthOp.SampleAttachmentDelete, SampleClass);
+      cannot(AuthOp.SampleDatasetRead, SampleClass);
 
       // -------------------------------------
       // data instance authorization
-      can(AuthOp.SamplesReadManyPublic, SampleClass);
-      can(AuthOp.SamplesReadOnePublic, SampleClass, {
+      can(AuthOp.SampleReadManyPublic, SampleClass);
+      can(AuthOp.SampleReadOnePublic, SampleClass, {
         isPublished: true,
       });
-      can(AuthOp.SamplesAttachmentReadPublic, SampleClass, {
+      can(AuthOp.SampleAttachmentReadPublic, SampleClass, {
         isPublished: true,
       });
-    } else if (
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in DELETE_GROUPS
-        */
+    } else {
+      // -------------------------------------
+      // authenticated users
+      // -------------------------------------
 
-      // -------------------------------------
-      // samples
-      // -------------------------------------
-      // endpoint authorization
-      can(AuthOp.SamplesDelete, SampleClass);
+      if (
+        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+      ) {
+        // -------------------------------------
+        // users that belong to any of the group listed in DELETE_GROUPS
+        // -------------------------------------
 
-      // -------------------------------------
-      // data instance authorization
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.SampleDelete, SampleClass);
+        can(AuthOp.SampleAttachmentDelete, SampleClass);
 
-      can(AuthOp.SamplesDeleteAny, SampleClass);
-    } else if (
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.SampleDeleteAny, SampleClass);
+        can(AuthOp.SampleAttachmentDeleteAny, SampleClass);
+      } else {
+        // -------------------------------------
+        // users that do not belong to any of the group listed in DELETE_GROUPS
+        // -------------------------------------
 
-      // -------------------------------------
-      // samples
-      // -------------------------------------
-      // endpoint authorization
-      can(AuthOp.SamplesRead, SampleClass);
-      can(AuthOp.SamplesCreate, SampleClass);
-      can(AuthOp.SamplesUpdate, SampleClass);
-      cannot(AuthOp.SamplesDelete, SampleClass);
-      can(AuthOp.SamplesAttachmentRead, SampleClass);
-      can(AuthOp.SamplesAttachmentCreate, SampleClass);
-      can(AuthOp.SamplesAttachmentUpdate, SampleClass);
-      can(AuthOp.SamplesAttachmentDelete, SampleClass);
-      can(AuthOp.SamplesDatasetRead, SampleClass);
+        // -------------------------------------
+        // endpoint authorization
+        cannot(AuthOp.SampleDelete, SampleClass);
 
-      // -------------------------------------
-      // data instance authorization
-      can(AuthOp.SamplesReadAny, SampleClass);
-      can(AuthOp.SamplesCreateAny, SampleClass);
-      can(AuthOp.SamplesUpdateAny, SampleClass);
-      cannot(AuthOp.SamplesDeleteAny, SampleClass);
-      can(AuthOp.SamplesAttachmentReadAny, SampleClass);
-      can(AuthOp.SamplesAttachmentCreateAny, SampleClass);
-      can(AuthOp.SamplesAttachmentUpdateAny, SampleClass);
-      can(AuthOp.SamplesAttachmentDeleteAny, SampleClass);
-    } else if (
-      user.currentGroups.some((g) => configuration().sampleGroups.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in SAMPLE_GROUPS
-       */
+        // -------------------------------------
+        // data instance authorization
+        cannot(AuthOp.SampleDeleteAny, SampleClass);
+        cannot(AuthOp.SampleDeleteOwner, SampleClass);
+      }
 
-      // -------------------------------------
-      // samples
-      // -------------------------------------
-      // endpoint authorization
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ADMIN_GROUPS
+        // -------------------------------------
 
-      can(AuthOp.SamplesRead, SampleClass);
-      can(AuthOp.SamplesCreate, SampleClass);
-      can(AuthOp.SamplesUpdate, SampleClass);
-      cannot(AuthOp.SamplesDelete, SampleClass);
-      can(AuthOp.SamplesAttachmentRead, SampleClass);
-      can(AuthOp.SamplesAttachmentCreate, SampleClass);
-      can(AuthOp.SamplesAttachmentUpdate, SampleClass);
-      can(AuthOp.SamplesAttachmentDelete, SampleClass);
-      can(AuthOp.SamplesDatasetRead, SampleClass);
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.SampleRead, SampleClass);
+        can(AuthOp.SampleCreate, SampleClass);
+        can(AuthOp.SampleUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentRead, SampleClass);
+        can(AuthOp.SampleAttachmentCreate, SampleClass);
+        can(AuthOp.SampleAttachmentUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentDelete, SampleClass);
+        can(AuthOp.SampleDatasetRead, SampleClass);
 
-      // -------------------------------------
-      // data instance authorization
-      can(AuthOp.SamplesCreateAny, SampleClass);
-      can(AuthOp.SamplesReadManyAccess, SampleClass);
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        isPublished: true,
-      });
-      //-
-      can(AuthOp.SamplesAttachmentCreateAny, SampleClass);
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        isPublished: true,
-      });
-      can(AuthOp.SamplesAttachmentUpdateOwner, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesAttachmentDeleteOwner, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-    } else if (user) {
-      /**
-       * authenticated users
-       */
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.SampleReadAny, SampleClass);
+        can(AuthOp.SampleCreateAny, SampleClass);
+        can(AuthOp.SampleUpdateAny, SampleClass);
+        can(AuthOp.SampleAttachmentReadAny, SampleClass);
+        can(AuthOp.SampleAttachmentCreateAny, SampleClass);
+        can(AuthOp.SampleAttachmentUpdateAny, SampleClass);
+        can(AuthOp.SampleAttachmentDeleteAny, SampleClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          configuration().samplePrivilegedGroups.includes(g),
+        )
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in SAMPLE_GROUPS
+        //
 
-      // -------------------------------------
-      // samples
-      // -------------------------------------
-      // endpoint authorization
-      can(AuthOp.SamplesRead, SampleClass);
-      cannot(AuthOp.SamplesCreate, SampleClass);
-      cannot(AuthOp.SamplesUpdate, SampleClass);
-      cannot(AuthOp.SamplesDelete, SampleClass);
-      can(AuthOp.SamplesAttachmentRead, SampleClass);
-      cannot(AuthOp.SamplesAttachmentCreate, SampleClass);
-      cannot(AuthOp.SamplesAttachmentUpdate, SampleClass);
-      cannot(AuthOp.SamplesAttachmentDelete, SampleClass);
-      // -------------------------------------
-      // data instance authorization
-      can(AuthOp.SamplesReadManyAccess, SampleClass);
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesReadOneAccess, SampleClass, {
-        isPublished: true,
-      });
-      // -
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(AuthOp.SamplesAttachmentReadAccess, SampleClass, {
-        isPublished: true,
-      });
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.SampleRead, SampleClass);
+        can(AuthOp.SampleCreate, SampleClass);
+        can(AuthOp.SampleUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentRead, SampleClass);
+        can(AuthOp.SampleAttachmentCreate, SampleClass);
+        can(AuthOp.SampleAttachmentUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentDelete, SampleClass);
+        can(AuthOp.SampleDatasetRead, SampleClass);
+
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.SampleCreateAny, SampleClass);
+        can(AuthOp.SampleUpdateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadManyAccess, SampleClass);
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          isPublished: true,
+        });
+        can(AuthOp.SampleAttachmentCreateAny, SampleClass);
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          isPublished: true,
+        });
+        can(AuthOp.SampleAttachmentUpdateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentDeleteOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (
+        user.currentGroups.some((g) =>
+          configuration().sampleGroups.includes(g),
+        ) ||
+        configuration().sampleGroups.includes("#all")
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in SAMPLE_GROUPS
+        //
+
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.SampleRead, SampleClass);
+        can(AuthOp.SampleCreate, SampleClass);
+        can(AuthOp.SampleUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentRead, SampleClass);
+        can(AuthOp.SampleAttachmentCreate, SampleClass);
+        can(AuthOp.SampleAttachmentUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentDelete, SampleClass);
+        can(AuthOp.SampleDatasetRead, SampleClass);
+
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.SampleCreateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleUpdateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadManyAccess, SampleClass);
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          isPublished: true,
+        });
+        can(AuthOp.SampleAttachmentCreateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          isPublished: true,
+        });
+        can(AuthOp.SampleAttachmentUpdateOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentDeleteOwner, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else {
+        // -------------------------------------
+        // users with no elevated permissions
+        // -------------------------------------
+
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.SampleRead, SampleClass);
+        cannot(AuthOp.SampleCreate, SampleClass);
+        cannot(AuthOp.SampleUpdate, SampleClass);
+        can(AuthOp.SampleAttachmentRead, SampleClass);
+        cannot(AuthOp.SampleAttachmentCreate, SampleClass);
+        cannot(AuthOp.SampleAttachmentUpdate, SampleClass);
+        if (
+          !user.currentGroups.some((g) =>
+            configuration().deleteGroups.includes(g),
+          )
+        ) {
+          cannot(AuthOp.SampleAttachmentDelete, SampleClass);
+        }
+
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.SampleReadManyAccess, SampleClass);
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleReadOneAccess, SampleClass, {
+          isPublished: true,
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(AuthOp.SampleAttachmentReadAccess, SampleClass, {
+          isPublished: true,
+        });
+      }
     }
+
     // ************************************
     // INSTRUMENT AUTHORIZATION
     // ************************************
@@ -1262,12 +1336,12 @@ export class CaslAbilityFactory {
     }
 
     // Instrument permissions
-    //can(Action.Read, Instrument);
+    //can(AuthOp.Read, Instrument);
     //if (user.currentGroups.some((g) => adminGroups.includes(g))) {
-    //  can(Action.Manage, Instrument);
+    //  can(AuthOp.Manage, Instrument);
     //}
 
-    //can(Action.Manage, JobClass);
+    //can(AuthOp.Manage, JobClass);
 
     can(AuthOp.Read, Logbook);
 
@@ -1275,63 +1349,63 @@ export class CaslAbilityFactory {
     can(AuthOp.Update, PublishedData);
     can(AuthOp.Create, PublishedData);
 
-    // can(Action.Manage, Attachment, {
+    // can(AuthOp.Manage, Attachment, {
     //   ownerGroup: { $in: user.currentGroups },
     // });
-    // can(Action.Manage, Datablock, {
+    // can(AuthOp.Manage, Datablock, {
     //   ownerGroup: { $in: user.currentGroups },
     // });
-    // can(Action.Manage, OrigDatablock, {
+    // can(AuthOp.Manage, OrigDatablock, {
     //   ownerGroup: { $in: user.currentGroups },
     // });
 
     // if (user.currentGroups.includes(Role.Admin)) {
-    //   can(Action.Manage, "all");
+    //   can(AuthOp.Manage, "all");
     // }
     // if (user.currentGroups.includes(Role.ArchiveManager)) {
-    //   //cannot(Action.Create, DatasetClass);
-    //   //cannot(Action.Update, DatasetClass);
-    //   //can(Action.Delete, DatasetClass);
-    //   cannot(Action.Manage, OrigDatablock);
-    //   cannot(Action.Create, OrigDatablock);
-    //   cannot(Action.Update, OrigDatablock);
-    //   can(Action.Delete, OrigDatablock);
-    //   cannot(Action.Manage, Datablock);
-    //   cannot(Action.Create, Datablock);
-    //   cannot(Action.Update, Datablock);
-    //   can(Action.Delete, Datablock);
-    //   can(Action.Delete, PublishedData);
+    //   //cannot(AuthOp.Create, DatasetClass);
+    //   //cannot(AuthOp.Update, DatasetClass);
+    //   //can(AuthOp.Delete, DatasetClass);
+    //   cannot(AuthOp.Manage, OrigDatablock);
+    //   cannot(AuthOp.Create, OrigDatablock);
+    //   cannot(AuthOp.Update, OrigDatablock);
+    //   can(AuthOp.Delete, OrigDatablock);
+    //   cannot(AuthOp.Manage, Datablock);
+    //   cannot(AuthOp.Create, Datablock);
+    //   cannot(AuthOp.Update, Datablock);
+    //   can(AuthOp.Delete, Datablock);
+    //   can(AuthOp.Delete, PublishedData);
     //   //--------------------------------
     //   // instrument
-    //   cannot(Action.InstrumentRead, Instrument);
-    //   cannot(Action.InstrumentCreate, Instrument);
-    //   cannot(Action.InstrumentUpdate, Instrument);
-    //   can(Action.InstrumentDelete, Instrument);
+    //   cannot(AuthOp.InstrumentRead, Instrument);
+    //   cannot(AuthOp.InstrumentCreate, Instrument);
+    //   cannot(AuthOp.InstrumentUpdate, Instrument);
+    //   can(AuthOp.InstrumentDelete, Instrument);
     // }
     //if (user.currentGroups.includes(Role.GlobalAccess)) {
-    //  can(Action.Read, "all");
+    //  can(AuthOp.Read, "all");
     //}
     // if (user.currentGroups.includes(Role.Ingestor)) {
-    //   can(Action.Create, Attachment);
+    //   can(AuthOp.Create, Attachment);
 
-    //   //cannot(Action.Delete, DatasetClass);
-    //   //can(Action.Create, DatasetClass);
-    //   //can(Action.Update, DatasetClass);
+    //   //cannot(AuthOp.Delete, DatasetClass);
+    //   //can(AuthOp.Create, DatasetClass);
+    //   //can(AuthOp.Update, DatasetClass);
 
-    //   can(Action.Create, Instrument);
-    //   can(Action.Update, Instrument);
+    //   can(AuthOp.Create, Instrument);
+    //   can(AuthOp.Update, Instrument);
     // }
     // if (user.currentGroups.includes(Role.ProposalIngestor)) {
-    //   cannot(Action.Delete, ProposalClass);
-    //   can(Action.Create, ProposalClass);
-    //   can(Action.Update, ProposalClass);
-    //   can(Action.Read, ProposalClass);
-    //   can(Action.ListAll, ProposalClass);
+    //   cannot(AuthOp.Delete, ProposalClass);
+    //   can(AuthOp.Create, ProposalClass);
+    //   can(AuthOp.Update, ProposalClass);
+    //   can(AuthOp.Read, ProposalClass);
+    //   can(AuthOp.ListAll, ProposalClass);
     // }
 
-    //can(Action.Create, UserSettings, { userId: user._id });
-    //can(Action.Read, UserSettings, { userId: user._id });
-    //can(Action.Update, UserSettings, { userId: user._id });
+    //can(AuthOp.Create, UserSettings, { userId: user._id });
+    //can(AuthOp.Read, UserSettings, { userId: user._id });
+    //can(AuthOp.Update, UserSettings, { userId: user._id });
 
     return build({
       detectSubjectType: (item) =>

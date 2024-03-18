@@ -1,15 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { UpdateUserSettingsDto } from "./update-user-settings.dto";
 
-export class CreateUserSettingsDto {
+export class CreateUserSettingsDto extends UpdateUserSettingsDto {
   @ApiProperty({ type: String, required: true })
   readonly userId: string;
-
-  @ApiProperty()
-  readonly columns: Record<string, unknown>[];
-
-  @ApiProperty({ type: Number, required: false, default: 25 })
-  readonly datasetCount?: number;
-
-  @ApiProperty({ type: Number, required: false, default: 25 })
-  readonly jobCount?: number;
 }

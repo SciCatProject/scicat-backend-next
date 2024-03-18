@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
-import { UpdateInstrumentDto } from "./dto/update-instrument.dto";
+import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -135,7 +135,7 @@ export class InstrumentsController {
   @Patch(":id")
   async update(
     @Param("id") id: string,
-    @Body() updateInstrumentDto: UpdateInstrumentDto,
+    @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
   ): Promise<Instrument | null> {
     try {
       const instrument = await this.instrumentsService.update(
