@@ -26,7 +26,11 @@ import { ProposalsService } from "./proposals/proposals.service";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
+import {
+  formatCamelCase,
+  unwrapJSON,
+  jsonify,
+} from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
@@ -65,9 +69,10 @@ import { HealthModule } from "./health/health.module";
           template: {
             dir: join(__dirname, "./common/email-templates"),
             adapter: new HandlebarsAdapter({
-              unwrapJSON: (json) => unwrapJSON(json),
-              keyToWord: (string) => formatCamelCase(string),
+              unwrapJSON: unwrapJSON,
+              keyToWord: formatCamelCase,
               eq: (a, b) => a === b,
+              jsonify: jsonify,
             }),
             options: {
               strict: true,

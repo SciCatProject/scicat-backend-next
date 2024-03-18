@@ -39,3 +39,7 @@ export const formatCamelCase = (camelCase: string): string => {
   const words = match.charAt(0).toUpperCase() + match.slice(1);
   return words;
 };
+
+export const jsonify = (context: any): string => {
+  return JSON.stringify(context, null, 3);
+};
