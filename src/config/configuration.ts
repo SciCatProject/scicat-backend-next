@@ -7,6 +7,7 @@ import {
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
+import { URLAction } from "src/jobs/actions/urlaction";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
@@ -82,7 +83,9 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  const job_configs: Promise<JobConfig[]> = loadJobConfig("src/jobs/config/jobConfig.example.json");
+  const job_configs: Promise<JobConfig[]> = loadJobConfig(
+    "src/jobs/config/jobConfig.example.json",
+  );
 
   const config = {
     jobConfiguration: job_configs,
@@ -236,6 +239,7 @@ export function registerDefaultActions() {
   // Create
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
+  registerCreateAction(URLAction);
   // Update
   registerUpdateAction(LogJobAction);
   registerUpdateAction(EmailJobAction);

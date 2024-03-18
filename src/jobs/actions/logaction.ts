@@ -7,7 +7,6 @@ import { Logger } from "@nestjs/common";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 
-
 export class LogJobAction<T> implements JobAction<T> {
   public static readonly actionType = "log";
 
@@ -24,6 +23,9 @@ export class LogJobAction<T> implements JobAction<T> {
   }
 
   constructor(data: Record<string, any>) {
-    Logger.log("Initializing LogJobAction. Params: " + JSON.stringify(data), "LogJobAction");
+    Logger.log(
+      "Initializing LogJobAction. Params: " + JSON.stringify(data),
+      "LogJobAction",
+    );
   }
 }
