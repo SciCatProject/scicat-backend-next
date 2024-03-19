@@ -6,7 +6,7 @@
   "editDatasetSampleEnabled": true,
   "editMetadataEnabled": true,
   "editPublishedData": false,
-  "editSampleEnabled": true,
+  "addSampleEnabled": true,
   "externalAuthEndpoint": "/api/v3/auth/msad",
   "facility": "ESS",
   "loginFacilityLabel": "ESS",
@@ -36,7 +36,7 @@
       "order": 1,
       "type": "standard",
       "enabled": true
-    },    
+    },
     {
       "name": "datasetName",
       "order": 2,
