@@ -789,6 +789,7 @@ export class CaslAbilityFactory {
       cannot(AuthOp.JobsRead, JobClass);
       cannot(AuthOp.JobsCreate, JobClass);
       cannot(AuthOp.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsDelete, JobClass);
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -803,11 +804,13 @@ export class CaslAbilityFactory {
       can(AuthOp.JobsRead, JobClass);
       can(AuthOp.JobsCreate, JobClass);
       can(AuthOp.JobsUpdate, JobClass);
+      can(AuthOp.JobsDelete, JobClass);
       // -------------------------------------
       // data instance authorization
       can(AuthOp.JobsReadAny, JobClass);
       can(AuthOp.JobsCreateAny, JobClass);
       can(AuthOp.JobsUpdateAny, JobClass);
+      can(AuthOp.JobsDeleteAny, JobClass);
     } else if (
       user.currentGroups.some((g) =>
         configuration().createJobGroups.includes(g),
@@ -824,6 +827,8 @@ export class CaslAbilityFactory {
       can(AuthOp.JobsRead, JobClass);
       can(AuthOp.JobsCreate, JobClass);
       can(AuthOp.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsDelete, JobClass);
+
       // -------------------------------------
       // data instance authorization
       can(AuthOp.JobsCreateAny, JobClass, {
@@ -851,6 +856,7 @@ export class CaslAbilityFactory {
       cannot(AuthOp.JobsRead, JobClass);
       cannot(AuthOp.JobsCreate, JobClass);
       can(AuthOp.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsDelete, JobClass);
       // -------------------------------------
       // data instance authorization
       can(AuthOp.JobsUpdateAny, JobClass, {
@@ -868,6 +874,7 @@ export class CaslAbilityFactory {
       can(AuthOp.JobsRead, JobClass);
       cannot(AuthOp.JobsCreate, JobClass);
       cannot(AuthOp.JobsUpdate, JobClass);
+      cannot(AuthOp.JobsDelete, JobClass);
       // -------------------------------------
       // data instance authorization
       can(AuthOp.JobsReadAccess, JobClass, {

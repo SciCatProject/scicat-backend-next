@@ -246,7 +246,6 @@ export class JobsController {
   //   }
   // }
 
-
   /**
    * Check that the dataset ids list is valid
    */
@@ -268,15 +267,12 @@ export class JobsController {
       );
     }
     return datasetIds;
-  }
-
+  };
 
   /**
    * Validate if the job is performable
    */
-  async validateJob(
-    createJobDto: CreateJobDto,
-  ): Promise<void> {
+  async validateJob(createJobDto: CreateJobDto): Promise<void> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
     const matchingConfig = jobConfigs.filter(
@@ -313,7 +309,6 @@ export class JobsController {
       }),
     );
   }
-
 
   /**
    * Checking if user is allowed to create job according to auth field of job configuration
@@ -365,8 +360,8 @@ export class JobsController {
           $or: [
             { ownerGroup: { $in: user.currentGroups } },
             { accessGroups: { $in: user.currentGroups } },
-            { isPublished: true }  // TBD
-          ]     
+            { isPublished: true }, // TBD
+          ],
         },
       });
 
@@ -402,12 +397,11 @@ export class JobsController {
     throw new HttpException(
       {
         status: HttpStatus.BAD_REQUEST,
-        message: "Incorrect jobParams."
+        message: "Incorrect jobParams.",
       },
       HttpStatus.BAD_REQUEST,
     );
   }
-
 
   /**
    * Send off to external service, update job in database if needed
@@ -449,7 +443,6 @@ export class JobsController {
     return;
   }
 
-
   /**
    * Create job
    */
@@ -480,7 +473,10 @@ export class JobsController {
     // Validate that request matches the current configuration
     await this.validateJob(createJobDto);
     // Check job authorization
-    await this.instanceAuthorization(createJobDto.jobParams, request.user as JWTUser);
+    await this.instanceAuthorization(
+      createJobDto.jobParams,
+      request.user as JWTUser,
+    );
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(createJobDto);
     // Perform the action that is specified in the create portion of the job configuration
@@ -490,7 +486,6 @@ export class JobsController {
     // return await this.jobsService.statusUpdate(createdJobInstance);
     return createdJobInstance;
   }
-
 
   /**
    * Update job
@@ -532,7 +527,10 @@ export class JobsController {
       );
     }
     // Check job authorization
-    await this.instanceAuthorization(currentJob.jobParams, request.user as JWTUser);
+    await this.instanceAuthorization(
+      currentJob.jobParams,
+      request.user as JWTUser,
+    );
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(id, updateJobDto);
     // Emit update event
@@ -545,13 +543,12 @@ export class JobsController {
     return updatedJob;
   }
 
-
   /**
    * Find job by id
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Read, JobClass),
+    ability.can(AuthOp.JobsRead, JobClass),
   )
   @Get(":id")
   @ApiOperation({
@@ -570,9 +567,10 @@ export class JobsController {
     return this.jobsService.findOne({ _id: id });
   }
 
-
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AuthOp.JobsRead, JobClass),
+  )
   @Get()
   @ApiQuery({
     name: "filter",
@@ -601,7 +599,9 @@ export class JobsController {
   // }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AuthOp.JobsRead, JobClass),
+  )
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -614,7 +614,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Delete, JobClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AuthOp.JobsDelete, JobClass),
+  )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });

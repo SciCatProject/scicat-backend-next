@@ -180,6 +180,7 @@ export enum AuthOp {
   JobsCreate = "jobs_create",
   JobsRead = "jobs_read",
   JobsUpdate = "jobs_update",
+  JobsDelete = "jobs_delete",
   // data instance authorization
   JobsCreateOwner = "jobs_create_owner",
   JobsCreateAny = "jobs_create_any",
@@ -187,6 +188,8 @@ export enum AuthOp {
   JobsReadAny = "jobs_read_any",
   JobsUpdateAccess = "jobs_update_access",
   JobsUpdateAny = "jobs_update_any",
+  JobsDeleteAccess = "jobs_delete_access",
+  JobsDeleteAny = "jobs_delete_any",
   // -------------
   // Users
   UserReadOwn = "user_read_own",
