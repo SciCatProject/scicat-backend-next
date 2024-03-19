@@ -21,7 +21,6 @@ import {
   InternalServerErrorException,
   ConflictException,
   BadRequestException,
-  Header,
 } from "@nestjs/common";
 import { MongoError } from "mongodb";
 import {
@@ -97,7 +96,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
 
@@ -548,10 +546,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
   ): Promise<{ valid: boolean }> {
-    const datasetDTO = await this.checkPermissionsForDatasetCreate(
-      request,
-      createDatasetDto,
-    );
+    await this.checkPermissionsForDatasetCreate(request, createDatasetDto);
 
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,
@@ -923,8 +918,6 @@ export class DatasetsController {
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
   ): Promise<DatasetClass | null> {
-    const user: JWTUser = request.user as JWTUser;
-
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -1343,7 +1336,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Partial<Attachment>> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetRead,
@@ -1439,7 +1432,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Attachment[]> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentRead,
@@ -1483,7 +1476,7 @@ export class DatasetsController {
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentUpdate,
@@ -1527,7 +1520,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Param("aid") aid: string,
   ): Promise<unknown> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetAttachmentDelete,
@@ -1637,7 +1630,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetOrigdatablockCreate,
@@ -1682,7 +1675,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<OrigDatablock[]> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetOrigdatablockRead,
@@ -1913,7 +1906,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
   ): Promise<Datablock[]> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    await this.checkPermissionsForDatasetExtended(
       request,
       pid,
       Action.DatasetDatablockRead,

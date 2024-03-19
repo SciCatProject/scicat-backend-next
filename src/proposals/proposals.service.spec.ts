@@ -30,6 +30,7 @@ const mockProposal: ProposalClass = {
 
 describe("ProposalsService", () => {
   let service: ProposalsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<ProposalClass>;
 
   beforeEach(async () => {

@@ -87,6 +87,7 @@ const mockDataset: DatasetClass = {
 
 describe("DatasetsService", () => {
   let service: DatasetsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<DatasetClass>;
 
   beforeEach(async () => {

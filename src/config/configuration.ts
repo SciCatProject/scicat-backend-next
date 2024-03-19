@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
@@ -57,20 +56,6 @@ const configuration = () => {
       }
     }
   });
-
-  // Logger.log("Config SETUP");
-  // Logger.log("- Access groups statisc values : " + accessGroupsStaticValues);
-  // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups );
-  // Logger.log("- Create dataset groups : " + createDatasetGroups);
-  // Logger.log(
-  //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
-  // );
-  // Logger.log(
-  //   "- Create dataset privileged groups : " + createDatasetPrivilegedGroups,
-  // );
-  // Logger.log("- Create job groups : " + createJobGroups);
-  // Logger.log("- Update job groups : " + updateJobGroups);
 
   const config = {
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],

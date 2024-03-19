@@ -1,10 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import {
-  Attachment,
-  AttachmentSchema,
-} from "src/attachments/schemas/attachment.schema";
+
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
   MeasurementPeriodClass,
