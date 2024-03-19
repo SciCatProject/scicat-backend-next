@@ -431,7 +431,12 @@ const TestData = {
   SampleCorrect: {
     owner: "Max Novelli",
     description: "This is a very important sample",
-    sampleCharacteristics: {},
+    sampleCharacteristics: {
+      chemical_formula: {
+        value: "H2O",
+        unit: "",
+      },
+    },
     ownerGroup: "ess",
     accessGroups: ["data scientist", "instrument scientist"],
   },
