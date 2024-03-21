@@ -81,7 +81,7 @@ your own _functionalAccounts.json_ file.
 
 ### Loggers configuration
 
-Providing a file called loggers.json\_ at the root of the project, locally or in the container, and create an external logger class in the `src/loggers/loggingProviders/`directory will automatically create specified one or multiple loggers instances.
+Providing a file called _loggers.json_ at the root of the project, locally or in the container, and create an external logger class in the `src/loggers/loggingProviders/`directory will automatically create specified one or multiple loggers instances.
 
 The `loggers.json.example` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
 
