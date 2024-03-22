@@ -42,6 +42,9 @@ const dataset3 = {
 };
 
 describe("0300: DatasetAuthorization: Test access to dataset", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
