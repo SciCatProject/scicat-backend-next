@@ -36,6 +36,9 @@ let accessTokenAdminIngestor = null,
   attachmentId10 = null;
 
 describe("2250: Sample Authorization", () => {
+  before(() => {
+    db.collection("Sample").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -73,7 +76,8 @@ describe("2250: Sample Authorization", () => {
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: TestData.Accounts["archiveManager"]["password"],
+                        password:
+                          TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
@@ -89,7 +93,8 @@ describe("2250: Sample Authorization", () => {
                               appUrl,
                               {
                                 username: "user4",
-                                password: TestData.Accounts["user4"]["password"],
+                                password:
+                                  TestData.Accounts["user4"]["password"],
                               },
                               (tokenVal) => {
                                 accessTokenUser4 = tokenVal;
@@ -97,7 +102,8 @@ describe("2250: Sample Authorization", () => {
                                   appUrl,
                                   {
                                     username: "user5.1",
-                                    password: TestData.Accounts["user5.1"]["password"],
+                                    password:
+                                      TestData.Accounts["user5.1"]["password"],
                                   },
                                   (tokenVal) => {
                                     accessTokenUser5 = tokenVal;
@@ -126,7 +132,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 1";
     sample.ownerGroup = "adminingestor";
-    sample.accessGroups=["group5"];
+    sample.accessGroups = ["group5"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -151,7 +157,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 2";
     sample.ownerGroup = "sampleingestor";
-    sample.accessGroups=["group3"];
+    sample.accessGroups = ["group3"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -176,7 +182,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 3";
     sample.ownerGroup = "group1";
-    sample.accessGroups=["group3"];
+    sample.accessGroups = ["group3"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -199,9 +205,9 @@ describe("2250: Sample Authorization", () => {
     let sample = {
       ...TestData.SampleCorrect,
     };
-    sample.description = "Sample 4"
+    sample.description = "Sample 4";
     sample.ownerGroup = "group2";
-    sample.accessGroups=["group4"];
+    sample.accessGroups = ["group4"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -226,8 +232,8 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 10 Public";
     sample.ownerGroup = "nogroup";
-    sample.accessGroups=[];
-    sample.isPublished=true;
+    sample.accessGroups = [];
+    sample.isPublished = true;
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -252,7 +258,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 5";
     sample.ownerGroup = "adminingestor";
-    sample.accessGroups=["group5","group2"];
+    sample.accessGroups = ["group5", "group2"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -277,7 +283,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 6";
     sample.ownerGroup = "sampleingestor";
-    sample.accessGroups=["group1","group4"];
+    sample.accessGroups = ["group1", "group4"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -302,7 +308,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 7";
     sample.ownerGroup = "group1";
-    sample.accessGroups=["group2","group3"];
+    sample.accessGroups = ["group2", "group3"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -327,7 +333,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 8";
     sample.ownerGroup = "group2";
-    sample.accessGroups=[];
+    sample.accessGroups = [];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -380,7 +386,7 @@ describe("2250: Sample Authorization", () => {
     };
     sample.description = "Sample 9";
     sample.ownerGroup = "group1";
-    sample.accessGroups=["group5"];
+    sample.accessGroups = ["group5"];
 
     return request(appUrl)
       .post("/api/v3/Samples")
@@ -576,12 +582,12 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
   });
-  
+
   function defineAttachment(caption) {
     return {
       thumbnail: TestData.AttachmentCorrect.thumbnail,
-      caption: caption || TestData.AttachmentCorrect.caption
-    }
+      caption: caption || TestData.AttachmentCorrect.caption,
+    };
   }
 
   // sample attachment
@@ -600,12 +606,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("adminingestor");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("adminingestor");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -630,12 +632,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("sampleingestor");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("sampleingestor");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -660,12 +658,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group1");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group1");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -690,12 +684,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group2");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group2");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -720,12 +710,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("nogroup");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("nogroup");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -750,12 +736,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("adminingestor");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("adminingestor");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -780,12 +762,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("sampleingestor");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("sampleingestor");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -810,12 +788,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group1");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group1");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -840,12 +814,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group2");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group2");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -892,12 +862,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group1");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group1");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -933,12 +899,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group1");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group1");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -963,12 +925,8 @@ describe("2250: Sample Authorization", () => {
         res.body.should.have
           .property("thumbnail")
           .and.equal(attachment.thumbnail);
-        res.body.should.have
-          .property("caption")
-          .and.equal(attachment.caption);
-        res.body.should.have
-          .property("ownerGroup")
-          .and.equal("group1");
+        res.body.should.have.property("caption").and.equal(attachment.caption);
+        res.body.should.have.property("ownerGroup").and.equal("group1");
         res.body.should.have.property("accessGroups");
         res.body.should.have.property("createdBy");
         res.body.should.have.property("updatedBy").and.be.string;
@@ -977,7 +935,7 @@ describe("2250: Sample Authorization", () => {
         attachmentId9 = res.body["id"];
       });
   });
- 
+
   it("0370: adds an attachment as User 2 to sample 1, which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Samples/" + sampleId1 + "/attachments")
@@ -1109,7 +1067,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "adminingestor",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1122,7 +1080,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(2);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId1, sampleId5]);
         });
@@ -1133,7 +1091,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "group1",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1146,7 +1104,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(3);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId3, sampleId7, sampleId9]);
         });
@@ -1169,7 +1127,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "sampleingestor",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1182,7 +1140,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(2);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId2, sampleId6]);
         });
@@ -1193,7 +1151,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "group1",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1225,7 +1183,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "group1",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1238,7 +1196,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.a("array").and.to.have.length(3);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId3, sampleId7, sampleId9]);
         });
@@ -1249,7 +1207,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "group2",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1281,7 +1239,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "group2",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1294,7 +1252,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(2);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId4, sampleId8]);
         });
@@ -1305,7 +1263,7 @@ describe("2250: Sample Authorization", () => {
     const filter = {
       where: {
         ownerGroup: "nogroup",
-      }
+      },
     };
 
     return request(appUrl)
@@ -1318,7 +1276,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(1);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("sampleId");
           e.sampleId.should.be.oneOf([sampleId10]);
         });
@@ -1369,7 +1327,7 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").and.to.have.length(1);
-        res.body.forEach( (e) => {
+        res.body.forEach((e) => {
           e.should.have.deep.property("isPublished");
           e.isPublished.should.be.equal(true);
         });
@@ -1381,7 +1339,7 @@ describe("2250: Sample Authorization", () => {
   //
   it("0640: access sample 1 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1405,7 +1363,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0650: access sample 2 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1429,7 +1387,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0660: access sample 3 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1453,7 +1411,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0660: access sample 4 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1477,7 +1435,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0670: access sample 5 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1501,7 +1459,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0680: access sample 6 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1525,7 +1483,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0690: access sample 7 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1549,7 +1507,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0700: access sample 8 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1573,7 +1531,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0710: access sample 9 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1597,7 +1555,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0720: access public sample 10 as Admin Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1621,7 +1579,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0730: access sample 1 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1637,7 +1595,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0740: access sample 2 as Sample Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1661,7 +1619,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0750: access sample 3 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1677,7 +1635,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0760: access sample 4 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1693,7 +1651,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0770: access sample 5 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1709,7 +1667,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0780: access sample 6 as Sample Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1733,7 +1691,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0790: access sample 7 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1749,7 +1707,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0800: access sample 8 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1765,7 +1723,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0810: access sample 9 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1781,7 +1739,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0820: access public sample 10 as Sample Ingestor", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1805,7 +1763,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0830: access sample 1 as User 1, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1821,7 +1779,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0840: access sample 2 as User 1, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1837,7 +1795,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0850: access sample 3 as User 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1861,7 +1819,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0860: access sample 4 as User 1, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1877,7 +1835,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0870: access sample 5 as User 1, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1893,7 +1851,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0880: access sample 6 as User 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1917,7 +1875,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0890: access sample 7 as User 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1941,7 +1899,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0900: access sample 8 as User 1, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -1957,7 +1915,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0910: access sample 9 as User 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -1981,7 +1939,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0920: access public sample 10 as User 1", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2005,7 +1963,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0930: access sample 1 as User 2, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2021,7 +1979,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0940: access sample 2 as User 2, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2037,7 +1995,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0950: access sample 3 as User 2, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2053,7 +2011,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0960: access sample 4 as User 2", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2077,7 +2035,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0970: access sample 5 as User 2", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2101,7 +2059,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0980: access sample 6 as User 2, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2117,7 +2075,7 @@ describe("2250: Sample Authorization", () => {
 
   it("0990: access sample 7 as User 2", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2141,7 +2099,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1000: access sample 8 as User 2", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2165,7 +2123,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1010: access sample 9 as User 2, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2181,7 +2139,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1020: access public sample 10 as User 2", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2205,7 +2163,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1030: access sample 1 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2221,7 +2179,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1040: access sample 2 as User 3", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2245,7 +2203,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1050: access sample 3 as User 3", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2269,7 +2227,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1060: access sample 4 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2285,7 +2243,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1070: access sample 5 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2301,7 +2259,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1080: access sample 6 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2317,7 +2275,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1090: access sample 7 as User 3", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2341,7 +2299,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1100: access sample 8 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2357,7 +2315,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1110: access sample 9 as User 3, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2373,7 +2331,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1120: access public sample 10 as User 3", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2397,7 +2355,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1130: access sample 1 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2413,7 +2371,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1140: access sample 2 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2429,7 +2387,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1150: access sample 3 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2445,7 +2403,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1160: access sample 4 as User 4", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2469,7 +2427,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1170: access sample 5 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2485,7 +2443,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1180: access sample 6 as User 4", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2509,7 +2467,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1190: access sample 7 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2525,7 +2483,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1200: access sample 8 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2541,7 +2499,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1210: access sample 9 as User 4, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2557,7 +2515,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1220: access public sample 10 as User 4", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2581,7 +2539,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1230: access sample 1 as User 5", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2605,7 +2563,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1240: access sample 2 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2621,7 +2579,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1250: access sample 3 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2637,7 +2595,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1260: access sample 4 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2653,7 +2611,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1270: access sample 5 as User 5", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2677,7 +2635,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1280: access sample 6 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2693,7 +2651,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1290: access sample 7 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2709,7 +2667,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1300: access sample 8 as User 5, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2725,7 +2683,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1310: access sample 9 as User 5", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2749,7 +2707,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1320: access public sample 10 as User 5", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -2773,7 +2731,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1330: access sample 1 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2787,7 +2745,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1340: access sample 2 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2801,7 +2759,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1350: access sample 3 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2815,7 +2773,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1360: access sample 4 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2829,7 +2787,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1370: access sample 5 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2843,7 +2801,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1380: access sample 6 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2857,7 +2815,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1390: access sample 7 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2871,7 +2829,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1400: access sample 8 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2885,7 +2843,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1410: access sample 9 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -2899,7 +2857,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1420: access public sample 10 as Unauthenticated User", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
@@ -2921,7 +2879,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1430: access sample 1 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId1 )
+      .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2937,7 +2895,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1440: access sample 2 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId2 )
+      .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2953,7 +2911,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1450: access sample 3 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId3 )
+      .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2969,7 +2927,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1460: access sample 4 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId4 )
+      .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -2985,7 +2943,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1470: access sample 5 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId5 )
+      .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3001,7 +2959,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1480: access sample 6 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId6 )
+      .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3016,7 +2974,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1490: access sample 7 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId7 )
+      .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3032,7 +2990,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1500: access sample 8 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId8 )
+      .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3048,7 +3006,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1510: access sample 9 as Archive Manager, which should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId9 )
+      .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3064,7 +3022,7 @@ describe("2250: Sample Authorization", () => {
 
   it("1520: access public sample 10 as Archive Manager", async () => {
     return request(appUrl)
-      .get("/api/v3/Samples/" + sampleId10 )
+      .get("/api/v3/Samples/" + sampleId10)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -3087,21 +3045,23 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2000",
-        "user" : "Admin Ingestor"
-      }
-    }
+        test: "2000",
+        user: "Admin Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId1)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3109,43 +3069,47 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2010",
-        "user" : "Admin Ingestor"
-      }
-    }
+        test: "2010",
+        user: "Admin Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId2)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
-  
+
   it("2020: update sample characteristic for sample 5 as Admin Ingestor", async () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2020",
-        "user" : "Admin Ingestor"
-      }
-    }
+        test: "2020",
+        user: "Admin Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId5)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3153,21 +3117,23 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2030",
-        "user" : "Admin Ingestor"
-      }
-    }
+        test: "2030",
+        user: "Admin Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId6)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3175,14 +3141,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2040",
-        "user" : "Sample Ingestor"
-      }
-    }
+        test: "2040",
+        user: "Sample Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId1)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3192,36 +3158,38 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2050",
-        "user" : "Sample Ingestor"
-      }
-    }
+        test: "2050",
+        user: "Sample Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId2)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
-  
+
   it("2060: update sample characteristic for sample 5 as Sample Ingestor, which should fail", async () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2060",
-        "user" : "Sample Ingestor"
-      }
-    }
+        test: "2060",
+        user: "Sample Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId5)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3231,21 +3199,23 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2070",
-        "user" : "Sample Ingestor"
-      }
-    }
+        test: "2070",
+        user: "Sample Ingestor",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId6)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3253,14 +3223,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2080",
-        "user" : "User 1"
-      }
-    }
+        test: "2080",
+        user: "User 1",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId2)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3270,36 +3240,38 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2090",
-        "user" : "User 1"
-      }
-    }
+        test: "2090",
+        user: "User 1",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId3)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
-  
+
   it("2100: update sample characteristic for sample 6 as User 1, which should fail", async () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2100",
-        "user" : "User 1"
-      }
-    }
+        test: "2100",
+        user: "User 1",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId6)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3309,21 +3281,23 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2110",
-        "user" : "User 1"
-      }
-    }
+        test: "2110",
+        user: "User 1",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId7)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3331,21 +3305,23 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2120",
-        "user" : "User 1"
-      }
-    }
+        test: "2120",
+        user: "User 1",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId9)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleCharacteristics");
-        res.body.sampleCharacteristics.should.have.property("test").and.be.equal(characteristics["test"]);
+        res.body.sampleCharacteristics.should.have
+          .property("test")
+          .and.be.equal(characteristics["test"]);
       });
   });
 
@@ -3353,14 +3329,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2130",
-        "user" : "User 2"
-      }
-    }
+        test: "2130",
+        user: "User 2",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId2)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3370,14 +3346,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2140",
-        "user" : "User 2"
-      }
-    }
+        test: "2140",
+        user: "User 2",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId4)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3387,14 +3363,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2150",
-        "user" : "User 2"
-      }
-    }
+        test: "2150",
+        user: "User 2",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId5)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3404,14 +3380,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2160",
-        "user" : "User 3"
-      }
-    }
+        test: "2160",
+        user: "User 3",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId3)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3421,14 +3397,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2170",
-        "user" : "User 3"
-      }
-    }
+        test: "2170",
+        user: "User 3",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId4)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3438,14 +3414,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2180",
-        "user" : "User 3"
-      }
-    }
+        test: "2180",
+        user: "User 3",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId10)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3455,14 +3431,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2190",
-        "user" : "User 4"
-      }
-    }
+        test: "2190",
+        user: "User 4",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId4)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3472,14 +3448,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2200",
-        "user" : "User 4"
-      }
-    }
+        test: "2200",
+        user: "User 4",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId5)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3489,14 +3465,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2210",
-        "user" : "User 4"
-      }
-    }
+        test: "2210",
+        user: "User 4",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId10)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3506,14 +3482,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2220",
-        "user" : "User 5"
-      }
-    }
+        test: "2220",
+        user: "User 5",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId5)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3523,14 +3499,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2230",
-        "user" : "User 5"
-      }
-    }
+        test: "2230",
+        user: "User 5",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId6)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3540,14 +3516,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2240",
-        "user" : "User 5"
-      }
-    }
+        test: "2240",
+        user: "User 5",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId10)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3557,14 +3533,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2250",
-        "user" : "Archive Manager"
-      }
-    }
+        test: "2250",
+        user: "Archive Manager",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId1)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3574,14 +3550,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2260",
-        "user" : "Archive Manager"
-      }
-    }
+        test: "2260",
+        user: "Archive Manager",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId10)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.CreationForbiddenStatusCode);
@@ -3591,14 +3567,14 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2270",
-        "user" : "Unauthenticated User"
-      }
-    }
+        test: "2270",
+        user: "Unauthenticated User",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId1)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
@@ -3607,18 +3583,17 @@ describe("2250: Sample Authorization", () => {
     const characteristics = {
       ...TestData.SampleCorrect["sampleCharacteristics"],
       ...{
-        "test" : "2280",
-        "user" : "Unauthenticated User"
-      }
-    }
+        test: "2280",
+        user: "Unauthenticated User",
+      },
+    };
 
     return request(appUrl)
       .patch("/api/v3/Samples/" + sampleId10)
-      .send({"sampleCharacteristics" : characteristics})
+      .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
       .expect(TestData.CreationForbiddenStatusCode);
   });
-
 
   // delete sample attachment
   it("4000: delete attachment 1 from sample 1 as Unauthenticated User, which should fail", async () => {
@@ -3630,7 +3605,9 @@ describe("2250: Sample Authorization", () => {
 
   it("4010: delete attachment 10 from sample 10 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
       .expect(TestData.DeleteForbiddenStatusCode);
   });
@@ -3653,9 +3630,11 @@ describe("2250: Sample Authorization", () => {
 
   it("4040: delete attachment 10 from sample 10 as User 5, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser5}` })      
+      .set({ Authorization: `Bearer ${accessTokenUser5}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
 
@@ -3677,9 +3656,11 @@ describe("2250: Sample Authorization", () => {
 
   it("4070: delete attachment 10 from sample 10 as User 4, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser4}` })      
+      .set({ Authorization: `Bearer ${accessTokenUser4}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
 
@@ -3701,9 +3682,11 @@ describe("2250: Sample Authorization", () => {
 
   it("4100: delete attachment 10 from sample 10 as User 3, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser3}` })      
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
 
@@ -3733,9 +3716,11 @@ describe("2250: Sample Authorization", () => {
 
   it("4140: delete attachment 10 from sample 10 as User 2, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser3}` })      
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
 
@@ -3746,7 +3731,7 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
-    });
+  });
 
   it("4160: delete attachment 4 from sample 4 as User 1, which should fail", async () => {
     return request(appUrl)
@@ -3771,13 +3756,15 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
-    });
+  });
 
   it("4190: delete attachment 10 from sample 10 as User 1, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })      
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
 
@@ -3797,7 +3784,7 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
-  
+
   it("4220: delete attachment 7 from sample 7 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
       .delete("/api/v3/samples/" + sampleId7 + "/attachments/" + attachmentId7)
@@ -3805,7 +3792,7 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
-  
+
   it("4230: delete attachment 8 from sample 8 as Sample Ingestor, wich should fail", async () => {
     return request(appUrl)
       .delete("/api/v3/samples/" + sampleId8 + "/attachments/" + attachmentId8)
@@ -3813,7 +3800,7 @@ describe("2250: Sample Authorization", () => {
       .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
       .expect(TestData.DeleteForbiddenStatusCode);
   });
-  
+
   it("4240: delete attachment 1 from sample 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
@@ -3822,10 +3809,12 @@ describe("2250: Sample Authorization", () => {
       .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
-  
+
   it("4250: delete attachment 3_2 from sample 3 as Admin Ingestor", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId3 + "/attachments/" + attachmentId3_2)
+      .delete(
+        "/api/v3/samples/" + sampleId3 + "/attachments/" + attachmentId3_2,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
@@ -3852,7 +3841,9 @@ describe("2250: Sample Authorization", () => {
 
   it("4280: delete attachment 7_2 from sample 7 as Archive Manager", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId7 + "/attachments/" + attachmentId7_2)
+      .delete(
+        "/api/v3/samples/" + sampleId7 + "/attachments/" + attachmentId7_2,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)
@@ -3861,7 +3852,9 @@ describe("2250: Sample Authorization", () => {
 
   it("4290: delete attachment 10 from sample 10 as Archive Manager", async () => {
     return request(appUrl)
-      .delete("/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10)
+      .delete(
+        "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
+      )
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
       .expect(TestData.SuccessfulDeleteStatusCode)

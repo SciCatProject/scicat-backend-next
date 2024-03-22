@@ -13,6 +13,9 @@ var policyIds = null;
 const raw2 = { ...TestData.RawCorrect };
 
 describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

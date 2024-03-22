@@ -42,6 +42,9 @@ const InstrumentCorrect4 = {
 };
 
 describe("1000: InstrumentFilter: Test retrieving instruments using filtering capabilities", () => {
+  before(() => {
+    db.collection("Instrument").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -79,7 +82,8 @@ describe("1000: InstrumentFilter: Test retrieving instruments using filtering ca
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: TestData.Accounts["archiveManager"]["password"],
+                        password:
+                          TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;
