@@ -58,7 +58,7 @@ export class JobClass extends OwnableClass {
   })
   statusCode: string;
 
-  // update
+  // status message
   @ApiProperty({
     type: String,
     required: false,
@@ -81,7 +81,7 @@ export class JobClass extends OwnableClass {
     type: [Object],
     required: false,
   })
-  statusHistory: Record<string, string>[];
+  statusHistory: Record<string, string>[]; // TBD
 
   // messages
   @ApiProperty({
@@ -96,32 +96,7 @@ export class JobClass extends OwnableClass {
   })
   messageSent: Record<string, unknown>;
 
-  // configuration definition (schema)
-  @ApiProperty({
-    type: Object,
-    required: false,
-    description:
-      "This is the equivalent object of the job configuration used to create this job.",
-  })
-  @Prop({
-    type: Object,
-    required: false,
-  })
-  configuration: Record<string, unknown>;  // TBD
-
-  // parameters (instance)
-  @ApiProperty({
-    type: Object,
-    required: false,
-    description:
-      "This is the equivalent object of the jobs parameters provided by the user.",
-  })
-  @Prop({
-    type: Object,
-    required: false,
-  })
-  jobParams: Record<string, unknown>;
-  // TODO email address for owner from scicat? see create example for job.recipients
+  // TBD email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);

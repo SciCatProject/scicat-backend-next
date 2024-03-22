@@ -33,7 +33,11 @@ export class JobsService {
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
     var createdJob = new this.jobModel(
-      addStatusFields(addCreatedByFields(createJobDto, username), "jobSubmitted"),
+      addStatusFields(
+        addCreatedByFields(createJobDto, username),
+        "Job has been submitted.",
+        "jobSubmitted"
+      ),
     );
     return createdJob.save();
   }
@@ -88,7 +92,7 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-
+    const statusHistory = { "statusHistory" : existingJob.statusHistory };
     const username = (this.request.user as JWTUser).username;
 
     const updatedJob = await this.jobModel
@@ -96,10 +100,11 @@ export class JobsService {
         { id: id },
         addStatusFields(
           addUpdatedByField(
-            updateJobStatusDto as UpdateQuery<JobDocument>,
+            {...updateJobStatusDto, ...statusHistory} as UpdateQuery<JobDocument>,
             username,
           ),
-          updateJobStatusDto.jobStatus
+          updateJobStatusDto.jobStatusMessage,
+          updateJobStatusDto.jobStatusCode,
         ),
         { new: true },
       )
