@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import { format, unit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
+import { escapeStringRegexp } from 'escape-string-regexp';
 import {
   IAxiosError,
   IFilters,
@@ -113,6 +114,11 @@ export const mapScientificQuery = (
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
         scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: rhs };
+        break;
+      }
+      case ScientificRelation.CONTAINS_STRING: {
+        const escapedRhs = escapeStringRegexp(rhs);
+        scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: escapedRhs };
         break;
       }
       case ScientificRelation.EQUAL_TO_NUMERIC: {
