@@ -36,7 +36,6 @@ export class JobsService {
     configVersion: string,
   ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
-    console.log(configVersion);
     var createdJob = new this.jobModel(
       addStatusFields(
         addConfigVersionField(

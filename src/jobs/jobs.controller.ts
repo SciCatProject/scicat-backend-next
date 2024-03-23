@@ -387,7 +387,56 @@ export class JobsController {
     const jc = await this.checkJobConfiguration(createJobDto.type);
 
     if (jc[functionType].auth == JobsAuth.All) {
+      // Public, no token required
       // nothing to do here
+      return true;
+    } else if (jc[functionType].auth == JobsAuth.Admin) {
+      // Verify that the user is an admin
+      if (user !== null && user.currentGroups.includes('admin')) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNAUTHORIZED,
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      return true;
+    } else if (jc[functionType].auth == JobsAuth.Authenticated) {
+      // Verify that the user is authenticated
+      if (user === null) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNAUTHORIZED,
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      return true;
+    } else if (jc[functionType].auth == JobsAuth.DatasetPublic) {
+      // verify that all the pids listed in the property indicated are public
+      const datasetIds = this.checkDatasetIds(createJobDto.jobParams);
+      const numberOfDatasets = await this.datasetsService.count({
+        where: {
+          pid: { $in: datasetIds },
+          isPublished: true   
+        },
+      });
+
+      const datasetsNoAccess = datasetIds.length - numberOfDatasets.count;
+
+      if (datasetsNoAccess > 0) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message:
+              "Unauthorized access to " +
+              datasetsNoAccess +
+              " datasets out of " +
+              datasetIds.length,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       return true;
     } else if (jc[functionType].auth == JobsAuth.DatasetOwner) {
       // verify that all the pids listed in the property indicated are owned by the user
@@ -440,17 +489,6 @@ export class JobsController {
               datasetIds.length,
           },
           HttpStatus.BAD_REQUEST,
-        );
-      }
-      return true;
-    } else if (jc[functionType].auth == JobsAuth.Authenticated) {
-      // verify that the user is authenticated
-      if (user === null) {
-        throw new HttpException(
-          {
-            status: HttpStatus.UNAUTHORIZED,
-          },
-          HttpStatus.UNAUTHORIZED,
         );
       }
       return true;
