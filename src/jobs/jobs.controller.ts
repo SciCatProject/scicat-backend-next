@@ -291,6 +291,27 @@ export class JobsController {
     return matchingConfig[0];
   }
 
+
+  /**
+   * Check the job's configuration version
+   */
+  async checkConfigurationVersion(
+    existingJob: JobClass,
+  ): Promise<void> {
+    const jc = await this.checkJobConfiguration(existingJob.type);
+    if (jc.configVersion != existingJob.configVersion) {
+      // return error that configuration version does not match
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid configuration version.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
   /**
    * Check that the dataset ids list is valid
    */
@@ -330,7 +351,7 @@ export class JobsController {
    */
   async validateJob(
     createJobDto: CreateJobDto,
-  ): Promise<void> {
+  ): Promise<string> {
     const jc = await this.checkJobConfiguration(createJobDto.type);
 
     await Promise.all(
@@ -351,6 +372,7 @@ export class JobsController {
         });
       }),
     );
+    return jc.configVersion;
   }
 
 
@@ -363,8 +385,6 @@ export class JobsController {
     functionType: string
   ): Promise<boolean> {
     const jc = await this.checkJobConfiguration(createJobDto.type);
-    console.log(jc);
-    console.log(jc[functionType]);
 
     if (jc[functionType].auth == JobsAuth.All) {
       // nothing to do here
@@ -499,14 +519,14 @@ export class JobsController {
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
-    await this.validateJob(createJobDto);
+    const jobConfigVersion = await this.validateJob(createJobDto);
     // Check job authorization
     await this.instanceAuthorization(createJobDto, request.user as JWTUser, "create");
     // Create actual job in database
-    const createdJobInstance = await this.jobsService.create(createJobDto);
+    const createdJobInstance = await this.jobsService.create(createJobDto, jobConfigVersion);
     // Perform the action that is specified in the create portion of the job configuration
     await this.performJobCreateAction(createdJobInstance);
-    // Update job instance with results of job create action
+    // Update job instance after the success of job create action
     return await this.jobsService.statusUpdate(
       createdJobInstance.id,
       { "jobStatusMessage": "Job has been created.", "jobStatusCode": "jobCreated" } as UpdateJobStatusDto
@@ -555,6 +575,8 @@ export class JobsController {
     }
     // Check job authorization
     await this.instanceAuthorization(currentJob, request.user as JWTUser, "update");
+    // Check configuration version
+    await this.checkConfigurationVersion(currentJob);
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
     // Emit update event

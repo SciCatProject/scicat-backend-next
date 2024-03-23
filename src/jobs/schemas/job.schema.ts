@@ -81,7 +81,19 @@ export class JobClass extends OwnableClass {
     type: [Object],
     required: false,
   })
-  statusHistory: Record<string, string>[]; // TBD
+  statusHistory: Record<string, string>[];
+
+  // configuration version
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Stores the job's latest configuration version.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  configVersion: string;
 
   // messages
   @ApiProperty({

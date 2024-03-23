@@ -14,6 +14,7 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addStatusFields,
   addCreatedByFields,
+  addConfigVersionField,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
@@ -30,11 +31,18 @@ export class JobsService {
     @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createJobDto: CreateJobDto): Promise<JobDocument> {
+  async create(
+    createJobDto: CreateJobDto,
+    configVersion: string,
+  ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
+    console.log(configVersion);
     var createdJob = new this.jobModel(
       addStatusFields(
-        addCreatedByFields(createJobDto, username),
+        addConfigVersionField(
+          addCreatedByFields(createJobDto, username),
+          configVersion
+        ),
         "Job has been submitted.",
         "jobSubmitted"
       ),

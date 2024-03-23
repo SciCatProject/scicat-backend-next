@@ -767,6 +767,18 @@ export const addCreatedByFields = <T>(
   };
 };
 
+export const addConfigVersionField = <T>(
+  obj: T,
+  version: string,
+): T & {
+  configVersion: string;
+} => {
+  return {
+    ...obj,
+    configVersion: version,
+  };
+};
+
 export const addUpdatedByField = <T>(
   obj: T,
   username: string,
