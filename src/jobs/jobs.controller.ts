@@ -646,6 +646,7 @@ export class JobsController {
     description: "Found job",
   })
   async findOne(
+    @Req() request: Request,
     @Param("id") id: string,
   ): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
@@ -677,6 +678,7 @@ export class JobsController {
     description: "Found jobs",
   })
   async findAll(
+    @Req() request: Request,
     @Query("filter") filter?: string,
   ): Promise<JobClass[] | null> {
     const parsedFilter: IFilters<
@@ -715,6 +717,7 @@ export class JobsController {
     description: "Deleted job",
   })
   async remove(
+    @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
     return this.jobsService.remove({ _id: id });
