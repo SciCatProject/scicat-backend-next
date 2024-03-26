@@ -108,6 +108,19 @@ export class JobClass extends OwnableClass {
   })
   messageSent: Record<string, unknown>;
 
+  // parameters (instance)
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+      "This is the equivalent object of the jobs parameters provided by the user.",
+  })
+  @Prop({
+    type: Object,
+    required: false,
+  })
+  jobParams: Record<string, unknown>;
+
   // TBD email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }
