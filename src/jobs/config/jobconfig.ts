@@ -30,18 +30,20 @@ import { JobConfigSchema } from "./jobConfig.schema" ;
  */
 export class JobConfig {
   jobType: string;
-
+  configVersion: string;
   create: JobOperation<CreateJobDto>;
   // read: JobReadAction[];
   update: JobOperation<UpdateJobStatusDto>;
 
   constructor(
     jobType: string,
+    configVersion: string,
     create: JobOperation<CreateJobDto>,
     read = undefined,
     update: JobOperation<UpdateJobStatusDto>,
   ) {
     this.jobType = jobType;
+    this.configVersion = configVersion;
     this.create = create;
     // this.read = read;
     this.update = update;
@@ -54,6 +56,7 @@ export class JobConfig {
    */
   static parse(data: Record<string, any>) {
     const type = data[JobsConfigSchema.JobType];
+    const configVersion = data[JobsConfigSchema.ConfigVersion];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
       data[AuthOp.Create],
@@ -63,7 +66,7 @@ export class JobConfig {
       updateActions,
       data[AuthOp.Update],
     );
-    return new JobConfig(type, create, read, update);
+    return new JobConfig(type, configVersion, create, read, update);
   }
 }
 

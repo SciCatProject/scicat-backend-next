@@ -70,7 +70,7 @@ const configuration = () => {
   // Logger.log("Config SETUP");
   // Logger.log("- Access groups static values : " + accessGroupsStaticValues);
   // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups );
+  // Logger.log("- Delete groups : " + deleteGroups);
   // Logger.log("- Create dataset groups : " + createDatasetGroups);
   // Logger.log(
   //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
@@ -123,7 +123,6 @@ const configuration = () => {
       enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
       accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
     },
-
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
@@ -146,7 +145,6 @@ const configuration = () => {
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
-
     oidc: {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
@@ -183,7 +181,6 @@ const configuration = () => {
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
     },
-
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
       : undefined,
