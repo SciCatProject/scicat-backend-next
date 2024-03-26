@@ -1,0 +1,11 @@
+version: "3.2"
+services:
+  mongodb:
+    image: bitnami/mongodb:latest
+    volumes:
+      - "mongodb_data:/bitnami"
+    ports:
+      - "27017:27017"
+volumes:
+  mongodb_data:
+    driver: local

@@ -10,6 +10,8 @@ import { AppModule } from "./app.module";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AllExceptionsFilter, ScicatLogger } from "./loggers/logger.service";
+import * as fs from "fs";
+import * as process from "process";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,6 +33,11 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  fs.writeFileSync("./openapi.json", JSON.stringify(document, null, 2));
+  if (process.env.EXIT_AFTER_OPENAPI_GENERATION) {
+    process.exit();
+  }
+
   const swaggerOptions: SwaggerCustomOptions = {
     swaggerOptions: {
       docExpansion: "none",
