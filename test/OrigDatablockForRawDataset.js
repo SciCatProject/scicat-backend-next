@@ -19,6 +19,10 @@ var accessTokenAdminIngestor = null,
   origDatablockWithValidChkAlg = null;
 
 describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relation to raw Datasets using origdatablocks endpoint", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("OrigDatablock").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -147,7 +151,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
   it("0050: adds a new origDatablock with wrong account which should fail", async () => {
     origDatablockData1.datasetId = datasetPid1;
     return request(appUrl)
-      .post(`/api/v3/OrigDatablocks`)
+      .post(`/api/v3/origDatablocks`)
       .send(origDatablockData1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
@@ -158,7 +162,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
   it("0060: adds a new origDatablock with correct account (origdatablock 1)", async () => {
     origDatablockData1.datasetId = datasetPid1;
     return request(appUrl)
-      .post(`/api/v3/OrigDatablocks`)
+      .post(`/api/v3/origDatablocks`)
       .send(origDatablockData1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -176,7 +180,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
   it("0070: adds a second origDatablock (origdatablock 2)", async () => {
     origDatablockData2.datasetId = datasetPid1;
     return request(appUrl)
-      .post(`/api/v3/OrigDatablocks`)
+      .post(`/api/v3/origDatablocks`)
       .send(origDatablockData2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -193,7 +197,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
 
   it("0080: add a new origDatablock with empty chkAlg should fail", async () => {
     return request(appUrl)
-      .post(`/api/v3/OrigDatablocks`)
+      .post(`/api/v3/origDatablocks`)
       .send(origDatablockWithEmptyChkAlg)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -207,7 +211,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
   it("0090: add a new origDatablock with valid chkAlg should success (origdatablock 3)", async () => {
     origDatablockData3.datasetId = datasetPid2;
     return request(appUrl)
-      .post(`/api/v3/OrigDatablocks`)
+      .post(`/api/v3/origDatablocks`)
       .send(origDatablockData3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -229,7 +233,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     const filter = { where: { datasetId: datasetPid1 } };
 
     return request(appUrl)
-      .get(`/api/v3/OrigDatablocks`)
+      .get(`/api/v3/origDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
@@ -246,7 +250,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     const filter = { where: { datasetId: datasetPid2 } };
 
     return request(appUrl)
-      .get(`/api/v3/OrigDatablocks`)
+      .get(`/api/v3/origDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
@@ -727,7 +731,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     const filter = { where: { datasetId: datasetPid1 } };
 
     return request(appUrl)
-      .get(`/api/v3/OrigDatablocks`)
+      .get(`/api/v3/origDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
@@ -742,7 +746,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     const filter = { where: { datasetId: datasetPid2 } };
 
     return request(appUrl)
-      .get(`/api/v3/OrigDatablocks`)
+      .get(`/api/v3/origDatablocks`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .query({ filter: JSON.stringify(filter) })
