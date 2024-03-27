@@ -24,6 +24,7 @@ const mockAttachment: Attachment = {
 
 describe("AttachmentsService", () => {
   let service: AttachmentsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let attachmentModel: Model<Attachment>;
 
   beforeEach(async () => {

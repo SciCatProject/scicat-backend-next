@@ -63,7 +63,6 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
-import { User } from "src/users/schemas/user.schema";
 
 @ApiBearerAuth()
 @ApiTags("samples")

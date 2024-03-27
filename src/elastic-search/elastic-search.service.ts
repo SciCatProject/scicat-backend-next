@@ -9,7 +9,6 @@ import {
 import { Client } from "@elastic/elasticsearch";
 import { SearchQueryService } from "./providers/query-builder.service";
 import {
-  SearchTotalHits,
   SearchRequest,
   AggregationsAggregate,
   SortOrder,

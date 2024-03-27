@@ -30,6 +30,7 @@ class PoliciesServiceMock {}
 
 describe("JobsService", () => {
   let service: JobsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<JobClass>;
 
   beforeEach(async () => {

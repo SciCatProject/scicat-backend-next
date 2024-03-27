@@ -1,8 +1,4 @@
-import {
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -26,8 +22,6 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     err: unknown,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any,
-    info: unknown,
-    context: ExecutionContext,
   ) {
     // const allowAny = this.reflector.get<string[]>(
     //   "allow-any",

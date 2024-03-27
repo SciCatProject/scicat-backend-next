@@ -35,6 +35,7 @@ const mockDatablock: Datablock = {
 
 describe("DatablocksService", () => {
   let service: DatablocksService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<Datablock>;
 
   beforeEach(async () => {

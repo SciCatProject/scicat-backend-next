@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserPayload } from "../interfaces/userPayload.interface";
 import { AccessGroupService } from "./access-group.service";
 
@@ -11,10 +11,7 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
     super();
   }
 
-  async getAccessGroups(
-    //idpPayload: Record<string, unknown>,
-    userPayload: UserPayload,
-  ): Promise<string[]> {
+  async getAccessGroups(userPayload: UserPayload): Promise<string[]> {
     const accessGroups: string[] = [];
 
     for (const accessGroupProvider of this.accessGroupProviders) {

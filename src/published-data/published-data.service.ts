@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, QueryOptions } from "mongoose";
+import { FilterQuery, Model } from "mongoose";
 import {
   parseLimitFilters,
   addCreatedByFields,
