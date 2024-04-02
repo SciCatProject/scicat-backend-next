@@ -11,6 +11,9 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
   var datablockId2 = null;
 
   beforeEach((done) => {
+    before(() => {
+      db.collection("Dataset").deleteMany({});
+    });
     utils.getToken(
       appUrl,
       {
