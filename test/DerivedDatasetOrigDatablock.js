@@ -12,6 +12,10 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
   let origDatablockId2 = null;
 
   beforeEach((done) => {
+    before(() => {
+      db.collection("Dataset").deleteMany({});
+      db.collection("OrigDatablock").deleteMany({});
+    });
     utils.getToken(
       appUrl,
       {

@@ -22,6 +22,9 @@ var testdataset = {
 };
 
 describe("1300: Policy: Simple Policy tests", () => {
+  before(() => {
+    db.collection("Policy").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
