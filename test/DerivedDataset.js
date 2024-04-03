@@ -14,6 +14,9 @@ var minPid = null;
 var explicitPid = null;
 
 describe("0700: DerivedDataset: Derived Datasets", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
