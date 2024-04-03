@@ -22,6 +22,9 @@ var origDatablockId = null;
 
 describe.skip("1100: Jobs: Test New Job Model", () => {
   before((done) => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("Job").deleteMany({});
+
     archiveJob = { ...TestData.ArchiveJob };
     retrieveJob = { ...TestData.RetrieveJob };
     publicJob = { ...TestData.PublicJob };
