@@ -4,7 +4,7 @@ import {
   getSchemaPath,
   PartialType,
 } from "@nestjs/swagger";
-import { OwnableDto } from "../../common/dto/ownable.dto";
+import { Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -18,15 +18,13 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import { TechniqueClass } from "../schemas/technique.schema";
-import { Type } from "class-transformer";
-import { CreateTechniqueDto } from "./create-technique.dto";
-import { RelationshipClass } from "../schemas/relationship.schema";
-import { CreateRelationshipDto } from "./create-relationship.dto";
-import { LifecycleClass } from "../schemas/lifecycle.schema";
 import { Attachment } from "../../attachments/schemas/attachment.schema";
-import { OrigDatablock } from "../../origdatablocks/schemas/origdatablock.schema";
-import { Datablock } from "../../datablocks/schemas/datablock.schema";
+import { OwnableDto } from "../../common/dto/ownable.dto";
+import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { RelationshipClass } from "../schemas/relationship.schema";
+import { TechniqueClass } from "../schemas/technique.schema";
+import { CreateRelationshipDto } from "./create-relationship.dto";
+import { CreateTechniqueDto } from "./create-technique.dto";
 
 @ApiTags("datasets")
 export class UpdateDatasetDto extends OwnableDto {
@@ -294,12 +292,6 @@ export class UpdateDatasetDto extends OwnableDto {
 
   @IsOptional()
   attachments?: Attachment[];
-
-  @IsOptional()
-  origdatablocks?: OrigDatablock[];
-
-  @IsOptional()
-  datablocks?: Datablock[];
 }
 
 export class PartialUpdateDatasetDto extends PartialType(UpdateDatasetDto) {}
