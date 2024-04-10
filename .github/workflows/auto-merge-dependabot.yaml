@@ -1,4 +1,4 @@
-name: Dependabot auto-merge
+name: Dependabot approve and merge
 
 on: pull_request_target
 
@@ -24,20 +24,9 @@ jobs:
 
       ## NOTE: This step is only required if the repository has been configured to Require approval
       ## Checks if update-type is patch or minor, then approve if the PR status is not approved yet.
-      ## Token with PR approval permission is required
-      - name: Approve patch and minor updates
+      - name: Auto approve patch and minor updates
+        uses: hmarr/auto-approve-action@v4
         if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'}}
-        run: |
-          gh pr checkout "$PR_URL"
-            if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
-          then
-            gh pr review --approve "$PR_URL"
-          else
-            echo "PR already approved.";
-          fi
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.PR_APPROVE_TOKEN}}
 
       ## NOTE: Requirements for merge has to be configured in the Branch protection rule page.
       ## To do so, go to repository > Settings > Branches > Edit.
