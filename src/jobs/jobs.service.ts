@@ -42,8 +42,8 @@ export class JobsService {
           addCreatedByFields(createJobDto, username),
           configVersion
         ),
-        "Job has been submitted.",
-        "jobSubmitted"
+        "Job has been created.",
+        "jobCreated"
       ),
     );
     return createdJob.save();

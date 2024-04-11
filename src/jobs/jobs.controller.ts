@@ -313,6 +313,21 @@ export class JobsController {
 
 
   /**
+   * Check that the user is authenticated
+   */
+  checkAuthenticatedUser = (user: JWTUser) => {
+    if (user === null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
+
+  /**
    * Check that the dataset ids list is valid
    */
   checkDatasetIds = (jobParams: Record<string, any> | undefined) => {
@@ -393,24 +408,18 @@ export class JobsController {
     } else if (jc[functionType].auth == JobsAuth.Admin) {
       // Verify that the user is an admin
       if (user !== null && user.currentGroups.includes('admin')) {
-        throw new HttpException(
-          {
-            status: HttpStatus.UNAUTHORIZED,
-          },
-          HttpStatus.UNAUTHORIZED,
-        );
+        return true;
       }
-      return true;
+
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     } else if (jc[functionType].auth == JobsAuth.Authenticated) {
       // Verify that the user is authenticated
-      if (user === null) {
-        throw new HttpException(
-          {
-            status: HttpStatus.UNAUTHORIZED,
-          },
-          HttpStatus.UNAUTHORIZED,
-        );
-      }
+      this.checkAuthenticatedUser(user);
       return true;
     } else if (jc[functionType].auth == JobsAuth.DatasetPublic) {
       // verify that all the pids listed in the property indicated are public
@@ -440,6 +449,7 @@ export class JobsController {
       return true;
     } else if (jc[functionType].auth == JobsAuth.DatasetOwner) {
       // verify that all the pids listed in the property indicated are owned by the user
+      this.checkAuthenticatedUser(user);
       const datasetIds = this.checkDatasetIds(createJobDto.jobParams);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
@@ -464,6 +474,7 @@ export class JobsController {
       }
     } else if (jc[functionType].auth == JobsAuth.DatasetAccess) {
       // verify that all the pids listed in the property indicated are accessible by the user
+      this.checkAuthenticatedUser(user);
       const datasetIds = this.checkDatasetIds(createJobDto.jobParams);
       const numberOfDatasets = await this.datasetsService.count({
         where: {
@@ -476,7 +487,7 @@ export class JobsController {
         },
       });
 
-      const datasetsNoAccess = datasetIds.length - numberOfDatasets.count; // TBD
+      const datasetsNoAccess = datasetIds.length - numberOfDatasets.count;
 
       if (datasetsNoAccess > 0) {
         throw new HttpException(
@@ -564,11 +575,7 @@ export class JobsController {
     const createdJobInstance = await this.jobsService.create(createJobDto, jobConfigVersion);
     // Perform the action that is specified in the create portion of the job configuration
     await this.performJobCreateAction(createdJobInstance);
-    // Update job instance after the success of job create action
-    return await this.jobsService.statusUpdate(
-      createdJobInstance.id,
-      { "jobStatusMessage": "Job has been created.", "jobStatusCode": "jobCreated" } as UpdateJobStatusDto
-    );
+    return createdJobInstance;
   }
 
 
