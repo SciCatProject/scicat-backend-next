@@ -18,5 +18,5 @@ export class CreateJobDto {
   })
   @IsObject()
   @IsOptional()
-  readonly jobParams?: Record<string, unknown>;
+  readonly jobParams?: Record<string, any>;
 }

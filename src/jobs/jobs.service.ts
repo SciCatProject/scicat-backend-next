@@ -14,6 +14,7 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addStatusFields,
   addCreatedByFields,
+  addConfigVersionField,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
@@ -30,10 +31,20 @@ export class JobsService {
     @Inject(REQUEST) private request: Request,
   ) {}
 
-  async create(createJobDto: CreateJobDto): Promise<JobDocument> {
+  async create(
+    createJobDto: CreateJobDto,
+    configVersion: string,
+  ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
     var createdJob = new this.jobModel(
-      addStatusFields(addCreatedByFields(createJobDto, username), "jobSubmitted"),
+      addStatusFields(
+        addConfigVersionField(
+          addCreatedByFields(createJobDto, username),
+          configVersion
+        ),
+        "Job has been created.",
+        "jobCreated"
+      ),
     );
     return createdJob.save();
   }
@@ -88,7 +99,7 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-
+    const statusHistory = { "statusHistory" : existingJob.statusHistory };
     const username = (this.request.user as JWTUser).username;
 
     const updatedJob = await this.jobModel
@@ -96,10 +107,11 @@ export class JobsService {
         { id: id },
         addStatusFields(
           addUpdatedByField(
-            updateJobStatusDto as UpdateQuery<JobDocument>,
+            {...updateJobStatusDto, ...statusHistory} as UpdateQuery<JobDocument>,
             username,
           ),
-          updateJobStatusDto.jobStatus
+          updateJobStatusDto.jobStatusMessage,
+          updateJobStatusDto.jobStatusCode,
         ),
         { new: true },
       )

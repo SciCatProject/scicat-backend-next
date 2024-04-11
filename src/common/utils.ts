@@ -731,14 +731,25 @@ export const createFullfacetPipeline = <T, Y extends object>(
 };
 
 export const addStatusFields = <T>(
-  obj: T,
+  obj: T & { statusHistory?: any[] },
   msg: string,
+  code: string,
 ): T & {
   statusMessage: string;
+  statusCode: string;
+  statusHistory: any[];
 } => {
+  var history = obj.statusHistory ? [...obj.statusHistory] : [];
+  history.push({
+    "timestamp": (new Date()).toISOString(),
+    "statusCode": code
+  });
+
   return {
     ...obj,
     statusMessage: msg,
+    statusCode: code,
+    statusHistory: history,
   };
 };
 
@@ -756,6 +767,18 @@ export const addCreatedByFields = <T>(
   };
 };
 
+export const addConfigVersionField = <T>(
+  obj: T,
+  version: string,
+): T & {
+  configVersion: string;
+} => {
+  return {
+    ...obj,
+    configVersion: version,
+  };
+};
+
 export const addUpdatedByField = <T>(
   obj: T,
   username: string,
@@ -767,6 +790,23 @@ export const addUpdatedByField = <T>(
     updatedBy: username,
   };
 };
+
+export const filterExampleSimplified =
+  '{ "where": { "field": "value" }, "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
+
+export const filterDescriptionSimplified =
+  '<pre>\n \
+{\n \
+  "where?": {\n \
+    "field": "value"\n \
+  },\n \
+  "limits?": {\n \
+    "limit": number,\n \
+    "skip": number,\n \
+    "order": [ascending, descending]\n \
+  }\n \
+}\n \
+</pre>';
 
 export const filterExample =
   '{ "where": { "field": "value" }, "include": [ { "relation": "target" } ], "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
