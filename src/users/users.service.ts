@@ -208,6 +208,11 @@ export class UsersService implements OnModuleInit {
     return user as ReturnedUserDto;
   }
 
+  async findByUsername(username: string): Promise<ReturnedUserDto | null> {
+    const user = await this.userModel.findOne({username: username}).exec();
+    return user as ReturnedUserDto;
+  }
+
   async updateUser(
     updateUserDto: UpdateUserDto,
     id: string,
@@ -230,6 +235,21 @@ export class UsersService implements OnModuleInit {
     }
     return null;
   }
+
+  async findByUsername2JWTUser(username: string): Promise<JWTUser | null> {
+    const userIdentity = await this.userIdentityModel.findOne({username: username}).exec();
+    if (userIdentity) {
+      const userProfile = userIdentity.profile;
+      return {
+        _id: userProfile.id,
+        username: userProfile.username,
+        email: userProfile.email,
+        currentGroups: userProfile.accessGroups,
+      } as JWTUser;
+    }
+    return null;
+  }
+
 
   async createUserIdentity(
     createUserIdentityDto: CreateUserIdentityDto,

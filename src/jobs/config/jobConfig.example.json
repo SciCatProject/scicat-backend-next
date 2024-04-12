@@ -2,6 +2,7 @@
   {
     "jobType": "archive",
     "create": {
+      "auth": "#all",
       "actions": [
         {
           "actionType": "log"
@@ -16,7 +17,7 @@
       ]
     },
     "update": {
-      "auth": "#all"
+      "auth": "archivemanager"
     }
   },
   {

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { IsObject, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsObject, IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
 export class CreateJobDto {
@@ -17,6 +17,33 @@ export class CreateJobDto {
     description: "Job's parameters as defined by job template in configuration",
   })
   @IsObject()
+  readonly jobParams: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "User that this job belongs to. Applicable only if requesting user has dequate permissions level"
+  })
+  @IsString()
   @IsOptional()
-  readonly jobParams?: Record<string, unknown>;
+  readonly ownerUser: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Group that this job belongs to. Applicable only if requesting user has dequate permissions level"
+  })
+  @IsString()
+  @IsOptional()
+  readonly ownerGroup: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "",
+    description: "If the job is submitted anonymously, an email has to be provided"
+  })
+  @IsEmail()
+  @IsOptional()
+  readonly requesterEmail: string;
 }

@@ -18,7 +18,7 @@ import * as fs from "fs";
 import { ApiProperty } from "@nestjs/swagger";
 import { JobClass } from "../schemas/job.schema";
 import { CreateJobDto } from "../dto/create-job.dto";
-import { UpdateJobStatusDto } from "../dto/update-jobstatus.dto";
+import { UpdateJobStatusDto } from "../dto/status-update-job.dto";
 import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
 import { AuthOp } from "src/casl/authop.enum";
 import { JobsAuth } from "../types/jobs-auth.enum";
@@ -202,12 +202,12 @@ var jobConfig: JobConfig[] | null = null; // singleton
  * @param filePath path to json config file
  * @returns
  */
-export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
+export function loadJobConfig(filePath: string): JobConfig[] {
   if (jobConfig !== null) {
     return jobConfig;
   }
 
-  const json = await fs.promises.readFile(filePath, "utf8");
+  const json = fs.readFileSync(filePath, "utf8");
   let data = JSON.parse(json);
 
   // Validate schema
@@ -224,6 +224,6 @@ export async function loadJobConfig(filePath: string): Promise<JobConfig[]> {
     data = [data];
   }
 
-  jobConfig = await data.map(JobConfig.parse);
-  return jobConfig!;
+  jobConfig = data.map(JobConfig.parse);
+  return jobConfig as JobConfig[];
 }

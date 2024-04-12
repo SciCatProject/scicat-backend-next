@@ -33,6 +33,17 @@ export class JobClass extends OwnableClass {
   })
   _id: string;
 
+  @ApiProperty({
+    type: String,
+    description:
+      "Defines the user that owns this job",
+  })
+  @Prop({
+    type: String,
+    index: true,
+  })
+  ownerUser: string;
+
   // type
   @ApiProperty({
     type: String,
@@ -71,17 +82,17 @@ export class JobClass extends OwnableClass {
   })
   statusMessage: string;
 
-  // history of status codes
-  @ApiProperty({
-    type: [Object],
-    required: false,
-    description: "Array of status updates containing status code and message",
-  })
-  @Prop({
-    type: [Object],
-    required: false,
-  })
-  statusHistory: Record<string, string>[];
+  // // history of status codes
+  // @ApiProperty({
+  //   type: [Object],
+  //   required: false,
+  //   description: "Array of status updates containing status code and message",
+  // })
+  // @Prop({
+  //   type: [Object],
+  //   required: false,
+  // })
+  // statusHistory: Record<string, string>[];
 
   // messages
   @ApiProperty({
@@ -121,6 +132,30 @@ export class JobClass extends OwnableClass {
     required: false,
   })
   jobParams: Record<string, unknown>;
+
+  // dataset validation results
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    description: "True if the user has the access requested to all the datasets listed on this job",
+  })
+  @Prop({
+    type: Boolean,
+    required: true,
+  })
+  datasetsValidation: boolean;
+  
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "",
+    description: "If the job is submitted anonymously, an email has to be provided"
+  })
+  @Prop({
+    type: String,
+    required: true,
+  })
+  requesterEmail: string;
   // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }

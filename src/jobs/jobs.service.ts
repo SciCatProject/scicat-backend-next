@@ -20,7 +20,7 @@ import {
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
+import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -82,7 +82,7 @@ export class JobsService {
 
   async statusUpdate(
     id: string,
-    updateJobStatusDto: UpdateJobStatusDto,
+    updateJobDto: UpdateStatusJobDto,
   ): Promise<JobClass | null> {
     const existingJob = await this.jobModel.findOne({ id: id }).exec();
     if (!existingJob) {
@@ -96,10 +96,11 @@ export class JobsService {
         { id: id },
         addStatusFields(
           addUpdatedByField(
-            updateJobStatusDto as UpdateQuery<JobDocument>,
+            updateJobDto as UpdateQuery<JobDocument>,
             username,
           ),
-          updateJobStatusDto.jobStatus
+          updateJobDto.statusCode,
+          updateJobDto.statusMessage!
         ),
         { new: true },
       )

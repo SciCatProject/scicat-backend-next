@@ -177,16 +177,20 @@ export enum AuthOp {
   // --------------
   // Jobs
   // endpoint authorization
-  JobsCreate = "jobs_create",
-  JobsRead = "jobs_read",
-  JobsUpdate = "jobs_update",
+  JobCreate = "jobs_create",
+  JobRead = "jobs_read",
+  JobStatusUpdate = "job_update",
+  JobDelete = "job_delete",
   // data instance authorization
-  JobsCreateOwner = "jobs_create_owner",
-  JobsCreateAny = "jobs_create_any",
-  JobsReadAccess = "jobs_read_access",
-  JobsReadAny = "jobs_read_any",
-  JobsUpdateAccess = "jobs_update_access",
-  JobsUpdateAny = "jobs_update_any",
+  JobCreateConfiguration = "job_create_configuration",
+  JobCreateOwner = "job_create_owner",
+  JobCreateAny = "job_create_any",
+  JobReadAccess = "job_read_access",
+  JobReadAny = "job_read_any",
+  JobStatusUpdateConfiguration = "job_status_update_configuration",
+  JobStatusUpdateOwner = "job_status_update_owner",
+  JobStatusUpdateAny = "job_status_update_any",
+  JobDeleteAny = "job_delete_any",
   // -------------
   // Users
   UserReadOwn = "user_read_own",
