@@ -2,14 +2,14 @@ import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
-export class UpdateJobStatusDto {
+export class UpdateStatusJobDto {
   @ApiProperty({
     type: String,
     required: true,
     description: "Updated job status code for the current status.",
   })
   @IsString()
-  readonly jobStatus: string;
+  readonly statusCode: string;
 
   @ApiProperty({
     type: String,
@@ -18,14 +18,5 @@ export class UpdateJobStatusDto {
   })
   @IsString()
   @IsOptional()
-  readonly message?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "JWT token for archiver service.",
-  })
-  @IsString()
-  @IsOptional()
-  readonly token?: string;
+  readonly statusMessage?: string;
 }
