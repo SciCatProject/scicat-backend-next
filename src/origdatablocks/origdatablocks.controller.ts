@@ -319,7 +319,15 @@ export class OrigDatablocksController {
         parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
         parsedFilters.where.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
-        parsedFilters.where.ownerGroup = parsedFilters.where.ownerGroup ?? [];
+        if (!parsedFilters.where.ownerGroup) {
+          parsedFilters.where.ownerGroup = [];
+        }
+
+        parsedFilters.where.ownerGroup = Array.isArray(
+          parsedFilters.where.ownerGroup,
+        )
+          ? parsedFilters.where.ownerGroup
+          : [parsedFilters.where.ownerGroup as string];
         parsedFilters.where.ownerGroup.push(...user.currentGroups);
       }
     }

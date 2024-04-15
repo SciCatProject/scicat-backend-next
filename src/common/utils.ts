@@ -467,22 +467,42 @@ export const createFullqueryFilter = <T>(
       };
     } else if (key === "userGroups") {
       filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+        ownerGroup: searchExpression<T>(
+          model,
+          "ownerGroup",
+          fields[key],
+        ) as object,
       });
       filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+        accessGroups: searchExpression<T>(
+          model,
+          "accessGroups",
+          fields[key],
+        ) as object,
       });
     } else if (key === "ownerGroup") {
       filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+        ownerGroup: searchExpression<T>(
+          model,
+          "ownerGroup",
+          fields[key],
+        ) as object,
       });
     } else if (key === "accessGroups") {
       filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+        accessGroups: searchExpression<T>(
+          model,
+          "accessGroups",
+          fields[key],
+        ) as object,
       });
     } else if (key === "sharedWith") {
       filterQuery["$or"]?.push({
-        sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),
+        sharedWith: searchExpression<T>(
+          model,
+          "sharedWith",
+          fields[key],
+        ) as object,
       });
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
@@ -890,7 +910,7 @@ export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
   if (filter.where) {
     filter.where = replaceLikeOperatorRecursive(
       filter.where as Record<string, unknown>,
-    );
+    ) as object;
   }
   return filter;
 };
