@@ -788,13 +788,13 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // endpoint authorization
       // job creation
-      if (configuration().jobConfiguration.some( (j) => j.create.auth == "#all")) {
+      if (configuration().jobConfiguration.some( (j) => j.create.auth == CreateJobAuth.All)) {
         can(AuthOp.JobCreate,JobClass)
       } else {
         cannot(AuthOp.JobCreate,JobClass)
       }
       cannot(AuthOp.JobRead, JobClass);
-      if (configuration().jobConfiguration.some( (j) => j.update.auth == "#all")) {
+      if (configuration().jobConfiguration.some( (j) => j.update.auth == UpdateJobAuth.All)) {
         can(AuthOp.JobStatusUpdate,JobClass)
       } else {
         cannot(AuthOp.JobStatusUpdate, JobClass);
@@ -804,10 +804,10 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // instance authorization
       can(AuthOp.JobCreateConfiguration,JobClass, {
-        'configuration.create.auth': '#all',
+        'configuration.create.auth': CreateJobAuth.All,
       })
       can(AuthOp.JobCreateConfiguration,JobClass, {
-        'configuration.create.auth' : '#datasetPublic',
+        'configuration.create.auth' : CreateJobAuth.DatasetPublic,
         'datasetsValidation': true
       })
     } else {

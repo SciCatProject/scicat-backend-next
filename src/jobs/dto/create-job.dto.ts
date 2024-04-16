@@ -41,9 +41,9 @@ export class CreateJobDto {
     type: String,
     required: false,
     default: "",
-    description: "If the job is submitted anonymously, an email has to be provided"
+    description: "Email to contact regarding this job. If the job is submitted anonymously, an email has to be provided"
   })
   @IsEmail()
   @IsOptional()
-  readonly requesterEmail: string;
+  readonly contactEmail: string;
 }

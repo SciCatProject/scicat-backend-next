@@ -148,13 +148,26 @@ export class JobClass extends OwnableClass {
     type: String,
     required: false,
     default: "",
-    description: "If the job is submitted anonymously, an email has to be provided"
+    description: "Email of the person to contact regarding this job. If the job is submitted anonymously, an email has to be provided"
   })
   @Prop({
     type: String,
+    required: false,
+  })
+  contactEmail: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    default: {},
+    description: "Configuration that was used to create this job."
+  })
+  @Prop({
+    type: Object,
     required: true,
   })
-  requesterEmail: string;
+  configuration: Record<string, unknown>;
+
   // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }

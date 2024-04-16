@@ -384,7 +384,7 @@ export class JobsController {
     if (matchingConfig.length != 1) {
       if (matchingConfig.length > 1) {
         Logger.error("More than one job configurations matching type " + createJobDto.type);
-      } else if () {
+      } else {
         Logger.error("No job configuration matching type " + createJobDto.type);
       }
       // return error that job type does not exists
@@ -437,13 +437,24 @@ export class JobsController {
     jobInstance.ownerUser = "";
     jobInstance.ownerGroup = "";
     jobInstance.accessGroups = [];
-    jobInstance.requesterEmail = jobCreateDto.requesterEmail;
+    jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.datasetsValidation = false;
     jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage = "Building and validating job, verifying authorization";
 
     if (user) {
+      // check if we have ownerGroup
+      if (!jobCreateDto.ownerGroup) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: `Invalid new job. Owner group should be specified`,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       // the request comes from a user who is logged in.
       if (user.currentGroups.some((g) => configuration().adminGroups.includes(g))) {
         // admin users
@@ -453,20 +464,32 @@ export class JobsController {
         }
 
         jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.requesterEmail = jobUser?.email as string;
-        jobInstance.ownerGroup = (
-          jobCreateDto.ownerGroup
-            ? jobCreateDto.ownerGroup
-            : jobUser?.currentGroups[0]
-        )
+        jobInstance.contactEmail = jobUser?.email as string;
+        jobInstance.ownerGroup = jobCreateDto.ownerGroup;
       } else {
+        // check that job user matches the user placing the request, if job user is specified
+        if (jobCreateDto.ownerUser && jobCreateDto.ownerUser != user.username) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: `Invalid new job. User owning the job should match user logged in.`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
         jobInstance.ownerUser = user.username;
-        jobInstance.requesterEmail = user.email;
-        jobInstance.ownerGroup = (
-          user.currentGroups.includes(jobCreateDto.ownerGroup)
-            ? jobCreateDto.ownerGroup
-            : user.currentGroups[0]
-        )
+        jobInstance.contactEmail = user.email;
+        // check that ownerGroup is one of the user groups
+        if (!user.currentGroups.includes(jobCreateDto.ownerGroup)) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: `Invalid new job. User needs to belong to job owner group`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        jobInstance.ownerGroup = jobCreateDto.ownerGroup;
       }
     }
 
