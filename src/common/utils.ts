@@ -735,14 +735,14 @@ export const addStatusFields = <T>(
   statusCode: string,
   statusMessage: string,
 ): T & {
-  statusCode: string
+  statusCode: string;
   statusMessage: string;
   statusHistory: any[];
 } => {
-  var history = obj.statusHistory ? [...obj.statusHistory] : [];
+  const history = obj.statusHistory ? [...obj.statusHistory] : [];
   history.push({
-    "timestamp": (new Date()).toISOString(),
-    "statusCode": statusCode
+    timestamp: new Date().toISOString(),
+    statusCode: statusCode,
   });
 
   return {

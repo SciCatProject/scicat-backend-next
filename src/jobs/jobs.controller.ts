@@ -61,7 +61,9 @@ export class JobsController {
     private readonly usersService: UsersService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.jobDatasetAuthorization = Object.values(AuthOp).filter((v) => v.includes("#dataset"));
+    this.jobDatasetAuthorization = Object.values(AuthOp).filter((v) =>
+      v.includes("#dataset"),
+    );
   }
 
   publishJob() {
@@ -258,13 +260,10 @@ export class JobsController {
   //   }
   // }
 
-
   /**
    * Validate filter for GET
    */
-  isFilterValid = (
-    parsedFilterFields: string[]
-  ): Boolean => {
+  isFilterValid = (parsedFilterFields: string[]): boolean => {
     // Filter contains only valid values or is empty
     const validFields = ["where", "limits"];
     for (const item of parsedFilterFields) {
@@ -275,18 +274,13 @@ export class JobsController {
     return true;
   };
 
-
   /**
    * Check that the job configuration is valid
    */
-  async checkJobConfiguration (
-    type: string
-  ): Promise<Record<string, any>> {
+  async checkJobConfiguration(type: string): Promise<Record<string, any>> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter(
-      (j) => j.jobType == type,
-    );
+    const matchingConfig = jobConfigs.filter((j) => j.jobType == type);
     if (matchingConfig.length != 1) {
       // return error that job type does not exists
       throw new HttpException(
@@ -300,13 +294,10 @@ export class JobsController {
     return matchingConfig[0];
   }
 
-
   /**
    * Check the job's configuration version
    */
-  async checkConfigurationVersion(
-    existingJob: JobClass,
-  ): Promise<void> {
+  async checkConfigurationVersion(existingJob: JobClass): Promise<void> {
     const jc = await this.checkJobConfiguration(existingJob.type);
     if (jc.configVersion != existingJob.configVersion) {
       // return error that configuration version does not match
@@ -320,7 +311,6 @@ export class JobsController {
     }
   }
 
-
   /**
    * Check that the user is authenticated
    */
@@ -333,8 +323,7 @@ export class JobsController {
         HttpStatus.UNAUTHORIZED,
       );
     }
-  }
-
+  };
 
   /**
    * Check that the dataset ids list is valid
@@ -367,15 +356,12 @@ export class JobsController {
       );
     }
     return datasetIds;
-  }
-
+  };
 
   /**
    * Validate if the job has a matching configuration and is performable
    */
-  async validateJob(
-    createJobDto: CreateJobDto,
-  ): Promise<any> {
+  async validateJob(createJobDto: CreateJobDto): Promise<any> {
     // it should return a single job configuration
     const jobConfigs = await configuration().jobConfiguration;
     const matchingConfig = jobConfigs.filter(
@@ -383,7 +369,9 @@ export class JobsController {
     );
     if (matchingConfig.length != 1) {
       if (matchingConfig.length > 1) {
-        Logger.error("More than one job configurations matching type " + createJobDto.type);
+        Logger.error(
+          "More than one job configurations matching type " + createJobDto.type,
+        );
       } else {
         Logger.error("No job configuration matching type " + createJobDto.type);
       }
@@ -408,8 +396,9 @@ export class JobsController {
           throw new HttpException(
             {
               status: HttpStatus.BAD_REQUEST,
-              message: `Invalid job input. Action ${action.getActionType()} unable to validate ${createJobDto.type
-                } job due to ${err}`,
+              message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+                createJobDto.type
+              } job due to ${err}`,
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -426,11 +415,9 @@ export class JobsController {
   async instanceAuthorizationJobCreate(
     jobCreateDto: Record<string, any>,
     user: JWTUser,
-    jobConfiguration: any
+    jobConfiguration: any,
   ): Promise<JobClass> {
-
-
-    // NOTE: We need JobClass instance because casl module works only on that. 
+    // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
     jobInstance._id = "";
@@ -441,7 +428,8 @@ export class JobsController {
     jobInstance.datasetsValidation = false;
     jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
-    jobInstance.statusMessage = "Building and validating job, verifying authorization";
+    jobInstance.statusMessage =
+      "Building and validating job, verifying authorization";
 
     if (user) {
       // check if we have ownerGroup
@@ -456,11 +444,15 @@ export class JobsController {
       }
 
       // the request comes from a user who is logged in.
-      if (user.currentGroups.some((g) => configuration().adminGroups.includes(g))) {
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {
-          jobUser = await this.usersService.findByUsername2JWTUser(jobCreateDto.ownerUser);
+          jobUser = await this.usersService.findByUsername2JWTUser(
+            jobCreateDto.ownerUser,
+          );
         }
 
         jobInstance.ownerUser = jobUser?.username as string;
@@ -497,27 +489,28 @@ export class JobsController {
       // verify that the user meet the requested permissions on the datasets listed
       const datasetIds = this.checkDatasetIds(jobCreateDto.jobParams);
       // build the condition
-      let datasetsWhere: any = {
+      const datasetsWhere: any = {
         where: {
           pid: { $in: datasetIds },
-        }
-      }
-      if (jobConfiguration.create.auth = "#datasetPublic") {
-        datasetsWhere['isPublished'] = true;
-      } else if (jobConfiguration.create.auth = "#datasetAccess") {
-        datasetsWhere['$or'] = [
+        },
+      };
+      if ((jobConfiguration.create.auth = "#datasetPublic")) {
+        datasetsWhere["isPublished"] = true;
+      } else if ((jobConfiguration.create.auth = "#datasetAccess")) {
+        datasetsWhere["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
-          { isPublished: true }
-        ]
-      } else if (jobConfiguration.create.auth = "#datasetOwner") {
-        datasetsWhere['ownerGroup'] = { $in: user.currentGroups }
+          { isPublished: true },
+        ];
+      } else if ((jobConfiguration.create.auth = "#datasetOwner")) {
+        datasetsWhere["ownerGroup"] = { $in: user.currentGroups };
       }
-      const numberOfDatasetsWithAccess = await this.datasetsService.count(datasetsWhere);
-      const datasetsNoAccess = datasetIds.length - numberOfDatasetsWithAccess.count;
-      jobInstance.datasetsValidation = (datasetsNoAccess == 0);
+      const numberOfDatasetsWithAccess =
+        await this.datasetsService.count(datasetsWhere);
+      const datasetsNoAccess =
+        datasetIds.length - numberOfDatasetsWithAccess.count;
+      jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
-
 
     // instantiate the casl matrix for the user
     const ability = this.caslAbilityFactory.createForUser(user);
@@ -534,12 +527,12 @@ export class JobsController {
     return jobInstance;
   }
 
-
   /**
    * Send off to external service, update job in database if needed
    */
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
-    for (var action of jobInstance.configuration?.create?.actions as Array<any>) {
+    for (var action of jobInstance.configuration?.create
+      ?.actions as Array<any>) {
       await action.performJob(jobInstance).catch((err: any) => {
         if (err instanceof HttpException) {
           throw err;
@@ -547,8 +540,9 @@ export class JobsController {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message: `Invalid job input. Action ${action.getActionType()} unable to validate ${jobInstance.type
-              } job due to ${err}`,
+            message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+              jobInstance.type
+            } job due to ${err}`,
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -556,7 +550,6 @@ export class JobsController {
     }
     return;
   }
-
 
   /**
    * Create job
@@ -591,7 +584,7 @@ export class JobsController {
     const jobInstance = await this.instanceAuthorizationJobCreate(
       createJobDto,
       request.user as JWTUser,
-      jobConfiguration
+      jobConfiguration,
     );
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
@@ -600,16 +593,14 @@ export class JobsController {
     return createdJobInstance;
   }
 
-
   /**
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobStatusUpdate(
     jobStatusUpdateDto: UpdateStatusJobDto,
     user: JWTUser,
-    jobInstance: JobClass
+    jobInstance: JobClass,
   ): Promise<JobClass> {
-
     // instantiate the casl matrix for the user
     const ability = this.caslAbilityFactory.createForUser(user);
     // check if he/she can create this dataset
@@ -640,7 +631,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be updated",
     required: true,
-    type: UpdateStatusJobDto
+    type: UpdateStatusJobDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -668,7 +659,7 @@ export class JobsController {
     await this.instanceAuthorizationJobStatusUpdate(
       updateJobDto,
       request.user as JWTUser,
-      currentJob
+      currentJob,
     );
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(id, updateJobDto);
@@ -682,7 +673,6 @@ export class JobsController {
     // }
     return updatedJob;
   }
-
 
   /**
    * Get job by id
@@ -708,7 +698,6 @@ export class JobsController {
     return this.jobsService.findOne({ _id: id });
   }
 
-
   /**
    * Get jobs
    */
@@ -719,11 +708,13 @@ export class JobsController {
   @Get()
   @ApiOperation({
     summary: "It returns a list of jobs.",
-    description: "It returns a list of jobs. The list returned can be modified by providing a filter.",
+    description:
+      "It returns a list of jobs. The list returned can be modified by providing a filter.",
   })
   @ApiQuery({
     name: "filter",
-    description: "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    description:
+      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
     required: false,
     type: String,
     example: filterExampleSimplified,
@@ -754,13 +745,12 @@ export class JobsController {
     return this.jobsService.findAll(parsedFilter);
   }
 
-
-  /** 
+  /**
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Delete, JobClass),  // TBD
+  @CheckPolicies(
+    (ability: AppAbility) => ability.can(AuthOp.Delete, JobClass), // TBD
   )
   @Delete(":id")
   @ApiOperation({

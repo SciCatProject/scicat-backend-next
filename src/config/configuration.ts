@@ -43,7 +43,8 @@ const configuration = () => {
   const oidcUsernameFieldMapping =
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
-  const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || ("jobConfig.json" as string);
+  const jobConfigurationFile =
+    process.env.JOB_CONFIGURATION_FILE || ("jobConfig.json" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -85,7 +86,7 @@ const configuration = () => {
 
   // Register built-in job actions
   registerDefaultActions();
-  let job_configs = loadJobConfig(jobConfigurationFile);
+  const job_configs = loadJobConfig(jobConfigurationFile);
 
   const config = {
     jobConfiguration: job_configs,

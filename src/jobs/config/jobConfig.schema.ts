@@ -1,6 +1,5 @@
 import { JobsAuth } from "../types/jobs-auth.enum";
 
-
 // We use this to validate the Json schema of the provided configuration
 export const JobConfigSchema = {
   type: "array",
@@ -21,11 +20,11 @@ export const JobConfigSchema = {
                 actionType: { type: "string" },
               },
               required: ["actionType"],
-              additionalProperties: true
-            }
-          }
+              additionalProperties: true,
+            },
+          },
         },
-        additionalProperties: true
+        additionalProperties: true,
       },
       update: {
         type: "object",
@@ -39,14 +38,14 @@ export const JobConfigSchema = {
                 actionType: { type: "string" },
               },
               required: ["actionType"],
-              additionalProperties: true
-            }
-          }
+              additionalProperties: true,
+            },
+          },
         },
-        additionalProperties: true
+        additionalProperties: true,
       },
     },
     required: ["jobType", "configVersion"],
-    additionalProperties: true
-  }
+    additionalProperties: true,
+  },
 };

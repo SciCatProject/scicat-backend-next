@@ -35,8 +35,7 @@ export class JobClass extends OwnableClass {
 
   @ApiProperty({
     type: String,
-    description:
-      "Defines the user that owns this job",
+    description: "Defines the user that owns this job",
   })
   @Prop({
     type: String,
@@ -136,19 +135,21 @@ export class JobClass extends OwnableClass {
   @ApiProperty({
     type: Boolean,
     required: true,
-    description: "True if the user has the access requested to all the datasets listed on this job",
+    description:
+      "True if the user has the access requested to all the datasets listed on this job",
   })
   @Prop({
     type: Boolean,
     required: true,
   })
   datasetsValidation: boolean;
-  
+
   @ApiProperty({
     type: String,
     required: false,
     default: "",
-    description: "Email of the person to contact regarding this job. If the job is submitted anonymously, an email has to be provided"
+    description:
+      "Email of the person to contact regarding this job. If the job is submitted anonymously, an email has to be provided",
   })
   @Prop({
     type: String,
@@ -160,7 +161,7 @@ export class JobClass extends OwnableClass {
     type: String,
     required: true,
     default: {},
-    description: "Configuration that was used to create this job."
+    description: "Configuration that was used to create this job.",
   })
   @Prop({
     type: Object,

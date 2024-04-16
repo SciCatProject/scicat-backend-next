@@ -22,7 +22,8 @@ export class CreateJobDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "User that this job belongs to. Applicable only if requesting user has dequate permissions level"
+    description:
+      "User that this job belongs to. Applicable only if requesting user has dequate permissions level",
   })
   @IsString()
   @IsOptional()
@@ -31,7 +32,8 @@ export class CreateJobDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Group that this job belongs to. Applicable only if requesting user has dequate permissions level"
+    description:
+      "Group that this job belongs to. Applicable only if requesting user has dequate permissions level",
   })
   @IsString()
   @IsOptional()
@@ -41,7 +43,8 @@ export class CreateJobDto {
     type: String,
     required: false,
     default: "",
-    description: "Email to contact regarding this job. If the job is submitted anonymously, an email has to be provided"
+    description:
+      "Email to contact regarding this job. If the job is submitted anonymously, an email has to be provided",
   })
   @IsEmail()
   @IsOptional()

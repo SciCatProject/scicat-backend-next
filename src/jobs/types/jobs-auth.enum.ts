@@ -13,7 +13,6 @@ export enum CreateJobAuth {
   DatasetOwner = "#datasetOwner",
 }
 
-
 export enum UpdateJobAuth {
   // any user can update, no checks are performed
   // to be used carefully, mainly for testing
@@ -23,5 +22,5 @@ export enum UpdateJobAuth {
   JobOwnerUser = "#jobOwnerUser",
   // only users belonging to the owner group can update the job
   // see field ownerGroup
-  JobOwnerGroup = "#jobOwnerGroup"
+  JobOwnerGroup = "#jobOwnerGroup",
 }

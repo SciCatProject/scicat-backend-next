@@ -788,14 +788,22 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // endpoint authorization
       // job creation
-      if (configuration().jobConfiguration.some( (j) => j.create.auth == CreateJobAuth.All)) {
-        can(AuthOp.JobCreate,JobClass)
+      if (
+        configuration().jobConfiguration.some(
+          (j) => j.create.auth == CreateJobAuth.All,
+        )
+      ) {
+        can(AuthOp.JobCreate, JobClass);
       } else {
-        cannot(AuthOp.JobCreate,JobClass)
+        cannot(AuthOp.JobCreate, JobClass);
       }
       cannot(AuthOp.JobRead, JobClass);
-      if (configuration().jobConfiguration.some( (j) => j.update.auth == UpdateJobAuth.All)) {
-        can(AuthOp.JobStatusUpdate,JobClass)
+      if (
+        configuration().jobConfiguration.some(
+          (j) => j.update.auth == UpdateJobAuth.All,
+        )
+      ) {
+        can(AuthOp.JobStatusUpdate, JobClass);
       } else {
         cannot(AuthOp.JobStatusUpdate, JobClass);
       }
@@ -803,13 +811,13 @@ export class CaslAbilityFactory {
 
       // -------------------------------------
       // instance authorization
-      can(AuthOp.JobCreateConfiguration,JobClass, {
-        'configuration.create.auth': CreateJobAuth.All,
-      })
-      can(AuthOp.JobCreateConfiguration,JobClass, {
-        'configuration.create.auth' : CreateJobAuth.DatasetPublic,
-        'datasetsValidation': true
-      })
+      can(AuthOp.JobCreateConfiguration, JobClass, {
+        "configuration.create.auth": CreateJobAuth.All,
+      });
+      can(AuthOp.JobCreateConfiguration, JobClass, {
+        "configuration.create.auth": CreateJobAuth.DatasetPublic,
+        datasetsValidation: true,
+      });
     } else {
       /**
        * authenticated users
@@ -828,16 +836,17 @@ export class CaslAbilityFactory {
         can(AuthOp.JobRead, JobClass);
         can(AuthOp.JobCreate, JobClass);
         can(AuthOp.JobStatusUpdate, JobClass);
-      
+
         // -------------------------------------
         // data instance authorization
         can(AuthOp.JobReadAny, JobClass);
         can(AuthOp.JobCreateAny, JobClass);
         can(AuthOp.JobStatusUpdateAny, JobClass);
-
       } else {
-  
-        const jobUserAuthorizationValues = [...user.currentGroups.map((g) => "@" + g), user.username];
+        const jobUserAuthorizationValues = [
+          ...user.currentGroups.map((g) => "@" + g),
+          user.username,
+        ];
 
         if (
           user.currentGroups.some((g) =>
@@ -845,14 +854,14 @@ export class CaslAbilityFactory {
           )
         ) {
           /**
-          * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
-          */
-        
+           * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
+           */
+
           // -------------------------------------
           // endpoint authorization
           can(AuthOp.JobRead, JobClass);
           can(AuthOp.JobCreate, JobClass);
-        
+
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobCreateOwner, JobClass, {
@@ -862,29 +871,36 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
           });
         } else {
-
           /**
-          * authenticated users not belonging to any special group
-          */
+           * authenticated users not belonging to any special group
+           */
           const jobCreateEndPointAuthorizationValues = [
-            ...Object.values(CreateJobAuth), 
-            ...jobUserAuthorizationValues];
+            ...Object.values(CreateJobAuth),
+            ...jobUserAuthorizationValues,
+          ];
           const jobCreateInstanceAuthorizationValues = [
-            ...Object.values(CreateJobAuth).filter((v) => ~String(v).includes('#dataset')), 
-            ...jobUserAuthorizationValues];
+            ...Object.values(CreateJobAuth).filter(
+              (v) => ~String(v).includes("#dataset"),
+            ),
+            ...jobUserAuthorizationValues,
+          ];
           const jobCreateDatasetAuthorizationValues = [
-            ...Object.values(CreateJobAuth).filter((v) => String(v).includes('#dataset'))
-          ]
-          
+            ...Object.values(CreateJobAuth).filter((v) =>
+              String(v).includes("#dataset"),
+            ),
+          ];
+
           // -------------------------------------
           // endpoint authorization
           can(AuthOp.JobRead, JobClass);
-          if (configuration().jobConfiguration.some( 
-            (j) => j.create.auth! in jobCreateEndPointAuthorizationValues 
-          )) {
-            can(AuthOp.JobCreate,JobClass)
+          if (
+            configuration().jobConfiguration.some(
+              (j) => j.create.auth! in jobCreateEndPointAuthorizationValues,
+            )
+          ) {
+            can(AuthOp.JobCreate, JobClass);
           }
-              
+
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobReadAccess, JobClass, {
@@ -892,13 +908,16 @@ export class CaslAbilityFactory {
             ownerUser: user.username,
           });
           can(AuthOp.JobCreateConfiguration, JobClass, {
-            'configuration.create.auth': { $in: jobCreateInstanceAuthorizationValues }  
+            "configuration.create.auth": {
+              $in: jobCreateInstanceAuthorizationValues,
+            },
           });
           can(AuthOp.JobCreateConfiguration, JobClass, {
-            'configuration.create.auth': { $in: jobCreateDatasetAuthorizationValues },
-            datasetValidation: true  
+            "configuration.create.auth": {
+              $in: jobCreateDatasetAuthorizationValues,
+            },
+            datasetValidation: true,
           });
-
         }
 
         if (
@@ -906,51 +925,55 @@ export class CaslAbilityFactory {
             configuration().updateJobGroups.includes(g),
           )
         ) {
-          
           // -------------------------------------
           // endpoint authorization
           can(AuthOp.JobStatusUpdate, JobClass);
-        
+
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobStatusUpdateOwner, JobClass, {
             $or: [
-              {ownerUser: user.username},
-              {ownerGroup: { $in: user.currentGroups }},
-            ]
+              { ownerUser: user.username },
+              { ownerGroup: { $in: user.currentGroups } },
+            ],
           });
         } else {
-
-
           const jobUpdateEndPointAuthorizationValues = [
-            ...Object.values(UpdateJobAuth), 
-            ...jobUserAuthorizationValues];
+            ...Object.values(UpdateJobAuth),
+            ...jobUserAuthorizationValues,
+          ];
           const jobUpdateInstanceAuthorizationValues = [
-            ...Object.values(UpdateJobAuth).filter((v) => ~String(v).includes('#job')), 
-            ...jobUserAuthorizationValues];
+            ...Object.values(UpdateJobAuth).filter(
+              (v) => ~String(v).includes("#job"),
+            ),
+            ...jobUserAuthorizationValues,
+          ];
 
           // -------------------------------------
           // endpoint authorization
-          if (configuration().jobConfiguration.some( 
-            (j) => j.update.auth! in jobUpdateEndPointAuthorizationValues 
-          )) {
-            can(AuthOp.JobStatusUpdate,JobClass)
+          if (
+            configuration().jobConfiguration.some(
+              (j) => j.update.auth! in jobUpdateEndPointAuthorizationValues,
+            )
+          ) {
+            can(AuthOp.JobStatusUpdate, JobClass);
           }
-              
+
           // -------------------------------------
           // data instance authorization
-          can(AuthOp.JobStatusUpdateConfiguration,JobClass, {
-            'configuration.update.auth': { $in: jobUpdateInstanceAuthorizationValues }
+          can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
+            "configuration.update.auth": {
+              $in: jobUpdateInstanceAuthorizationValues,
+            },
           });
-          can(AuthOp.JobStatusUpdateConfiguration,JobClass, {
-            'configuration.update.auth': '#jobOwnerUser',
-            ownerUser: user.username
+          can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
+            "configuration.update.auth": "#jobOwnerUser",
+            ownerUser: user.username,
           });
-          can(AuthOp.JobStatusUpdateConfiguration,JobClass, {
-            'configuration.update.auth': '#jobOwnerGroup',
-            ownerGroup: { $in: user.currentGroups }
+          can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
+            "configuration.update.auth": "#jobOwnerGroup",
+            ownerGroup: { $in: user.currentGroups },
           });
-
         }
       }
     }

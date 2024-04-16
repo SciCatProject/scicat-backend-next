@@ -3,7 +3,6 @@ import { IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
 export class UpdateStatusJobDto {
-
   @ApiProperty({
     type: String,
     required: true,

@@ -23,7 +23,7 @@ import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
 import { AuthOp } from "src/casl/authop.enum";
 import { JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
-import { JobConfigSchema } from "./jobConfig.schema" ;
+import { JobConfigSchema } from "./jobConfig.schema";
 
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
@@ -74,10 +74,7 @@ export class JobOperation<DtoType> {
   auth: JobsAuth | undefined;
   actions: JobAction<DtoType>[];
 
-  constructor(
-    actions: JobAction<DtoType>[] = [],
-    auth: JobsAuth | undefined,
-  ) {
+  constructor(actions: JobAction<DtoType>[] = [], auth: JobsAuth | undefined) {
     this.actions = actions;
     this.auth = auth;
   }
@@ -87,8 +84,12 @@ export class JobOperation<DtoType> {
     data: Record<string, any>,
   ): JobOperation<DtoType> {
     // if Auth is not defined, default to #authenticated
-    const auth = data[JobsConfigSchema.Auth] ? data[JobsConfigSchema.Auth] : JobsAuth.Authenticated;
-    const actionsData: any[] = data[JobsConfigSchema.Actions] ? data[JobsConfigSchema.Actions] : [];
+    const auth = data[JobsConfigSchema.Auth]
+      ? data[JobsConfigSchema.Auth]
+      : JobsAuth.Authenticated;
+    const actionsData: any[] = data[JobsConfigSchema.Actions]
+      ? data[JobsConfigSchema.Actions]
+      : [];
     const actions = actionsData.map((json) =>
       parseAction<DtoType>(actionList, json),
     );
@@ -165,9 +166,7 @@ const updateActions: Record<string, JobActionClass<UpdateJobStatusDto>> = {};
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerCreateAction(
-  action: JobActionClass<CreateJobDto>
-) {
+export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
   createActions[action.actionType] = action;
 }
 /**
@@ -177,7 +176,6 @@ export function registerCreateAction(
 export function getRegisteredCreateActions(): string[] {
   return Object.keys(createActions);
 }
-
 
 /**
  * Registers an action to handle jobs of a particular type
@@ -198,7 +196,7 @@ export function getRegisteredUpdateActions(): string[] {
 
 /// Parsing
 
-var jobConfig: JobConfig[] | null = null; // singleton
+let jobConfig: JobConfig[] | null = null; // singleton
 /**
  * Load jobconfig.json file.
  * Expects one or more JobConfig configurations (see JobConfig.parse)

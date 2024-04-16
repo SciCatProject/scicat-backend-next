@@ -36,14 +36,14 @@ export class JobsService {
     configVersion: string,
   ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
-    var createdJob = new this.jobModel(
+    const createdJob = new this.jobModel(
       addStatusFields(
         addConfigVersionField(
           addCreatedByFields(createJobDto, username),
-          configVersion
+          configVersion,
         ),
         "Job has been created.",
-        "jobCreated"
+        "jobCreated",
       ),
     );
     return createdJob.save();
@@ -99,19 +99,16 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-    const statusHistory = { "statusHistory" : existingJob.statusHistory };
+    const statusHistory = { statusHistory: existingJob.statusHistory };
     const username = (this.request.user as JWTUser).username;
 
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },
         addStatusFields(
-          addUpdatedByField(
-            updateJobDto as UpdateQuery<JobDocument>,
-            username,
-          ),
+          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
           updateJobDto.statusCode,
-          updateJobDto.statusMessage!
+          updateJobDto.statusMessage!,
         ),
         { new: true },
       )
