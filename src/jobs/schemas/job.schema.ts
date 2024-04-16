@@ -69,7 +69,7 @@ export class JobClass extends OwnableClass {
   })
   statusCode: string;
 
-  // update
+  // status message
   @ApiProperty({
     type: String,
     required: false,
@@ -94,6 +94,18 @@ export class JobClass extends OwnableClass {
   // })
   // statusHistory: Record<string, string>[];
 
+  // configuration version
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Stores the job's latest configuration version.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  configVersion: string;
+
   // messages
   @ApiProperty({
     type: Object,
@@ -106,19 +118,6 @@ export class JobClass extends OwnableClass {
     required: false,
   })
   messageSent: Record<string, unknown>;
-
-  // configuration definition (schema)
-  @ApiProperty({
-    type: Object,
-    required: false,
-    description:
-      "This is the equivalent object of the job configuration used to create this job.",
-  })
-  @Prop({
-    type: Object,
-    required: false,
-  })
-  configuration: Record<string, unknown>;  // TBD
 
   // parameters (instance)
   @ApiProperty({

@@ -17,7 +17,7 @@ import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobStatusDto, UpdateStatusJobDto } from "./dto/status-update-job.dto";
+import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
@@ -31,18 +31,21 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import { IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsAuth } from "./types/jobs-auth.enum";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
-import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import { UserProfile } from "src/users/schemas/user-profile.schema";
+import {
+  filterDescriptionSimplified,
+  filterExampleSimplified,
+} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -257,9 +260,96 @@ export class JobsController {
 
 
   /**
+   * Validate filter for GET
+   */
+  isFilterValid = (
+    parsedFilterFields: string[]
+  ): Boolean => {
+    // Filter contains only valid values or is empty
+    const validFields = ["where", "limits"];
+    for (const item of parsedFilterFields) {
+      if (!validFields.includes(item)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+
+  /**
+   * Check that the job configuration is valid
+   */
+  async checkJobConfiguration (
+    type: string
+  ): Promise<Record<string, any>> {
+    // it should return a single job configuration
+    const jobConfigs = await configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter(
+      (j) => j.jobType == type,
+    );
+    if (matchingConfig.length != 1) {
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid job type: " + type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return matchingConfig[0];
+  }
+
+
+  /**
+   * Check the job's configuration version
+   */
+  async checkConfigurationVersion(
+    existingJob: JobClass,
+  ): Promise<void> {
+    const jc = await this.checkJobConfiguration(existingJob.type);
+    if (jc.configVersion != existingJob.configVersion) {
+      // return error that configuration version does not match
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid configuration version.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
+  /**
+   * Check that the user is authenticated
+   */
+  checkAuthenticatedUser = (user: JWTUser) => {
+    if (user === null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
+
+  /**
    * Check that the dataset ids list is valid
    */
-  checkDatasetIds = (jobParams: Record<string, any>) => {
+  checkDatasetIds = (jobParams: Record<string, any> | undefined) => {
+    if (!jobParams) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Dataset ids list was not provided in jobParams",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const field = JobsConfigSchema.DatasetIds;
     const datasetIds = (
       typeof jobParams[field] === "string"
@@ -470,7 +560,7 @@ export class JobsController {
   async create(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-  ): Promise<JobClass> {
+  ): Promise<JobClass | null> {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
     const jobConfiguration = await this.validateJob(createJobDto);
@@ -484,9 +574,6 @@ export class JobsController {
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
     await this.performJobCreateAction(createdJobInstance);
-    // TBD
-    // Update job instance with results of job create action
-    // return await this.jobsService.statusUpdate(createdJobInstance);
     return createdJobInstance;
   }
 
@@ -575,16 +662,16 @@ export class JobsController {
 
 
   /**
-   * Find job by id
+   * Get job by id
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Read, JobClass),
+    ability.can(AuthOp.JobsRead, JobClass),
   )
   @Get(":id")
   @ApiOperation({
-    summary: "It finds an existing job based on its id.",
-    description: "It finds an existing job based on its id.",
+    summary: "It returns the requested job.",
+    description: "It returns the requested job.",
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -599,52 +686,73 @@ export class JobsController {
   }
 
 
+  /**
+   * Get jobs
+   */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AuthOp.JobsRead, JobClass),
+  )
   @Get()
+  @ApiOperation({
+    summary: "It returns a list of jobs.",
+    description: "It returns a list of jobs. The list returned can be modified by providing a filter.",
+  })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieve all jobs",
+    description: "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
     required: false,
+    type: String,
+    example: filterExampleSimplified,
   })
-  async findAll(@Query("filter") filter?: string): Promise<JobClass[]> {
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Found jobs",
+  })
+  async findAll(
+    @Req() request: Request,
+    @Query("filter") filter?: string,
+  ): Promise<JobClass[] | null> {
     const parsedFilter: IFilters<
       JobDocument,
       FilterQuery<JobDocument>
     > = JSON.parse(filter ?? "{}");
+
+    if (!this.isFilterValid(Object.keys(parsedFilter))) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid filter syntax.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return this.jobsService.findAll(parsedFilter);
   }
 
-  // @UseGuards(PoliciesGuard)
-  // @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
-  // @Get("/fullquery")
-  // async fullquery(
-  //   @Query() filters: { fields?: string; limits?: string },
-  // ): Promise<JobClass[]> {
-  //   const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-  //     fields: JSON.parse(filters.fields ?? "{}"),
-  //     limits: JSON.parse(filters.limits ?? "{}"),
-  //   };
-  //   return this.jobsService.fullquery(parsedFilters);
-  // }
 
+  /** 
+   * Delete a job
+   */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, JobClass))
-  @Get("/fullfacet")
-  async fullfacet(
-    @Query() filters: { fields?: string; facets?: string },
-  ): Promise<Record<string, unknown>[]> {
-    const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
-      fields: JSON.parse(filters.fields ?? "{}"),
-      facets: JSON.parse(filters.facets ?? "[]"),
-    };
-    return this.jobsService.fullfacet(parsedFilters);
-  }
-
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Delete, JobClass))
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AuthOp.Delete, JobClass),  // TBD
+  )
   @Delete(":id")
-  async remove(@Param("id") id: string): Promise<unknown> {
+  @ApiOperation({
+    summary: "It deletes the requested job.",
+    description: "It deletes the requested job.",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: undefined,
+    description: "Deleted job",
+  })
+  async remove(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<unknown> {
     return this.jobsService.remove({ _id: id });
   }
 }

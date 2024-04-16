@@ -6,11 +6,20 @@ export class UpdateStatusJobDto {
   @ApiProperty({
     type: String,
     required: true,
+    description: "Updated job status message for the current status.",
+  })
+  @IsString()
+  readonly jobStatusMessage: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
     description: "Updated job status code for the current status.",
   })
   @IsString()
   readonly statusCode: string;
 
+  // TBD are 'message' and 'token' needed?
   @ApiProperty({
     type: String,
     required: false,
