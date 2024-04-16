@@ -1,3 +1,13 @@
+// Add this to the VERY top of the first file loaded in your app
+import apm from "elastic-apm-node"
+apm.start({
+
+    // Override the service name from package.json
+    // Allowed characters: a-z, A-Z, 0-9, -, _, and space
+    serviceName: 'backend',
+    // Set the custom APM Server URL (default: http://localhost:8200)
+    serverUrl: 'http://localhost:8200'
+})
 import session from "express-session";
 import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
