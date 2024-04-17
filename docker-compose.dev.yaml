@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: bitnami/mongodb:4.2
+    image: docker.io/bitnami/mongodb:4.2
     volumes:
       - mongodb_data:/bitnami
   backend:
