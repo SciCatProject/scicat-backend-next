@@ -1321,8 +1321,8 @@ export class CaslAbilityFactory {
         user.currentGroups.some((g) => configuration().adminGroups.includes(g))
       ) {
         /**
-        * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-        */
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
 
         // -------------------------------------
         // endpoint authorization
