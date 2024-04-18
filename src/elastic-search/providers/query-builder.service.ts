@@ -8,7 +8,12 @@ import {
   IShould,
   ObjectType,
 } from "../interfaces/es-common.type";
-import { FilterFields, QueryFields, FacetFields } from "./fields.enum";
+import {
+  FilterFields,
+  QueryFields,
+  FacetFields,
+  ShouldFields,
+} from "./fields.enum";
 
 import { mapScientificQuery } from "src/common/utils";
 import { IScientificFilter } from "src/common/interfaces/common.interface";
@@ -18,16 +23,17 @@ import { convertToElasticSearchQuery } from "../helpers/utils";
 export class SearchQueryService {
   readonly filterFields = [...Object.values(FilterFields)];
   readonly queryFields = [...Object.values(QueryFields)];
+  readonly shouldFields = [...Object.values(ShouldFields)];
   readonly facetFields = [...Object.values(FacetFields)];
   readonly textQuerySplitMethod = /[ ,]+/;
 
   public buildSearchQuery(searchParam: IDatasetFields) {
     try {
-      const { text = "", ...fields } = searchParam;
+      const { ...fields } = searchParam;
 
       const filter = this.buildFilterFields(fields);
       const should = this.buildShouldFields(fields);
-      const query = this.buildTextQuery(text);
+      const query = this.buildTextQuery(fields);
 
       return this.constructFinalQuery(filter, should, query);
     } catch (err) {
@@ -54,7 +60,7 @@ export class SearchQueryService {
   private buildShouldFields(fields: Partial<IDatasetFields>) {
     const shouldFilter: IShould[] = [];
     if (fields["sharedWith"]) {
-      const termFilter = { term: { sharedWith: fields["sharedWith"] } };
+      const termFilter = { terms: { sharedWith: fields["sharedWith"] } };
 
       shouldFilter.push(termFilter);
     }
@@ -68,9 +74,17 @@ export class SearchQueryService {
     return { bool: { should: shouldFilter, minimum_should_match: 1 } };
   }
 
-  private buildTextQuery(text: string): QueryDslQueryContainer[] {
-    const terms = this.splitSearchText(text);
-    const wildcardQueries = this.buildWildcardQueries(terms);
+  private buildTextQuery(
+    fields: Partial<IDatasetFields>,
+  ): QueryDslQueryContainer[] {
+    let wildcardQueries: QueryDslQueryContainer[] = [];
+    const { text } = fields;
+
+    //NOTE: if text field is present, we query both datasetName and description fields
+    if (text) {
+      wildcardQueries = this.buildWildcardQueries(text);
+    }
+
     return wildcardQueries.length > 0
       ? [{ bool: { should: wildcardQueries, minimum_should_match: 1 } }]
       : [];
@@ -84,22 +98,13 @@ export class SearchQueryService {
       .filter(Boolean);
   }
 
-  private buildWildcardQueries(terms: string[]): QueryDslQueryContainer[] {
-    const wildcardQueries: QueryDslQueryContainer[] = [];
-    for (const term of terms) {
-      for (const fieldName of this.queryFields) {
-        const query = {
-          wildcard: {
-            [fieldName]: {
-              value: `*${term}*`,
-            },
-          },
-        };
-        wildcardQueries.push(query);
-      }
-    }
-
-    return wildcardQueries;
+  private buildWildcardQueries(text: string): QueryDslQueryContainer[] {
+    const terms = this.splitSearchText(text);
+    return terms.flatMap((term) =>
+      this.queryFields.map((fieldName) => ({
+        wildcard: { [fieldName]: { value: `*${term}*` } },
+      })),
+    );
   }
 
   private buildTermsFilter(fieldName: string, values: unknown) {
@@ -157,13 +162,22 @@ export class SearchQueryService {
           },
         });
         break;
-
       default:
-        filterArray.push({
-          terms: {
-            [fieldName]: values as string[],
-          },
-        });
+        if (Array.isArray(values)) {
+          filterArray.push({
+            terms: {
+              [fieldName]: values,
+            },
+          });
+        }
+        if (typeof values === "string") {
+          filterArray.push({
+            match: {
+              [`${fieldName}.keyword`]: values as string,
+            },
+          });
+        }
+        break;
     }
     return filterArray;
   }
