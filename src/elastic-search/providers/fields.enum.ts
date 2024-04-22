@@ -12,14 +12,6 @@ export enum FilterFields {
   Mode = "mode",
 }
 
-export enum FacetFields {
-  Type = "type",
-  CreationLocation = "creationLocation",
-  OwnerGroup = "ownerGroup",
-  AccessGroups = "accessGroups",
-  Keywords = "keywords",
-}
-
 export enum QueryFields {
   DatasetName = "datasetName",
   Description = "description",
@@ -28,6 +20,14 @@ export enum QueryFields {
 export enum ShouldFields {
   SharedWith = "sharedWith",
   UserGroups = "userGroups",
+}
+
+export enum FacetFields {
+  Type = "type",
+  CreationLocation = "creationLocation",
+  OwnerGroup = "ownerGroup",
+  AccessGroups = "accessGroups",
+  Keywords = "keywords",
 }
 
 export enum SortFields {

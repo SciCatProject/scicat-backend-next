@@ -44,15 +44,14 @@ export class SearchQueryService {
   private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
     const filter: IFilter[] = [];
 
-    for (const fieldName of this.filterFields) {
-      if (fields[fieldName]) {
-        const filterQueries = this.buildTermsFilter(
-          fieldName,
-          fields[fieldName],
-        );
-        filter.push(...filterQueries);
+    Object.entries(fields).forEach(([key, value]) => {
+      if (this.shouldFields.includes(key as ShouldFields) || key === "text") {
+        return;
       }
-    }
+
+      const filterQueries = this.buildTermsFilter(key, value);
+      filter.push(...filterQueries);
+    });
 
     return filter;
   }
@@ -173,7 +172,7 @@ export class SearchQueryService {
         if (typeof values === "string") {
           filterArray.push({
             match: {
-              [`${fieldName}.keyword`]: values as string,
+              [fieldName]: values as string,
             },
           });
         }

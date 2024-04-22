@@ -49,6 +49,9 @@ export const datasetMappings: MappingObject = {
   proposalId: {
     type: "keyword",
   },
+  sampleId: {
+    type: "keyword",
+  },
   sourceFolder: {
     type: "keyword",
   },
@@ -71,6 +74,9 @@ export const datasetMappings: MappingObject = {
     type: "keyword",
   },
   sharedWith: {
+    type: "keyword",
+  },
+  ownerEmail: {
     type: "keyword",
   },
 };
