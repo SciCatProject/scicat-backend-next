@@ -238,9 +238,9 @@ The image below shows visualized workflow.
 
 **Auto-generated Release Notes:**
 
-- The release log is automatically populated with all commit messages since the last tag, providing a detailed changelog for the release. By default semantic-release uses [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
+The release log is automatically populated with all commit messages since the last tag, providing a detailed changelog for the release. By default semantic-release uses [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
 
-**In order to generate detailed changelog for the release, the following type for the `commit message`/`PR title` should be used:**
+In order to generate detailed changelog for the release, the following type for the `commit message`/`PR title` should be used:
 
 - feat: message - A new feature
 - fix: message - A bug fix
