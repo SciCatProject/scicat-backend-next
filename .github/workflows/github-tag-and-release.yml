@@ -54,9 +54,23 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
+      ## The metadata-action dynamically generates and manages metadata for Docker images,
+      ## like tags and labels, based on the provided inputs and workflow context.
+      ## https://github.com/docker/metadata-action
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/scicatproject/backend-next
+          tags: |
+            type=raw,value=stable
+            type=raw,value=${{ steps.tag_version.outputs.new_tag }}
+            type=semver,pattern={{version}}
+            type=raw,value={{date 'YYYY-MM'}},prefix=r_
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/scicatproject/backend-next:${{ steps.tag_version.outputs.new_tag }}
+          tags: ${{ steps.meta.outputs.tags }}
