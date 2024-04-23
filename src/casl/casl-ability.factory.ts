@@ -1302,37 +1302,38 @@ export class CaslAbilityFactory {
       cannot(Action.InstrumentCreate, Instrument);
       cannot(Action.InstrumentUpdate, Instrument);
       cannot(Action.InstrumentDelete, Instrument);
-    } else if (
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in DELETE_GROUPS
-        */
+    } else {
+      if (
+        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+      ) {
+        /*
+         * user that belongs to any of the group listed in DELETE_GROUPS
+         */
 
-      // -------------------------------------
-      // instrument
-      // -------------------------------------
-      // endpoint authorization
-      can(Action.InstrumentDelete, Instrument);
-    } else if (
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
-      // -------------------------------------
-      // instrument
-      // -------------------------------------
-      // endpoint authorization
-      can(Action.InstrumentRead, Instrument);
-      can(Action.InstrumentCreate, Instrument);
-      can(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
-    } else if (user) {
-      can(Action.InstrumentRead, Instrument);
-      cannot(Action.InstrumentCreate, Instrument);
-      cannot(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.InstrumentDelete, Instrument);
+      } else {
+        cannot(Action.InstrumentDelete, Instrument);
+      }
+
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.InstrumentRead, Instrument);
+        can(Action.InstrumentCreate, Instrument);
+        can(Action.InstrumentUpdate, Instrument);
+      } else {
+        can(Action.InstrumentRead, Instrument);
+        cannot(Action.InstrumentCreate, Instrument);
+        cannot(Action.InstrumentUpdate, Instrument);
+      }
     }
 
     // Instrument permissions
