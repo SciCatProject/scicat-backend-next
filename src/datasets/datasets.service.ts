@@ -126,7 +126,7 @@ export class DatasetsService {
       );
 
       datasets = await this.datasetModel
-        .find({ _id: { $in: esResult.data } })
+        .find({ pid: { $in: esResult.data } })
         .sort(modifiers.sort)
         .exec();
     }

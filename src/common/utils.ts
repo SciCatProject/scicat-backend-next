@@ -845,7 +845,7 @@ export const datasetsFullQueryDescriptionFields =
   "metadataKey": "metadata", <optional>\n \
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
-  "sharedWith": "email", <optional>\n \
+  "sharedWith": ["email", ...], <optional>\n \
 }\n \
   </pre>';
 

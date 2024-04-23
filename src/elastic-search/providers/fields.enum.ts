@@ -8,6 +8,8 @@ export enum FilterFields {
   AccessGroups = "accessGroups",
   ScientificMetadata = "scientific",
   IsPublished = "isPublished",
+  DatasetName = "datasetName",
+  Mode = "mode",
 }
 
 export enum FacetFields {
@@ -21,6 +23,11 @@ export enum FacetFields {
 export enum QueryFields {
   DatasetName = "datasetName",
   Description = "description",
+}
+
+export enum ShouldFields {
+  SharedWith = "sharedWith",
+  UserGroups = "userGroups",
 }
 
 export enum SortFields {
