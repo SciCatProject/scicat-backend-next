@@ -220,6 +220,8 @@ Following are the post that I found useful working on the migration:
 Scicat Backend controls new releases with the `GitHub-tag-and-release` GitHub Action. This workflow is triggered by push events to the release branch. It automates the version bumping and release processes based on semantic commit messages. Full documentation of the action package can be found on [github-tag-action](https://github.com/marketplace/actions/github-tag)
 
 The image below shows visualized workflow.
+![image](https://github.com/SciCatProject/scicat-backend-next/assets/78078898/0f3c5386-4a16-4ed1-a2ee-d71ef6f34e99)
+
 
 ### Workflow Trigger Condition
 
