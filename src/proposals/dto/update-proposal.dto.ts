@@ -124,7 +124,6 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @IsObject()
   readonly metadata?: Record<string, unknown>;
-
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}
