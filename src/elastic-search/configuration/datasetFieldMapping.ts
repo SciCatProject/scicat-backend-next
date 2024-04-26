@@ -29,7 +29,6 @@ export const datasetMappings: MappingObject = {
   },
   creationTime: {
     type: "date",
-    ignore_above: 256,
   },
   scientificMetadata: {
     type: "nested",
