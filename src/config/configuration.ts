@@ -86,7 +86,10 @@ const configuration = () => {
     },
     accessGroupsStaticConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_STATIC_ENABLED || true),
-      value: accessGroupsStaticValues.split(",").map((v) => v.trim()) ?? [],
+      value:
+        (accessGroupsStaticValues &&
+          accessGroupsStaticValues.split(",").map((v) => v.trim())) ??
+        [],
     },
     accessGroupsOIDCPayloadConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
