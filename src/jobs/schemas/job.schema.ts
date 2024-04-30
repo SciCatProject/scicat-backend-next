@@ -3,6 +3,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { CreateJobAuth } from "../types/jobs-auth.enum";
+import { JobConfig } from "../config/jobconfig";
 
 export type JobDocument = JobClass & Document;
 
@@ -158,16 +160,18 @@ export class JobClass extends OwnableClass {
   contactEmail: string;
 
   @ApiProperty({
-    type: String,
-    required: true,
-    default: {},
+    type: Object,
     description: "Configuration that was used to create this job.",
+    required: true,
   })
   @Prop({
     type: Object,
     required: true,
   })
-  configuration: Record<string, unknown>;
+  configuration: JobConfig;
+
+  @Prop({ type: Boolean, required: false, default: false })
+  datasetValidation?: boolean;
 
   // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too

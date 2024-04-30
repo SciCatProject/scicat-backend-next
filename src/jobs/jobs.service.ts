@@ -99,7 +99,7 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-    const statusHistory = { statusHistory: existingJob.statusHistory };
+    // const statusHistory = { statusHistory: existingJob.statusHistory };
     const username = (this.request.user as JWTUser).username;
 
     const updatedJob = await this.jobModel

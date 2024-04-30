@@ -24,3 +24,5 @@ export enum UpdateJobAuth {
   // see field ownerGroup
   JobOwnerGroup = "#jobOwnerGroup",
 }
+
+export type JobsAuth = CreateJobAuth | UpdateJobAuth;

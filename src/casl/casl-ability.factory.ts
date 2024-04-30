@@ -812,10 +812,10 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // instance authorization
       can(AuthOp.JobCreateConfiguration, JobClass, {
-        "configuration.create.auth": CreateJobAuth.All,
+        ["configuration.create.auth" as string]: CreateJobAuth.All,
       });
       can(AuthOp.JobCreateConfiguration, JobClass, {
-        "configuration.create.auth": CreateJobAuth.DatasetPublic,
+        ["configuration.create.auth" as string]: CreateJobAuth.DatasetPublic,
         datasetsValidation: true,
       });
     } else {
@@ -908,12 +908,12 @@ export class CaslAbilityFactory {
             ownerUser: user.username,
           });
           can(AuthOp.JobCreateConfiguration, JobClass, {
-            "configuration.create.auth": {
+            ["configuration.create.auth" as string]: {
               $in: jobCreateInstanceAuthorizationValues,
             },
           });
           can(AuthOp.JobCreateConfiguration, JobClass, {
-            "configuration.create.auth": {
+            ["configuration.create.auth" as string]: {
               $in: jobCreateDatasetAuthorizationValues,
             },
             datasetValidation: true,
@@ -932,10 +932,10 @@ export class CaslAbilityFactory {
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobStatusUpdateOwner, JobClass, {
-            $or: [
-              { ownerUser: user.username },
-              { ownerGroup: { $in: user.currentGroups } },
-            ],
+            ownerUser: user.username,
+          });
+          can(AuthOp.JobStatusUpdateOwner, JobClass, {
+            ownerGroup: { $in: user.currentGroups },
           });
         } else {
           const jobUpdateEndPointAuthorizationValues = [
@@ -962,16 +962,16 @@ export class CaslAbilityFactory {
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            "configuration.update.auth": {
+            ["configuration.update.auth" as string]: {
               $in: jobUpdateInstanceAuthorizationValues,
             },
           });
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            "configuration.update.auth": "#jobOwnerUser",
+            ["configuration.update.auth" as string]: "#jobOwnerUser",
             ownerUser: user.username,
           });
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            "configuration.update.auth": "#jobOwnerGroup",
+            ["configuration.update.auth" as string]: "#jobOwnerGroup",
             ownerGroup: { $in: user.currentGroups },
           });
         }
