@@ -22,7 +22,7 @@ export class JobCreateInterceptor implements NestInterceptor {
     const jobConfiguration = await this.validateJob(req.body);
 
     req.body = {
-      createDto: req.body,
+      ...req.body,
       configuration: jobConfiguration,
     };
 

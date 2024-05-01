@@ -17,7 +17,7 @@ import {
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
-import { CreateJobDto } from "./dto/create-job.dto";
+import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
 import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -45,7 +45,7 @@ import {
   filterDescriptionSimplified,
   filterExampleSimplified,
 } from "src/common/utils";
-import { JobConfig, JobOperation } from "./config/jobconfig";
+import { JobConfig } from "./config/jobconfig";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 
 @ApiBearerAuth()
@@ -363,13 +363,13 @@ export class JobsController {
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobCreate(
-    jobCreateDto: any,
+    jobCreateDto: CreateJobDtoWithConfig,
     user: JWTUser,
-    jobConfiguration: any,
   ): Promise<JobClass> {
     // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
+    const jobConfiguration = jobCreateDto.configuration;
     jobInstance._id = "";
     jobInstance.ownerUser = "";
     jobInstance.ownerGroup = "";
@@ -436,7 +436,10 @@ export class JobsController {
       }
     }
 
-    if (jobConfiguration.create.auth in this.jobDatasetAuthorization) {
+    if (
+      jobConfiguration.create.auth &&
+      jobConfiguration.create.auth in this.jobDatasetAuthorization
+    ) {
       // verify that the user meet the requested permissions on the datasets listed
       const datasetIds = this.checkDatasetIds(jobCreateDto.jobParams);
       // build the condition
@@ -526,21 +529,19 @@ export class JobsController {
   })
   async create(
     @Req() request: Request,
-    @Body() job: { createDto: CreateJobDto; configuration: JobConfig },
+    @Body() createJobDtoWithConfig: CreateJobDtoWithConfig,
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
     // Check job authorization
     const jobInstance = await this.instanceAuthorizationJobCreate(
-      job.createDto,
+      createJobDtoWithConfig,
       request.user as JWTUser,
-      job.configuration,
     );
-
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(
       jobInstance,
-      job.configuration.configVersion,
+      createJobDtoWithConfig.configuration.configVersion,
     );
 
     // Perform the action that is specified in the create portion of the job configuration
