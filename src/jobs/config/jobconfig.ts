@@ -217,7 +217,7 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   if (validate(data)) {
     console.log("Schema is valid!");
   } else {
-    console.log("Invalid Schema", validate.errors);
+    console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
 
   if (!Array.isArray(data)) {

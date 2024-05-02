@@ -11,7 +11,7 @@ export const JobConfigSchema = {
       create: {
         type: "object",
         properties: {
-          auth: { type: "string", enum: Object.values(CreateJobAuth) },
+          auth: { type: "string" },
           actions: {
             type: "array",
             items: {
@@ -29,7 +29,7 @@ export const JobConfigSchema = {
       update: {
         type: "object",
         properties: {
-          auth: { type: "string", enum: Object.values(UpdateJobAuth) },
+          auth: { type: "string" },
           actions: {
             type: "array",
             items: {

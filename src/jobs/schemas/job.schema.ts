@@ -83,18 +83,6 @@ export class JobClass extends OwnableClass {
   })
   statusMessage: string;
 
-  // // history of status codes
-  // @ApiProperty({
-  //   type: [Object],
-  //   required: false,
-  //   description: "Array of status updates containing status code and message",
-  // })
-  // @Prop({
-  //   type: [Object],
-  //   required: false,
-  // })
-  // statusHistory: Record<string, string>[];
-
   // configuration version
   @ApiProperty({
     type: String,
