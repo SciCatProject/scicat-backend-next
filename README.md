@@ -28,19 +28,21 @@ or the SciCat team at ESS.
 2. `npm install`
 3. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
 4. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
-5. `npm run start:dev`
-6. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
-7. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
+5. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
+6. `npm run start:dev`
+7. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+8. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
 ## Develop in a container using the docker-compose.dev file
 
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
 2. docker-compose -f docker-compose.dev.yaml up -d
 3. _Optional_ Mount [functionalAccounts.json](#local-user-accounts) file to a volume in the container to create local users.
-4. _Optional_ change the container env variables
-5. Attach to the container
-6. `npm run start:dev`
-7. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+4. _Optional_ Mount [loggers.json](#loggers-configuration) file to a volume in the container to configure multiple loggers.
+5. _Optional_ change the container env variables
+6. Attach to the container
+7. `npm run start:dev`
+8. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
@@ -76,6 +78,12 @@ automatically create the specified accounts on startup. If this file is not prov
 
 Follow the structure of [functionalAccounts.json.minimal.example](/functionalAccounts.json.minimal.example) to create
 your own _functionalAccounts.json_ file.
+
+### Loggers configuration
+
+Providing a file called _loggers.json_ at the root of the project, locally or in the container, and create an external logger class in the `src/loggers/loggingProviders/`directory will automatically create specified one or multiple loggers instances.
+
+The `loggers.json.example` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
 
 ## Environment variables
 
@@ -160,6 +168,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 - `ES_MAX_RESULT` [number] Maximum records can be indexed into Elasticsearch. Default value: 10000
 - `ES_FIELDS_LIMIT` [number] The total number of fields in an index. Default value: 1000
 - `ES_REFRESH` [string] If set to `wait_for` Elasticsearch will wait till data is insereted to specificied index then return response. Unless you have a good reason to wait for the change to become visible, always use `false` (the default setting).
+
+- `LOGGERS_CONFIG_FILE` [string] The file name for loggers configuration which needs to be located in the project root directory. Default value: "loggers.json"
 
 ## Migrating from the old SciCat Backend
 

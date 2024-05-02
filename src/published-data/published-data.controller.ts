@@ -439,8 +439,7 @@ export class PublishedDataController {
     @Param("id") id: string,
     @Body() data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { doi, ...publishedData } = data;
+    const { ...publishedData } = data;
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 

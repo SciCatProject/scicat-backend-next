@@ -21,7 +21,7 @@ import {
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateJobStatusDto } from "./dto/update-jobstatus.dto";
+import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -36,14 +36,14 @@ export class JobsService {
     configVersion: string,
   ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
-    var createdJob = new this.jobModel(
+    const createdJob = new this.jobModel(
       addStatusFields(
         addConfigVersionField(
           addCreatedByFields(createJobDto, username),
-          configVersion
+          configVersion,
         ),
         "Job has been created.",
-        "jobCreated"
+        "jobCreated",
       ),
     );
     return createdJob.save();
@@ -93,25 +93,21 @@ export class JobsService {
 
   async statusUpdate(
     id: string,
-    updateJobStatusDto: UpdateJobStatusDto,
+    updateJobDto: UpdateStatusJobDto,
   ): Promise<JobClass | null> {
     const existingJob = await this.jobModel.findOne({ id: id }).exec();
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-    const statusHistory = { "statusHistory" : existingJob.statusHistory };
     const username = (this.request.user as JWTUser).username;
 
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },
         addStatusFields(
-          addUpdatedByField(
-            {...updateJobStatusDto, ...statusHistory} as UpdateQuery<JobDocument>,
-            username,
-          ),
-          updateJobStatusDto.jobStatusMessage,
-          updateJobStatusDto.jobStatusCode,
+          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
+          updateJobDto.statusCode,
+          updateJobDto.statusMessage!,
         ),
         { new: true },
       )

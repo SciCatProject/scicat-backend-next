@@ -32,6 +32,7 @@ const mockPublishedData: PublishedData = {
 
 describe("PublishedDataService", () => {
   let service: PublishedDataService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<PublishedData>;
 
   beforeEach(async () => {

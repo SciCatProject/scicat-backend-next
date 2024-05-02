@@ -9,6 +9,7 @@ import { PoliciesModule } from "src/policies/policies.module";
 import { CommonModule } from "src/common/common.module";
 import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
+import { UsersModule } from "src/users/users.module";
 
 @Module({
   controllers: [JobsController],
@@ -16,6 +17,7 @@ import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
     CommonModule,
     ConfigModule,
     DatasetsModule,
+    UsersModule,
     MongooseModule.forFeatureAsync([
       {
         name: JobClass.name,

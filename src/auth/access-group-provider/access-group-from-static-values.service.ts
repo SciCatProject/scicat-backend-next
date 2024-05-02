@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { AccessGroupService } from "./access-group.service";
 
 /**
@@ -11,10 +11,6 @@ export class AccessGroupFromStaticValuesService extends AccessGroupService {
   }
 
   async getAccessGroups(): Promise<string[]> {
-    // Logger.log(
-    //   "Static access group getAccessGroups : " +
-    //     this.staticAccessGroups.join(","),
-    // );
     return this.staticAccessGroups;
   }
 }

@@ -14,6 +14,7 @@ const mockInstrument: Instrument = {
 
 describe("InstrumentsService", () => {
   let service: InstrumentsService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<Instrument>;
 
   beforeEach(async () => {

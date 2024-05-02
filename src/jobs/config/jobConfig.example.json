@@ -3,6 +3,7 @@
     "jobType": "archive",
     "configVersion": "v1.0 2024-03-01 6f3f38",
     "create": {
+      "auth": "#all",
       "actions": [
         {
           "actionType": "log"
@@ -17,7 +18,7 @@
       ]
     },
     "update": {
-      "auth": "#all"
+      "auth": "archivemanager"
     }
   },
   {

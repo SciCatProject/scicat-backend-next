@@ -3,6 +3,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { CreateJobAuth } from "../types/jobs-auth.enum";
+import { JobConfig } from "../config/jobconfig";
 
 export type JobDocument = JobClass & Document;
 
@@ -32,6 +34,16 @@ export class JobClass extends OwnableClass {
     type: String,
   })
   _id: string;
+
+  @ApiProperty({
+    type: String,
+    description: "Defines the user that owns this job",
+  })
+  @Prop({
+    type: String,
+    index: true,
+  })
+  ownerUser: string;
 
   // type
   @ApiProperty({
@@ -71,18 +83,6 @@ export class JobClass extends OwnableClass {
   })
   statusMessage: string;
 
-  // history of status codes
-  @ApiProperty({
-    type: [Object],
-    required: false,
-    description: "Array of status updates containing status code and message",
-  })
-  @Prop({
-    type: [Object],
-    required: false,
-  })
-  statusHistory: Record<string, string>[];
-
   // configuration version
   @ApiProperty({
     type: String,
@@ -121,7 +121,47 @@ export class JobClass extends OwnableClass {
   })
   jobParams: Record<string, unknown>;
 
-  // TBD email address for owner from scicat? see create example for job.recipients
+  // dataset validation results
+  @ApiProperty({
+    type: Boolean,
+    required: true,
+    description:
+      "True if the user has the access requested to all the datasets listed on this job",
+  })
+  @Prop({
+    type: Boolean,
+    required: true,
+  })
+  datasetsValidation: boolean;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "",
+    description:
+      "Email of the person to contact regarding this job. If the job is submitted anonymously, an email has to be provided",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  contactEmail: string;
+
+  @ApiProperty({
+    type: Object,
+    description: "Configuration that was used to create this job.",
+    required: true,
+  })
+  @Prop({
+    type: Object,
+    required: true,
+  })
+  configuration: JobConfig;
+
+  @Prop({ type: Boolean, required: false, default: false })
+  datasetValidation?: boolean;
+
+  // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);

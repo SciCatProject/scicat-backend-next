@@ -731,25 +731,17 @@ export const createFullfacetPipeline = <T, Y extends object>(
 };
 
 export const addStatusFields = <T>(
-  obj: T & { statusHistory?: any[] },
-  msg: string,
-  code: string,
+  obj: T,
+  statusCode: string,
+  statusMessage: string,
 ): T & {
-  statusMessage: string;
   statusCode: string;
-  statusHistory: any[];
+  statusMessage: string;
 } => {
-  var history = obj.statusHistory ? [...obj.statusHistory] : [];
-  history.push({
-    "timestamp": (new Date()).toISOString(),
-    "statusCode": code
-  });
-
   return {
     ...obj,
-    statusMessage: msg,
-    statusCode: code,
-    statusHistory: history,
+    statusCode: statusCode,
+    statusMessage: statusMessage,
   };
 };
 
