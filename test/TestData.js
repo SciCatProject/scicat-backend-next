@@ -684,24 +684,47 @@ const TestData = {
     ],
   },
 
-  ArchiveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "archive",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
+  // ArchiveJob: {
+  //   emailJobInitiator: "scicatarchivemanger@psi.ch",
+  //   type: "archive",
+  //   jobStatusMessage: "jobForwarded",
+  //   datasetList: [
+  //     {
+  //       pid: "dummy",
+  //       files: [],
+  //     },
+  //     {
+  //       pid: "dummy",
+  //       files: [],
+  //     },
+  //   ],
+  //   jobResultObject: {
+  //     status: "okay",
+  //     message: "All systems okay",
+  //   },
+  // },
+
+  ArchiveJob:{
+    jobType: "archive",
+    configVersion: "v1.0 2024-03-01 6f3f38",
+    create: {
+      auth: "#all",
+      actions: [
+        {
+          actionType: "log"
+        },
+        {
+          actionType: "url",
+          url: "http://localhost:3000/api/v3/health?jobid={{id}}",
+          headers: {
+            accept: "application/json"
+          }
+        }
+      ]
     },
+    update: {
+      auth: "archivemanager"
+    }
   },
 
   RetrieveJob: {

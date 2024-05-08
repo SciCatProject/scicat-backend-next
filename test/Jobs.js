@@ -4,9 +4,44 @@
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null,
+  accessTokenUser1 = null,
+  accessTokenUser2 = null,
+  accessTokenUser3 = null,
+  accessTokenUser4 = null,
+  accessTokenUser51 = null,
+  accessTokenUser52 = null,
+  accessTokenArchiveManager = null,
+  accessTokenAdmin = null;
 
+
+let job1 = {
+    "type": "archive",
+    "jobParams": {
+      "jobType": "archive",
+      "configVersion": "v1.0 2024-03-01 6f3f38",
+      "create": {
+          "auth": "#all",
+          "actions": [
+              {
+                  "actionType": "log"
+              },
+              {
+                  "actionType": "url",
+                  "url": "http://localhost:3000/api/v3/health?jobid={{id}}",
+                  "headers": {
+                      "accept": "application/json"
+                  }
+              }
+          ]
+      },
+      "update": {
+          "auth": "archivemanager"
+      }
+    },
+    "ownerUser": "user3",
+    "ownerGroup": "group3",
+}
 var pid1 = null;
 var pid2 = null;
 var datasetLiveCycle1 = {};
@@ -20,7 +55,7 @@ var retrieveJobId = null;
 var publicJobIds = [];
 var origDatablockId = null;
 
-describe.skip("1100: Jobs: Test New Job Model", () => {
+describe("1100: Jobs: Test New Job Model", () => {
   before((done) => {
     archiveJob = { ...TestData.ArchiveJob };
     retrieveJob = { ...TestData.RetrieveJob };
@@ -40,36 +75,99 @@ describe.skip("1100: Jobs: Test New Job Model", () => {
         utils.getToken(
           appUrl,
           {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
+            username: "user1",
+            password: TestData.Accounts["user1"]["password"],
           },
           (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
+            accessTokenUser1 = tokenVal;
+            utils.getToken(
+              appUrl,
+              {
+                username: "user2",
+                password: TestData.Accounts["user2"]["password"],
+              },
+              (tokenVal) => {
+                accessTokenUser2 = tokenVal;
+                utils.getToken(
+                  appUrl,
+                  {
+                    username: "user3",
+                    password: TestData.Accounts["user3"]["password"],
+                  },
+                  (tokenVal) => {
+                    accessTokenUser4 = tokenVal;
+                    utils.getToken(
+                      appUrl,
+                      {
+                        username: "user4",
+                        password: TestData.Accounts["user4"]["password"],
+                      },
+                      (tokenVal) => {
+                        accessTokenUser51 = tokenVal;
+                        utils.getToken(
+                          appUrl,
+                          {
+                            username: "user5.1",
+                            password: TestData.Accounts["user5.1"]["password"],
+                          },
+                          (tokenVal) => {
+                            accessTokenUser52 = tokenVal;
+                            utils.getToken(
+                              appUrl,
+                              {
+                                username: "user5.2",
+                                password: TestData.Accounts["user5.2"]["password"],
+                              },
+                              (tokenVal) => {
+                                accessTokenUser3 = tokenVal;
+                                utils.getToken(
+                                  appUrl,
+                                  {
+                                    username: "archiveManager",
+                                    password:
+                                      TestData.Accounts["archiveManager"]["password"],
+                                  },
+                                  (tokenVal) => {
+                                    accessTokenArchiveManager = tokenVal;
+                                    utils.getToken(
+                                      appUrl,
+                                      {
+                                        username: "admin",
+                                        password: TestData.Accounts["admin"]["password"],
+                                      },
+                                      (tokenVal) => {
+                                        accessTokenAdmin = tokenVal;
+                                        done();
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
           },
         );
       },
     );
   });
 
-  it("0010: adds a new raw dataset", async () => {
+  it("0010: adds a new job as  dataset", async () => {
     return request(appUrl)
-      .post("/api/v3/Datasets")
-      .send(TestData.RawCorrect)
+      .post("/api/v3/Jobs")
+      .send(job1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("owner").and.be.string;
-        res.body.should.have.property("type").and.equal("raw");
-        res.body.should.have.property("pid").and.be.string;
-        // store link to this dataset in datablocks
-        var pidtest = res.body["pid"];
-        archiveJob.datasetList[0].pid = pidtest;
-        retrieveJob.datasetList[0].pid = pidtest;
-        publicJob.datasetList[0].pid = pidtest;
-        pid1 = encodeURIComponent(res.body["pid"]);
       });
   });
 
