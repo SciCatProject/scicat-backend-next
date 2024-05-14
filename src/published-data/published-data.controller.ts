@@ -443,6 +443,29 @@ export class PublishedDataController {
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
+    let returnValue = null;
+    if(OAIServerUri) {
+      returnValue = await this.resyncOAIPublication(id, publishedData, OAIServerUri)
+    }
+
+    try {
+      await this.publishedDataService.update({ doi: id }, publishedData);
+    } catch (error:any) {
+      console.log(error);
+      throw new HttpException(
+        `Error occurred: ${error}`,
+        error.response?.status || HttpStatus.FAILED_DEPENDENCY,
+      );
+    }
+
+    return returnValue;
+  }
+
+  private async resyncOAIPublication(
+    id: string,
+    publishedData: UpdatePublishedDataDto,
+    OAIServerUri: string
+  ): Promise<IRegister | null> {
     let doiProviderCredentials = {
       username: "removed",
       password: "removed",
@@ -465,25 +488,21 @@ export class PublishedDataController {
       auth: doiProviderCredentials,
     };
 
-    let res;
     try {
-      res = await firstValueFrom(
+      const res = await firstValueFrom(
         this.httpService.request({
           ...resyncOAIPublication,
           method: "PUT",
         }),
       );
-    } catch (error) {
+      return res ? res.data : null;
+    } catch (error:any) {
       handleAxiosRequestError(error, "PublishedDataController.resync");
+      throw new HttpException(
+        `Error occurred: ${error}`,
+        error.response.status || HttpStatus.FAILED_DEPENDENCY,
+      );
     }
-
-    try {
-      await this.publishedDataService.update({ doi: id }, publishedData);
-    } catch (error) {
-      console.error(error);
-    }
-
-    return res ? res.data : null;
   }
 }
 
