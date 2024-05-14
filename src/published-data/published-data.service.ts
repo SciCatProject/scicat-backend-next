@@ -1,4 +1,4 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope, HttpException, HttpStatus } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -20,12 +20,23 @@ import {
   PublishedDataDocument,
 } from "./schemas/published-data.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { HttpService } from "@nestjs/axios";
+import {
+  UpdatePublishedDataDto,
+} from "./dto/update-published-data.dto";
+import { IRegister } from "./interfaces/published-data.interface";
+import { existsSync, readFileSync } from "fs";
+import { firstValueFrom } from "rxjs";
+import { handleAxiosRequestError } from "src/common/utils";
 
 @Injectable({ scope: Scope.REQUEST })
 export class PublishedDataService {
+  private doiConfigPath = "./src/config/doiconfig.local.json";
+
   constructor(
     @InjectModel(PublishedData.name)
     private publishedDataModel: Model<PublishedDataDocument>,
+    private readonly httpService: HttpService,
     @Inject(REQUEST)
     private request: Request,
   ) {}
@@ -100,5 +111,49 @@ export class PublishedDataService {
 
   async remove(filter: FilterQuery<PublishedDataDocument>): Promise<unknown> {
     return this.publishedDataModel.findOneAndDelete(filter).exec();
+  }
+
+  async resyncOAIPublication(
+    id: string,
+    publishedData: UpdatePublishedDataDto,
+    OAIServerUri: string
+  ): Promise<IRegister | null> {
+    let doiProviderCredentials = {
+      username: "removed",
+      password: "removed",
+    };
+
+    if (existsSync(this.doiConfigPath)) {
+      doiProviderCredentials = JSON.parse(
+        readFileSync(this.doiConfigPath).toString(),
+      );
+    }
+
+    const resyncOAIPublication = {
+      method: "PUT",
+      body: publishedData,
+      json: true,
+      uri: OAIServerUri + "/" + encodeURIComponent(encodeURIComponent(id)),
+      headers: {
+        "content-type": "application/json;charset=UTF-8",
+      },
+      auth: doiProviderCredentials,
+    };
+
+    try {
+      const res = await firstValueFrom(
+        this.httpService.request({
+          ...resyncOAIPublication,
+          method: "PUT",
+        }),
+      );
+      return res ? res.data : null;
+    } catch (error:any) {
+      handleAxiosRequestError(error, "PublishedDataController.resync");
+      throw new HttpException(
+        `Error occurred: ${error}`,
+        error.response.status || HttpStatus.FAILED_DEPENDENCY,
+      );
+    }
   }
 }
