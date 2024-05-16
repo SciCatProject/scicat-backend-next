@@ -46,7 +46,6 @@ export const datasetMappings: MappingObject = {
   history: {
     type: "nested",
     dynamic: false,
-    ignore_above: 256,
   },
   proposalId: {
     type: "keyword",
