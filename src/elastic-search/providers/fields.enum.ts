@@ -12,7 +12,7 @@ export enum FilterFields {
   Mode = "mode",
 }
 
-export enum QueryFields {
+export enum MustFields {
   DatasetName = "datasetName",
   Description = "description",
 }
