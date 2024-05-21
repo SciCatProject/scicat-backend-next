@@ -88,88 +88,83 @@ The `loggers.json.example` file in the root directory showcases the example of c
 ## Environment variables
 
 Valid environment variables for the .env file. See [.env.example](/.env.example) for examples value formats.
-
-- `ADMIN_GROUPS` [string] _Optional_ Comma separated list of admin groups with admin permission assigned to the listed users. Example: "admin, ingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `CREATE_DATASET_GROUPS` [string] _Optional_ Comma seperated list of create dataset groups. Users belong to the listed groups can create dataset with/without PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `CREATE_DATASET_WITH_PID_GROUPS` [string] _Optional_ Comma seperated list of create dataset with pid groups. Users belong to the listed groups can create dataset with PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `DELETE_GROUPS` [string] _Optional_ Comma seperated list of delete groups. Users belong to the listed groups can delete any dataset, origDatablocks, datablocks etc. For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `DATASET_CREATION_VALIDATION_ENABLED` [boolean] Flag to enable/disable dataset validation to validate if requested new dataset is valid with given regular expression. Preconfigure **DATASET_CREATION_VALIDATION_REGEX** variable is required. Default value: false
-- `DATASET_CREATION_VALIDATION_REGEX` [string] Regular expression validation for new dataset request. Default value: ""
-- `PROPOSAL_GROUPS` [string] _Optional_ Comma separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-- `SAMPLE_GROUPS` [string] _Optional_ Comma separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html)
-
-- `ACCESS_GROUPS_GRAPHQL_ENABLED` [string] _Optional_ Flag to enable/disable the graphql service get access groups. In order to use this service following variables needs to be configured: `ACCESS_GROUP_SERVICE_TOKEN`, `ACCESS_GROUP_SERVICE_API_URL` and `ACCESS_GROUP_SERVICE_HANDLER` respectively. Values true or false. Defaults to true.
-- `ACCESS_GROUPS_SERVICE_TOKEN` [string] _Optional_ Authentication token used if access groups are obtained from a third party service. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
-- `ACCESS_GROUP_SERVICE_API_URL` [string] _Optional_ URL of the service providing the users' access groups. This value is not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example
-- `ACCESS_GROUP_SERVICE_HANDLER` [string] _Optional_ Configuration property that points to the source of a module. This module provides a specific responseProcessor function for handling GraphQL responses and a query template for making GraphQL requests
-- `ACCESS_GROUPS_STATIC_ENABLED` [string] _Optional_ Flag to enable/disable automatic assignment of predefined access groups to all users. Values true or false. Defaults to true.
-- `ACCESS_GROUPS_STATIC_VALUES` [string] _Optional_ Comma separated list of access groups automatically assigned to all users. Example: "scicat, user"
-- `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` [string] _Optional_ Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. Defaults to false
-
-- `DOI_PREFIX` [string] The facility DOI prefix, with trailing slash.
-- `EXPRESS_SESSION_SECRET` [string] _Optional_ Secret used to set up express session.
-- `HTTP_MAX_REDIRECTS` [number] _Optional_ Max redirects for http requests. Defaults to 5.
-- `HTTP_TIMEOUT` [number] _Optional_ Timeout from http requests in ms. Defaults to 5000.
-- `JWT_SECRET` [string] The secret for your JWT token, used for authorization.
-- `JWT_EXPIRES_IN` [number] _Optional_ How long, in seconds, the JWT token is valid. Defaults to `3600`.
-- `LDAP_URL` [string] _Optional_ The URL to your LDAP server.
-- `LDAP_BIND_DN` [string] _Optional_ Bind_DN for your LDAP server.
-- `LDAP_BIND_CREDENTIALS` [string] _Optional_ Credentials for your LDAP server.
-- `LDAP_SEARCH_BASE` [string] _Optional_ Search base for your LDAP server.
-- `LDAP_SEARCH_FILTER` [string] _Optional_ Search filter for you LDAP server.
-- `OIDC_ISSUER` [string] _Optional_ URL of the oidc server providing the authentication service. Example: https://identity.esss.dk/realm/ess.
-- `OIDC_CLIENT_ID` [string] _Optional_ Identity of the client that we want to use to obtain the user token. Example: scicat
-- `OIDC_CLIENT_SECRET` [string] _Optional_ Secret to provide to the oidc service to obtain the user token. Example: Aa1JIw3kv3mQlGFWhRrE3gOdkH6xreAwro
-- `OIDC_CALLBACK_URL` [string] _Optional_ SciCat callback URL that we want th eoidc service to redirect to, in case of successful login. Example: http://myscicat/api/v3/oidc/callback
-- `OIDC_SCOPE` [string] _Optional_ Space separated list of the info returned by the oidc service. Example: "openid profile email"
-- `OIDC_SUCCESS_URL` [string] _Optional_ SciCat Frontend auth-callback URL. Required in order to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback
-- `OIDC_ACCESS_GROUPS` [string] _Optional_ Functionality is still unclear.
-- `OIDC_ACCESS_GROUPS_PROPERTY` [string] _Optional_ Target field to get the access groups value from OIDC response.
-- `OIDC_USERINFO_MAPPING_FIELD_USERNAME` [string] _Optional_ comma-separated list. Specifies the fields from the OIDC response to concatenate and use as the user's profile username. For example, setting `OIDC_USERINFO_MAPPING_FIELD_USERNAME="iss, sub"` combines the iss (issuer) and sub (subject) values from the OIDC response, resulting in a username like `myIssuer_myUserName`. This allows for customizable username definitions based on OIDC response attributes. Defaults to "preferred_username" || "name"
-- `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME` [string] _Optional_ Specifies the fields from the OIDC response and use as the user's profile displayname. For example, setting `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME="preferred_username"` use displayName value from the OIDC response, resulting in a displayname like `myPreferredName`. This allows for customizable displayname definitions based on OIDC response attributes. Defaults to "name"
-- `OIDC_USERINFO_MAPPING_FIELD_EMAIL` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "email"
-- `OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "family_name"
-- `OIDC_USERINFO_MAPPING_FIELD_ID` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "sub" || "user_id"
-- `OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "thumbnailPhoto"
-- `OIDC_USERINFO_MAPPING_FIELD_PROVIDER` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "iss"
-- `OIDC_USERINFO_MAPPING_FIELD_GROUP` [string] _Optional_ Same as `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME`. Defaults to "groups"
-- `OIDC_USERQUERY_OPERATOR` [string] _Optional_ Specifies the operator ("or" or "and") for UserModel.findOne queries, determining the logic used to match fields like "username" or "email". Example: `UserModel.findOne({$or: {"username":"testUser", "email":"test@test.com"}})`. Defaults to "or"
-- `OIDC_USERQUERY_FILTER` [string] _Optional_ Defines key-value pairs for UserModel.findOne queries, using a "key:value" format. Values should correspond to fields in the userProfile object. For instance,` OIDC_USERQUERY_FILTER="username:sub, email:email"` maps to `userProfile.sub` and `userProfile.email` respectively. Defaults to "username:username, email:email"
-
-- `LOGBOOK_ENABLED` [string] _Optional_ Flag to enable/disable the Logbook endpoints. Values "yes" or "no". Defaults to "no".
-- `LOGBOOK_BASE_URL` [string] _Optional_ The base URL to the Logbook API. Only required if Logbook is enabled.
-
-- `METADATA_KEYS_RETURN_LIMIT` [number] _Optional_ The return limit for the `/Datasets/metadataKeys` endpoint.
-- `METADATA_PARENT_INSTANCES_RETURN_LIMIT` _Optional_ The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint.
-- `MONGODB_URI` [string] The URI for your MongoDB instance.
-- `OAI_PROVIDER_ROUTE` [string] _Optional_ URI to OAI provider, used for the `/publisheddata/:id/resync` endpoint.
-- `PID_PREFIX` [string] The facility PID prefix, with trailing slash.
-- `PUBLIC_URL_PREFIX` [string] The base URL to the facility Landing Page.
-- `PORT` [number] _Optional_ The port on which you want to access the app. Defaults to `3000`.
-- `RABBITMQ_ENABLED` [string] _Optional_ Flag to enable/disable RabbitMQ consumer. Values "yes" or "no". Defaults to "no".
-- `RABBITMQ_HOSTNAME` [string] _Optional_ The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled.
-- `RABBITMQ_USERNAME` [string] _Optional_ The username used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled.
-- `RABBITMQ_PASSWORD` [string] _Optional_ The password used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled.
-- `REGISTER_DOI_URI` [string] URI to the organization that registers the facilities DOI's.
-- `REGISTER_METADATA_URI` [string] URI to the organization that registers the facilities published data metadata.
-- `SITE` [string] The name of your site.
-- `SMTP_HOST` [string] _Optional_ Host of SMTP server.
-- `SMTP_MESSAGE_FROM` [string] _Optional_ Email address that emails should be sent from.
-- `SMTP_PORT` [string] _Optional_ Port of SMTP server.
-- `SMTP_SECURE` [string] _Optional_ Secure of SMTP server.
-- `POLICY_PUBLICATION_SHIFT` [integer] _Optional_ Embargo period expressed in years. Default value: 3 years
-- `POLICY_RETENTION_SHIFT` [integer] _Optional_ Retention period (aka how long the facility will hold on to data) expressed in years. Default value: -1 (data will be hold indefinitely)
-
-- `ELASTICSEARCH_ENABLED` [string] Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". Defaults to "no"
-- `ES_HOST` [string] Host of Elasticsearch server instance
-- `ES_USERNAME` [string] _Optional_ Elasticsearch username that can be customized when loads Elasticsearch server. Default value: 'elastic'
-- `ES_PASSWORD` [string] Elasticsearch password that can be customized when loads Elasticsearch server.
-- `MONGODB_COLLECTION` [string] Collection name to be mapped into specified Elasticsearch index. Used for data synchronization between mongoDB and Elasticsearch index.
-- `ES_MAX_RESULT` [number] Maximum records can be indexed into Elasticsearch. Default value: 10000
-- `ES_FIELDS_LIMIT` [number] The total number of fields in an index. Default value: 1000
-- `ES_REFRESH` [string] If set to `wait_for` Elasticsearch will wait till data is insereted to specificied index then return response. Unless you have a good reason to wait for the change to become visible, always use `false` (the default setting).
-
-- `LOGGERS_CONFIG_FILE` [string] The file name for loggers configuration which needs to be located in the project root directory. Default value: "loggers.json"
+| Environment Variable | Type | Optional | Description | Default Value |
+|---------------------------------------------|---------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
+| `ADMIN_GROUPS` | string | Yes | Comma-separated list of admin groups with admin permission assigned to the listed users. Example: "admin, ingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `CREATE_DATASET_GROUPS` | string | Yes | Comma-separated list of create dataset groups. Users belong to the listed groups can create dataset with/without PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `CREATE_DATASET_WITH_PID_GROUPS` | string | Yes | Comma-separated list of create dataset with pid groups. Users belong to the listed groups can create dataset with PID. Example: "group1, group2". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `DELETE_GROUPS` | string | Yes | Comma-separated list of delete groups. Users belong to the listed groups can delete any dataset, origDatablocks, datablocks, etc. For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `DATASET_CREATION_VALIDATION_ENABLED` | boolean | | Flag to enable/disable dataset validation to validate if requested new dataset is valid with given regular expression. Preconfigure **DATASET_CREATION_VALIDATION_REGEX** variable is required. | false |
+| `DATASET_CREATION_VALIDATION_REGEX` | string | | Regular expression validation for new dataset request. | "" |
+| `PROPOSAL_GROUPS` | string | Yes | Comma-separated list of proposal groups with permission to create any proposals. Example: "proposaladmin, proposalingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `SAMPLE_GROUPS` | string | Yes | Comma-separated list of sample groups with permission to create any samples. Example: "sampleadmin, sampleingestor". For more details check: [Scicat Documentation](https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization.html) | |
+| `ACCESS_GROUPS_GRAPHQL_ENABLED` | string | Yes | Flag to enable/disable the GraphQL service to get access groups. Requires configuration of `ACCESS_GROUP_SERVICE_TOKEN`, `ACCESS_GROUP_SERVICE_API_URL`, and `ACCESS_GROUP_SERVICE_HANDLER`. | true |
+| `ACCESS_GROUPS_SERVICE_TOKEN` | string | Yes | Authentication token used if access groups are obtained from a third-party service. Not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example. | |
+| `ACCESS_GROUP_SERVICE_API_URL` | string | Yes | URL of the service providing the users' access groups. Not used by the vanilla installation, but only if the instance is customized to use an external service to provide user groups, like the ESS example. | |
+| `ACCESS_GROUP_SERVICE_HANDLER` | string | Yes | Configuration property that points to the source of a module. This module provides a specific responseProcessor function for handling GraphQL responses and a query template for making GraphQL requests. | |
+| `ACCESS_GROUPS_STATIC_ENABLED` | string | Yes | Flag to enable/disable automatic assignment of predefined access groups to all users. | true |
+| `ACCESS_GROUPS_STATIC_VALUES` | string | Yes | Comma-separated list of access groups automatically assigned to all users. Example: "scicat, user". | |
+| `ACCESS_GROUPS_OIDCPAYLOAD_ENABLED` | string | Yes | Flag to enable/disable fetching access groups directly from OIDC response. Requires specifying a field via `OIDC_ACCESS_GROUPS_PROPERTY` to extract access groups. | false |
+| `DOI_PREFIX` | string | | The facility DOI prefix, with trailing slash. | |
+| `EXPRESS_SESSION_SECRET` | string | Yes | Secret used to set up express session. | |
+| `HTTP_MAX_REDIRECTS` | number | Yes | Max redirects for HTTP requests. | 5 |
+| `HTTP_TIMEOUT` | number | Yes | Timeout for HTTP requests in ms. | 5000 |
+| `JWT_SECRET` | string | | The secret for your JWT token, used for authorization. | |
+| `JWT_EXPIRES_IN` | number | Yes | How long, in seconds, the JWT token is valid. | 3600 |
+| `LDAP_URL` | string | Yes | The URL to your LDAP server. | |
+| `LDAP_BIND_DN` | string | Yes | Bind_DN for your LDAP server. | |
+| `LDAP_BIND_CREDENTIALS` | string | Yes | Credentials for your LDAP server. | |
+| `LDAP_SEARCH_BASE` | string | Yes | Search base for your LDAP server. | |
+| `LDAP_SEARCH_FILTER` | string | Yes | Search filter for your LDAP server. | |
+| `OIDC_ISSUER` | string | Yes | URL of the OIDC server providing the authentication service. Example: https://identity.esss.dk/realm/ess. | |
+| `OIDC_CLIENT_ID` | string | Yes | Identity of the client used to obtain the user token. Example: scicat. | |
+| `OIDC_CLIENT_SECRET` | string | Yes | Secret to provide to the OIDC service to obtain the user token. Example: Aa1JIw3kv3mQlGFWhRrE3gOdkH6xreAwro. | |
+| `OIDC_CALLBACK_URL` | string | Yes | SciCat callback URL to redirect to after a successful login. Example: http://myscicat/api/v3/oidc/callback. | |
+| `OIDC_SCOPE` | string | Yes | Space-separated list of info returned by the OIDC service. Example: "openid profile email". | |
+| `OIDC_SUCCESS_URL` | string | Yes | SciCat Frontend auth-callback URL. Required to pass user credentials to SciCat Frontend after OIDC login. Example: https://myscicatfrontend/auth-callback. | |
+| `OIDC_ACCESS_GROUPS` | string | Yes | Functionality is still unclear. | |
+| `OIDC_ACCESS_GROUPS_PROPERTY` | string | Yes | Target field to get the access groups value from OIDC response. | |
+| `OIDC_USERINFO_MAPPING_FIELD_USERNAME` | string | Yes | Comma-separated list of fields from the OIDC response to use as the user's profile username. Example: `OIDC_USERINFO_MAPPING_FIELD_USERNAME="iss, sub"`. | "preferred_username" \|\| "name" |
+| `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME` | string | Yes | Field from the OIDC response to use as the user's profile display name. Example: `OIDC_USERINFO_MAPPING_FIELD_DISPLAYNAME="preferred_username"`. | "name" |
+| `OIDC_USERINFO_MAPPING_FIELD_EMAIL` | string | Yes | Field from the OIDC response to use as the user's profile email. | "email" |
+| `OIDC_USERINFO_MAPPING_FIELD_FAMILYNAME` | string | Yes | Field from the OIDC response to use as the user's profile family name. | "family_name" |
+| `OIDC_USERINFO_MAPPING_FIELD_ID` | string | Yes | Field from the OIDC response to use as the user's profile ID. | "sub" \|\| "user_id" |
+| `OIDC_USERINFO_MAPPING_FIELD_THUMBNAILPHOTO`| string | Yes | Field from the OIDC response to use as the user's profile thumbnail photo. | "thumbnailPhoto" |
+| `OIDC_USERINFO_MAPPING_FIELD_PROVIDER` | string | Yes | Field from the OIDC response to use as the user's profile provider. | "iss" |
+| `OIDC_USERINFO_MAPPING_FIELD_GROUP` | string | Yes | Field from the OIDC response to use as the user's profile group. | "groups" |
+| `OIDC_USERQUERY_OPERATOR` | string | Yes | Specifies the operator ("or" or "and") for UserModel.findOne queries, determining the logic used to match fields like "username" or "email". Example: `UserModel.findOne({$or: {"username":"testUser", "email":"test@test.com"}})`. | "or" |
+| `OIDC_USERQUERY_FILTER` | string | Yes | Defines key-value pairs for UserModel.findOne queries, using a "key:value" format. Example: `OIDC_USERQUERY_FILTER="username:sub, email:email"`. | "username:username, email:email" |
+| `LOGBOOK_ENABLED` | string | Yes | Flag to enable/disable the Logbook endpoints. Values "yes" or "no". | "no" |
+| `LOGBOOK_BASE_URL` | string | Yes | The base URL to the Logbook API. Only required if Logbook is enabled. | |
+| `METADATA_KEYS_RETURN_LIMIT` | number | Yes | The return limit for the `/Datasets/metadataKeys` endpoint. | |
+| `METADATA_PARENT_INSTANCES_RETURN_LIMIT` | number | Yes | The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint. | |
+| `MONGODB_URI` | string | | The URI for your MongoDB instance. | |
+| `OAI_PROVIDER_ROUTE` | string | Yes | URI to OAI provider, used for the `/publisheddata/:id/resync` endpoint. | |
+| `PID_PREFIX` | string | | The facility PID prefix, with trailing slash. | |
+| `PUBLIC_URL_PREFIX` | string | | The base URL to the facility Landing Page. | |
+| `PORT` | number | Yes | The port on which you want to access the app. | 3000 |
+| `RABBITMQ_ENABLED` | string | Yes | Flag to enable/disable RabbitMQ consumer. Values "yes" or "no". | "no" |
+| `RABBITMQ_HOSTNAME` | string | Yes | The hostname of the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
+| `RABBITMQ_USERNAME` | string | Yes | The username used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
+| `RABBITMQ_PASSWORD` | string | Yes | The password used to authenticate to the RabbitMQ message broker. Only required if RabbitMQ is enabled. | |
+| `REGISTER_DOI_URI` | string | | URI to the organization that registers the facility's DOIs. | |
+| `REGISTER_METADATA_URI` | string | | URI to the organization that registers the facility's published data metadata. | |
+| `SITE` | string | | The name of your site. | |
+| `SMTP_HOST` | string | Yes | Host of SMTP server. | |
+| `SMTP_MESSAGE_FROM` | string | Yes | Email address that emails should be sent from. | |
+| `SMTP_PORT` | string | Yes | Port of SMTP server. | |
+| `SMTP_SECURE` | string | Yes | Secure of SMTP server. | |
+| `POLICY_PUBLICATION_SHIFT` | integer | Yes | Embargo period expressed in years. | 3 years |
+| `POLICY_RETENTION_SHIFT` | integer | Yes | Retention period (how long the facility will hold on to data) expressed in years. | -1 (indefinitely) |
+| `ELASTICSEARCH_ENABLED` | string | | Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". | "no" |
+| `ES_HOST` | string | | Host of Elasticsearch server instance. | |
+| `ES_USERNAME` | string | Yes | Elasticsearch username. | "elastic" |
+| `ES_PASSWORD` | string | | Elasticsearch password. | |
+| `MONGODB_COLLECTION` | string | | Collection name to be mapped into specified Elasticsearch index. Used for data synchronization between MongoDB and Elasticsearch index. | |
+| `ES_MAX_RESULT` | number | | Maximum records that can be indexed into Elasticsearch. | 10000 |
+| `ES_FIELDS_LIMIT` | number | | The total number of fields in an index. | 1000 |
+| `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
+| `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
 
 ## Migrating from the old SciCat Backend
 
@@ -221,7 +216,6 @@ Scicat Backend controls new releases with the `GitHub-tag-and-release` GitHub Ac
 
 The image below shows visualized workflow.
 ![image](https://github.com/SciCatProject/scicat-backend-next/assets/78078898/0f3c5386-4a16-4ed1-a2ee-d71ef6f34e99)
-
 
 ### Workflow Trigger Condition
 
