@@ -428,7 +428,7 @@ export class ElasticSearchService implements OnModuleInit {
         ];
       },
       onDrop(doc) {
-        console.debug(`${doc.document._id}`, doc.error?.reason);
+        console.debug(`${doc.document.pid}`, doc.error?.reason);
       },
     });
   }
