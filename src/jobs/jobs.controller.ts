@@ -21,8 +21,9 @@ import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
 import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
-import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory"; 
 import { AuthOp } from "src/casl/authop.enum";
+import { CreateJobAuth,UpdateJobAuth } from "src/jobs/types/jobs-auth.enum"
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
   ApiBearerAuth,
@@ -62,7 +63,7 @@ export class JobsController {
     private readonly usersService: UsersService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.jobDatasetAuthorization = Object.values(AuthOp).filter((v) =>
+    this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
     );
   }
@@ -383,17 +384,6 @@ export class JobsController {
       "Building and validating job, verifying authorization";
 
     if (user) {
-      // check if we have ownerGroup
-      if (!jobCreateDto.ownerGroup) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            message: `Invalid new job. Owner group should be specified`,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       // the request comes from a user who is logged in.
       if (
         user.currentGroups.some((g) => configuration().adminGroups.includes(g))
@@ -405,11 +395,20 @@ export class JobsController {
             jobCreateDto.ownerUser,
           );
         }
-
         jobInstance.ownerUser = jobUser?.username as string;
         jobInstance.contactEmail = jobUser?.email as string;
         jobInstance.ownerGroup = jobCreateDto.ownerGroup;
       } else {
+        // check if we have ownerGroup
+        if (!jobCreateDto.ownerGroup) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: `Invalid new job. Owner group should be specified`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
         // check that job user matches the user placing the request, if job user is specified
         if (jobCreateDto.ownerUser && jobCreateDto.ownerUser != user.username) {
           throw new HttpException(
@@ -435,10 +434,10 @@ export class JobsController {
         jobInstance.ownerGroup = jobCreateDto.ownerGroup;
       }
     }
-
+ 
     if (
       jobConfiguration.create.auth &&
-      jobConfiguration.create.auth in this.jobDatasetAuthorization
+      Object.values(this.jobDatasetAuthorization).includes(jobConfiguration.create.auth)
     ) {
       // verify that the user meet the requested permissions on the datasets listed
       const datasetIds = this.checkDatasetIds(jobCreateDto.jobParams);
@@ -465,7 +464,15 @@ export class JobsController {
         datasetIds.length - numberOfDatasetsWithAccess.count;
       jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
-
+    if (!user && jobCreateDto.ownerGroup ) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: `Invalid new job. Unauthenticated user cannot initiate a job owned by another user.`,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     // instantiate the casl matrix for the user
     const ability = this.caslAbilityFactory.createForUser(user);
     // check if he/she can create this dataset
@@ -534,6 +541,7 @@ export class JobsController {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
     // Check job authorization
+
     const jobInstance = await this.instanceAuthorizationJobCreate(
       createJobDtoWithConfig,
       request.user as JWTUser,
@@ -543,7 +551,6 @@ export class JobsController {
       jobInstance,
       createJobDtoWithConfig.configuration.configVersion,
     );
-
     // Perform the action that is specified in the create portion of the job configuration
     await this.performJobCreateAction(createdJobInstance);
     return createdJobInstance;
