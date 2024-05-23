@@ -35,7 +35,21 @@ export class JobsService {
     createJobDto: CreateJobDto,
     configVersion: string,
   ): Promise<JobDocument> {
-    const username = (this.request.user as JWTUser).username;
+    let username;
+    if (this.request.user as JWTUser){
+      console.log('user exists');
+      username = (this.request.user as JWTUser).username;
+    }else{
+      console.log("create a user");
+      const anonymousUser: JWTUser = {
+        _id: "",
+        username: "anonymous",
+        email: "",
+        currentGroups: []
+      };
+      username = anonymousUser.username;
+    }
+    //const username = (this.request.user as JWTUser).username;
     const createdJob = new this.jobModel(
       addStatusFields(
         addConfigVersionField(
