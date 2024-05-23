@@ -146,7 +146,7 @@ export class SamplesController {
           );
 
         default:
-          Logger.error("Permission for the action is not specified");
+          Logger.warn("Permission for the action is not specified ");
           return false;
       }
     } catch (error) {

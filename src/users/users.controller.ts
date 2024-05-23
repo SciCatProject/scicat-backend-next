@@ -41,9 +41,9 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { JwtSignOptions } from "@nestjs/jwt";
 import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
-import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -111,7 +111,7 @@ export class UsersController {
     return await this.authService.login(req.user as Omit<User, "password">);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/my/self")
@@ -136,7 +136,7 @@ export class UsersController {
     return this.usersService.findById(authenticatedUserId);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @Get("/my/identity")
   async getMyUserIdentity(
@@ -151,7 +151,7 @@ export class UsersController {
     return this.usersService.findByIdUserIdentity(authenticatedUserId);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
   @Get("/my/settings")
   async getMySettings(@Req() request: Request): Promise<UserSettings | null> {
@@ -164,7 +164,7 @@ export class UsersController {
     return this.usersService.findByIdUserSettings(authenticatedUserId);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -184,7 +184,7 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -203,7 +203,7 @@ export class UsersController {
     return this.usersService.findByIdUserIdentity(id);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserCreateOwn, User) ||
@@ -223,7 +223,7 @@ export class UsersController {
     return this.usersService.createUserSettings(id, createUserSettingsDto);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -242,7 +242,7 @@ export class UsersController {
     return this.usersService.findByIdUserSettings(id);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
@@ -265,7 +265,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
@@ -288,7 +288,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserDeleteOwn, User) ||
@@ -307,7 +307,7 @@ export class UsersController {
     return this.usersService.findOneAndDeleteUserSettings(id);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
     return (
       ability.can(Action.UserReadOwn, User) ||
@@ -352,7 +352,7 @@ export class UsersController {
     return this.authService.logout(req);
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.UserCreateJwt, User),
   )
