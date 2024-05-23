@@ -893,9 +893,10 @@ export class CaslAbilityFactory {
           // -------------------------------------
           // endpoint authorization
           can(AuthOp.JobRead, JobClass);
+
           if (
             configuration().jobConfiguration.some(
-              (j) => j.create.auth! in jobCreateEndPointAuthorizationValues,
+              (j) => j.create.auth && jobCreateEndPointAuthorizationValues.includes(j.create.auth as string),
             )
           ) {
             can(AuthOp.JobCreate, JobClass);
@@ -912,11 +913,12 @@ export class CaslAbilityFactory {
               $in: jobCreateInstanceAuthorizationValues,
             },
           });
+          
           can(AuthOp.JobCreateConfiguration, JobClass, {
             ["configuration.create.auth" as string]: {
               $in: jobCreateDatasetAuthorizationValues,
             },
-            datasetValidation: true,
+            datasetsValidation: true
           });
         }
 
