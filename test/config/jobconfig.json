@@ -1,53 +1,84 @@
 [
   {
-    "jobType": "archive",
+    "jobType": "all_access",
+    "configVersion": "v1.0 2024-03-01 6f3f38",
     "create": {
-      "actions": {
-        "actionType": "log"
-      }
-    },
-    "update": {
       "auth": "#all",
-      "actions": {
-        "actionType": "log"
-      }
-    },
-    "post": {
       "actions": [
         {
-          "actionType": "email",
-          "mailer": {
-            "host": "smtp.myinstitution.ext",
-            "port": 465,
-            "secure": true,
-            "auth": {
-              "user": "scicatuser",
-              "pass": ""
-            }
-          },
-          "to": "{{ join job.recipients ' '}}",
-          "from": "scicat@example.com",
-          "subject": "Archive job {{job.pid}} has completed.",
-          "body": "Dear {{job.owner}},\n\nArchive job {{job.pid}} has completed. Results: {{job.status}}\n"
+          "actionType": "log"
         },
         {
-          "actionType": "filter",
-          "filter": {
-            "status": "SUCCESSFUL"
-          },
-          "actions": [
-            {
-              "actionType": "url",
-              "url": "myscicat.myinstitution.ext/datablock/archived",
-              "verb": "post",
-              "headers": {
-                "AuthBearer": "{{secrets.jwt_token}}"
-              },
-              "body": "{ structure to create archive files }"
-            }
-          ]
+          "actionType": "url",
+          "url": "http://localhost:3000/api/v3/health?jobid={{id}}",
+          "headers": {
+            "accept": "application/json"
+          }
         }
       ]
+    },
+    "update": {
+      "auth": "archivemanager"
+    }
+  },
+  {
+    "jobType": "public_access",
+    "configVersion": "v1.0 2024-03-01 6f3f31",
+    "create": {
+      "auth": "#datasetPublic"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "authenticated_access",
+    "configVersion": "v1.0 2024-03-01 6f3f32",
+    "create": {
+      "auth": "#authenticated"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "dataset_access",
+    "configVersion": "v1.0 2024-03-01 6f3f33",
+    "create": {
+      "auth": "#datasetAccess"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "owner_access",
+    "configVersion": "v1.0 2024-03-01 6f3f34",
+    "create": {
+      "auth": "#datasetOwner"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "user_access",
+    "configVersion": "v1.0 2024-03-01 6f3f35",
+    "create": {
+      "auth": "user5.1"
+    },
+    "update": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "group_access",
+    "configVersion": "v1.0 2024-03-01 6f3f36",
+    "create": {
+      "auth": "@group5"
+    },
+    "update": {
+      "auth": "#all"
     }
   }
 ]
