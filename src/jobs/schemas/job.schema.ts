@@ -158,8 +158,8 @@ export class JobClass extends OwnableClass {
   })
   configuration: JobConfig;
 
-  @Prop({ type: Boolean, required: false, default: false })
-  datasetValidation?: boolean;
+  // @Prop({ type: Boolean, required: false, default: false })
+  // datasetValidation?: boolean;
 
   // TODO email address for owner from scicat? see create example for job.recipients
   // in case email is needed it goes into params, and other values too
