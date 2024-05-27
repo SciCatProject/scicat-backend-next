@@ -359,7 +359,7 @@ export class ElasticSearchService implements OnModuleInit {
       );
     }
   }
-  async updateInsertDocument(data: DatasetDocument) {
+  async updateInsertDocument(data: Partial<DatasetDocument>) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
     const transformedScientificMetadata = transformKeysInObject(
