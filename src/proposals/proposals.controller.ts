@@ -155,7 +155,7 @@ export class ProposalsController {
           );
 
         default:
-          Logger.warn("Permission for the action is not specified");
+          Logger.error("Permission for the action is not specified");
           return false;
       }
     } catch (error) {

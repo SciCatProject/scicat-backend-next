@@ -33,7 +33,6 @@ export default class GrayLogger implements Logger {
     exception: unknown,
     context: Record<string, unknown> | undefined,
   ): void {
-    if (context?.statusCode === 403 || context?.statusCode === 401) return;
     this.logger.logException(message, exception, context);
   }
 }
