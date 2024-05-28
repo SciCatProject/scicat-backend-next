@@ -3,6 +3,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
 import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { AxiosInstance } from 'axios';
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
@@ -37,6 +39,7 @@ describe("PublishedDataService", () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [HttpModule],
       providers: [
         PublishedDataService,
         {
@@ -48,6 +51,11 @@ describe("PublishedDataService", () => {
             create: jest.fn(),
             exec: jest.fn(),
           },
+        },
+        HttpService,
+        {
+          provide: 'AXIOS_INSTANCE_TOKEN',
+          useValue: {} as AxiosInstance,
         },
       ],
     }).compile();
