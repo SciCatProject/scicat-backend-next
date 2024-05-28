@@ -118,15 +118,17 @@ export class PublishedDataService {
     publishedData: UpdatePublishedDataDto,
     OAIServerUri: string
   ): Promise<IRegister | null> {
-    let doiProviderCredentials = {
-      username: "removed",
-      password: "removed",
-    };
+    let doiProviderCredentials;
 
+    // this can be improved on by validating doiProviderCredentials
     if (existsSync(this.doiConfigPath)) {
       doiProviderCredentials = JSON.parse(
         readFileSync(this.doiConfigPath).toString(),
       );
+    } else {
+      throw new HttpException(
+        "doiConfigPath file not found", HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
 
     const resyncOAIPublication = {
