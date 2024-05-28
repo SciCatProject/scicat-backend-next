@@ -1,3 +1,4 @@
+import { HttpException } from "@nestjs/common";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
@@ -5,6 +6,7 @@ import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { AxiosInstance } from 'axios';
+import fs from 'fs';
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
@@ -67,4 +69,19 @@ describe("PublishedDataService", () => {
   it("should be defined", () => {
     expect(service).toBeDefined();
   });
+
+  describe("resyncOAIPublication", () => {
+    const id = 'test-id';
+    const OAIServerUri = 'https://oaimockserver.com';
+
+    it('should throw HttpException if doiConfigPath file does not exist', async () => {
+      jest.mock('fs');
+      jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+
+      await expect(
+        service.resyncOAIPublication(id, mockPublishedData, OAIServerUri),
+      ).rejects.toThrowError(HttpException);
+    });
+  })
+
 });
