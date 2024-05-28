@@ -809,6 +809,8 @@ const TestData = {
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
+    size: faker.number.int({ min: 0, max: 100000000 }),
+    proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
     scientificMetadata: {
       with_unit_and_value_si: {
