@@ -173,10 +173,10 @@ export class SearchQueryService {
             },
           });
         }
-        if (typeof values === "string") {
+        if (typeof values === "string" || typeof values === "number") {
           filterArray.push({
             match: {
-              [fieldName]: values as string,
+              [fieldName]: values as string | number,
             },
           });
         }

@@ -90,4 +90,7 @@ export const datasetMappings: MappingObject = {
     type: "keyword",
     ignore_above: 256,
   },
+  size: {
+    type: "long",
+  },
 };
