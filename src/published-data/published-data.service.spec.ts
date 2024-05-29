@@ -1,4 +1,4 @@
-import { HttpException } from "@nestjs/common";
+import { HttpException, Logger } from "@nestjs/common";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
@@ -63,14 +63,6 @@ describe("PublishedDataService", () => {
             exec: jest.fn(),
           },
         },
-        // {
-        //   provide: HttpService,
-        //   useValue: {
-        //     request: jest.fn((object) => of({
-        //       data: 'success'
-        //     }))
-        //   }
-        // },
         {
           provide: 'AXIOS_INSTANCE_TOKEN',
           useValue: {} as AxiosInstance,
@@ -81,6 +73,7 @@ describe("PublishedDataService", () => {
     service = await module.resolve<PublishedDataService>(PublishedDataService);
     model = module.get<Model<PublishedData>>(getModelToken("PublishedData"));
     httpService = module.get<HttpService>(HttpService);
+    Logger.error = jest.fn();
   });
 
   it("should be defined", () => {
@@ -128,6 +121,21 @@ describe("PublishedDataService", () => {
         }
       )
     });
+
+    it('should throw HttpException if request to oaiProvider raise exception', async () => {
+      jest.mock('fs');
+      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
+      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(JSON.stringify(doiCredentials));
+      jest.spyOn(httpService, 'request').mockImplementation(() => {
+        throw new Error();
+      });
+
+      await expect(
+        service.resyncOAIPublication(id, mockPublishedData, OAIServerUri)
+      ).rejects.toThrowError(HttpException);
+
+      expect(Logger.error).toBeCalled();
+    })
 
   })
 
