@@ -431,6 +431,26 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiOperation({
+    summary: "Edits published data.",
+    description:
+      "It edits published data and resyncs with OAI Provider if it is defined.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "The DOI of the published data.",
+    type: String,
+  })
+  @ApiParam({
+    name: "data",
+    description: "The edited data that will be updated in the database and with OAI Provider if defined.",
+    type: UpdatePublishedDataDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: false,
+    description: "Return the result of resync with OAI Provider if defined, or null.",
+  })
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,
