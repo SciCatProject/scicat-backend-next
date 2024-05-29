@@ -457,8 +457,6 @@ export class PublishedDataController {
 
     return returnValue;
   }
-
-  
 }
 
 function formRegistrationXML(publishedData: PublishedData): string {
