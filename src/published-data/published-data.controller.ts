@@ -448,7 +448,6 @@ export class PublishedDataController {
     try {
       await this.publishedDataService.update({ doi: id }, publishedData);
     } catch (error:any) {
-      console.log(error);
       throw new HttpException(
         `Error occurred: ${error}`,
         error.response?.status || HttpStatus.FAILED_DEPENDENCY,
