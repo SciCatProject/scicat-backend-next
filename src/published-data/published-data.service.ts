@@ -160,7 +160,7 @@ export class PublishedDataService {
       handleAxiosRequestError(error, "PublishedDataController.resync");
       throw new HttpException(
         `Error occurred: ${error}`,
-        error.response.status || HttpStatus.FAILED_DEPENDENCY,
+        error.response?.status || HttpStatus.FAILED_DEPENDENCY,
       );
     }
   }
