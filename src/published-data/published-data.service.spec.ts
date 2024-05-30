@@ -4,11 +4,11 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Model } from "mongoose";
 import { PublishedDataService } from "./published-data.service";
 import { PublishedData } from "./schemas/published-data.schema";
-import { HttpModule, HttpService } from '@nestjs/axios';
-import { AxiosInstance } from 'axios';
-import fs from 'fs';
-import { of } from 'rxjs';
-import { AxiosResponse } from 'axios';
+import { HttpModule, HttpService } from "@nestjs/axios";
+import { AxiosInstance } from "axios";
+import fs from "fs";
+import { of } from "rxjs";
+import { AxiosResponse } from "axios";
 
 const mockPublishedData: PublishedData = {
   doi: "100.10/random-test-uuid-string",
@@ -37,16 +37,16 @@ const mockPublishedData: PublishedData = {
 };
 
 const mockAxiosResponse: Partial<AxiosResponse> = {
-  data: 'success',
+  data: "success",
   status: 200,
-  statusText: 'OK',
+  statusText: "OK",
 };
 
 describe("PublishedDataService", () => {
   let service: PublishedDataService;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let model: Model<PublishedData>;
-  let httpService: HttpService
+  let httpService: HttpService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -64,7 +64,7 @@ describe("PublishedDataService", () => {
           },
         },
         {
-          provide: 'AXIOS_INSTANCE_TOKEN',
+          provide: "AXIOS_INSTANCE_TOKEN",
           useValue: {} as AxiosInstance,
         },
       ],
@@ -81,62 +81,62 @@ describe("PublishedDataService", () => {
   });
 
   describe("resyncOAIPublication", () => {
-    const id = 'test-id';
-    const OAIServerUri = 'https://oaimockserver.com';
+    const id = "test-id";
+    const OAIServerUri = "https://oaimockserver.com";
     const doiCredentials = {
       username: "the_username",
-      password: "the_password"
-    }
+      password: "the_password",
+    };
 
-    it('should throw HttpException if doiConfigPath file does not exist', async () => {
-      jest.mock('fs');
-      jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+    it("should throw HttpException if doiConfigPath file does not exist", async () => {
+      jest.mock("fs");
+      jest.spyOn(fs, "existsSync").mockReturnValue(false);
 
       await expect(
         service.resyncOAIPublication(id, mockPublishedData, OAIServerUri),
       ).rejects.toThrowError(HttpException);
     });
 
-    it('should call httpService.request with correct payload', async () => {
-      jest.mock('fs');
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(JSON.stringify(doiCredentials));
-      jest.spyOn(httpService, 'request').mockReturnValueOnce(
-        of(mockAxiosResponse as AxiosResponse)
-      )
+    it("should call httpService.request with correct payload", async () => {
+      jest.mock("fs");
+      jest.spyOn(fs, "existsSync").mockReturnValueOnce(true);
+      jest
+        .spyOn(fs, "readFileSync")
+        .mockReturnValueOnce(JSON.stringify(doiCredentials));
+      jest
+        .spyOn(httpService, "request")
+        .mockReturnValueOnce(of(mockAxiosResponse as AxiosResponse));
       await service.resyncOAIPublication(id, mockPublishedData, OAIServerUri);
 
       expect(httpService.request).toHaveBeenCalledTimes(1);
 
-      expect(httpService.request).toHaveBeenCalledWith(
-        {
-          method: 'PUT',
-          json: true,
-          body: mockPublishedData,
-          auth: doiCredentials,
-          uri: OAIServerUri + "/" + id,
-          headers: {
-            "content-type": "application/json;charset=UTF-8",
-          },
-        }
-      )
+      expect(httpService.request).toHaveBeenCalledWith({
+        method: "PUT",
+        json: true,
+        body: mockPublishedData,
+        auth: doiCredentials,
+        uri: OAIServerUri + "/" + id,
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+        },
+      });
     });
 
-    it('should throw HttpException if request to oaiProvider raise exception', async () => {
-      jest.mock('fs');
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(JSON.stringify(doiCredentials));
-      jest.spyOn(httpService, 'request').mockImplementation(() => {
+    it("should throw HttpException if request to oaiProvider raise exception", async () => {
+      jest.mock("fs");
+      jest.spyOn(fs, "existsSync").mockReturnValueOnce(true);
+      jest
+        .spyOn(fs, "readFileSync")
+        .mockReturnValueOnce(JSON.stringify(doiCredentials));
+      jest.spyOn(httpService, "request").mockImplementation(() => {
         throw new Error();
       });
 
       await expect(
-        service.resyncOAIPublication(id, mockPublishedData, OAIServerUri)
+        service.resyncOAIPublication(id, mockPublishedData, OAIServerUri),
       ).rejects.toThrowError(HttpException);
 
       expect(Logger.error).toBeCalled();
-    })
-
-  })
-
+    });
+  });
 });
