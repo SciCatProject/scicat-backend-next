@@ -359,7 +359,7 @@ export class ElasticSearchService implements OnModuleInit {
       );
     }
   }
-  async updateInsertDocument(data: DatasetDocument) {
+  async updateInsertDocument(data: Partial<DatasetDocument>) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
     const transformedScientificMetadata = transformKeysInObject(
@@ -428,7 +428,7 @@ export class ElasticSearchService implements OnModuleInit {
         ];
       },
       onDrop(doc) {
-        console.debug(`${doc.document._id}`, doc.error?.reason);
+        console.debug(`${doc.document.pid}`, doc.error?.reason);
       },
     });
   }
