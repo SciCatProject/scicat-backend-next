@@ -1,4 +1,11 @@
-import { Inject, Injectable, Scope, HttpException, HttpStatus } from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  Inject,
+  Injectable,
+  Scope,
+  HttpException,
+  HttpStatus,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -21,9 +28,7 @@ import {
 } from "./schemas/published-data.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { HttpService } from "@nestjs/axios";
-import {
-  UpdatePublishedDataDto,
-} from "./dto/update-published-data.dto";
+import { UpdatePublishedDataDto } from "./dto/update-published-data.dto";
 import { IRegister } from "./interfaces/published-data.interface";
 import { existsSync, readFileSync } from "fs";
 import { firstValueFrom } from "rxjs";
@@ -116,7 +121,7 @@ export class PublishedDataService {
   async resyncOAIPublication(
     id: string,
     publishedData: UpdatePublishedDataDto,
-    OAIServerUri: string
+    OAIServerUri: string,
   ): Promise<IRegister | null> {
     let doiProviderCredentials;
 
@@ -127,8 +132,9 @@ export class PublishedDataService {
       );
     } else {
       throw new HttpException(
-        "doiConfigPath file not found", HttpStatus.INTERNAL_SERVER_ERROR
-      )
+        "doiConfigPath file not found",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
 
     const resyncOAIPublication = {
@@ -150,11 +156,11 @@ export class PublishedDataService {
         }),
       );
       return res ? res.data : null;
-    } catch (error:any) {
+    } catch (error: any) {
       handleAxiosRequestError(error, "PublishedDataController.resync");
       throw new HttpException(
         `Error occurred: ${error}`,
-        error.response?.status || HttpStatus.FAILED_DEPENDENCY,
+        error.response.status || HttpStatus.FAILED_DEPENDENCY,
       );
     }
   }

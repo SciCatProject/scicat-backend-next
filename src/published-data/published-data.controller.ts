@@ -443,13 +443,15 @@ export class PublishedDataController {
   })
   @ApiParam({
     name: "data",
-    description: "The edited data that will be updated in the database and with OAI Provider if defined.",
+    description:
+      "The edited data that will be updated in the database and with OAI Provider if defined.",
     type: UpdatePublishedDataDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
     isArray: false,
-    description: "Return the result of resync with OAI Provider if defined, or null.",
+    description:
+      "Return the result of resync with OAI Provider if defined, or null.",
   })
   @Post("/:id/resync")
   async resync(
@@ -461,13 +463,17 @@ export class PublishedDataController {
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
     let returnValue = null;
-    if(OAIServerUri) {
-      returnValue = await this.publishedDataService.resyncOAIPublication(id, publishedData, OAIServerUri);
+    if (OAIServerUri) {
+      returnValue = await this.publishedDataService.resyncOAIPublication(
+        id,
+        publishedData,
+        OAIServerUri,
+      );
     }
 
     try {
       await this.publishedDataService.update({ doi: id }, publishedData);
-    } catch (error:any) {
+    } catch (error: any) {
       throw new HttpException(
         `Error occurred: ${error}`,
         error.response?.status || HttpStatus.FAILED_DEPENDENCY,
