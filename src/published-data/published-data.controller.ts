@@ -48,7 +48,6 @@ import { FilterQuery, QueryOptions } from "mongoose";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { AttachmentsService } from "src/attachments/attachments.service";
-import { existsSync, readFileSync } from "fs";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
@@ -59,8 +58,6 @@ import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 @ApiTags("published data")
 @Controller("publisheddata")
 export class PublishedDataController {
-  private doiConfigPath = "./src/config/doiconfig.local.json";
-
   constructor(
     private readonly attachmentsService: AttachmentsService,
     private readonly configService: ConfigService,
@@ -434,6 +431,28 @@ export class PublishedDataController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
+  @ApiOperation({
+    summary: "Edits published data.",
+    description:
+      "It edits published data and resyncs with OAI Provider if it is defined.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "The DOI of the published data.",
+    type: String,
+  })
+  @ApiParam({
+    name: "data",
+    description:
+      "The edited data that will be updated in the database and with OAI Provider if defined.",
+    type: UpdatePublishedDataDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: false,
+    description:
+      "Return the result of resync with OAI Provider if defined, or null.",
+  })
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,
@@ -443,47 +462,25 @@ export class PublishedDataController {
 
     const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
 
-    let doiProviderCredentials = {
-      username: "removed",
-      password: "removed",
-    };
-
-    if (existsSync(this.doiConfigPath)) {
-      doiProviderCredentials = JSON.parse(
-        readFileSync(this.doiConfigPath).toString(),
+    let returnValue = null;
+    if (OAIServerUri) {
+      returnValue = await this.publishedDataService.resyncOAIPublication(
+        id,
+        publishedData,
+        OAIServerUri,
       );
-    }
-
-    const resyncOAIPublication = {
-      method: "PUT",
-      body: publishedData,
-      json: true,
-      uri: OAIServerUri + "/" + encodeURIComponent(encodeURIComponent(id)),
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-      },
-      auth: doiProviderCredentials,
-    };
-
-    let res;
-    try {
-      res = await firstValueFrom(
-        this.httpService.request({
-          ...resyncOAIPublication,
-          method: "PUT",
-        }),
-      );
-    } catch (error) {
-      handleAxiosRequestError(error, "PublishedDataController.resync");
     }
 
     try {
       await this.publishedDataService.update({ doi: id }, publishedData);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      throw new HttpException(
+        `Error occurred: ${error}`,
+        error.response?.status || HttpStatus.FAILED_DEPENDENCY,
+      );
     }
 
-    return res ? res.data : null;
+    return returnValue;
   }
 }
 
