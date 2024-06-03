@@ -64,10 +64,8 @@ export class DatasetsService {
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
     );
-    if (this.ESClient) {
-      await this.ESClient.updateInsertDocument(
-        createdDataset.toObject() as DatasetDocument,
-      );
+    if (this.ESClient && createdDataset) {
+      await this.ESClient.updateInsertDocument(createdDataset.toObject());
     }
     return createdDataset.save();
   }
@@ -242,10 +240,8 @@ export class DatasetsService {
       throw new NotFoundException(`Dataset #${id} not found`);
     }
 
-    if (this.ESClient) {
-      await this.ESClient.updateInsertDocument(
-        updatedDataset.toObject() as DatasetDocument,
-      );
+    if (this.ESClient && updatedDataset) {
+      await this.ESClient.updateInsertDocument(updatedDataset.toObject());
     }
     // we were able to find the dataset and update it
     return updatedDataset;
@@ -283,10 +279,8 @@ export class DatasetsService {
       )
       .exec();
 
-    if (this.ESClient) {
-      await this.ESClient.updateInsertDocument(
-        patchedDataset?.toObject() as DatasetDocument,
-      );
+    if (this.ESClient && patchedDataset) {
+      await this.ESClient.updateInsertDocument(patchedDataset.toObject());
     }
 
     // we were able to find the dataset and update it

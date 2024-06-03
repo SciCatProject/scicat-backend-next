@@ -4,6 +4,7 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
@@ -113,6 +114,16 @@ export class UpdateProposalDto extends OwnableDto {
   @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
   readonly MeasurementPeriodList?: CreateMeasurementPeriodDto[];
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the proposal metadata.",
+  })
+  @IsOptional()
+  @IsObject()
+  readonly metadata?: Record<string, unknown>;
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}

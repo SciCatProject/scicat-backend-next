@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
+const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 require("dotenv").config();
@@ -23,21 +24,18 @@ const scientificMetadataFieldName = {
   string: "with_string",
 };
 
-const scientificMetadata = ({
-  lhs = "",
-  relation = "",
-  rhs = "",
-  unit = "",
-}) => {
+const scientificMetadata = (values) => {
+  const scientificQuery = values.map((value) => {
+    return {
+      lhs: value.lhs,
+      relation: value.relation,
+      rhs: value.rhs,
+      unit: value.unit,
+    };
+  });
+
   return {
-    scientific: [
-      {
-        lhs,
-        relation,
-        rhs,
-        unit,
-      },
-    ],
+    scientific: scientificQuery,
   };
 };
 
@@ -71,7 +69,7 @@ const scientificMetadata = ({
       );
     });
 
-    it("0010: adds a new raw dataset with scientificMetadata", function () {
+    it("0010: adds a new raw dataset with scientificMetadata", async () => {
       return request(appUrl)
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
@@ -92,61 +90,30 @@ const scientificMetadata = ({
         });
     });
 
-    it("0020: should fetch dataset with unitSI and ValueSI condition filter", function () {
-      request(appUrl)
-        .post("/api/v3/elastic-search/search")
-        .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.unitAndValue,
-            relation: Relation.GREATER_THAN,
-            rhs: 99,
-            unit: "m",
-          }),
-        )
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
-
-      request(appUrl)
-        .post("/api/v3/elastic-search/search")
-        .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.unitAndValue,
-            relation: Relation.LESS_THAN,
-            rhs: 101,
-            unit: "m",
-          }),
-        )
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` });
-
+    it("0020: should fetch dataset with correct unitSI and ValueSI condition for scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.unitAndValue,
-            relation: Relation.EQUAL_TO_NUMERIC,
-            rhs: 100,
-            unit: "m",
-          }),
-        )
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-        .expect(TestData.SuccessfulPostStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.data.should.include(decodeURIComponent(pid));
-        });
-    });
-    it("0030: should fetch dataset with numeric value filter", async () => {
-      return request(appUrl)
-        .post("/api/v3/elastic-search/search")
-        .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.number,
-            relation: Relation.EQUAL_TO_NUMERIC,
-            rhs: 111,
-            unit: "",
-          }),
+          scientificMetadata([
+            {
+              lhs: scientificMetadataFieldName.unitAndValue,
+              relation: Relation.GREATER_THAN,
+              rhs: 99,
+              unit: "m",
+            },
+            {
+              lhs: scientificMetadataFieldName.unitAndValue,
+              relation: Relation.EQUAL_TO_NUMERIC,
+              rhs: 100,
+              unit: "m",
+            },
+            {
+              lhs: scientificMetadataFieldName.unitAndValue,
+              relation: Relation.LESS_THAN,
+              rhs: 101,
+              unit: "m",
+            },
+          ]),
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -157,16 +124,18 @@ const scientificMetadata = ({
         });
     });
 
-    it("0040: should fetch dataset with string value filter", async () => {
+    it("0021: should fetch dataset with correct numeric value for scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.string,
-            relation: Relation.EQUAL_TO_STRING,
-            rhs: "222",
-            unit: "",
-          }),
+          scientificMetadata([
+            {
+              lhs: scientificMetadataFieldName.number,
+              relation: Relation.EQUAL_TO_NUMERIC,
+              rhs: 111,
+              unit: "",
+            },
+          ]),
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
@@ -177,30 +146,114 @@ const scientificMetadata = ({
         });
     });
 
-    it("0050: should fail when fetching dataset with incorrect relation type and value type", async () => {
+    it("0022: should fetch dataset with correct string value for the scientific filter", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send(
-          scientificMetadata({
-            lhs: scientificMetadataFieldName.number,
-            relation: Relation.EQUAL_TO_NUMERIC,
-            rhs: "111",
-            unit: "",
-          }),
+          scientificMetadata([
+            {
+              lhs: scientificMetadataFieldName.string,
+              relation: Relation.EQUAL_TO_STRING,
+              rhs: "222",
+              unit: "",
+            },
+          ]),
         )
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
         .expect(TestData.SuccessfulPostStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.have
-            .property("data")
-            .which.is.an("array")
-            .that.has.lengthOf(0);
+          res.body.data.should.include(decodeURIComponent(pid));
         });
     });
 
-    it("0060: should delete this raw dataset", async () => {
+    it("0023: should fail when fetching dataset with incorrect relation type and value type for the scientific filter", async () => {
+      return request(appUrl)
+        .post("/api/v3/elastic-search/search")
+        .send(
+          scientificMetadata([
+            {
+              lhs: scientificMetadataFieldName.number,
+              relation: Relation.EQUAL_TO_NUMERIC,
+              rhs: "111",
+              unit: "",
+            },
+          ]),
+        )
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.data.should.be.length(0);
+        });
+    });
+
+    it("0030: should fetching dataset with correct proposalId and size", async () => {
+      return request(appUrl)
+        .post("/api/v3/elastic-search/search")
+        .send({
+          proposalId: TestData.ScientificMetadataForElasticSearch.proposalId,
+          size: TestData.ScientificMetadataForElasticSearch.size,
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.data.should.include(decodeURIComponent(pid));
+        });
+    });
+
+    it("0031: should fail fetching dataset with correct proposalId but wrong size", async () => {
+      return request(appUrl)
+        .post("/api/v3/elastic-search/search")
+        .send({
+          proposalId: TestData.ScientificMetadataForElasticSearch.proposalId,
+          size: faker.number.int({ min: 100000001, max: 100400000 }),
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.data.should.be.length(0);
+        });
+    });
+    it("0032: should fail fetching dataset with wrong proposalId but correct size", async () => {
+      return request(appUrl)
+        .post("/api/v3/elastic-search/search")
+        .send({
+          proposalId: "wrongProposalId",
+          size: TestData.ScientificMetadataForElasticSearch.size,
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.data.should.be.length(0);
+        });
+    });
+
+    it("0033: should fail fetching dataset with incorrect proposalId and size", async () => {
+      return request(appUrl)
+        .post("/api/v3/elastic-search/search")
+        .send({
+          proposalId: "wrongProposalId",
+          size: faker.number.int({ min: 100000001, max: 100400000 }),
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+        .expect(TestData.SuccessfulPostStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.data.should.be.length(0);
+        });
+    });
+
+    it("0034: should delete this raw dataset", async () => {
       return request(appUrl)
         .delete("/api/v3/datasets/" + pid)
         .set("Accept", "application/json")

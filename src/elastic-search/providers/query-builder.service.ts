@@ -10,7 +10,7 @@ import {
 } from "../interfaces/es-common.type";
 import {
   FilterFields,
-  QueryFields,
+  MustFields,
   FacetFields,
   ShouldFields,
 } from "./fields.enum";
@@ -22,7 +22,7 @@ import { convertToElasticSearchQuery } from "../helpers/utils";
 @Injectable()
 export class SearchQueryService {
   readonly filterFields = [...Object.values(FilterFields)];
-  readonly queryFields = [...Object.values(QueryFields)];
+  readonly mustFields = [...Object.values(MustFields)];
   readonly shouldFields = [...Object.values(ShouldFields)];
   readonly facetFields = [...Object.values(FacetFields)];
   readonly textQuerySplitMethod = /[ ,]+/;
@@ -33,9 +33,13 @@ export class SearchQueryService {
 
       const filter = this.buildFilterFields(fields);
       const should = this.buildShouldFields(fields);
-      const query = this.buildTextQuery(fields);
+      const must = this.buildTextQuery(fields);
 
-      return this.constructFinalQuery(filter, should, query);
+      // NOTE: The final query flow is as follows:
+      // step 1. Build filter fields conditions must match all filter fields
+      // step 2. Build should fields conditions must match at least one should field
+      // step 3. Build text query conditions must match all text query fields
+      return this.constructFinalQuery(filter, should, must);
     } catch (err) {
       Logger.error("Elastic search build search query failed");
       throw err;
@@ -44,15 +48,14 @@ export class SearchQueryService {
   private buildFilterFields(fields: Partial<IDatasetFields>): IFilter[] {
     const filter: IFilter[] = [];
 
-    for (const fieldName of this.filterFields) {
-      if (fields[fieldName]) {
-        const filterQueries = this.buildTermsFilter(
-          fieldName,
-          fields[fieldName],
-        );
-        filter.push(...filterQueries);
+    Object.entries(fields).forEach(([key, value]) => {
+      if (this.shouldFields.includes(key as ShouldFields) || key === "text") {
+        return;
       }
-    }
+
+      const filterQueries = this.buildTermsFilter(key, value);
+      filter.push(...filterQueries);
+    });
 
     return filter;
   }
@@ -101,7 +104,7 @@ export class SearchQueryService {
   private buildWildcardQueries(text: string): QueryDslQueryContainer[] {
     const terms = this.splitSearchText(text);
     return terms.flatMap((term) =>
-      this.queryFields.map((fieldName) => ({
+      this.mustFields.map((fieldName) => ({
         wildcard: { [fieldName]: { value: `*${term}*` } },
       })),
     );
@@ -170,10 +173,10 @@ export class SearchQueryService {
             },
           });
         }
-        if (typeof values === "string") {
+        if (typeof values === "string" || typeof values === "number") {
           filterArray.push({
             match: {
-              [`${fieldName}.keyword`]: values as string,
+              [fieldName]: values as string | number,
             },
           });
         }

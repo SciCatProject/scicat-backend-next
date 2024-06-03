@@ -17,8 +17,12 @@ export class AccessGroupFromMultipleProvidersService extends AccessGroupService 
     for (const accessGroupProvider of this.accessGroupProviders) {
       const accessGroupsFromProvider =
         await accessGroupProvider.getAccessGroups(userPayload);
-      accessGroups.push(...accessGroupsFromProvider);
+
+      accessGroups.push(
+        ...accessGroupsFromProvider.filter((group) => group.trim() !== ""),
+      );
     }
+
     return accessGroups;
   }
 }
