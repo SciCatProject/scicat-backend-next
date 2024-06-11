@@ -48,6 +48,9 @@ import {
 } from "src/common/utils";
 import { JobConfig } from "./config/jobconfig";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
+import { ConnectableObservable } from "rxjs";
+import { integer } from "@elastic/elasticsearch/lib/api/types";
+import { boolean } from "mathjs";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -276,42 +279,42 @@ export class JobsController {
     return true;
   };
 
-  /**
-   * Check that the job configuration is valid
-   */
-  async checkJobConfiguration(type: string): Promise<JobConfig> {
-    // it should return a single job configuration
-    const jobConfigs = await configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter((j) => j.jobType == type);
-    if (matchingConfig.length != 1) {
-      // return error that job type does not exists
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Invalid job type: " + type,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    return matchingConfig[0];
-  }
+  // /**
+  //  * Check that the job configuration is valid
+  //  */
+  // async checkJobConfiguration(type: string): Promise<JobConfig> {
+  //   // it should return a single job configuration
+  //   const jobConfigs = await configuration().jobConfiguration;
+  //   const matchingConfig = jobConfigs.filter((j) => j.jobType == type);
+  //   if (matchingConfig.length != 1) {
+  //     // return error that job type does not exists
+  //     throw new HttpException(
+  //       {
+  //         status: HttpStatus.BAD_REQUEST,
+  //         message: "Invalid job type: " + type,
+  //       },
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  //   return matchingConfig[0];
+  // }
 
-  /**
-   * Check the job's configuration version
-   */
-  async checkConfigurationVersion(existingJob: JobClass): Promise<void> {
-    const jc = await this.checkJobConfiguration(existingJob.type);
-    if (jc.configVersion != existingJob.configVersion) {
-      // return error that configuration version does not match
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Invalid configuration version.",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  // /**
+  //  * Check the job's configuration version
+  //  */
+  // async checkConfigurationVersion(existingJob: JobClass): Promise<void> {
+  //   const jc = await this.checkJobConfiguration(existingJob.type);
+  //   if (jc.configVersion != existingJob.configVersion) {
+  //     // return error that configuration version does not match
+  //     throw new HttpException(
+  //       {
+  //         status: HttpStatus.BAD_REQUEST,
+  //         message: "Invalid configuration version.",
+  //       },
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
 
   /**
    * Check that the user is authenticated
@@ -330,17 +333,7 @@ export class JobsController {
   /**
    * Check that the dataset ids list is valid
    */
-  checkDatasetIds = (jobParams: Record<string, unknown> | undefined) => {
-    if (!jobParams) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Dataset ids list was not provided in jobParams",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
+  async checkDatasetIds(jobParams: Record<string, unknown> ):Promise<string[]> {
     const field = JobsConfigSchema.DatasetIds;
     const datasetIds = (
       typeof jobParams[field] === "string"
@@ -357,6 +350,37 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
+    interface condition{
+      where:{
+        pid: {$eq: string}
+      }
+    }
+    if (datasetIds.length == 0 ){
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "List of passed dataset IDs is empty.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    for (const i in datasetIds) {
+      const filter : condition= {
+        where: {
+          pid: { $eq: datasetIds[i] }
+        },
+      };
+      const idCount = await this.datasetsService.count(filter);
+      if (idCount.count <1){
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "At least one dataset in the ids list doesn't.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
     return datasetIds;
   };
 
@@ -372,17 +396,22 @@ export class JobsController {
     const jobInstance = new JobClass();
     const jobConfiguration = jobCreateDto.configuration;
     jobInstance._id = "";
-    jobInstance.ownerUser = "";
-    jobInstance.ownerGroup = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
     jobInstance.contactEmail = jobCreateDto.contactEmail;
+    jobInstance.jobParams = {};
     jobInstance.datasetsValidation = false;
     jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
-
+      
+    // if datasetIds property in jobParams is passed, check if such IDs exist in data base
+    let datasetIds: string[] = [];
+    if (JobsConfigSchema.DatasetIds in jobCreateDto.jobParams) {
+      datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
+      jobInstance.jobParams[JobsConfigSchema.DatasetIds] = datasetIds
+    }
     if (user) {
       // the request comes from a user who is logged in.
       if (
@@ -404,7 +433,7 @@ export class JobsController {
           throw new HttpException(
             {
               status: HttpStatus.BAD_REQUEST,
-              message: `Invalid new job. Owner group should be specified`,
+              message: `Invalid new job. Owner group should be specified.`,
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -426,7 +455,7 @@ export class JobsController {
           throw new HttpException(
             {
               status: HttpStatus.BAD_REQUEST,
-              message: `Invalid new job. User needs to belong to job owner group`,
+              message: `Invalid new job. User needs to belong to job owner group.`,
             },
             HttpStatus.BAD_REQUEST,
           );
@@ -434,34 +463,57 @@ export class JobsController {
         jobInstance.ownerGroup = jobCreateDto.ownerGroup;
       }
     }
- 
+    
     if (
       jobConfiguration.create.auth &&
       Object.values(this.jobDatasetAuthorization).includes(jobConfiguration.create.auth)
     ) {
+        // check that jobParams are passed for #dataset jobs
+        if (!jobCreateDto.jobParams) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: "Dataset ids list was not provided in jobParams",
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       // verify that the user meet the requested permissions on the datasets listed
-      const datasetIds = this.checkDatasetIds(jobCreateDto.jobParams);
+      // const datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
       // build the condition
-      const datasetsWhere: Record<string, unknown> = {
+      interface datasetsWhere{
+        where:{
+          pid: { $in: string[] };
+          isPublished?: boolean;
+          ownerGroup?: {$in: string[]};
+          $or?: [
+                  { ownerGroup: { $in: string[] } },
+                  { accessGroups: { $in: string[] } },
+                  { isPublished: true }
+                ];
+        }
+      }
+
+      const datasetsWhere: datasetsWhere = {
         where: {
-          pid: { $in: datasetIds },
+          pid: { $in: datasetIds }
         },
       };
       if (jobConfiguration.create.auth === "#datasetPublic") {
-        datasetsWhere["isPublished"] = true;
+        datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
-        datasetsWhere["$or"] = [
+        datasetsWhere["where"]["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
           { isPublished: true },
         ];
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
-        datasetsWhere["ownerGroup"] = { $in: user.currentGroups };
+        datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
       }
       const numberOfDatasetsWithAccess =
         await this.datasetsService.count(datasetsWhere);
       const datasetsNoAccess =
-        datasetIds.length - numberOfDatasetsWithAccess.count;
+      datasetIds.length - numberOfDatasetsWithAccess.count;
       jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
     if (!user && jobCreateDto.ownerGroup ) {
@@ -473,6 +525,7 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     // instantiate the casl matrix for the user
     const ability = this.caslAbilityFactory.createForUser(user);
     // check if he/she can create this dataset
@@ -482,7 +535,7 @@ export class JobsController {
       ability.can(AuthOp.JobCreateConfiguration, jobInstance);
 
     if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to create this dataset");
+      throw new ForbiddenException("Unauthorized to create this dataset.");
     }
 
     return jobInstance;
@@ -541,7 +594,6 @@ export class JobsController {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
     // Check job authorization
-
     const jobInstance = await this.instanceAuthorizationJobCreate(
       createJobDtoWithConfig,
       request.user as JWTUser,
