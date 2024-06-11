@@ -37,10 +37,8 @@ export class JobsService {
   ): Promise<JobDocument> {
     let username;
     if (this.request.user as JWTUser){
-      console.log('user exists');
       username = (this.request.user as JWTUser).username;
     }else{
-      console.log("create a user");
       const anonymousUser: JWTUser = {
         _id: "",
         username: "anonymous",
