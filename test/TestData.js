@@ -707,11 +707,7 @@ const TestData = {
   Job:{
     type: "",
     jobParams: {
-      datasetIds:[]
     },
-    ownerUser: "",
-    ownerGroup: "",
-    contactEmail: ""
   },
 
   RetrieveJob: {

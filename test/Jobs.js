@@ -6,12 +6,9 @@ const { TestData } = require("./TestData");
 
 let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
-  accessTokenUser2 = null,
   accessTokenUser3 = null,
-  accessTokenUser4 = null,
   accessTokenUser51 = null,
   accessTokenUser52 = null,
-  accessTokenArchiveManager = null,
   accessTokenAdmin = null;
 
 let datasetPid1 = null,
@@ -62,37 +59,17 @@ const jobDatasetOwner = {
 };
 const jobUser51 = {
   ...TestData.Job, 
-  type: "user5.1"
+  type: "user_access"
 };
 const jobGroup5 = {
   ...TestData.Job, 
-  type: "group5"
+  type: "group_access"
 };
 
-
-
-var pid1 = null;
-var pid2 = null;
-var datasetLiveCycle1 = {};
-var datasetLiveCycle2 = {};
-var archiveJob = null;
-var retrieveJob = null;
-var publicJob = null;
-
-var archiveJobId = null;
-var retrieveJobId = null;
-var publicJobIds = [];
-var origDatablockId = null;
-
 describe.only("1100: Jobs: Test New Job Model", () => {
-  before((done) => {
+  before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-
-    archiveJob = { ...TestData.ArchiveJob };
-    retrieveJob = { ...TestData.RetrieveJob };
-    publicJob = { ...TestData.PublicJob };
-    done();
   });
 
   beforeEach((done) => {
@@ -115,11 +92,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
             utils.getToken(
               appUrl,
               {
-                username: "user2",
-                password: TestData.Accounts["user2"]["password"],
+                username: "user3",
+                password: TestData.Accounts["user3"]["password"],
               },
               (tokenVal) => {
-                accessTokenUser2 = tokenVal;
+                accessTokenUser3 = tokenVal;
                 utils.getToken(
                   appUrl,
                   {
@@ -160,7 +137,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
     );
   });
 
-  it.only("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: adds dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -177,7 +154,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it.only("0020: adds another new raw dataset", async () => {
+  it("0020: adds dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -194,7 +171,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0030: adds another new raw dataset", async () => {
+  it("0030: adds dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
@@ -210,13 +187,63 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         datasetPid3 = res.body["pid"];
       });
   });
-  it("0040: Adds a new job as admin for admin ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "admin";
-    jobAll["ownerGroup"] = "admin";
+  
+  it("0035: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasets, which should fail", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id")
+      });
+  });
+
+  it("0037: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with not existing dataset IDs, which should fail", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: ["fakeID"],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id")
+      });
+  });
+
+  it("0038: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasetIds parameter", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -224,17 +251,71 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0050: Adds a new job as admin for group1 ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "user1";
-    jobAll["ownerGroup"] = "group1";
+
+  // it("0039: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with no jobParams parameter", async () => {
+  //   const newDataset = {
+  //     type: "public_access",
+  //     ownerUser: "admin",
+  //     ownerGroup: "admin",
+  //   };
+
+  //   return request(appUrl)
+  //     .post("/api/v3/Jobs")
+  //     .send(newDataset)
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+  //     .expect(TestData.BadRequestStatusCode)
+  //     .expect("Content-Type", /json/)
+  //     .then((res) => {
+  //       res.body.should.not.have.property("id");
+  //       res.body.should.have.propert("message").and.be.equal("Dataset ids list was not provided in jobParams");
+  //     });
+  // });
+
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0050: Add a new job as a user from ADMIN_GROUPS for another user in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -242,18 +323,24 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0060: Adds a new job as admin for group1 ownerGroup and no ownerUser for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerGroup"] = "group1";
-    jobAll["ownerUser"] = "";
+  it("0060: Add a new job as a user from ADMIN_GROUPS for undefined user from another group user in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -261,36 +348,49 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0065: Adds a new job as admin for anonymous owner for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerGroup"] = "";
-    jobAll["ownerUser"] = "";
+
+  it("0065: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0070: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "user1";
-    jobAll["ownerGroup"] = "group1";
+  it("0070: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -299,17 +399,23 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0080: Adds a new job as user1 for group1 ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "group1";
+
+  it("0080: Add a new job as a user from CREATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -318,48 +424,93 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0090: Adds a new job as user1 for user 5.1 ownerUser and group5 ownerGroup for #all, which should fail as bad request", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "user5.1";
-    jobAll["ownerGroup"] = "group5";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobAll)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.should.not.have.property("ownerGroup");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0100: Adds a new job as user1 for group5 ownerGroup and no ownerUser for #all, which should fail", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "group5";
+  it("0090: AAdd a new job as a user from CREATE_JOB_GROUPS for another user in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
       });
   });
-  it("0110: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid2];
-    jobAll["ownerUser"] = "user5.1";
-    jobAll["ownerGroup"] = "group5";
+
+  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User needs to belong to job owner group.");
+      });
+  });
+
+  it("0105: Add a new job as a user from CREATE_JOB_GROUPS for anonymous user in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+      });
+  });
+
+  it("0110: Add a new job as a normal user for himself/herself in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -368,17 +519,23 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0120: Adds a new job as user5.1 for group5 ownerGroup for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "group5";
+
+  it("0120:Add a new job as a normal user for his/her group in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -387,153 +544,265 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0130: Adds a new job as user 5.1 for ownerUser user1 for group1 ownerGroup for #all, which should fail as bad request", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "user1";
-    jobAll["ownerGroup"] = "group1";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobAll)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.should.not.have.property("ownerGroup");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0140: Adds a new job as user5.1 for group1 ownerGroup and no ownerUser for #all, which should fail", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "group1";
+  it("0130: Add a new job as a normal user for another user in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
       });
   });
-  it("0150: Adds a new job as unauthenticated user for #all", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "";
+
+  it("0140: Add a new job as a normal user for another group in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User needs to belong to job owner group.");
+      });
+  });
+
+  it("0145: Add a new job as a normal user for anonymous user in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+      });
+  });
+
+  it("0150: Adds a new job as unauthenticated user in '#all' configuration", async () => {
+    const newDataset = {
+      ...jobAll,
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0160: Adds a new job as unauthenticated user for group1 ownerGroup for #all, which should fail", async () => {
-    jobAll["jobParams"]["datasetIds"] = [datasetPid1];
-    jobAll["ownerUser"] = "";
-    jobAll["ownerGroup"] = "group1";
+  it("0160: Adds a new job as unauthenticated user for another user in '#all' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobAll,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAll.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAll)
+      .send(newDataset)
       .set("Accept", "application/json")
       .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-      });
-  });
-
-  it("0170: Adds a new job as admin for admin ownerGroup with published datasets for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetPublic["ownerUser"] = "admin";
-    jobDatasetPublic["ownerGroup"] = "admin";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0180: Adds a new job as admin for admin ownerGroup with one unpublished dataset for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1, datasetPid2];
-    jobDatasetPublic["ownerUser"] = "admin";
-    jobDatasetPublic["ownerGroup"] = "admin";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-
-  it("0185: Adds a new job as admin for anonymous owner for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetPublic["ownerGroup"] = "";
-    jobDatasetPublic["ownerUser"] = "";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0190: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup with published datasets for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetPublic["ownerUser"] = "user1";
-    jobDatasetPublic["ownerGroup"] = "group1";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("group1");
-        res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("message").and.be.equal("Invalid new job. Unauthenticated user cannot initiate a job owned by another user.");
       });
   });
   
-  it("0200: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup with onepublished datasets for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1, datasetPid2, datasetPid3];
-    jobDatasetPublic["ownerUser"] = "user1";
-    jobDatasetPublic["ownerGroup"] = "group1";
+  it("0170: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0180: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0181: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0182: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetPublic' configuration with one unpublished dataset", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0185: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0190: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -542,17 +811,50 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0210: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup with published datasets for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetPublic["ownerUser"] = "user5.1";
-    jobDatasetPublic["ownerGroup"] = "group5";
+  
+  it("0200: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0210: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1,],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -561,78 +863,366 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
   
-  it("0220: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup with onepublished datasets for #datasetPublic, which should fail", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1, datasetPid2, datasetPid3];
-    jobDatasetPublic["ownerUser"] = "user5";
-    jobDatasetPublic["ownerGroup"] = "group5";
+  it("0220: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail ad forbidden", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
       });
   });
 
-  it("0230: Adds a new job as unauthenticated user for #datasetPublic", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetPublic["ownerUser"] = "";
-    jobDatasetPublic["ownerGroup"] = "";
+  it("0230: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
+      .send(newDataset)
       .set("Accept", "application/json")
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it.only("0240: Adds a new job as unauthenticated user for #datasetPublic with one unpublished dataset, which should fail", async () => {
-    jobDatasetPublic["jobParams"]["datasetIds"] = [datasetPid1, datasetPid2];
-    jobDatasetPublic["ownerUser"] = "";
-    jobDatasetPublic["ownerGroup"] = "";
+  it("0240: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobDatasetPublic,
+      jobParams: {
+        ...jobDatasetPublic.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetPublic)
+      .send(newDataset)
       .set("Accept", "application/json")
-      .expect(TestData.AccessForbiddenStatusCode) // now it's the same error as it should, but the actual check it should go through is not entered 
+      .expect(TestData.AccessForbiddenStatusCode) 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
       });
   });
-  it("0250: Adds a new job as unauthenticated user for #authenticated which should fail", async () => {
-    jobAuthenticated["jobParams"]["datasetIds"] = [datasetPid1, datasetPid2];
-    jobAuthenticated["ownerUser"] = "";
-    jobAuthenticated["ownerGroup"] = "";
+
+  it("0241: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobAuthenticated)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0242: Add a new job as a user from ADMIN_GROUPS for another user in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });  
+  it("0243: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0244: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0245: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0246: Add a new job as a normal user for himself/herself in '#authenticated' configuration", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0250: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobAuthenticated,
+      jobParams: {
+        ...jobAuthenticated.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+      });
+  });
+ 
+  it("0251: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetAccess' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0260: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup for #datasetAccess with access to datasets", async () => {
-    jobDatasetAccess["jobParams"]["datasetIds"] = [datasetPid1,datasetPid3];
-    jobDatasetAccess["ownerUser"] = "user1";
-    jobDatasetAccess["ownerGroup"] = "group1";
+  it("0252: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetAccess' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetAccess)
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0253: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetAccess' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0254: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetAccess' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0260: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -641,67 +1231,25 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0270: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup for #datasetAccess with a dataset to which it has no access, which should fail", async () => {
-    jobDatasetAccess["jobParams"]["datasetIds"] = [datasetPid1,datasetPid2, datasetPid3];
-    jobDatasetAccess["ownerUser"] = "user1";
-    jobDatasetAccess["ownerGroup"] = "group1";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetAccess)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.CreationForbiddenStatusCodeAccessForbiddenStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("id");
-      });
-  });
-  it("0280: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess with access to datasets", async () => {
-    jobDatasetAccess["jobParams"]["datasetIds"] = [datasetPid1,datasetPid3];
-    jobDatasetAccess["ownerUser"] = "user5.1";
-    jobDatasetAccess["ownerGroup"] = "group5";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetAccess)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("group5");
-        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
-      });
-  });
-  it("0290: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess with a dataset to which it has no access, which should fail", async () => {
-    jobDatasetAccess["jobParams"]["datasetIds"] = [datasetPid1,datasetPid2, datasetPid3];
-    jobDatasetAccess["ownerUser"] = "user5.1";
-    jobDatasetAccess["ownerGroup"] = "group5";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetAccess)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.CreationForbiddenStatusCodeAccessForbiddenStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("id");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
-  it("0300: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup for #datasetOwner with access to datasets", async () => {
-    jobDatasetOwner["jobParams"]["datasetIds"] = [datasetPid1];
-    jobDatasetOwner["ownerUser"] = "user1";
-    jobDatasetOwner["ownerGroup"] = "group1";
+
+  it("0265: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with no access to datasets", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetOwner)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -710,32 +1258,47 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0310: Adds a new job as user1 for user1 ownerUser and group1 ownerGroup for #datasetOwner with a dataset to which it has no access, which should fail", async () => {
-    jobDatasetOwner["jobParams"]["datasetIds"] = [datasetPid1, datasetPid3];
-    jobDatasetOwner["ownerUser"] = "user1";
-    jobDatasetOwner["ownerGroup"] = "group1";
+
+  it("0270: Adds a new job as user1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess, which should fail", async () => {
+      const newDataset = {
+        ...jobDatasetAccess,
+        ownerUser: "user5.1",
+        ownerGroup: "group5",
+        jobParams: {
+          ...jobDatasetAccess.jobParams,
+          datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        },
+      };
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("id");
+          res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        });
+    });
+
+  it("0280: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid3],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetOwner)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
-      .expect(TestData.CreationForbiddenStatusCodeAccessForbiddenStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("id");
-      });
-  });
-  it("0320: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup for #datasetOwner with access to datasets", async () => {
-    jobDatasetOwner["jobParams"]["datasetIds"] = [datasetPid3];
-    jobDatasetOwner["ownerUser"] = "user5.1";
-    jobDatasetOwner["ownerGroup"] = "group5";
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(jobDatasetOwner)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.EntryCreatedStatusCode)
@@ -744,25 +1307,742 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal('jobCreated');
-        jobId = res.body["id"];
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
-  it("0330: Adds a new job as user5.1 for user5.1 ownerUser and group5 ownerGroup for #datasetOwner with a dataset to which it has no access, which should fail", async () => {
-    jobDatasetOwner["jobParams"]["datasetIds"] = [datasetPid2];
-    jobDatasetOwner["ownerUser"] = "user5.1";
-    jobDatasetOwner["ownerGroup"] = "group5";
+
+  it("0290: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with no access to datasets, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
     return request(appUrl)
       .post("/api/v3/Jobs")
-      .send(jobDatasetOwner)
+      .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.CreationForbiddenStatusCodeAccessForbiddenStatusCode)
+      .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
       });
   });
+
+  it("0291: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0292: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0293: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0294: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0295: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0300: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0310: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0320: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0330: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets not owned by his/her group, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+      });
+  });
+
+
+  it("0340: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0350: Add a new job as a user from ADMIN_GROUPS for another user in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0355: Add a new job as a user from ADMIN_GROUPS for another group in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0360: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0370: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself user in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0380: Add a new job as a user from CREATE_JOB_GROUPS for user5.1 in '#USER5.1' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+      });
+  });
+
+  it("0390: Adds a new job as user5.1 himself/herself in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+
+  it("0400: Adds a new job as user5.1 for no ownerUser and group5 ownerGroup in #USER5.1 configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0410: Adds a new job as user5.2 for himself/herself in #USER5.1, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user5.2",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+      });
+  });
+
+  it("0420: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "admin",
+      ownerGroup: "admin",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0430: Add a new job as a user from ADMIN_GROUPS for another user in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0435: Add a new job as a user from ADMIN_GROUPS for another group in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0440: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("ownerGroup");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0450: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user1",
+      ownerGroup: "group1",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group1");
+        res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0460: Add a new job as a user from CREATE_JOB_GROUPS for user 5.1 in '#@group5' configuration, which should fail as bad request", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+      });
+  });
+
+  it("0480: Add a new job as a user 5.1 for himself/herself in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0490: Add a new job as a user 5.1 for another user in his/her group in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0500: Add a new job as a user 5.2 for himself/herself in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user5.2",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.2");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0510: Adds a new job as user3 for himself/herself in #@group5, which should fail as forbidden", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user3",
+      ownerGroup: "group3",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+      });
+  });
+
   // it("0050: Adds a new archive job request contains empty datasetList, which should fail", async () => {
   //   const empty = { ...TestData.ArchiveJob };
   //   empty.datasetList = [];
@@ -981,7 +2261,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   //         return done(err);
   //       }
   //       res.body.should.have.property("id");
-  //       retrieveJobId = res.body["id"];
+  //       ret
   //     });
   // });
 
@@ -1353,7 +2633,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   //     .expect("Content-Type", /json/);
   // });
 
-  // // NOTE: We don't have put endpoint on the jobs here, only patch.
+  // // NOTE: We don't have put endpoint on the jobs here, patch.
   // // Patch without id is returning 404 nor found. Maybe this will be valid one if we need and add put endpoint later?
   // // it("Add new job using put, which should fails. Ensure that adding new job without authentication using put is not possible ", async () => {
   // //   return request(appUrl)
