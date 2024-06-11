@@ -822,7 +822,6 @@ export class CaslAbilityFactory {
       /**
        * authenticated users
        */
-
       // check if this user is part of the admin group
       if (
         user.currentGroups.some((g) => configuration().adminGroups.includes(g))
@@ -830,7 +829,6 @@ export class CaslAbilityFactory {
         /**
          * authenticated users belonging to any of the group listed in ADMIN_GROUPS
          */
-
         // -------------------------------------
         // endpoint authorization
         can(AuthOp.JobRead, JobClass);
@@ -847,7 +845,6 @@ export class CaslAbilityFactory {
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
         ];
-
         if (
           user.currentGroups.some((g) =>
             configuration().createJobGroups.includes(g),
@@ -880,7 +877,7 @@ export class CaslAbilityFactory {
           ];
           const jobCreateInstanceAuthorizationValues = [
             ...Object.values(CreateJobAuth).filter(
-              (v) => ~String(v).includes("#dataset"),
+              (v) => !String(v).includes("#dataset"),
             ),
             ...jobUserAuthorizationValues,
           ];
@@ -889,7 +886,6 @@ export class CaslAbilityFactory {
               String(v).includes("#dataset"),
             ),
           ];
-
           // -------------------------------------
           // endpoint authorization
           can(AuthOp.JobRead, JobClass);
@@ -908,17 +904,17 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
             ownerUser: user.username,
           });
+          
           can(AuthOp.JobCreateConfiguration, JobClass, {
             ["configuration.create.auth" as string]: {
               $in: jobCreateInstanceAuthorizationValues,
             },
           });
-          
           can(AuthOp.JobCreateConfiguration, JobClass, {
             ["configuration.create.auth" as string]: {
               $in: jobCreateDatasetAuthorizationValues,
             },
-            datasetsValidation: true
+            datasetsValidation: true,
           });
         }
 
@@ -955,7 +951,7 @@ export class CaslAbilityFactory {
           // endpoint authorization
           if (
             configuration().jobConfiguration.some(
-              (j) => j.update.auth! in jobUpdateEndPointAuthorizationValues,
+             (j) => j.update.auth! in jobUpdateEndPointAuthorizationValues, 
             )
           ) {
             can(AuthOp.JobStatusUpdate, JobClass);
