@@ -31,10 +31,7 @@ import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import {
-  PartialUpdateUserSettingsDto,
-  UpdateUserSettingsDto,
-} from "./dto/update-user-settings.dto";
+import { PartialUpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { User } from "./schemas/user.schema";
 import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
 import { AuthService } from "src/auth/auth.service";
@@ -255,7 +252,7 @@ export class UsersController {
   async updateSettings(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() updateUserSettingsDto: UpdateUserSettingsDto,
+    @Body() updateUserSettingsDto: PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     await this.checkUserAuthorization(
       request,
