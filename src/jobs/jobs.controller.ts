@@ -399,7 +399,6 @@ export class JobsController {
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
     jobInstance.contactEmail = jobCreateDto.contactEmail;
-    jobInstance.jobParams = {};
     jobInstance.datasetsValidation = false;
     jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
@@ -410,7 +409,6 @@ export class JobsController {
     let datasetIds: string[] = [];
     if (JobsConfigSchema.DatasetIds in jobCreateDto.jobParams) {
       datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
-      jobInstance.jobParams[JobsConfigSchema.DatasetIds] = datasetIds
     }
     if (user) {
       // the request comes from a user who is logged in.
