@@ -14,7 +14,14 @@ let accessTokenAdminIngestor = null,
 let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
-  jobId = null;
+  jobId1 = null,
+  jobId2 = null,
+  jobId3 = null,
+  jobId4 = null,
+  jobId5 = null,
+  jobId6 = null,
+  jobId7 = null,
+  jobId8 = null;
 
 
 const dataset1 = {
@@ -188,7 +195,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0035: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasets, which should fail", async () => {
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasets, which should fail", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "admin",
@@ -211,7 +218,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0037: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with not existing dataset IDs, which should fail", async () => {
+  it("0050: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with not existing dataset IDs, which should fail", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "admin",
@@ -234,7 +241,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0038: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasetIds parameter", async () => {
+  it("0060: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasetIds parameter", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "admin",
@@ -253,6 +260,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId1 = res.body["id"];
       });
   });
 
@@ -276,7 +284,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   //     });
   // });
 
-  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration", async () => {
+  it("0070: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "admin",
@@ -302,7 +310,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0050: Add a new job as a user from ADMIN_GROUPS for another user in '#all' configuration", async () => {
+  it("0080: Add a new job as a user from ADMIN_GROUPS for another user in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user1",
@@ -325,10 +333,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId2 = res.body["id"];
       });
   });
 
-  it("0060: Add a new job as a user from ADMIN_GROUPS for undefined user from another group user in '#all' configuration", async () => {
+  it("0090: Add a new job as a user from ADMIN_GROUPS for undefined user from another group user in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group1",
@@ -350,10 +359,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId3 = res.body["id"];
       });
   });
 
-  it("0065: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#all' configuration", async () => {
+  it("0100: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
@@ -374,10 +384,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId6 = res.body["id"];
       });
   });
 
-  it("0070: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#all' configuration", async () => {
+  it("0110: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user1",
@@ -403,7 +414,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0080: Add a new job as a user from CREATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
+  it("0120: Add a new job as a user from CREATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group1",
@@ -428,7 +439,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0090: AAdd a new job as a user from CREATE_JOB_GROUPS for another user in '#all' configuration, which should fail as bad request", async () => {
+  it("0130: AAdd a new job as a user from CREATE_JOB_GROUPS for another user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user5.1",
@@ -449,10 +460,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+        jobId4 = res.body["id"];
       });
   });
 
-  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#all' configuration, which should fail as bad request", async () => {
+  it("0140: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group5",
@@ -472,10 +484,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Invalid new job. User needs to belong to job owner group.");
+        jobId5 = res.body["id"];
       });
   });
 
-  it("0105: Add a new job as a user from CREATE_JOB_GROUPS for anonymous user in '#all' configuration, which should fail as bad request", async () => {
+  it("0150: Add a new job as a user from CREATE_JOB_GROUPS for anonymous user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
@@ -497,7 +510,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0110: Add a new job as a normal user for himself/herself in '#all' configuration", async () => {
+  it("0160: Add a new job as a normal user for himself/herself in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user5.1",
@@ -523,7 +536,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0120:Add a new job as a normal user for his/her group in '#all' configuration", async () => {
+  it("0170:Add a new job as a normal user for his/her group in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group5",
@@ -548,7 +561,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0130: Add a new job as a normal user for another user in '#all' configuration, which should fail as bad request", async () => {
+  it("0180: Add a new job as a normal user for another user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user1",
@@ -572,7 +585,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0140: Add a new job as a normal user for another group in '#all' configuration, which should fail as bad request", async () => {
+  it("0190: Add a new job as a normal user for another group in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group1",
@@ -595,7 +608,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0145: Add a new job as a normal user for anonymous user in '#all' configuration, which should fail as bad request", async () => {
+  it("0200: Add a new job as a normal user for anonymous user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
@@ -617,7 +630,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0150: Adds a new job as unauthenticated user in '#all' configuration", async () => {
+  it("0210: Adds a new job as unauthenticated user in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
@@ -640,7 +653,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0160: Adds a new job as unauthenticated user for another user in '#all' configuration, which should fail as bad request", async () => {
+  it("0220: Adds a new job as unauthenticated user for another user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group1",
@@ -662,7 +675,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0170: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0230: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "admin",
@@ -688,7 +701,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0180: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0240: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "admin",
@@ -714,7 +727,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0181: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0250: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -740,7 +753,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0182: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0260: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerGroup: "group1",
@@ -765,7 +778,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0185: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0270: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
@@ -789,7 +802,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0190: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0280: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -815,7 +828,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0200: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0290: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -841,7 +854,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0210: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0300: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -867,7 +880,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0220: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail ad forbidden", async () => {
+  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail ad forbidden", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -891,7 +904,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0230: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0320: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
@@ -914,7 +927,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0240: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+  it("0330: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
@@ -935,7 +948,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0241: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+  it("0340: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       ownerUser: "admin",
@@ -961,7 +974,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0242: Add a new job as a user from ADMIN_GROUPS for another user in '#authenticated' configuration", async () => {
+  it("0350: Add a new job as a user from ADMIN_GROUPS for another user in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       ownerUser: "user1",
@@ -986,7 +999,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });  
-  it("0243: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
+  it("0360: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       ownerGroup: "group1",
@@ -1011,7 +1024,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0244: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#authenticated' configuration", async () => {
+  it("0370: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       jobParams: {
@@ -1035,7 +1048,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0245: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+  it("0380: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       ownerUser: "user1",
@@ -1061,7 +1074,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0246: Add a new job as a normal user for himself/herself in '#authenticated' configuration", async () => {
+  it("0390: Add a new job as a normal user for himself/herself in '#authenticated' configuration", async () => {
     const newDataset = {
       ...jobAuthenticated,
       ownerUser: "user5.1",
@@ -1087,7 +1100,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0250: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
+  it("0400: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobAuthenticated,
       jobParams: {
@@ -1108,7 +1121,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
  
-  it("0251: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetAccess' configuration", async () => {
+  it("0410: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetAccess' configuration", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "admin",
@@ -1134,7 +1147,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0252: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetAccess' configuration", async () => {
+  it("0420: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetAccess' configuration", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "user1",
@@ -1160,7 +1173,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0253: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetAccess' configuration", async () => {
+  it("0430: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetAccess' configuration", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerGroup: "group1",
@@ -1185,7 +1198,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0254: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetAccess' configuration", async () => {
+  it("0440: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetAccess' configuration", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       jobParams: {
@@ -1209,7 +1222,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0260: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
+  it("0450: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "user1",
@@ -1236,7 +1249,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   });
 
 
-  it("0265: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with no access to datasets", async () => {
+  it("0460: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetAccess' configuration with no access to datasets", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "user1",
@@ -1262,7 +1275,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0270: Adds a new job as user1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess, which should fail", async () => {
+  it("0470: Adds a new job as user1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess, which should fail", async () => {
       const newDataset = {
         ...jobDatasetAccess,
         ownerUser: "user5.1",
@@ -1285,7 +1298,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         });
     });
 
-  it("0280: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
+  it("0480: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "user5.1",
@@ -1311,7 +1324,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0290: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with no access to datasets, which should fail as forbidden", async () => {
+  it("0490: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with no access to datasets, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobDatasetAccess,
       ownerUser: "user5.1",
@@ -1335,7 +1348,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0291: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+  it("0500: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "admin",
@@ -1361,7 +1374,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0292: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+  it("0510: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "admin",
@@ -1387,7 +1400,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0293: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetOwner' configuration", async () => {
+  it("0520: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetOwner' configuration", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -1413,7 +1426,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0294: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
+  it("0530: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerGroup: "group1",
@@ -1438,7 +1451,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0295: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
+  it("0540: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       jobParams: {
@@ -1462,7 +1475,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0300: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0550: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -1488,7 +1501,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0310: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0560: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -1514,7 +1527,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0320: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0570: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "user5.1",
@@ -1540,7 +1553,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0330: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets not owned by his/her group, which should fail as forbidden", async () => {
+  it("0580: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets not owned by his/her group, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobDatasetOwner,
       ownerUser: "user5.1",
@@ -1565,7 +1578,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   });
 
 
-  it("0340: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#USER5.1' configuration", async () => {
+  it("0590: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "admin",
@@ -1591,7 +1604,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0350: Add a new job as a user from ADMIN_GROUPS for another user in '#USER5.1' configuration", async () => {
+  it("0600: Add a new job as a user from ADMIN_GROUPS for another user in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "user1",
@@ -1617,7 +1630,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0355: Add a new job as a user from ADMIN_GROUPS for another group in '#USER5.1' configuration", async () => {
+  it("0610: Add a new job as a user from ADMIN_GROUPS for another group in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerGroup: "group1",
@@ -1642,7 +1655,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0360: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#USER5.1' configuration", async () => {
+  it("0620: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       jobParams: {
@@ -1666,7 +1679,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0370: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself user in '#USER5.1' configuration", async () => {
+  it("0630: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself user in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "user1",
@@ -1692,7 +1705,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0380: Add a new job as a user from CREATE_JOB_GROUPS for user5.1 in '#USER5.1' configuration, which should fail as bad request", async () => {
+  it("0640: Add a new job as a user from CREATE_JOB_GROUPS for user5.1 in '#USER5.1' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "user5.1",
@@ -1716,7 +1729,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0390: Adds a new job as user5.1 himself/herself in '#USER5.1' configuration", async () => {
+  it("0650: Adds a new job as user5.1 himself/herself in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "user5.1",
@@ -1742,7 +1755,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
   });
 
 
-  it("0400: Adds a new job as user5.1 for no ownerUser and group5 ownerGroup in #USER5.1 configuration", async () => {
+  it("0660: Adds a new job as user5.1 for no ownerUser and group5 ownerGroup in #USER5.1 configuration", async () => {
     const newDataset = {
       ...jobUser51,
       ownerGroup: "group5",
@@ -1767,7 +1780,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0410: Adds a new job as user5.2 for himself/herself in #USER5.1, which should fail as forbidden", async () => {
+  it("0670: Adds a new job as user5.2 for himself/herself in #USER5.1, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobUser51,
       ownerUser: "user5.2",
@@ -1788,10 +1801,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        jobId7 = res.body["id"];
       });
   });
 
-  it("0420: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#@group5' configuration", async () => {
+  it("0680: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "admin",
@@ -1817,7 +1831,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0430: Add a new job as a user from ADMIN_GROUPS for another user in '#@group5' configuration", async () => {
+  it("0690: Add a new job as a user from ADMIN_GROUPS for another user in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user1",
@@ -1843,7 +1857,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0435: Add a new job as a user from ADMIN_GROUPS for another group in '#@group5' configuration", async () => {
+  it("0700: Add a new job as a user from ADMIN_GROUPS for another group in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerGroup: "group1",
@@ -1868,7 +1882,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0440: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#@group5' configuration", async () => {
+  it("0710: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       jobParams: {
@@ -1892,7 +1906,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0450: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#@group5' configuration", async () => {
+  it("0720: Add a new job as a user from CREATE_JOB_GROUPS for another group in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user1",
@@ -1918,7 +1932,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0460: Add a new job as a user from CREATE_JOB_GROUPS for user 5.1 in '#@group5' configuration, which should fail as bad request", async () => {
+  it("0730: Add a new job as a user from CREATE_JOB_GROUPS for user 5.1 in '#@group5' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user5.1",
@@ -1942,7 +1956,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0480: Add a new job as a user 5.1 for himself/herself in '#@group5' configuration", async () => {
+  it("0740: Add a new job as a user 5.1 for himself/herself in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user5.1",
@@ -1968,7 +1982,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0490: Add a new job as a user 5.1 for another user in his/her group in '#@group5' configuration", async () => {
+  it("0750: Add a new job as a user 5.1 for another user in his/her group in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerGroup: "group5",
@@ -1993,7 +2007,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0500: Add a new job as a user 5.2 for himself/herself in '#@group5' configuration", async () => {
+  it("0760: Add a new job as a user 5.2 for himself/herself in '#@group5' configuration", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user5.2",
@@ -2019,7 +2033,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0510: Adds a new job as user3 for himself/herself in #@group5, which should fail as forbidden", async () => {
+  it("0770: Adds a new job as user3 for himself/herself in #@group5, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user3",
