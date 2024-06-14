@@ -100,7 +100,30 @@ export class JobsService {
   }
 
   async findOne(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
-    return this.jobModel.findOne(filter).exec();
+    const jobFound = await this.jobModel.findOne(filter).exec();
+    if (jobFound){
+      const job = new JobClass();
+      job.createdBy = jobFound.createdBy;
+      job.updatedBy = jobFound.updatedBy;
+      job.createdAt = jobFound.createdAt;
+      job.updatedAt = jobFound.updatedAt;
+      job.ownerGroup = jobFound.ownerGroup;
+      job.accessGroups = jobFound.accessGroups;
+      job.id = jobFound.id;
+      job._id = jobFound._id;
+      job.ownerUser = jobFound.ownerUser;
+      job.type = jobFound.type;
+      job.statusCode = jobFound.statusCode;
+      job.statusMessage = jobFound.statusMessage;
+      job.configVersion = jobFound.configVersion;
+      job.messageSent = jobFound.messageSent;
+      job.jobParams = jobFound.jobParams;
+      job.datasetsValidation = jobFound.datasetsValidation;
+      job.contactEmail = jobFound.contactEmail;
+      job.configuration = jobFound.configuration;
+      return job
+    }
+    return jobFound
   }
 
   async statusUpdate(
