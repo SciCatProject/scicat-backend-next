@@ -23,7 +23,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory"; 
 import { AuthOp } from "src/casl/authop.enum";
-import { CreateJobAuth,UpdateJobAuth } from "src/jobs/types/jobs-auth.enum"
+import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum"
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
   ApiBearerAuth,
@@ -610,7 +610,6 @@ export class JobsController {
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobStatusUpdate(
-    jobStatusUpdateDto: UpdateStatusJobDto,
     user: JWTUser,
     jobInstance: JobClass,
   ): Promise<JobClass> {
@@ -621,7 +620,6 @@ export class JobsController {
       ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
       ability.can(AuthOp.JobStatusUpdateOwner, jobInstance) ||
       ability.can(AuthOp.JobStatusUpdateConfiguration, jobInstance);
-
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
@@ -658,7 +656,7 @@ export class JobsController {
   ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
-    const currentJob = await this.jobsService.findOne({ id: id });
+    const currentJob = await this.jobsService.findOne({ id: id }); 
     if (currentJob === null) {
       throw new HttpException(
         {
@@ -670,7 +668,6 @@ export class JobsController {
     }
     // Check job authorization
     await this.instanceAuthorizationJobStatusUpdate(
-      updateJobDto,
       request.user as JWTUser,
       currentJob,
     );
