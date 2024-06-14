@@ -15,13 +15,21 @@ let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
   jobId1 = null,
+  encodedJobId1 = null,
   jobId2 = null,
+  encodedJobId2 = null,
   jobId3 = null,
+  encodedJobId3 = null,
   jobId4 = null,
+  encodedJobId4 = null,
   jobId5 = null,
+  encodedJobId5 = null,
   jobId6 = null,
-  jobId7 = null,
-  jobId8 = null;
+  encodedJobId6 = null,
+  jobId7 = null, // need to first create a job for that
+  encodedJobId7 = null,
+  jobId8 = null,
+  encodedJobId8 = null;
 
 
 const dataset1 = {
@@ -261,6 +269,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
         jobId1 = res.body["id"];
+        encodedJobId1 = encodeURIComponent(jobId1);
       });
   });
 
@@ -334,6 +343,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
         jobId2 = res.body["id"];
+        encodedJobId2 = encodeURIComponent(jobId2);
       });
   });
 
@@ -360,6 +370,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
         jobId3 = res.body["id"];
+        encodedJobId3 = encodeURIComponent(jobId3);
       });
   });
 
@@ -385,6 +396,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
+        encodedJobId6 = encodeURIComponent(jobId6);
       });
   });
 
@@ -460,7 +472,6 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
-        jobId4 = res.body["id"];
       });
   });
 
@@ -484,7 +495,6 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Invalid new job. User needs to belong to job owner group.");
-        jobId5 = res.body["id"];
       });
   });
 
@@ -533,6 +543,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId4 = res.body["id"];
+        encodedJobId4 = encodeURIComponent(jobId4);
       });
   });
 
@@ -558,6 +570,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId5 = res.body["id"];
+        encodedJobId5 = encodeURIComponent(jobId5);
       });
   });
 
@@ -1801,7 +1815,6 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
-        jobId7 = res.body["id"];
       });
   });
 
@@ -2033,7 +2046,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0770: Adds a new job as user3 for himself/herself in #@group5, which should fail as forbidden", async () => {
+  it("0770: Adds a new job as user3 for himself/herself in #@group5 configuration, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobGroup5,
       ownerUser: "user3",
@@ -2056,6 +2069,194 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
       });
   });
+
+  it("0780: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobId1}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+});
+
+it("0790: Adds a Status update to a job as a user from ADMIN_GROUPS for another user's job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0800: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0810: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0820: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#all' configuration", async () => {
+  
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+ });
+it("0830: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0840: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0850: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0860: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonym user's group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0870: Adds a Status update to a job as a normal user  for his/her job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0880: Adds a Status update to a job as a normal user for another user's job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0890: Adds a Status update to a job as a normal user for his/her group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId5}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0900: Adds a Status update to a job as a normal user for another user's group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+
+it("0910: Adds a Status update to a job as a normal user for anonym user's group in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("0920: Adds a Status update to a job as unauthhenticated user for anonymous job in '#all' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
 
   // it("0050: Adds a new archive job request contains empty datasetList, which should fail", async () => {
   //   const empty = { ...TestData.ArchiveJob };
