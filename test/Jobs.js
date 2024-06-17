@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
+const { and } = require("ajv/dist/compile/codegen");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -25,11 +26,65 @@ let datasetPid1 = null,
   jobId5 = null,
   encodedJobId5 = null,
   jobId6 = null,
+
   encodedJobId6 = null,
-  jobId7 = null, // need to first create a job for that
-  encodedJobId7 = null,
-  jobId8 = null,
-  encodedJobId8 = null;
+  jobIdGroup1 = null,
+  encodedJobIdGroup1 = null,
+  jobIdGroup2 = null,
+  encodedJobIdGroup2 = null,
+  jobIdGroup3 = null,
+  encodedJobIdGroup3 = null,
+  jobIdGroup4 = null,
+  encodedJobIdGroup4 = null,
+  jobIdGroup5 = null,
+  encodedJobIdGroup5 = null,  
+  jobIdGroup6 = null,
+  encodedJobIdGroup6 = null,
+
+  jobIdUser1 = null,
+  encodedJobIdUser1 = null,
+  jobIdUser2 = null,
+  encodedJobIdUser2 = null,
+  jobIdUser3 = null,
+  encodedJobIdUser3 = null,
+  jobIdUser4 = null,
+  encodedJobIdUser4 = null,
+  jobIdUser5 = null,
+  encodedJobIdUser5 = null,  
+  jobIdUser6 = null,
+  encodedJobIdUser6 = null,
+
+  jobIdUserSpec1 = null,
+  encodedJobIdUserSpec1 = null,
+  jobIdUserSpec2 = null,
+  encodedJobIdUserSpec2 = null,
+  jobIdUserSpec3 = null,
+  encodedJobIdUserSpec3 = null,
+  jobIdUserSpec4 = null,
+  encodedJobIdUserSpec4 = null,
+  jobIdUserSpec5 = null,
+  encodedJobIdUserSpec5 = null,  
+  jobIdUserSpec6 = null,
+  encodedJobIdUserSpec6 = null,
+  jobIdUserSpec7 = null, 
+  encodedJobIdUserSpec7 = null,
+
+  jobIdGroupSpec1 = null,
+  encodedJobIdGroupSpec1 = null,
+  jobIdGroupSpec2 = null,
+  encodedJobIdGroupSpec2 = null,
+  jobIdGroupSpec3 = null,
+  encodedJobIdGroupSpec3 = null,
+  jobIdGroupSpec4 = null,
+  encodedJobIdGroupSpec4 = null,
+  jobIdGroupSpec5 = null,
+  encodedJobIdGroupSpec5 = null,  
+  jobIdGroupSpec6 = null,
+  encodedJobIdGroupSpec6 = null,
+  jobIdGroupSpec7 = null, 
+  encodedJobIdGroupSpec7 = null,
+  jobIdGroupSpec8 = null,
+  encodedJobIdGroupSpec8 = null;
 
 
 const dataset1 = {
@@ -1158,6 +1213,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup1 = res.body["id"];
+        encodedJobIdGroup1 = encodeURIComponent(jobIdGroup1);
       });
   });
 
@@ -1184,6 +1241,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup2 = res.body["id"];
+        encodedJobIdGroup2 = encodeURIComponent(jobIdGroup2);
       });
   });
 
@@ -1209,6 +1268,35 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup3 = res.body["id"];
+        encodedJobIdGroup3 = encodeURIComponent(jobIdGroup3);
+      });
+  });
+
+  it("0435: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetAccess' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetAccess.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup5 = res.body["id"];
+        encodedJobIdGroup5 = encodeURIComponent(jobIdGroup5);
       });
   });
 
@@ -1233,6 +1321,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup6 = res.body["id"];
+        encodedJobIdGroup6 = encodeURIComponent(jobIdGroup6);
       });
   });
 
@@ -1335,6 +1425,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroup4 = res.body["id"];
+        encodedJobIdGroup4 = encodeURIComponent(jobIdGroup4);
       });
   });
 
@@ -1385,6 +1477,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser1 = res.body["id"];
+        encodedJobIdUser1 = encodeURIComponent(jobIdUser1);
       });
   });
 
@@ -1437,6 +1531,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser2 = res.body["id"];
+        encodedJobIdUser2 = encodeURIComponent(jobIdUser2);
       });
   });
 
@@ -1462,6 +1558,35 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser3 = res.body["id"];
+        encodedJobIdUser3 = encodeURIComponent(jobIdUser3);
+      });
+  });
+
+  it("0535: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
+    const newDataset = {
+      ...jobDatasetOwner,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobDatasetOwner.jobParams,
+        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser5 = res.body["id"];
+        encodedJobIdUser5 = encodeURIComponent(jobIdUser5);
       });
   });
 
@@ -1486,6 +1611,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser6 = res.body["id"];
+        encodedJobIdUser6 = encodeURIComponent(jobIdUser6);
       });
   });
 
@@ -1564,6 +1691,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUser4 = res.body["id"];
+        encodedJobIdUser4 = encodeURIComponent(jobIdUser4);
       });
   });
 
@@ -1615,6 +1744,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec1 = res.body["id"];
+        encodedJobIdUserSpec1 = encodeURIComponent(jobIdUserSpec1);
       });
   });
 
@@ -1641,6 +1772,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec2 = res.body["id"];
+        encodedJobIdUserSpec2 = encodeURIComponent(jobIdUserSpec2);
       });
   });
 
@@ -1666,9 +1799,69 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec3 = res.body["id"];
+        encodedJobIdUserSpec3 = encodeURIComponent(jobIdUserSpec3);
       });
   });
 
+
+  it("0615: Add a new job as a user from ADMIN_GROUPS for another group in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec5 = res.body["id"];
+        encodedJobIdUserSpec5 = encodeURIComponent(jobIdUserSpec5);
+      });
+  });
+
+
+  it("0616: Add a new job as a user from ADMIN_GROUPS for another user in '#USER5.1' configuration", async () => {
+    const newDataset = {
+      ...jobUser51,
+      ownerUser: "user5.2",
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobUser51.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.2");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec7 = res.body["id"];
+        encodedJobIdUserSpec7 = encodeURIComponent(jobIdUserSpec7);
+      });
+  });
+
+  
   it("0620: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#USER5.1' configuration", async () => {
     const newDataset = {
       ...jobUser51,
@@ -1690,6 +1883,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec6 = res.body["id"];
+        encodedJobIdUserSpec6 = encodeURIComponent(jobIdUserSpec6);
       });
   });
 
@@ -1764,7 +1959,10 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdUserSpec4 = res.body["id"];
+        encodedJobIdUserSpec4 = encodeURIComponent(jobIdUserSpec4);
       });
   });
 
@@ -1841,6 +2039,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec1 = res.body["id"];
+        encodedJobIdGroupSpec1 = encodeURIComponent(jobIdGroupSpec1);
       });
   });
 
@@ -1867,6 +2067,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec2 = res.body["id"];
+        encodedJobIdGroupSpec2 = encodeURIComponent(jobIdGroupSpec2);
       });
   });
 
@@ -1892,6 +2094,63 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec3 = res.body["id"];
+        encodedJobIdGroupSpec3 = encodeURIComponent(jobIdGroupSpec3);
+      });
+  });
+
+  it("0705: Add a new job as a user from ADMIN_GROUPS for another group in '#@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerGroup: "group5",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec5 = res.body["id"];
+        encodedJobIdGroupSpec5 = encodeURIComponent(jobIdGroupSpec5);
+      });
+  });
+
+  it("0706: Add a new job as a user from ADMIN_GROUPS for another user in '@group5' configuration", async () => {
+    const newDataset = {
+      ...jobGroup5,
+      ownerUser: "user3",
+      ownerGroup: "group3",
+      jobParams: {
+        ...jobGroup5.jobParams,
+        datasetIds: [datasetPid1, datasetPid2],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group3");
+        res.body.should.have.property("ownerUser").and.be.equal("user3");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec8 = res.body["id"];
+        encodedJobIdGroupSpec8 = encodeURIComponent(jobIdGroupSpec8);
       });
   });
 
@@ -1916,6 +2175,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec6 = res.body["id"];
+        encodedJobIdGroupSpec6 = encodeURIComponent(jobIdGroupSpec6);
       });
   });
 
@@ -1992,6 +2253,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec4 = res.body["id"];
+        encodedJobIdGroupSpec4 = encodeURIComponent(jobIdGroupSpec4);
       });
   });
 
@@ -2043,6 +2306,8 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobIdGroupSpec7 = res.body["id"];
+        encodedJobIdGroupSpec7 = encodeURIComponent(jobIdGroupSpec7);
       });
   });
 
@@ -2161,7 +2426,7 @@ it("0840: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his
 });
 it("0850: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#all' configuration", async () => {
   return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobId4}`)
+      .patch(`/api/v3/Jobs/${encodedJobId5}`)
       .send({ 
         statusCode: "update status of a job", 
         statusMessage: "job finished/blocked/etc", 
@@ -2256,6 +2521,887 @@ it("0920: Adds a Status update to a job as unauthhenticated user for anonymous j
       .set("Accept", "application/json")
       .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
+});
+
+it("0930: Adds a Status update to a job as unauthhenticated user for anouther group's job in '#all' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0940: Adds a Status update to a job as unauthhenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobId2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0950: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser1}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("0960: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerUser' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("0970: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '#jobOwnerUser' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("0980: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '#jobOwnerUser' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+
+it("0990: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+ });
+it("1000: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1010: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerUser' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1020: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1030: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonym user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1040: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerUser' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1050: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1060: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1070: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+
+it("1080: Adds a Status update to a job as a normal user for anonym user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1090: Adds a Status update to a job as unauthhenticated user for anonym user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+
+it("1100: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup1}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1110: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerGroup' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("1120: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '#jobOwnerGroup' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("1130: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '#jobOwnerGroup' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+
+  it("1140: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+   });
+  it("1150: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1160: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerGroup' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1170: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  
+  it("1180: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonym user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  
+it("1190: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerGroup' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1200: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1210: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerGroup' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+it("1220: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+
+it("1230: Adds a Status update to a job as a normal user for anonym user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+
+it("1240: Adds a Status update to a job as unauthhenticated user for anonym user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1250: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in 'USER5.1' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUserSpec1}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+});
+
+it("1260: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in 'USER5.1' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("1270: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in 'USER5.1' configuration", async () => {
+return request(appUrl)
+    .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
+    .send({ 
+      statusCode: "update status of a job", 
+      statusMessage: "job finished/blocked/etc", 
+    })
+    .set("Accept", "application/json")
+    .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+    .expect(TestData.SuccessfulPatchStatusCode)
+    .expect("Content-Type", /json/);
+});
+
+it("1280: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in 'USER5.1' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+
+  it("1290: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in 'USER5.1' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+   });
+  it("1300: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1310: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in 'USER5.1' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1320: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  
+  it("1330: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonym user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser1}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+
+  it("1340: Adds a Status update to a job as user5.1 for his/her job in 'USER5.1' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser51}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1350: Adds a Status update to a job as user5.1 for another user's job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser51}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1360: Adds a Status update to a job as user5.1 for his/her group in 'USER5.1' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser51}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  it("1370: Adds a Status update to a job as user5.1 for another user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser51}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+
+  it("1380: Adds a Status update to a job as user5.1 for anonym user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser51}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1390: Adds a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec7}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser52}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1400: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser52}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1410: Adds a Status update to a job as user5.2 for another user in his/her group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser52}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1420: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '@group5' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec1}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+  
+  it("1430: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '@group5' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+  
+  it("1440: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '@group5' configuration", async () => {
+  return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
+      .send({ 
+        statusCode: "update status of a job", 
+        statusMessage: "job finished/blocked/etc", 
+      })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/);
+  });
+  
+  it("1450: Adds a Status update to a job as a user from ADMIN_GROUPS for anonym user's job in '@group5' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+    });
+  
+    it("1460: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '@group5' configuration", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser1}` })
+          .expect(TestData.SuccessfulPatchStatusCode)
+          .expect("Content-Type", /json/);
+     });
+    it("1470: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser1}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    it("1480: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '@group5' configuration", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser1}` })
+          .expect(TestData.SuccessfulPatchStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    it("1490: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser1}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    
+    it("1500: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonym user's group in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser1}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    
+    it("1510: Adds a Status update to a job as user5.1 for his/her job in '@group5' configuration", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser51}` })
+          .expect(TestData.SuccessfulPatchStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    it("1520: Adds a Status update to a job as user5.1 for another user's job in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser51}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    it("1530: Adds a Status update to a job as user5.1 for his/her group in '@group5' configuration", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser51}` })
+          .expect(TestData.SuccessfulPatchStatusCode)
+          .expect("Content-Type", /json/);
+    });
+    it("1540: Adds a Status update to a job as user5.1 for another user's group in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser51}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+  
+  
+    it("1550: Adds a Status update to a job as user5.1 for anonym user's group in '@group5' configuration, which should fail as forbidden", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser51}` })
+          .expect(TestData.AccessForbiddenStatusCode)
+          .expect("Content-Type", /json/);
+    });
+  
+    it("1560: Adds a Status update to a job as user5.2 for his/her job in '@group5' configuration", async () => {
+      return request(appUrl)
+          .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec7}`)
+          .send({ 
+            statusCode: "update status of a job", 
+            statusMessage: "job finished/blocked/etc", 
+          })
+          .set("Accept", "application/json")
+          .set({ Authorization: `Bearer ${accessTokenUser52}` })
+          .expect(TestData.SuccessfulPatchStatusCode)
+          .expect("Content-Type", /json/);
+    });
+  
+
+  it("1570: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in '@group5' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser52}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1580: Adds a Status update to a job as user5.2 for another user in his/her group job in '@group5' configuration", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser52}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1590: Adds a Status update to a job as user3 for his/her job in '@group5' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec8}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser3}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+  it("1600: Adds a Status update to a job as user3 for user's 5.1 job in '@group5' configuration, which should fail as forbidden", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenUser3}` })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+  });
+
+
+  it("1610: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration with non-existing jobId, which should fail as bad request", async () => {
+    return request(appUrl)
+        .patch(`/api/v3/Jobs/badJobId`)
+        .send({ 
+          statusCode: "update status of a job", 
+          statusMessage: "job finished/blocked/etc", 
+        })
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/);
 });
 
   // it("0050: Adds a new archive job request contains empty datasetList, which should fail", async () => {
