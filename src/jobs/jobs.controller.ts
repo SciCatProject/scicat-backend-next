@@ -399,6 +399,7 @@ export class JobsController {
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
     jobInstance.contactEmail = jobCreateDto.contactEmail;
+    jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
     jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
