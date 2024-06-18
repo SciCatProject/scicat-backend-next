@@ -800,7 +800,7 @@ export class CaslAbilityFactory {
       cannot(AuthOp.JobRead, JobClass);
       if (
         configuration().jobConfiguration.some(
-          (j) => j.update.auth == UpdateJobAuth.All,
+          (j) => j.statusUpdate.auth == UpdateJobAuth.All,
         )
       ) {
         can(AuthOp.JobStatusUpdate, JobClass);
@@ -953,7 +953,7 @@ export class CaslAbilityFactory {
           // endpoint authorization
           if (
             configuration().jobConfiguration.some(
-              (j) => j.update.auth! in jobUpdateEndPointAuthorizationValues,
+              (j) => j.statusUpdate.auth! in jobUpdateEndPointAuthorizationValues,
             )
           ) {
             can(AuthOp.JobStatusUpdate, JobClass);
@@ -962,16 +962,16 @@ export class CaslAbilityFactory {
           // -------------------------------------
           // data instance authorization
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.update.auth" as string]: {
+            ["configuration.statusUpdate.auth" as string]: {
               $in: jobUpdateInstanceAuthorizationValues,
             },
           });
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.update.auth" as string]: "#jobOwnerUser",
+            ["configuration.statusUpdate.auth" as string]: "#jobOwnerUser",
             ownerUser: user.username,
           });
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.update.auth" as string]: "#jobOwnerGroup",
+            ["configuration.statusUpdate.auth" as string]: "#jobOwnerGroup",
             ownerGroup: { $in: user.currentGroups },
           });
         }

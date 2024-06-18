@@ -17,7 +17,7 @@
         }
       ]
     },
-    "update": {
+    "statusUpdate": {
       "auth": "archivemanager"
     }
   },
@@ -27,7 +27,7 @@
     "create": {
       "auth": "#all"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#all"
     }
   }

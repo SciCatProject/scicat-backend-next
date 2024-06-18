@@ -1,9 +1,8 @@
 import { Logger } from "@nestjs/common";
 import {
-  JobConfig,
   loadJobConfig,
   registerCreateAction,
-  registerUpdateAction,
+  registerStatusUpdateAction,
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
@@ -238,9 +237,9 @@ export function registerDefaultActions() {
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
-  // Update
-  registerUpdateAction(LogJobAction);
-  registerUpdateAction(EmailJobAction);
+  // Status Update
+  registerStatusUpdateAction(LogJobAction);
+  registerStatusUpdateAction(EmailJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

@@ -18,7 +18,7 @@ import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
-import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
+import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -45,7 +45,6 @@ import {
   filterDescriptionSimplified,
   filterExampleSimplified,
 } from "src/common/utils";
-import { JobConfig } from "./config/jobconfig";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 
 @ApiBearerAuth()
@@ -275,42 +274,6 @@ export class JobsController {
     return true;
   };
 
-  /**
-   * Check that the job configuration is valid
-   */
-  async checkJobConfiguration(type: string): Promise<JobConfig> {
-    // it should return a single job configuration
-    const jobConfigs = await configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter((j) => j.jobType == type);
-    if (matchingConfig.length != 1) {
-      // return error that job type does not exists
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Invalid job type: " + type,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    return matchingConfig[0];
-  }
-
-  /**
-   * Check the job's configuration version
-   */
-  async checkConfigurationVersion(existingJob: JobClass): Promise<void> {
-    const jc = await this.checkJobConfiguration(existingJob.type);
-    if (jc.configVersion != existingJob.configVersion) {
-      // return error that configuration version does not match
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Invalid configuration version.",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
 
   /**
    * Check that the user is authenticated
@@ -541,7 +504,6 @@ export class JobsController {
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(
       jobInstance,
-      createJobDtoWithConfig.configuration.configVersion,
     );
 
     // Perform the action that is specified in the create portion of the job configuration
@@ -553,7 +515,6 @@ export class JobsController {
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobStatusUpdate(
-    jobStatusUpdateDto: UpdateStatusJobDto,
     user: JWTUser,
     jobInstance: JobClass,
   ): Promise<JobClass> {
@@ -573,7 +534,7 @@ export class JobsController {
   }
 
   /**
-   * Update job
+   * Update job status
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
@@ -581,23 +542,23 @@ export class JobsController {
   )
   @Patch(":id")
   @ApiOperation({
-    summary: "It updates an existing job.",
-    description: "It updates an existing job.",
+    summary: "It updates the status of an existing job.",
+    description: "It updates the status of an existing job.",
   })
   @ApiBody({
-    description: "Input fields for the job to be updated",
+    description: "Status fields for the job to be updated",
     required: true,
-    type: UpdateStatusJobDto,
+    type: StatusUpdateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
     type: JobClass,
-    description: "Updated job",
+    description: "Updated job status",
   })
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() updateJobDto: UpdateStatusJobDto,
+    @Body() statusUpdateJobDto: StatusUpdateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
@@ -613,12 +574,12 @@ export class JobsController {
     }
     // Check job authorization
     await this.instanceAuthorizationJobStatusUpdate(
-      updateJobDto,
       request.user as JWTUser,
       currentJob,
     );
     // Update job in database
-    const updatedJob = await this.jobsService.statusUpdate(id, updateJobDto);
+    const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
+
     // Emit update event
     // MN: not needed
     // if (updatedJob) {
@@ -680,21 +641,29 @@ export class JobsController {
     @Req() request: Request,
     @Query("filter") filter?: string,
   ): Promise<JobClass[] | null> {
-    const parsedFilter: IFilters<
-      JobDocument,
-      FilterQuery<JobDocument>
-    > = JSON.parse(filter ?? "{}");
+    try {
+      filter = filter ?? "{}";
+      JSON.parse(filter as string);
+      // filter is a valid JSON, continue with parsing
+      const parsedFilter: IFilters<
+        JobDocument,
+        FilterQuery<JobDocument>
+      > = JSON.parse(filter);
 
-    if (!this.isFilterValid(Object.keys(parsedFilter))) {
+      if (!this.isFilterValid(Object.keys(parsedFilter))) {
+        throw { message: "Invalid filter syntax." };
+      }
+      return this.jobsService.findAll(parsedFilter, request.user as JWTUser);
+    }
+    catch (e) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: "Invalid filter syntax.",
+          message: (e as Error).message,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
-    return this.jobsService.findAll(parsedFilter);
   }
 
   /**
