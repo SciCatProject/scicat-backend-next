@@ -653,7 +653,7 @@ export class JobsController {
       if (!this.isFilterValid(Object.keys(parsedFilter))) {
         throw { message: "Invalid filter syntax." };
       }
-      return this.jobsService.findAll(parsedFilter, request.user as JWTUser);
+      return this.jobsService.findAll(parsedFilter);
     }
     catch (e) {
       throw new HttpException(

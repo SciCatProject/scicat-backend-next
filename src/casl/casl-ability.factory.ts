@@ -25,7 +25,7 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { AuthOp } from "./authop.enum";
 import configuration from "src/config/configuration";
-import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
+import { CreateJobAuth, StatusUpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 
 type Subjects =
   | string
@@ -800,7 +800,7 @@ export class CaslAbilityFactory {
       cannot(AuthOp.JobRead, JobClass);
       if (
         configuration().jobConfiguration.some(
-          (j) => j.statusUpdate.auth == UpdateJobAuth.All,
+          (j) => j.statusUpdate.auth == StatusUpdateJobAuth.All,
         )
       ) {
         can(AuthOp.JobStatusUpdate, JobClass);
@@ -922,7 +922,7 @@ export class CaslAbilityFactory {
 
         if (
           user.currentGroups.some((g) =>
-            configuration().updateJobGroups.includes(g),
+            configuration().statusUpdateJobGroups.includes(g),
           )
         ) {
           // -------------------------------------
@@ -939,11 +939,11 @@ export class CaslAbilityFactory {
           });
         } else {
           const jobUpdateEndPointAuthorizationValues = [
-            ...Object.values(UpdateJobAuth),
+            ...Object.values(StatusUpdateJobAuth),
             ...jobUserAuthorizationValues,
           ];
           const jobUpdateInstanceAuthorizationValues = [
-            ...Object.values(UpdateJobAuth).filter(
+            ...Object.values(StatusUpdateJobAuth).filter(
               (v) => ~String(v).includes("#job"),
             ),
             ...jobUserAuthorizationValues,

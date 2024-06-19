@@ -45,18 +45,10 @@ export class JobsService {
   }
 
   async findAll(
-    filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
-    user: JWTUser
+    filter: IFilters<JobDocument, FilterQuery<JobDocument>>
   ): Promise<JobClass[]> {
     var whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
-
-    if (user.username !== "admin") {
-      whereFilters = {
-        ...whereFilters,
-        ...{ "ownerUser": user.username }
-      }
-    }
 
     return this.jobModel
       .find(whereFilters)
