@@ -2,7 +2,7 @@ import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 @ApiTags("jobs")
-export class UpdateStatusJobDto {
+export class StatusUpdateJobDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -11,7 +11,6 @@ export class UpdateStatusJobDto {
   @IsString()
   readonly statusCode: string;
 
-  // TBD are 'message' and 'token' needed?
   @ApiProperty({
     type: String,
     required: false,

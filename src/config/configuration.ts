@@ -1,9 +1,8 @@
 import { Logger } from "@nestjs/common";
 import {
-  JobConfig,
   loadJobConfig,
   registerCreateAction,
-  registerUpdateAction,
+  registerStatusUpdateAction,
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
@@ -30,7 +29,7 @@ const configuration = () => {
     process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
@@ -82,7 +81,7 @@ const configuration = () => {
   //   "- Create dataset privileged groups : " + createDatasetPrivilegedGroups,
   // );
   // Logger.log("- Create job groups : " + createJobGroups);
-  // Logger.log("- Update job groups : " + updateJobGroups);
+  // Logger.log("- Update job groups : " + statusUpdateJobGroups);
 
   // Register built-in job actions
   registerDefaultActions();
@@ -108,7 +107,7 @@ const configuration = () => {
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
-    updateJobGroups: updateJobGroups,
+    statusUpdateJobGroups: statusUpdateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
@@ -238,9 +237,9 @@ export function registerDefaultActions() {
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
-  // Update
-  registerUpdateAction(LogJobAction);
-  registerUpdateAction(EmailJobAction);
+  // Status Update
+  registerStatusUpdateAction(LogJobAction);
+  registerStatusUpdateAction(EmailJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

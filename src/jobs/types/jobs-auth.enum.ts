@@ -13,7 +13,7 @@ export enum CreateJobAuth {
   DatasetOwner = "#datasetOwner",
 }
 
-export enum UpdateJobAuth {
+export enum StatusUpdateJobAuth {
   // any user can update, no checks are performed
   // to be used carefully, mainly for testing
   All = "#all",
@@ -25,4 +25,4 @@ export enum UpdateJobAuth {
   JobOwnerGroup = "#jobOwnerGroup",
 }
 
-export type JobsAuth = CreateJobAuth | UpdateJobAuth;
+export type JobsAuth = CreateJobAuth | StatusUpdateJobAuth;

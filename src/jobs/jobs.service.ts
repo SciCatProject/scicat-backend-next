@@ -14,14 +14,13 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addStatusFields,
   addCreatedByFields,
-  addConfigVersionField,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { UpdateStatusJobDto } from "./dto/status-update-job.dto";
+import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -33,15 +32,11 @@ export class JobsService {
 
   async create(
     createJobDto: CreateJobDto,
-    configVersion: string,
   ): Promise<JobDocument> {
     const username = (this.request.user as JWTUser).username;
     const createdJob = new this.jobModel(
       addStatusFields(
-        addConfigVersionField(
-          addCreatedByFields(createJobDto, username),
-          configVersion,
-        ),
+        addCreatedByFields(createJobDto, username),
         "Job has been created.",
         "jobCreated",
       ),
@@ -50,9 +45,9 @@ export class JobsService {
   }
 
   async findAll(
-    filter: IFilters<JobDocument, FilterQuery<JobDocument>>,
+    filter: IFilters<JobDocument, FilterQuery<JobDocument>>
   ): Promise<JobClass[]> {
-    const whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
+    var whereFilters: FilterQuery<JobDocument> = filter.where ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
 
     return this.jobModel
@@ -93,7 +88,7 @@ export class JobsService {
 
   async statusUpdate(
     id: string,
-    updateJobDto: UpdateStatusJobDto,
+    statusUpdateJobDto: StatusUpdateJobDto,
   ): Promise<JobClass | null> {
     const existingJob = await this.jobModel.findOne({ id: id }).exec();
     if (!existingJob) {
@@ -105,9 +100,9 @@ export class JobsService {
       .findOneAndUpdate(
         { id: id },
         addStatusFields(
-          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
-          updateJobDto.statusCode,
-          updateJobDto.statusMessage!,
+          addUpdatedByField(statusUpdateJobDto as UpdateQuery<JobDocument>, username),
+          statusUpdateJobDto.statusCode,
+          statusUpdateJobDto.statusMessage!,
         ),
         { new: true },
       )
