@@ -17,7 +17,7 @@
 import * as fs from "fs";
 import { JobClass } from "../schemas/job.schema";
 import { CreateJobDto } from "../dto/create-job.dto";
-import { UpdateStatusJobDto } from "../dto/status-update-job.dto";
+import { StatusUpdateJobDto } from "../dto/status-update-job.dto";
 import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
 import { AuthOp } from "src/casl/authop.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
@@ -32,20 +32,20 @@ export class JobConfig {
   configVersion: string;
   create: JobOperation<CreateJobDto>;
   // read: JobReadAction[];
-  update: JobOperation<UpdateStatusJobDto>;
+  statusUpdate: JobOperation<StatusUpdateJobDto>;
 
   constructor(
     jobType: string,
     configVersion: string,
     create: JobOperation<CreateJobDto>,
     read = undefined,
-    update: JobOperation<UpdateStatusJobDto>,
+    statusUpdate: JobOperation<StatusUpdateJobDto>,
   ) {
     this.jobType = jobType;
     this.configVersion = configVersion;
     this.create = create;
     // this.read = read;
-    this.update = update;
+    this.statusUpdate = statusUpdate;
   }
 
   /**
@@ -53,19 +53,21 @@ export class JobConfig {
    * @param data JSON
    * @returns
    */
-  static parse(data: Record<string, any>) {
+  static parse(
+    data: Record<string, any>,
+    configVersion: string
+  ): JobConfig {
     const type = data[JobsConfigSchema.JobType];
-    const configVersion = data[JobsConfigSchema.ConfigVersion];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
       data[AuthOp.Create],
     );
-    const read = undefined; //"read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
-    const update = JobOperation.parse<UpdateStatusJobDto>(
-      updateActions,
-      data[AuthOp.Update],
+    const read = undefined;  // "read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
+    const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
+      statusUpdateActions,
+      data[AuthOp.StatusUpdate],
     );
-    return new JobConfig(type, configVersion, create, read, update);
+    return new JobConfig(type, configVersion, create, read, statusUpdate);
   }
 }
 
@@ -151,7 +153,7 @@ export interface JobActionClass<DtoType> {
 
 export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
-export type JobUpdateAction = JobAction<UpdateStatusJobDto>;
+export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
 
 /// Action registration
 
@@ -159,7 +161,7 @@ export type JobUpdateAction = JobAction<UpdateStatusJobDto>;
 
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
-const updateActions: Record<string, JobActionClass<UpdateStatusJobDto>> = {};
+const statusUpdateActions: Record<string, JobActionClass<StatusUpdateJobDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
@@ -180,17 +182,17 @@ export function getRegisteredCreateActions(): string[] {
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerUpdateAction(
-  action: JobActionClass<UpdateStatusJobDto>,
+export function registerStatusUpdateAction(
+  action: JobActionClass<StatusUpdateJobDto>,
 ) {
-  updateActions[action.actionType] = action;
+  statusUpdateActions[action.actionType] = action;
 }
 /**
  * List of action types with a registered action
  * @returns
  */
-export function getRegisteredUpdateActions(): string[] {
-  return Object.keys(updateActions);
+export function getRegisteredStatusUpdateActions(): string[] {
+  return Object.keys(statusUpdateActions);
 }
 
 /// Parsing
@@ -220,10 +222,6 @@ export function loadJobConfig(filePath: string): JobConfig[] {
     console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
 
-  if (!Array.isArray(data)) {
-    data = [data];
-  }
-
-  jobConfig = data.map(JobConfig.parse);
+  jobConfig = data.jobs.map((jobData: Record<string, any>) => JobConfig.parse(jobData, data.configVersion));
   return jobConfig as JobConfig[];
 }

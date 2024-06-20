@@ -3,7 +3,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
-import { CreateJobAuth } from "../types/jobs-auth.enum";
 import { JobConfig } from "../config/jobconfig";
 
 export type JobDocument = JobClass & Document;
@@ -83,18 +82,6 @@ export class JobClass extends OwnableClass {
   })
   statusMessage: string;
 
-  // configuration version
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Stores the job's latest configuration version.",
-  })
-  @Prop({
-    type: String,
-    required: false,
-  })
-  configVersion: string;
-
   // messages
   @ApiProperty({
     type: Object,
@@ -158,11 +145,8 @@ export class JobClass extends OwnableClass {
   })
   configuration: JobConfig;
 
-  // @Prop({ type: Boolean, required: false, default: false })
-  // datasetValidation?: boolean;
-
-  // TODO email address for owner from scicat? see create example for job.recipients
-  // in case email is needed it goes into params, and other values too
+  @Prop({ type: Boolean, required: false, default: false })
+  datasetValidation?: boolean;
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);
 

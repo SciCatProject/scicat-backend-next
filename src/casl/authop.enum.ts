@@ -6,6 +6,7 @@ export enum AuthOp {
   ReadOwn = "readown",
   ReadAll = "readall",
   Update = "update",
+  StatusUpdate = "statusUpdate",
   Delete = "delete",
   ListOwn = "listown",
   ListAll = "listall",
