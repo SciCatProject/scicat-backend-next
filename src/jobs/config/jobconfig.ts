@@ -53,9 +53,11 @@ export class JobConfig {
    * @param data JSON
    * @returns
    */
-  static parse(data: Record<string, any>) {
+  static parse(
+    data: Record<string, any>,
+    configVersion: string
+  ): JobConfig {
     const type = data[JobsConfigSchema.JobType];
-    const configVersion = data[JobsConfigSchema.ConfigVersion];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
       data[AuthOp.Create],
@@ -220,10 +222,6 @@ export function loadJobConfig(filePath: string): JobConfig[] {
     console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
 
-  if (!Array.isArray(data)) {
-    data = [data];
-  }
-
-  jobConfig = data.map(JobConfig.parse);
+  jobConfig = data.jobs.map((jobData: Record<string, any>) => JobConfig.parse(jobData, data.configVersion));
   return jobConfig as JobConfig[];
 }

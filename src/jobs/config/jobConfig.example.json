@@ -1,34 +1,35 @@
-[
-  {
-    "jobType": "archive",
-    "configVersion": "v1.0 2024-03-01 6f3f38",
-    "create": {
-      "auth": "#all",
-      "actions": [
-        {
-          "actionType": "log"
-        },
-        {
-          "actionType": "url",
-          "url": "http://localhost:3000/api/v3/health?jobid={{id}}",
-          "headers": {
-            "accept": "application/json"
+{
+  "configVersion": "v1.0 2024-03-01 6f3f38",
+  "jobs": [
+    {
+      "jobType": "archive",
+      "create": {
+        "auth": "#all",
+        "actions": [
+          {
+            "actionType": "log"
+          },
+          {
+            "actionType": "url",
+            "url": "http://localhost:3000/api/v3/health?jobid={{id}}",
+            "headers": {
+              "accept": "application/json"
+            }
           }
-        }
-      ]
+        ]
+      },
+      "statusUpdate": {
+        "auth": "archivemanager"
+      }
     },
-    "statusUpdate": {
-      "auth": "archivemanager"
+    {
+      "jobType": "public",
+      "create": {
+        "auth": "#all"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
     }
-  },
-  {
-    "jobType": "public",
-    "configVersion": "v1.0 2024-03-01 6f3f31",
-    "create": {
-      "auth": "#all"
-    },
-    "statusUpdate": {
-      "auth": "#all"
-    }
-  }
-]
+  ]
+}
