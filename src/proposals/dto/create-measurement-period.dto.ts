@@ -4,6 +4,15 @@ import { IsDateString, IsOptional, IsString } from "class-validator";
 export class CreateMeasurementPeriodDto {
   @ApiProperty({
     type: String,
+    description:
+      "Unique identifier (relative to the proposal) of a MeasurementPeriod",
+  })
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @ApiProperty({
+    type: String,
     required: true,
     description:
       "Instrument or beamline identifier where measurement was pursued, e.g. /PSI/SLS/TOMCAT",

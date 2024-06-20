@@ -2,11 +2,26 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { QueryableClass } from "src/common/schemas/queryable.schema";
+import { v4 as uuidv4 } from "uuid";
 
 export type MeasurementPeriodDocument = MeasurementPeriodClass & Document;
 
 @Schema()
 export class MeasurementPeriodClass extends QueryableClass {
+  @ApiProperty({
+    type: String,
+    default: () => uuidv4(),
+    required: true,
+    description:
+      "Unique identifier (relative to the proposal) of a MeasurementPeriod",
+  })
+  @Prop({
+    type: String,
+    required: true,
+    default: () => uuidv4(),
+  })
+  id: string;
+
   @ApiProperty({
     type: String,
     required: true,
