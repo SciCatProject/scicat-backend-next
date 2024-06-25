@@ -16,6 +16,7 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { JobsService } from "./jobs.service";
 import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
@@ -347,6 +348,23 @@ export class JobsController {
     return datasetIds;
   };
 
+
+  /**
+   * Create instance of JobClass to check permissions
+   */
+  async generateJobInstanceForPermissions(
+    job: JobClass,
+  ): Promise<JobClass> {
+    const jobInstance = new JobClass();
+    jobInstance._id = job._id;
+    jobInstance.id = job.id;
+    jobInstance.configuration = job.configuration;
+    jobInstance.ownerGroup = job.ownerGroup;
+    jobInstance.ownerUser = job.ownerUser;
+
+    return jobInstance;
+  }
+
   /**
    * Checking if user is allowed to create job according to auth field of job configuration
    */
@@ -570,27 +588,6 @@ export class JobsController {
   }
 
   /**
-   * Checking if user is allowed to create job according to auth field of job configuration
-   */
-  async instanceAuthorizationJobStatusUpdate(
-    user: JWTUser,
-    jobInstance: JobClass,
-  ): Promise<JobClass> {
-    // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.createForUser(user);
-    // check if he/she can create this dataset
-    const canCreate =
-      ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
-      ability.can(AuthOp.JobStatusUpdateOwner, jobInstance) ||
-      ability.can(AuthOp.JobStatusUpdateConfiguration, jobInstance);
-    if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
-    }
-
-    return jobInstance;
-  }
-
-  /**
    * Update job status
    */
   @UseGuards(PoliciesGuard)
@@ -629,11 +626,18 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // Check job authorization
-    await this.instanceAuthorizationJobStatusUpdate(
-      request.user as JWTUser,
-      currentJob,
-    );
+    const currentJobInstance = await this.generateJobInstanceForPermissions(currentJob);
+
+    const ability = this.caslAbilityFactory.createForUser(request.user as JWTUser);
+    // check if he/she can create this dataset
+    const canCreate =
+      ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
+      ability.can(AuthOp.JobStatusUpdateOwner, currentJobInstance) ||
+      ability.can(AuthOp.JobStatusUpdateConfiguration, currentJobInstance);
+    if (!canCreate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
 
@@ -667,7 +671,25 @@ export class JobsController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<JobClass | null> {
-    return this.jobsService.findOne({ _id: id });
+    const currentJob = await this.jobsService.findOne({ _id: id });
+    if (currentJob === null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid job id.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const currentJobInstance = await this.generateJobInstanceForPermissions(currentJob);
+    const ability = this.caslAbilityFactory.createForUser(request.user as JWTUser);
+    const canCreate =
+      ability.can(AuthOp.JobReadAny, JobClass) ||
+      ability.can(AuthOp.JobReadAccess, currentJobInstance);
+    if (!canCreate) {
+      throw new ForbiddenException("Unauthorized to update this dataset");
+    }
+    return currentJob
   }
 
   /**
@@ -697,7 +719,7 @@ export class JobsController {
   async findAll(
     @Req() request: Request,
     @Query("filter") filter?: string,
-  ): Promise<JobClass[] | null> {
+  ): Promise<JobClass[]> {
     try {
       filter = filter ?? "{}";
       JSON.parse(filter as string);
@@ -710,7 +732,22 @@ export class JobsController {
       if (!this.isFilterValid(Object.keys(parsedFilter))) {
         throw { message: "Invalid filter syntax." };
       }
-      return this.jobsService.findAll(parsedFilter);
+      // for each job run a casl JobReadOwner on a jobInstance
+      const datasetsFound = await this.jobsService.findAll(parsedFilter);
+      let datasetsAccessible: JobClass [] = [];
+      const ability = this.caslAbilityFactory.createForUser(request.user as JWTUser);
+      
+      for (const i in datasetsFound) {
+        // check if he/she can create this dataset
+        const jobInstance = await this.generateJobInstanceForPermissions(datasetsFound[i]);
+        const canCreate =
+          ability.can(AuthOp.JobReadAny, JobClass) ||
+          ability.can(AuthOp.JobReadAccess, jobInstance);
+          if (canCreate) {
+            datasetsAccessible.push(datasetsFound[i])
+          }
+      }
+      return datasetsAccessible;
     }
     catch (e) {
       throw new HttpException(
@@ -727,9 +764,7 @@ export class JobsController {
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) => ability.can(AuthOp.Delete, JobClass), // TBD
-  )
+  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.JobDelete, JobClass)&& ability.can(AuthOp.JobDeleteAny, JobClass) )
   @Delete(":id")
   @ApiOperation({
     summary: "It deletes the requested job.",
@@ -744,6 +779,7 @@ export class JobsController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
+    Logger.log("Deleting job!");
     return this.jobsService.remove({ _id: id });
   }
 }
