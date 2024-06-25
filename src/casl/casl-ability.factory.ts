@@ -818,6 +818,10 @@ export class CaslAbilityFactory {
         ["configuration.create.auth" as string]: CreateJobAuth.DatasetPublic,
         datasetsValidation: true,
       });
+      can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
+        ["configuration.statusUpdate.auth" as string]: StatusUpdateJobAuth.All,
+        ownerGroup: undefined
+      });
     } else {
       /**
        * authenticated users
@@ -834,12 +838,26 @@ export class CaslAbilityFactory {
         can(AuthOp.JobRead, JobClass);
         can(AuthOp.JobCreate, JobClass);
         can(AuthOp.JobStatusUpdate, JobClass);
+        cannot(AuthOp.JobDelete, JobClass);
 
         // -------------------------------------
         // data instance authorization
         can(AuthOp.JobReadAny, JobClass);
         can(AuthOp.JobCreateAny, JobClass);
         can(AuthOp.JobStatusUpdateAny, JobClass);
+      } else if (
+        user.currentGroups.some((g) => configuration().deleteJobGroups.includes(g))
+      ){
+        /**
+         * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
+         */
+        // -------------------------------------
+        // endpoint authorization
+        can(AuthOp.JobDelete, JobClass);
+
+        // -------------------------------------
+        // data instance authorization
+        can(AuthOp.JobDeleteAny, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
@@ -918,11 +936,11 @@ export class CaslAbilityFactory {
           });
         }
         const jobUpdateEndPointAuthorizationValues = [
-          ...Object.values(UpdateJobAuth),
+          ...Object.values(StatusUpdateJobAuth),
           ...jobUserAuthorizationValues,
         ];
         const jobUpdateInstanceAuthorizationValues = [
-          ...Object.values(UpdateJobAuth).filter(
+          ...Object.values(StatusUpdateJobAuth).filter(
             (v) => !String(v).includes("#job"),
           ),
           ...jobUserAuthorizationValues,
@@ -939,9 +957,8 @@ export class CaslAbilityFactory {
 
           // -------------------------------------
           // data instance authorization
-
           can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.update.auth" as string]: {
+            ["configuration.statusUpdate.auth" as string]: {
               $in: jobUpdateInstanceAuthorizationValues,
             },
           });
@@ -952,22 +969,12 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
           });
         } else {
-          const jobUpdateEndPointAuthorizationValues = [
-            ...Object.values(StatusUpdateJobAuth),
-            ...jobUserAuthorizationValues,
-          ];
-          const jobUpdateInstanceAuthorizationValues = [
-            ...Object.values(StatusUpdateJobAuth).filter(
-              (v) => ~String(v).includes("#job"),
-            ),
-            ...jobUserAuthorizationValues,
-          ];
 
           // -------------------------------------
           // endpoint authorization
           if (
             configuration().jobConfiguration.some(
-             (j) => j.statusUpdate.auth && jobUpdateEndPointAuthorizationValues.includes(j.update.auth as string),
+             (j) => j.statusUpdate.auth && jobUpdateEndPointAuthorizationValues.includes(j.statusUpdate.auth as string),
             )
           ) {
             can(AuthOp.JobStatusUpdate, JobClass);
@@ -989,6 +996,7 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
           });
         }
+        cannot(AuthOp.JobDelete, JobClass);
       }
     }
 
