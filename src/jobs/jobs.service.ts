@@ -29,23 +29,20 @@ export class JobsService {
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
+  
+  getUsername():string {
+    if (this.request.user as JWTUser){
+      return (this.request.user as JWTUser).username;
+    }else{
+      return "anonymous";
+    }
+  }
 
   async create(
     createJobDto: CreateJobDto,
   ): Promise<JobDocument> {
-    let username;
-    if (this.request.user as JWTUser){
-      username = (this.request.user as JWTUser).username;
-    }else{
-      const anonymousUser: JWTUser = {
-        _id: "",
-        username: "anonymous",
-        email: "",
-        currentGroups: []
-      };
-      username = anonymousUser.username;
-    }
-    //const username = (this.request.user as JWTUser).username;
+    
+    const username = this.getUsername();
     const createdJob = new this.jobModel(
       addStatusFields(
         addCreatedByFields(createJobDto, username),
@@ -95,30 +92,7 @@ export class JobsService {
   }
 
   async findOne(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
-    const jobFound = await this.jobModel.findOne(filter).exec();
-    if (jobFound){
-      const job = new JobClass();
-      job.createdBy = jobFound.createdBy;
-      job.updatedBy = jobFound.updatedBy;
-      job.createdAt = jobFound.createdAt;
-      job.updatedAt = jobFound.updatedAt;
-      job.ownerGroup = jobFound.ownerGroup;
-      job.accessGroups = jobFound.accessGroups;
-      job.id = jobFound.id;
-      job._id = jobFound._id;
-      job.ownerUser = jobFound.ownerUser;
-      job.type = jobFound.type;
-      job.statusCode = jobFound.statusCode;
-      job.statusMessage = jobFound.statusMessage;
-      job.configVersion = jobFound.configVersion;
-      job.messageSent = jobFound.messageSent;
-      job.jobParams = jobFound.jobParams;
-      job.datasetsValidation = jobFound.datasetsValidation;
-      job.contactEmail = jobFound.contactEmail;
-      job.configuration = jobFound.configuration;
-      return job
-    }
-    return jobFound
+    return this.jobModel.findOne(filter).exec(); 
   }
 
   async statusUpdate(
@@ -129,8 +103,8 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-    const username = (this.request.user as JWTUser).username;
-
+        
+    const username = this.getUsername();
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },
