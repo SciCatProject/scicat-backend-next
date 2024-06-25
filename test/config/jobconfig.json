@@ -1,4 +1,6 @@
-[
+{
+  "configVersion": "v1.0 2024-03-01 6f3f38",
+  "jobs": [
   {
     "jobType": "all_access",
     "configVersion": "v1.0 2024-03-01 6f3f38",
@@ -17,17 +19,17 @@
         }
       ]
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#all"
     }
-  },
-  {
+ },
+ {
     "jobType": "public_access",
     "configVersion": "v1.0 2024-03-01 6f3f31",
     "create": {
       "auth": "#datasetPublic"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#all"
     }
   },
@@ -37,7 +39,7 @@
     "create": {
       "auth": "#authenticated"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#all"
     }
   },
@@ -47,7 +49,7 @@
     "create": {
       "auth": "#datasetAccess"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#jobOwnerGroup"
     }
   },
@@ -57,7 +59,7 @@
     "create": {
       "auth": "#datasetOwner"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "#jobOwnerUser"
     }
   },
@@ -67,7 +69,7 @@
     "create": {
       "auth": "user5.1"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "user5.1"
     }
   },
@@ -77,8 +79,9 @@
     "create": {
       "auth": "@group5"
     },
-    "update": {
+    "statusUpdate": {
       "auth": "@group5"
     }
   }
-]
+  ]
+}
