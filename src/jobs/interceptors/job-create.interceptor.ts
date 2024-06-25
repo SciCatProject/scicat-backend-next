@@ -78,6 +78,28 @@ export class JobCreateInterceptor implements NestInterceptor {
         });
       }),
     );
-    return jc;
+
+    return this.mergeActionsConfigurationFields(jc as any);
+  }
+
+  /**
+   * Store only the job's configuration object in the database
+   * and not the action instances
+   */
+  mergeActionsConfigurationFields(jobConfig: any): JobConfig {
+    const { create, statusUpdate, ...rest } = jobConfig;
+    const newCreate = { ...create };
+    const newStatusUpdate = { ...statusUpdate };
+  
+    newCreate.actions = newCreate.configuration;
+    newStatusUpdate.actions = newStatusUpdate.configuration;
+    delete newCreate.configuration;
+    delete newStatusUpdate.configuration;
+  
+    return {
+      ...rest,
+      create: newCreate,
+      statusUpdate: newStatusUpdate,
+    };
   }
 }

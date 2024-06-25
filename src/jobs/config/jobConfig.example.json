@@ -19,7 +19,17 @@
         ]
       },
       "statusUpdate": {
-        "auth": "archivemanager"
+        "auth": "archivemanager",
+        "actions": [
+          {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "post": 5672,
+            "username": "guest",
+            "password": "guest",
+            "queue": "client.jobs.write"
+          }
+        ]
       }
     },
     {
