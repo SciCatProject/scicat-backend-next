@@ -139,7 +139,7 @@ const jobGroup5 = {
   type: "group_access"
 };
 
-describe.only("1100: Jobs: Test New Job Model", () => {
+describe("1100: Jobs: Test New Job Model", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -3807,7 +3807,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         });
   });
 
-  it("1910: should delete job 1 as Archive Manager", async () => {
+  it("1910: Delete job 1 as Archive Manager", async () => {
     return request(appUrl)
       .delete("/api/v3/jobs/" + encodedJobIdUser1)
       .set("Accept", "application/json")
@@ -3816,7 +3816,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1920: should delete job 1 as Admin, which should fail", async () => {
+  it("1920: Delete job 1 as Admin, which should fail", async () => {
     return request(appUrl)
       .delete("/api/v3/jobs/" + encodedJobIdUser1)
       .set("Accept", "application/json")
@@ -3825,7 +3825,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1930: should delete job 1 as CREATE_JOB_GROUPS user, which should fail", async () => {
+  it("1930: Delete job 1 as CREATE_JOB_GROUPS user, which should fail", async () => {
     return request(appUrl)
       .delete("/api/v3/jobs/" + encodedJobIdUser1)
       .set("Accept", "application/json")
@@ -3834,11 +3834,11 @@ describe.only("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1940: should delete job 1 as normal user, which should fail", async () => {
+  it("1940: Delete job 1 as normal user, which should fail", async () => {
     return request(appUrl)
       .delete("/api/v3/jobs/" + encodedJobIdUser1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.DeleteForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
