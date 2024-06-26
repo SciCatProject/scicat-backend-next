@@ -600,7 +600,7 @@ export class JobsController {
     );
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
-    // Perform the action that is specified in the create portion of the job configuration
+    // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.performJobStatusUpdateAction(updatedJob);
     }
