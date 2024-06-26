@@ -70,7 +70,10 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
           );
           return;
         }
-        channel.assertQueue(this.queueName);
+
+        channel.assertQueue(this.queueName, {
+          durable: true
+        });
 
         const msg = `StatusUpdate Job ${job.id}`;
         channel.sendToQueue(this.queueName, Buffer.from(msg));
@@ -78,7 +81,10 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
           "Published message: " + msg,
           "RabbitMQJobAction",
         );
-        connection.close();
+
+        channel.close(() => {
+          connection.close();
+        });
       });
     });
   }

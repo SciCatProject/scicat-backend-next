@@ -27,7 +27,7 @@
             "post": 5672,
             "username": "guest",
             "password": "guest",
-            "queue": "client.jobs.write"
+            "queue": "jobs.statusUpdate"
           }
         ]
       }
