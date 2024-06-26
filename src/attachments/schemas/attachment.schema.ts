@@ -43,7 +43,7 @@ export class Attachment extends OwnableClass {
   caption: string;
 
   @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Dataset", required: false })
+  @Prop({ type: String, ref: "Dataset", index: true, required: false })
   datasetId: string;
 
   @ApiProperty({ type: String, required: false })
