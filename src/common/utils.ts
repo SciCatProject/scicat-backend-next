@@ -13,6 +13,27 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
+export const convertArrayToSI = (
+  inputValue: number[],
+  inputUnit: string,
+): { valueSI: number[]; unitSI: string } => {
+  try {
+    const newUnit = unit(inputUnit).toSI().toJSON().unit;
+    if (inputValue && inputValue.length) {
+      const value = Array.from(
+        inputValue,
+        (iValue) => unit(iValue, inputUnit).to(newUnit).toJSON().value,
+      );
+      return { valueSI: value, unitSI: newUnit };
+    } else {
+      return { valueSI: inputValue, unitSI: newUnit };
+    }
+  } catch (error) {
+    console.error(error);
+    return { valueSI: inputValue, unitSI: inputUnit };
+  }
+};
+
 export const convertToSI = (
   inputValue: number,
   inputUnit: string,
@@ -49,8 +70,19 @@ export const appendSIUnitToPhysicalQuantity = <T extends object>(object: T) => {
         ] as unknown as number;
       }
     });
-
-    if (value !== undefined && unit && unit.length > 0) {
+    if (
+      value !== undefined &&
+      Array.isArray(value) &&
+      unit &&
+      unit.length > 0
+    ) {
+      const { valueSI, unitSI } = convertArrayToSI(value, unit);
+      updatedObject[key as keyof T] = {
+        ...instance,
+        valueSI,
+        unitSI,
+      };
+    } else if (value !== undefined && unit && unit.length > 0) {
       const { valueSI, unitSI } = convertToSI(value, unit);
       updatedObject[key as keyof T] = {
         ...instance,
