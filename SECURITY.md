@@ -16,4 +16,4 @@ Please include as much information as you can to help us better understand and r
 
 ## Disclosure
 
-We use GitHub [security advisories](https://github.com/SciCatProject/scitacean/security/advisories) to disclose fixed vulnerabilities.
+We use GitHub [security advisories](https://github.com/SciCatProject/scicat-backend-next/security/advisories) to disclose fixed vulnerabilities.
