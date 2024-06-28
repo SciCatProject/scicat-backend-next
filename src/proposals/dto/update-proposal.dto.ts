@@ -7,10 +7,12 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  Validate,
   ValidateNested,
 } from "class-validator";
 import { OwnableDto } from "../../common/dto/ownable.dto";
 import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
+import { UniqueMeasurementPeriodIdConstraint } from "./validators/unique-measurement-period-id";
 
 @ApiTags("proposals")
 export class UpdateProposalDto extends OwnableDto {
@@ -113,6 +115,7 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
+  @Validate(UniqueMeasurementPeriodIdConstraint)
   readonly MeasurementPeriodList?: CreateMeasurementPeriodDto[];
 
   @ApiProperty({
