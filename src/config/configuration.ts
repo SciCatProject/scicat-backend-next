@@ -7,6 +7,7 @@ import {
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
 import { URLAction } from "src/jobs/actions/urlaction";
+import { RabbitMQJobAction } from "src/jobs/actions/rabbitmqaction";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
@@ -237,9 +238,11 @@ export function registerDefaultActions() {
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
+  registerCreateAction(RabbitMQJobAction);
   // Status Update
   registerStatusUpdateAction(LogJobAction);
   registerStatusUpdateAction(EmailJobAction);
+  registerStatusUpdateAction(RabbitMQJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

@@ -24,6 +24,7 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 
+
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
@@ -31,7 +32,7 @@ export class JobConfig {
   jobType: string;
   configVersion: string;
   create: JobOperation<CreateJobDto>;
-  // read: JobReadAction[];
+  // read: JobOperation<ReadJobDto>;
   statusUpdate: JobOperation<StatusUpdateJobDto>;
 
   constructor(
@@ -54,30 +55,36 @@ export class JobConfig {
    * @returns
    */
   static parse(
-    data: Record<string, any>,
+    jobData: Record<string, any>,
     configVersion: string
   ): JobConfig {
-    const type = data[JobsConfigSchema.JobType];
+    const type = jobData[JobsConfigSchema.JobType];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
-      data[AuthOp.Create],
+      jobData[AuthOp.Create],
     );
-    const read = undefined;  // "read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
+    const read = undefined;
     const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
       statusUpdateActions,
-      data[AuthOp.StatusUpdate],
+      jobData[AuthOp.StatusUpdate],
     );
     return new JobConfig(type, configVersion, create, read, statusUpdate);
   }
 }
 
+
+/**
+ * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
+ */
 export class JobOperation<DtoType> {
   auth: JobsAuth | undefined;
   actions: JobAction<DtoType>[];
+  configuration: Object;
 
-  constructor(actions: JobAction<DtoType>[] = [], auth: JobsAuth | undefined) {
-    this.actions = actions;
+  constructor(auth: JobsAuth | undefined, actions: JobAction<DtoType>[] = [], configuration: Object) {
     this.auth = auth;
+    this.actions = actions;
+    this.configuration = configuration;
   }
 
   static parse<DtoType>(
@@ -94,9 +101,10 @@ export class JobOperation<DtoType> {
     const actions = actionsData.map((json) =>
       parseAction<DtoType>(actionList, json),
     );
-    return new JobOperation<DtoType>(actions, auth);
+    return new JobOperation<DtoType>(auth, actions, actionsData);
   }
 }
+
 
 /**
  * Given a JSON object configuring a JobConfigAction.
@@ -122,6 +130,7 @@ function parseAction<DtoType>(
   return new actionClass(data);
 }
 
+
 /**
  * Superclass for all responses to Job changes
  */
@@ -130,16 +139,20 @@ export interface JobAction<DtoType> {
    * Validate the DTO, throwing an HttpException for problems
    */
   validate: (dto: DtoType) => Promise<void>;
+
   /**
    * Respond to the action
    */
   performJob: (job: JobClass) => Promise<void>;
+
   /**
    * Return the actionType for this action. This should match the class's
    * static actionType (used for constructing the class from the configuration file)
    */
   getActionType(): string;
 }
+
+
 /**
  * Describes the constructor and static members for JobAction implementations
  */
@@ -155,21 +168,30 @@ export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
 export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
 
-/// Action registration
 
-// type JobActionCtor<T> = (json: Record<string,any>) => JobAction<T>;
-
+/**
+ * Action registration
+ */
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
-// const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
+// const readActions: Record<string, JobActionClass<ReadJobDto>> = {};
 const statusUpdateActions: Record<string, JobActionClass<StatusUpdateJobDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
+export function registerCreateAction(
+  action: JobActionClass<CreateJobDto>
+) {
   createActions[action.actionType] = action;
 }
+
+export function registerStatusUpdateAction(
+  action: JobActionClass<StatusUpdateJobDto>,
+) {
+  statusUpdateActions[action.actionType] = action;
+}
+
 /**
  * List of action types with a registered action
  * @returns
@@ -178,26 +200,16 @@ export function getRegisteredCreateActions(): string[] {
   return Object.keys(createActions);
 }
 
-/**
- * Registers an action to handle jobs of a particular type
- * @param action
- */
-export function registerStatusUpdateAction(
-  action: JobActionClass<StatusUpdateJobDto>,
-) {
-  statusUpdateActions[action.actionType] = action;
-}
-/**
- * List of action types with a registered action
- * @returns
- */
 export function getRegisteredStatusUpdateActions(): string[] {
   return Object.keys(statusUpdateActions);
 }
 
-/// Parsing
 
+/**
+ * Parsing
+ */
 let jobConfig: JobConfig[] | null = null; // singleton
+
 /**
  * Load jobconfig.json file.
  * Expects one or more JobConfig configurations (see JobConfig.parse)

@@ -15,11 +15,29 @@
             "headers": {
               "accept": "application/json"
             }
+          },
+          {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "queue": "jobqueue"
           }
         ]
       },
       "statusUpdate": {
-        "auth": "archivemanager"
+        "auth": "archivemanager",
+        "actions": [
+          {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "queue": "jobqueue"
+          }
+        ]
       }
     },
     {
