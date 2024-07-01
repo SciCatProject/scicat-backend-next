@@ -923,6 +923,7 @@ export class CaslAbilityFactory {
             ownerUser: user.username,
           });
           
+          
           can(AuthOp.JobCreateConfiguration, JobClass, {
             ["configuration.create.auth" as string]: {
               $in: jobCreateInstanceAuthorizationValues,

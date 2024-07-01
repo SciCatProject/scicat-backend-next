@@ -3,7 +3,7 @@
 
 var chaiHttp = require("chai-http");
 const { MongoClient } = require("mongodb");
-const uri = "mongodb://localhost:27017/scicat";
+const uri = process.env.MONGODB_URI;
 
 const client = new MongoClient(uri);
 
@@ -16,4 +16,4 @@ loadChai();
 
 global.appUrl = "http://localhost:3000";
 global.request = require("supertest");
-global.db = client.db("scicat");
+global.db = client.db(uri.split("/", ).pop());

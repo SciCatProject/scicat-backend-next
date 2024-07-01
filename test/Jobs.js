@@ -221,6 +221,11 @@ describe("1100: Jobs: Test New Job Model", () => {
     );
   });
 
+  after(() => { //because we're not deleting all the jobs and don't delete datasets
+    db.collection("Dataset").deleteMany({});
+    db.collection("Job").deleteMany({});
+  });
+
   it("0010: adds dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -520,7 +525,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0130: AAdd a new job as a user from CREATE_JOB_GROUPS for another user in '#all' configuration, which should fail as bad request", async () => {
+  it("0130: Add a new job as a user from CREATE_JOB_GROUPS for another user in '#all' configuration, which should fail as bad request", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "user5.1",
