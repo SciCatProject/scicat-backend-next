@@ -16,7 +16,6 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
-import { plainToClass, plainToInstance } from 'class-transformer';
 import { JobsService } from "./jobs.service";
 import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
@@ -48,9 +47,6 @@ import {
   filterExampleSimplified,
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
-import { ConnectableObservable } from "rxjs";
-import { integer } from "@elastic/elasticsearch/lib/api/types";
-import { boolean } from "mathjs";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -339,7 +335,7 @@ export class JobsController {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message: "At least one dataset in the ids list doesn't.",
+            message: "At least one dataset in the ids list doesn't exist.",
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -630,11 +626,11 @@ export class JobsController {
 
     const ability = this.caslAbilityFactory.createForUser(request.user as JWTUser);
     // check if he/she can create this dataset
-    const canCreate =
+    const canUpdateStatus =
       ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
       ability.can(AuthOp.JobStatusUpdateOwner, currentJobInstance) ||
       ability.can(AuthOp.JobStatusUpdateConfiguration, currentJobInstance);
-    if (!canCreate) {
+    if (!canUpdateStatus) {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
