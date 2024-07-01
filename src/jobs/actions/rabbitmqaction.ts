@@ -5,7 +5,7 @@ import { JobClass } from "../schemas/job.schema";
 
 
 /**
- * Publish a message following a job status update
+ * Publish a message in a RabbitMQ queue
  */
 export class RabbitMQJobAction<T> implements JobAction<T> {
   public static readonly actionType = "rabbitmq";
@@ -38,11 +38,12 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    if ([undefined, ""].some(el => Object.values(this.connectionDetails).includes(el))) {
-      throw new NotFoundException("Configuration is missing connection details.");
+    const connectionDetailsMissing = [undefined, ""].some(el => Object.values(this.connectionDetails).includes(el));
+    if (connectionDetailsMissing) {
+      throw new NotFoundException("RabbitMQ configuration is missing connection details.");
     }
     if (this.queueName == undefined || this.queueName == "") {
-      throw new NotFoundException("Queue name is not defined.");
+      throw new NotFoundException("RabbitMQ queue name is not defined.");
     }
   }
 
@@ -54,8 +55,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
 
     amqp.connect(this.connectionDetails, (connectionError: Error, connection: Connection) => {
       if (connectionError) {
-        console.log(connectionError);
-        Logger.log(
+        Logger.error(
           "Connection error in RabbitMQJobAction: " + JSON.stringify(connectionError.message),
           "RabbitMQJobAction",
         );
@@ -64,7 +64,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
 
       connection.createChannel((channelError: Error, channel) => {
         if (channelError) {
-          Logger.log(
+          Logger.error(
             "Channel error in RabbitMQJobAction: " + JSON.stringify(channelError.message),
             "RabbitMQJobAction",
           );
@@ -75,12 +75,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
           durable: true
         });
 
-        const msg = `StatusUpdate Job ${job.id}`;
-        channel.sendToQueue(this.queueName, Buffer.from(msg));
-        Logger.log(
-          "Published message: " + msg,
-          "RabbitMQJobAction",
-        );
+        channel.sendToQueue(this.queueName, Buffer.from(JSON.stringify(job)));
 
         channel.close(() => {
           connection.close();

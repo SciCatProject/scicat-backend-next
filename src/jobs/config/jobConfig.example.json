@@ -15,6 +15,14 @@
             "headers": {
               "accept": "application/json"
             }
+          },
+          {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "queue": "jobqueue"
           }
         ]
       },
@@ -24,10 +32,10 @@
           {
             "actionType": "rabbitmq",
             "hostname": "rabbitmq",
-            "post": 5672,
+            "port": 5672,
             "username": "guest",
             "password": "guest",
-            "queue": "jobs.statusUpdate"
+            "queue": "jobqueue"
           }
         ]
       }

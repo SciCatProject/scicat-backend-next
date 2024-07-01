@@ -79,7 +79,7 @@ export class JobCreateInterceptor implements NestInterceptor {
       }),
     );
 
-    return this.mergeActionsConfigurationFields(jc as any);
+    return this.mergeActionsConfigurationFields(jc as JobConfig);
   }
 
   /**

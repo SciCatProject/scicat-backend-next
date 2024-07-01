@@ -238,6 +238,7 @@ export function registerDefaultActions() {
   registerCreateAction(LogJobAction);
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
+  registerCreateAction(RabbitMQJobAction);
   // Status Update
   registerStatusUpdateAction(LogJobAction);
   registerStatusUpdateAction(EmailJobAction);
