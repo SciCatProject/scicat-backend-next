@@ -3,7 +3,6 @@
   "jobs": [
   {
     "jobType": "all_access",
-    "configVersion": "v1.0 2024-03-01 6f3f38",
     "create": {
       "auth": "#all",
       "actions": [
@@ -18,7 +17,6 @@
  },
  {
     "jobType": "public_access",
-    "configVersion": "v1.0 2024-03-01 6f3f31",
     "create": {
       "auth": "#datasetPublic"
     },
@@ -28,7 +26,6 @@
   },
   {
     "jobType": "authenticated_access",
-    "configVersion": "v1.0 2024-03-01 6f3f32",
     "create": {
       "auth": "#authenticated"
     },
@@ -38,7 +35,6 @@
   },
   {
     "jobType": "dataset_access",
-    "configVersion": "v1.0 2024-03-01 6f3f33",
     "create": {
       "auth": "#datasetAccess"
     },
@@ -48,7 +44,6 @@
   },
   {
     "jobType": "owner_access",
-    "configVersion": "v1.0 2024-03-01 6f3f34",
     "create": {
       "auth": "#datasetOwner"
     },
@@ -58,7 +53,6 @@
   },
   {
     "jobType": "user_access",
-    "configVersion": "v1.0 2024-03-01 6f3f35",
     "create": {
       "auth": "user5.1"
     },
@@ -68,7 +62,6 @@
   },
   {
     "jobType": "group_access",
-    "configVersion": "v1.0 2024-03-01 6f3f36",
     "create": {
       "auth": "@group5"
     },
