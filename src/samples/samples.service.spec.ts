@@ -91,9 +91,23 @@ describe("SamplesService", () => {
       $text: {
         $search: "test",
       },
-      "sampleCharacteristics.test.value": {
-        $eq: "test",
-      },
+      $or: [
+        {
+          "sampleCharacteristics.test": {
+            $eq: "test",
+          },
+        },
+        {
+          "sampleCharacteristics.test.v": {
+            $eq: "test",
+          },
+        },
+        {
+          "sampleCharacteristics.test.value": {
+            $eq: "test",
+          },
+        },
+      ],
     };
 
     await service.fullquery(filter);
