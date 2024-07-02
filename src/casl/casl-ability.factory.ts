@@ -1,9 +1,10 @@
 import {
-  Ability,
   AbilityBuilder,
-  AbilityClass,
   ExtractSubjectType,
   InferSubjects,
+  MongoAbility,
+  MongoQuery,
+  createMongoAbility,
 } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
@@ -46,15 +47,17 @@ type Subjects =
       | typeof ElasticSearchActions
     >
   | "all";
+type PossibleAbilities = [Action, Subjects];
+type Conditions = MongoQuery;
 
-export type AppAbility = Ability<[Action, Subjects]>;
+export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
   createForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Action, Subjects]>
-    >(Ability as AbilityClass<AppAbility>);
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
 
     // // admin groups
     // const stringAdminGroups = process.env.ADMIN_GROUPS || "";

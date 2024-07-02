@@ -33,7 +33,6 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
@@ -517,7 +516,7 @@ export class ProposalsController {
   }
 
   // GET /proposals/:id
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )

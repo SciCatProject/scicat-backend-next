@@ -17,7 +17,7 @@ import { UserIdentitiesService } from "./user-identities.service";
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
-import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
+import { PoliciesGuard } from "../casl/guards/policies.guard";
 
 @ApiBearerAuth()
 @ApiTags("user identities")
@@ -28,7 +28,7 @@ export class UserIdentitiesController {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies(
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
@@ -87,7 +87,7 @@ export class UserIdentitiesController {
     return identity;
   }
 
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @Get("/isValidEmail")
   async isValidEmail(
     // NOTE: This now supports both headers filter and query filter.
