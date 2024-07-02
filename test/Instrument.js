@@ -17,6 +17,9 @@ let accessTokenAdminIngestor = null,
 const newName = "ESS3-1";
 
 describe("0900: Instrument: instrument management, creation, update, deletion and search", () => {
+  before(() => {
+    db.collection("Instrument").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

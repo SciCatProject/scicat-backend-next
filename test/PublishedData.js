@@ -34,6 +34,10 @@ const nonpublictestdataset = {
 };
 
 describe("1600: PublishedData: Test of access to published data", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("PublishedData").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

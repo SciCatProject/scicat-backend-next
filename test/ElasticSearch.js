@@ -44,6 +44,9 @@ const scientificMetadata = ({
 (isESenabled ? describe : describe.skip)(
   "ElastiSearch: CRUD, filtering and search test case",
   () => {
+    before(() => {
+      db.collection("Dataset").deleteMany({});
+    });
     beforeEach((done) => {
       utils.getToken(
         appUrl,

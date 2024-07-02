@@ -12,6 +12,9 @@ let accessTokenProposalIngestor = null,
   attachmentId = null;
 
 describe("1500: Proposal: Simple Proposal", () => {
+  before(() => {
+    db.collection("Proposal").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

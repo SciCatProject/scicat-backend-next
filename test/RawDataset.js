@@ -14,6 +14,10 @@ var accessTokenArchiveManager = null;
 var proposalId = null;
 
 describe("1900: RawDataset: Raw Datasets", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("Proposals").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

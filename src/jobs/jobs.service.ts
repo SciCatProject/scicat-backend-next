@@ -29,11 +29,20 @@ export class JobsService {
     @InjectModel(JobClass.name) private jobModel: Model<JobDocument>,
     @Inject(REQUEST) private request: Request,
   ) {}
+  
+  getUsername():string {
+    if (this.request.user as JWTUser){
+      return (this.request.user as JWTUser).username;
+    }else{
+      return "anonymous";
+    }
+  }
 
   async create(
     createJobDto: CreateJobDto,
   ): Promise<JobDocument> {
-    const username = (this.request.user as JWTUser).username;
+    
+    const username = this.getUsername();
     const createdJob = new this.jobModel(
       addStatusFields(
         addCreatedByFields(createJobDto, username),
@@ -83,7 +92,7 @@ export class JobsService {
   }
 
   async findOne(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
-    return this.jobModel.findOne(filter).exec();
+    return this.jobModel.findOne(filter).exec(); 
   }
 
   async statusUpdate(
@@ -94,8 +103,8 @@ export class JobsService {
     if (!existingJob) {
       throw new NotFoundException(`Job #${id} not found`);
     }
-    const username = (this.request.user as JWTUser).username;
-
+        
+    const username = this.getUsername();
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },

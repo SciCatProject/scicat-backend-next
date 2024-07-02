@@ -30,6 +30,7 @@ const configuration = () => {
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
   const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
   const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
@@ -108,6 +109,7 @@ const configuration = () => {
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
     statusUpdateJobGroups: statusUpdateJobGroups,
+    deleteJobGroups:deleteJobGroups, 
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),

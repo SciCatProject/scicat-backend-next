@@ -1,53 +1,73 @@
-[
+{
+  "configVersion": "v1.0 2024-03-01 6f3f38",
+  "jobs": [
   {
-    "jobType": "archive",
+    "jobType": "all_access",
     "create": {
-      "actions": {
-        "actionType": "log"
-      }
-    },
-    "update": {
       "auth": "#all",
-      "actions": {
-        "actionType": "log"
-      }
-    },
-    "post": {
       "actions": [
         {
-          "actionType": "email",
-          "mailer": {
-            "host": "smtp.myinstitution.ext",
-            "port": 465,
-            "secure": true,
-            "auth": {
-              "user": "scicatuser",
-              "pass": ""
-            }
-          },
-          "to": "{{ join job.recipients ' '}}",
-          "from": "scicat@example.com",
-          "subject": "Archive job {{job.pid}} has completed.",
-          "body": "Dear {{job.owner}},\n\nArchive job {{job.pid}} has completed. Results: {{job.status}}\n"
-        },
-        {
-          "actionType": "filter",
-          "filter": {
-            "status": "SUCCESSFUL"
-          },
-          "actions": [
-            {
-              "actionType": "url",
-              "url": "myscicat.myinstitution.ext/datablock/archived",
-              "verb": "post",
-              "headers": {
-                "AuthBearer": "{{secrets.jwt_token}}"
-              },
-              "body": "{ structure to create archive files }"
-            }
-          ]
+          "actionType": "log"
         }
       ]
+    },
+    "statusUpdate": {
+      "auth": "#all"
+    }
+ },
+ {
+    "jobType": "public_access",
+    "create": {
+      "auth": "#datasetPublic"
+    },
+    "statusUpdate": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "authenticated_access",
+    "create": {
+      "auth": "#authenticated"
+    },
+    "statusUpdate": {
+      "auth": "#all"
+    }
+  },
+  {
+    "jobType": "dataset_access",
+    "create": {
+      "auth": "#datasetAccess"
+    },
+    "statusUpdate": {
+      "auth": "#jobOwnerGroup"
+    }
+  },
+  {
+    "jobType": "owner_access",
+    "create": {
+      "auth": "#datasetOwner"
+    },
+    "statusUpdate": {
+      "auth": "#jobOwnerUser"
+    }
+  },
+  {
+    "jobType": "user_access",
+    "create": {
+      "auth": "user5.1"
+    },
+    "statusUpdate": {
+      "auth": "user5.1"
+    }
+  },
+  {
+    "jobType": "group_access",
+    "create": {
+      "auth": "@group5"
+    },
+    "statusUpdate": {
+      "auth": "@group5"
     }
   }
-]
+  ]
+}
