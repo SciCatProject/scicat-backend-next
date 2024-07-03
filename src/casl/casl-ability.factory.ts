@@ -916,7 +916,7 @@ export class CaslAbilityFactory {
             ["configuration.create.auth" as string]: {
               $in: jobCreateDatasetAuthorizationValues,
             },
-            datasetValidation: true,
+            datasetsValidation: true,
           });
         }
 
