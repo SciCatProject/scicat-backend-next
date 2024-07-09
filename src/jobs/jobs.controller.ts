@@ -362,7 +362,6 @@ export class JobsController {
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
     const jobConfiguration = this.getJobMatchingConfiguration(jobCreateDto);
-    console.log(jobConfiguration);
 
     jobInstance._id = "";
     jobInstance.ownerUser = "";
