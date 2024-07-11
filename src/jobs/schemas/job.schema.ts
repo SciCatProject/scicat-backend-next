@@ -82,19 +82,6 @@ export class JobClass extends OwnableClass {
   })
   statusMessage: string;
 
-  // messages
-  @ApiProperty({
-    type: Object,
-    required: false,
-    description:
-      "This is the equivalent object of the message sent to external service.",
-  })
-  @Prop({
-    type: Object,
-    required: false,
-  })
-  messageSent: Record<string, unknown>;
-
   // parameters (instance)
   @ApiProperty({
     type: Object,
@@ -144,9 +131,6 @@ export class JobClass extends OwnableClass {
     required: true,
   })
   configuration: JobConfig;
-
-  @Prop({ type: Boolean, required: false, default: false })
-  datasetValidation?: boolean;
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);
 

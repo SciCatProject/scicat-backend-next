@@ -362,6 +362,35 @@ export class JobsController {
   }
 
   /**
+   * Check job type matching configuration
+   */
+  getJobMatchingConfiguration = (createJobDto: CreateJobDtoWithConfig) => {
+    const jobConfigs = configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter(
+      (j) => j.jobType == createJobDto.type,
+    );
+
+    if (matchingConfig.length != 1) {
+      if (matchingConfig.length > 1) {
+        Logger.error(
+          "More than one job configurations matching type " + createJobDto.type,
+        );
+      } else {
+        Logger.error("No job configuration matching type " + createJobDto.type);
+      }
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid job type: " + createJobDto.type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return matchingConfig[0];
+  };
+
+  /**
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobCreate(
@@ -371,7 +400,8 @@ export class JobsController {
     // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
-    const jobConfiguration = jobCreateDto.configuration;
+    const jobConfiguration = this.getJobMatchingConfiguration(jobCreateDto);
+
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
@@ -521,7 +551,8 @@ export class JobsController {
    * Send off to external service, update job in database if needed
    */
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
-    for (const action of jobInstance.configuration.create.actions) {
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+    for (const action of jobConfig.create.actions) {
       await action.performJob(jobInstance).catch((err: Error) => {
         if (err instanceof HttpException) {
           throw err;
