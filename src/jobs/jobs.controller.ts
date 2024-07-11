@@ -324,6 +324,35 @@ export class JobsController {
   };
 
   /**
+   * Check job type matching configuration
+   */
+  getJobMatchingConfiguration = (createJobDto: CreateJobDtoWithConfig) => {
+    const jobConfigs = configuration().jobConfiguration;
+    const matchingConfig = jobConfigs.filter(
+      (j) => j.jobType == createJobDto.type,
+    );
+
+    if (matchingConfig.length != 1) {
+      if (matchingConfig.length > 1) {
+        Logger.error(
+          "More than one job configurations matching type " + createJobDto.type,
+        );
+      } else {
+        Logger.error("No job configuration matching type " + createJobDto.type);
+      }
+      // return error that job type does not exists
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Invalid job type: " + createJobDto.type,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return matchingConfig[0];
+  };
+
+  /**
    * Checking if user is allowed to create job according to auth field of job configuration
    */
   async instanceAuthorizationJobCreate(
@@ -333,7 +362,8 @@ export class JobsController {
     // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
-    const jobConfiguration = jobCreateDto.configuration;
+    const jobConfiguration = this.getJobMatchingConfiguration(jobCreateDto);
+
     jobInstance._id = "";
     jobInstance.ownerUser = "";
     jobInstance.ownerGroup = "";
@@ -466,22 +496,16 @@ export class JobsController {
   }
 
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfigs = configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter(
-      (j) => j.jobType == jobInstance.type,
-    );
-    for (const action of matchingConfig[0].create.actions) {
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+    for (const action of jobConfig.create.actions) {
       await this.performJobAction(jobInstance, action);
     }
     return;
   }
 
   async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfigs = configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter(
-      (j) => j.jobType == jobInstance.type,
-    );
-    for (const action of matchingConfig[0].statusUpdate.actions) {
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+    for (const action of jobConfig.statusUpdate.actions) {
       await this.performJobAction(jobInstance, action);
     }
     return;
