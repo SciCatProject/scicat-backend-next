@@ -354,7 +354,8 @@ export class JobsController {
     const jobInstance = new JobClass();
     jobInstance._id = job._id;
     jobInstance.id = job.id;
-    jobInstance.configuration = job.configuration;
+    jobInstance.type = job.type;
+    //jobInstance.configuration = configuration().statusUpdateJobGroups;
     jobInstance.ownerGroup = job.ownerGroup;
     jobInstance.ownerUser = job.ownerUser;
 
@@ -364,25 +365,25 @@ export class JobsController {
   /**
    * Check job type matching configuration
    */
-  getJobMatchingConfiguration = (createJobDto: CreateJobDtoWithConfig) => {
+  getJobMatchingConfiguration = (createJobDtoType: string) => {
     const jobConfigs = configuration().jobConfiguration;
     const matchingConfig = jobConfigs.filter(
-      (j) => j.jobType == createJobDto.type,
+      (j) => j.jobType == createJobDtoType,
     );
 
     if (matchingConfig.length != 1) {
       if (matchingConfig.length > 1) {
         Logger.error(
-          "More than one job configurations matching type " + createJobDto.type,
+          "More than one job configurations matching type " + createJobDtoType,
         );
       } else {
-        Logger.error("No job configuration matching type " + createJobDto.type);
+        Logger.error("No job configuration matching type " + createJobDtoType);
       }
       // return error that job type does not exists
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: "Invalid job type: " + createJobDto.type,
+          message: "Invalid job type: " + createJobDtoType,
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -400,7 +401,7 @@ export class JobsController {
     // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
-    const jobConfiguration = this.getJobMatchingConfiguration(jobCreateDto);
+    const jobConfiguration = this.getJobMatchingConfiguration(jobCreateDto.type);
 
     jobInstance._id = "";
     jobInstance.accessGroups = [];
@@ -408,7 +409,7 @@ export class JobsController {
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configuration = jobConfiguration;
+    jobInstance.configuration = jobConfiguration; 
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
@@ -551,7 +552,7 @@ export class JobsController {
    * Send off to external service, update job in database if needed
    */
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance.type);
     for (const action of jobConfig.create.actions) {
       await action.performJob(jobInstance).catch((err: Error) => {
         if (err instanceof HttpException) {
@@ -654,6 +655,7 @@ export class JobsController {
       );
     }
     const currentJobInstance = await this.generateJobInstanceForPermissions(currentJob);
+    currentJobInstance.configuration = this.getJobMatchingConfiguration(currentJobInstance.type)
 
     const ability = this.caslAbilityFactory.createForUser(request.user as JWTUser);
     // check if he/she can create this dataset
