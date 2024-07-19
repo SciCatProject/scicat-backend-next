@@ -476,7 +476,7 @@ export class JobsController {
   }
 
   /**
-   * Send off to external service, update job in database if needed
+   * Send off to external service
    */
   async performJobAction(jobInstance: JobClass, action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>): Promise<void> {
     await action.performJob(jobInstance).catch((err: Error) => {
@@ -505,6 +505,28 @@ export class JobsController {
 
   async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+
+    await Promise.all(
+      jobConfig.statusUpdate.actions.map((action) => {
+        return action.validate(jobInstance).catch((err) => {
+          Logger.error(err);
+          if (err instanceof HttpException) {
+            throw err;
+          }
+
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+                jobInstance.type
+              } job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        });
+      }),
+    );
+
     for (const action of jobConfig.statusUpdate.actions) {
       await this.performJobAction(jobInstance, action);
     }

@@ -22,7 +22,9 @@
             "port": 5672,
             "username": "guest",
             "password": "guest",
-            "queue": "jobqueue"
+            "exchange": "jobs.write",
+            "queue": "client.jobs.write",
+            "key": "jobqueue"
           }
         ]
       },
@@ -35,7 +37,9 @@
             "port": 5672,
             "username": "guest",
             "password": "guest",
-            "queue": "jobqueue"
+            "exchange": "jobs.write",
+            "queue": "client.jobs.write",
+            "key": "jobqueue"
           }
         ]
       }

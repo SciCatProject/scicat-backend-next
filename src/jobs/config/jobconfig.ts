@@ -79,12 +79,10 @@ export class JobConfig {
 export class JobOperation<DtoType> {
   auth: JobsAuth | undefined;
   actions: JobAction<DtoType>[];
-  configuration: Object;
 
-  constructor(auth: JobsAuth | undefined, actions: JobAction<DtoType>[] = [], configuration: Object) {
-    this.auth = auth;
+  constructor(actions: JobAction<DtoType>[] = [], auth: JobsAuth | undefined) {
     this.actions = actions;
-    this.configuration = configuration;
+    this.auth = auth;
   }
 
   static parse<DtoType>(
@@ -101,7 +99,7 @@ export class JobOperation<DtoType> {
     const actions = actionsData.map((json) =>
       parseAction<DtoType>(actionList, json),
     );
-    return new JobOperation<DtoType>(auth, actions, actionsData);
+    return new JobOperation<DtoType>(actions, auth);
   }
 }
 

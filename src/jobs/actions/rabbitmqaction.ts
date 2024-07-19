@@ -9,8 +9,8 @@ import { JobClass } from "../schemas/job.schema";
  */
 export class RabbitMQJobAction<T> implements JobAction<T> {
   public static readonly actionType = "rabbitmq";
-  private connectionDetails;
-  private queueName;
+  private connection;
+  private binding;
 
   constructor(data: Record<string, any>) {
     Logger.log(
@@ -18,14 +18,18 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    this.connectionDetails = {
+    this.connection = {
       protocol: "amqp",
       hostname: data.hostname,
       port: data.port,
       username: data.username,
       password: data.password,
     };
-    this.queueName = data.queue;
+    this.binding = {
+      exchange: data.exchange,
+      queue: data.queue,
+      key: data.key
+    };
   }
 
   getActionType(): string {
@@ -38,12 +42,14 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    const connectionDetailsMissing = [undefined, ""].some(el => Object.values(this.connectionDetails).includes(el));
+    const connectionDetailsMissing = [undefined, ""].some(el => Object.values(this.connection).includes(el));
     if (connectionDetailsMissing) {
       throw new NotFoundException("RabbitMQ configuration is missing connection details.");
     }
-    if (this.queueName == undefined || this.queueName == "") {
-      throw new NotFoundException("RabbitMQ queue name is not defined.");
+
+    const bindingDetailsMissing = [undefined, ""].some(el => Object.values(this.binding).includes(el));
+    if (bindingDetailsMissing) {
+      throw new NotFoundException("RabbitMQ binding is missing exchange/queue/key details.");
     }
   }
 
@@ -53,7 +59,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    amqp.connect(this.connectionDetails, (connectionError: Error, connection: Connection) => {
+    amqp.connect(this.connection, (connectionError: Error, connection: Connection) => {
       if (connectionError) {
         Logger.error(
           "Connection error in RabbitMQJobAction: " + JSON.stringify(connectionError.message),
@@ -71,11 +77,10 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
           return;
         }
 
-        channel.assertQueue(this.queueName, {
-          durable: true
-        });
-
-        channel.sendToQueue(this.queueName, Buffer.from(JSON.stringify(job)));
+        channel.assertQueue(this.binding.queue, { durable: true });
+        channel.assertExchange(this.binding.exchange, "topic", { durable: true });
+        channel.bindQueue(this.binding.queue, this.binding.exchange, this.binding.key);
+        channel.sendToQueue(this.binding.queue, Buffer.from(JSON.stringify(job)));
 
         channel.close(() => {
           connection.close();
