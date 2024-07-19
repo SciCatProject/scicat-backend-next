@@ -62,6 +62,10 @@ const RawCorrect3 = {
       value: 6,
       unit: "",
     },
+    test_field_string: {
+      value: "test_string_value",
+      unit: "",
+    },
   },
   datasetName: "This is the third correct test raw dataset",
   description:
@@ -790,9 +794,9 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       mode: {},
       scientific: [
         {
-          lhs: "test_field_1",
+          lhs: "test_field_string",
           relation: "EQUAL_TO_STRING",
-          rhs: "6",
+          rhs: "test_string_value",
           unit: "",
         },
       ],
