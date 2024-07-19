@@ -108,7 +108,6 @@ export const mapScientificQuery = (
   const scientificFilterQueryOr: Record<string, unknown>[] = [];
 
   const keyToFieldMapping: Record<string, string> = {
-    scientificMetadata: "scientificMetadata",
     scientific: "scientificMetadata",
     characteristics: "sampleCharacteristics",
   };
@@ -180,6 +179,7 @@ export const mapScientificQuery = (
   } else if (scientificFilterQueryOr.length > 1) {
     scientificFilterQuery["$and"] = scientificFilterQueryOr;
   }
+
   return scientificFilterQuery;
 };
 

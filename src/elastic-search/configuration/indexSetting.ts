@@ -44,12 +44,24 @@ export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
     },
   },
   {
+    double_as_double: {
+      path_match: "scientificMetadata.*.*",
+      match_mapping_type: "double",
+      mapping: {
+        type: "double",
+        coerce: true,
+        ignore_malformed: true,
+      },
+    },
+  },
+  {
     date_as_keyword: {
       path_match: "scientificMetadata.*.*",
       match_mapping_type: "date",
       mapping: {
-        type: "keyword",
-        ignore_above: 256,
+        type: "date",
+        format: "strict_date_optional_time||epoch_millis",
+        ignore_malformed: true,
       },
     },
   },

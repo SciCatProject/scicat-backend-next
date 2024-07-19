@@ -20,6 +20,12 @@ export interface IShould {
   term?: {
     [key: string]: string | undefined;
   };
+  range?: {
+    [key: string]: {
+      gte?: string | number;
+      lte?: string | number;
+    };
+  };
 }
 
 export interface IBoolShould {
@@ -56,6 +62,10 @@ export interface IFilter {
       };
     };
   };
+  bool?: {
+    should: IShould[];
+    minimum_should_match?: number;
+  };
 }
 
 export interface IFullFacets {
@@ -80,4 +90,9 @@ export interface ITransformedFullFacets {
         count: number;
       }
     | { totalSets: number };
+}
+
+type Operation = "$eq" | "$neq" | "$gte" | "$gt" | "$lte" | "$lt";
+export interface IQuery {
+  [key: string]: any;
 }

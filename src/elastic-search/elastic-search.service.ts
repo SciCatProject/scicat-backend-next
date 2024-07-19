@@ -26,9 +26,9 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "src/common/utils";
 import {
-  transformKeysInObject,
   initialSyncTransform,
   transformFacets,
+  addValueType,
 } from "./helpers/utils";
 
 import { SortFields } from "./providers/fields.enum";
@@ -362,7 +362,7 @@ export class ElasticSearchService implements OnModuleInit {
   async updateInsertDocument(data: Partial<DatasetDocument>) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
     delete data._id;
-    const transformedScientificMetadata = transformKeysInObject(
+    const transformedScientificMetadata = addValueType(
       data.scientificMetadata as Record<string, unknown>,
     );
 

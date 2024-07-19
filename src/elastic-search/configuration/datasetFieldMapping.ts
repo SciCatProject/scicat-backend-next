@@ -33,15 +33,7 @@ export const datasetMappings: MappingObject = {
   scientificMetadata: {
     type: "nested",
     dynamic: true,
-    properties: {
-      runNumber: {
-        properties: {
-          value: {
-            type: "long",
-          },
-        },
-      },
-    },
+    properties: {},
   },
   history: {
     type: "nested",
