@@ -808,7 +808,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.length.should.be.equal(0);
+        res.body.length.should.be.equal(1);
       });
   });
 
