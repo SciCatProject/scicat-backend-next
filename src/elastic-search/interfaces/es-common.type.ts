@@ -92,7 +92,10 @@ export interface ITransformedFullFacets {
     | { totalSets: number };
 }
 
-type Operation = "$eq" | "$neq" | "$gte" | "$gt" | "$lte" | "$lt";
-export interface IQuery {
-  [key: string]: any;
+export interface ScientificQuery {
+  [key: string]: Record<string, string> | "$and" | "$or";
+}
+
+export interface nestedQueryObject {
+  [key: string]: Record<string, string | { [key: string]: string }>;
 }

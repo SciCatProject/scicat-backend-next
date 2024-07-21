@@ -5,8 +5,9 @@ import {
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import {
   IFilter,
-  IQuery,
   ITransformedFullFacets,
+  nestedQueryObject,
+  ScientificQuery,
 } from "../interfaces/es-common.type";
 
 export const transformKey = (key: string): string => {
@@ -71,7 +72,7 @@ export const initialSyncTransform = (obj: DatasetClass) => {
   return modifiedDocInObject;
 };
 
-const extractNestedQueryOperationValue = (query: IQuery) => {
+const extractNestedQueryOperationValue = (query: nestedQueryObject) => {
   const field = Object.keys(query)[0];
   const operationWithPrefix = Object.keys(query[field])[0];
 
@@ -85,15 +86,17 @@ const extractNestedQueryOperationValue = (query: IQuery) => {
   return { operation, value, field };
 };
 
-export const convertToElasticSearchQuery = (scientificQuery: any) => {
+export const convertToElasticSearchQuery = (
+  scientificQuery: ScientificQuery,
+): IFilter[] => {
   const filters: IFilter[] = [];
 
   for (const field in scientificQuery) {
-    const query = scientificQuery[field] as any;
+    const query = scientificQuery[field];
 
-    if (field === "$and") {
-      query.forEach((query: any) => {
-        const shouldQueries = query.$or.map((orQuery: any) => {
+    if (field === "$and" && Array.isArray(query)) {
+      query.forEach((query: { $or: nestedQueryObject[] }) => {
+        const shouldQueries = query.$or.map((orQuery: nestedQueryObject) => {
           const { operation, value, field } =
             extractNestedQueryOperationValue(orQuery);
           const filterType = operation === "eq" ? "term" : "range";
@@ -110,8 +113,8 @@ export const convertToElasticSearchQuery = (scientificQuery: any) => {
           },
         });
       });
-    } else if (field === "$or") {
-      const shouldQueries = query.map((query: any) => {
+    } else if (field === "$or" && Array.isArray(query)) {
+      const shouldQueries = query.map((query: nestedQueryObject) => {
         const { operation, value, field } =
           extractNestedQueryOperationValue(query);
         const filterType = operation === "eq" ? "term" : "range";
@@ -129,10 +132,11 @@ export const convertToElasticSearchQuery = (scientificQuery: any) => {
       });
     } else {
       const operation = Object.keys(query)[0];
+
       const value =
-        typeof query[operation] === "string"
-          ? (query[operation] as string).trim()
-          : query[operation];
+        typeof (query as Record<string, "eq">)[operation] === "string"
+          ? (query as Record<string, "eq">)[operation].trim()
+          : (query as Record<string, "eq">)[operation];
       const esOperation = operation.replace("$", "");
 
       // NOTE:
