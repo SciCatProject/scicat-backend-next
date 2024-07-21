@@ -22,13 +22,25 @@ export const special_character_filter: AnalysisPatternReplaceCharFilter = {
 
 //Dynamic templates
 export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
+  // NOTE: date as keyword is temporary solution for date format issue
   {
-    string_as_keyword: {
+    date_as_keyword: {
       path_match: "scientificMetadata.*.*",
-      match_mapping_type: "string",
+      match_mapping_type: "date",
       mapping: {
         type: "keyword",
-        ignore_above: 256,
+      },
+    },
+  },
+  // NOTE: This is a workaround for the issue where the start_time field is not being
+  // parsed correctly. This is a temporary solution until
+  // we can find a better way to handle date format.
+  {
+    start_time_as_keyword: {
+      path_match: "scientificMetadata.start_time.*",
+      match_mapping_type: "long",
+      mapping: {
+        type: "keyword",
       },
     },
   },
@@ -55,13 +67,12 @@ export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
     },
   },
   {
-    date_as_keyword: {
+    string_as_keyword: {
       path_match: "scientificMetadata.*.*",
-      match_mapping_type: "date",
+      match_mapping_type: "string",
       mapping: {
-        type: "date",
-        format: "strict_date_optional_time||epoch_millis",
-        ignore_malformed: true,
+        type: "keyword",
+        ignore_above: 256,
       },
     },
   },

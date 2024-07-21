@@ -86,6 +86,10 @@ export class ElasticSearchService implements OnModuleInit {
       const isIndexExists = await this.isIndexExists(this.defaultIndex);
       if (!isIndexExists) {
         await this.createIndex(this.defaultIndex);
+        Logger.log(
+          `New index ${this.defaultIndex}is created `,
+          "ElasticSearch",
+        );
       }
       this.connected = true;
       Logger.log("Elasticsearch Connected", "ElasticSearch");
@@ -141,25 +145,17 @@ export class ElasticSearchService implements OnModuleInit {
         index,
         body: {
           settings: defaultElasticSettings,
+          mappings: {
+            dynamic: true,
+            dynamic_templates: dynamic_template,
+            numeric_detection: true,
+            date_detection: true,
+            dynamic_date_formats: [
+              "yyyy-MM-dd'T'HH:mm:ss|| yyyy-MM-dd HH:mm:ss||yyyy-MM-dd'T'HH:mm:ss.SSSZ||yyyy-MM-dd'T'HH:mm:ss.SSS'Z'||yyyy-MM-dd'T'HH:mm:ss.SSS",
+            ],
+            properties: datasetMappings,
+          },
         },
-      });
-      await this.esService.indices.close({ index });
-      await this.esService.indices.putSettings({
-        index,
-        body: {
-          settings: defaultElasticSettings,
-        },
-      });
-      await this.esService.indices.putMapping({
-        index,
-        dynamic: true,
-        body: {
-          dynamic_templates: dynamic_template,
-          properties: datasetMappings,
-        },
-      });
-      await this.esService.indices.open({
-        index,
       });
       Logger.log(
         `Elasticsearch Index Created-> Index: ${index}`,
