@@ -485,7 +485,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0180: adds a new sample as an unauthenticated user with owner group as sampleingestor, which should fail", async () => {
@@ -498,7 +498,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0190: adds a new sample as an unauthenticated user with owner group as user1, which should fail", async () => {
@@ -511,7 +511,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0200: adds a new sample as an unauthenticated user with its owner group, which should fail", async () => {
@@ -524,7 +524,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0210: adds a new sample as Archive Manager with owner group as adminingestor, which should fail", async () => {
@@ -977,7 +977,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId1 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0420: adds an attachment as an unauthenticated user to sample 2, which should fail", async () => {
@@ -985,7 +985,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId2 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0430: adds an attachment as an unauthenticated user to sample 3, which should fail", async () => {
@@ -993,7 +993,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId3 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0440: adds an attachment as an unauthenticated user to sample 4, which should fail", async () => {
@@ -1001,7 +1001,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId4 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("0450: adds an attachment as Archive Manager to sample 1, which should fail", async () => {
@@ -2733,126 +2733,126 @@ describe("2250: Sample Authorization", () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1335: fetch all attachments for sample 1 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1340: access sample 2 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("1345: fetch all attachments for sample 1 as Unauthenticated User, which should fail", async () => {
+  it("1345: fetch all attachments for sample 2 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId2 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1350: access sample 3 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1355: fetch all attachments for sample 5 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId3 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1360: access sample 4 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1365: fetch all attachments for sample 4 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId4 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1370: access sample 5 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1375: fetch all attachments for sample 5 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId5 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1380: access sample 6 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1385: fetch all attachments for sample 6 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId6 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1390: access sample 7 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1395: fetch all attachments for sample 7 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId7 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1400: access sample 8 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1405: fetch all attachments for sample 8 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId8 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1410: access sample 9 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1415: fetch all attachments for sample 9 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId9 + "/attachments")
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1420: access public sample 10 as Unauthenticated User", async () => {
@@ -2882,7 +2882,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1435: fetch all attachments for sample 5 as Archive Manager, which should fail", async () => {
@@ -2890,7 +2890,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1440: access sample 2 as Archive Manager, which should fail", async () => {
@@ -2898,7 +2898,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1445: fetch all attachments for sample 2 as Archive Manager, which should fail", async () => {
@@ -2906,7 +2906,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId2 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1450: access sample 3 as Archive Manager, which should fail", async () => {
@@ -2914,7 +2914,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1455: fetch all attachments for sample 5 as Archive Manager, which should fail", async () => {
@@ -2922,7 +2922,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId3 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1460: access sample 4 as Archive Manager, which should fail", async () => {
@@ -2930,7 +2930,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId4)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1465: fetch all attachments for sample 4 as Archive Manager, which should fail", async () => {
@@ -2938,7 +2938,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId4 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1470: access sample 5 as Archive Manager, which should fail", async () => {
@@ -2946,7 +2946,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId5)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1475: fetch all attachments for sample 5 as Archive Manager, which should fail", async () => {
@@ -2954,7 +2954,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId5 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1480: access sample 6 as Archive Manager, which should fail", async () => {
@@ -2962,14 +2962,14 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId6)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
   it("1485: fetch all attachments for sample 6 as Archive Manager, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId6 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1490: access sample 7 as Archive Manager, which should fail", async () => {
@@ -2977,7 +2977,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId7)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1495: fetch all attachments for sample 7 as Archive Manager, which should fail", async () => {
@@ -2985,7 +2985,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId7 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1500: access sample 8 as Archive Manager, which should fail", async () => {
@@ -2993,7 +2993,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId8)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1505: fetch all attachments for sample 8 as Archive Manager, which should fail", async () => {
@@ -3001,7 +3001,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId8 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1510: access sample 9 as Archive Manager, which should fail", async () => {
@@ -3009,7 +3009,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId9)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1515: fetch all attachments for sample 9 as Archive Manager, which should fail", async () => {
@@ -3017,7 +3017,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId5 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("1520: access public sample 10 as Archive Manager", async () => {
@@ -3037,7 +3037,7 @@ describe("2250: Sample Authorization", () => {
       .get("/api/v3/Samples/" + sampleId7 + "/attachments")
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   // modify sample
@@ -3576,7 +3576,7 @@ describe("2250: Sample Authorization", () => {
       .patch("/api/v3/Samples/" + sampleId1)
       .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("2280: update sample characteristic for public sample 10 as Unauthenticated User, which should fail", async () => {
@@ -3592,7 +3592,7 @@ describe("2250: Sample Authorization", () => {
       .patch("/api/v3/Samples/" + sampleId10)
       .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   // delete sample attachment
@@ -3600,7 +3600,7 @@ describe("2250: Sample Authorization", () => {
     return request(appUrl)
       .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
       .set("Accept", "application/json")
-      .expect(TestData.DeleteForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("4010: delete attachment 10 from sample 10 as Unauthenticated User, which should fail", async () => {
@@ -3609,7 +3609,7 @@ describe("2250: Sample Authorization", () => {
         "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
       )
       .set("Accept", "application/json")
-      .expect(TestData.DeleteForbiddenStatusCode);
+      .expect(TestData.UnauthorizedStatusCode);
   });
 
   it("4020: delete attachment 1 from sample 1 as User 5, which should fail", async () => {

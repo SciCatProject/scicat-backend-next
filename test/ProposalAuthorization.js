@@ -17,6 +17,8 @@ let proposalPid1 = null,
   encodedProposalPid2 = null,
   proposalPid3 = null,
   encodedProposalPid3 = null;
+// proposalPid10 = null,
+// encodedProposalPid10 = null;
 
 const proposal1 = {
   ...TestData.ProposalCorrectMin,
@@ -38,6 +40,14 @@ const proposal3 = {
   ownerGroup: "group2",
   accessGroups: ["group3"],
 };
+
+// const proposal10 = {
+//   ...TestData.ProposalCorrectMin,
+//   proposalId: "20170271",
+//   ownerGroup: "admin",
+//   accessGroups: ["admin"],
+//   isPublished: true,
+// };
 
 describe("1400: ProposalAuthorization: Test access to proposal", () => {
   before(() => {
@@ -104,7 +114,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     done();
   });
 
-  it("0010: adds proposal 1", async () => {
+  it("0000: adds proposal 1", async () => {
     return request(appUrl)
       .post("/api/v3/proposals")
       .send(proposal1)
@@ -120,7 +130,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("0020: adds proposal 2", async () => {
+  it("0010: adds proposal 2", async () => {
     return request(appUrl)
       .post("/api/v3/proposals")
       .send(proposal2)
@@ -136,7 +146,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("0030: adds proposal 3", async () => {
+  it("0020: adds proposal 3", async () => {
     return request(appUrl)
       .post("/api/v3/proposals")
       .send(proposal3)
@@ -152,13 +162,37 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  // it("0030: adds proposal 10", async () => {
+  //   return request(appUrl)
+  //     .post("/api/v3/proposals")
+  //     .send(proposal10)
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+  //     .expect(TestData.EntryCreatedStatusCode)
+  //     .expect("Content-Type", /json/)
+  //     .then((res) => {
+  //       res.body.should.have.property("ownerGroup").and.equal("admin");
+  //       res.body.should.have.property("proposalId").and.be.string;
+  //       proposalPid10 = res.body["proposalId"];
+  //       encodedProposalPid10 = encodeURIComponent(proposalPid10);
+  //     });
+  // });
+
   it("0040: cannot access proposal as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(TestData.UnauthorizedStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
+
+  // it("0045: can access public proposal as unauthenticated user", async () => {
+  //   return request(appUrl)
+  //     .get("/api/v3/proposals/" + encodedProposalPid10)
+  //     .set("Accept", "application/json")
+  //     .expect("Content-Type", /json/)
+  //     .expect(TestData.SuccessfulGetStatusCode);
+  // });
 
   it("0050: admin can list all proposals", async () => {
     return request(appUrl)
