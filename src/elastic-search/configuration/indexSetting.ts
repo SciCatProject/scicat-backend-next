@@ -22,7 +22,7 @@ export const special_character_filter: AnalysisPatternReplaceCharFilter = {
 
 //Dynamic templates
 export const dynamic_template: Record<string, MappingDynamicTemplate>[] = [
-  // NOTE: date as keyword is temporary solution for date format issue
+  // NOTE: date as keyword is temporary solution for date format inconsistency issue in the scientificMetadata field
   {
     date_as_keyword: {
       path_match: "scientificMetadata.*.*",
