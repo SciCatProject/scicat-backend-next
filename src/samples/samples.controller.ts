@@ -280,7 +280,7 @@ export class SamplesController {
   }
 
   // GET /samples
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
@@ -712,7 +712,7 @@ export class SamplesController {
   }
 
   // GET /samples/:id/attachments
-  @UseGuards(AuthenticatedPoliciesGuard)
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.SampleAttachmentRead, SampleClass),
   )
