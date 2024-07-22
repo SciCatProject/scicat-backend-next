@@ -13,13 +13,8 @@ import { compile, TemplateDelegate } from "handlebars";
  * Send an email following a job
  */
 export class EmailJobAction<T> implements JobAction<T> {
-  private mailService: Transporter;
-  private toTemplate: TemplateDelegate<JobClass>;
-  private from: string;
-  private subjectTemplate: TemplateDelegate<JobClass>;
-  private bodyTemplate?: TemplateDelegate<JobClass>;
-
   public static readonly actionType = "email";
+  private mailerDetails;
 
   getActionType(): string {
     return EmailJobAction.actionType;
@@ -31,28 +26,13 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    if (!data["mailer"]) {
-      throw new NotFoundException("Param 'mailer' is undefined");
-    }
-    if (!data["to"]) {
-      throw new NotFoundException("Param 'to' is undefined");
-    }
-    if (!data["from"]) {
-      throw new NotFoundException("Param 'from' is undefined");
-    }
-    if (!data["subject"]) {
-      throw new NotFoundException("Param 'subject' is undefined");
-    }
-    if (!data["body"]) {
-      throw new NotFoundException("Param 'body' is undefined");
-    }
-    Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
-
-    this.mailService = createTransport(data["mailer"]);
-    this.toTemplate = compile(data["to"]);
-    this.from = data["from"];
-    this.subjectTemplate = compile(data["subject"]);
-    this.bodyTemplate = compile(data["body"]);
+    this.mailerDetails = {
+      mailer: data.mailer,
+      to: data.to,
+      from: data.from,
+      subject: data.subject,
+      bodyTemplate: data.bodyTemplate,
+    };
   }
 
   async validate(dto: T) {
@@ -60,6 +40,11 @@ export class EmailJobAction<T> implements JobAction<T> {
       "Validating EmailJobAction: " + JSON.stringify(dto),
       "EmailJobAction",
     );
+
+    const mailerDetailsMissing = [undefined, ""].some(el => Object.values(this.mailerDetails).includes(el));
+    if (mailerDetailsMissing) {
+      throw new NotFoundException("Email action is not configured correctly.");
+    }
   }
 
   async performJob(job: JobClass) {
@@ -68,15 +53,23 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
+    // const mailService: Transporter = createTransport(this.mailerDetails.mailer);
+    const toTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.to);
+    const subjectTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.subject);
+    const bodyTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.bodyTemplate);
+
     // Fill templates
     const mail: any = {
-      to: this.toTemplate(job),
-      from: this.from,
-      subject: this.subjectTemplate(job),
+      to: toTemplate(job),
+      from: this.mailerDetails.from,
+      subject: subjectTemplate(job),
     };
-    if (this.bodyTemplate) {
-      mail.text = this.bodyTemplate(job);
+    if (bodyTemplate) {
+      mail.text = bodyTemplate(job);
     }
-    await this.mailService.sendMail(mail);
+
+    Logger.log(mail);
+
+    // await mailService.sendMail(mail);
   }
 }

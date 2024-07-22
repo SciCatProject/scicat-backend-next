@@ -15,6 +15,14 @@
             "headers": {
               "accept": "application/json"
             }
+          },
+          {
+            "actionType": "email",
+            "mailer": "smtp",
+            "to": "{{job.contactEmail}}",
+            "from": "someone",
+            "subject": "[SciCat] Your {{job.type}} job was submitted successfully",
+            "bodyTemplate": "some-file"
           }
         ]
       },
