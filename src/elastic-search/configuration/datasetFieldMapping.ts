@@ -30,18 +30,13 @@ export const datasetMappings: MappingObject = {
   creationTime: {
     type: "date",
   },
+  endTime: {
+    type: "date",
+  },
   scientificMetadata: {
     type: "nested",
     dynamic: true,
-    properties: {
-      runNumber: {
-        properties: {
-          value: {
-            type: "long",
-          },
-        },
-      },
-    },
+    properties: {},
   },
   history: {
     type: "nested",

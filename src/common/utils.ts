@@ -86,11 +86,26 @@ export const convertToRequestedUnit = (
   };
 };
 
+const buildCondition = (
+  key: string,
+  value: string | number,
+  operator: string,
+): Record<string, unknown> => {
+  const conditions: Record<string, unknown> = { $or: [] };
+  conditions["$or"] = ["", ".v", ".value"].map((suffix) => {
+    return {
+      [`${key}${suffix}`]: { [`${operator}`]: value },
+    };
+  });
+  return conditions;
+};
+
 export const mapScientificQuery = (
   key: string,
   scientific: IScientificFilter[] = [],
 ): Record<string, unknown> => {
   const scientificFilterQuery: Record<string, unknown> = {};
+  const scientificFilterQueryOr: Record<string, unknown>[] = [];
 
   const keyToFieldMapping: Record<string, string> = {
     scientific: "scientificMetadata",
@@ -112,7 +127,9 @@ export const mapScientificQuery = (
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
-        scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: rhs };
+        scientificFilterQueryOr.push(
+          buildCondition(matchKeyGeneric, rhs, "$eq"),
+        );
         break;
       }
       case ScientificRelation.EQUAL_TO_NUMERIC: {
@@ -131,7 +148,9 @@ export const mapScientificQuery = (
           scientificFilterQuery[matchKeyMeasurement] = { $gt: valueSI };
           scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $gt: rhs };
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$gt"),
+          );
         }
         break;
       }
@@ -141,12 +160,26 @@ export const mapScientificQuery = (
           scientificFilterQuery[matchKeyMeasurement] = { $lt: valueSI };
           scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $lt: rhs };
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$lt"),
+          );
         }
+        break;
+      }
+      case ScientificRelation.CONTAINS_STRING: {
+        scientificFilterQueryOr.push(
+          buildCondition(matchKeyGeneric, rhs, `/${rhs}/`),
+        );
         break;
       }
     }
   });
+  if (scientificFilterQueryOr.length == 1) {
+    scientificFilterQuery["$or"] = scientificFilterQueryOr[0]["$or"];
+  } else if (scientificFilterQueryOr.length > 1) {
+    scientificFilterQuery["$and"] = scientificFilterQueryOr;
+  }
+
   return scientificFilterQuery;
 };
 

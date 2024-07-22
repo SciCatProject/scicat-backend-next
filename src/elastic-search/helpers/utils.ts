@@ -3,12 +3,17 @@ import {
   AggregationsFrequentItemSetsBucketKeys,
 } from "@elastic/elasticsearch/lib/api/types";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { IFilter, ITransformedFullFacets } from "../interfaces/es-common.type";
+import {
+  IFilter,
+  ITransformedFullFacets,
+  nestedQueryObject,
+  ScientificQuery,
+} from "../interfaces/es-common.type";
 
 export const transformKey = (key: string): string => {
   return key.trim().replace(/[.]/g, "\\.").replace(/ /g, "_").toLowerCase();
 };
-export const transformKeysInObject = (obj: Record<string, unknown>) => {
+export const addValueType = (obj: Record<string, unknown>) => {
   const newObj: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
@@ -16,6 +21,7 @@ export const transformKeysInObject = (obj: Record<string, unknown>) => {
 
     const isNumberValueType =
       typeof (value as Record<string, unknown>)?.value === "number";
+
     if (isNumberValueType) {
       (value as Record<string, unknown>)["value_type"] = "number";
     } else {
@@ -66,51 +72,103 @@ export const initialSyncTransform = (obj: DatasetClass) => {
   return modifiedDocInObject;
 };
 
+const extractNestedQueryOperationValue = (query: nestedQueryObject) => {
+  const field = Object.keys(query)[0];
+  const operationWithPrefix = Object.keys(query[field])[0];
+
+  const value =
+    typeof query[field][operationWithPrefix] === "string"
+      ? (query[field][operationWithPrefix] as string).trim()
+      : query[field][operationWithPrefix];
+
+  const operation = operationWithPrefix.replace("$", "");
+
+  return { operation, value, field };
+};
+
 export const convertToElasticSearchQuery = (
-  scientificQuery: Record<string, unknown>,
-) => {
+  scientificQuery: ScientificQuery,
+): IFilter[] => {
   const filters: IFilter[] = [];
 
   for (const field in scientificQuery) {
-    const query = scientificQuery[field] as Record<string, unknown>;
-    const operation = Object.keys(query)[0];
-    const value =
-      typeof query[operation] === "string"
-        ? (query[operation] as string).trim()
-        : query[operation];
+    const query = scientificQuery[field];
 
-    const esOperation = operation.replace("$", "");
-
-    // NOTE-EXAMPLE:
-    // trasnformedKey = "scientificMetadata.someKey.value"
-    // firstPart = "scientificMetadata",
-    // middlePart = "someKey"
-    const { transformedKey, firstPart, middlePart } = transformMiddleKey(field);
-
-    let filter = {};
-
-    const fieldType = field.split(".").pop();
-
-    if (fieldType === "valueSI" || fieldType === "value") {
-      const numberFilter = {
-        term: {
-          [`${firstPart}.${middlePart}.value_type`]:
-            typeof value === "number" ? "number" : "string",
+    if (field === "$and" && Array.isArray(query)) {
+      query.forEach((query: { $or: nestedQueryObject[] }) => {
+        const shouldQueries = query.$or.map((orQuery: nestedQueryObject) => {
+          const { operation, value, field } =
+            extractNestedQueryOperationValue(orQuery);
+          const filterType = operation === "eq" ? "term" : "range";
+          return {
+            [filterType]: {
+              [field]: operation === "eq" ? value : { [operation]: value },
+            },
+          };
+        });
+        filters.push({
+          bool: {
+            should: shouldQueries,
+            minimum_should_match: 1,
+          },
+        });
+      });
+    } else if (field === "$or" && Array.isArray(query)) {
+      const shouldQueries = query.map((query: nestedQueryObject) => {
+        const { operation, value, field } =
+          extractNestedQueryOperationValue(query);
+        const filterType = operation === "eq" ? "term" : "range";
+        return {
+          [filterType]: {
+            [field]: operation === "eq" ? value : { [operation]: value },
+          },
+        };
+      });
+      filters.push({
+        bool: {
+          should: shouldQueries,
+          minimum_should_match: 1,
         },
-      };
-      filters.push(numberFilter);
+      });
+    } else {
+      const operation = Object.keys(query)[0];
+
+      const value =
+        typeof (query as Record<string, "eq">)[operation] === "string"
+          ? (query as Record<string, "eq">)[operation].trim()
+          : (query as Record<string, "eq">)[operation];
+      const esOperation = operation.replace("$", "");
+
+      // NOTE:
+      // trasnformedKey = "scientificMetadata.someKey.value"
+      // firstPart = "scientificMetadata",
+      // middlePart = "someKey"
+      // lastPart = "value"
+      const { transformedKey, firstPart, middlePart, lastPart } =
+        transformMiddleKey(field);
+
+      if (lastPart === "valueSI" || lastPart === "value") {
+        const numberFilter = {
+          term: {
+            [`${firstPart}.${middlePart}.value_type`]:
+              typeof value === "number" ? "number" : "string",
+          },
+        };
+        filters.push(numberFilter);
+      }
+
+      const filter =
+        esOperation === "eq"
+          ? {
+              term: { [`${transformedKey}`]: value },
+            }
+          : {
+              range: { [`${transformedKey}`]: { [esOperation]: value } },
+            };
+
+      filters.push(filter);
     }
-
-    filter =
-      esOperation === "eq"
-        ? {
-            term: { [`${transformedKey}`]: value },
-          }
-        : { range: { [`${transformedKey}`]: { [esOperation]: value } } };
-
-    filters.push(filter);
   }
-
   return filters;
 };
 
