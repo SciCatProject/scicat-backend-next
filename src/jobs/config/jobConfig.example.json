@@ -17,6 +17,16 @@
             }
           },
           {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "exchange": "jobs.write",
+            "queue": "client.jobs.write",
+            "key": "jobqueue"
+          },
+          {
             "actionType": "email",
             "mailer": "smtp",
             "to": "{{job.contactEmail}}",
@@ -27,7 +37,19 @@
         ]
       },
       "statusUpdate": {
-        "auth": "archivemanager"
+        "auth": "archivemanager",
+        "actions": [
+          {
+            "actionType": "rabbitmq",
+            "hostname": "rabbitmq",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "exchange": "jobs.write",
+            "queue": "client.jobs.write",
+            "key": "jobqueue"
+          }
+        ]
       }
     },
     {

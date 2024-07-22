@@ -78,6 +78,7 @@ export class JobCreateInterceptor implements NestInterceptor {
         });
       }),
     );
+
     return jc;
   }
 }
