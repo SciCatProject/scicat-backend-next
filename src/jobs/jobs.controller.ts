@@ -552,7 +552,10 @@ export class JobsController {
   /**
    * Send off to external service
    */
-  async performJobAction(jobInstance: JobClass, action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>): Promise<void> {
+  async performJobAction(
+    jobInstance: JobClass,
+    action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>,
+  ): Promise<void> {
     await action.performJob(jobInstance).catch((err: Error) => {
       if (err instanceof HttpException) {
         throw err;
@@ -578,7 +581,7 @@ export class JobsController {
   }
 
   async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance.type);
 
     await Promise.all(
       jobConfig.statusUpdate.actions.map((action) => {
@@ -606,7 +609,6 @@ export class JobsController {
     }
     return;
   }
-
 
   /**
    * Create job
@@ -707,7 +709,10 @@ export class JobsController {
     }
 
     // Update job in database
-    const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
+    const updatedJob = await this.jobsService.statusUpdate(
+      id,
+      statusUpdateJobDto,
+    );
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.performJobStatusUpdateAction(updatedJob);

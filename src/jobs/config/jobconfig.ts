@@ -24,7 +24,6 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 
-
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
@@ -52,10 +51,7 @@ export class JobConfig {
    * @returns
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static parse(
-    jobData: Record<string, any>,
-    configVersion: string
-  ): JobConfig {
+  static parse(jobData: Record<string, any>, configVersion: string): JobConfig {
     const type = jobData[JobsConfigSchema.JobType];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
@@ -68,7 +64,6 @@ export class JobConfig {
     return new JobConfig(type, configVersion, create, statusUpdate);
   }
 }
-
 
 /**
  * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
@@ -100,7 +95,6 @@ export class JobOperation<DtoType> {
   }
 }
 
-
 /**
  * Given a JSON object configuring a JobConfigAction.
  *
@@ -125,7 +119,6 @@ function parseAction<DtoType>(
   return new actionClass(data);
 }
 
-
 /**
  * Superclass for all responses to Job changes
  */
@@ -147,7 +140,6 @@ export interface JobAction<DtoType> {
   getActionType(): string;
 }
 
-
 /**
  * Describes the constructor and static members for JobAction implementations
  */
@@ -163,20 +155,20 @@ export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
 export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
 
-
 /**
  * Action registration
  */
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
-const statusUpdateActions: Record<string, JobActionClass<StatusUpdateJobDto>> = {};
+const statusUpdateActions: Record<
+  string,
+  JobActionClass<StatusUpdateJobDto>
+> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerCreateAction(
-  action: JobActionClass<CreateJobDto>
-) {
+export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
   createActions[action.actionType] = action;
 }
 
@@ -197,7 +189,6 @@ export function getRegisteredCreateActions(): string[] {
 export function getRegisteredStatusUpdateActions(): string[] {
   return Object.keys(statusUpdateActions);
 }
-
 
 /**
  * Parsing

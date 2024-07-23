@@ -3,7 +3,6 @@ import amqp, { Connection } from "amqplib/callback_api";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 
-
 /**
  * Publish a message in a RabbitMQ queue
  */
@@ -12,6 +11,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
   private connection;
   private binding;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     Logger.log(
       "Initializing RabbitMQJobAction. Params: " + JSON.stringify(data),
@@ -28,7 +28,7 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
     this.binding = {
       exchange: data.exchange,
       queue: data.queue,
-      key: data.key
+      key: data.key,
     };
   }
 
@@ -42,14 +42,22 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    const connectionDetailsMissing = [undefined, ""].some(el => Object.values(this.connection).includes(el));
+    const connectionDetailsMissing = [undefined, ""].some((el) =>
+      Object.values(this.connection).includes(el),
+    );
     if (connectionDetailsMissing) {
-      throw new NotFoundException("RabbitMQ configuration is missing connection details.");
+      throw new NotFoundException(
+        "RabbitMQ configuration is missing connection details.",
+      );
     }
 
-    const bindingDetailsMissing = [undefined, ""].some(el => Object.values(this.binding).includes(el));
+    const bindingDetailsMissing = [undefined, ""].some((el) =>
+      Object.values(this.binding).includes(el),
+    );
     if (bindingDetailsMissing) {
-      throw new NotFoundException("RabbitMQ binding is missing exchange/queue/key details.");
+      throw new NotFoundException(
+        "RabbitMQ binding is missing exchange/queue/key details.",
+      );
     }
   }
 
@@ -59,33 +67,47 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
       "RabbitMQJobAction",
     );
 
-    amqp.connect(this.connection, (connectionError: Error, connection: Connection) => {
-      if (connectionError) {
-        Logger.error(
-          "Connection error in RabbitMQJobAction: " + JSON.stringify(connectionError.message),
-          "RabbitMQJobAction",
-        );
-        return;
-      }
-
-      connection.createChannel((channelError: Error, channel) => {
-        if (channelError) {
+    amqp.connect(
+      this.connection,
+      (connectionError: Error, connection: Connection) => {
+        if (connectionError) {
           Logger.error(
-            "Channel error in RabbitMQJobAction: " + JSON.stringify(channelError.message),
+            "Connection error in RabbitMQJobAction: " +
+              JSON.stringify(connectionError.message),
             "RabbitMQJobAction",
           );
           return;
         }
 
-        channel.assertQueue(this.binding.queue, { durable: true });
-        channel.assertExchange(this.binding.exchange, "topic", { durable: true });
-        channel.bindQueue(this.binding.queue, this.binding.exchange, this.binding.key);
-        channel.sendToQueue(this.binding.queue, Buffer.from(JSON.stringify(job)));
+        connection.createChannel((channelError: Error, channel) => {
+          if (channelError) {
+            Logger.error(
+              "Channel error in RabbitMQJobAction: " +
+                JSON.stringify(channelError.message),
+              "RabbitMQJobAction",
+            );
+            return;
+          }
 
-        channel.close(() => {
-          connection.close();
+          channel.assertQueue(this.binding.queue, { durable: true });
+          channel.assertExchange(this.binding.exchange, "topic", {
+            durable: true,
+          });
+          channel.bindQueue(
+            this.binding.queue,
+            this.binding.exchange,
+            this.binding.key,
+          );
+          channel.sendToQueue(
+            this.binding.queue,
+            Buffer.from(JSON.stringify(job)),
+          );
+
+          channel.close(() => {
+            connection.close();
+          });
         });
-      });
-    });
+      },
+    );
   }
 }
