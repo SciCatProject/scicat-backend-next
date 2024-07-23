@@ -40,6 +40,7 @@ export const formatCamelCase = (camelCase: string): string => {
   return words;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const jsonify = (context: any): string => {
   return JSON.stringify(context, null, 3);
 };

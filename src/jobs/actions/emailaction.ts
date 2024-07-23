@@ -25,6 +25,7 @@ export class EmailJobAction<T> implements JobAction<T> {
     return EmailJobAction.actionType;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     Logger.log(
       "Initializing EmailJobAction. Params: " + JSON.stringify(data),
@@ -69,6 +70,7 @@ export class EmailJobAction<T> implements JobAction<T> {
     );
 
     // Fill templates
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mail: any = {
       to: this.toTemplate(job),
       from: this.from,

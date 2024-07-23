@@ -31,20 +31,17 @@ export class JobConfig {
   jobType: string;
   configVersion: string;
   create: JobOperation<CreateJobDto>;
-  // read: JobReadAction[];
   statusUpdate: JobOperation<StatusUpdateJobDto>;
 
   constructor(
     jobType: string,
     configVersion: string,
     create: JobOperation<CreateJobDto>,
-    read = undefined,
     statusUpdate: JobOperation<StatusUpdateJobDto>,
   ) {
     this.jobType = jobType;
     this.configVersion = configVersion;
     this.create = create;
-    // this.read = read;
     this.statusUpdate = statusUpdate;
   }
 
@@ -53,21 +50,18 @@ export class JobConfig {
    * @param data JSON
    * @returns
    */
-  static parse(
-    data: Record<string, any>,
-    configVersion: string
-  ): JobConfig {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static parse(data: Record<string, any>, configVersion: string): JobConfig {
     const type = data[JobsConfigSchema.JobType];
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
       data[AuthOp.Create],
     );
-    const read = undefined;  // "read" in data ? oneOrMore(data["read"]).map((json) => parseReadAction(json["action"])) : [];
     const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
       statusUpdateActions,
       data[AuthOp.StatusUpdate],
     );
-    return new JobConfig(type, configVersion, create, read, statusUpdate);
+    return new JobConfig(type, configVersion, create, statusUpdate);
   }
 }
 
@@ -161,7 +155,10 @@ export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
 
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
 // const readActions: Record<string, JobActionCtor<ReadJobDto>> = {};
-const statusUpdateActions: Record<string, JobActionClass<StatusUpdateJobDto>> = {};
+const statusUpdateActions: Record<
+  string,
+  JobActionClass<StatusUpdateJobDto>
+> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
@@ -210,7 +207,7 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   }
 
   const json = fs.readFileSync(filePath, "utf8");
-  let data = JSON.parse(json);
+  const data = JSON.parse(json);
 
   // Validate schema
   const ajv = new Ajv();
@@ -222,6 +219,8 @@ export function loadJobConfig(filePath: string): JobConfig[] {
     console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
 
-  jobConfig = data.jobs.map((jobData: Record<string, any>) => JobConfig.parse(jobData, data.configVersion));
+  jobConfig = data.jobs.map((jobData: Record<string, any>) =>
+    JobConfig.parse(jobData, data.configVersion),
+  );
   return jobConfig as JobConfig[];
 }

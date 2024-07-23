@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import {
   loadJobConfig,
   registerCreateAction,
@@ -44,7 +43,8 @@ const configuration = () => {
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE || ("src/jobs/config/jobConfig.example.json" as string);
+    process.env.JOB_CONFIGURATION_FILE ||
+    ("src/jobs/config/jobConfig.example.json" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -109,7 +109,7 @@ const configuration = () => {
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
     statusUpdateJobGroups: statusUpdateJobGroups,
-    deleteJobGroups:deleteJobGroups, 
+    deleteJobGroups: deleteJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),

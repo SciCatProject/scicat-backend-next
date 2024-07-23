@@ -19,13 +19,13 @@ describe("JobsController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [JobsController],
-      imports:[CaslModule],
+      imports: [CaslModule],
       providers: [
         //CaslAbilityFactory,
         { provide: JobsService, useClass: JobsServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
-        { provide: UsersService, useClass: UsersServiceMock},
+        { provide: UsersService, useClass: UsersServiceMock },
         { provide: EventEmitter2, useClass: EventEmitter2 },
       ],
     }).compile();

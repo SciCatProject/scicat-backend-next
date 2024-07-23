@@ -25,7 +25,10 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { AuthOp } from "./authop.enum";
 import configuration from "src/config/configuration";
-import { CreateJobAuth, StatusUpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
+import {
+  CreateJobAuth,
+  StatusUpdateJobAuth,
+} from "src/jobs/types/jobs-auth.enum";
 
 type Subjects =
   | string
@@ -820,7 +823,7 @@ export class CaslAbilityFactory {
       });
       can(AuthOp.JobStatusUpdateConfiguration, JobClass, {
         ["configuration.statusUpdate.auth" as string]: StatusUpdateJobAuth.All,
-        ownerGroup: undefined
+        ownerGroup: undefined,
       });
     } else {
       /**
@@ -846,8 +849,10 @@ export class CaslAbilityFactory {
         can(AuthOp.JobCreateAny, JobClass);
         can(AuthOp.JobStatusUpdateAny, JobClass);
       } else if (
-        user.currentGroups.some((g) => configuration().deleteJobGroups.includes(g))
-      ){
+        user.currentGroups.some((g) =>
+          configuration().deleteJobGroups.includes(g),
+        )
+      ) {
         /**
          * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
          */
@@ -910,7 +915,11 @@ export class CaslAbilityFactory {
 
           if (
             configuration().jobConfiguration.some(
-              (j) => j.create.auth && jobCreateEndPointAuthorizationValues.includes(j.create.auth as string),
+              (j) =>
+                j.create.auth &&
+                jobCreateEndPointAuthorizationValues.includes(
+                  j.create.auth as string,
+                ),
             )
           ) {
             can(AuthOp.JobCreate, JobClass);
@@ -922,8 +931,7 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
             ownerUser: user.username,
           });
-          
-          
+
           can(AuthOp.JobCreateConfiguration, JobClass, {
             ["configuration.create.auth" as string]: {
               $in: jobCreateInstanceAuthorizationValues,
@@ -970,12 +978,15 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
           });
         } else {
-
           // -------------------------------------
           // endpoint authorization
           if (
             configuration().jobConfiguration.some(
-             (j) => j.statusUpdate.auth && jobUpdateEndPointAuthorizationValues.includes(j.statusUpdate.auth as string),
+              (j) =>
+                j.statusUpdate.auth &&
+                jobUpdateEndPointAuthorizationValues.includes(
+                  j.statusUpdate.auth as string,
+                ),
             )
           ) {
             can(AuthOp.JobStatusUpdate, JobClass);
