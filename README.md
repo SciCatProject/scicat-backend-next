@@ -23,6 +23,7 @@ If you have any questions, please feel free to contact any member of the develop
 or the SciCat team at ESS.
 
 ## Contributing
+
 If you're planning to contribute to this project by adding new functionality, we encourage you to discuss it first in the Discussions tab. This helps ensure that your proposed changes align with the project's goals and prevents duplicate efforts. Here's how you can initiate a discussion:
 
 1. Go to the [Discussions tab](https://github.com/SciCatProject/scicat-backend-next/discussions).
@@ -148,6 +149,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `METADATA_KEYS_RETURN_LIMIT` | number | Yes | The return limit for the `/Datasets/metadataKeys` endpoint. | |
 | `METADATA_PARENT_INSTANCES_RETURN_LIMIT` | number | Yes | The return limit of Datasets to extract metadata keys from for the `/Datasets/metadataKeys` endpoint. | |
 | `MONGODB_URI` | string | | The URI for your MongoDB instance. | |
+| `MONGDB_TEST_NAME` | string | | The DB name for your MongoDB instance that runs on the local testing environment. |"scicat-test"|
 | `OAI_PROVIDER_ROUTE` | string | Yes | URI to OAI provider, used for the `/publisheddata/:id/resync` endpoint. | |
 | `PID_PREFIX` | string | | The facility PID prefix, with trailing slash. | |
 | `PUBLIC_URL_PREFIX` | string | | The base URL to the facility Landing Page. | |
