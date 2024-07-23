@@ -130,8 +130,7 @@ jobs:
       - name: API tests
         env:
           ELASTICSEARCH_ENABLED: ${{ matrix.elasticsearch_enabled }}
-          MONGODB_URI: mongodb://localhost:27017/scicat
-          MONGODB_TEST: scicat
+          MONGODB_URI: mongodb://localhost:27017/scicat-test-db
           EXPRESS_SESSION_SECRET: a_scicat_secret
           JWT_SECRET: a_scicat_secret
           PORT: 3000

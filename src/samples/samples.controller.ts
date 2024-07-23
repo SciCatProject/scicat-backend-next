@@ -554,12 +554,12 @@ export class SamplesController {
     return sample;
   }
 
-  // GET /samples/:id/access
+  // GET /samples/:id/authorization
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
-  @Get("/:id/access")
+  @Get("/:id/authorization")
   @ApiOperation({
     summary: "Check user access to a specific sample.",
     description:

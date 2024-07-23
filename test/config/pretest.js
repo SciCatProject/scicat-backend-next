@@ -3,7 +3,7 @@
 
 var chaiHttp = require("chai-http");
 const { MongoClient } = require("mongodb");
-const testDbName = process.env.MONGODB_TEST || "scicat-test";
+const testDbName = "scicat-test-db";
 const uri = `mongodb://localhost:27017/${testDbName}`;
 
 const client = new MongoClient(uri);

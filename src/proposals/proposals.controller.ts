@@ -549,12 +549,12 @@ export class ProposalsController {
     return proposal;
   }
 
-  // GET /proposals/:pid/access
+  // GET /proposals/:pid/authorization
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
-  @Get("/:pid/access")
+  @Get("/:pid/authorization")
   @ApiOperation({
     summary: "Check user access to a specific proposal.",
     description:
@@ -585,7 +585,7 @@ export class ProposalsController {
       proposal,
       request,
     );
-    return { canAccess: canAccess };
+    return { canAccess };
   }
 
   // PATCH /proposals/:pid
