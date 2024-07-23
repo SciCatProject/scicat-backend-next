@@ -1349,6 +1349,18 @@ describe("2250: Sample Authorization", () => {
       });
   });
 
+  it("0641: check Admin Ingestor access to public sample 1 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId1 + "/access")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
+      });
+  });
+
   it("0645: fetch all attachments for sample 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
@@ -1585,6 +1597,18 @@ describe("2250: Sample Authorization", () => {
       .expect(TestData.CreationForbiddenStatusCode);
   });
 
+  it("0731: check Sample Ingestor access to sample 1 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId1 + "/access")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
+  });
+
   it("0735: fetch all attachments for sample 1 as Sample Ingestor, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
@@ -1602,6 +1626,18 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleId").and.be.equal(sampleId2);
+      });
+  });
+
+  it("0741: check Sample Ingestor access to sample 2 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId2 + "/access")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenSampleIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
       });
   });
 
@@ -1769,6 +1805,18 @@ describe("2250: Sample Authorization", () => {
       .expect(TestData.CreationForbiddenStatusCode);
   });
 
+  it("0831: check User 1 access to sample 2 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId1 + "/access")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
+  });
+
   it("0835: fetch all attachments for sample 1 as User 1, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
@@ -1802,6 +1850,18 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleId").and.be.equal(sampleId3);
+      });
+  });
+
+  it("0851: check User 1 access to sample 3 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId3 + "/access")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
       });
   });
 
@@ -2736,6 +2796,17 @@ describe("2250: Sample Authorization", () => {
       .expect(TestData.AccessForbiddenStatusCode);
   });
 
+  it("1331: check unauthenticated user access to sample 1 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId1 + "/access")
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
+  });
+
   it("1335: fetch all attachments for sample 1 as Unauthenticated User, which should fail", async () => {
     return request(appUrl)
       .get("/api/v3/Samples/" + sampleId1 + "/attachments")
@@ -2863,6 +2934,17 @@ describe("2250: Sample Authorization", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("sampleId").and.be.equal(sampleId10);
+      });
+  });
+
+  it("1421: check unauthenticated user access to public sample 10 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/Samples/" + sampleId10 + "/access")
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
       });
   });
 
