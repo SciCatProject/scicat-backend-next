@@ -47,6 +47,7 @@ import {
   filterExampleSimplified,
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
+import { JobAction } from "./config/jobconfig";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -549,28 +550,63 @@ export class JobsController {
   }
 
   /**
-   * Send off to external service, update job in database if needed
+   * Send off to external service
    */
+  async performJobAction(jobInstance: JobClass, action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>): Promise<void> {
+    await action.performJob(jobInstance).catch((err: Error) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+            jobInstance.type
+          } job due to ${err}`,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
+  }
+
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobMatchingConfiguration(jobInstance.type);
     for (const action of jobConfig.create.actions) {
-      await action.performJob(jobInstance).catch((err: Error) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
-              jobInstance.type
-            } job due to ${err}`,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      });
+      await this.performJobAction(jobInstance, action);
     }
     return;
   }
+
+  async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
+    const jobConfig = this.getJobMatchingConfiguration(jobInstance);
+
+    await Promise.all(
+      jobConfig.statusUpdate.actions.map((action) => {
+        return action.validate(jobInstance).catch((err) => {
+          Logger.error(err);
+          if (err instanceof HttpException) {
+            throw err;
+          }
+
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+                jobInstance.type
+              } job due to ${err}`,
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        });
+      }),
+    );
+
+    for (const action of jobConfig.statusUpdate.actions) {
+      await this.performJobAction(jobInstance, action);
+    }
+    return;
+  }
+
 
   /**
    * Create job
@@ -671,10 +707,11 @@ export class JobsController {
     }
 
     // Update job in database
-    const updatedJob = await this.jobsService.statusUpdate(
-      id,
-      statusUpdateJobDto,
-    );
+    const updatedJob = await this.jobsService.statusUpdate(id, statusUpdateJobDto);
+    // Perform the action that is specified in the update portion of the job configuration
+    if (updatedJob !== null) {
+      await this.performJobStatusUpdateAction(updatedJob);
+    }
 
     // Emit update event
     // MN: not needed

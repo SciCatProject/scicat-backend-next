@@ -15,11 +15,11 @@ export class LogJobAction<T> implements JobAction<T> {
   }
 
   async validate(dto: T) {
-    Logger.log("Validating CREATE job: " + JSON.stringify(dto), "LogJobAction");
+    Logger.log("Validating job: " + JSON.stringify(dto), "LogJobAction");
   }
 
   async performJob(job: JobClass) {
-    Logger.log("Performing CREATE job: " + JSON.stringify(job), "LogJobAction");
+    Logger.log("Performing job: " + JSON.stringify(job), "LogJobAction");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
