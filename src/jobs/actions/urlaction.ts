@@ -1,9 +1,4 @@
-import {
-  Logger,
-  NotFoundException,
-  BadRequestException,
-  HttpException,
-} from "@nestjs/common";
+import { Logger, NotFoundException, HttpException } from "@nestjs/common";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import * as Handlebars from "handlebars";
@@ -24,6 +19,16 @@ const jobTemplateOptions = {
 };
 
 /**
+ * Type guard for Record<string, string>
+ * @param obj
+ * @returns
+ */
+function isStringRecord(obj: any): obj is Record<string, string> {
+  return typeof obj === 'object' && obj !== null &&
+         Object.keys(obj).every(key => typeof key === 'string' && typeof obj[key] === 'string');
+}
+
+/**
  * Respond to Job events by making an HTTP call.
  */
 export class URLAction<T> implements JobAction<T> {
@@ -31,8 +36,8 @@ export class URLAction<T> implements JobAction<T> {
 
   private urlTemplate: Handlebars.TemplateDelegate<JobClass>;
   private method = "GET";
-  private headers: Record<string, string> = {};
-  private body: Record<string, any> | null = null;
+  private headerTemplates?: Record<string, Handlebars.TemplateDelegate<JobClass>> = {};
+  private bodyTemplate?: Handlebars.TemplateDelegate<JobClass>;
 
   getActionType(): string {
     return URLAction.actionType;
@@ -41,13 +46,13 @@ export class URLAction<T> implements JobAction<T> {
   async validate(dto: T) {}
 
   async performJob(job: JobClass) {
-    const url = this.urlTemplate(job, jobTemplateOptions);
+    const url = encodeURI(this.urlTemplate(job, jobTemplateOptions));
     Logger.log(`Requesting ${url}`, "URLAction");
 
     const response = await fetch(url, {
       method: this.method,
-      headers: this.headers,
-      body: JSON.stringify(this.body),
+      headers: this.headerTemplates ? Object.fromEntries(Object.entries(this.headerTemplates).map(([key, template]) => [key, template(job, jobTemplateOptions)])): undefined,
+      body: this.bodyTemplate ? this.bodyTemplate(job, jobTemplateOptions) : undefined,
     });
 
     Logger.log(`Request for ${url} returned ${response.status}`, "URLAction");
@@ -84,8 +89,13 @@ export class URLAction<T> implements JobAction<T> {
       this.method = data.method;
     }
     if (data["headers"]) {
-      this.headers = data.headers;
+      if(!isStringRecord(data.headers)) {
+        throw new NotFoundException("Param 'headers' should map strings to strings");
+      }
+      this.headerTemplates = Object.fromEntries(Object.entries(data.headers).map(([key, value]) => [key, Handlebars.compile(value)]));
     }
-    this.body = data["body"];
+    if (data["body"]) {
+      this.bodyTemplate = Handlebars.compile(data["body"]);
+    }
   }
 }
