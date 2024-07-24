@@ -1,3 +1,22 @@
+/**
+ * Handlebar helper functions.
+ *
+ * Helpers should be registered in app.module.ts
+ */
+import { JobClass } from "src/jobs/schemas/job.schema";
+import { JobsConfigSchema } from "src/jobs/types/jobs-config-schema.enum";
+
+/**
+ * Convert json objects to HTML
+ *
+ * Supports:
+ * - boolean, numbers, and strings without modification
+ * - Arrays as <ul>
+ * - Objects as key: value pairs separated by <br/>
+ * - null as "Not specified"
+ * @param json
+ * @returns
+ */
 export const unwrapJSON = (json: unknown): string | number => {
   if (json === null) {
     return "Not specified";
@@ -40,6 +59,82 @@ export const formatCamelCase = (camelCase: string): string => {
   return words;
 };
 
-export const jsonify = (context: any): string => {
+/**
+ * Convert a handlebars context to a json string
+ *
+ * Useful for debugging, eg "{{{jsonify this}}}". Results contain newlines.
+ * @param context Handlebars variable
+ * @returns string
+ */
+export const jsonify = (context: unknown): string => {
   return JSON.stringify(context, null, 3);
 };
+
+
+type DatasetIdV3 = {
+  pid: string;
+  files: string[];
+};
+interface JobV3 {
+  id: string;
+  emailJobInitiator: string;
+  type: string;
+  creationTime: Date;
+  executionTime?: Date;
+  jobParams: Record<string, unknown>;
+  jobStatusMessage: string;
+  datasetList: DatasetIdV3[];
+  jobResultObject?: unknown;
+}
+
+/**
+ * Convert a current job to follow the old v3 schema.
+ *
+ * Useful as a shim for backwards compatibility with old archive systems.
+ *
+ * Example: '{{{ jsonify (job_v3 this) }}}'
+ * @param context
+ */
+export const job_v3 = (job: JobClass): JobV3 => {
+  let datasetList: DatasetIdV3[];
+  if(JobsConfigSchema.DatasetIds in job.jobParams) {
+    const datasetIds = job.jobParams[JobsConfigSchema.DatasetIds] as string[];
+    datasetList = datasetIds.map(pid => ({
+      pid: pid,
+      files: [],
+    }));
+  } else {
+    datasetList = [];
+  }
+  return {
+    "id": job.id,
+    "emailJobInitiator": job.contactEmail,
+    "type": job.type,
+    "creationTime": job.createdAt,
+    "jobParams": {
+      ...job.jobParams,
+      "username": job.createdBy
+    },
+    //v3 statusMessages were generally concise, so use the statusCode
+    "jobStatusMessage": job.statusCode,
+    "datasetList": datasetList,
+  };
+};
+
+/**
+ * URL encode input
+ * @param context Handlebars variable
+ * @returns URL-encoded string
+ */
+export const urlencode = (context: string): string => {
+  return encodeURIComponent(context);
+}
+
+/**
+ * Base64 encode input
+ * @param context Handlebars variable
+ * @returns URL-encoded string
+ */
+export const base64enc = (context: string): string => {
+  return btoa(context);
+}
