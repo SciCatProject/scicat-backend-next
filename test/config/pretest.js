@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 //NOTE: Here we load and initialize some global variables that are used throughout the tests
-
+require("dotenv").config();
 var chaiHttp = require("chai-http");
-const { MongoClient } = require("mongodb");
-const testDbName = "scicat-test-db";
-const uri = `mongodb://localhost:27017/${testDbName}`;
 
-const client = new MongoClient(uri);
+const { MongoClient } = require("mongodb");
+
+const client = new MongoClient(process.env.MONGODB_URI);
 
 async function loadChai() {
   const { chai } = import("chai");
   chai.use(chaiHttp);
   await client.connect();
 }
-loadChai();
 
+loadChai();
 global.appUrl = "http://localhost:3000";
 global.request = require("supertest");
-global.db = client.db(testDbName);
+global.db = client.db();
