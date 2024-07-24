@@ -23,6 +23,7 @@ If you have any questions, please feel free to contact any member of the develop
 or the SciCat team at ESS.
 
 ## Contributing
+
 If you're planning to contribute to this project by adding new functionality, we encourage you to discuss it first in the Discussions tab. This helps ensure that your proposed changes align with the project's goals and prevents duplicate efforts. Here's how you can initiate a discussion:
 
 1. Go to the [Discussions tab](https://github.com/SciCatProject/scicat-backend-next/discussions).

@@ -33,7 +33,6 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
@@ -181,7 +180,7 @@ export class ProposalsController {
       );
 
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
+        throw new ForbiddenException("Unauthorized to this proposal");
       }
     }
     return proposal;
@@ -516,8 +515,8 @@ export class ProposalsController {
     return this.proposalsService.fullfacet(parsedFilters);
   }
 
-  // GET /proposals/:id
-  @UseGuards(AuthenticatedPoliciesGuard)
+  // GET /proposals/:pid
+  @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
@@ -532,7 +531,7 @@ export class ProposalsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: false,
     description: "Return proposal with pid specified",
@@ -546,7 +545,47 @@ export class ProposalsController {
       proposalId,
       Action.ProposalsRead,
     );
+
     return proposal;
+  }
+
+  // GET /proposals/:pid/authorization
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(Action.ProposalsRead, ProposalClass),
+  )
+  @Get("/:pid/authorization")
+  @ApiOperation({
+    summary: "Check user access to a specific proposal.",
+    description:
+      "Returns a boolean indicating whether the user has access to the proposal with the specified ID.",
+  })
+  @ApiParam({
+    name: "pid",
+    description: "ID of the proposal to check access for",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Boolean,
+    description:
+      "Returns true if the user has access to the specified proposal, otherwise false.",
+  })
+  async findByIdAccess(
+    @Req() request: Request,
+    @Param("pid") proposalId: string,
+  ): Promise<{ canAccess: boolean }> {
+    const proposal = await this.proposalsService.findOne({
+      proposalId,
+    });
+    if (!proposal) return { canAccess: false };
+
+    const canAccess = await this.permissionChecker(
+      Action.ProposalsRead,
+      proposal,
+      request,
+    );
+    return { canAccess };
   }
 
   // PATCH /proposals/:pid
