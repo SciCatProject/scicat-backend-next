@@ -3,7 +3,23 @@
 
 var chaiHttp = require("chai-http");
 const { MongoClient } = require("mongodb");
-const uri = process.env.MONGODB_URI;
+require("dotenv").config();
+var chaiHttp = require("chai-http");
+
+const { MongoClient } = require("mongodb");
+
+const client = new MongoClient(process.env.MONGODB_URI);
+
+async function loadChai() {
+  const { chai } = import("chai");
+  chai.use(chaiHttp);
+  await client.connect();
+}
+
+loadChai();
+global.appUrl = "http://localhost:3000";
+global.request = require("supertest");
+global.db = client.db();
 
 const client = new MongoClient(uri);
 
