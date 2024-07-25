@@ -3,18 +3,35 @@
  * This is intended as an example of the JobAction interface
  *
  */
+import { readFileSync } from "fs";
+import { compile, TemplateDelegate } from "handlebars";
 import { Logger, NotFoundException } from "@nestjs/common";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
-import { createTransport, Transporter } from "nodemailer";
-import { compile, TemplateDelegate } from "handlebars";
+import configuration from "src/config/configuration";
+import { createTransport, Transporter,  } from "nodemailer";
+
+
+// Handlebar options for JobClass templates
+const jobTemplateOptions = {
+  allowedProtoProperties: {
+    id: true,
+    type: true,
+    statusCode: true,
+    statusMessage: true,
+    createdBy: true,
+    jobParams: true,
+  },
+  allowProtoPropertiesByDefault: false, // limit accessible fields for security
+};
+
 
 /**
  * Send an email following a job
  */
 export class EmailJobAction<T> implements JobAction<T> {
   public static readonly actionType = "email";
-  private mailerDetails;
+  private messageDetails;
 
   getActionType(): string {
     return EmailJobAction.actionType;
@@ -26,10 +43,10 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    this.mailerDetails = {
-      mailer: data.mailer,
+    this.messageDetails = {
       to: data.to,
       from: data.from,
+      password: data.password,
       subject: data.subject,
       bodyTemplate: data.bodyTemplate,
     };
@@ -41,8 +58,8 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    const mailerDetailsMissing = [undefined, ""].some(el => Object.values(this.mailerDetails).includes(el));
-    if (mailerDetailsMissing) {
+    const messageDetailsMissing = [undefined, ""].some(el => Object.values(this.messageDetails).includes(el));
+    if (messageDetailsMissing) {
       throw new NotFoundException("Email action is not configured correctly.");
     }
   }
@@ -53,23 +70,34 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    // const mailService: Transporter = createTransport(this.mailerDetails.mailer);
-    const toTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.to);
-    const subjectTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.subject);
-    const bodyTemplate: TemplateDelegate<JobClass> = compile(this.mailerDetails.bodyTemplate);
+    const mailerConfig = configuration().smtp;
+
+    const mailService: Transporter = createTransport({
+      host: mailerConfig.host,
+      port: mailerConfig.port,
+      secure: mailerConfig.secure,
+      auth: {
+        user: this.messageDetails.from,
+        pass: this.messageDetails.password
+      }
+    } as any);
+    const toTemplate: TemplateDelegate<JobClass> = compile(this.messageDetails.to);
+    const subjectTemplate: TemplateDelegate<JobClass> = compile(this.messageDetails.subject);
+
+    const templateFile = readFileSync(this.messageDetails.bodyTemplate, "utf8");
+    const bodyTemplate: TemplateDelegate<JobClass> = compile(templateFile);
 
     // Fill templates
     const mail: any = {
-      to: toTemplate(job),
-      from: this.mailerDetails.from,
-      subject: subjectTemplate(job),
+      to: toTemplate(job, jobTemplateOptions),
+      from: this.messageDetails.from,
+      subject: subjectTemplate(job, jobTemplateOptions),
     };
     if (bodyTemplate) {
-      mail.text = bodyTemplate(job);
+      mail.text = bodyTemplate(job, jobTemplateOptions);
     }
 
-    Logger.log(mail);
-
-    // await mailService.sendMail(mail);
+    // Send the email
+    await mailService.sendMail(mail);
   }
 }

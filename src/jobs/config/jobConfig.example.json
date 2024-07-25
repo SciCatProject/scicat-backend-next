@@ -28,11 +28,11 @@
           },
           {
             "actionType": "email",
-            "mailer": "smtp",
-            "to": "{{job.contactEmail}}",
-            "from": "someone",
-            "subject": "[SciCat] Your {{job.type}} job was submitted successfully",
-            "bodyTemplate": "some-file"
+            "to": "{{contactEmail}}",
+            "from": "",
+            "password": "",
+            "subject": "[SciCat] Your {{type}} job was submitted successfully",
+            "bodyTemplate": "src/common/email-templates/job-template-simplified.html"
           }
         ]
       },
