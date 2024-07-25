@@ -16,5 +16,3 @@ loadChai();
 global.appUrl = "http://localhost:3000";
 global.request = require("supertest");
 global.db = client.db();
-
-const client = new MongoClient(uri);
