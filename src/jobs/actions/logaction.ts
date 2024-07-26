@@ -22,8 +22,7 @@ export class LogJobAction<T> implements JobAction<T> {
     Logger.log("Performing job: " + JSON.stringify(job), "LogJobAction");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(data: Record<string, any>) {
+  constructor(data: Record<string, unknown>) {
     Logger.log(
       "Initializing LogJobAction. Params: " + JSON.stringify(data),
       "LogJobAction",
