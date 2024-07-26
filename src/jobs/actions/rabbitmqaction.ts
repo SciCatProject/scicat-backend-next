@@ -11,24 +11,42 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
   private connection;
   private binding;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(data: Record<string, any>) {
+  constructor(data: Record<string, unknown>) {
     Logger.log(
       "Initializing RabbitMQJobAction. Params: " + JSON.stringify(data),
       "RabbitMQJobAction",
     );
 
+    // Validate that all necessary params are present
+    const requiredConnectionParams = [
+      "hostname",
+      "port",
+      "username",
+      "password",
+    ];
+    for (const param of requiredConnectionParams) {
+      if (!data[param]) {
+        throw new NotFoundException(`Missing connection parameter: ${param}`);
+      }
+    }
+
+    const requiredBindingParams = ["exchange", "queue", "key"];
+    for (const param of requiredBindingParams) {
+      if (!data[param]) {
+        throw new NotFoundException(`Missing binding parameter: ${param}`);
+      }
+    }
     this.connection = {
       protocol: "amqp",
-      hostname: data.hostname,
-      port: data.port,
-      username: data.username,
-      password: data.password,
+      hostname: data.hostname as string,
+      port: data.port as number,
+      username: data.username as string,
+      password: data.password as string,
     };
     this.binding = {
-      exchange: data.exchange,
-      queue: data.queue,
-      key: data.key,
+      exchange: data.exchange as string,
+      queue: data.queue as string,
+      key: data.key as string,
     };
   }
 
@@ -36,30 +54,8 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
     return RabbitMQJobAction.actionType;
   }
 
-  async validate(dto: T) {
-    Logger.log(
-      "Validating RabbitMQJobAction: " + JSON.stringify(dto),
-      "RabbitMQJobAction",
-    );
-
-    const connectionDetailsMissing = [undefined, ""].some((el) =>
-      Object.values(this.connection).includes(el),
-    );
-    if (connectionDetailsMissing) {
-      throw new NotFoundException(
-        "RabbitMQ configuration is missing connection details.",
-      );
-    }
-
-    const bindingDetailsMissing = [undefined, ""].some((el) =>
-      Object.values(this.binding).includes(el),
-    );
-    if (bindingDetailsMissing) {
-      throw new NotFoundException(
-        "RabbitMQ binding is missing exchange/queue/key details.",
-      );
-    }
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async validate(dto: T) {}
 
   async performJob(job: JobClass) {
     Logger.log(

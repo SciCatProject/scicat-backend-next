@@ -27,8 +27,7 @@ export class URLAction<T> implements JobAction<T> {
   private urlTemplate: Handlebars.TemplateDelegate<JobClass>;
   private method = "GET";
   private headers: Record<string, string> = {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private body: Record<string, any> | null = null;
+  private body: Record<string, unknown> | null = null;
 
   getActionType(): string {
     return URLAction.actionType;
