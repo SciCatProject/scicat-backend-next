@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Job configuration
  *
@@ -24,7 +23,6 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 
-
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
@@ -32,20 +30,17 @@ export class JobConfig {
   jobType: string;
   configVersion: string;
   create: JobOperation<CreateJobDto>;
-  // read: JobOperation<ReadJobDto>;
   statusUpdate: JobOperation<StatusUpdateJobDto>;
 
   constructor(
     jobType: string,
     configVersion: string,
     create: JobOperation<CreateJobDto>,
-    read = undefined,
     statusUpdate: JobOperation<StatusUpdateJobDto>,
   ) {
     this.jobType = jobType;
     this.configVersion = configVersion;
     this.create = create;
-    // this.read = read;
     this.statusUpdate = statusUpdate;
   }
 
@@ -55,23 +50,35 @@ export class JobConfig {
    * @returns
    */
   static parse(
-    jobData: Record<string, any>,
-    configVersion: string
+    jobData: Record<string, unknown>,
+    configVersion: string,
   ): JobConfig {
-    const type = jobData[JobsConfigSchema.JobType];
+    if (
+      !(JobsConfigSchema.JobType in jobData) ||
+      typeof jobData[JobsConfigSchema.JobType] !== "string"
+    ) {
+      throw new Error(`Invalid job type`);
+    }
+    const type = jobData[JobsConfigSchema.JobType] as string;
+    if (!(AuthOp.Create in jobData)) {
+      throw new Error(`No ${AuthOp.Create} configured for job type "${type}"`);
+    }
+    if (!(AuthOp.StatusUpdate in jobData)) {
+      throw new Error(
+        `No ${AuthOp.StatusUpdate} configured for job type "${type}"`,
+      );
+    }
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
-      jobData[AuthOp.Create],
+      jobData[AuthOp.Create] as Record<string, unknown>,
     );
-    const read = undefined;
     const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
       statusUpdateActions,
-      jobData[AuthOp.StatusUpdate],
+      jobData[AuthOp.StatusUpdate] as Record<string, unknown>,
     );
-    return new JobConfig(type, configVersion, create, read, statusUpdate);
+    return new JobConfig(type, configVersion, create, statusUpdate);
   }
 }
-
 
 /**
  * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
@@ -87,22 +94,35 @@ export class JobOperation<DtoType> {
 
   static parse<DtoType>(
     actionList: Record<string, JobActionClass<DtoType>>,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
   ): JobOperation<DtoType> {
     // if Auth is not defined, default to #authenticated
-    const auth = data[JobsConfigSchema.Auth]
-      ? data[JobsConfigSchema.Auth]
-      : CreateJobAuth.Authenticated;
-    const actionsData: any[] = data[JobsConfigSchema.Actions]
-      ? data[JobsConfigSchema.Actions]
-      : [];
-    const actions = actionsData.map((json) =>
-      parseAction<DtoType>(actionList, json),
-    );
+    let auth: JobsAuth = CreateJobAuth.Authenticated;
+    if (data[JobsConfigSchema.Auth]) {
+      // don't bother to validate auth value
+      if (typeof data[JobsConfigSchema.Auth] !== "string") {
+        throw new Error(
+          `Invalid auth value "${data[JobsConfigSchema.Auth]}" for job type`,
+        );
+      }
+      auth = data[JobsConfigSchema.Auth] as JobsAuth;
+    }
+    let actionsData: unknown[] = [];
+    if (JobsConfigSchema.Actions in data) {
+      if (!Array.isArray(data[JobsConfigSchema.Actions])) {
+        throw new Error(`Expected array for ${JobsConfigSchema.Actions} value`);
+      }
+      actionsData = data[JobsConfigSchema.Actions];
+    }
+    const actions = actionsData.map((json) => {
+      if (typeof json !== "object") {
+        throw new Error(`Expected object for job config action`);
+      }
+      return parseAction<DtoType>(actionList, json as Record<string, unknown>);
+    });
     return new JobOperation<DtoType>(actions, auth);
   }
 }
-
 
 /**
  * Given a JSON object configuring a JobConfigAction.
@@ -114,11 +134,13 @@ export class JobOperation<DtoType> {
  */
 function parseAction<DtoType>(
   actionList: Record<string, JobActionClass<DtoType>>,
-  data: Record<string, any>,
+  data: Record<string, unknown>,
 ): JobAction<DtoType> {
   if (!(JobsConfigSchema.ActionType in data))
     throw SyntaxError(`No action.actionType in ${JSON.stringify(data)}`);
-
+  if (typeof data[JobsConfigSchema.ActionType] !== "string") {
+    throw SyntaxError(`Expected string for ${JobsConfigSchema.ActionType}`);
+  }
   const type = data[JobsConfigSchema.ActionType];
   if (!(type in actionList)) {
     throw SyntaxError(`No handler found for actions of type ${type}`);
@@ -127,7 +149,6 @@ function parseAction<DtoType>(
   const actionClass = actionList[type];
   return new actionClass(data);
 }
-
 
 /**
  * Superclass for all responses to Job changes
@@ -150,7 +171,6 @@ export interface JobAction<DtoType> {
   getActionType(): string;
 }
 
-
 /**
  * Describes the constructor and static members for JobAction implementations
  */
@@ -159,28 +179,27 @@ export interface JobActionClass<DtoType> {
    * Action type, eg "url". Matched during parsing of the action
    */
   readonly actionType: string;
-  new (json: Record<string, any>): JobAction<DtoType>;
+  new (json: Record<string, unknown>): JobAction<DtoType>;
 }
 
 export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
 export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
 
-
 /**
  * Action registration
  */
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
-// const readActions: Record<string, JobActionClass<ReadJobDto>> = {};
-const statusUpdateActions: Record<string, JobActionClass<StatusUpdateJobDto>> = {};
+const statusUpdateActions: Record<
+  string,
+  JobActionClass<StatusUpdateJobDto>
+> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
  * @param action
  */
-export function registerCreateAction(
-  action: JobActionClass<CreateJobDto>
-) {
+export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
   createActions[action.actionType] = action;
 }
 
@@ -202,7 +221,6 @@ export function getRegisteredStatusUpdateActions(): string[] {
   return Object.keys(statusUpdateActions);
 }
 
-
 /**
  * Parsing
  */
@@ -220,7 +238,7 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   }
 
   const json = fs.readFileSync(filePath, "utf8");
-  let data = JSON.parse(json);
+  const data = JSON.parse(json);
 
   // Validate schema
   const ajv = new Ajv();
@@ -232,6 +250,8 @@ export function loadJobConfig(filePath: string): JobConfig[] {
     console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
 
-  jobConfig = data.jobs.map((jobData: Record<string, any>) => JobConfig.parse(jobData, data.configVersion));
+  jobConfig = data.jobs.map((jobData: Record<string, unknown>) =>
+    JobConfig.parse(jobData, data.configVersion),
+  );
   return jobConfig as JobConfig[];
 }

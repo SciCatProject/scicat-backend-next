@@ -13,6 +13,7 @@ let accessTokenAdminIngestor = null,
 describe("2200: Sample: Simple Sample", () => {
   before(() => {
     db.collection("Sample").deleteMany({});
+    db.collection("Dataset").deleteMany({});
   });
   beforeEach((done) => {
     utils.getToken(

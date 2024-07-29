@@ -1,9 +1,4 @@
-import {
-  Logger,
-  NotFoundException,
-  BadRequestException,
-  HttpException,
-} from "@nestjs/common";
+import { Logger, NotFoundException, HttpException } from "@nestjs/common";
 import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import * as Handlebars from "handlebars";
@@ -32,12 +27,13 @@ export class URLAction<T> implements JobAction<T> {
   private urlTemplate: Handlebars.TemplateDelegate<JobClass>;
   private method = "GET";
   private headers: Record<string, string> = {};
-  private body: Record<string, any> | null = null;
+  private body: Record<string, unknown> | null = null;
 
   getActionType(): string {
     return URLAction.actionType;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(dto: T) {}
 
   async performJob(job: JobClass) {
@@ -75,6 +71,7 @@ export class URLAction<T> implements JobAction<T> {
    *
    * @throws {NotFoundException} If the 'url' parameter is not provided in the data object
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     if (!data["url"]) {
       throw new NotFoundException("Param 'url' is undefined in url action");
