@@ -71,10 +71,33 @@ export class UserSettings {
 
   @ApiProperty({
     type: [Object],
-    default: [],
+    default: [
+      { type: "LocationFilterComponent", visible: true },
+      { type: "PidFilterComponent", visible: true },
+      { type: "PidFilterContainsComponent", visible: false },
+      { type: "PidFilterStartsWithComponent", visible: false },
+      { type: "GroupFilterComponent", visible: true },
+      { type: "TypeFilterComponent", visible: true },
+      { type: "KeywordFilterComponent", visible: true },
+      { type: "DateRangeFilterComponent", visible: true },
+      { type: "TextFilterComponent", visible: true },
+    ],
     description: "Array of filters the user has set",
   })
-  @Prop({ type: [{ type: Object }], default: [] })
+  @Prop({
+    type: [{ type: Object }],
+    default: [
+      { type: "LocationFilterComponent", visible: true },
+      { type: "PidFilterComponent", visible: true },
+      { type: "PidFilterContainsComponent", visible: false },
+      { type: "PidFilterStartsWithComponent", visible: false },
+      { type: "GroupFilterComponent", visible: true },
+      { type: "TypeFilterComponent", visible: true },
+      { type: "KeywordFilterComponent", visible: true },
+      { type: "DateRangeFilterComponent", visible: true },
+      { type: "TextFilterComponent", visible: true },
+    ],
+  })
   filters: FilterConfig[];
 
   @ApiProperty({
