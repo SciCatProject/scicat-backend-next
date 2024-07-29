@@ -9,7 +9,17 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import {
+  FilterQuery,
+  HydratedDocument,
+  IfAny,
+  Model,
+  ModifyResult,
+  Query,
+  QueryOptions,
+  Schema,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
@@ -39,6 +49,7 @@ import {
 } from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import Types = Schema.Types;
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -288,7 +299,30 @@ export class DatasetsService {
   }
 
   // DELETE dataset
-  async findByIdAndDelete(id: string): Promise<DatasetClass | null> {
+  async findByIdAndDelete(id: string): Promise<
+    Query<
+      ModifyResult<HydratedDocument<DatasetDocument, object, object>>,
+      Document & DatasetClass & Document extends {
+        _id?: infer U;
+      }
+        ? IfAny<
+            U,
+            DatasetClass &
+              Document & {
+                _id: Types.ObjectId;
+              },
+            DatasetClass & Document & Required<{ _id: U }>
+          >
+        : DatasetClass &
+            Document & {
+              _id: Types.ObjectId;
+            },
+      object,
+      DatasetClass & Document,
+      "findOneAndDelete"
+    > &
+      object
+  > {
     if (this.ESClient) {
       await this.ESClient.deleteDocument(id);
     }

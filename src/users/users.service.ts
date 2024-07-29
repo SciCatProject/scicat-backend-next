@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { genSalt, hash } from "bcrypt";
-import { FilterQuery, Model } from "mongoose";
+import { FilterQuery, HydratedDocument, Model, ModifyResult } from "mongoose";
 import { CreateUserIdentityDto } from "./dto/create-user-identity.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { RolesService } from "./roles.service";
@@ -249,7 +249,11 @@ export class UsersService implements OnModuleInit {
   }
 
   // NOTE: This is just for testing purposes inside accessGroups.e2e-spec.ts
-  async removeUserIdentity(userId: string): Promise<UserIdentity | null> {
+  async removeUserIdentity(
+    userId: string,
+  ): Promise<
+    ModifyResult<HydratedDocument<UserIdentityDocument, object, object>>
+  > {
     const removedUserIdentity = await this.userIdentityModel
       .findOneAndDelete({ userId })
       .exec();
