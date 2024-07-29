@@ -277,7 +277,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasets, which should fail", async () => {
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasets in job parameters, which should fail", async () => {
     const newDataset = {
       ...jobAll,
       ownerUser: "admin",
@@ -297,6 +297,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id")
+        res.body.should.have.property("message").and.be.equal("List of passed dataset IDs is empty.");
       });
   });
 
@@ -307,7 +308,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerGroup: "admin",
       jobParams: {
         ...jobAll.jobParams,
-        datasetIds: ["fakeID"],
+        datasetIds: ["fakeID", "fakeID2"],
       },
     };
 
@@ -323,9 +324,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0060: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration with no datasetIds parameter", async () => {
+  it("0060: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with no jobParams parameter, which should fail", async () => {
     const newDataset = {
-      ...jobAll,
+      type: "all_access",
       ownerUser: "admin",
       ownerGroup: "admin",
     };
@@ -335,37 +336,33 @@ describe("1100: Jobs: Test New Job Model", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerGroup").and.be.equal("admin");
-        res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
-        jobId1 = res.body["id"];
-        encodedJobId1 = encodeURIComponent(jobId1);
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Job parameters need to be defined.");
       });
   });
 
-  // it("0039: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with no jobParams parameter", async () => {
-  //   const newDataset = {
-  //     type: "public_access",
-  //     ownerUser: "admin",
-  //     ownerGroup: "admin",
-  //   };
+  it("0065: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with empty jobParams parameter, which should fail", async () => {
+    const newDataset = {
+      type: "all_access",
+      ownerUser: "admin",
+      ownerGroup: "admin",
+    };
 
-  //   return request(appUrl)
-  //     .post("/api/v3/Jobs")
-  //     .send(newDataset)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-  //     .expect(TestData.BadRequestStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.not.have.property("id");
-  //       res.body.should.have.propert("message").and.be.equal("Dataset ids list was not provided in jobParams");
-  //     });
-  // });
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Job parameters need to be defined.");
+      });
+  });
 
   it("0070: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#all' configuration", async () => {
     const newDataset = {
@@ -390,6 +387,8 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
         res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        jobId1 = res.body["id"];
+        encodedJobId1 = encodeURIComponent(jobId1);
       });
   });
 
@@ -3445,7 +3444,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(61);
+          res.body.should.be.an("array").to.have.lengthOf(60);
         });
   });
 
@@ -3460,7 +3459,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(37);
+          res.body.should.be.an("array").to.have.lengthOf(36);
         });
   });
 
@@ -3848,7 +3847,16 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1950: Access jobs as a user from ADMIN_GROUPS, which should be one less that before prooving that delete works.", async () => {
+  it("1950: Delete job not existing in database as Archive Manager, which should fail", async () => {
+    return request(appUrl)
+      .delete("/api/v3/jobs/" + 'fakeJobId')
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("1960: Access jobs as a user from ADMIN_GROUPS, which should be one less that before prooving that delete works.", async () => {
     return request(appUrl)
         .get(`/api/v3/Jobs/`)
         .send({})
@@ -3857,8 +3865,8 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(60);
+          res.body.should.be.an("array").to.have.lengthOf(59);
         });
-  });
+  }); 
 
 });
