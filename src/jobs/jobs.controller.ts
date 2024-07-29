@@ -312,7 +312,7 @@ export class JobsController {
     }
     interface condition {
       where: {
-        pid: { $eq: string };
+        pid: { $in: string[] };
       };
     }
     if (datasetIds.length == 0) {
@@ -324,22 +324,23 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    for (const i in datasetIds) {
-      const filter: condition = {
-        where: {
-          pid: { $eq: datasetIds[i] },
+
+    const filter: condition = {
+      where: {
+        pid: { $in: datasetIds },
+      },
+    };
+    const findDatasetsById = await this.datasetsService.findAll(filter);
+    const findIds = findDatasetsById.map(({ pid }) => pid);
+    const nonExistIds = datasetIds.filter((x) => !findIds.includes(x));
+    if (nonExistIds.length != 0) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: ` Datasets with pid ${nonExistIds} don't exist.`,
         },
-      };
-      const idCount = await this.datasetsService.count(filter);
-      if (idCount.count < 1) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            message: "At least one dataset in the ids list doesn't exist.",
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return datasetIds;
   }
@@ -638,6 +639,19 @@ export class JobsController {
     @Body() createJobDtoWithConfig: CreateJobDtoWithConfig,
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
+    // throw an error if no jobParams are passed
+    if (
+      !createJobDtoWithConfig.jobParams ||
+      Object.keys(createJobDtoWithConfig.jobParams).length == 0
+    ) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Job parameters need to be defined.",
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     // Validate that request matches the current configuration
     // Check job authorization
     const jobInstance = await this.instanceAuthorizationJobCreate(
@@ -866,7 +880,18 @@ export class JobsController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
-    Logger.log("Deleting job!");
+    const foundJob = await this.jobsService.findOne({ _id: id });
+    if (foundJob === null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: `Job id ${id} doesn't exist.`,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    Logger.log(`Deleting job with id ${id}!`);
     return this.jobsService.remove({ _id: id });
   }
 }
