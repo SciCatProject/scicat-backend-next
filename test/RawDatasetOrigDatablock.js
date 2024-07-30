@@ -14,10 +14,10 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
     origDatablockWithEmptyChkAlg = null,
     origDatablockWithValidChkAlg = null;
 
-    before(() => {
-      db.collection("Dataset").deleteMany({});
-      db.collection("OrigDatablock").deleteMany({});
-    });
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("OrigDatablock").deleteMany({});
+  });
   beforeEach(async() => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
