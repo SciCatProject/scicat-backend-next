@@ -18,38 +18,21 @@ describe("1900: RawDataset: Raw Datasets", () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Proposals").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "proposalIngestor",
-            password: TestData.Accounts["proposalIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessProposalToken = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "archiveManager",
-                password: TestData.Accounts["archiveManager"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
-              },
-            );
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessProposalToken = await utils.getToken(appUrl, {
+      username: "proposalIngestor",
+      password: TestData.Accounts["proposalIngestor"]["password"],
+    });
+
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   it("0010: adds a new proposal", async () => {

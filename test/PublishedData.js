@@ -38,28 +38,16 @@ describe("1600: PublishedData: Test of access to published data", () => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {
