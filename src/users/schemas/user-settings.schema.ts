@@ -30,6 +30,18 @@ export interface ScientificCondition {
   operator: string;
 }
 
+export const kDefaultFilters: FilterConfig[] = [
+  { type: "LocationFilterComponent", visible: true },
+  { type: "PidFilterComponent", visible: true },
+  { type: "PidFilterContainsComponent", visible: false },
+  { type: "PidFilterStartsWithComponent", visible: false },
+  { type: "GroupFilterComponent", visible: true },
+  { type: "TypeFilterComponent", visible: true },
+  { type: "KeywordFilterComponent", visible: true },
+  { type: "DateRangeFilterComponent", visible: true },
+  { type: "TextFilterComponent", visible: true },
+];
+
 @Schema({
   collection: "UserSetting",
   toJSON: {
@@ -71,32 +83,12 @@ export class UserSettings {
 
   @ApiProperty({
     type: [Object],
-    default: [
-      { type: "LocationFilterComponent", visible: true },
-      { type: "PidFilterComponent", visible: true },
-      { type: "PidFilterContainsComponent", visible: false },
-      { type: "PidFilterStartsWithComponent", visible: false },
-      { type: "GroupFilterComponent", visible: true },
-      { type: "TypeFilterComponent", visible: true },
-      { type: "KeywordFilterComponent", visible: true },
-      { type: "DateRangeFilterComponent", visible: true },
-      { type: "TextFilterComponent", visible: true },
-    ],
+    default: kDefaultFilters,
     description: "Array of filters the user has set",
   })
   @Prop({
     type: [{ type: Object }],
-    default: [
-      { type: "LocationFilterComponent", visible: true },
-      { type: "PidFilterComponent", visible: true },
-      { type: "PidFilterContainsComponent", visible: false },
-      { type: "PidFilterStartsWithComponent", visible: false },
-      { type: "GroupFilterComponent", visible: true },
-      { type: "TypeFilterComponent", visible: true },
-      { type: "KeywordFilterComponent", visible: true },
-      { type: "DateRangeFilterComponent", visible: true },
-      { type: "TextFilterComponent", visible: true },
-    ],
+    default: kDefaultFilters,
   })
   filters: FilterConfig[];
 

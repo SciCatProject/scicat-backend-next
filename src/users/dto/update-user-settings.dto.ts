@@ -1,4 +1,8 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
+import {
+  FilterConfig,
+  ScientificCondition,
+} from "../schemas/user-settings.schema";
 
 export class UpdateUserSettingsDto {
   @ApiProperty()
@@ -9,6 +13,12 @@ export class UpdateUserSettingsDto {
 
   @ApiProperty({ type: Number, required: false, default: 25 })
   readonly jobCount?: number;
+
+  @ApiProperty()
+  readonly filters: FilterConfig[];
+
+  @ApiProperty()
+  readonly conditions: ScientificCondition[];
 }
 
 export class PartialUpdateUserSettingsDto extends PartialType(
