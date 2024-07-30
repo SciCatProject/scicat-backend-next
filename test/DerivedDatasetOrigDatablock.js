@@ -11,11 +11,11 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
   let origDatablockId1 = null;
   let origDatablockId2 = null;
 
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+    db.collection("OrigDatablock").deleteMany({});
+  });
   beforeEach(async() => {
-    before(() => {
-      db.collection("Dataset").deleteMany({});
-      db.collection("OrigDatablock").deleteMany({});
-    });
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

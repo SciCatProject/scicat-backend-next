@@ -43,8 +43,8 @@ describe("2360: Users settings", () => {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
     });
-    userIdUser1 = loginResponseUser1.userId
-    accessTokenUser1  = loginResponseUser1.token
+    userIdUser1 = loginResponseUser1.userId;
+    accessTokenUser1  = loginResponseUser1.token;
   });
 
   it("0010: Update users settings with valid value should sucess ", async () => {
