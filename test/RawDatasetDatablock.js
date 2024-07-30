@@ -10,31 +10,19 @@ describe("1800: RawDatasetDatablock: Test Datablocks and their relation to raw D
   var datablockId = null;
   var datablockId2 = null;
 
-  beforeEach((done) => {
+  beforeEach(async() => {
     before(() => {
       db.collection("Dataset").deleteMany({});
     });
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
-          },
-        );
-      },
-    );
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   it("0010: adds a new raw dataset", async () => {

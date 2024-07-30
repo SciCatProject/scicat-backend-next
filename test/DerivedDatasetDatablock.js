@@ -10,32 +10,20 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
 
   let datablockId1 = null;
   let datablockId2 = null;
-
-  beforeEach((done) => {
+ 
+  beforeEach(async() => {
     before(() => {
       db.collection("Dataset").deleteMany({});
     });
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
-          },
-        );
-      },
-    );
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   it("0100:adds a new derived dataset", async () => {
