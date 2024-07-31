@@ -5,7 +5,7 @@ const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
 
-let accessTokenProposalIngestor= null,
+let accessTokenProposalIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
@@ -40,6 +40,9 @@ const proposal3 = {
 };
 
 describe("1400: ProposalAuthorization: Test access to proposal", () => {
+  before(() => {
+    db.collection("Proposal").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,
@@ -48,7 +51,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
         password: TestData.Accounts["adminIngestor"]["password"],
       },
       (tokenVal) => {
-        accessTokenAdminIngestor= tokenVal;
+        accessTokenAdminIngestor = tokenVal;
 
         utils.getToken(
           appUrl,
@@ -78,7 +81,8 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
                       appUrl,
                       {
                         username: "archiveManager",
-                        password: TestData.Accounts["archiveManager"]["password"],
+                        password:
+                          TestData.Accounts["archiveManager"]["password"],
                       },
                       (tokenVal) => {
                         accessTokenArchiveManager = tokenVal;

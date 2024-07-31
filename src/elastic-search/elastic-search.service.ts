@@ -320,7 +320,7 @@ export class ElasticSearchService implements OnModuleInit {
 
       const totalCount = body.hits.hits.length || 0;
 
-      const data = body.hits.hits.map((item) => item._id);
+      const data = body.hits.hits.map((item) => item._id || "");
       return {
         totalCount,
         data,
@@ -361,13 +361,14 @@ export class ElasticSearchService implements OnModuleInit {
   }
   async updateInsertDocument(data: DatasetDocument) {
     //NOTE: Replace all keys with lower case, also replace spaces and dot with underscore
-    delete data._id;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id: unused, ...restData } = data; // type-safe delete _id
     const transformedScientificMetadata = transformKeysInObject(
-      data.scientificMetadata as Record<string, unknown>,
+      restData.scientificMetadata as Record<string, unknown>,
     );
 
     const transformedData = {
-      ...data,
+      ...restData,
       scientificMetadata: transformedScientificMetadata,
     };
     try {

@@ -22,7 +22,7 @@ export class LogJobAction<T> implements JobAction<T> {
     Logger.log("Performing job: " + JSON.stringify(job), "LogJobAction");
   }
 
-  constructor(data: Record<string, any>) {
+  constructor(data: Record<string, unknown>) {
     Logger.log(
       "Initializing LogJobAction. Params: " + JSON.stringify(data),
       "LogJobAction",

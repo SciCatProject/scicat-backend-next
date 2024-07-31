@@ -89,6 +89,9 @@ const RawCorrect4 = {
 };
 
 describe("0400: DatasetFilter: Test retrieving datasets using filtering capabilities", () => {
+  before(() => {
+    db.collection("Dataset").deleteMany({});
+  });
   beforeEach((done) => {
     utils.getToken(
       appUrl,

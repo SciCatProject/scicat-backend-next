@@ -43,6 +43,7 @@ export class URLAction<T> implements JobAction<T> {
     return URLAction.actionType;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(dto: T) {}
 
   async performJob(job: JobClass) {
@@ -80,6 +81,7 @@ export class URLAction<T> implements JobAction<T> {
    *
    * @throws {NotFoundException} If the 'url' parameter is not provided in the data object
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     if (!data["url"]) {
       throw new NotFoundException("Param 'url' is undefined in url action");
