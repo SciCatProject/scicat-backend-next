@@ -25,11 +25,11 @@ const jobTemplateOptions = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isStringRecord(obj: any): obj is Record<string, string> {
-  return ( 
+  return (
     typeof obj === "object" &&
     obj !== null &&
     Object.keys(obj).every(
-      (key) => typeof key === "string" && typeof obj[key] === "string"
+      (key) => typeof key === "string" && typeof obj[key] === "string",
     )
   );
 }
@@ -58,12 +58,13 @@ export class URLAction<T> implements JobAction<T> {
 
     const response = await fetch(url, {
       method: this.method,
-      headers: this.headerTemplates ? 
-                Object.fromEntries(
-                  Object.entries(this.headerTemplates).map(
-                    ([key, template]) => [key, template(job, jobTemplateOptions)]
-                  )
-                ) : undefined,
+      headers: this.headerTemplates
+               ? Object.fromEntries(
+                 Object.entries(this.headerTemplates).map(([key, template]) => [
+                  key,
+                  template(job, jobTemplateOptions),
+                ])
+               ) : undefined,
       body: this.bodyTemplate ? this.bodyTemplate(job, jobTemplateOptions) : undefined,
     });
 
@@ -106,9 +107,10 @@ export class URLAction<T> implements JobAction<T> {
         throw new NotFoundException("Param 'headers' should map strings to strings");
       }
       this.headerTemplates = Object.fromEntries(
-        Object.entries(data.headers).map(
-          ([key, value]) => [key, Handlebars.compile(value)]
-        )
+        Object.entries(data.headers).map(([key, value]) => [
+          key,
+          Handlebars.compile(value),
+        ]),
       );
     }
     if (data["body"]) {

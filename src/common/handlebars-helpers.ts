@@ -112,7 +112,7 @@ export const job_v3 = (job: JobClass): JobV3 => {
     creationTime: job.createdAt,
     jobParams: {
       ...job.jobParams,
-      username: job.createdBy
+      username: job.createdBy,
     },
     //v3 statusMessages were generally concise, so use the statusCode
     jobStatusMessage: job.statusCode,
