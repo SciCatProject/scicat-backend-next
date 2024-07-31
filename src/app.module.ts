@@ -30,6 +30,9 @@ import {
   formatCamelCase,
   unwrapJSON,
   jsonify,
+  job_v3,
+  urlencode,
+  base64enc,
 } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
@@ -75,6 +78,9 @@ import { LoggerModule } from "./loggers/logger.module";
               keyToWord: formatCamelCase,
               eq: (a, b) => a === b,
               jsonify: jsonify,
+              job_v3: job_v3,
+              urlencode: urlencode,
+              base64enc: base64enc,
             }),
             options: {
               strict: true,
