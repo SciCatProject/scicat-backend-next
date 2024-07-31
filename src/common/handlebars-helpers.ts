@@ -70,7 +70,6 @@ export const jsonify = (context: unknown): string => {
   return JSON.stringify(context, null, 3);
 };
 
-
 type DatasetIdV3 = {
   pid: string;
   files: string[];
@@ -97,9 +96,9 @@ interface JobV3 {
  */
 export const job_v3 = (job: JobClass): JobV3 => {
   let datasetList: DatasetIdV3[];
-  if(JobsConfigSchema.DatasetIds in job.jobParams) {
+  if (JobsConfigSchema.DatasetIds in job.jobParams) {
     const datasetIds = job.jobParams[JobsConfigSchema.DatasetIds] as string[];
-    datasetList = datasetIds.map(pid => ({
+    datasetList = datasetIds.map((pid) => ({
       pid: pid,
       files: [],
     }));
@@ -107,17 +106,17 @@ export const job_v3 = (job: JobClass): JobV3 => {
     datasetList = [];
   }
   return {
-    "id": job.id,
-    "emailJobInitiator": job.contactEmail,
-    "type": job.type,
-    "creationTime": job.createdAt,
-    "jobParams": {
+    id: job.id,
+    emailJobInitiator: job.contactEmail,
+    type: job.type,
+    creationTime: job.createdAt,
+    jobParams: {
       ...job.jobParams,
-      "username": job.createdBy
+      username: job.createdBy
     },
     //v3 statusMessages were generally concise, so use the statusCode
-    "jobStatusMessage": job.statusCode,
-    "datasetList": datasetList,
+    jobStatusMessage: job.statusCode,
+    datasetList: datasetList,
   };
 };
 
@@ -128,7 +127,7 @@ export const job_v3 = (job: JobClass): JobV3 => {
  */
 export const urlencode = (context: string): string => {
   return encodeURIComponent(context);
-}
+};
 
 /**
  * Base64 encode input
@@ -137,4 +136,4 @@ export const urlencode = (context: string): string => {
  */
 export const base64enc = (context: string): string => {
   return btoa(context);
-}
+};
