@@ -63,11 +63,11 @@ export class URLAction<T> implements JobAction<T> {
       method: this.method,
       headers: this.headerTemplates
         ? Object.fromEntries(
-          Object.entries(this.headerTemplates).map(([key, template]) => [
-            key,
-            template(job, jobTemplateOptions),
-          ]),
-        )
+            Object.entries(this.headerTemplates).map(([key, template]) => [
+              key,
+              template(job, jobTemplateOptions),
+            ]),
+          )
         : undefined,
       body: this.bodyTemplate
         ? this.bodyTemplate(job, jobTemplateOptions)
