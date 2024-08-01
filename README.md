@@ -32,44 +32,6 @@ If you're planning to contribute to this project by adding new functionality, we
 
 Thank you for your interest in contributing to our project!
 
-## Pull Request Guidelines
-
-When creating a pull request (PR) for this repository, it's important to follow the guidelines for PR titles and PR template to ensure consistency and clarity. Proper PR titles help maintain a clear and understandable project history and facilitate better release notes.
-
-### PR Title Format
-
-All PR titles must adhere to the conventional commits format. This format helps in automating the release process and generating changelogs. The format is as follows:
-
-```
-<type>(<scope>): <description>
-```
-
-type: The type of change being made. It must be one of the following:
-
-- `feat:` A new feature
-- `fix:` A bug fix
-- `ci:` Continuous integration-related changes.
-- `docs:` Documentation only changes
-- `style:` Changes that do not affect the meaning of the code (white -space, formatting, missing semi -colons, etc)
-- `refactor:` A code change that neither fixes a bug nor adds a feature
-- `revert`: Reverts a previous commit.
-- `perf:` A code change that improves performance
-- `test:` Adding missing or correcting existing tests
-- `chore:` Changes to the build process or auxiliary tools and libraries such as documentation generation
-- `build:` Changes that affect the build system or external dependencies.
-- `BREAKING CHANGE:` A change that introduces a breaking API change.
-
-scope: An `optional` description of the section of the codebase affected by the changes (e.g., api, ui, docs). This is enclosed in parentheses.
-
-description: A brief summary of the changes made.
-
-### Examples
-
-- feat(api): add new endpoint for data retrieval
-- fix(ui): correct button alignment on mobile devices
-- docs: update contributing guidelines
-- BREAKING CHANGE: refactor authentication middleware to use new library
-
 ## Get started
 
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
@@ -255,36 +217,6 @@ Following are the post that I found useful working on the migration:
   - https://docs.nestjs.com/openapi/introduction
   - https://docs.nestjs.com/openapi/types-and-parameters
   - https://docs.nestjs.com/openapi/decorators
-
-## New Release Version Bump Workflow
-
-### Workflow Overview
-
-Scicat Backend controls new releases with the `GitHub-tag-and-release` GitHub Action. This workflow is triggered by push events to the release branch. It automates the version bumping and release processes based on semantic commit messages. Full documentation of the action package can be found on [github-tag-action](https://github.com/marketplace/actions/github-tag)
-
-The image below shows visualized workflow.
-![image](https://github.com/SciCatProject/scicat-backend-next/assets/78078898/0f3c5386-4a16-4ed1-a2ee-d71ef6f34e99)
-
-### Workflow Trigger Condition
-
-> [!Caution]  
-> Any push to the `release` branch initiates the workflow.
-
-### Versioning and Release Strategy
-
-**Semantic Versioning:**
-
-- The version is automatically bumped according to the semantic PR titles, using the [semantic-release](https://github.com/semantic-release/semantic-release) conventions:
-
-  - `fix:` prefixed titles generate a patch release.
-  - `feat:` prefixed titles generate a minor release.
-  - `BREAKING CHANGE:` in the commit message triggers a major release.
-
-**Auto-generated Release Notes:**
-
-The release log is automatically populated with all commit messages since the last tag, providing a detailed changelog for the release. By default semantic-release uses [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
-
-In order to generate detailed changelog for the release, please follow the pull request guidelines for PR titles.
 
 ## License
 
