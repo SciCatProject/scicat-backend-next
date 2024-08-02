@@ -156,6 +156,16 @@ export class ProposalClass extends OwnableClass {
   @Prop({
     type: [MeasurementPeriodSchema],
     required: false,
+    validate: {
+      validator: function (measurementPeriodList: MeasurementPeriodClass[]) {
+        const ids = measurementPeriodList.map(
+          (measurementPeriod) => measurementPeriod.id,
+        );
+        return ids.length === new Set(ids).size;
+      },
+      message:
+        "MeasurementPeriod id must be unique within the MeasurementPeriodList",
+    },
   })
   MeasurementPeriodList?: MeasurementPeriodClass[];
 
