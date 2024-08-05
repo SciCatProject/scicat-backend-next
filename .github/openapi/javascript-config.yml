@@ -1,0 +1,5 @@
+packageName: "scicat-openapi-client"
+packageUrl: "javascript.package.url"
+projectName: "scicat-openapi-client"
+disallowAdditionalPropertiesIfNotPresent: false
+usePromises: true
