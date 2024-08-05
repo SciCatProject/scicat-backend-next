@@ -73,7 +73,7 @@ export class URLAction<T> implements JobAction<T> {
 
     Logger.log(
       `Request for ${url} returned ${response.status}`,
-      "UrlJobAction"
+      "UrlJobAction",
     );
 
     if (!response.ok) {

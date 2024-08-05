@@ -60,21 +60,21 @@ export class JobCreateInterceptor implements NestInterceptor {
 
     // await Promise.all(
     //   jc.create.actions.map((action) => {
-        // return action.validate(createJobDto).catch((err) => {
-        //   Logger.error(err);
-        //   if (err instanceof HttpException) {
-        //     throw err;
-        //   }
-        //   throw new HttpException(
-        //     {
-        //       status: HttpStatus.BAD_REQUEST,
-        //       message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
-        //         createJobDto.type
-        //       } job due to ${err}`,
-        //     },
-        //     HttpStatus.BAD_REQUEST,
-        //   );
-        // });
+    //     return action.validate(createJobDto).catch((err) => {
+    //       Logger.error(err);
+    //       if (err instanceof HttpException) {
+    //         throw err;
+    //       }
+    //       throw new HttpException(
+    //         {
+    //           status: HttpStatus.BAD_REQUEST,
+    //           message: `Invalid job input. Action ${action.getActionType()} unable to validate ${
+    //             createJobDto.type
+    //           } job due to ${err}`,
+    //         },
+    //         HttpStatus.BAD_REQUEST,
+    //       );
+    //     });
     //   }),
     // );
 
