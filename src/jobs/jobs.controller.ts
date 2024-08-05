@@ -352,9 +352,7 @@ export class JobsController {
    */
   getJobTypeConfiguration = (jobType: string) => {
     const jobConfigs = configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter(
-      (j) => j.jobType == jobType,
-    );
+    const matchingConfig = jobConfigs.filter((j) => j.jobType == jobType);
 
     if (matchingConfig.length != 1) {
       if (matchingConfig.length > 1) {
@@ -386,9 +384,7 @@ export class JobsController {
     // NOTE: We need JobClass instance because casl module works only on that.
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
-    const jobConfiguration = this.getJobTypeConfiguration(
-      jobCreateDto.type,
-    );
+    const jobConfiguration = this.getJobTypeConfiguration(jobCreateDto.type);
 
     jobInstance._id = "";
     jobInstance.accessGroups = [];
@@ -396,7 +392,9 @@ export class JobsController {
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configVersion = jobConfiguration[JobsConfigSchema.ConfigVersion];
+    jobInstance.configVersion = jobConfiguration[
+      JobsConfigSchema.ConfigVersion
+    ];
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
@@ -573,12 +571,13 @@ export class JobsController {
 
     // TODO - do we need to do something with the new configVersion ?
     if (jobConfig.configVersion !== jobInstance.configVersion) {
-      Logger.log(`
+      Logger.log(
+        `
           Job was created with configVersion ${jobInstance.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
         "JobStatusUpdate",
-      )
+      );
     }
 
     for (const action of jobConfig.statusUpdate.actions) {

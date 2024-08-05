@@ -71,7 +71,11 @@ export class URLAction<T> implements JobAction<T> {
         : undefined,
     });
 
-    Logger.log(`Request for ${url} returned ${response.status}`, "UrlJobAction");
+    Logger.log(
+      `Request for ${url} returned ${response.status}`,
+      "UrlJobAction"
+    );
+
     if (!response.ok) {
       throw new HttpException(
         {
