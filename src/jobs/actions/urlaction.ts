@@ -52,12 +52,9 @@ export class URLAction<T> implements JobAction<T> {
     return URLAction.actionType;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async validate(dto: T) {}
-
   async performJob(job: JobClass) {
     const url = encodeURI(this.urlTemplate(job, jobTemplateOptions));
-    Logger.log(`Requesting ${url}`, "URLAction");
+    Logger.log(`Requesting ${url}`, "UrlJobAction");
 
     const response = await fetch(url, {
       method: this.method,
@@ -74,7 +71,7 @@ export class URLAction<T> implements JobAction<T> {
         : undefined,
     });
 
-    Logger.log(`Request for ${url} returned ${response.status}`, "URLAction");
+    Logger.log(`Request for ${url} returned ${response.status}`, "UrlJobAction");
     if (!response.ok) {
       throw new HttpException(
         {
@@ -101,13 +98,20 @@ export class URLAction<T> implements JobAction<T> {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
+    Logger.log(
+      "Initializing UrlJobAction. Params: " + JSON.stringify(data),
+      "UrlJobAction",
+    );
+
     if (!data["url"]) {
       throw new NotFoundException("Param 'url' is undefined in url action");
     }
     this.urlTemplate = Handlebars.compile(data.url);
+
     if (data["method"]) {
       this.method = data.method;
     }
+
     if (data["headers"]) {
       if (!isStringRecord(data.headers)) {
         throw new NotFoundException(
@@ -121,6 +125,7 @@ export class URLAction<T> implements JobAction<T> {
         ]),
       );
     }
+
     if (data["body"]) {
       this.bodyTemplate = Handlebars.compile(data["body"]);
     }
