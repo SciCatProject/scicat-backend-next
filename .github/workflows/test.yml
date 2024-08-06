@@ -173,5 +173,5 @@ jobs:
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           cp functionalAccounts.json.test functionalAccounts.json
-          docker-compose up --build -d
+          docker compose up --build -d
           npm run test:api
