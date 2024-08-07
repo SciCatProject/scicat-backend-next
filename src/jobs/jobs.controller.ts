@@ -679,7 +679,9 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    currentJobInstance.configuration = this.getJobTypeConfiguration(currentJobInstance.type);
+    currentJobInstance.configuration = this.getJobTypeConfiguration(
+      currentJobInstance.type,
+    );
 
     const ability = this.caslAbilityFactory.createForUser(
       request.user as JWTUser,
