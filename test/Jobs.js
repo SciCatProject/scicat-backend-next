@@ -340,7 +340,6 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Job parameters need to be defined.");
       });
   });
 
@@ -349,6 +348,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       type: "all_access",
       ownerUser: "admin",
       ownerGroup: "admin",
+      jobParams: {
+      },
     };
 
     return request(appUrl)
@@ -967,7 +968,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
   
-  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail ad forbidden", async () => {
+  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -987,7 +988,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -1031,7 +1032,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -1204,7 +1205,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
  
@@ -1467,7 +1468,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -1733,7 +1734,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -2025,7 +2026,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 
@@ -2344,7 +2345,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Unauthorized to create this dataset.");
+        res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
 

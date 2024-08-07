@@ -392,8 +392,7 @@ export class JobsController {
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configVersion =
-      jobConfiguration[JobsConfigSchema.ConfigVersion];
+    jobInstance.configuration = jobConfiguration;
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
@@ -568,11 +567,11 @@ export class JobsController {
   async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
 
-    // TODO - do we need to do something with the new configVersion ?
-    if (jobConfig.configVersion !== jobInstance.configVersion) {
+    // TODO - what shall we do when configVersion does not match?
+    if (jobConfig.configVersion !== jobInstance.configuration.configVersion) {
       Logger.log(
         `
-          Job was created with configVersion ${jobInstance.configVersion}.
+          Job was created with configVersion ${jobInstance.configuration.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
         "JobStatusUpdate",
@@ -680,9 +679,7 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    currentJobInstance.configVersion = this.getJobTypeConfiguration(
-      currentJobInstance.type,
-    )[JobsConfigSchema.ConfigVersion];
+    currentJobInstance.configuration = this.getJobTypeConfiguration(currentJobInstance.type);
 
     const ability = this.caslAbilityFactory.createForUser(
       request.user as JWTUser,

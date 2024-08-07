@@ -3,6 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { JobConfig } from "../config/jobconfig";
 
 export type JobDocument = JobClass & Document;
 
@@ -122,14 +123,14 @@ export class JobClass extends OwnableClass {
 
   @ApiProperty({
     type: Object,
-    description: "Configuration version that was used to create this job.",
+    description: "Configuration that was used to create this job.",
     required: true,
   })
   @Prop({
     type: Object,
     required: true,
   })
-  configVersion: string;
+  configuration: JobConfig;
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);
 
