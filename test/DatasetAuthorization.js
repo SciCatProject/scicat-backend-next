@@ -41,7 +41,7 @@ const dataset3 = {
   accessGroups: ["group3"],
 };
 
-describe("0300: DatasetAuthorization: Test access to dataset", () => {
+describe.only("0300: DatasetAuthorization: Test access to dataset", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
   });

@@ -54,33 +54,91 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: JWTUser) {
+
+  createForUser(user:JWTUser){
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
-    // // admin groups
-    // const stringAdminGroups = process.env.ADMIN_GROUPS || "";
-    // const adminGroups: string[] = stringAdminGroups
-    //   ? stringAdminGroups.split(",").map((v) => v.trim())
-    //   : [];
-    // // delete groups
-    // const stringDeleteGroups = process.env.DELETE_GROUPS || "";
-    // const deleteGroups: string[] = stringDeleteGroups
-    //   ? stringDeleteGroups.split(",").map((v) => v.trim())
-    //   : [];
-    // // create dataset groups
-    // const stringCreateDatasetGroups =
-    //   process.env.CREATE_DATASET_GROUPS || "all";
-    // const createDatasetGroups: string[] = stringCreateDatasetGroups
-    //   .split(",")
-    //   .map((v) => v.trim());
+    if (!user) {
+      /**
+      /*  unauthenticated users
+      **/
 
-    /*
-    / Set permissions for different type of users for the following subsystems:
-    / - Datasets (https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization/authorization_datasets.html)
-    / - OrigDatablocks (https://scicatproject.github.io/documentation/Development/v4.x/backend/authorization/authorization_origdatablocks.html)
-     */
+      cannot(Action.UserReadOwn, User);
+      cannot(Action.UserCreateOwn, User);
+      cannot(Action.UserUpdateOwn, User);
+      cannot(Action.UserDeleteOwn, User);
+      cannot(Action.UserReadAny, User);
+      cannot(Action.UserCreateAny, User);
+      cannot(Action.UserUpdateAny, User);
+      cannot(Action.UserDeleteAny, User);
+    } else {
+      if (
+        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+      ) {
+        /*
+        / user that belongs to any of the group listed in DELETE_GROUPS
+        */
+
+        can(Action.Delete, PublishedData);
+        can(Action.Delete, Policy);
+      } 
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        /*
+        / user that belongs to any of the group listed in ADMIN_GROUPS
+        */
+
+        can(Action.ReadAll, UserIdentity);
+
+        // -------------------------------------
+        // elasticsearch
+        // -------------------------------------
+        // endpoint authorization
+        can(Action.Manage, ElasticSearchActions);
+
+        // -------------------------------------
+        // user endpoint, including useridentity
+        can(Action.UserReadAny, User);
+        can(Action.UserReadOwn, User);
+        can(Action.UserCreateAny, User);
+        can(Action.UserUpdateAny, User);
+        can(Action.UserDeleteAny, User);
+        can(Action.UserCreateJwt, User);
+
+        // -------------------------------------
+        // policies
+        can(Action.Update, Policy);
+        can(Action.Read, Policy);
+        can(Action.Create, Policy);
+      } else {
+        /**
+        /*  authenticated users
+        **/
+        cannot(Action.UserReadAny, User);
+        cannot(Action.UserCreateAny, User);
+        cannot(Action.UserUpdateAny, User);
+        cannot(Action.UserDeleteAny, User);
+        cannot(Action.UserCreateJwt, User);
+      }
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  createDatasetForUser(user:JWTUser){
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
     if (!user) {
       /**
       /*  unauthenticated users
@@ -125,28 +183,14 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
 
-      // -------------------------------------
-      // origdatablock
-      // -------------------------------------
-      // endpoint authorization
-      can(Action.OrigdatablockRead, OrigDatablock);
-      cannot(Action.OrigdatablockCreate, OrigDatablock);
-      cannot(Action.OrigdatablockUpdate, OrigDatablock);
-      // -------------------------------------
-      // data instance authorization
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        isPublished: true,
-      });
-
-      cannot(Action.UserReadOwn, User);
-      cannot(Action.UserCreateOwn, User);
-      cannot(Action.UserUpdateOwn, User);
-      cannot(Action.UserDeleteOwn, User);
-      cannot(Action.UserReadAny, User);
-      cannot(Action.UserCreateAny, User);
-      cannot(Action.UserUpdateAny, User);
-      cannot(Action.UserDeleteAny, User);
+      // cannot(Action.UserReadOwn, User);
+      // cannot(Action.UserCreateOwn, User);
+      // cannot(Action.UserUpdateOwn, User);
+      // cannot(Action.UserDeleteOwn, User);
+      // cannot(Action.UserReadAny, User);
+      // cannot(Action.UserCreateAny, User);
+      // cannot(Action.UserUpdateAny, User);
+      // cannot(Action.UserDeleteAny, User);
     } else {
       if (
         user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
@@ -172,17 +216,8 @@ export class CaslAbilityFactory {
         // -
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockDelete, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockDeleteAny, OrigDatablock);
-
-        can(Action.Delete, PublishedData);
-        can(Action.Delete, Policy);
+        // can(Action.Delete, PublishedData);
+        // can(Action.Delete, Policy);
       } else {
         /*
         /  user that does not belong to any of the group listed in DELETE_GROUPS
@@ -197,12 +232,6 @@ export class CaslAbilityFactory {
         cannot(Action.DatasetOrigdatablockDelete, DatasetClass);
         // -
         cannot(Action.DatasetDatablockDelete, DatasetClass);
-
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        cannot(Action.OrigdatablockDelete, OrigDatablock);
       }
 
       if (
@@ -212,16 +241,16 @@ export class CaslAbilityFactory {
         / user that belongs to any of the group listed in ADMIN_GROUPS
         */
 
-        // this tests should be all removed, once we are done with authorization review
-        //can(Action.ListAll, DatasetClass);
-        // can(Action.ListAll, ProposalClass);
-        can(Action.ReadAll, UserIdentity);
+        // // this tests should be all removed, once we are done with authorization review
+        // //can(Action.ListAll, DatasetClass);
+        // // can(Action.ListAll, ProposalClass);
+        // can(Action.ReadAll, UserIdentity);
 
-        // -------------------------------------
-        // elasticsearch
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.Manage, ElasticSearchActions);
+        // // -------------------------------------
+        // // elasticsearch
+        // // -------------------------------------
+        // // endpoint authorization
+        // can(Action.Manage, ElasticSearchActions);
 
         // -------------------------------------
         // datasets
@@ -266,33 +295,20 @@ export class CaslAbilityFactory {
         // -------------------------------------
         can(Action.DatasetLogbookReadAny, DatasetClass);
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockReadAny, OrigDatablock);
-        can(Action.OrigdatablockCreateAny, OrigDatablock);
-        can(Action.OrigdatablockUpdateAny, OrigDatablock);
+        // // -------------------------------------
+        // // user endpoint, including useridentity
+        // can(Action.UserReadAny, User);
+        // can(Action.UserReadOwn, User);
+        // can(Action.UserCreateAny, User);
+        // can(Action.UserUpdateAny, User);
+        // can(Action.UserDeleteAny, User);
+        // can(Action.UserCreateJwt, User);
 
-        // -------------------------------------
-        // user endpoint, including useridentity
-        can(Action.UserReadAny, User);
-        can(Action.UserReadOwn, User);
-        can(Action.UserCreateAny, User);
-        can(Action.UserUpdateAny, User);
-        can(Action.UserDeleteAny, User);
-        can(Action.UserCreateJwt, User);
-
-        // -------------------------------------
-        // policies
-        can(Action.Update, Policy);
-        can(Action.Read, Policy);
-        can(Action.Create, Policy);
+        // // -------------------------------------
+        // // policies
+        // can(Action.Update, Policy);
+        // can(Action.Read, Policy);
+        // can(Action.Create, Policy);
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetPrivilegedGroups.includes(g),
@@ -390,29 +406,6 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockCreateAny, OrigDatablock);
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          accessGroups: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetWithPidGroups.includes(g),
@@ -517,31 +510,6 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          accessGroups: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          isPublished: true,
-        });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetGroups.includes(g),
@@ -648,31 +616,6 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        can(Action.OrigdatablockCreate, OrigDatablock);
-        can(Action.OrigdatablockUpdate, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          accessGroups: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          isPublished: true,
-        });
-        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
       } else if (user) {
         /**
         /*  authenticated users
@@ -745,41 +688,193 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
 
-        // -------------------------------------
-        // origdatablock
-        // -------------------------------------
-        // endpoint authorization
-        can(Action.OrigdatablockRead, OrigDatablock);
-        cannot(Action.OrigdatablockCreate, OrigDatablock);
-        cannot(Action.OrigdatablockUpdate, OrigDatablock);
-        // -------------------------------------
-        // data instance authorization
-        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          ownerGroup: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          accessGroups: { $in: user.currentGroups },
-        });
-        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-          isPublished: true,
-        });
-        cannot(Action.UserReadAny, User);
-        cannot(Action.UserCreateAny, User);
-        cannot(Action.UserUpdateAny, User);
-        cannot(Action.UserDeleteAny, User);
-        cannot(Action.UserCreateJwt, User);
+        // cannot(Action.UserReadAny, User);
+        // cannot(Action.UserCreateAny, User);
+        // cannot(Action.UserUpdateAny, User);
+        // cannot(Action.UserDeleteAny, User);
+        // cannot(Action.UserCreateJwt, User);
       }
-      can(Action.UserReadOwn, User, { _id: user._id });
-      can(Action.UserCreateOwn, User, { _id: user._id });
-      can(Action.UserUpdateOwn, User, { _id: user._id });
-      can(Action.UserDeleteOwn, User, { _id: user._id });
+      // can(Action.UserReadOwn, User, { _id: user._id });
+      // can(Action.UserCreateOwn, User, { _id: user._id });
+      // can(Action.UserUpdateOwn, User, { _id: user._id });
+      // can(Action.UserDeleteOwn, User, { _id: user._id });
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+
+  createOrigDatablockForUser(user:JWTUser){
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
+      / user that belongs to any of the group listed in DELETE_GROUPS
+      */
+
+      // endpoint authorization
+      can(Action.OrigdatablockDelete, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockDeleteAny, OrigDatablock);
+    } else {
+      /*
+      /  user that does not belong to any of the group listed in DELETE_GROUPS
+      */
+
+      // endpoint authorization
+      cannot(Action.OrigdatablockDelete, OrigDatablock);
     }
 
-    // ************************************
-    // JOBS AUTHORIZATION
-    // ************************************
+    if (
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
+      / user that belongs to any of the group listed in ADMIN_GROUPS
+      */
 
+      // endpoint authorization
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockReadAny, OrigDatablock);
+      can(Action.OrigdatablockCreateAny, OrigDatablock);
+      can(Action.OrigdatablockUpdateAny, OrigDatablock);
+
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetPrivilegedGroups.includes(g),
+      )
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
+      **/
+      // endpoint authorization
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockCreateAny, OrigDatablock);
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetWithPidGroups.includes(g),
+      ) ||
+      configuration().createDatasetWithPidGroups.includes("#all")
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
+      **/
+
+      // endpoint authorization
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        isPublished: true,
+      });
+      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetGroups.includes(g),
+      ) ||
+      configuration().createDatasetGroups.includes("#all")
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_GROUPS
+      **/
+
+      // endpoint authorization
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        isPublished: true,
+      });
+      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+    } else if (user) {
+      /**
+      /*  authenticated users
+      **/
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      cannot(Action.OrigdatablockCreate, OrigDatablock);
+      cannot(Action.OrigdatablockUpdate, OrigDatablock);
+      // -------------------------------------
+      // data instance authorization
+      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        ownerGroup: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        accessGroups: { $in: user.currentGroups },
+      });
+      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+        isPublished: true,
+      });
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+
+  }
+
+  createJobsForUser(user:JWTUser){
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+        // ************************************
+        // JOBS AUTHORIZATION
+        // ************************************
     if (!user) {
       /**
        * unauthenticated users
@@ -878,18 +973,25 @@ export class CaslAbilityFactory {
       });
     }
 
-    // ************************************
-    // PROPOSALS AUTHORIZATION
-    // ************************************
+      return build({
+        detectSubjectType: (item) =>
+          item.constructor as ExtractSubjectType<Subjects>,
+      });
+    }
+
+  createProposalsForUser(user:JWTUser){
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+        // ************************************
+        // PROPOSALS AUTHORIZATION
+        // ************************************
 
     if (!user) {
       /**
        * unauthenticated users
        */
 
-      // -------------------------------------
-      // proposals
-      // -------------------------------------
       // endpoint authorization
       can(Action.ProposalsRead, ProposalClass);
       cannot(Action.ProposalsCreate, ProposalClass);
@@ -916,9 +1018,6 @@ export class CaslAbilityFactory {
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
 
-      // -------------------------------------
-      // proposals
-      // -------------------------------------
       // endpoint authorization
       can(Action.ProposalsDelete, ProposalClass);
 
@@ -933,9 +1032,6 @@ export class CaslAbilityFactory {
        * authenticated users belonging to any of the group listed in ADMIN_GROUPS
        */
 
-      // -------------------------------------
-      // proposals
-      // -------------------------------------
       // endpoint authorization
       can(Action.ProposalsRead, ProposalClass);
       can(Action.ProposalsCreate, ProposalClass);
@@ -964,9 +1060,6 @@ export class CaslAbilityFactory {
        * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
        */
 
-      // -------------------------------------
-      // proposals
-      // -------------------------------------
       // endpoint authorization
 
       can(Action.ProposalsRead, ProposalClass);
@@ -1013,9 +1106,6 @@ export class CaslAbilityFactory {
        * authenticated users
        */
 
-      // -------------------------------------
-      // proposals
-      // -------------------------------------
       // endpoint authorization
       can(Action.ProposalsRead, ProposalClass);
       cannot(Action.ProposalsCreate, ProposalClass);
@@ -1049,10 +1139,23 @@ export class CaslAbilityFactory {
         isPublished: true,
       });
     }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+
+
+  createSamplesForUser(user:JWTUser){
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
 
     // ************************************
     // SAMPLES AUTHORIZATION
     // ************************************
+
     if (!user) {
       // -------------------------------------
       // unauthenticated users
@@ -1295,6 +1398,17 @@ export class CaslAbilityFactory {
         });
       }
     }
+    
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  createInstrumentForUser(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
 
     // ************************************
     // INSTRUMENT AUTHORIZATION
@@ -1339,77 +1453,12 @@ export class CaslAbilityFactory {
       }
     }
 
-    // Instrument permissions
-    //can(Action.Read, Instrument);
-    //if (user.currentGroups.some((g) => adminGroups.includes(g))) {
-    //  can(Action.Manage, Instrument);
-    //}
+    // can(Action.Read, Logbook);
 
-    //can(Action.Manage, JobClass);
+    // can(Action.Read, PublishedData);
+    // can(Action.Update, PublishedData);
+    // can(Action.Create, PublishedData);
 
-    can(Action.Read, Logbook);
-
-    can(Action.Read, PublishedData);
-    can(Action.Update, PublishedData);
-    can(Action.Create, PublishedData);
-
-    // can(Action.Manage, Attachment, {
-    //   ownerGroup: { $in: user.currentGroups },
-    // });
-    // can(Action.Manage, Datablock, {
-    //   ownerGroup: { $in: user.currentGroups },
-    // });
-    // can(Action.Manage, OrigDatablock, {
-    //   ownerGroup: { $in: user.currentGroups },
-    // });
-
-    // if (user.currentGroups.includes(Role.Admin)) {
-    //   can(Action.Manage, "all");
-    // }
-    // if (user.currentGroups.includes(Role.ArchiveManager)) {
-    //   //cannot(Action.Create, DatasetClass);
-    //   //cannot(Action.Update, DatasetClass);
-    //   //can(Action.Delete, DatasetClass);
-    //   cannot(Action.Manage, OrigDatablock);
-    //   cannot(Action.Create, OrigDatablock);
-    //   cannot(Action.Update, OrigDatablock);
-    //   can(Action.Delete, OrigDatablock);
-    //   cannot(Action.Manage, Datablock);
-    //   cannot(Action.Create, Datablock);
-    //   cannot(Action.Update, Datablock);
-    //   can(Action.Delete, Datablock);
-    //   can(Action.Delete, PublishedData);
-    //   //--------------------------------
-    //   // instrument
-    //   cannot(Action.InstrumentRead, Instrument);
-    //   cannot(Action.InstrumentCreate, Instrument);
-    //   cannot(Action.InstrumentUpdate, Instrument);
-    //   can(Action.InstrumentDelete, Instrument);
-    // }
-    //if (user.currentGroups.includes(Role.GlobalAccess)) {
-    //  can(Action.Read, "all");
-    //}
-    // if (user.currentGroups.includes(Role.Ingestor)) {
-    //   can(Action.Create, Attachment);
-
-    //   //cannot(Action.Delete, DatasetClass);
-    //   //can(Action.Create, DatasetClass);
-    //   //can(Action.Update, DatasetClass);
-
-    //   can(Action.Create, Instrument);
-    //   can(Action.Update, Instrument);
-    // }
-    // if (user.currentGroups.includes(Role.ProposalIngestor)) {
-    //   cannot(Action.Delete, ProposalClass);
-    //   can(Action.Create, ProposalClass);
-    //   can(Action.Update, ProposalClass);
-    //   can(Action.Read, ProposalClass);
-    //   can(Action.ListAll, ProposalClass);
-    // }
-
-    //can(Action.Create, UserSettings, { userId: user._id });
-    //can(Action.Read, UserSettings, { userId: user._id });
-    //can(Action.Update, UserSettings, { userId: user._id });
 
     return build({
       detectSubjectType: (item) =>
