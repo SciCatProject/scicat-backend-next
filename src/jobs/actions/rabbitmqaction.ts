@@ -54,9 +54,6 @@ export class RabbitMQJobAction<T> implements JobAction<T> {
     return RabbitMQJobAction.actionType;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async validate(dto: T) {}
-
   async performJob(job: JobClass) {
     Logger.log(
       "Performing RabbitMQJobAction: " + JSON.stringify(job),

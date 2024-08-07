@@ -65,13 +65,6 @@ export class EmailJobAction<T> implements JobAction<T> {
     this.bodyTemplate = compile(data["body"]);
   }
 
-  async validate(dto: T) {
-    Logger.log(
-      "Validating EmailJobAction: " + JSON.stringify(dto),
-      "EmailJobAction",
-    );
-  }
-
   async performJob(job: JobClass) {
     Logger.log(
       "Performing EmailJobAction: " + JSON.stringify(job),
