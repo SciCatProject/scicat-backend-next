@@ -409,7 +409,8 @@ export class JobsController {
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configuration = jobConfiguration;
+    jobInstance.configVersion =
+      jobConfiguration[JobsConfigSchema.ConfigVersion];
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
