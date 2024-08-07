@@ -155,11 +155,6 @@ function parseAction<DtoType>(
  */
 export interface JobAction<DtoType> {
   /**
-   * Validate the DTO, throwing an HttpException for problems
-   */
-  validate: (dto: DtoType) => Promise<void>;
-
-  /**
    * Respond to the action
    */
   performJob: (job: JobClass) => Promise<void>;
