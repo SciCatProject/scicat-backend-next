@@ -14,15 +14,11 @@ export class LogJobAction<T> implements JobAction<T> {
     return LogJobAction.actionType;
   }
 
-  async validate(dto: T) {
-    Logger.log("Validating job: " + JSON.stringify(dto), "LogJobAction");
-  }
-
   async performJob(job: JobClass) {
     Logger.log("Performing job: " + JSON.stringify(job), "LogJobAction");
   }
 
-  constructor(data: Record<string, any>) {
+  constructor(data: Record<string, unknown>) {
     Logger.log(
       "Initializing LogJobAction. Params: " + JSON.stringify(data),
       "LogJobAction",

@@ -15,6 +15,10 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
     origDatablockWithValidChkAlg = null;
 
   beforeEach((done) => {
+    before(() => {
+      db.collection("Dataset").deleteMany({});
+      db.collection("OrigDatablock").deleteMany({});
+    });
     utils.getToken(
       appUrl,
       {

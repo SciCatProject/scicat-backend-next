@@ -14,14 +14,14 @@ describe("Job configuration", () => {
     const path = "test/config/jobconfig.json";
     const config = await loadJobConfig(path);
     expect(config).toBeDefined();
-    expect(config.length).toBe(1);
-    expect(config[0].jobType).toBe("archive");
+    expect(config.length).toBe(7);
+    expect(config[0].jobType).toBe("all_access");
     expect(config[0].create).toBeDefined();
     const create = config[0].create;
     expect(create.actions.length).toBe(1);
     const action = create.actions[0];
     expect(action instanceof LogJobAction);
     expect(action.getActionType()).toBe("log");
-    action.validate({ config: null });
+    // action.validate({ config: null });
   });
 });
