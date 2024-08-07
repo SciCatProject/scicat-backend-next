@@ -547,9 +547,8 @@ export class JobsController {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: `Invalid job input. Action ${action.getActionType()} unable to perform ${
-            jobInstance.type
-          } job ${action.getActionType()} action due to ${err}`,
+          message: `Invalid job input. Job '${jobInstance.type}' unable to perfom 
+            action '${action.getActionType()}' due to ${err}`,
         },
         HttpStatus.BAD_REQUEST,
       );
