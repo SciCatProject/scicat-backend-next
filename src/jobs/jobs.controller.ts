@@ -737,10 +737,10 @@ export class JobsController {
     const ability = this.caslAbilityFactory.createForUser(
       request.user as JWTUser,
     );
-    const canGet =
+    const canRead =
       ability.can(AuthOp.JobReadAny, JobClass) ||
       ability.can(AuthOp.JobReadAccess, currentJobInstance);
-    if (!canGet) {
+    if (!canRead) {
       throw new ForbiddenException("Unauthorized to get this job.");
     }
     return currentJob;
