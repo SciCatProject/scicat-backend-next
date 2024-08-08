@@ -11,7 +11,6 @@ import { JobAction } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import configuration from "src/config/configuration";
 
-
 // Handlebar options for JobClass templates
 const jobTemplateOptions = {
   allowedProtoProperties: {
@@ -106,7 +105,7 @@ export class EmailJobAction<T> implements JobAction<T> {
       "Performing EmailJobAction: " + JSON.stringify(job),
       "EmailJobAction",
     );
-    
+
     // Fill templates
     const mail: MailOptions = {
       to: this.toTemplate(job, jobTemplateOptions),
