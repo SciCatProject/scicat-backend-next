@@ -1,0 +1,30 @@
+{
+    "id": "id",
+    "emailJobInitiator": "contactEmail",
+    "type": "type",
+    "creationTime": "DateTime",
+    "jobParams": "jobParams",
+    "jobStatusMessage": "statusCode",
+    "datasetList": {
+        "source": "jobParams.datasetIds",
+        "value": {
+            "pid": "",
+            "files": []
+        }
+    },
+    "createdBy": "createdBy",
+    "createdAt": "DateTime",
+    "updatedAt": "DateTime",
+
+
+
+    "updatedBy": "updatedBy",
+    "ownerGroup": "ownerGroup",
+    "accessGroups": "accessGroups",
+    "isPublished": "isPublished",
+    "ownerUser": "ownerUser",
+    "statusMessage": "statusMessage",
+    "datasetsValidation": "datasetsValidation",
+    "configuration": "configuration"
+}
+
