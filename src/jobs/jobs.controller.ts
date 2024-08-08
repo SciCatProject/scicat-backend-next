@@ -392,7 +392,8 @@ export class JobsController {
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configuration = jobConfiguration;
+    jobInstance.configVersion =
+      jobConfiguration[JobsConfigSchema.ConfigVersion];
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
@@ -471,7 +472,6 @@ export class JobsController {
         );
       }
       // verify that the user meet the requested permissions on the datasets listed
-      // const datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
       // build the condition
       interface datasetsWhere {
         where: {
@@ -567,10 +567,10 @@ export class JobsController {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
 
     // TODO - what shall we do when configVersion does not match?
-    if (jobConfig.configVersion !== jobInstance.configuration.configVersion) {
+    if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
-          Job was created with configVersion ${jobInstance.configuration.configVersion}.
+          Job was created with configVersion ${jobInstance.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
         "JobStatusUpdate",
@@ -678,20 +678,17 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    currentJobInstance.configuration = this.getJobTypeConfiguration(
-      currentJobInstance.type,
-    );
 
     const ability = this.caslAbilityFactory.createForUser(
       request.user as JWTUser,
     );
-    // check if he/she can create this dataset
+    // check if the user can update this job
     const canUpdateStatus =
       ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
       ability.can(AuthOp.JobStatusUpdateOwner, currentJobInstance) ||
       ability.can(AuthOp.JobStatusUpdateConfiguration, currentJobInstance);
     if (!canUpdateStatus) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
+      throw new ForbiddenException("Unauthorized to update this job.");
     }
 
     // Update job in database
@@ -703,15 +700,6 @@ export class JobsController {
     if (updatedJob !== null) {
       await this.performJobStatusUpdateAction(updatedJob);
     }
-
-    // Emit update event
-    // MN: not needed
-    // if (updatedJob) {
-    //   this.eventEmitter.emit("jobUpdated", {
-    //     instance: updatedJob,
-    //     hookState: { oldData: [updatedJob] },
-    //   });
-    // }
     return updatedJob;
   }
 
@@ -749,11 +737,11 @@ export class JobsController {
     const ability = this.caslAbilityFactory.createForUser(
       request.user as JWTUser,
     );
-    const canCreate =
+    const canRead =
       ability.can(AuthOp.JobReadAny, JobClass) ||
       ability.can(AuthOp.JobReadAccess, currentJobInstance);
-    if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
+    if (!canRead) {
+      throw new ForbiddenException("Unauthorized to get this job.");
     }
     return currentJob;
   }
@@ -799,25 +787,25 @@ export class JobsController {
         throw { message: "Invalid filter syntax." };
       }
       // for each job run a casl JobReadOwner on a jobInstance
-      const datasetsFound = await this.jobsService.findAll(parsedFilter);
-      const datasetsAccessible: JobClass[] = [];
+      const jobsFound = await this.jobsService.findAll(parsedFilter);
+      const jobsAccessible: JobClass[] = [];
       const ability = this.caslAbilityFactory.createForUser(
         request.user as JWTUser,
       );
 
-      for (const i in datasetsFound) {
-        // check if he/she can create this dataset
+      for (const i in jobsFound) {
+        // check if the user can get this job
         const jobInstance = await this.generateJobInstanceForPermissions(
-          datasetsFound[i],
+          jobsFound[i],
         );
         const canCreate =
           ability.can(AuthOp.JobReadAny, JobClass) ||
           ability.can(AuthOp.JobReadAccess, jobInstance);
         if (canCreate) {
-          datasetsAccessible.push(datasetsFound[i]);
+          jobsAccessible.push(jobsFound[i]);
         }
       }
-      return datasetsAccessible;
+      return jobsAccessible;
     } catch (e) {
       throw new HttpException(
         {
