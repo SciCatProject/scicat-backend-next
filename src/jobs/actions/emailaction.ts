@@ -21,10 +21,10 @@ const jobTemplateOptions = {
     statusMessage: true,
     createdBy: true,
     jobParams: true,
+    contactEmail: true,
   },
   allowProtoPropertiesByDefault: false, // limit accessible fields for security
 };
-
 
 type MailOptions = {
   to: string;
@@ -56,9 +56,6 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    if (!data["mailer"]) {
-      throw new NotFoundException("Param 'mailer' is undefined");
-    }
     if (!data["to"]) {
       throw new NotFoundException("Param 'to' is undefined");
     }
@@ -77,29 +74,30 @@ export class EmailJobAction<T> implements JobAction<T> {
     if (!data["subject"]) {
       throw new NotFoundException("Param 'subject' is undefined");
     }
-    if (!data["body"]) {
-      throw new NotFoundException("Param 'body' is undefined");
+    if (!data["bodyTemplate"]) {
+      throw new NotFoundException("Param 'bodyTemplate' is undefined");
     }
 
     Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
 
-    const mailerConfig = configuration().smtp;
-    this.mailService = createTransport({
-      host: mailerConfig.host,
-      port: mailerConfig.port,
-      secure: mailerConfig.secure,
-      auth: {
-        user: this.from,
-        pass: this.password
-      }
-    } as any);
-
-    this.toTemplate = compile(data["to"]);
     this.from = data["from"];
     this.password = data["password"];
+
+    // const mailerConfig = configuration().smtp;
+    // this.mailService = createTransport({
+    //   host: mailerConfig.host,
+    //   port: mailerConfig.port,
+    //   secure: mailerConfig.secure,
+    //   auth: {
+    //     user: this.from,
+    //     pass: this.password
+    //   }
+    // } as any);
+
+    this.toTemplate = compile(data["to"]);
     this.subjectTemplate = compile(data["subject"]);
 
-    const templateFile = readFileSync(data["body"] as string, "utf8");
+    const templateFile = readFileSync(data["bodyTemplate"] as string, "utf8");
     this.bodyTemplate = compile(templateFile);
   }
 
@@ -108,7 +106,7 @@ export class EmailJobAction<T> implements JobAction<T> {
       "Performing EmailJobAction: " + JSON.stringify(job),
       "EmailJobAction",
     );
-
+    
     // Fill templates
     const mail: MailOptions = {
       to: this.toTemplate(job, jobTemplateOptions),
@@ -116,8 +114,9 @@ export class EmailJobAction<T> implements JobAction<T> {
       subject: this.subjectTemplate(job, jobTemplateOptions),
     };
     mail.text = this.bodyTemplate(job, jobTemplateOptions);
+    Logger.log(mail);
 
     // Send the email
-    await this.mailService.sendMail(mail);
+    // await this.mailService.sendMail(mail);
   }
 }

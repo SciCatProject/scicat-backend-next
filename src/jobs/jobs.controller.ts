@@ -401,6 +401,10 @@ export class JobsController {
     let datasetIds: string[] = [];
     if (JobsConfigSchema.DatasetIds in jobCreateDto.jobParams) {
       datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
+      jobInstance.jobParams = {
+        ...jobInstance.jobParams,
+        [JobsConfigSchema.DatasetIds]: datasetIds,
+      };
     }
     if (user) {
       // the request comes from a user who is logged in.

@@ -29,8 +29,8 @@
           {
             "actionType": "email",
             "to": "{{contactEmail}}",
-            "from": "",
-            "password": "",
+            "from": "from",
+            "password": "password",
             "subject": "[SciCat] Your {{type}} job was submitted successfully",
             "bodyTemplate": "src/common/email-templates/job-template-simplified.html"
           }
