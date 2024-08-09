@@ -6,6 +6,12 @@ const TestAccounts = Object.fromEntries(
   RawTestAccounts.map((account) => [account.username, account]),
 );
 
+const DatasetDates = faker.date.betweens({
+  from: faker.date.recent({ days: 15 }).toISOString(),
+  to: faker.date.recent({ days: 10 }).toISOString(),
+  count: 2,
+});
+
 const TestData = {
   EntryCreatedStatusCode: 201,
   EntryValidStatusCode: 200,
@@ -117,6 +123,7 @@ const TestData = {
 
   RawCorrect: {
     principalInvestigator: "scicatingestor@your.site",
+    startTime: "2011-09-14T05:29:11.000Z",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
@@ -199,7 +206,8 @@ const TestData = {
 
   RawCorrectRandom: {
     principalInvestigator: faker.internet.email(),
-    endTime: faker.date.past().toISOString(),
+    startTime: DatasetDates[0],
+    endTime: DatasetDates[1],
     creationLocation: faker.system.directoryPath(),
     dataFormat: faker.lorem.words(3),
     scientificMetadata: {
@@ -299,6 +307,7 @@ const TestData = {
 
   RawWrong_2: {
     principalInvestigator: "bertram.astor@grumble.com",
+    startTime: "2011-09-15T02:13:52.000Z",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
