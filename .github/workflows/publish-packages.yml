@@ -20,13 +20,17 @@ jobs:
         with:
           node-version: ${{env.NODE_VERSION}}
 
-      - name: Run docker-compose
+      - name: Pull MongoDB Image
         run: |
-          cp CI/ESS/e2e/docker-compose.e2e.yaml docker-compose.yaml
-          docker compose pull
-          docker compose build --no-cache
-          docker compose up -d
-
+          docker pull mongo:latest
+          docker run -d --name mongo-container -p 27017:27017 mongo:latest
+      - name: Start Backend
+        env:
+          MONGODB_URI: "mongodb://localhost:27017/scicat"
+          JWT_SECRET: thisIsTheJwtSecret
+        run: |
+          npm install
+          npm run start
       - name: Wait for Backend
         run: |
           npm install -g wait-on
@@ -39,9 +43,9 @@ jobs:
         run: sudo chown -R $USER:$USER ./sdk
 
       - name: Upload generated SDK JSON
-        uses: actions/upload-artifact@v3
+        uses: actions/cache@v3
         with:
-          name: sdk
+          key: sdk
           path: ./sdk
 
   npm-publish:
