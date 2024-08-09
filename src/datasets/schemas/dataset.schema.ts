@@ -418,7 +418,16 @@ export class DatasetClass extends OwnableClass {
     type: Date,
     required: false,
     description:
-      "End time of data acquisition for this dataset, format according to chapter 5.6 internet date/time format in RFC 3339. Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
+      "Start time of data acquisition for the current dataset.<br>It is expected to be in ISO8601 format according to specifications for internet date/time format in RFC 3339, chapter 5.6 (https://www.rfc-editor.org/rfc/rfc3339#section-5).<br>Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
+  })
+  @Prop({ type: Date, required: false })
+  startTime?: Date;
+
+  @ApiProperty({
+    type: Date,
+    required: false,
+    description:
+      "End time of data acquisition for the current dataset.<br>It is expected to be in ISO8601 format according to specifications for internet date/time format in RFC 3339, chapter 5.6 (https://www.rfc-editor.org/rfc/rfc3339#section-5).<br>Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
   })
   @Prop({ type: Date, required: false })
   endTime?: Date;
