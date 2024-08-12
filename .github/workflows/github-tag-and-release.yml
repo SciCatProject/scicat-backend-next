@@ -1,4 +1,5 @@
-name: Bump version
+name: Bump release version and build-push
+
 on:
   push:
     branches:
