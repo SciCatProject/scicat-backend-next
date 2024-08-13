@@ -44,18 +44,10 @@ jobs:
       - name: Download the Swagger schema
         run: curl -o ./swagger-schema.json http://localhost:3000/explorer-json
 
-      - name: Update SDK Version for each language in Config Files
-        run: node scripts/update-sdk-versions.js
-
       - uses: actions/upload-artifact@v4
         with:
           name: swagger-schema
           path: ./swagger-schema.json
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: updated-configs
-          path: .github/openapi/
 
   generate-and-upload-sdk:
     runs-on: ubuntu-latest
@@ -75,10 +67,6 @@ jobs:
         with:
           name: swagger-schema
           path: .
-      - uses: actions/download-artifact@v4
-        with:
-          name: updated-configs
-          path: .github/openapi/
 
       - name: Check packageVersion
         run: |
