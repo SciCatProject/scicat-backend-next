@@ -13,6 +13,8 @@ env:
 jobs:
   start-backend-and-upload-swagger-schema:
     runs-on: ubuntu-latest
+    outputs:
+      current-version: ${{ steps.package-version.outputs.current-version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,6 +23,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{env.NODE_VERSION}}
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Pull MongoDB Image
         run: |
@@ -62,6 +68,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set packageVersion variable
+        run: echo "packageVersion=${{ needs.start-backend-and-upload-swagger-schema.outputs.current-version }}" >> $GITHUB_ENV
+
       - uses: actions/download-artifact@v4
         with:
           name: swagger-schema
@@ -71,13 +80,27 @@ jobs:
           name: updated-configs
           path: .github/openapi/
 
+      - name: Check packageVersion
+        run: |
+          if [ -z "$packageVersion" ]; then
+            echo "packageVersion is not set, exiting..."
+            exit 1
+          fi
+
       - name: Generate Client
         uses: openapi-generators/openapitools-generator-action@v1
         with:
           generator: ${{ matrix.generator }}
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
-          command-args: -o ./sdk/${{ matrix.generator }}
+          command-args: |
+            -o ./sdk/${{ matrix.generator }} $(
+            if [ "${{ matrix.generator }}" == "typescript" ]; then
+              echo "--additional-properties=npmVersion=$packageVersion";
+            elif [ "${{ matrix.generator }}" == "python" ]; then
+              echo "--additional-properties=packageVersion=$packageVersion";
+            fi
+            )
 
       - uses: actions/upload-artifact@v4
         with:
