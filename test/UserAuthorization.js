@@ -20,7 +20,7 @@ let accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   userIdArchiveManager = null;
 
-describe("2300: User Authorization: test that user authorization are correct", () => {
+describe.only("2300: User Authorization: test that user authorization are correct", () => {
   beforeEach(async() => {
     const loginResponseIngestor = await utils.getIdAndToken(appUrl, {
       username: "adminIngestor",

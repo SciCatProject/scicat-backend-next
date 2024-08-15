@@ -84,7 +84,8 @@ export class PoliciesController {
     const user: JWTUser = request.user as JWTUser;
 
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.accessPolicyEndpointForUser(user);
+      // these actions are not defined in casl
       const canViewAll = ability.can(Action.ListAll, Policy);
       const canViewTheirOwn = ability.can(Action.ListOwn, Policy);
       if (!canViewAll && canViewTheirOwn) {
