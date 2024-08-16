@@ -96,59 +96,31 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "user1",
-            password: TestData.Accounts["user1"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenUser1 = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user2",
-                password: TestData.Accounts["user2"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser2 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user2"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser3 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        done();
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser2 = await utils.getToken(appUrl, {
+      username: "user2",
+      password: TestData.Accounts["user2"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {

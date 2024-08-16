@@ -38,19 +38,13 @@ describe("2350: Users: Login with functional accounts", () => {
 });
 
 describe("2360: Users settings", () => {
-  beforeEach((done) => {
-    utils.getIdAndToken(
-      appUrl,
-      {
-        username: "user1",
-        password: TestData.Accounts["user1"]["password"],
-      },
-      (idVal, tokenVal) => {
-        accessTokenUser1 = tokenVal;
-        userIdUser1 = idVal;
-        done();
-      },
-    );
+  beforeEach(async() => {
+    const loginResponseUser1 = await utils.getIdAndToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+    userIdUser1 = loginResponseUser1.userId;
+    accessTokenUser1  = loginResponseUser1.token;
   });
 
   it("0010: Update users settings with valid value should success ", async () => {
