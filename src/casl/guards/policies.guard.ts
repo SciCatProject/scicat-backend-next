@@ -3,7 +3,6 @@ import { Reflector } from "@nestjs/core";
 import { AppAbility, CaslAbilityFactory } from "../casl-ability.factory";
 import { CHECK_POLICIES_KEY } from "../decorators/check-policies.decorator";
 import { PolicyHandler } from "../interfaces/policy-handler.interface";
-import { request } from "https";
 
 @Injectable()
 export class PoliciesGuard implements CanActivate {
@@ -13,23 +12,24 @@ export class PoliciesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-
     const policyHandlers =
-    this.reflector.get<PolicyHandler[]>(
-      CHECK_POLICIES_KEY,
-      context.getHandler(),
-    ) || [];
+      this.reflector.get<PolicyHandler[]>(
+        CHECK_POLICIES_KEY,
+        context.getHandler(),
+      ) || [];
 
     const req = context.switchToHttp().getRequest();
     const user = req.user;
-    const endpoint = req.route.path.split("/")[3]
-    
-    const ability = this.caslAbilityFactory.accessEndpointForUser(user, endpoint);
+    const endpoint = req.route.path.split("/")[3];
+
+    const ability = this.caslAbilityFactory.accessEndpointForUser(
+      user,
+      endpoint,
+    );
     return policyHandlers.every((handler) =>
       this.execPolicyHandler(handler, ability),
     );
   }
-
 
   private execPolicyHandler(handler: PolicyHandler, ability: AppAbility) {
     if (typeof handler === "function") {
@@ -40,13 +40,3 @@ export class PoliciesGuard implements CanActivate {
     return handler.handle(ability);
   }
 }
-
-
-
-
-
-    // Assuming that there is only one policy handler, extract the subject
-    //const policyHandler = policyHandlers[0];
-    //const subject = this.extractSubjectFromPolicyHandler(policyHandler);
-
-  

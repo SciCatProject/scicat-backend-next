@@ -99,7 +99,8 @@ export class ProposalsController {
     );
 
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
+    const ability =
+      this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
 
     try {
       switch (group) {
@@ -208,7 +209,8 @@ export class ProposalsController {
     mergedFilters.where = mergedFilters.where || {};
 
     if (user) {
-      const ability = this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
+      const ability =
+        this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
       const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -407,7 +409,8 @@ export class ProposalsController {
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
+      const ability =
+        this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
       const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
@@ -478,7 +481,8 @@ export class ProposalsController {
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
-      const ability = this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
+      const ability =
+        this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
       const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
@@ -869,7 +873,8 @@ export class ProposalsController {
     @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
+    const ability =
+      this.caslAbilityFactory.accessProposalsDataInstanceForUser(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 

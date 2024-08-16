@@ -56,119 +56,129 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 export class CaslAbilityFactory {
   accessEndpointForUser(user: JWTUser, subject: string) {
     switch (subject) {
-      case 'elastic-search':
-        return this.accessElasticSearchEndpointForUser(user);
-      case 'logbooks':
-        return this.accessLogbookEndpointForUser(user);
-      case 'publisheddata':
-        return this.accessPublishedDataEndpointForUser(user);
-      case 'policies':
-        return this.accessPolicyEndpointForUser(user);
-      case 'users':
-        return this.accessUserEndpointForUser(user);
-      case 'datasets':
+      case "datasets":
         return this.accessDatasetEndpointForUser(user);
-      case 'origdatablocks':
-        return this.accessOrigDatablockEndpointForUser(user);
-      case 'jobs':
+      case "elastic-search":
+        return this.accessElasticSearchEndpointForUser(user);
+      case "jobs":
         return this.accessJobsEnpointForUser(user);
-      case 'proposals':
-        return this.accessProposalsEndpointForUser(user);
-      case 'samples':
-        return this.accessSamplesEndpointForUser(user);
-      case 'instruments':
+      case "instruments":
         return this.accessInstrumentEndpointForUser(user);
+      case "logbooks":
+        return this.accessLogbookEndpointForUser(user);
+      case "origdatablocks":
+        return this.accessOrigDatablockEndpointForUser(user);
+      case "policies":
+        return this.accessPolicyEndpointForUser(user);
+      case "proposals":
+        return this.accessProposalsEndpointForUser(user);
+      case "publisheddata":
+        return this.accessPublishedDataEndpointForUser(user);
+      case "samples":
+        return this.accessSamplesEndpointForUser(user);
+      case "users":
+        return this.accessUserEndpointForUser(user);
+      case "useridentities":
+        return this.accessUserEndpointForUser(user);
       default:
-        throw new Error(`No endpoint access policies defined for subject: ${subject}`);
+        throw new Error(`
+        No endpoint access policies defined for subject: ${subject}`);
     }
   }
 
-  accessElasticSearchEndpointForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessElasticSearchEndpointForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
-    if (user && 
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
-        /*
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
         */
-        can(Action.Manage, ElasticSearchActions);
-      }
+      can(Action.Manage, ElasticSearchActions);
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
 
-  accessLogbookEndpointForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessLogbookEndpointForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
-    if (user
-      ) {
-        /*
+    if (user) {
+      /*
         / authenticated user
         */
-       can(Action.Read, Logbook);
-      }
+      can(Action.Read, Logbook);
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
-    
-  accessPublishedDataEndpointForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+
+  accessPublishedDataEndpointForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    if (user){
+    if (user) {
       can(Action.Read, PublishedData);
       can(Action.Update, PublishedData);
       can(Action.Create, PublishedData);
     }
 
-    if (user && user.currentGroups.some((g) => configuration().deleteGroups.includes(g))){
-        /*
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
-        can(Action.Delete, PublishedData);
-      } 
+      can(Action.Delete, PublishedData);
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
 
-  accessPolicyEndpointForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessPolicyEndpointForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    if (user && user.currentGroups.some((g) => configuration().deleteGroups.includes(g))){
-        /*
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
-        can(Action.Delete, Policy);
-      } else if (user && 
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
-        /*
+      can(Action.Delete, Policy);
+    } else if (
+      user &&
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
         */
 
-        can(Action.Update, Policy);
-        can(Action.Read, Policy);
-        can(Action.Create, Policy);
-      }
+      can(Action.Update, Policy);
+      can(Action.Read, Policy);
+      can(Action.Create, Policy);
+    }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
-  } 
+  }
 
-  accessUserEndpointForUser(user:JWTUser){
+  accessUserEndpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -206,7 +216,7 @@ export class CaslAbilityFactory {
         can(Action.UserCreateJwt, User);
 
         // -------------------------------------
-      } else  if (user) {
+      } else if (user) {
         /**
         /*  authenticated users
         **/
@@ -227,7 +237,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessDatasetEndpointForUser(user:JWTUser){
+  accessDatasetEndpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -255,8 +265,6 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetDatablockUpdate, DatasetClass);
       // -
       cannot(Action.DatasetLogbookRead, DatasetClass);
-     
-
     } else {
       if (
         user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
@@ -265,18 +273,15 @@ export class CaslAbilityFactory {
         / user that belongs to any of the group listed in DELETE_GROUPS
         */
 
-
         can(Action.DatasetDelete, DatasetClass);
         // -
         can(Action.DatasetOrigdatablockDelete, DatasetClass);
         // -
         can(Action.DatasetDatablockDelete, DatasetClass);
-
       } else {
         /*
         /  user that does not belong to any of the group listed in DELETE_GROUPS
         */
-
 
         cannot(Action.DatasetDelete, DatasetClass);
         // -
@@ -310,9 +315,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockUpdate, DatasetClass);
         // -
         can(Action.DatasetLogbookRead, DatasetClass);
-       
-
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetPrivilegedGroups.includes(g),
@@ -340,7 +342,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockUpdate, DatasetClass);
         // -
         can(Action.DatasetLogbookRead, DatasetClass);
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetWithPidGroups.includes(g),
@@ -369,7 +370,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockUpdate, DatasetClass);
         // -
         can(Action.DatasetLogbookRead, DatasetClass);
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetGroups.includes(g),
@@ -398,7 +398,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockUpdate, DatasetClass);
         // -
         can(Action.DatasetLogbookRead, DatasetClass);
-  
       } else if (user) {
         /**
         /*  authenticated users
@@ -422,9 +421,7 @@ export class CaslAbilityFactory {
         cannot(Action.DatasetDatablockUpdate, DatasetClass);
         // -
         can(Action.DatasetLogbookRead, DatasetClass);
-     
       }
-
     }
     return build({
       detectSubjectType: (item) =>
@@ -432,8 +429,8 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessDatasetDataInstanceForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessDatasetDataInstanceForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
 
@@ -458,8 +455,6 @@ export class CaslAbilityFactory {
       can(Action.DatasetDatablockReadPublic, DatasetClass, {
         isPublished: true,
       });
-
-
     } else {
       if (
         user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
@@ -473,8 +468,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetOrigdatablockDeleteAny, DatasetClass);
         // -
         can(Action.DatasetDatablockDeleteAny, DatasetClass);
-
-
       }
 
       if (
@@ -483,7 +476,7 @@ export class CaslAbilityFactory {
         /*
         / user that belongs to any of the group listed in ADMIN_GROUPS
         */
- 
+
         can(Action.DatasetCreateAny, DatasetClass);
         can(Action.DatasetReadAny, DatasetClass);
         can(Action.DatasetUpdateAny, DatasetClass);
@@ -502,8 +495,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetDatablockUpdateAny, DatasetClass);
         // -------------------------------------
         can(Action.DatasetLogbookReadAny, DatasetClass);
-
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetPrivilegedGroups.includes(g),
@@ -576,7 +567,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetWithPidGroups.includes(g),
@@ -658,7 +648,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().createDatasetGroups.includes(g),
@@ -742,7 +731,6 @@ export class CaslAbilityFactory {
         can(Action.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-
       } else if (user) {
         /**
         /*  authenticated users
@@ -792,9 +780,7 @@ export class CaslAbilityFactory {
         can(Action.DatasetLogbookReadOwner, DatasetClass, {
           ownerGroup: { $in: user.currentGroups },
         });
-
       }
-
     }
     return build({
       detectSubjectType: (item) =>
@@ -802,7 +788,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessOrigDatablockEndpointForUser(user:JWTUser){
+  accessOrigDatablockEndpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -832,7 +818,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
-
     } else if (
       user.currentGroups.some((g) =>
         configuration().createDatasetPrivilegedGroups.includes(g),
@@ -845,7 +830,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
-     
     } else if (
       user.currentGroups.some((g) =>
         configuration().createDatasetWithPidGroups.includes(g),
@@ -859,7 +843,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
-      
     } else if (
       user.currentGroups.some((g) =>
         configuration().createDatasetGroups.includes(g),
@@ -873,7 +856,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockRead, OrigDatablock);
       can(Action.OrigdatablockCreate, OrigDatablock);
       can(Action.OrigdatablockUpdate, OrigDatablock);
-     
     } else if (user) {
       /**
       /*  authenticated users
@@ -882,17 +864,15 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockRead, OrigDatablock);
       cannot(Action.OrigdatablockCreate, OrigDatablock);
       cannot(Action.OrigdatablockUpdate, OrigDatablock);
-
     }
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
-
   }
 
-  accessOrigDatablockDataInstanceForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessOrigDatablockDataInstanceForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     if (
@@ -903,7 +883,7 @@ export class CaslAbilityFactory {
       */
 
       can(Action.OrigdatablockDeleteAny, OrigDatablock);
-    } 
+    }
     if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -914,7 +894,6 @@ export class CaslAbilityFactory {
       can(Action.OrigdatablockReadAny, OrigDatablock);
       can(Action.OrigdatablockCreateAny, OrigDatablock);
       can(Action.OrigdatablockUpdateAny, OrigDatablock);
-
     } else if (
       user.currentGroups.some((g) =>
         configuration().createDatasetPrivilegedGroups.includes(g),
@@ -1009,10 +988,9 @@ export class CaslAbilityFactory {
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
-
   }
 
-  accessJobsEnpointForUser(user:JWTUser){
+  accessJobsEnpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1034,7 +1012,6 @@ export class CaslAbilityFactory {
       can(Action.JobsRead, JobClass);
       can(Action.JobsCreate, JobClass);
       can(Action.JobsUpdate, JobClass);
-  
     } else if (
       user.currentGroups.some((g) =>
         configuration().createJobGroups.includes(g),
@@ -1047,7 +1024,6 @@ export class CaslAbilityFactory {
       can(Action.JobsRead, JobClass);
       can(Action.JobsCreate, JobClass);
       can(Action.JobsUpdate, JobClass);
-     
     } else if (
       user.currentGroups.some((g) =>
         configuration().updateJobGroups.includes(g),
@@ -1060,7 +1036,6 @@ export class CaslAbilityFactory {
       cannot(Action.JobsRead, JobClass);
       cannot(Action.JobsCreate, JobClass);
       can(Action.JobsUpdate, JobClass);
-   
     } else if (user) {
       /**
        * authenticated users
@@ -1077,8 +1052,8 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessJobsDataInstanceForUser(user:JWTUser){
-    const { can, cannot, build } = new AbilityBuilder(
+  accessJobsDataInstanceForUser(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     if (
@@ -1133,7 +1108,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessProposalsEndpointForUser(user:JWTUser){
+  accessProposalsEndpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1150,7 +1125,6 @@ export class CaslAbilityFactory {
       cannot(Action.ProposalsAttachmentCreate, ProposalClass);
       cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
       cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-
     } else if (
       user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
     ) {
@@ -1159,7 +1133,6 @@ export class CaslAbilityFactory {
         */
 
       can(Action.ProposalsDelete, ProposalClass);
-
     } else if (
       user.currentGroups.some((g) => configuration().adminGroups.includes(g))
     ) {
@@ -1175,7 +1148,6 @@ export class CaslAbilityFactory {
       can(Action.ProposalsAttachmentCreate, ProposalClass);
       can(Action.ProposalsAttachmentUpdate, ProposalClass);
       can(Action.ProposalsAttachmentDelete, ProposalClass);
-   
     } else if (
       user.currentGroups.some((g) => {
         return configuration().proposalGroups.includes(g);
@@ -1194,7 +1166,6 @@ export class CaslAbilityFactory {
       can(Action.ProposalsAttachmentUpdate, ProposalClass);
       can(Action.ProposalsAttachmentDelete, ProposalClass);
       cannot(Action.ProposalsDatasetRead, ProposalClass);
-
     } else if (user) {
       /**
        * authenticated users
@@ -1209,7 +1180,6 @@ export class CaslAbilityFactory {
       cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
       cannot(Action.ProposalsAttachmentDelete, ProposalClass);
       can(Action.ProposalsDatasetRead, ProposalClass);
-  
     }
     return build({
       detectSubjectType: (item) =>
@@ -1217,7 +1187,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessProposalsDataInstanceForUser(user:JWTUser){
+  accessProposalsDataInstanceForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1324,7 +1294,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessSamplesEndpointForUser(user:JWTUser){
+  accessSamplesEndpointForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1333,7 +1303,6 @@ export class CaslAbilityFactory {
       // -------------------------------------
       // unauthenticated users
       // -------------------------------------
-
 
       can(Action.SampleRead, SampleClass);
       cannot(Action.SampleCreate, SampleClass);
@@ -1344,7 +1313,6 @@ export class CaslAbilityFactory {
       cannot(Action.SampleAttachmentUpdate, SampleClass);
       cannot(Action.SampleAttachmentDelete, SampleClass);
       cannot(Action.SampleDatasetRead, SampleClass);
-
     } else {
       // -------------------------------------
       // authenticated users
@@ -1359,14 +1327,12 @@ export class CaslAbilityFactory {
 
         can(Action.SampleDelete, SampleClass);
         can(Action.SampleAttachmentDelete, SampleClass);
-
       } else {
         // -------------------------------------
         // users that do not belong to any of the group listed in DELETE_GROUPS
         // -------------------------------------
 
         cannot(Action.SampleDelete, SampleClass);
-
       }
 
       if (
@@ -1384,7 +1350,6 @@ export class CaslAbilityFactory {
         can(Action.SampleAttachmentUpdate, SampleClass);
         can(Action.SampleAttachmentDelete, SampleClass);
         can(Action.SampleDatasetRead, SampleClass);
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().samplePrivilegedGroups.includes(g),
@@ -1402,7 +1367,6 @@ export class CaslAbilityFactory {
         can(Action.SampleAttachmentUpdate, SampleClass);
         can(Action.SampleAttachmentDelete, SampleClass);
         can(Action.SampleDatasetRead, SampleClass);
-
       } else if (
         user.currentGroups.some((g) =>
           configuration().sampleGroups.includes(g),
@@ -1421,7 +1385,6 @@ export class CaslAbilityFactory {
         can(Action.SampleAttachmentUpdate, SampleClass);
         can(Action.SampleAttachmentDelete, SampleClass);
         can(Action.SampleDatasetRead, SampleClass);
-
       } else {
         // -------------------------------------
         // users with no elevated permissions
@@ -1442,14 +1405,14 @@ export class CaslAbilityFactory {
         }
       }
     }
-    
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
 
-  accessSamplesDataInstanceForUser(user:JWTUser){
+  accessSamplesDataInstanceForUser(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1612,7 +1575,7 @@ export class CaslAbilityFactory {
         });
       }
     }
-    
+
     return build({
       detectSubjectType: (item) =>
         item.constructor as ExtractSubjectType<Subjects>,
@@ -1665,4 +1628,3 @@ export class CaslAbilityFactory {
     });
   }
 }
-
