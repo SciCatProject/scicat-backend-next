@@ -30,7 +30,7 @@ export interface ScientificCondition {
   operator: string;
 }
 
-export const kDefaultFilters: FilterConfig[] = [
+export const FILTER_CONFIGS: FilterConfig[] = [
   { type: "LocationFilterComponent", visible: true },
   { type: "PidFilterComponent", visible: true },
   { type: "PidFilterContainsComponent", visible: false },
@@ -83,12 +83,12 @@ export class UserSettings {
 
   @ApiProperty({
     type: [Object],
-    default: kDefaultFilters,
+    default: FILTER_CONFIGS,
     description: "Array of filters the user has set",
   })
   @Prop({
     type: [{ type: Object }],
-    default: kDefaultFilters,
+    default: FILTER_CONFIGS,
   })
   filters: FilterConfig[];
 
