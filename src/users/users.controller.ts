@@ -330,26 +330,6 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(Action.UserCreateAny, User),
-  )
-  @Post("/settings/default")
-  async postDefaultSettings(
-    @Req() request: Request,
-    @Body() createUserSettingsDto: CreateUserSettingsDto,
-  ): Promise<UserSettings> {
-    await this.checkUserAuthorization(
-      request,
-      [Action.UserCreateAny],
-      createUserSettingsDto.userId,
-    );
-    return this.usersService.createUserSettings(
-      "default",
-      createUserSettingsDto,
-    );
-  }
-
-  @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies((ability: AppAbility) => {
     return (
       ability.can(Action.UserReadOwn, User) ||
