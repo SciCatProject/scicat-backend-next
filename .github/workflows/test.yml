@@ -1,6 +1,6 @@
 name: Test
 env:
-  NODE_VERSION: 18.x
+  NODE_VERSION: 20.x
 
 on:
   pull_request:
