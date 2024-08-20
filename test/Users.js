@@ -38,22 +38,16 @@ describe("2350: Users: Login with functional accounts", () => {
 });
 
 describe("2360: Users settings", () => {
-  beforeEach((done) => {
-    utils.getIdAndToken(
-      appUrl,
-      {
-        username: "user1",
-        password: TestData.Accounts["user1"]["password"],
-      },
-      (idVal, tokenVal) => {
-        accessTokenUser1 = tokenVal;
-        userIdUser1 = idVal;
-        done();
-      },
-    );
+  beforeEach(async() => {
+    const loginResponseUser1 = await utils.getIdAndToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+    userIdUser1 = loginResponseUser1.userId;
+    accessTokenUser1  = loginResponseUser1.token;
   });
 
-  it("0010: Update users settings with valid value should sucess ", async () => {
+  it("0010: Update users settings with valid value should success ", async () => {
     return request(appUrl)
       .put(`/api/v3/Users/${userIdUser1}/settings`)
       .set("Accept", "application/json")
@@ -64,6 +58,8 @@ describe("2360: Users settings", () => {
         res.body.should.have.property("userId", userIdUser1);
         res.body.should.have.property("datasetCount");
         res.body.should.have.property("jobCount");
+        res.body.should.have.property("filters");
+        res.body.should.have.property("conditions");
       });
   });
 });

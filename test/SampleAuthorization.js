@@ -39,93 +39,47 @@ describe("2250: Sample Authorization", () => {
   before(() => {
     db.collection("Sample").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "sampleIngestor",
-            password: TestData.Accounts["sampleIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenSampleIngestor = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user1",
-                password: TestData.Accounts["user1"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser1 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user2",
-                    password: TestData.Accounts["user2"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser2 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        utils.getToken(
-                          appUrl,
-                          {
-                            username: "user3",
-                            password: TestData.Accounts["user3"]["password"],
-                          },
-                          (tokenVal) => {
-                            accessTokenUser3 = tokenVal;
-                            utils.getToken(
-                              appUrl,
-                              {
-                                username: "user4",
-                                password:
-                                  TestData.Accounts["user4"]["password"],
-                              },
-                              (tokenVal) => {
-                                accessTokenUser4 = tokenVal;
-                                utils.getToken(
-                                  appUrl,
-                                  {
-                                    username: "user5.1",
-                                    password:
-                                      TestData.Accounts["user5.1"]["password"],
-                                  },
-                                  (tokenVal) => {
-                                    accessTokenUser5 = tokenVal;
-                                    done();
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  });
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
+    accessTokenSampleIngestor = await utils.getToken(appUrl, {
+      username: "sampleIngestor",
+      password: TestData.Accounts["sampleIngestor"]["password"],
+    });
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser2 = await utils.getToken(appUrl, {
+      username: "user2",
+      password: TestData.Accounts["user2"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenUser4 = await utils.getToken(appUrl, {
+      username: "user4",
+      password: TestData.Accounts["user4"]["password"],
+    });
+
+    accessTokenUser5 = await utils.getToken(appUrl, {
+      username: "user5.1",
+      password: TestData.Accounts["user5.1"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
+  });
+  
   it("0010: adds sample 1 as Admin Ingestor with owner group its own group", async () => {
     let sample = {
       ...TestData.SampleCorrect,

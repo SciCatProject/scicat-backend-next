@@ -12,6 +12,7 @@ import {
   Body,
   ForbiddenException,
   HttpCode,
+  CanActivate,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -31,7 +32,10 @@ import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import { PartialUpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import {
+  PartialUpdateUserSettingsDto,
+  UpdateUserSettingsDto,
+} from "./dto/update-user-settings.dto";
 import { User } from "./schemas/user.schema";
 import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
 import { AuthService } from "src/auth/auth.service";
@@ -44,6 +48,8 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
+import { PoliciesGuard } from "src/casl/guards/policies.guard";
+import { DefaultUserSettingsInterceptor } from "./interceptors/default-user-settings.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -305,6 +311,22 @@ export class UsersController {
       id,
     );
     return this.usersService.findOneAndDeleteUserSettings(id);
+  }
+
+  @UseInterceptors(DefaultUserSettingsInterceptor)
+  @UseGuards(
+    class ByPassAuthenticatedPoliciesGuard
+      extends PoliciesGuard
+      implements CanActivate
+    {
+      async canActivate(): Promise<boolean> {
+        return Promise.resolve(true);
+      }
+    },
+  )
+  @Get("/settings/default")
+  async getDefaultSettings(): Promise<UserSettings> {
+    return Promise.resolve(new UserSettings());
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)

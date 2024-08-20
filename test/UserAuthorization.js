@@ -21,87 +21,57 @@ let accessTokenAdminIngestor = null,
   userIdArchiveManager = null;
 
 describe("2300: User Authorization: test that user authorization are correct", () => {
-  beforeEach((done) => {
-    utils.getIdAndToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (idVal, tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        userIdIngestor = idVal;
-        utils.getIdAndToken(
-          appUrl,
-          {
-            username: "user1",
-            password: TestData.Accounts["user1"]["password"],
-          },
-          (idVal, tokenVal) => {
-            accessTokenUser1 = tokenVal;
-            userIdUser1 = idVal;
-            utils.getIdAndToken(
-              appUrl,
-              {
-                username: "user2",
-                password: TestData.Accounts["user2"]["password"],
-              },
-              (idVal, tokenVal) => {
-                accessTokenUser2 = tokenVal;
-                userIdUser2 = idVal;
-                utils.getIdAndToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user3"]["password"],
-                  },
-                  (idVal, tokenVal) => {
-                    accessTokenUser3 = tokenVal;
-                    userIdUser3 = idVal;
-                    utils.getIdAndToken(
-                      appUrl,
-                      {
-                        username: "user4",
-                        password: TestData.Accounts["user4"]["password"],
-                      },
-                      (idVal, tokenVal) => {
-                        accessTokenUser4 = tokenVal;
-                        userIdUser4 = idVal;
-                        utils.getIdAndToken(
-                          appUrl,
-                          {
-                            username: "archiveManager",
-                            password: TestData.Accounts["archiveManager"]["password"],
-                          },
-                          (idVal, tokenVal) => {
-                            accessTokenArchiveManager = tokenVal;
-                            userIdArchiveManager = idVal;
-                            utils.getIdAndToken(
-                              appUrl,
-                              {
-                                username: "admin",
-                                password: TestData.Accounts["admin"]["password"],
-                              },
-                              (idVal, tokenVal) => {
-                                accessTokenAdmin = tokenVal;
-                                userIdAdmin = idVal;
-                                done();
-                              },
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  });
+  beforeEach(async() => {
+    const loginResponseIngestor = await utils.getIdAndToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+    userIdIngestor = loginResponseIngestor.userId;
+    accessTokenAdminIngestor = loginResponseIngestor.token;
 
+    const loginResponseUser1 = await utils.getIdAndToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+    userIdUser1 = loginResponseUser1.userId;
+    accessTokenUser1  = loginResponseUser1.token;
+
+    const loginResponseUser2 = await utils.getIdAndToken(appUrl, {
+      username: "user2",
+      password: TestData.Accounts["user2"]["password"],
+    });
+    userIdUser2 = loginResponseUser2.userId;
+    accessTokenUser2 = loginResponseUser2.token;
+
+    const loginResponseUser3 = await utils.getIdAndToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+    userIdUser3 = loginResponseUser3.userId
+    accessTokenUser3 = loginResponseUser3.token
+
+    const loginResponseUser4 = await utils.getIdAndToken(appUrl, {
+      username: "user4",
+      password: TestData.Accounts["user4"]["password"],
+    });
+    userIdUser4 = loginResponseUser4.userId;
+    accessTokenUser4 = loginResponseUser4.token;
+    
+    const loginResponseAdmin = await utils.getIdAndToken(appUrl, {
+      username: "admin",
+      password: TestData.Accounts["admin"]["password"],
+    });
+    userIdAdmin = loginResponseAdmin.userId;
+    accessTokenAdmin = loginResponseAdmin.token;
+
+    const loginResponseArchiveManager = await utils.getIdAndToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
+    userIdArchiveManager = loginResponseArchiveManager.userId;
+    accessTokenArchiveManager = loginResponseArchiveManager.token;
+  });
+  
   afterEach((done) => {
     sandbox.restore();
     done();

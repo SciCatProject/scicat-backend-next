@@ -21,38 +21,46 @@ var publicJobIds = [];
 var origDatablockId = null;
 
 describe.skip("1100: Jobs: Test New Job Model", () => {
-  before((done) => {
+  before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
-
-    archiveJob = { ...TestData.ArchiveJob };
-    retrieveJob = { ...TestData.RetrieveJob };
-    publicJob = { ...TestData.PublicJob };
-    done();
   });
 
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
-          },
-        );
-      },
-    );
+  beforeEach(async () => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenUser51 = await utils.getToken(appUrl, {
+      username: "user5.1",
+      password: TestData.Accounts["user5.1"]["password"],
+    });
+
+    accessTokenUser52 = await utils.getToken(appUrl, {
+      username: "user5.2",
+      password: TestData.Accounts["user5.2"]["password"],
+    });
+
+    accessTokenAdmin = await utils.getToken(appUrl, {
+      username: "admin",
+      password: TestData.Accounts["admin"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   it("0010: adds a new raw dataset", async () => {

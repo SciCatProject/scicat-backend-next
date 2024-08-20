@@ -9,7 +9,7 @@ let accessTokenProposalIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
-  accessTokenUser2 = null;
+  accessTokenUser3 = null;
 
 let proposalPid1 = null,
   encodedProposalPid1 = null,
@@ -53,60 +53,31 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
-        utils.getToken(
-          appUrl,
-          {
-            username: "proposalIngestor",
-            password: TestData.Accounts["proposalIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenProposalIngestor = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user1",
-                password: TestData.Accounts["user1"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser1 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user3"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser2 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        done();
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+    accessTokenProposalIngestor = await utils.getToken(appUrl, {
+      username: "proposalIngestor",
+      password: TestData.Accounts["proposalIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {
@@ -386,7 +357,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -399,7 +370,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.AccessForbiddenStatusCode);
   });
@@ -408,7 +379,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid1 + "/authorization")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -420,7 +391,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -432,7 +403,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2 + "/authorization")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -444,7 +415,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -456,7 +427,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3 + "/authorization")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -468,7 +439,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -482,7 +453,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get(`/api/v3/proposals/fullfacet`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {

@@ -2,6 +2,7 @@ import * as mongoose from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
+import filterConfigs from "../../config/default-filters.config.json";
 
 export type UserSettingsDocument = UserSettings & Document;
 
@@ -29,6 +30,8 @@ export interface ScientificCondition {
   value: string;
   operator: string;
 }
+
+export const FILTER_CONFIGS: FilterConfig[] = filterConfigs as FilterConfig[];
 
 @Schema({
   collection: "UserSetting",
@@ -71,32 +74,12 @@ export class UserSettings {
 
   @ApiProperty({
     type: [Object],
-    default: [
-      { type: "LocationFilterComponent", visible: true },
-      { type: "PidFilterComponent", visible: true },
-      { type: "PidFilterContainsComponent", visible: false },
-      { type: "PidFilterStartsWithComponent", visible: false },
-      { type: "GroupFilterComponent", visible: true },
-      { type: "TypeFilterComponent", visible: true },
-      { type: "KeywordFilterComponent", visible: true },
-      { type: "DateRangeFilterComponent", visible: true },
-      { type: "TextFilterComponent", visible: true },
-    ],
+    default: FILTER_CONFIGS,
     description: "Array of filters the user has set",
   })
   @Prop({
     type: [{ type: Object }],
-    default: [
-      { type: "LocationFilterComponent", visible: true },
-      { type: "PidFilterComponent", visible: true },
-      { type: "PidFilterContainsComponent", visible: false },
-      { type: "PidFilterStartsWithComponent", visible: false },
-      { type: "GroupFilterComponent", visible: true },
-      { type: "TypeFilterComponent", visible: true },
-      { type: "KeywordFilterComponent", visible: true },
-      { type: "DateRangeFilterComponent", visible: true },
-      { type: "TextFilterComponent", visible: true },
-    ],
+    default: FILTER_CONFIGS,
   })
   filters: FilterConfig[];
 

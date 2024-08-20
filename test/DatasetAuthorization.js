@@ -45,71 +45,38 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "user1",
-            password: TestData.Accounts["user1"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenUser1 = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user2",
-                password: TestData.Accounts["user2"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser2 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user3"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser3 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        utils.getToken(
-                          appUrl,
-                          {
-                            username: "admin",
-                            password: TestData.Accounts["admin"]["password"],
-                          },
-                          (tokenVal) => {
-                            accessTokenAdmin = tokenVal;
-                            done();
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  });
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser2 = await utils.getToken(appUrl, {
+      username: "user2",
+      password: TestData.Accounts["user2"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenAdmin = await utils.getToken(appUrl, {
+      username: "admin",
+      password: TestData.Accounts["admin"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
+  });
+  
   afterEach((done) => {
     sandbox.restore();
     done();
