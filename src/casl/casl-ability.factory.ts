@@ -54,190 +54,38 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  accessEndpointForUser(user: JWTUser, subject: string) {
+  endpointAccess(user: JWTUser, subject: string) {
     switch (subject) {
       case "datasets":
-        return this.accessDatasetEndpointForUser(user);
+        return this.datasetEndpointAccess(user);
       case "elastic-search":
-        return this.accessElasticSearchEndpointForUser(user);
+        return this.elasticSearchEndpointAccess(user);
       case "jobs":
-        return this.accessJobsEnpointForUser(user);
+        return this.jobsEndpointAccess(user);
       case "instruments":
-        return this.accessInstrumentEndpointForUser(user);
+        return this.instrumentEndpointAccess(user);
       case "logbooks":
-        return this.accessLogbookEndpointForUser(user);
+        return this.logbookEndpointAccess(user);
       case "origdatablocks":
-        return this.accessOrigDatablockEndpointForUser(user);
+        return this.origDatablockEndpointAccess(user);
       case "policies":
-        return this.accessPolicyEndpointForUser(user);
+        return this.policyEndpointAccess(user);
       case "proposals":
-        return this.accessProposalsEndpointForUser(user);
+        return this.proposalsEndpointAccess(user);
       case "publisheddata":
-        return this.accessPublishedDataEndpointForUser(user);
+        return this.publishedDataEndpointAccess(user);
       case "samples":
-        return this.accessSamplesEndpointForUser(user);
+        return this.samplesEndpointAccess(user);
       case "users":
-        return this.accessUserEndpointForUser(user);
       case "useridentities":
-        return this.accessUserEndpointForUser(user);
+        return this.userEndpointAccess(user);
       default:
         throw new Error(`
         No endpoint access policies defined for subject: ${subject}`);
     }
   }
 
-  accessElasticSearchEndpointForUser(user: JWTUser) {
-    const { can, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-
-    if (
-      user &&
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in ADMIN_GROUPS
-        */
-      can(Action.Manage, ElasticSearchActions);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessLogbookEndpointForUser(user: JWTUser) {
-    const { can, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-
-    if (user) {
-      /*
-        / authenticated user
-        */
-      can(Action.Read, Logbook);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessPublishedDataEndpointForUser(user: JWTUser) {
-    const { can, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (user) {
-      can(Action.Read, PublishedData);
-      can(Action.Update, PublishedData);
-      can(Action.Create, PublishedData);
-    }
-
-    if (
-      user &&
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in DELETE_GROUPS
-        */
-      can(Action.Delete, PublishedData);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessPolicyEndpointForUser(user: JWTUser) {
-    const { can, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (
-      user &&
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in DELETE_GROUPS
-        */
-      can(Action.Delete, Policy);
-    } else if (
-      user &&
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in ADMIN_GROUPS
-        */
-
-      can(Action.Update, Policy);
-      can(Action.Read, Policy);
-      can(Action.Create, Policy);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessUserEndpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-
-    if (!user) {
-      /**
-      /*  unauthenticated users
-      **/
-
-      cannot(Action.UserReadOwn, User);
-      cannot(Action.UserCreateOwn, User);
-      cannot(Action.UserUpdateOwn, User);
-      cannot(Action.UserDeleteOwn, User);
-      cannot(Action.UserReadAny, User);
-      cannot(Action.UserCreateAny, User);
-      cannot(Action.UserUpdateAny, User);
-      cannot(Action.UserDeleteAny, User);
-    } else {
-      if (
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
-        /*
-        / user that belongs to any of the group listed in ADMIN_GROUPS
-        */
-
-        // can(Action.ReadAll, UserIdentity); NOT used?
-
-        // -------------------------------------
-        // user endpoint, including useridentity
-        can(Action.UserReadAny, User);
-        can(Action.UserReadOwn, User);
-        can(Action.UserCreateAny, User);
-        can(Action.UserUpdateAny, User);
-        can(Action.UserDeleteAny, User);
-        can(Action.UserCreateJwt, User);
-
-        // -------------------------------------
-      } else if (user) {
-        /**
-        /*  authenticated users
-        **/
-        cannot(Action.UserReadAny, User);
-        cannot(Action.UserCreateAny, User);
-        cannot(Action.UserUpdateAny, User);
-        cannot(Action.UserDeleteAny, User);
-        cannot(Action.UserCreateJwt, User);
-      }
-      can(Action.UserReadOwn, User, { _id: user._id });
-      can(Action.UserCreateOwn, User, { _id: user._id });
-      can(Action.UserUpdateOwn, User, { _id: user._id });
-      can(Action.UserDeleteOwn, User, { _id: user._id });
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessDatasetEndpointForUser(user: JWTUser) {
+  datasetEndpointAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -429,7 +277,546 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessDatasetDataInstanceForUser(user: JWTUser) {
+  elasticSearchEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in ADMIN_GROUPS
+        */
+      can(Action.Manage, ElasticSearchActions);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  instrumentEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (!user) {
+      cannot(Action.InstrumentRead, Instrument);
+      cannot(Action.InstrumentCreate, Instrument);
+      cannot(Action.InstrumentUpdate, Instrument);
+      cannot(Action.InstrumentDelete, Instrument);
+    } else {
+      if (
+        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+      ) {
+        /*
+         * user that belongs to any of the group listed in DELETE_GROUPS
+         */
+
+        can(Action.InstrumentDelete, Instrument);
+      } else {
+        cannot(Action.InstrumentDelete, Instrument);
+      }
+
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+         */
+
+        can(Action.InstrumentRead, Instrument);
+        can(Action.InstrumentCreate, Instrument);
+        can(Action.InstrumentUpdate, Instrument);
+      } else {
+        can(Action.InstrumentRead, Instrument);
+        cannot(Action.InstrumentCreate, Instrument);
+        cannot(Action.InstrumentUpdate, Instrument);
+      }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  jobsEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (!user) {
+      /**
+       * unauthenticated users
+       */
+
+      cannot(Action.JobsRead, JobClass);
+      cannot(Action.JobsCreate, JobClass);
+      cannot(Action.JobsUpdate, JobClass);
+    } else if (
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /**
+       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+       */
+
+      can(Action.JobsRead, JobClass);
+      can(Action.JobsCreate, JobClass);
+      can(Action.JobsUpdate, JobClass);
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createJobGroups.includes(g),
+      )
+    ) {
+      /**
+       * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
+       */
+
+      can(Action.JobsRead, JobClass);
+      can(Action.JobsCreate, JobClass);
+      can(Action.JobsUpdate, JobClass);
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().updateJobGroups.includes(g),
+      )
+    ) {
+      /**
+       * authenticated users belonging to any of the group listed in UPDATE_JOBS_GROUPS
+       */
+
+      cannot(Action.JobsRead, JobClass);
+      cannot(Action.JobsCreate, JobClass);
+      can(Action.JobsUpdate, JobClass);
+    } else if (user) {
+      /**
+       * authenticated users
+       */
+
+      can(Action.JobsRead, JobClass);
+      cannot(Action.JobsCreate, JobClass);
+      cannot(Action.JobsUpdate, JobClass);
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  logbookEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (user) {
+      /*
+        / authenticated user
+        */
+      can(Action.Read, Logbook);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  origDatablockEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
+      / user that belongs to any of the group listed in DELETE_GROUPS
+      */
+
+      can(Action.OrigdatablockDelete, OrigDatablock);
+    } else {
+      /*
+      /  user that does not belong to any of the group listed in DELETE_GROUPS
+      */
+
+      cannot(Action.OrigdatablockDelete, OrigDatablock);
+    }
+
+    if (
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
+      / user that belongs to any of the group listed in ADMIN_GROUPS
+      */
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetPrivilegedGroups.includes(g),
+      )
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
+      **/
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetWithPidGroups.includes(g),
+      ) ||
+      configuration().createDatasetWithPidGroups.includes("#all")
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
+      **/
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+    } else if (
+      user.currentGroups.some((g) =>
+        configuration().createDatasetGroups.includes(g),
+      ) ||
+      configuration().createDatasetGroups.includes("#all")
+    ) {
+      /**
+      /*  users belonging to CREATE_DATASET_GROUPS
+      **/
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      can(Action.OrigdatablockCreate, OrigDatablock);
+      can(Action.OrigdatablockUpdate, OrigDatablock);
+    } else if (user) {
+      /**
+      /*  authenticated users
+      **/
+
+      can(Action.OrigdatablockRead, OrigDatablock);
+      cannot(Action.OrigdatablockCreate, OrigDatablock);
+      cannot(Action.OrigdatablockUpdate, OrigDatablock);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  policyEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in DELETE_GROUPS
+        */
+      can(Action.Delete, Policy);
+    } else if (
+      user &&
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in ADMIN_GROUPS
+        */
+
+      can(Action.Update, Policy);
+      can(Action.Read, Policy);
+      can(Action.Create, Policy);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  proposalsEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (!user) {
+      /**
+       * unauthenticated users
+       */
+
+      can(Action.ProposalsRead, ProposalClass);
+      cannot(Action.ProposalsCreate, ProposalClass);
+      cannot(Action.ProposalsUpdate, ProposalClass);
+      cannot(Action.ProposalsDelete, ProposalClass);
+      can(Action.ProposalsAttachmentRead, ProposalClass);
+      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
+      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
+      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+    } else if (
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in DELETE_GROUPS
+        */
+
+      can(Action.ProposalsDelete, ProposalClass);
+    } else if (
+      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+    ) {
+      /**
+       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
+       */
+
+      can(Action.ProposalsRead, ProposalClass);
+      can(Action.ProposalsCreate, ProposalClass);
+      can(Action.ProposalsUpdate, ProposalClass);
+      cannot(Action.ProposalsDelete, ProposalClass);
+      can(Action.ProposalsAttachmentRead, ProposalClass);
+      can(Action.ProposalsAttachmentCreate, ProposalClass);
+      can(Action.ProposalsAttachmentUpdate, ProposalClass);
+      can(Action.ProposalsAttachmentDelete, ProposalClass);
+    } else if (
+      user.currentGroups.some((g) => {
+        return configuration().proposalGroups.includes(g);
+      })
+    ) {
+      /**
+       * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
+       */
+
+      can(Action.ProposalsRead, ProposalClass);
+      can(Action.ProposalsCreate, ProposalClass);
+      can(Action.ProposalsUpdate, ProposalClass);
+      cannot(Action.ProposalsDelete, ProposalClass);
+      can(Action.ProposalsAttachmentRead, ProposalClass);
+      can(Action.ProposalsAttachmentCreate, ProposalClass);
+      can(Action.ProposalsAttachmentUpdate, ProposalClass);
+      can(Action.ProposalsAttachmentDelete, ProposalClass);
+      cannot(Action.ProposalsDatasetRead, ProposalClass);
+    } else if (user) {
+      /**
+       * authenticated users
+       */
+
+      can(Action.ProposalsRead, ProposalClass);
+      cannot(Action.ProposalsCreate, ProposalClass);
+      cannot(Action.ProposalsUpdate, ProposalClass);
+      cannot(Action.ProposalsDelete, ProposalClass);
+      can(Action.ProposalsAttachmentRead, ProposalClass);
+      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
+      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
+      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
+      can(Action.ProposalsDatasetRead, ProposalClass);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  publishedDataEndpointAccess(user: JWTUser) {
+    const { can, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+    if (user) {
+      can(Action.Read, PublishedData);
+      can(Action.Update, PublishedData);
+      can(Action.Create, PublishedData);
+    }
+
+    if (
+      user &&
+      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+    ) {
+      /*
+        / user that belongs to any of the group listed in DELETE_GROUPS
+        */
+      can(Action.Delete, PublishedData);
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  samplesEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (!user) {
+      // -------------------------------------
+      // unauthenticated users
+      // -------------------------------------
+
+      can(Action.SampleRead, SampleClass);
+      cannot(Action.SampleCreate, SampleClass);
+      cannot(Action.SampleUpdate, SampleClass);
+      cannot(Action.SampleDelete, SampleClass);
+      can(Action.SampleAttachmentRead, SampleClass);
+      cannot(Action.SampleAttachmentCreate, SampleClass);
+      cannot(Action.SampleAttachmentUpdate, SampleClass);
+      cannot(Action.SampleAttachmentDelete, SampleClass);
+      cannot(Action.SampleDatasetRead, SampleClass);
+    } else {
+      // -------------------------------------
+      // authenticated users
+      // -------------------------------------
+
+      if (
+        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
+      ) {
+        // -------------------------------------
+        // users that belong to any of the group listed in DELETE_GROUPS
+        // -------------------------------------
+
+        can(Action.SampleDelete, SampleClass);
+        can(Action.SampleAttachmentDelete, SampleClass);
+      } else {
+        // -------------------------------------
+        // users that do not belong to any of the group listed in DELETE_GROUPS
+        // -------------------------------------
+
+        cannot(Action.SampleDelete, SampleClass);
+      }
+
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in ADMIN_GROUPS
+        // -------------------------------------
+
+        can(Action.SampleRead, SampleClass);
+        can(Action.SampleCreate, SampleClass);
+        can(Action.SampleUpdate, SampleClass);
+        can(Action.SampleAttachmentRead, SampleClass);
+        can(Action.SampleAttachmentCreate, SampleClass);
+        can(Action.SampleAttachmentUpdate, SampleClass);
+        can(Action.SampleAttachmentDelete, SampleClass);
+        can(Action.SampleDatasetRead, SampleClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          configuration().samplePrivilegedGroups.includes(g),
+        )
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in SAMPLE_GROUPS
+        //
+
+        can(Action.SampleRead, SampleClass);
+        can(Action.SampleCreate, SampleClass);
+        can(Action.SampleUpdate, SampleClass);
+        can(Action.SampleAttachmentRead, SampleClass);
+        can(Action.SampleAttachmentCreate, SampleClass);
+        can(Action.SampleAttachmentUpdate, SampleClass);
+        can(Action.SampleAttachmentDelete, SampleClass);
+        can(Action.SampleDatasetRead, SampleClass);
+      } else if (
+        user.currentGroups.some((g) =>
+          configuration().sampleGroups.includes(g),
+        ) ||
+        configuration().sampleGroups.includes("#all")
+      ) {
+        // -------------------------------------
+        // users belonging to any of the group listed in SAMPLE_GROUPS
+        //
+
+        can(Action.SampleRead, SampleClass);
+        can(Action.SampleCreate, SampleClass);
+        can(Action.SampleUpdate, SampleClass);
+        can(Action.SampleAttachmentRead, SampleClass);
+        can(Action.SampleAttachmentCreate, SampleClass);
+        can(Action.SampleAttachmentUpdate, SampleClass);
+        can(Action.SampleAttachmentDelete, SampleClass);
+        can(Action.SampleDatasetRead, SampleClass);
+      } else {
+        // -------------------------------------
+        // users with no elevated permissions
+        // -------------------------------------
+
+        can(Action.SampleRead, SampleClass);
+        cannot(Action.SampleCreate, SampleClass);
+        cannot(Action.SampleUpdate, SampleClass);
+        can(Action.SampleAttachmentRead, SampleClass);
+        cannot(Action.SampleAttachmentCreate, SampleClass);
+        cannot(Action.SampleAttachmentUpdate, SampleClass);
+        if (
+          !user.currentGroups.some((g) =>
+            configuration().deleteGroups.includes(g),
+          )
+        ) {
+          cannot(Action.SampleAttachmentDelete, SampleClass);
+        }
+      }
+    }
+
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  userEndpointAccess(user: JWTUser) {
+    const { can, cannot, build } = new AbilityBuilder(
+      createMongoAbility<PossibleAbilities, Conditions>,
+    );
+
+    if (!user) {
+      /**
+      /*  unauthenticated users
+      **/
+
+      cannot(Action.UserReadOwn, User);
+      cannot(Action.UserCreateOwn, User);
+      cannot(Action.UserUpdateOwn, User);
+      cannot(Action.UserDeleteOwn, User);
+      cannot(Action.UserReadAny, User);
+      cannot(Action.UserCreateAny, User);
+      cannot(Action.UserUpdateAny, User);
+      cannot(Action.UserDeleteAny, User);
+    } else {
+      if (
+        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
+      ) {
+        /*
+        / user that belongs to any of the group listed in ADMIN_GROUPS
+        */
+
+        // can(Action.ReadAll, UserIdentity); NOT used?
+
+        // -------------------------------------
+        // user endpoint, including useridentity
+        can(Action.UserReadAny, User);
+        can(Action.UserReadOwn, User);
+        can(Action.UserCreateAny, User);
+        can(Action.UserUpdateAny, User);
+        can(Action.UserDeleteAny, User);
+        can(Action.UserCreateJwt, User);
+
+        // -------------------------------------
+      } else if (user) {
+        /**
+        /*  authenticated users
+        **/
+        cannot(Action.UserReadAny, User);
+        cannot(Action.UserCreateAny, User);
+        cannot(Action.UserUpdateAny, User);
+        cannot(Action.UserDeleteAny, User);
+        cannot(Action.UserCreateJwt, User);
+      }
+      can(Action.UserReadOwn, User, { _id: user._id });
+      can(Action.UserCreateOwn, User, { _id: user._id });
+      can(Action.UserUpdateOwn, User, { _id: user._id });
+      can(Action.UserDeleteOwn, User, { _id: user._id });
+    }
+    return build({
+      detectSubjectType: (item) =>
+        item.constructor as ExtractSubjectType<Subjects>,
+    });
+  }
+
+  datasetDataInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -788,90 +1175,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessOrigDatablockEndpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-      / user that belongs to any of the group listed in DELETE_GROUPS
-      */
-
-      can(Action.OrigdatablockDelete, OrigDatablock);
-    } else {
-      /*
-      /  user that does not belong to any of the group listed in DELETE_GROUPS
-      */
-
-      cannot(Action.OrigdatablockDelete, OrigDatablock);
-    }
-
-    if (
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /*
-      / user that belongs to any of the group listed in ADMIN_GROUPS
-      */
-
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        configuration().createDatasetPrivilegedGroups.includes(g),
-      )
-    ) {
-      /**
-      /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
-      **/
-
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        configuration().createDatasetWithPidGroups.includes(g),
-      ) ||
-      configuration().createDatasetWithPidGroups.includes("#all")
-    ) {
-      /**
-      /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
-      **/
-
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        configuration().createDatasetGroups.includes(g),
-      ) ||
-      configuration().createDatasetGroups.includes("#all")
-    ) {
-      /**
-      /*  users belonging to CREATE_DATASET_GROUPS
-      **/
-
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (user) {
-      /**
-      /*  authenticated users
-      **/
-
-      can(Action.OrigdatablockRead, OrigDatablock);
-      cannot(Action.OrigdatablockCreate, OrigDatablock);
-      cannot(Action.OrigdatablockUpdate, OrigDatablock);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessOrigDatablockDataInstanceForUser(user: JWTUser) {
+  origDatablockDataInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -990,69 +1294,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessJobsEnpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (!user) {
-      /**
-       * unauthenticated users
-       */
-
-      cannot(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      cannot(Action.JobsUpdate, JobClass);
-    } else if (
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
-
-      can(Action.JobsRead, JobClass);
-      can(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
-    } else if (
-      user.currentGroups.some((g) =>
-        configuration().createJobGroups.includes(g),
-      )
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
-       */
-
-      can(Action.JobsRead, JobClass);
-      can(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
-    } else if (
-      user.currentGroups.some((g) =>
-        configuration().updateJobGroups.includes(g),
-      )
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in UPDATE_JOBS_GROUPS
-       */
-
-      cannot(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      can(Action.JobsUpdate, JobClass);
-    } else if (user) {
-      /**
-       * authenticated users
-       */
-
-      can(Action.JobsRead, JobClass);
-      cannot(Action.JobsCreate, JobClass);
-      cannot(Action.JobsUpdate, JobClass);
-    }
-
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessJobsDataInstanceForUser(user: JWTUser) {
+  jobsDataInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1108,86 +1350,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessProposalsEndpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-    if (!user) {
-      /**
-       * unauthenticated users
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      cannot(Action.ProposalsCreate, ProposalClass);
-      cannot(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
-      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
-      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-    ) {
-      /*
-        / user that belongs to any of the group listed in DELETE_GROUPS
-        */
-
-      can(Action.ProposalsDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
-    } else if (
-      user.currentGroups.some((g) => {
-        return configuration().proposalGroups.includes(g);
-      })
-    ) {
-      /**
-       * authenticated users belonging to any of the group listed in PROPOSAL_GROUPS
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      can(Action.ProposalsCreate, ProposalClass);
-      can(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      can(Action.ProposalsAttachmentCreate, ProposalClass);
-      can(Action.ProposalsAttachmentUpdate, ProposalClass);
-      can(Action.ProposalsAttachmentDelete, ProposalClass);
-      cannot(Action.ProposalsDatasetRead, ProposalClass);
-    } else if (user) {
-      /**
-       * authenticated users
-       */
-
-      can(Action.ProposalsRead, ProposalClass);
-      cannot(Action.ProposalsCreate, ProposalClass);
-      cannot(Action.ProposalsUpdate, ProposalClass);
-      cannot(Action.ProposalsDelete, ProposalClass);
-      can(Action.ProposalsAttachmentRead, ProposalClass);
-      cannot(Action.ProposalsAttachmentCreate, ProposalClass);
-      cannot(Action.ProposalsAttachmentUpdate, ProposalClass);
-      cannot(Action.ProposalsAttachmentDelete, ProposalClass);
-      can(Action.ProposalsDatasetRead, ProposalClass);
-    }
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessProposalsDataInstanceForUser(user: JWTUser) {
+  proposalsDataInstanceAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1294,125 +1457,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessSamplesEndpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-
-    if (!user) {
-      // -------------------------------------
-      // unauthenticated users
-      // -------------------------------------
-
-      can(Action.SampleRead, SampleClass);
-      cannot(Action.SampleCreate, SampleClass);
-      cannot(Action.SampleUpdate, SampleClass);
-      cannot(Action.SampleDelete, SampleClass);
-      can(Action.SampleAttachmentRead, SampleClass);
-      cannot(Action.SampleAttachmentCreate, SampleClass);
-      cannot(Action.SampleAttachmentUpdate, SampleClass);
-      cannot(Action.SampleAttachmentDelete, SampleClass);
-      cannot(Action.SampleDatasetRead, SampleClass);
-    } else {
-      // -------------------------------------
-      // authenticated users
-      // -------------------------------------
-
-      if (
-        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-      ) {
-        // -------------------------------------
-        // users that belong to any of the group listed in DELETE_GROUPS
-        // -------------------------------------
-
-        can(Action.SampleDelete, SampleClass);
-        can(Action.SampleAttachmentDelete, SampleClass);
-      } else {
-        // -------------------------------------
-        // users that do not belong to any of the group listed in DELETE_GROUPS
-        // -------------------------------------
-
-        cannot(Action.SampleDelete, SampleClass);
-      }
-
-      if (
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
-        // -------------------------------------
-        // users belonging to any of the group listed in ADMIN_GROUPS
-        // -------------------------------------
-
-        can(Action.SampleRead, SampleClass);
-        can(Action.SampleCreate, SampleClass);
-        can(Action.SampleUpdate, SampleClass);
-        can(Action.SampleAttachmentRead, SampleClass);
-        can(Action.SampleAttachmentCreate, SampleClass);
-        can(Action.SampleAttachmentUpdate, SampleClass);
-        can(Action.SampleAttachmentDelete, SampleClass);
-        can(Action.SampleDatasetRead, SampleClass);
-      } else if (
-        user.currentGroups.some((g) =>
-          configuration().samplePrivilegedGroups.includes(g),
-        )
-      ) {
-        // -------------------------------------
-        // users belonging to any of the group listed in SAMPLE_GROUPS
-        //
-
-        can(Action.SampleRead, SampleClass);
-        can(Action.SampleCreate, SampleClass);
-        can(Action.SampleUpdate, SampleClass);
-        can(Action.SampleAttachmentRead, SampleClass);
-        can(Action.SampleAttachmentCreate, SampleClass);
-        can(Action.SampleAttachmentUpdate, SampleClass);
-        can(Action.SampleAttachmentDelete, SampleClass);
-        can(Action.SampleDatasetRead, SampleClass);
-      } else if (
-        user.currentGroups.some((g) =>
-          configuration().sampleGroups.includes(g),
-        ) ||
-        configuration().sampleGroups.includes("#all")
-      ) {
-        // -------------------------------------
-        // users belonging to any of the group listed in SAMPLE_GROUPS
-        //
-
-        can(Action.SampleRead, SampleClass);
-        can(Action.SampleCreate, SampleClass);
-        can(Action.SampleUpdate, SampleClass);
-        can(Action.SampleAttachmentRead, SampleClass);
-        can(Action.SampleAttachmentCreate, SampleClass);
-        can(Action.SampleAttachmentUpdate, SampleClass);
-        can(Action.SampleAttachmentDelete, SampleClass);
-        can(Action.SampleDatasetRead, SampleClass);
-      } else {
-        // -------------------------------------
-        // users with no elevated permissions
-        // -------------------------------------
-
-        can(Action.SampleRead, SampleClass);
-        cannot(Action.SampleCreate, SampleClass);
-        cannot(Action.SampleUpdate, SampleClass);
-        can(Action.SampleAttachmentRead, SampleClass);
-        cannot(Action.SampleAttachmentCreate, SampleClass);
-        cannot(Action.SampleAttachmentUpdate, SampleClass);
-        if (
-          !user.currentGroups.some((g) =>
-            configuration().deleteGroups.includes(g),
-          )
-        ) {
-          cannot(Action.SampleAttachmentDelete, SampleClass);
-        }
-      }
-    }
-
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
-
-  accessSamplesDataInstanceForUser(user: JWTUser) {
+  samplesDataInstanceAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1582,49 +1627,4 @@ export class CaslAbilityFactory {
     });
   }
 
-  accessInstrumentEndpointForUser(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
-      createMongoAbility<PossibleAbilities, Conditions>,
-    );
-
-    if (!user) {
-      cannot(Action.InstrumentRead, Instrument);
-      cannot(Action.InstrumentCreate, Instrument);
-      cannot(Action.InstrumentUpdate, Instrument);
-      cannot(Action.InstrumentDelete, Instrument);
-    } else {
-      if (
-        user.currentGroups.some((g) => configuration().deleteGroups.includes(g))
-      ) {
-        /*
-         * user that belongs to any of the group listed in DELETE_GROUPS
-         */
-
-        can(Action.InstrumentDelete, Instrument);
-      } else {
-        cannot(Action.InstrumentDelete, Instrument);
-      }
-
-      if (
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
-        /**
-         * authenticated users belonging to any of the group listed in ADMIN_GROUPS
-         */
-
-        can(Action.InstrumentRead, Instrument);
-        can(Action.InstrumentCreate, Instrument);
-        can(Action.InstrumentUpdate, Instrument);
-      } else {
-        can(Action.InstrumentRead, Instrument);
-        cannot(Action.InstrumentCreate, Instrument);
-        cannot(Action.InstrumentUpdate, Instrument);
-      }
-    }
-
-    return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
-    });
-  }
 }

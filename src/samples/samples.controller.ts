@@ -98,7 +98,7 @@ export class SamplesController {
 
     const user: JWTUser = request.user as JWTUser;
     const ability =
-      this.caslAbilityFactory.accessSamplesDataInstanceForUser(user);
+      this.caslAbilityFactory.samplesDataInstanceAccess(user);
 
     try {
       switch (group) {
@@ -200,7 +200,7 @@ export class SamplesController {
     const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
       const ability =
-        this.caslAbilityFactory.accessSamplesDataInstanceForUser(user);
+        this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -359,7 +359,7 @@ export class SamplesController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability =
-        this.caslAbilityFactory.accessSamplesDataInstanceForUser(user);
+        this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -431,7 +431,7 @@ export class SamplesController {
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
       const ability =
-        this.caslAbilityFactory.accessSamplesDataInstanceForUser(user);
+        this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -875,7 +875,7 @@ export class SamplesController {
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability =
-      this.caslAbilityFactory.accessSamplesDataInstanceForUser(user);
+      this.caslAbilityFactory.samplesDataInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 

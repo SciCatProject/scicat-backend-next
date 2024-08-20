@@ -56,7 +56,7 @@ export class UserIdentitiesController {
 
     const authenticatedUser: JWTUser = request.user as JWTUser;
     const ability =
-      await this.caslAbilityFactory.accessUserEndpointForUser(
+      await this.caslAbilityFactory.userEndpointAccess(
         authenticatedUser,
       );
 

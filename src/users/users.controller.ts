@@ -66,7 +66,7 @@ export class UsersController {
     viewedUserSchema.id = viewedUserId;
 
     const ability =
-      this.caslAbilityFactory.accessUserEndpointForUser(authenticatedUser);
+      this.caslAbilityFactory.userEndpointAccess(authenticatedUser);
     // const authorized = actions.map( action =>
     //   ability.can(action, viewedUserSchema)
     // ) as Array<Boolean>;
@@ -330,7 +330,7 @@ export class UsersController {
       id,
     )) as JWTUser;
     const ability =
-      this.caslAbilityFactory.accessDatasetEndpointForUser(viewedUser);
+      this.caslAbilityFactory.datasetEndpointAccess(viewedUser);
 
     const canCreateDataset = ability.can(Action.DatasetCreate, DatasetClass);
 

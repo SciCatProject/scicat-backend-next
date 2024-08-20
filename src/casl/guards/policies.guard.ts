@@ -22,7 +22,7 @@ export class PoliciesGuard implements CanActivate {
     const user = req.user;
     const endpoint = req.route.path.split("/")[3];
 
-    const ability = this.caslAbilityFactory.accessEndpointForUser(
+    const ability = this.caslAbilityFactory.endpointAccess(
       user,
       endpoint,
     );
