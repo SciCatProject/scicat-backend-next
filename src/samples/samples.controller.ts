@@ -97,8 +97,7 @@ export class SamplesController {
     );
 
     const user: JWTUser = request.user as JWTUser;
-    const ability =
-      this.caslAbilityFactory.samplesDataInstanceAccess(user);
+    const ability = this.caslAbilityFactory.samplesDataInstanceAccess(user);
 
     try {
       switch (group) {
@@ -199,8 +198,7 @@ export class SamplesController {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
-      const ability =
-        this.caslAbilityFactory.samplesDataInstanceAccess(user);
+      const ability = this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -358,8 +356,7 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability =
-        this.caslAbilityFactory.samplesDataInstanceAccess(user);
+      const ability = this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -430,8 +427,7 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability =
-        this.caslAbilityFactory.samplesDataInstanceAccess(user);
+      const ability = this.caslAbilityFactory.samplesDataInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -874,8 +870,7 @@ export class SamplesController {
     @Param("id") sampleId: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability =
-      this.caslAbilityFactory.samplesDataInstanceAccess(user);
+    const ability = this.caslAbilityFactory.samplesDataInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 

@@ -329,8 +329,7 @@ export class UsersController {
     const viewedUser = (await this.usersService.findById2JWTUser(
       id,
     )) as JWTUser;
-    const ability =
-      this.caslAbilityFactory.datasetEndpointAccess(viewedUser);
+    const ability = this.caslAbilityFactory.datasetEndpointAccess(viewedUser);
 
     const canCreateDataset = ability.can(Action.DatasetCreate, DatasetClass);
 

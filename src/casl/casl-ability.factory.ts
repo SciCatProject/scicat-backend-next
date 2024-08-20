@@ -1626,5 +1626,4 @@ export class CaslAbilityFactory {
         item.constructor as ExtractSubjectType<Subjects>,
     });
   }
-
 }
