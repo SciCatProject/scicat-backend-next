@@ -18,7 +18,7 @@ import { JobClass } from "../schemas/job.schema";
 import { CreateJobDto } from "../dto/create-job.dto";
 import { StatusUpdateJobDto } from "../dto/status-update-job.dto";
 import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
-import { AuthOp } from "src/casl/action.enum";
+import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
@@ -49,6 +49,7 @@ export class JobConfig {
    * @param data JSON
    * @returns
    */
+  
   static parse(
     jobData: Record<string, unknown>,
     configVersion: string,
@@ -60,25 +61,26 @@ export class JobConfig {
       throw new Error(`Invalid job type`);
     }
     const type = jobData[JobsConfigSchema.JobType] as string;
-    if (!(AuthOp.Create in jobData)) {
-      throw new Error(`No ${AuthOp.Create} configured for job type "${type}"`);
+    if (!(Action.Create in jobData)) {
+      throw new Error(`No ${Action.Create} configured for job type "${type}"`);
     }
-    if (!(AuthOp.StatusUpdate in jobData)) {
+    if (!(Action.StatusUpdate in jobData)) {
       throw new Error(
-        `No ${AuthOp.StatusUpdate} configured for job type "${type}"`,
+        `No ${Action.StatusUpdate} configured for job type "${type}"`,
       );
     }
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
-      jobData[AuthOp.Create] as Record<string, unknown>,
+      jobData[Action.Create] as Record<string, unknown>,
     );
     const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
       statusUpdateActions,
-      jobData[AuthOp.StatusUpdate] as Record<string, unknown>,
+      jobData[Action.StatusUpdate] as Record<string, unknown>,
     );
     return new JobConfig(type, configVersion, create, statusUpdate);
   }
 }
+
 
 /**
  * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
@@ -244,7 +246,6 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   } else {
     console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
   }
-
   jobConfig = data.jobs.map((jobData: Record<string, unknown>) =>
     JobConfig.parse(jobData, data.configVersion),
   );

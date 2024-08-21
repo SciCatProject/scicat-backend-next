@@ -1358,7 +1358,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  jobsInstanceAccess(user: JWTUser) {
+  jobsInstanceAccess(user: JWTUser, jobConfiguration: Object ) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1367,7 +1367,7 @@ export class CaslAbilityFactory {
       /**
        * unauthenticated users
        */
-
+      
       can(Action.JobCreateConfiguration, JobClass, {
         ["configuration.create.auth" as string]: CreateJobAuth.All,
       });

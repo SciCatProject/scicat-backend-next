@@ -31,7 +31,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/action.enum";
+import { Action } from "src/casl/action.enum";
 import {
   PublishedData,
   PublishedDataDocument,

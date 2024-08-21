@@ -22,7 +22,7 @@ import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/action.enum";
+import { Action } from "src/casl/action.enum";
 import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
@@ -48,6 +48,7 @@ import {
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
+import { ConnectableObservable } from "rxjs";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -385,7 +386,6 @@ export class JobsController {
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
     const jobConfiguration = this.getJobTypeConfiguration(jobCreateDto.type);
-
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
@@ -519,12 +519,12 @@ export class JobsController {
     }
 
     // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(user,jobConfiguration);
     // check if the user can create this job
     const canCreate =
-      ability.can(AuthOp.JobCreateAny, JobClass) ||
-      ability.can(AuthOp.JobCreateOwner, jobInstance) ||
-      ability.can(AuthOp.JobCreateConfiguration, jobInstance);
+      ability.can(Action.JobCreateAny, JobClass) ||
+      ability.can(Action.JobCreateOwner, jobInstance) ||
+      ability.can(Action.JobCreateConfiguration, jobInstance);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
@@ -587,8 +587,8 @@ export class JobsController {
    * Create job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.JobCreate, JobClass),
+  @CheckPolicies("jobs",(ability: AppAbility) =>
+    ability.can(Action.JobCreate, JobClass),
   )
   // @UseInterceptors(JobCreateInterceptor)
   @Post()
@@ -641,8 +641,8 @@ export class JobsController {
    * Update job status
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.JobStatusUpdate, JobClass),
+  @CheckPolicies("jobs",(ability: AppAbility) =>
+    ability.can(Action.JobStatusUpdate, JobClass),
   )
   @Patch(":id")
   @ApiOperation({
@@ -678,15 +678,16 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-
-    const ability = this.caslAbilityFactory.createForUser(
+    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
+      jobConfiguration,
     );
     // check if the user can update this job
     const canUpdateStatus =
-      ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
-      ability.can(AuthOp.JobStatusUpdateOwner, currentJobInstance) ||
-      ability.can(AuthOp.JobStatusUpdateConfiguration, currentJobInstance);
+      ability.can(Action.JobStatusUpdateAny, JobClass) ||
+      ability.can(Action.JobStatusUpdateOwner, currentJobInstance) ||
+      ability.can(Action.JobStatusUpdateConfiguration, currentJobInstance);
     if (!canUpdateStatus) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
@@ -707,7 +708,7 @@ export class JobsController {
    * Get job by id
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.JobRead, JobClass))
+  @CheckPolicies("jobs",(ability: AppAbility) => ability.can(Action.JobRead, JobClass))
   @Get(":id")
   @ApiOperation({
     summary: "It returns the requested job.",
@@ -734,12 +735,15 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    const ability = this.caslAbilityFactory.createForUser(
+
+    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
+      jobConfiguration,
     );
     const canRead =
-      ability.can(AuthOp.JobReadAny, JobClass) ||
-      ability.can(AuthOp.JobReadAccess, currentJobInstance);
+      ability.can(Action.JobReadAny, JobClass) ||
+      ability.can(Action.JobReadAccess, currentJobInstance);
     if (!canRead) {
       throw new ForbiddenException("Unauthorized to get this job.");
     }
@@ -750,7 +754,9 @@ export class JobsController {
    * Get jobs
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.JobRead, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get()
   @ApiOperation({
     summary: "It returns a list of jobs.",
@@ -789,18 +795,20 @@ export class JobsController {
       // for each job run a casl JobReadOwner on a jobInstance
       const jobsFound = await this.jobsService.findAll(parsedFilter);
       const jobsAccessible: JobClass[] = [];
-      const ability = this.caslAbilityFactory.createForUser(
-        request.user as JWTUser,
-      );
 
       for (const i in jobsFound) {
+        const jobConfiguration = this.getJobTypeConfiguration(jobsFound[i].type);
+        const ability = this.caslAbilityFactory.jobsInstanceAccess(
+          request.user as JWTUser,
+          jobConfiguration,
+        );
         // check if the user can get this job
         const jobInstance = await this.generateJobInstanceForPermissions(
           jobsFound[i],
         );
         const canCreate =
-          ability.can(AuthOp.JobReadAny, JobClass) ||
-          ability.can(AuthOp.JobReadAccess, jobInstance);
+          ability.can(Action.JobReadAny, JobClass) ||
+          ability.can(Action.JobReadAccess, jobInstance);
         if (canCreate) {
           jobsAccessible.push(jobsFound[i]);
         }
@@ -821,10 +829,10 @@ export class JobsController {
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
+  @CheckPolicies("jobs",
     (ability: AppAbility) =>
-      ability.can(AuthOp.JobDelete, JobClass) &&
-      ability.can(AuthOp.JobDeleteAny, JobClass),
+      ability.can(Action.JobDelete, JobClass) &&
+      ability.can(Action.JobDeleteAny, JobClass),
   )
   @Delete(":id")
   @ApiOperation({

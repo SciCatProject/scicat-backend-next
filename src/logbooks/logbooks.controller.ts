@@ -11,7 +11,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/action.enum";
+import { Action } from "src/casl/action.enum";
 import { Logbook } from "./schemas/logbook.schema";
 import { UsersLogbooksInterceptor } from "./interceptors/users-logbooks.interceptor";
 
@@ -22,7 +22,9 @@ export class LogbooksController {
   constructor(private readonly logbooksService: LogbooksService) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, Logbook))
+  @CheckPolicies("logbooks", (ability: AppAbility) =>
+    ability.can(Action.Read, Logbook),
+  )
   @UseInterceptors(UsersLogbooksInterceptor)
   @Get()
   findAll() {
@@ -30,7 +32,9 @@ export class LogbooksController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.Read, Logbook))
+  @CheckPolicies("logbooks", (ability: AppAbility) =>
+    ability.can(Action.Read, Logbook),
+  )
   @UseInterceptors(UsersLogbooksInterceptor)
   @Get("/:name")
   async findByName(
