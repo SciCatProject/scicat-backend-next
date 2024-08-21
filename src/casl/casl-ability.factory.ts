@@ -58,14 +58,14 @@ export class CaslAbilityFactory {
     [endpoint: string]: (user: JWTUser) => AppAbility;
   } = {
     datasets: this.datasetEndpointAccess,
-    elasticSearch: this.elasticSearchEndpointAccess,
+    "elastic-search": this.elasticSearchEndpointAccess,
     jobs: this.jobsEndpointAccess,
     instruments: this.instrumentEndpointAccess,
     logbooks: this.logbookEndpointAccess,
     origdatablocks: this.origDatablockEndpointAccess,
     policies: this.policyEndpointAccess,
     proposals: this.proposalsEndpointAccess,
-    publishedData: this.publishedDataEndpointAccess,
+    publisheddata: this.publishedDataEndpointAccess,
     samples: this.samplesEndpointAccess,
     users: this.userEndpointAccess,
   };
@@ -811,7 +811,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  datasetDataInstanceAccess(user: JWTUser) {
+  datasetInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1170,7 +1170,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  origDatablockDataInstanceAccess(user: JWTUser) {
+  origDatablockInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1289,7 +1289,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  jobsDataInstanceAccess(user: JWTUser) {
+  jobsInstanceAccess(user: JWTUser) {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1345,7 +1345,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  proposalsDataInstanceAccess(user: JWTUser) {
+  proposalsInstanceAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
@@ -1452,7 +1452,7 @@ export class CaslAbilityFactory {
     });
   }
 
-  samplesDataInstanceAccess(user: JWTUser) {
+  samplesInstanceAccess(user: JWTUser) {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );

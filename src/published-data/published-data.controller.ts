@@ -69,7 +69,7 @@ export class PublishedDataController {
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
   @Post()
@@ -155,7 +155,7 @@ export class PublishedDataController {
 
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Read, PublishedData),
   )
   @Get("/formpopulate")
@@ -221,7 +221,7 @@ export class PublishedDataController {
 
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @Patch("/:id")
@@ -237,7 +237,7 @@ export class PublishedDataController {
 
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
   @Delete("/:id")
@@ -247,7 +247,7 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/register
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
@@ -428,7 +428,7 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("publishedData", (ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @ApiOperation({
