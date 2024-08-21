@@ -30,6 +30,7 @@ export class UserIdentitiesController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),

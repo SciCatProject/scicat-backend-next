@@ -243,7 +243,7 @@ export class SamplesController {
   }
   // POST /samples
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleCreate, SampleClass),
   )
   @UseInterceptors(
@@ -281,7 +281,7 @@ export class SamplesController {
 
   // GET /samples
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get()
@@ -315,7 +315,7 @@ export class SamplesController {
 
   // GET /samples/fullquery
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/fullquery")
@@ -392,7 +392,7 @@ export class SamplesController {
 
   // GET /samples/metadataKeys
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/metadataKeys")
@@ -464,7 +464,7 @@ export class SamplesController {
 
   // GET /samples/findOne
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/findOne")
@@ -523,7 +523,7 @@ export class SamplesController {
 
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id")
@@ -556,7 +556,7 @@ export class SamplesController {
 
   // GET /samples/:id/authorization
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id/authorization")
@@ -594,7 +594,7 @@ export class SamplesController {
 
   // PATCH /samples/:id
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleUpdate, SampleClass),
   )
   @UseInterceptors(
@@ -634,7 +634,7 @@ export class SamplesController {
 
   // DELETE /samples/:id
   @UseGuards()
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleDelete, SampleClass),
   )
   @Delete("/:id")
@@ -661,7 +661,7 @@ export class SamplesController {
 
   // POST /samples/:id/attachments
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Post("/:id/attachments")
@@ -713,7 +713,7 @@ export class SamplesController {
 
   // GET /samples/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments")
@@ -747,7 +747,7 @@ export class SamplesController {
 
   // GET /samples/:id/attachments/:fk
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments/:fk")
@@ -790,7 +790,7 @@ export class SamplesController {
 
   // DELETE /samples/:id/attachments/:fk
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Delete("/:id/attachments/:fk")
@@ -832,7 +832,7 @@ export class SamplesController {
 
   // POST /samples/:id/datasets
   /*   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Create, Dataset))
   @Post("/:id/datasets")
   async createDataset(
     @Param("id") id: string,
@@ -845,7 +845,7 @@ export class SamplesController {
 
   // GET /samples/:id/datasets
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleDatasetRead, SampleClass),
   )
   @Get("/:id/datasets")
@@ -908,7 +908,7 @@ export class SamplesController {
 
   // PATCH /samples/:id/datasets/:fk
   /* @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Patch("/:id/datasets/:fk")
   async findOneDatasetAndUpdate(
     @Param("id") sampleId: string,
@@ -923,7 +923,7 @@ export class SamplesController {
 
   // DELETE /samples/:id/datasets/:fk
   /*   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Delete, Dataset))
   @Delete("/:id/datasets/:fk")
   async findOneDatasetAndRemove(
     @Param("id") sampleId: string,

@@ -243,7 +243,7 @@ export class ProposalsController {
 
   // POST /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsCreate, ProposalClass),
   )
   @UseInterceptors(
@@ -291,7 +291,7 @@ export class ProposalsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsCreate, ProposalClass),
   )
   @HttpCode(HttpStatus.OK)
@@ -330,7 +330,7 @@ export class ProposalsController {
 
   // GET /proposals
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get()
@@ -366,7 +366,7 @@ export class ProposalsController {
 
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/fullquery")
@@ -445,7 +445,7 @@ export class ProposalsController {
 
   // GET /proposals/fullfacet
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/fullfacet")
@@ -517,7 +517,7 @@ export class ProposalsController {
 
   // GET /proposals/:pid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/:pid")
@@ -551,7 +551,7 @@ export class ProposalsController {
 
   // GET /proposals/:pid/authorization
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsRead, ProposalClass),
   )
   @Get("/:pid/authorization")
@@ -590,7 +590,7 @@ export class ProposalsController {
 
   // PATCH /proposals/:pid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsUpdate, ProposalClass),
   )
   @UseInterceptors(
@@ -638,7 +638,7 @@ export class ProposalsController {
 
   // DELETE /proposals/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsDelete, ProposalClass),
   )
   @Delete("/:pid")
@@ -669,7 +669,7 @@ export class ProposalsController {
 
   // POST /proposals/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsAttachmentCreate, ProposalClass),
   )
   @Post("/:pid/attachments")
@@ -714,7 +714,7 @@ export class ProposalsController {
 
   // GET /proposals/:pid/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsAttachmentRead, ProposalClass),
   )
   @Get("/:pid/attachments")
@@ -750,7 +750,7 @@ export class ProposalsController {
 
   // PATCH /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsAttachmentUpdate, ProposalClass),
   )
   @Patch("/:pid/attachments/:aid")
@@ -797,7 +797,7 @@ export class ProposalsController {
 
   // DELETE /proposals/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsAttachmentDelete, ProposalClass),
   )
   @Delete("/:pid/attachments/:aid")
@@ -841,7 +841,7 @@ export class ProposalsController {
 
   // GET /proposals/:id/datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("proposals", (ability: AppAbility) =>
     ability.can(Action.ProposalsDatasetRead, ProposalClass),
   )
   @Get("/:pid/datasets")

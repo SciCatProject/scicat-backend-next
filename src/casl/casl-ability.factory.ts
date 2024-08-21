@@ -6,7 +6,7 @@ import {
   MongoQuery,
   createMongoAbility,
 } from "@casl/ability";
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 // import { Role } from "src/auth/role.enum";
@@ -54,35 +54,30 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  endpointAccess(user: JWTUser, subject: string) {
-    switch (subject) {
-      case "datasets":
-        return this.datasetEndpointAccess(user);
-      case "elastic-search":
-        return this.elasticSearchEndpointAccess(user);
-      case "jobs":
-        return this.jobsEndpointAccess(user);
-      case "instruments":
-        return this.instrumentEndpointAccess(user);
-      case "logbooks":
-        return this.logbookEndpointAccess(user);
-      case "origdatablocks":
-        return this.origDatablockEndpointAccess(user);
-      case "policies":
-        return this.policyEndpointAccess(user);
-      case "proposals":
-        return this.proposalsEndpointAccess(user);
-      case "publisheddata":
-        return this.publishedDataEndpointAccess(user);
-      case "samples":
-        return this.samplesEndpointAccess(user);
-      case "users":
-      case "useridentities":
-        return this.userEndpointAccess(user);
-      default:
-        throw new Error(`
-        No endpoint access policies defined for subject: ${subject}`);
+  private endpointAccessors: {
+    [endpoint: string]: (user: JWTUser) => AppAbility;
+  } = {
+    datasets: this.datasetEndpointAccess,
+    elasticSearch: this.elasticSearchEndpointAccess,
+    jobs: this.jobsEndpointAccess,
+    instruments: this.instrumentEndpointAccess,
+    logbooks: this.logbookEndpointAccess,
+    origdatablocks: this.origDatablockEndpointAccess,
+    policies: this.policyEndpointAccess,
+    proposals: this.proposalsEndpointAccess,
+    publishedData: this.publishedDataEndpointAccess,
+    samples: this.samplesEndpointAccess,
+    users: this.userEndpointAccess,
+  };
+
+  endpointAccess(endpoint: string, user: JWTUser) {
+    const accessFunction = this.endpointAccessors[endpoint];
+    if (!accessFunction) {
+      throw new InternalServerErrorException(
+        `No endpoint access policies defined for subject: ${endpoint}`,
+      );
     }
+    return accessFunction.call(this, user);
   }
 
   datasetEndpointAccess(user: JWTUser) {

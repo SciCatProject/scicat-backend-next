@@ -42,7 +42,7 @@ export class InstrumentsController {
   constructor(private readonly instrumentsService: InstrumentsService) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentCreate, Instrument),
   )
   @UseInterceptors(
@@ -69,7 +69,7 @@ export class InstrumentsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentRead, Instrument),
   )
   @Get()
@@ -87,7 +87,7 @@ export class InstrumentsController {
 
   // GET /instrument/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentRead, Instrument),
   )
   @Get("/findOne")
@@ -117,7 +117,7 @@ export class InstrumentsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentRead, Instrument),
   )
   @Get(":id")
@@ -126,7 +126,7 @@ export class InstrumentsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentUpdate, Instrument),
   )
   @UseInterceptors(
@@ -152,7 +152,7 @@ export class InstrumentsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("instruments", (ability: AppAbility) =>
     ability.can(Action.InstrumentDelete, Instrument),
   )
   @Delete(":id")

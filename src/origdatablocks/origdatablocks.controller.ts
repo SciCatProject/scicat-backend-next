@@ -158,7 +158,7 @@ export class OrigDatablocksController {
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockCreate, OrigDatablock),
   )
   @HttpCode(HttpStatus.CREATED)
@@ -227,7 +227,7 @@ export class OrigDatablocksController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockCreate, OrigDatablock),
   )
   @HttpCode(HttpStatus.OK)
@@ -272,7 +272,7 @@ export class OrigDatablocksController {
 
   // GET /origdatablock
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get()
@@ -339,7 +339,7 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullquery")
@@ -404,7 +404,7 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/fullquery/files
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullquery/files")
@@ -460,7 +460,7 @@ export class OrigDatablocksController {
 
   //  GET /origdatablocks/fullfacet
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet")
@@ -502,7 +502,7 @@ export class OrigDatablocksController {
 
   //  GET /origdatablocks/fullfacet/files
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet/files")
@@ -548,7 +548,7 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/:id")
@@ -582,7 +582,7 @@ export class OrigDatablocksController {
 
   // PATCH /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockUpdate, OrigDatablock),
   )
   @Patch("/:id")
@@ -629,7 +629,7 @@ export class OrigDatablocksController {
 
   // DELETE /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
     ability.can(Action.OrigdatablockDelete, OrigDatablock),
   )
   @Delete("/:id")

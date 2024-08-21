@@ -37,7 +37,7 @@ export class ElasticSearchServiceController {
   ) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.CREATED)
@@ -53,7 +53,7 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
@@ -70,7 +70,7 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
@@ -88,7 +88,7 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
@@ -104,7 +104,7 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
@@ -120,7 +120,7 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
     ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)

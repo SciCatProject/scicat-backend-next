@@ -12,17 +12,21 @@ export class PoliciesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const policyHandlers =
-      this.reflector.get<PolicyHandler[]>(
-        CHECK_POLICIES_KEY,
-        context.getHandler(),
-      ) || [];
+    const policyData = this.reflector.get<{
+      endpoint: string;
+      handlers: PolicyHandler[];
+    }>(CHECK_POLICIES_KEY, context.getHandler());
 
+    if (!policyData) {
+      return false;
+    }
+
+    const policyHandlers = policyData["handlers"];
+    const endpoint = policyData["endpoint"];
     const req = context.switchToHttp().getRequest();
     const user = req.user;
-    const endpoint = req.route.path.split("/")[3];
 
-    const ability = this.caslAbilityFactory.endpointAccess(user, endpoint);
+    const ability = this.caslAbilityFactory.endpointAccess(endpoint, user);
     return policyHandlers.every((handler) =>
       this.execPolicyHandler(handler, ability),
     );
