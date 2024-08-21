@@ -71,7 +71,8 @@ export class UsersController {
     viewedUserSchema._id = viewedUserId;
     viewedUserSchema.id = viewedUserId;
 
-    const ability = this.caslAbilityFactory.createForUser(authenticatedUser);
+    const ability =
+      this.caslAbilityFactory.userEndpointAccess(authenticatedUser);
     // const authorized = actions.map( action =>
     //   ability.can(action, viewedUserSchema)
     // ) as Array<Boolean>;
@@ -118,7 +119,9 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserReadOwn, User),
+  )
   @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/my/self")
   @ApiOperation({
@@ -143,7 +146,9 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserReadOwn, User),
+  )
   @Get("/my/identity")
   async getMyUserIdentity(
     @Req() request: Request,
@@ -158,7 +163,9 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.UserReadOwn, User))
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserReadOwn, User),
+  )
   @Get("/my/settings")
   async getMySettings(@Req() request: Request): Promise<UserSettings | null> {
     const authenticatedUserId: string = (request.user as JWTUser)._id;
@@ -172,6 +179,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
@@ -192,6 +200,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
@@ -211,6 +220,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserCreateOwn, User) ||
       ability.can(Action.UserCreateAny, User),
@@ -231,6 +241,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
@@ -250,6 +261,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
       ability.can(Action.UserUpdateAny, User),
@@ -273,6 +285,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserUpdateOwn, User) ||
       ability.can(Action.UserUpdateAny, User),
@@ -296,6 +309,7 @@ export class UsersController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserDeleteOwn, User) ||
       ability.can(Action.UserDeleteAny, User),
@@ -330,7 +344,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => {
+  @CheckPolicies("users", (ability: AppAbility) => {
     return (
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User)
@@ -350,7 +364,7 @@ export class UsersController {
     const viewedUser = (await this.usersService.findById2JWTUser(
       id,
     )) as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(viewedUser);
+    const ability = this.caslAbilityFactory.datasetEndpointAccess(viewedUser);
 
     const canCreateDataset = ability.can(Action.DatasetCreate, DatasetClass);
 
@@ -375,7 +389,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("users", (ability: AppAbility) =>
     ability.can(Action.UserCreateJwt, User),
   )
   @Post("/:id/jwt")

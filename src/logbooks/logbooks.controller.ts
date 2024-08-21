@@ -22,7 +22,9 @@ export class LogbooksController {
   constructor(private readonly logbooksService: LogbooksService) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
+  @CheckPolicies("logbooks", (ability: AppAbility) =>
+    ability.can(Action.Read, Logbook),
+  )
   @UseInterceptors(UsersLogbooksInterceptor)
   @Get()
   findAll() {
@@ -30,7 +32,9 @@ export class LogbooksController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Logbook))
+  @CheckPolicies("logbooks", (ability: AppAbility) =>
+    ability.can(Action.Read, Logbook),
+  )
   @UseInterceptors(UsersLogbooksInterceptor)
   @Get("/:name")
   async findByName(
