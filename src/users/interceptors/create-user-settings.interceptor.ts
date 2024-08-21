@@ -8,6 +8,7 @@ import {
 import { Observable, tap } from "rxjs";
 import { CreateUserSettingsDto } from "../dto/create-user-settings.dto";
 import { UsersService } from "../users.service";
+import { FILTER_CONFIGS } from "../schemas/user-settings.schema";
 
 @Injectable()
 export class CreateUserSettingsInterceptor implements NestInterceptor {
@@ -34,6 +35,8 @@ export class CreateUserSettingsInterceptor implements NestInterceptor {
           const createUserSettingsDto: CreateUserSettingsDto = {
             userId,
             columns: [],
+            filters: FILTER_CONFIGS,
+            conditions: [],
           };
           return this.usersService.createUserSettings(
             userId,
