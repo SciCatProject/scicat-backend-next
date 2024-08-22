@@ -30,6 +30,7 @@ export class UserIdentitiesController {
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies(
+    "users",
     (ability: AppAbility) =>
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
@@ -56,7 +57,7 @@ export class UserIdentitiesController {
 
     const authenticatedUser: JWTUser = request.user as JWTUser;
     const ability =
-      await this.caslAbilityFactory.createForUser(authenticatedUser);
+      await this.caslAbilityFactory.userEndpointAccess(authenticatedUser);
 
     if (
       !ability.can(Action.UserReadAny, User) &&

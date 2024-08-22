@@ -288,7 +288,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get()
   @ApiQuery({
     name: "filter",
@@ -304,7 +306,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get("/fullquery")
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
@@ -317,7 +321,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -330,14 +336,18 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Update, JobClass),
+  )
   @Patch(":id")
   async update(
     @Param("id") id: string,
@@ -356,7 +366,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Delete, JobClass),
+  )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });

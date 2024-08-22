@@ -160,7 +160,7 @@ export class DatasetsController {
   ): IFilters<DatasetDocument, IDatasetFields> {
     const user: JWTUser = request.user as JWTUser;
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
     const canViewAccess = ability.can(
@@ -205,7 +205,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
 
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
 
       let canDoAction = false;
 
@@ -290,7 +290,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
 
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
       const canView =
         ability.can(Action.DatasetReadAny, DatasetClass) ||
         ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
@@ -355,7 +355,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
       // instantiate the casl matrix for the user
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
       // check if he/she can create this dataset
       const canCreate =
         ability.can(Action.DatasetCreateAny, DatasetClass) ||
@@ -389,7 +389,7 @@ export class DatasetsController {
 
   // POST /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetCreate, DatasetClass),
   )
   @UseInterceptors(
@@ -510,7 +510,7 @@ export class DatasetsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetCreate, DatasetClass),
   )
   @UseInterceptors(
@@ -568,7 +568,7 @@ export class DatasetsController {
 
   // GET /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(MainDatasetsPublicInterceptor)
@@ -650,7 +650,7 @@ export class DatasetsController {
 
   // GET /datasets/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
@@ -691,7 +691,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
@@ -729,7 +729,7 @@ export class DatasetsController {
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
@@ -769,7 +769,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
@@ -811,7 +811,7 @@ export class DatasetsController {
 
   // GET /datasets/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
@@ -850,7 +850,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
@@ -890,7 +890,7 @@ export class DatasetsController {
 
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/findOne")
@@ -961,7 +961,7 @@ export class DatasetsController {
 
   // GET /datasets/count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/count")
@@ -1001,7 +1001,7 @@ export class DatasetsController {
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/:pid")
@@ -1032,7 +1032,7 @@ export class DatasetsController {
   // PATCH /datasets/:id
   // body: modified fields
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @UseInterceptors(
@@ -1098,7 +1098,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(Action.DatasetUpdateAny, DatasetClass) ||
@@ -1113,7 +1113,7 @@ export class DatasetsController {
 
   // PUT /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @UseInterceptors(
@@ -1177,7 +1177,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(Action.DatasetUpdateAny, DatasetClass) ||
@@ -1195,7 +1195,7 @@ export class DatasetsController {
 
   // DELETE /datasets/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetDelete, DatasetClass),
   )
   @Delete("/:pid")
@@ -1227,7 +1227,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(Action.DatasetDeleteAny, DatasetClass) ||
@@ -1241,7 +1241,7 @@ export class DatasetsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetUpdate, DatasetClass),
   )
   @Post("/:pid/appendToArrayField")
@@ -1278,7 +1278,7 @@ export class DatasetsController {
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
       where: { pid: pid },
     });
@@ -1312,7 +1312,7 @@ export class DatasetsController {
 
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
   // @UseGuards(PoliciesGuard)
@@ -1356,7 +1356,7 @@ export class DatasetsController {
 
   // POST /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetAttachmentCreate, DatasetClass),
   )
   @HttpCode(HttpStatus.CREATED)
@@ -1406,7 +1406,7 @@ export class DatasetsController {
 
   // GET /datasets/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetAttachmentRead, DatasetClass),
   )
   @Get("/:pid/attachments")
@@ -1443,7 +1443,7 @@ export class DatasetsController {
 
   // PATCH /datasets/:id/attachments/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetAttachmentUpdate, DatasetClass),
   )
   @Put("/:pid/attachments/:aid")
@@ -1490,7 +1490,7 @@ export class DatasetsController {
 
   // DELETE /datasets/:pid/attachments/:aid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetAttachmentDelete, DatasetClass),
   )
   @Delete("/:pid/attachments/:aid")
@@ -1534,7 +1534,7 @@ export class DatasetsController {
 
   // POST /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => {
+  @CheckPolicies("datasets", (ability: AppAbility) => {
     return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
   })
   @UseInterceptors(
@@ -1600,7 +1600,7 @@ export class DatasetsController {
 
   // POST /datasets/:id/origdatablocks/isValid
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => {
+  @CheckPolicies("datasets", (ability: AppAbility) => {
     return ability.can(Action.DatasetOrigdatablockCreate, DatasetClass);
   })
   @HttpCode(HttpStatus.OK)
@@ -1649,7 +1649,7 @@ export class DatasetsController {
 
   // GET /datasets/:id/origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => {
+  @CheckPolicies("datasets", (ability: AppAbility) => {
     return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
   })
   @Get("/:pid/origdatablocks")
@@ -1686,7 +1686,7 @@ export class DatasetsController {
 
   // PATCH /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => {
+  @CheckPolicies("datasets", (ability: AppAbility) => {
     return ability.can(Action.DatasetOrigdatablockUpdate, DatasetClass);
   })
   @UseInterceptors(
@@ -1757,7 +1757,7 @@ export class DatasetsController {
 
   // DELETE /datasets/:id/origdatablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetOrigdatablockDelete, DatasetClass),
   )
   @Delete("/:pid/origdatablocks/:oid")
@@ -1819,7 +1819,7 @@ export class DatasetsController {
 
   // POST /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetDatablockCreate, DatasetClass),
   )
   @UseInterceptors(
@@ -1880,7 +1880,7 @@ export class DatasetsController {
 
   // GET /datasets/:id/datablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetDatablockRead, DatasetClass),
   )
   @Get("/:pid/datablocks")
@@ -1917,7 +1917,7 @@ export class DatasetsController {
 
   // PATCH /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetDatablockUpdate, DatasetClass),
   )
   @UseInterceptors(
@@ -1987,7 +1987,7 @@ export class DatasetsController {
 
   // DELETE /datasets/:id/datablocks/:fk
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetDatablockDelete, DatasetClass),
   )
   @Delete("/:pid/datablocks/:did")
@@ -2056,7 +2056,7 @@ export class DatasetsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetLogbookRead, DatasetClass),
   )
   @Get("/:pid/logbook")
