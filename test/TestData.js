@@ -8,7 +8,7 @@ const TestAccounts = Object.fromEntries(
 
 const DatasetDates = faker.date.betweens({
   from: faker.date.recent({ days: 15 }).toISOString(),
-  to: faker.date.recent({ days: 10 }).toISOString(),
+  to: faker.date.soon({ days: 10 }).toISOString(),
   count: 2,
 });
 
