@@ -925,6 +925,21 @@ export const samplesFullQueryDescriptionFields =
 }\n \
   </pre>';
 
+export const filterUserIdentityExample = '{ "where": { "field": "value" }}';
+
+export const filterUserIdentityDescription =
+  '<pre>\n \
+{\n \
+  "field": "value"\n \
+}\n \
+  or \n \
+{\n \
+  "where?": {\n \
+    "field": "value"\n \
+  }\n \
+}\
+</pre>';
+
 export const parseBoolean = (v: unknown): boolean => {
   switch (v) {
     case true:
