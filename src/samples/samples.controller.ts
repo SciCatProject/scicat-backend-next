@@ -34,7 +34,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import {
   SampleClass,
   SampleDocument,
@@ -96,7 +96,7 @@ export class SamplesController {
     );
 
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
 
     try {
       switch (group) {
@@ -198,8 +198,8 @@ export class SamplesController {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.SampleReadAny, SampleClass);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
           AuthOp.SampleReadManyAccess,
@@ -356,8 +356,8 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.SampleReadAny, SampleClass);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -427,8 +427,8 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.SampleReadAny, SampleClass);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+      const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -828,8 +828,8 @@ export class SamplesController {
     @Param("id") sampleId: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 
     if (!canViewAny) {

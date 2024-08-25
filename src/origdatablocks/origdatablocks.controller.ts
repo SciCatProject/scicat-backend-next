@@ -31,7 +31,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import {
   OrigDatablock,
   OrigDatablockDocument,
@@ -128,7 +128,7 @@ export class OrigDatablocksController {
     const origDatablockInstance =
       await this.generateOrigDatablockInstanceInstanceForPermissions(dataset);
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
 
     let canDoAction = false;
 
@@ -302,8 +302,8 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       JSON.parse(filter ?? "{}");
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       parsedFilters.where = parsedFilters.where ?? {};
       const canViewAccess = ability.can(
@@ -355,8 +355,8 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
 
     if (!canViewAny) {
       const canViewAccess = ability.can(
@@ -418,8 +418,8 @@ export class OrigDatablocksController {
   ): Promise<OrigDatablock[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
         AuthOp.OrigdatablockReadManyAccess,
@@ -459,8 +459,8 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
         AuthOp.OrigdatablockReadManyAccess,
@@ -500,8 +500,8 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
         AuthOp.OrigdatablockReadManyAccess,

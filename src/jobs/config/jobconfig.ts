@@ -18,7 +18,7 @@ import { JobClass } from "../schemas/job.schema";
 import { CreateJobDto } from "../dto/create-job.dto";
 import { StatusUpdateJobDto } from "../dto/status-update-job.dto";
 import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";

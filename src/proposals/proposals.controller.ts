@@ -36,7 +36,7 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
@@ -100,7 +100,7 @@ export class ProposalsController {
     );
 
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
 
     try {
       switch (group) {
@@ -209,8 +209,8 @@ export class ProposalsController {
     mergedFilters.where = mergedFilters.where || {};
 
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
+      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
           AuthOp.ProposalsReadManyAccess,
@@ -408,8 +408,8 @@ export class ProposalsController {
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
+      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -479,8 +479,8 @@ export class ProposalsController {
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const facets = JSON.parse(filters.facets ?? "[]");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
-      const canViewAll = ability.can(AuthOp.ProposalsReadAny, ProposalClass);
+      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -830,8 +830,8 @@ export class ProposalsController {
     @Param("pid") proposalId: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 
     if (!canViewAny) {

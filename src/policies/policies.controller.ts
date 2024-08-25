@@ -24,7 +24,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import { Policy, PolicyDocument } from "./schemas/policy.schema";
 import { FilterQuery } from "mongoose";
 import { IPolicyFilter } from "./interfaces/policy-filters.interface";

@@ -20,7 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { UserIdentity } from "./schemas/user-identity.schema";

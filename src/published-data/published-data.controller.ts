@@ -31,7 +31,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import {
   PublishedData,
   PublishedDataDocument,
@@ -72,8 +72,8 @@ export class PublishedDataController {
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Create, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Create, PublishedData),
   )
   @Post()
   async create(
@@ -158,8 +158,8 @@ export class PublishedDataController {
 
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Read, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Read, PublishedData),
   )
   @Get("/formpopulate")
   @ApiQuery({
@@ -224,8 +224,8 @@ export class PublishedDataController {
 
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Update, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Update, PublishedData),
   )
   @Patch("/:id")
   async update(
@@ -240,8 +240,8 @@ export class PublishedDataController {
 
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Delete, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Delete, PublishedData),
   )
   @Delete("/:id")
   async remove(@Param("id") id: string): Promise<unknown> {
@@ -250,8 +250,8 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/register
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Update, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
   async register(@Param("id") id: string): Promise<IRegister | null> {
@@ -431,9 +431,31 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Update, PublishedData),
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
+    ability.can(Action.Update, PublishedData),
   )
+  @ApiOperation({
+    summary: "Edits published data.",
+    description:
+      "It edits published data and resyncs with OAI Provider if it is defined.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "The DOI of the published data.",
+    type: String,
+  })
+  @ApiParam({
+    name: "data",
+    description:
+      "The edited data that will be updated in the database and with OAI Provider if defined.",
+    type: UpdatePublishedDataDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    isArray: false,
+    description:
+      "Return the result of resync with OAI Provider if defined, or null.",
+  })
   @Post("/:id/resync")
   async resync(
     @Param("id") id: string,

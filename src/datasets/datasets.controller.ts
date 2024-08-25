@@ -43,7 +43,7 @@ import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { AuthOp } from "src/casl/action.enum";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import {
   MainDatasetsPublicInterceptor,
@@ -160,9 +160,9 @@ export class DatasetsController {
   ): IFilters<DatasetDocument, IDatasetFields> {
     const user: JWTUser = request.user as JWTUser;
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
-    const canViewOwner = ability.can(AuthOp.DatasetReadManyOwner, DatasetClass);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
+    const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
     const canViewAccess = ability.can(
       AuthOp.DatasetReadManyAccess,
       DatasetClass,
@@ -205,7 +205,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
 
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
 
       let canDoAction = false;
 
@@ -290,7 +290,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
 
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
       const canView =
         ability.can(AuthOp.DatasetReadAny, DatasetClass) ||
         ability.can(AuthOp.DatasetReadOneOwner, datasetInstance) ||
@@ -355,7 +355,7 @@ export class DatasetsController {
       const datasetInstance =
         await this.generateDatasetInstanceForPermissions(dataset);
       // instantiate the casl matrix for the user
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
       // check if he/she can create this dataset
       const canCreate =
         ability.can(AuthOp.DatasetCreateAny, DatasetClass) ||
@@ -691,8 +691,8 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
       const canViewAccess = ability.can(
@@ -769,8 +769,8 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
       // delete fields.isPublished;
@@ -850,8 +850,8 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.DatasetReadAny, DatasetClass);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
       // delete fields.isPublished;
@@ -1098,7 +1098,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(AuthOp.DatasetUpdateAny, DatasetClass) ||
@@ -1177,7 +1177,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(AuthOp.DatasetUpdateAny, DatasetClass) ||
@@ -1227,7 +1227,7 @@ export class DatasetsController {
 
     // instantiate the casl matrix for the user
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     // check if he/she can create this dataset
     const canUpdate =
       ability.can(AuthOp.DatasetDeleteAny, DatasetClass) ||
@@ -1278,7 +1278,7 @@ export class DatasetsController {
     @Query("data") data: string,
   ): Promise<DatasetClass | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
       where: { pid: pid },
     });
