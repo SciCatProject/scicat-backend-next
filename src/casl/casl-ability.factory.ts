@@ -298,7 +298,7 @@ export class CaslAbilityFactory {
     );
 
     if (!user) {
-      cannot(Action.InstrumentRead, Instrument);
+      can(Action.InstrumentRead, Instrument);
       cannot(Action.InstrumentCreate, Instrument);
       cannot(Action.InstrumentUpdate, Instrument);
       cannot(Action.InstrumentDelete, Instrument);
