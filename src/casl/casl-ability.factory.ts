@@ -31,6 +31,8 @@ import {
   StatusUpdateJobAuth,
 } from "src/jobs/types/jobs-auth.enum";
 
+import { JobConfig } from "src/jobs/config/jobconfig";
+
 type Subjects =
   | string
   | InferSubjects<
@@ -1358,8 +1360,8 @@ export class CaslAbilityFactory {
     });
   }
 
-  jobsInstanceAccess(user: JWTUser, jobConfiguration: Object ) {
-    const { can, cannot, build } = new AbilityBuilder(
+  jobsInstanceAccess(user: JWTUser, jobConfiguration: JobConfig ) {
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
   
@@ -1367,18 +1369,19 @@ export class CaslAbilityFactory {
       /**
        * unauthenticated users
        */
-      
-      can(Action.JobCreateConfiguration, JobClass, {
-        ["configuration.create.auth" as string]: CreateJobAuth.All,
-      });
-      can(Action.JobCreateConfiguration, JobClass, {
-        ["configuration.create.auth" as string]: CreateJobAuth.DatasetPublic,
-        datasetsValidation: true,
-      });
-      can(Action.JobStatusUpdateConfiguration, JobClass, {
-        ["configuration.statusUpdate.auth" as string]: StatusUpdateJobAuth.All,
-        ownerGroup: undefined,
-      });
+      if (jobConfiguration.create.auth === CreateJobAuth.All){
+        can(Action.JobCreateConfiguration, JobClass);
+      };
+      if (jobConfiguration.create.auth === CreateJobAuth.DatasetPublic){
+        can(Action.JobCreateConfiguration, JobClass, {
+          datasetsValidation: true,
+        });
+      };
+      if (jobConfiguration.statusUpdate.auth === StatusUpdateJobAuth.All){
+        can(Action.JobStatusUpdateConfiguration, JobClass, {
+          ownerGroup: undefined,
+        });
+      };
     } else {
       /**
        * authenticated users
@@ -1393,15 +1396,6 @@ export class CaslAbilityFactory {
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
         can(Action.JobStatusUpdateAny, JobClass);
-      } else if (
-        user.currentGroups.some((g) =>
-          configuration().deleteJobGroups.includes(g),
-        )
-      ) {
-        /**
-         * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
-         */
-        can(Action.JobDeleteAny, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
@@ -1442,18 +1436,14 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
             ownerUser: user.username,
           });
-
-          can(Action.JobCreateConfiguration, JobClass, {
-            ["configuration.create.auth" as string]: {
-              $in: jobCreateInstanceAuthorizationValues,
-            },
-          });
-          can(Action.JobCreateConfiguration, JobClass, {
-            ["configuration.create.auth" as string]: {
-              $in: jobCreateDatasetAuthorizationValues,
-            },
-            datasetsValidation: true,
-          });
+          if (jobCreateInstanceAuthorizationValues.some((a) => jobConfiguration.create.auth === a)){
+            can(Action.JobCreateConfiguration, JobClass);
+          };
+          if (jobCreateDatasetAuthorizationValues.some((a) => jobConfiguration.create.auth === a)){
+            can(Action.JobCreateConfiguration, JobClass, {
+                datasetsValidation: true,
+              });
+          }
         }
         const jobUpdateInstanceAuthorizationValues = [
           ...Object.values(StatusUpdateJobAuth).filter(
@@ -1467,11 +1457,9 @@ export class CaslAbilityFactory {
             configuration().statusUpdateJobGroups.includes(g),
           )
         ) {
-          can(Action.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.statusUpdate.auth" as string]: {
-              $in: jobUpdateInstanceAuthorizationValues,
-            },
-          });
+          if (jobUpdateInstanceAuthorizationValues.some((a) => jobConfiguration.statusUpdate.auth === a)){
+            can(Action.JobStatusUpdateConfiguration, JobClass);
+          };
           can(Action.JobStatusUpdateOwner, JobClass, {
             ownerUser: user.username,
           });
@@ -1479,21 +1467,20 @@ export class CaslAbilityFactory {
             ownerGroup: { $in: user.currentGroups },
           });
         } else {
-          can(Action.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.statusUpdate.auth" as string]: {
-              $in: jobUpdateInstanceAuthorizationValues,
-            },
-          });
-          can(Action.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.statusUpdate.auth" as string]: "#jobOwnerUser",
-            ownerUser: user.username,
-          });
-          can(Action.JobStatusUpdateConfiguration, JobClass, {
-            ["configuration.statusUpdate.auth" as string]: "#jobOwnerGroup",
-            ownerGroup: { $in: user.currentGroups },
-          });
+          if (jobUpdateInstanceAuthorizationValues.some((a) => jobConfiguration.statusUpdate.auth === a)){
+            can(Action.JobStatusUpdateConfiguration, JobClass);
+          };
+          if (jobConfiguration.statusUpdate.auth ===  "#jobOwnerUser"){
+            can(Action.JobStatusUpdateConfiguration, JobClass, {
+              ownerUser: user.username,
+            });
+          }
+          if (jobConfiguration.statusUpdate.auth ===  "#jobOwnerGroup"){
+            can(Action.JobStatusUpdateConfiguration, JobClass, {
+              ownerGroup: { $in: user.currentGroups },
+            });
+          };
         }
-        cannot(Action.JobDelete, JobClass);
       }
     }
 

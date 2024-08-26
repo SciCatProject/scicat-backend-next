@@ -193,7 +193,7 @@ export enum Action {
   JobStatusUpdateConfiguration = "job_status_update_configuration",
   JobStatusUpdateOwner = "job_status_update_owner",
   JobStatusUpdateAny = "job_status_update_any",
-  JobDeleteAny = "job_delete_any",
+  //JobDeleteAny = "job_delete_any",
 
   // -------------
   // Users actions

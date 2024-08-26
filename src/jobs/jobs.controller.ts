@@ -755,7 +755,7 @@ export class JobsController {
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.Read, JobClass),
+    ability.can(Action.JobRead, JobClass),
   )
   @Get()
   @ApiOperation({
@@ -831,8 +831,7 @@ export class JobsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs",
     (ability: AppAbility) =>
-      ability.can(Action.JobDelete, JobClass) &&
-      ability.can(Action.JobDeleteAny, JobClass),
+      ability.can(Action.JobDelete, JobClass),
   )
   @Delete(":id")
   @ApiOperation({
