@@ -129,12 +129,12 @@ export class UserIdentitiesController {
     summary:
       "It returns true if the emailed passed in is linked to any registered users",
     description:
-      "This endpoint check if the email passed in as parameter is a valid email tight to a known user that have a record in this instance of SciCat",
+      "This endpoint check if the email passed in as parameter is a valid email connected to a known user that has a record in this instance of SciCat",
   })
   @ApiQuery({
     name: "filter",
     description:
-      "Email to be checked or or full database filters to apply when checking for the email\n" +
+      "Email to be checked or full filter format query to apply when checking for the email\n" +
       filterUserIdentityDescription,
     required: false,
     type: String,
