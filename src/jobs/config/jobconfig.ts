@@ -49,7 +49,7 @@ export class JobConfig {
    * @param data JSON
    * @returns
    */
-  
+
   static parse(
     jobData: Record<string, unknown>,
     configVersion: string,
@@ -80,7 +80,6 @@ export class JobConfig {
     return new JobConfig(type, configVersion, create, statusUpdate);
   }
 }
-
 
 /**
  * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")

@@ -48,7 +48,6 @@ import {
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
-import { ConnectableObservable } from "rxjs";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -519,7 +518,10 @@ export class JobsController {
     }
 
     // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.jobsInstanceAccess(user,jobConfiguration);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
+      user,
+      jobConfiguration,
+    );
     // check if the user can create this job
     const canCreate =
       ability.can(Action.JobCreateAny, JobClass) ||
@@ -587,7 +589,7 @@ export class JobsController {
    * Create job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs",(ability: AppAbility) =>
+  @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobCreate, JobClass),
   )
   // @UseInterceptors(JobCreateInterceptor)
@@ -641,7 +643,7 @@ export class JobsController {
    * Update job status
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs",(ability: AppAbility) =>
+  @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobStatusUpdate, JobClass),
   )
   @Patch(":id")
@@ -708,7 +710,9 @@ export class JobsController {
    * Get job by id
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs",(ability: AppAbility) => ability.can(Action.JobRead, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
   @Get(":id")
   @ApiOperation({
     summary: "It returns the requested job.",
@@ -797,7 +801,9 @@ export class JobsController {
       const jobsAccessible: JobClass[] = [];
 
       for (const i in jobsFound) {
-        const jobConfiguration = this.getJobTypeConfiguration(jobsFound[i].type);
+        const jobConfiguration = this.getJobTypeConfiguration(
+          jobsFound[i].type,
+        );
         const ability = this.caslAbilityFactory.jobsInstanceAccess(
           request.user as JWTUser,
           jobConfiguration,
@@ -829,9 +835,8 @@ export class JobsController {
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs",
-    (ability: AppAbility) =>
-      ability.can(Action.JobDelete, JobClass),
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobDelete, JobClass),
   )
   @Delete(":id")
   @ApiOperation({
