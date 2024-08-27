@@ -262,7 +262,7 @@ export class ElasticSearchService implements OnModuleInit {
     limit = 20,
     skip = 0,
     sort?: Record<string, SortOrder>,
-  ): Promise<{ totalCount: number; data: string[] }> {
+  ): Promise<{ totalCount: number; data: (string | undefined)[] }> {
     const defaultMinScore = searchParam.text ? 1 : 0;
 
     try {
