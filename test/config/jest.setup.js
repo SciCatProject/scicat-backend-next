@@ -1,2 +1,2 @@
-import { ReadableStream } from "node:stream/web";
-global.ReadableStream = ReadableStream;
+/* eslint-disable @typescript-eslint/no-var-requires */
+global.ReadableStream = require("node:stream/web").ReadableStream;
