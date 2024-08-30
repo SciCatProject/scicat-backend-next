@@ -1,4 +1,5 @@
 {
+  "setupFilesAfterEnv": ["jest.setup.js"],
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../../",
   "testTimeout": 30000,
@@ -16,5 +17,4 @@
       "isolatedModules": true
     }
   }
-
 }
