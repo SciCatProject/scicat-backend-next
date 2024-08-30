@@ -118,6 +118,9 @@
     "wait-on": "^8.0.0"
   },
   "jest": {
+    "setupFilesAfterEnv": [
+      "./test/config/jest.setup.js"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",
