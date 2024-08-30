@@ -119,7 +119,7 @@
   },
   "jest": {
     "setupFilesAfterEnv": [
-      "./test/config/jest.setup.js"
+      "../test/config/jest.setup.js"
     ],
     "moduleFileExtensions": [
       "js",
