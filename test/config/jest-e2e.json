@@ -1,5 +1,5 @@
 {
-  "setupFilesAfterEnv": ["jest.setup.js"],
+  "setupFilesAfterEnv": ["test/config/jest.setup.js"],
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../../",
   "testTimeout": 30000,
