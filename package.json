@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@casl/ability": "^6.3.2",
-    "@elastic/elasticsearch": "^8.9.0",
+    "@elastic/elasticsearch": "^8.15.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^10.3.8",
@@ -118,6 +118,9 @@
     "wait-on": "^8.0.0"
   },
   "jest": {
+    "setupFilesAfterEnv": [
+      "../test/config/jest.setup.js"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",
