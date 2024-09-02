@@ -2,7 +2,6 @@ import * as mongoose from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import filterConfigs from "../../config/default-filters.config.json";
 
 export type UserSettingsDocument = UserSettings & Document;
 
@@ -30,8 +29,6 @@ export interface ScientificCondition {
   value: string;
   operator: string;
 }
-
-export const FILTER_CONFIGS: FilterConfig[] = filterConfigs as FilterConfig[];
 
 @Schema({
   collection: "UserSetting",
@@ -74,12 +71,12 @@ export class UserSettings {
 
   @ApiProperty({
     type: [Object],
-    default: FILTER_CONFIGS,
+    default: [],
     description: "Array of filters the user has set",
   })
   @Prop({
     type: [{ type: Object }],
-    default: FILTER_CONFIGS,
+    default: [],
   })
   filters: FilterConfig[];
 
