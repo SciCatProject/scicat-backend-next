@@ -1,5 +1,5 @@
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsObject } from "class-validator";
 
 @ApiTags("jobs")
 export class StatusUpdateJobDto {
@@ -19,4 +19,13 @@ export class StatusUpdateJobDto {
   @IsString()
   @IsOptional()
   readonly statusMessage?: string;
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description: "Dataset archiving results.",
+  })
+  @IsObject()
+  @IsOptional()
+  readonly jobResultObject?: Record<string, unknown>;
 }

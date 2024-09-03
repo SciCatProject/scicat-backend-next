@@ -45,6 +45,7 @@ export class JobsService {
         addCreatedByFields(createJobDto, username),
         "Job has been created.",
         "jobCreated",
+        {}
       ),
     );
     return createdJob.save();
@@ -112,6 +113,7 @@ export class JobsService {
           ),
           statusUpdateJobDto.statusCode,
           statusUpdateJobDto.statusMessage!,
+          statusUpdateJobDto.jobResultObject!,
         ),
         { new: true },
       )
