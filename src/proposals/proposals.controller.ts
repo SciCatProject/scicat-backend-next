@@ -180,7 +180,7 @@ export class ProposalsController {
       );
 
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
+        throw new ForbiddenException("Unauthorized to this proposal");
       }
     }
     return proposal;
@@ -531,7 +531,7 @@ export class ProposalsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: false,
     description: "Return proposal with pid specified",
@@ -545,6 +545,7 @@ export class ProposalsController {
       proposalId,
       Action.ProposalsRead,
     );
+
     return proposal;
   }
 

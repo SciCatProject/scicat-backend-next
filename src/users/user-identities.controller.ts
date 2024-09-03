@@ -8,7 +8,13 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Action } from "src/casl/action.enum";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -18,6 +24,11 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
+import { boolean } from "mathjs";
+import {
+  filterUserIdentityDescription,
+  filterUserIdentityExample,
+} from "src/common/utils";
 
 @ApiBearerAuth()
 @ApiTags("user identities")
@@ -36,6 +47,27 @@ export class UserIdentitiesController {
       ability.can(Action.UserReadAny, User),
   )
   @Get("/findOne")
+  @ApiOperation({
+    summary:
+      "It returns the user identity profile of the first user matching the query",
+    description:
+      "This endpoint returns the user identity profile of the first user matching teh condition",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Full database filters to apply when checking for the email. The filter can be just the where clause or the full filter syntax\n" +
+      filterUserIdentityDescription,
+    required: false,
+    type: String,
+    example: filterUserIdentityExample,
+  })
+  @ApiResponse({
+    status: 201,
+    type: boolean,
+    description:
+      "Results is true if a registered user exists that have the emailed provided listed as main email",
+  })
   async findOne(
     // NOTE: This now supports both headers filter and query filter.
     // There is a loopback config file where we have this as a setting on the frontend.
@@ -89,7 +121,31 @@ export class UserIdentitiesController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("users", (ability: AppAbility) =>
+    ability.can(Action.UserReadAny, User),
+  )
   @Get("/isValidEmail")
+  @ApiOperation({
+    summary:
+      "It returns true if the emailed passed in is linked to any registered users",
+    description:
+      "This endpoint check if the email passed in as parameter is a valid email connected to a known user that has a record in this instance of SciCat",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Email to be checked or full filter format query to apply when checking for the email\n" +
+      filterUserIdentityDescription,
+    required: false,
+    type: String,
+    example: filterUserIdentityExample,
+  })
+  @ApiResponse({
+    status: 201,
+    type: boolean,
+    description:
+      "Results is true if a registered user exists that have the emailed provided listed as main email",
+  })
   async isValidEmail(
     // NOTE: This now supports both headers filter and query filter.
     // There is a loopback config file where we have this as a setting on the frontend.
@@ -97,7 +153,17 @@ export class UserIdentitiesController {
     @Headers() headers: Record<string, string>,
     @Query("filter") queryFilters?: string,
   ): Promise<boolean | null> {
-    const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
+    let parsedQueryFilters;
+    try {
+      parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
+    } catch {
+      parsedQueryFilters = {
+        where: {
+          "profile.email": queryFilters,
+        },
+      };
+    }
+
     let filter = {};
     if (headers.filter) {
       const parsedFilter = JSON.parse(headers.filter);
@@ -112,10 +178,6 @@ export class UserIdentitiesController {
       filter,
     )) as UserIdentity;
 
-    if (!identity) {
-      return false;
-    }
-
-    return true;
+    return identity ? true : false;
   }
 }

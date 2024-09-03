@@ -30,7 +30,7 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     const userFilter: FilterQuery<UserDocument> = {
       $or: [
         { username: `ldap.${payload.displayName}` },
-        { username: payload.displayName },
+        { username: payload.displayName as string },
         { email: payload.mail as string },
       ],
     };

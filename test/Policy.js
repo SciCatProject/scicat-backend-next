@@ -48,7 +48,7 @@ describe("1300: Policy: Simple Policy tests", () => {
       },
     );
   });
-
+  
   it("0010: adds a new policy", async () => {
     return request(appUrl)
       .post("/api/v3/Policies")

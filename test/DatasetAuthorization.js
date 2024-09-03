@@ -109,7 +109,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       },
     );
   });
-
+  
   afterEach((done) => {
     sandbox.restore();
     done();
