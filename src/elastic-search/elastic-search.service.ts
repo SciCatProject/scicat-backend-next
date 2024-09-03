@@ -363,7 +363,7 @@ export class ElasticSearchService implements OnModuleInit {
     );
 
     const transformedData = {
-      ...restData,
+      ...data,
       scientificMetadata: transformedScientificMetadata,
     };
     try {
