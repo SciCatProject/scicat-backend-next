@@ -695,7 +695,6 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       pid: TestData.PidPrefix + "/" + uuidv4(),
       ownerGroup: "admin",
     };
-    console.log("0502: pid : " + datasetWithPid["pid"]);
 
     return request(appUrl)
       .post("/api/v3/Datasets")

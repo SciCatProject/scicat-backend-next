@@ -485,7 +485,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0180: adds a new sample as an unauthenticated user with owner group as sampleingestor, which should fail", async () => {
@@ -498,7 +498,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0190: adds a new sample as an unauthenticated user with owner group as user1, which should fail", async () => {
@@ -511,7 +511,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0200: adds a new sample as an unauthenticated user with its owner group, which should fail", async () => {
@@ -524,7 +524,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples")
       .send(sample)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0210: adds a new sample as Archive Manager with owner group as adminingestor, which should fail", async () => {
@@ -977,7 +977,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId1 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0420: adds an attachment as an unauthenticated user to sample 2, which should fail", async () => {
@@ -985,7 +985,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId2 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0430: adds an attachment as an unauthenticated user to sample 3, which should fail", async () => {
@@ -993,7 +993,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId3 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0440: adds an attachment as an unauthenticated user to sample 4, which should fail", async () => {
@@ -1001,7 +1001,7 @@ describe("2250: Sample Authorization", () => {
       .post("/api/v3/Samples/" + sampleId4 + "/attachments")
       .send(TestData.AttachmentCorrect)
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("0450: adds an attachment as Archive Manager to sample 1, which should fail", async () => {
@@ -3576,7 +3576,7 @@ describe("2250: Sample Authorization", () => {
       .patch("/api/v3/Samples/" + sampleId1)
       .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("2280: update sample characteristic for public sample 10 as Unauthenticated User, which should fail", async () => {
@@ -3592,7 +3592,7 @@ describe("2250: Sample Authorization", () => {
       .patch("/api/v3/Samples/" + sampleId10)
       .send({ sampleCharacteristics: characteristics })
       .set("Accept", "application/json")
-      .expect(TestData.CreationForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   // delete sample attachment
@@ -3600,7 +3600,7 @@ describe("2250: Sample Authorization", () => {
     return request(appUrl)
       .delete("/api/v3/samples/" + sampleId1 + "/attachments/" + attachmentId1)
       .set("Accept", "application/json")
-      .expect(TestData.DeleteForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("4010: delete attachment 10 from sample 10 as Unauthenticated User, which should fail", async () => {
@@ -3609,7 +3609,7 @@ describe("2250: Sample Authorization", () => {
         "/api/v3/samples/" + sampleId10 + "/attachments/" + attachmentId10,
       )
       .set("Accept", "application/json")
-      .expect(TestData.DeleteForbiddenStatusCode);
+      .expect(TestData.CreationUnauthorizedStatusCode);
   });
 
   it("4020: delete attachment 1 from sample 1 as User 5, which should fail", async () => {

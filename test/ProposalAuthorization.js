@@ -157,7 +157,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(TestData.UnauthorizedStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0050: admin can list all proposals", async () => {

@@ -1,5 +1,4 @@
-/** Strings representing authorization groups for the various CRUD operations */
-export enum AuthOp {
+export enum Action {
   Manage = "manage",
   Create = "create",
   Read = "read",
@@ -12,7 +11,7 @@ export enum AuthOp {
   ListAll = "listall",
   // ---------------
   // Datasets
-  // endpoint authorization
+  // endpoint authorization actions
   DatasetCreate = "dataset_create",
   DatasetRead = "dataset_read",
   DatasetUpdate = "dataset_update",
@@ -30,7 +29,7 @@ export enum AuthOp {
   DatasetDatablockUpdate = "dataset_datablock_update",
   DatasetDatablockDelete = "dataset_datablock_delete",
   DatasetLogbookRead = "dataset_logbook_read",
-  // data instance authorization
+  // data instance actions
   DatasetCreateOwnerNoPid = "dataset_create_owner_no_pid",
   DatasetCreateOwnerWithPid = "dataset_create_owner_with_pid",
   DatasetCreateAny = "dataset_create_any",
@@ -77,14 +76,15 @@ export enum AuthOp {
   DatasetDatablockDeleteAny = "dataset_datablock_delete_any",
   DatasetLogbookReadOwner = "dataset_logbook_read_owner",
   DatasetLogbookReadAny = "dataset_logbook_read_any",
+  //
   // -------------
   // Origdatablock
-  // endpoint authorization
+  // endpoint authorization actions
   OrigdatablockCreate = "origdatablock_create",
   OrigdatablockRead = "origdatablock_read",
   OrigdatablockUpdate = "origdatablock_update",
   OrigdatablockDelete = "origdatablock_delete",
-  // data instance authorization
+  // individual actions
   OrigdatablockCreateOwner = "origdatablock_create_owner",
   OrigdatablockCreateAny = "origdatablock_create_any",
   OrigdatablockReadManyPublic = "origdatablock_read_many_public",
@@ -98,9 +98,9 @@ export enum AuthOp {
   OrigdatablockUpdateAny = "origdatablock_update_any",
   OrigdatablockDeleteOwner = "origdatablock_delete_owner",
   OrigdatablockDeleteAny = "origdatablock_delete_any",
-  // -------------
+
   // Proposals
-  // endpoint authorization
+  // endpoint authorization actions
   ProposalsCreate = "proposals_create",
   ProposalsRead = "proposals_read",
   ProposalsUpdate = "proposals_update",
@@ -110,7 +110,8 @@ export enum AuthOp {
   ProposalsAttachmentUpdate = "proposals_attachment_update",
   ProposalsAttachmentDelete = "proposals_attachment_delete",
   ProposalsDatasetRead = "proposals_dataset_read",
-  // data instance authorization
+
+  // individual actions
   ProposalsCreateOwner = "proposals_create_owner",
   ProposalsCreateAny = "proposals_create_any",
   ProposalsReadManyPublic = "proposals_read_many_public",
@@ -177,6 +178,7 @@ export enum AuthOp {
 
   // --------------
   // Jobs
+  // --------------
   // endpoint authorization
   JobCreate = "jobs_create",
   JobRead = "jobs_read",
@@ -191,9 +193,10 @@ export enum AuthOp {
   JobStatusUpdateConfiguration = "job_status_update_configuration",
   JobStatusUpdateOwner = "job_status_update_owner",
   JobStatusUpdateAny = "job_status_update_any",
-  JobDeleteAny = "job_delete_any",
+  //JobDeleteAny = "job_delete_any",
+
   // -------------
-  // Users
+  // Users actions
   UserReadOwn = "user_read_own",
   UserReadAny = "user_read_any",
   UserCreateOwn = "user_create_own",
@@ -203,8 +206,7 @@ export enum AuthOp {
   UserDeleteOwn = "user_delete_own",
   UserDeleteAny = "user_delete_any",
   UserCreateJwt = "user_create_jwt",
-  // -------------
-  // Instrument
+  // Instrument actions
   InstrumentRead = "instrument_read",
   InstrumentUpdate = "instrument_update",
   InstrumentCreate = "instrument_create",
