@@ -27,7 +27,12 @@ export class PublishedData {
   })
   _id: string;
 
-  @ApiProperty({ type: String, description: "Digital Object Identifier" })
+  @ApiProperty({
+    type: String,
+    description:
+      "Digital Object Identifier; e.g.," +
+      ' "10.xxx/9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d".',
+  })
   @Prop({
     type: String,
     unique: true,
@@ -47,7 +52,9 @@ export class PublishedData {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Creator Affiliation",
+    description:
+      "Creator Affiliation.  This field has the semantics of" +
+      " [DataCite Creator/affiliation](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#affiliation).",
   })
   @Prop({ type: String, required: false })
   affiliation: string;
@@ -55,7 +62,10 @@ export class PublishedData {
   @ApiProperty({
     type: [String],
     required: true,
-    description: "Creator of dataset/dataset collection",
+    description:
+      "Creator of dataset/dataset collection.  This field has the semantics" +
+      " of Dublin Core [dcmi:creator](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/creator/)" +
+      " and [DataCite Creator/creatorName](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#creatorname).",
   })
   @Prop({ type: [String], required: true })
   creator: string[];
@@ -63,7 +73,10 @@ export class PublishedData {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Dataset publisher",
+    description:
+      "Dataset publisher.  This field has the semantics of Dublin Core" +
+      " [dcmi:publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)" +
+      " and [DataCite publisher](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publisher).",
   })
   @Prop({ type: String, required: true })
   publisher: string;
@@ -71,12 +84,22 @@ export class PublishedData {
   @ApiProperty({
     type: Number,
     required: true,
-    description: "Year of publication ",
+    description:
+      "Year of publication.  This field has the semantics of Dublin Core" +
+      " [dcmi:date](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/date/)" +
+      " and [DataCite publicationYear](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/publicationyear/).",
   })
   @Prop({ type: Number, required: true })
   publicationYear: number;
 
-  @ApiProperty({ type: String, required: true, description: "Title" })
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "The title of the data.  This field has the semantics of Dublin Core" +
+      " [dcmi:title](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/title/)" +
+      " and [DataCite title](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/title/).",
+  })
   @Prop({ type: String, required: true })
   title: string;
 
@@ -91,7 +114,10 @@ export class PublishedData {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Abstract text for published datasets",
+    description:
+      "Abstract text for published datasets.  This field has the semantics" +
+      " of [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/description/)" +
+      " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
   })
   @Prop({ type: String, required: true })
   abstract: string;
@@ -99,7 +125,11 @@ export class PublishedData {
   @ApiProperty({
     type: String,
     required: true,
-    description: "Link to description of how to re-use data",
+    description:
+      "Link to description of how to re-use data.  This field has the" +
+      " semantics of Dublic Core [dcmi:description](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/description/)" +
+      " and [DataCite description](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/description/)" +
+      " with [Abstract descriptionType](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/descriptionType/#abstract).",
   })
   @Prop({ type: String, required: true })
   dataDescription: string;
@@ -131,7 +161,9 @@ export class PublishedData {
   @ApiProperty({
     type: [String],
     required: true,
-    description: "Array of one or more PIDS which make up the published data",
+    description:
+      "Array of one or more Dataset persistent identifier (pid) values that" +
+      " make up the published data.",
   })
   @Prop({ type: [String], required: true })
   pidArray: string[];

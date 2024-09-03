@@ -166,9 +166,8 @@ export class SamplesController {
 
     if (sample) {
       const canDoAction = await this.permissionChecker(group, sample, request);
-
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized to update this sample");
+        throw new ForbiddenException("Unauthorized to this sample");
       }
     }
 
@@ -547,11 +546,15 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<SampleClass | null> {
-    await this.checkPermissionsForSample(request, id, Action.SampleRead);
-    return this.samplesService.findOne({ sampleId: id });
+    const sample = await this.checkPermissionsForSample(
+      request,
+      id,
+      Action.SampleRead,
+    );
+    return sample;
   }
 
-  // PATCH /samples/:id
+  // GET /samples/:id/authorization
   @UseGuards(PoliciesGuard)
   @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),

@@ -86,11 +86,26 @@ export const convertToRequestedUnit = (
   };
 };
 
+const buildCondition = (
+  key: string,
+  value: string | number,
+  operator: string,
+): Record<string, unknown> => {
+  const conditions: Record<string, unknown> = { $or: [] };
+  conditions["$or"] = ["", ".v", ".value"].map((suffix) => {
+    return {
+      [`${key}${suffix}`]: { [`${operator}`]: value },
+    };
+  });
+  return conditions;
+};
+
 export const mapScientificQuery = (
   key: string,
   scientific: IScientificFilter[] = [],
 ): Record<string, unknown> => {
   const scientificFilterQuery: Record<string, unknown> = {};
+  const scientificFilterQueryOr: Record<string, unknown>[] = [];
 
   const keyToFieldMapping: Record<string, string> = {
     scientific: "scientificMetadata",
@@ -112,7 +127,9 @@ export const mapScientificQuery = (
 
     switch (relation) {
       case ScientificRelation.EQUAL_TO_STRING: {
-        scientificFilterQuery[`${matchKeyGeneric}.value`] = { $eq: rhs };
+        scientificFilterQueryOr.push(
+          buildCondition(matchKeyGeneric, rhs, "$eq"),
+        );
         break;
       }
       case ScientificRelation.EQUAL_TO_NUMERIC: {
@@ -131,7 +148,9 @@ export const mapScientificQuery = (
           scientificFilterQuery[matchKeyMeasurement] = { $gt: valueSI };
           scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $gt: rhs };
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$gt"),
+          );
         }
         break;
       }
@@ -141,12 +160,26 @@ export const mapScientificQuery = (
           scientificFilterQuery[matchKeyMeasurement] = { $lt: valueSI };
           scientificFilterQuery[matchUnit] = { $eq: unitSI };
         } else {
-          scientificFilterQuery[`${matchKeyGeneric}.value`] = { $lt: rhs };
+          scientificFilterQueryOr.push(
+            buildCondition(matchKeyGeneric, rhs, "$lt"),
+          );
         }
+        break;
+      }
+      case ScientificRelation.CONTAINS_STRING: {
+        scientificFilterQueryOr.push(
+          buildCondition(matchKeyGeneric, rhs, `/${rhs}/`),
+        );
         break;
       }
     }
   });
+  if (scientificFilterQueryOr.length == 1) {
+    scientificFilterQuery["$or"] = scientificFilterQueryOr[0]["$or"];
+  } else if (scientificFilterQueryOr.length > 1) {
+    scientificFilterQuery["$and"] = scientificFilterQueryOr;
+  }
+
   return scientificFilterQuery;
 };
 
@@ -467,22 +500,42 @@ export const createFullqueryFilter = <T>(
       };
     } else if (key === "userGroups") {
       filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+        ownerGroup: searchExpression<T>(
+          model,
+          "ownerGroup",
+          fields[key],
+        ) as object,
       });
       filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+        accessGroups: searchExpression<T>(
+          model,
+          "accessGroups",
+          fields[key],
+        ) as object,
       });
     } else if (key === "ownerGroup") {
       filterQuery["$or"]?.push({
-        ownerGroup: searchExpression<T>(model, "ownerGroup", fields[key]),
+        ownerGroup: searchExpression<T>(
+          model,
+          "ownerGroup",
+          fields[key],
+        ) as object,
       });
     } else if (key === "accessGroups") {
       filterQuery["$or"]?.push({
-        accessGroups: searchExpression<T>(model, "accessGroups", fields[key]),
+        accessGroups: searchExpression<T>(
+          model,
+          "accessGroups",
+          fields[key],
+        ) as object,
       });
     } else if (key === "sharedWith") {
       filterQuery["$or"]?.push({
-        sharedWith: searchExpression<T>(model, "sharedWith", fields[key]),
+        sharedWith: searchExpression<T>(
+          model,
+          "sharedWith",
+          fields[key],
+        ) as object,
       });
     } else {
       filterQuery[key as keyof FilterQuery<T>] = searchExpression<T>(
@@ -860,7 +913,7 @@ export const datasetsFullQueryDescriptionFields =
   "metadataKey": "metadata", <optional>\n \
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
-  "sharedWith": "email", <optional>\n \
+  "sharedWith": ["email", ...], <optional>\n \
 }\n \
   </pre>';
 
@@ -907,6 +960,30 @@ export const samplesFullQueryDescriptionFields =
 }\n \
   </pre>';
 
+export const filterUserIdentityExample =
+  '{ "profile.email": "this_email@your.site" }';
+
+export const filterUserIdentityDescription =
+  '<pre>\n \
+  this_email@some.site\n \
+or \n \
+  {\n \
+    "email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "profile.email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "where?": {\n \
+      "profile.email": "this_email@some.site"\n \
+    }\n \
+  }\n \
+This last version is deprecated and will be discontinued as soon as the FE is updated.\n \
+It has been maintanined for backward compatibility.\n \
+</pre>';
+
 export const parseBoolean = (v: unknown): boolean => {
   switch (v) {
     case true:
@@ -925,7 +1002,7 @@ export const replaceLikeOperator = <T>(filter: IFilters<T>): IFilters<T> => {
   if (filter.where) {
     filter.where = replaceLikeOperatorRecursive(
       filter.where as Record<string, unknown>,
-    );
+    ) as object;
   }
   return filter;
 };

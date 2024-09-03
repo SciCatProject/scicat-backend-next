@@ -4,16 +4,22 @@ about: Describe this issue purpose here.
 
 ---
 
-## Issue Name
+## Issue Name (title)
+Please enter the title for this github issue
 
 ### Summary
+Description of the issue
 
 ### Steps to Reproduce
+Describe how to reproduce the issue
 
 ### Current Behaviour
+Describe the current behavior if it is relevant
 
 ### Expected Behaviour
+Describe the expected behavior if it is relevant
 
-### Extra Details
+### Details
+Provide all the details related to this issue. Also include screenshots, wireframes or mockups if they help.
 
-Here you should include details about the system (if it is unique) and possible information about a fix (feel free to link to code where relevant). Screenshots/GIFs are also fine here.
+__PS__: make sure to add the proper tags to the issue

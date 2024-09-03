@@ -1,4 +1,4 @@
-FROM node:18-alpine AS dev
+FROM node:20-alpine AS dev
 
 # Prepare app directory
 WORKDIR /home/node/app
@@ -6,17 +6,15 @@ COPY . .
 
 # Set up local user
 RUN mkdir /home/node/app/dist
-RUN npm install -g npm@9.8.1
 
 # Install dependencies
 
 RUN npm install glob rimraf
 RUN npm install
 
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Prepare app directory
-RUN npm install -g npm@9.8.1
 WORKDIR /usr/src/app
 
 # Set up local user
@@ -29,7 +27,7 @@ RUN npm run build
 # Remove development dependencies
 RUN npm prune --production
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Prepare app directory
 WORKDIR /home/node/app

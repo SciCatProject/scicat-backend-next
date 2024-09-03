@@ -90,7 +90,7 @@ export class OrigDatablocksController {
   //     newDatasetClass.ownerGroup = dataset.ownerGroup;
 
   //     if (user) {
-  //       const ability = this.caslAbilityFactory.createForUser(user);
+  //       const ability = this.caslAbilityFactory.createOrigDatablockForUser(user);
   //       const canUpdate = ability.can(Action.Update, newDatasetClass);
   //       if (!canUpdate) {
   //         throw new ForbiddenException("Unauthorized access");
@@ -319,7 +319,15 @@ export class OrigDatablocksController {
         parsedFilters.where.userGroups = parsedFilters.where.userGroups ?? [];
         parsedFilters.where.userGroups.push(...user.currentGroups);
       } else if (canViewOwner) {
-        parsedFilters.where.ownerGroup = parsedFilters.where.ownerGroup ?? [];
+        if (!parsedFilters.where.ownerGroup) {
+          parsedFilters.where.ownerGroup = [];
+        }
+
+        parsedFilters.where.ownerGroup = Array.isArray(
+          parsedFilters.where.ownerGroup,
+        )
+          ? parsedFilters.where.ownerGroup
+          : [parsedFilters.where.ownerGroup as string];
         parsedFilters.where.ownerGroup.push(...user.currentGroups);
       }
     }

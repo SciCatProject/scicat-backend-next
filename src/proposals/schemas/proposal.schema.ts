@@ -158,6 +158,15 @@ export class ProposalClass extends OwnableClass {
     required: false,
   })
   MeasurementPeriodList?: MeasurementPeriodClass[];
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    default: {},
+    description: "JSON object containing the proposal metadata.",
+  })
+  @Prop({ type: Object, required: false, default: {} })
+  metadata?: Record<string, unknown>;
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);

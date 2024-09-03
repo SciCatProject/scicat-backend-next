@@ -85,6 +85,7 @@ export class PoliciesController {
 
     if (user) {
       const ability = this.caslAbilityFactory.policyEndpointAccess(user);
+      // these actions are not defined in casl
       const canViewAll = ability.can(Action.ListAll, Policy);
       const canViewTheirOwn = ability.can(Action.ListOwn, Policy);
       if (!canViewAll && canViewTheirOwn) {

@@ -25,22 +25,18 @@ export const datasetMappings: MappingObject = {
   },
   pid: {
     type: "keyword",
+    ignore_above: 256,
   },
   creationTime: {
+    type: "date",
+  },
+  endTime: {
     type: "date",
   },
   scientificMetadata: {
     type: "nested",
     dynamic: true,
-    properties: {
-      runNumber: {
-        properties: {
-          value: {
-            type: "long",
-          },
-        },
-      },
-    },
+    properties: {},
   },
   history: {
     type: "nested",
@@ -48,29 +44,48 @@ export const datasetMappings: MappingObject = {
   },
   proposalId: {
     type: "keyword",
+    ignore_above: 256,
+  },
+  sampleId: {
+    type: "keyword",
+    ignore_above: 256,
   },
   sourceFolder: {
     type: "keyword",
+    ignore_above: 256,
   },
   isPublished: {
     type: "boolean",
   },
   type: {
     type: "keyword",
+    ignore_above: 256,
   },
   keywords: {
     type: "keyword",
+    ignore_above: 256,
   },
   creationLocation: {
     type: "keyword",
+    ignore_above: 256,
   },
   ownerGroup: {
     type: "keyword",
+    ignore_above: 256,
   },
   accessGroups: {
     type: "keyword",
+    ignore_above: 256,
   },
   sharedWith: {
     type: "keyword",
+    ignore_above: 256,
+  },
+  ownerEmail: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  size: {
+    type: "long",
   },
 };
