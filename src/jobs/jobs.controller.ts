@@ -22,7 +22,7 @@ import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { Action } from "src/casl/action.enum";
 import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import {
@@ -385,14 +385,14 @@ export class JobsController {
     // If other fields are needed can be added later.
     const jobInstance = new JobClass();
     const jobConfiguration = this.getJobTypeConfiguration(jobCreateDto.type);
-
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.datasetsValidation = false;
-    jobInstance.configuration = jobConfiguration;
+    jobInstance.configVersion =
+      jobConfiguration[JobsConfigSchema.ConfigVersion];
     jobInstance.statusCode = "Initializing";
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
@@ -471,7 +471,6 @@ export class JobsController {
         );
       }
       // verify that the user meet the requested permissions on the datasets listed
-      // const datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
       // build the condition
       interface datasetsWhere {
         where: {
@@ -519,12 +518,15 @@ export class JobsController {
     }
 
     // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
+      user,
+      jobConfiguration,
+    );
     // check if the user can create this job
     const canCreate =
-      ability.can(AuthOp.JobCreateAny, JobClass) ||
-      ability.can(AuthOp.JobCreateOwner, jobInstance) ||
-      ability.can(AuthOp.JobCreateConfiguration, jobInstance);
+      ability.can(Action.JobCreateAny, JobClass) ||
+      ability.can(Action.JobCreateOwner, jobInstance) ||
+      ability.can(Action.JobCreateConfiguration, jobInstance);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
@@ -567,10 +569,10 @@ export class JobsController {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
 
     // TODO - what shall we do when configVersion does not match?
-    if (jobConfig.configVersion !== jobInstance.configuration.configVersion) {
+    if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
-          Job was created with configVersion ${jobInstance.configuration.configVersion}.
+          Job was created with configVersion ${jobInstance.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
         "JobStatusUpdate",
@@ -587,8 +589,8 @@ export class JobsController {
    * Create job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.JobCreate, JobClass),
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobCreate, JobClass),
   )
   // @UseInterceptors(JobCreateInterceptor)
   @Post()
@@ -641,8 +643,8 @@ export class JobsController {
    * Update job status
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.JobStatusUpdate, JobClass),
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobStatusUpdate, JobClass),
   )
   @Patch(":id")
   @ApiOperation({
@@ -678,20 +680,18 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    currentJobInstance.configuration = this.getJobTypeConfiguration(
-      currentJobInstance.type,
-    );
-
-    const ability = this.caslAbilityFactory.createForUser(
+    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
+      jobConfiguration,
     );
-    // check if he/she can create this dataset
+    // check if the user can update this job
     const canUpdateStatus =
-      ability.can(AuthOp.JobStatusUpdateAny, JobClass) ||
-      ability.can(AuthOp.JobStatusUpdateOwner, currentJobInstance) ||
-      ability.can(AuthOp.JobStatusUpdateConfiguration, currentJobInstance);
+      ability.can(Action.JobStatusUpdateAny, JobClass) ||
+      ability.can(Action.JobStatusUpdateOwner, currentJobInstance) ||
+      ability.can(Action.JobStatusUpdateConfiguration, currentJobInstance);
     if (!canUpdateStatus) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
+      throw new ForbiddenException("Unauthorized to update this job.");
     }
 
     // Update job in database
@@ -703,15 +703,6 @@ export class JobsController {
     if (updatedJob !== null) {
       await this.performJobStatusUpdateAction(updatedJob);
     }
-
-    // Emit update event
-    // MN: not needed
-    // if (updatedJob) {
-    //   this.eventEmitter.emit("jobUpdated", {
-    //     instance: updatedJob,
-    //     hookState: { oldData: [updatedJob] },
-    //   });
-    // }
     return updatedJob;
   }
 
@@ -719,7 +710,9 @@ export class JobsController {
    * Get job by id
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.JobRead, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
   @Get(":id")
   @ApiOperation({
     summary: "It returns the requested job.",
@@ -746,14 +739,17 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    const ability = this.caslAbilityFactory.createForUser(
+
+    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+    const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
+      jobConfiguration,
     );
-    const canCreate =
-      ability.can(AuthOp.JobReadAny, JobClass) ||
-      ability.can(AuthOp.JobReadAccess, currentJobInstance);
-    if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
+    const canRead =
+      ability.can(Action.JobReadAny, JobClass) ||
+      ability.can(Action.JobReadAccess, currentJobInstance);
+    if (!canRead) {
+      throw new ForbiddenException("Unauthorized to get this job.");
     }
     return currentJob;
   }
@@ -762,7 +758,9 @@ export class JobsController {
    * Get jobs
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(AuthOp.JobRead, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
   @Get()
   @ApiOperation({
     summary: "It returns a list of jobs.",
@@ -799,25 +797,29 @@ export class JobsController {
         throw { message: "Invalid filter syntax." };
       }
       // for each job run a casl JobReadOwner on a jobInstance
-      const datasetsFound = await this.jobsService.findAll(parsedFilter);
-      const datasetsAccessible: JobClass[] = [];
-      const ability = this.caslAbilityFactory.createForUser(
-        request.user as JWTUser,
-      );
+      const jobsFound = await this.jobsService.findAll(parsedFilter);
+      const jobsAccessible: JobClass[] = [];
 
-      for (const i in datasetsFound) {
-        // check if he/she can create this dataset
+      for (const i in jobsFound) {
+        const jobConfiguration = this.getJobTypeConfiguration(
+          jobsFound[i].type,
+        );
+        const ability = this.caslAbilityFactory.jobsInstanceAccess(
+          request.user as JWTUser,
+          jobConfiguration,
+        );
+        // check if the user can get this job
         const jobInstance = await this.generateJobInstanceForPermissions(
-          datasetsFound[i],
+          jobsFound[i],
         );
         const canCreate =
-          ability.can(AuthOp.JobReadAny, JobClass) ||
-          ability.can(AuthOp.JobReadAccess, jobInstance);
+          ability.can(Action.JobReadAny, JobClass) ||
+          ability.can(Action.JobReadAccess, jobInstance);
         if (canCreate) {
-          datasetsAccessible.push(datasetsFound[i]);
+          jobsAccessible.push(jobsFound[i]);
         }
       }
-      return datasetsAccessible;
+      return jobsAccessible;
     } catch (e) {
       throw new HttpException(
         {
@@ -833,10 +835,8 @@ export class JobsController {
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
-  @CheckPolicies(
-    (ability: AppAbility) =>
-      ability.can(AuthOp.JobDelete, JobClass) &&
-      ability.can(AuthOp.JobDeleteAny, JobClass),
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobDelete, JobClass),
   )
   @Delete(":id")
   @ApiOperation({

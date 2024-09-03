@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiBody, ApiResponse } from "@nestjs/swagger";
-import { AuthOp } from "src/casl/authop.enum";
+import { Action } from "src/casl/action.enum";
 import { AppAbility } from "src/casl/casl-ability.factory";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -37,8 +37,8 @@ export class ElasticSearchServiceController {
   ) {}
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({
@@ -53,8 +53,8 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -70,8 +70,8 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(SubDatasetsPublicInterceptor)
@@ -88,8 +88,8 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -104,8 +104,8 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -120,8 +120,8 @@ export class ElasticSearchServiceController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.Manage, ElasticSearchActions),
+  @CheckPolicies("elastic-search", (ability: AppAbility) =>
+    ability.can(Action.Manage, ElasticSearchActions),
   )
   @HttpCode(HttpStatus.OK)
   @ApiResponse({

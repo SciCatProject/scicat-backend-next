@@ -31,7 +31,7 @@ import {
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AuthOp } from "src/casl/authop.enum";
+import { Action } from "src/casl/action.enum";
 import {
   OrigDatablock,
   OrigDatablockDocument,
@@ -61,7 +61,7 @@ export class OrigDatablocksController {
   async checkPermissionsForOrigDatablock(
     request: Request,
     id: string,
-    group: AuthOp,
+    group: Action,
   ) {
     const origDatablock = await this.origDatablocksService.findOne({ _id: id });
     if (!origDatablock) {
@@ -116,7 +116,7 @@ export class OrigDatablocksController {
   async checkPermissionsForOrigDatablockExtended(
     request: Request,
     id: string,
-    group: AuthOp,
+    group: Action,
   ) {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
@@ -128,24 +128,24 @@ export class OrigDatablocksController {
     const origDatablockInstance =
       await this.generateOrigDatablockInstanceInstanceForPermissions(dataset);
 
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
 
     let canDoAction = false;
 
-    if (group == AuthOp.OrigdatablockCreate) {
+    if (group == Action.OrigdatablockCreate) {
       canDoAction =
-        ability.can(AuthOp.OrigdatablockCreateAny, origDatablockInstance) ||
-        ability.can(AuthOp.OrigdatablockCreateOwner, origDatablockInstance);
-    } else if (group == AuthOp.OrigdatablockRead) {
+        ability.can(Action.OrigdatablockCreateAny, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockCreateOwner, origDatablockInstance);
+    } else if (group == Action.OrigdatablockRead) {
       canDoAction =
-        ability.can(AuthOp.OrigdatablockReadAny, origDatablockInstance) ||
-        ability.can(AuthOp.OrigdatablockReadOnePublic, origDatablockInstance) ||
-        ability.can(AuthOp.OrigdatablockReadOneAccess, origDatablockInstance) ||
-        ability.can(AuthOp.OrigdatablockReadOneOwner, origDatablockInstance);
-    } else if (group == AuthOp.OrigdatablockUpdate) {
+        ability.can(Action.OrigdatablockReadAny, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockReadOnePublic, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockReadOneAccess, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockReadOneOwner, origDatablockInstance);
+    } else if (group == Action.OrigdatablockUpdate) {
       canDoAction =
-        ability.can(AuthOp.OrigdatablockUpdateAny, origDatablockInstance) ||
-        ability.can(AuthOp.OrigdatablockUpdateOwner, origDatablockInstance);
+        ability.can(Action.OrigdatablockUpdateAny, origDatablockInstance) ||
+        ability.can(Action.OrigdatablockUpdateOwner, origDatablockInstance);
     }
 
     if (!canDoAction) {
@@ -157,8 +157,8 @@ export class OrigDatablocksController {
 
   // POST /origdatablocks
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockCreate, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockCreate, OrigDatablock),
   )
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -185,7 +185,7 @@ export class OrigDatablocksController {
     const dataset = await this.checkPermissionsForOrigDatablockExtended(
       request,
       createOrigDatablockDto.datasetId,
-      AuthOp.OrigdatablockCreate,
+      Action.OrigdatablockCreate,
     );
 
     if (dataset) {
@@ -226,8 +226,8 @@ export class OrigDatablocksController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockCreate, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockCreate, OrigDatablock),
   )
   @HttpCode(HttpStatus.OK)
   @Post("/isValid")
@@ -255,7 +255,7 @@ export class OrigDatablocksController {
     await this.checkPermissionsForOrigDatablockExtended(
       request,
       (createOrigDatablock as CreateOrigDatablockDto).datasetId,
-      AuthOp.OrigdatablockCreate,
+      Action.OrigdatablockCreate,
     );
     const dtoTestOrigDatablock = plainToInstance(
       CreateOrigDatablockDto,
@@ -271,8 +271,8 @@ export class OrigDatablocksController {
 
   // GET /origdatablock
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get()
   @ApiOperation({
@@ -302,16 +302,16 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const parsedFilters: IFilters<OrigDatablockDocument, IOrigDatablockFields> =
       JSON.parse(filter ?? "{}");
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       parsedFilters.where = parsedFilters.where ?? {};
       const canViewAccess = ability.can(
-        AuthOp.OrigdatablockReadManyAccess,
+        Action.OrigdatablockReadManyAccess,
         OrigDatablock,
       );
       const canViewOwner = ability.can(
-        AuthOp.OrigdatablockReadManyOwner,
+        Action.OrigdatablockReadManyOwner,
         OrigDatablock,
       );
 
@@ -329,8 +329,8 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullquery")
   @ApiQuery({
@@ -355,16 +355,16 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
 
     if (!canViewAny) {
       const canViewAccess = ability.can(
-        AuthOp.OrigdatablockReadManyAccess,
+        Action.OrigdatablockReadManyAccess,
         OrigDatablock,
       );
       const canViewOwner = ability.can(
-        AuthOp.OrigdatablockReadManyOwner,
+        Action.OrigdatablockReadManyOwner,
         OrigDatablock,
       );
 
@@ -393,8 +393,8 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/fullquery/files
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullquery/files")
   @ApiQuery({
@@ -418,15 +418,15 @@ export class OrigDatablocksController {
   ): Promise<OrigDatablock[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
-        AuthOp.OrigdatablockReadManyAccess,
+        Action.OrigdatablockReadManyAccess,
         OrigDatablock,
       );
       const canViewOwner = ability.can(
-        AuthOp.OrigdatablockReadManyOwner,
+        Action.OrigdatablockReadManyOwner,
         OrigDatablock,
       );
 
@@ -448,8 +448,8 @@ export class OrigDatablocksController {
 
   //  GET /origdatablocks/fullfacet
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet")
   async fullfacet(
@@ -459,15 +459,15 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
-        AuthOp.OrigdatablockReadManyAccess,
+        Action.OrigdatablockReadManyAccess,
         OrigDatablock,
       );
       const canViewOwner = ability.can(
-        AuthOp.OrigdatablockReadManyOwner,
+        Action.OrigdatablockReadManyOwner,
         OrigDatablock,
       );
 
@@ -489,8 +489,8 @@ export class OrigDatablocksController {
 
   //  GET /origdatablocks/fullfacet/files
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/fullfacet/files")
   async fullfacetFiles(
@@ -500,15 +500,15 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IOrigDatablockFields = JSON.parse(filters.fields ?? "{}");
 
-    const ability = this.caslAbilityFactory.createForUser(user);
-    const canViewAny = ability.can(AuthOp.OrigdatablockReadAny, OrigDatablock);
+    const ability = this.caslAbilityFactory.origDatablockInstanceAccess(user);
+    const canViewAny = ability.can(Action.OrigdatablockReadAny, OrigDatablock);
     if (!canViewAny) {
       const canViewAccess = ability.can(
-        AuthOp.OrigdatablockReadManyAccess,
+        Action.OrigdatablockReadManyAccess,
         OrigDatablock,
       );
       const canViewOwner = ability.can(
-        AuthOp.OrigdatablockReadManyOwner,
+        Action.OrigdatablockReadManyOwner,
         OrigDatablock,
       );
 
@@ -534,8 +534,8 @@ export class OrigDatablocksController {
 
   // GET /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockRead, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockRead, OrigDatablock),
   )
   @Get("/:id")
   @ApiOperation({
@@ -560,7 +560,7 @@ export class OrigDatablocksController {
     const origdatablock = await this.checkPermissionsForOrigDatablock(
       request,
       id,
-      AuthOp.OrigdatablockRead,
+      Action.OrigdatablockRead,
     );
 
     return origdatablock;
@@ -568,8 +568,8 @@ export class OrigDatablocksController {
 
   // PATCH /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockUpdate, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockUpdate, OrigDatablock),
   )
   @Patch("/:id")
   @ApiOperation({
@@ -600,7 +600,7 @@ export class OrigDatablocksController {
     await this.checkPermissionsForOrigDatablock(
       request,
       id,
-      AuthOp.OrigdatablockUpdate,
+      Action.OrigdatablockUpdate,
     );
 
     const origdatablock = (await this.origDatablocksService.update(
@@ -615,8 +615,8 @@ export class OrigDatablocksController {
 
   // DELETE /origdatablocks/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
-    ability.can(AuthOp.OrigdatablockDelete, OrigDatablock),
+  @CheckPolicies("origdatablocks", (ability: AppAbility) =>
+    ability.can(Action.OrigdatablockDelete, OrigDatablock),
   )
   @Delete("/:id")
   @ApiOperation({
