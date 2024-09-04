@@ -694,29 +694,23 @@ const TestData = {
     ],
   },
 
-  // ArchiveJob: {
-  //   emailJobInitiator: "scicatarchivemanger@psi.ch",
-  //   type: "archive",
-  //   jobStatusMessage: "jobForwarded",
-  //   datasetList: [
-  //     {
-  //       pid: "dummy",
-  //       files: [],
-  //     },
-  //     {
-  //       pid: "dummy",
-  //       files: [],
-  //     },
-  //   ],
-  //   jobResultObject: {
-  //     status: "okay",
-  //     message: "All systems okay",
-  //   },
-  // },
- 
-  Job:{
-    type: "",
-    jobParams: {
+  ArchiveJob: {
+    emailJobInitiator: "scicatarchivemanger@psi.ch",
+    type: "archive",
+    jobStatusMessage: "jobForwarded",
+    datasetList: [
+      {
+        pid: "dummy",
+        files: [],
+      },
+      {
+        pid: "dummy",
+        files: [],
+      },
+    ],
+    jobResultObject: {
+      status: "okay",
+      message: "All systems okay",
     },
   },
 
