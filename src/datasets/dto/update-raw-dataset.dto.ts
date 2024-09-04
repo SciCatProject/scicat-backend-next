@@ -1,8 +1,8 @@
 import { IsDateString, IsOptional, IsString } from "class-validator";
-import { UpdateDatasetDto } from "./update-dataset.dto";
+import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 
-export class UpdateRawDatasetDto extends UpdateDatasetDto {
+export class UpdateRawDatasetDto extends UpdateDatasetObsoleteDto {
   /* we need to discuss if the naming is adequate. */
   @ApiProperty({
     type: String,

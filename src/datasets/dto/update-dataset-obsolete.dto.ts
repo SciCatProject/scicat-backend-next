@@ -24,9 +24,12 @@ import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { Attachment } from "../../attachments/schemas/attachment.schema";
+import { OrigDatablock } from "../../origdatablocks/schemas/origdatablock.schema";
+import { Datablock } from "../../datablocks/schemas/datablock.schema";
 
 @ApiTags("datasets")
-export class UpdateDatasetDto extends OwnableDto {
+export class UpdateDatasetObsoleteDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -34,8 +37,7 @@ export class UpdateDatasetDto extends OwnableDto {
       "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons.",
   })
   @IsString()
-  @IsOptional()
-  readonly owner?: string;
+  readonly owner: string;
 
   @ApiProperty({
     type: String,
@@ -173,12 +175,13 @@ export class UpdateDatasetDto extends OwnableDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder.",
   })
+  @IsOptional()
   @IsString()
-  readonly datasetName: string;
+  readonly datasetName?: string;
 
   @ApiProperty({
     type: String,
@@ -208,7 +211,7 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   @IsOptional()
   @IsBoolean()
-  readonly isPublished?: boolean = false;
+  readonly isPublished?: boolean;
 
   @ApiProperty({
     type: "array",
@@ -258,7 +261,7 @@ export class UpdateDatasetDto extends OwnableDto {
       "Describes the current status of the dataset during its lifetime with respect to the storage handling systems.",
   })
   @IsOptional()
-  readonly datasetlifecycle?: LifecycleClass;
+  readonly datasetlifecycle: LifecycleClass;
 
   @ApiProperty({
     type: Object,
@@ -288,135 +291,8 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsOptional()
   @IsNumber()
   readonly dataQualityMetrics?: number;
-
-  @ApiProperty({
-    type: String,
-    required: true,
-    description:
-      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
-  })
-  @IsString()
-  readonly principalInvestigator: string;
-
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description:
-      "Start time of data acquisition for the current dataset.<br>It is expected to be in ISO8601 format according to specifications for internet date/time format in RFC 3339, chapter 5.6 (https://www.rfc-editor.org/rfc/rfc3339#section-5).<br>Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
-  })
-  @IsOptional()
-  @IsDateString()
-  readonly startTime?: Date;
-
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description:
-      "End time of data acquisition for the current dataset.<br>It is expected to be in ISO8601 format according to specifications for internet date/time format in RFC 3339, chapter 5.6 (https://www.rfc-editor.org/rfc/rfc3339#section-5).<br>Local times without timezone/offset info are automatically transformed to UTC using the timezone of the API server.",
-  })
-  @IsOptional()
-  @IsDateString()
-  readonly endTime?: Date;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly creationLocation?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Defines the format of the data files in this dataset, e.g Nexus Version x.y.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly dataFormat?: string;
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "ID of the proposal or proposals which the dataset belongs to.<br>This dataset might have been acquired under the listed proposals or is derived from datasets acquired from datasets belonging to the listed datasets.",
-  })
-  @IsOptional()
-  @IsString({
-    each: true,
-  })
-  readonly proposalId?: string[];
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "ID of the sample or samples used when collecting the data included or used in this dataset.",
-  })
-  @IsOptional()
-  @IsString({
-    each: true,
-  })
-  readonly sampleId?: string[];
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "ID of the instrument or instruments where the data included or used in this datasets was collected on.",
-  })
-  @IsOptional()
-  @IsString({
-    each: false,
-  })
-  readonly instrumentId?: string[];
-
-  @ApiProperty({
-    type: [String],
-    required: true,
-    description:
-      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
-  })
-  @IsOptional()
-  @IsString({
-    each: false,
-  })
-  readonly inputDatasets?: string[];
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    description:
-      "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data.",
-  })
-  @IsOptional()
-  @IsString({
-    each: true,
-  })
-  readonly usedSoftware?: string[];
-
-  @ApiProperty({
-    type: Object,
-    required: false,
-    description:
-      "The creation process of the derived data will usually depend on input job parameters. The full structure of these input parameters are stored here.",
-  })
-  @IsOptional()
-  @IsObject()
-  readonly jobParameters?: Record<string, unknown>;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "The output job logfile. Keep the size of this log data well below 15 MB.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly jobLogData?: string;
 }
 
-export class PartialUpdateDatasetDto extends PartialType(UpdateDatasetDto) {}
+export class PartialUpdateDatasetObsoleteDto extends PartialType(
+  UpdateDatasetObsoleteDto,
+) {}
