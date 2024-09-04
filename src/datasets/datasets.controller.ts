@@ -36,7 +36,7 @@ import {
 } from "@nestjs/swagger";
 import { Request } from "express";
 import { DatasetsService } from "./datasets.service";
-import { PartialUpdateDatasetDto } from "./dto/update-dataset.dto";
+import { PartialUpdateDatasetObsoleteDto } from "./dto/update-dataset-obsolete.dto";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
 import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
@@ -98,6 +98,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
+import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -597,7 +598,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<DatasetClass[] | null> {
+  ): Promise<OutputDatasetObsoleteDto[] | null> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -606,7 +607,9 @@ export class DatasetsController {
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     // this should be implemented at database level
-    const datasets = await this.datasetsService.findAll(mergedFilters);
+    const datasets = (await this.datasetsService.findAll(
+      mergedFilters,
+    )) as OutputDatasetObsoleteDto[];
     if (datasets && datasets.length > 0) {
       const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
@@ -917,7 +920,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetObsoleteDto | null> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -927,7 +930,7 @@ export class DatasetsController {
 
     const dataset = (await this.datasetsService.findOne(
       mergedFilters,
-    )) as DatasetClass;
+    )) as OutputDatasetObsoleteDto;
 
     if (dataset) {
       const includeFilters = mergedFilters.include ?? [];
@@ -1585,7 +1588,7 @@ export class DatasetsController {
       const datablock =
         await this.origDatablocksService.create(createOrigDatablock);
 
-      const updateDatasetDto: PartialUpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
         size: dataset.size + datablock.size,
         numberOfFiles: dataset.numberOfFiles + datablock.dataFileList.length,
       };
@@ -1804,7 +1807,7 @@ export class DatasetsController {
         where: { datasetId: pid },
       });
       // update dataset size and files number
-      const updateDatasetDto: PartialUpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
         size: odb.reduce((a, b) => a + b.size, 0),
         numberOfFiles: odb.reduce((a, b) => a + b.dataFileList.length, 0),
       };
@@ -2034,7 +2037,7 @@ export class DatasetsController {
         datasetId: pid,
       });
       // update dataset size and files number
-      const updateDatasetDto: PartialUpdateDatasetDto = {
+      const updateDatasetDto: PartialUpdateDatasetObsoleteDto = {
         packedSize: remainingDatablocks.reduce((a, b) => a + b.packedSize, 0),
         numberOfFilesArchived: remainingDatablocks.reduce(
           (a, b) => a + b.dataFileList.length,

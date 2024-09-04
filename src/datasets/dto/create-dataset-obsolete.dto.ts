@@ -1,9 +1,9 @@
 import { IsEnum, IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { DatasetType } from "../dataset-type.enum";
-import { UpdateDatasetDto } from "./update-dataset.dto";
+import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
 
-export class CreateDatasetDto extends UpdateDatasetDto {
+export class CreateDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
     type: String,
     required: false,
@@ -22,4 +22,13 @@ export class CreateDatasetDto extends UpdateDatasetDto {
   })
   @IsEnum(DatasetType)
   readonly type: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Version of the API used in creation of the dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly version?: string;
 }

@@ -24,11 +24,11 @@ import { ElasticSearchService } from "src/elastic-search/elastic-search.service"
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
-import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import { CreateDatasetObsoleteDto } from "./dto/create-dataset-obsolete.dto";
 import {
-  PartialUpdateDatasetDto,
-  UpdateDatasetDto,
-} from "./dto/update-dataset.dto";
+  PartialUpdateDatasetObsoleteDto,
+  UpdateDatasetObsoleteDto,
+} from "./dto/update-dataset-obsolete.dto";
 import {
   PartialUpdateDerivedDatasetDto,
   UpdateDerivedDatasetDto,
@@ -58,7 +58,9 @@ export class DatasetsService {
     }
   }
 
-  async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
+  async create(
+    createDatasetDto: CreateDatasetObsoleteDto,
+  ): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
@@ -206,7 +208,7 @@ export class DatasetsService {
   async findByIdAndReplace(
     id: string,
     updateDatasetDto:
-      | UpdateDatasetDto
+      | UpdateDatasetObsoleteDto
       | UpdateRawDatasetDto
       | UpdateDerivedDatasetDto,
   ): Promise<DatasetClass> {
@@ -252,7 +254,7 @@ export class DatasetsService {
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto:
-      | PartialUpdateDatasetDto
+      | PartialUpdateDatasetObsoleteDto
       | PartialUpdateRawDatasetDto
       | PartialUpdateDerivedDatasetDto
       | UpdateQuery<DatasetDocument>,
@@ -434,20 +436,28 @@ export class DatasetsService {
   async updateHistory(
     req: Request,
     dataset: DatasetClass,
-    data: UpdateDatasetDto,
+    data: UpdateDatasetObsoleteDto,
   ) {
     if (req.body.history) {
       delete req.body.history;
     }
 
     if (!req.body.size && !req.body.packedSize) {
-      const updatedFields: Omit<UpdateDatasetDto, "updatedAt" | "updatedBy"> =
-        data;
+      const updatedFields: Omit<
+        UpdateDatasetObsoleteDto,
+        "updatedAt" | "updatedBy"
+      > = data;
       const historyItem: Record<string, unknown> = {};
       Object.keys(updatedFields).forEach((updatedField) => {
-        historyItem[updatedField as keyof UpdateDatasetDto] = {
-          currentValue: data[updatedField as keyof UpdateDatasetDto],
-          previousValue: dataset[updatedField as keyof UpdateDatasetDto],
+        historyItem[updatedField as keyof UpdateDatasetObsoleteDto] = {
+          currentValue: data[updatedField as keyof UpdateDatasetObsoleteDto],
+          previousValue:
+            dataset[
+              updatedField as keyof Omit<
+                UpdateDatasetObsoleteDto,
+                "attachments" | "origdatablocks" | "datablocks"
+              >
+            ],
         };
       });
       dataset.history = dataset.history ?? [];
