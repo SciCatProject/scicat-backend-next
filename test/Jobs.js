@@ -145,80 +145,41 @@ describe("1100: Jobs: Test New Job Model", () => {
     db.collection("Job").deleteMany({});
   });
 
+  beforeEach(async () => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "user1",
-            password: TestData.Accounts["user1"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenUser1 = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user3",
-                password: TestData.Accounts["user3"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser3 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user5.1",
-                    password: TestData.Accounts["user5.1"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser51 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "user5.2",
-                        password:
-                          TestData.Accounts["user5.2"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenUser52 = tokenVal;
-                        utils.getToken(
-                          appUrl,
-                          {
-                            username: "admin",
-                            password: TestData.Accounts["admin"]["password"],
-                          },
-                          (tokenVal) => {
-                            accessTokenAdmin = tokenVal;
-                            utils.getToken(
-                              appUrl,
-                              {
-                                username:"archiveManager",
-                                password: TestData.Accounts["archiveManager"]["password"],
-                              },
-                              (tokenVal) => {
-                                accessTokenArchiveManager = tokenVal;
-                                done();
-                              }
-                            )
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenUser51 = await utils.getToken(appUrl, {
+      username: "user5.1",
+      password: TestData.Accounts["user5.1"]["password"],
+    });
+
+    accessTokenUser52 = await utils.getToken(appUrl, {
+      username: "user5.2",
+      password: TestData.Accounts["user5.2"]["password"],
+    });
+
+    accessTokenAdmin = await utils.getToken(appUrl, {
+      username: "admin",
+      password: TestData.Accounts["admin"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   after(() => { //because we're not deleting all the jobs and don't delete datasets

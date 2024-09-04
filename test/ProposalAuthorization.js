@@ -53,60 +53,31 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
-        utils.getToken(
-          appUrl,
-          {
-            username: "proposalIngestor",
-            password: TestData.Accounts["proposalIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenProposalIngestor = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user1",
-                password: TestData.Accounts["user1"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser1 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user3"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser2 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        done();
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+    accessTokenProposalIngestor = await utils.getToken(appUrl, {
+      username: "proposalIngestor",
+      password: TestData.Accounts["proposalIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {

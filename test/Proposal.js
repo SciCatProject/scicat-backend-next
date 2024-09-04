@@ -15,38 +15,21 @@ describe("1500: Proposal: Simple Proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "proposalIngestor",
-        password: TestData.Accounts["proposalIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenProposalIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "adminIngestor",
-            password: TestData.Accounts["adminIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenAdminIngestor = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "archiveManager",
-                password: TestData.Accounts["archiveManager"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenArchiveManager = tokenVal;
-                done();
-              },
-            );
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessTokenProposalIngestor = await utils.getToken(appUrl, {
+      username: "proposalIngestor",
+      password: TestData.Accounts["proposalIngestor"]["password"],
+    });
+
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   // the following two function definition prepare for
