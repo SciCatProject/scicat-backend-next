@@ -112,8 +112,8 @@ export class JobsService {
             username,
           ),
           statusUpdateJobDto.statusCode,
-          statusUpdateJobDto.statusMessage!,
-          statusUpdateJobDto.jobResultObject!,
+          statusUpdateJobDto.statusMessage,
+          statusUpdateJobDto.jobResultObject,
         ),
         { new: true },
       )

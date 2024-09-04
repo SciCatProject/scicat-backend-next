@@ -17,8 +17,7 @@ export class StatusUpdateJobDto {
     description: "Additional message about the current job status.",
   })
   @IsString()
-  @IsOptional()
-  readonly statusMessage?: string;
+  readonly statusMessage: string;
 
   @ApiProperty({
     type: Object,

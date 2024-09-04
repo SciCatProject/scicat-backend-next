@@ -787,11 +787,11 @@ export const addStatusFields = <T>(
   obj: T,
   statusCode: string,
   statusMessage: string,
-  jobResultObject: Record<string, unknown>,
+  jobResultObject: Record<string, unknown> | undefined,
 ): T & {
   statusCode: string;
   statusMessage: string;
-  jobResultObject: Record<string, unknown>;
+  jobResultObject: Record<string, unknown> | undefined;
 } => {
   return {
     ...obj,
