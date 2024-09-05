@@ -283,7 +283,7 @@ export class UsersService implements OnModuleInit {
       return this.isValidFilterComponentType(key, value);
     });
 
-    if (!validFilters) {
+    if (result && !validFilters) {
       const updatedUsersFilter = await this.findOneAndUpdateUserSettings(
         userId,
         {

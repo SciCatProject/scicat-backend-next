@@ -18,7 +18,7 @@ export enum FilterComponentType {
   TextFilter = "TextFilter",
 }
 
-// NOTE: The key is one of FilterComponentType, and the value is a string
+// NOTE: The key is one of FilterComponentType
 export type FilterConfig = Partial<{
   [K in FilterComponentType]: boolean;
 }>;
