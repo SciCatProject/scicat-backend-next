@@ -274,24 +274,10 @@ export class UsersService implements OnModuleInit {
   }
 
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
-    const result = await this.userSettingsModel.findOne({ userId }).exec();
-
-    // NOTE: The extra functions ensure filters in user setting record match the FilterComponentType format.
-    // If not, reset the user settings to maintain consistency.
-    const validFilters = result?.filters.some((filter) => {
-      const [key, value] = Object.entries(filter)[0];
-      return this.isValidFilterComponentType(key, value);
-    });
-
-    if (result && !validFilters) {
-      const updatedUsersFilter = await this.findOneAndUpdateUserSettings(
-        userId,
-        {
-          filters: [],
-        },
-      );
-      return updatedUsersFilter;
-    }
+    const result = await this.userSettingsModel
+      .findOne({ userId })
+      .lean()
+      .exec();
 
     return result;
   }
@@ -364,15 +350,5 @@ export class UsersService implements OnModuleInit {
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
     const jwtString = this.jwtService.sign(user, signAndVerifyOptions);
     return { jwt: jwtString };
-  }
-
-  private isValidFilterComponentType(
-    key: string,
-    value: unknown,
-  ): key is FilterComponentType {
-    return (
-      Object.keys(FilterComponentType).includes(key) &&
-      typeof value === "boolean"
-    );
   }
 }

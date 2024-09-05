@@ -11,6 +11,7 @@ import {
   Body,
   ForbiddenException,
   HttpCode,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -42,6 +43,7 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
+import { UserSettingsInterceptor } from "./interceptors/user-settings.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -230,6 +232,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
+  @UseInterceptors(UserSettingsInterceptor)
   @CheckPolicies(
     "users",
     (ability: AppAbility) =>
