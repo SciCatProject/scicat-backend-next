@@ -32,6 +32,11 @@ type MailOptions = {
   text?: string;
 };
 
+type Auth = {
+  user: string;
+  password: string;
+};
+
 /**
  * Send an email following a job
  */
@@ -41,7 +46,7 @@ export class EmailJobAction<T> implements JobAction<T> {
   private mailService: Transporter;
   private toTemplate: TemplateDelegate<JobClass>;
   private from: string;
-  private password: string;
+  private auth: Auth | Object = {};
   private subjectTemplate: TemplateDelegate<JobClass>;
   private bodyTemplate: TemplateDelegate<JobClass>;
 
@@ -55,20 +60,21 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
+    if (data["auth"]) { // check optional auth field
+      function CheckAuthDefinition(obj: any): obj is Auth {
+        return Object.keys(obj).length == 2 && "user" in obj && "password" in obj;
+      }
+
+      if (!CheckAuthDefinition(data["auth"])) {
+        throw new NotFoundException("Param 'auth' should contain fields 'user' and 'password' only.");
+      }
+      this.auth = data["auth"] as Auth;
+    }
     if (!data["to"]) {
       throw new NotFoundException("Param 'to' is undefined");
     }
     if (!data["from"]) {
       throw new NotFoundException("Param 'from' is undefined");
-    }
-    if (typeof data["from"] !== "string") {
-      throw new TypeError("Param 'from' should be a string");
-    }
-    if (!data["password"]) {
-      throw new NotFoundException("Param 'from' is undefined");
-    }
-    if (typeof data["password"] !== "string") {
-      throw new TypeError("Param 'password' should be a string");
     }
     if (!data["subject"]) {
       throw new NotFoundException("Param 'subject' is undefined");
@@ -76,23 +82,17 @@ export class EmailJobAction<T> implements JobAction<T> {
     if (!data["bodyTemplate"]) {
       throw new NotFoundException("Param 'bodyTemplate' is undefined");
     }
-
     Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
-
-    this.from = data["from"];
-    this.password = data["password"];
 
     // const mailerConfig = configuration().smtp;
     // this.mailService = createTransport({
     //   host: mailerConfig.host,
     //   port: mailerConfig.port,
     //   secure: mailerConfig.secure,
-    //   auth: {
-    //     user: this.from,
-    //     pass: this.password
-    //   }
+    //   auth: this.auth
     // } as any);
 
+    this.from = data["from"] as string;
     this.toTemplate = compile(data["to"]);
     this.subjectTemplate = compile(data["subject"]);
 
