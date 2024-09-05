@@ -94,6 +94,7 @@ export class UsersController {
 
   @ApiBody({ type: CredentialsDto })
   @AllowAny()
+  @UseInterceptors(UserSettingsInterceptor)
   @UseGuards(LocalAuthGuard)
   @Post("login")
   @ApiOperation({
@@ -232,7 +233,6 @@ export class UsersController {
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
-  @UseInterceptors(UserSettingsInterceptor)
   @CheckPolicies(
     "users",
     (ability: AppAbility) =>

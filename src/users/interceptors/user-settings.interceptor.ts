@@ -5,7 +5,7 @@ import {
   Logger,
   NestInterceptor,
 } from "@nestjs/common";
-import { Observable, tap } from "rxjs";
+import { Observable, switchMap } from "rxjs";
 import { CreateUserSettingsDto } from "../dto/create-user-settings.dto";
 import { UsersService } from "../users.service";
 import {
@@ -17,20 +17,22 @@ import { UpdateUserSettingsDto } from "../dto/update-user-settings.dto";
 @Injectable()
 export class UserSettingsInterceptor implements NestInterceptor {
   constructor(private usersService: UsersService) {}
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<unknown>> {
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const res = context.switchToHttp().getResponse();
+    const user = res.req.user;
+
+    if (!user) {
+      return next.handle();
+    }
+
+    const userId = user._id;
+
     return next.handle().pipe(
-      tap(async () => {
-        const res = context.switchToHttp().getResponse();
-        const user = res.req.user;
-        if (!user) {
-          return;
-        }
-        const userId = user._id;
+      switchMap(async (payload) => {
         const userSettings =
           await this.usersService.findByIdUserSettings(userId);
+
         if (!userSettings) {
           Logger.log(
             `Adding default settings to user ${user.username}`,
@@ -42,7 +44,7 @@ export class UserSettingsInterceptor implements NestInterceptor {
             conditions: [],
             columns: [],
           };
-          return this.usersService.createUserSettings(
+          await this.usersService.createUserSettings(
             userId,
             createUserSettingsDto,
           );
@@ -54,15 +56,13 @@ export class UserSettingsInterceptor implements NestInterceptor {
               `Reset default settings to user ${user.username}`,
               "UserSettingsInterceptor",
             );
-            return await this.resetUserSettings(userId, userSettings);
+            await this.resetUserSettings(userId, userSettings);
           }
         }
-
-        return;
+        return payload;
       }),
     );
   }
-
   private async resetUserSettings(userId: string, userSettings: UserSettings) {
     // NOTE: The extra functions ensure filters in user setting record match the FilterComponentType format.
     // If not, reset the user settings to maintain consistency.
