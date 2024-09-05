@@ -60,13 +60,18 @@ export class EmailJobAction<T> implements JobAction<T> {
       "EmailJobAction",
     );
 
-    if (data["auth"]) { // check optional auth field
-      function CheckAuthDefinition(obj: any): obj is Auth {
-        return Object.keys(obj).length == 2 && "user" in obj && "password" in obj;
+    if (data["auth"]) {
+      // check optional auth field
+      function CheckAuthDefinition(obj: Object): obj is Auth {
+        return (
+          Object.keys(obj).length == 2 && "user" in obj && "password" in obj;
+        )
       }
 
       if (!CheckAuthDefinition(data["auth"])) {
-        throw new NotFoundException("Param 'auth' should contain fields 'user' and 'password' only.");
+        throw new NotFoundException(
+          "Param 'auth' should contain fields 'user' and 'password' only."
+        );
       }
       this.auth = data["auth"] as Auth;
     }
