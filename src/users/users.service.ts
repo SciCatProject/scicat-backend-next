@@ -276,19 +276,21 @@ export class UsersService implements OnModuleInit {
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
     const result = await this.userSettingsModel.findOne({ userId }).exec();
 
-    if (!result) {
-      return null;
-    }
-
     // NOTE: The extra functions ensure filters in user setting record match the FilterComponentType format.
     // If not, reset the user settings to maintain consistency.
-    const validFilters = result.filters.some((filter) => {
+    const validFilters = result?.filters.some((filter) => {
       const [key, value] = Object.entries(filter)[0];
       return this.isValidFilterComponentType(key, value);
     });
 
     if (!validFilters) {
-      return this.findOneAndUpdateUserSettings(userId, { filters: [] });
+      const updatedUsersFilter = await this.findOneAndUpdateUserSettings(
+        userId,
+        {
+          filters: [],
+        },
+      );
+      return updatedUsersFilter;
     }
 
     return result;
