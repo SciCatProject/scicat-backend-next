@@ -64,8 +64,8 @@ export class EmailJobAction<T> implements JobAction<T> {
       // check optional auth field
       function CheckAuthDefinition(obj: Object): obj is Auth {
         return (
-          Object.keys(obj).length == 2 && "user" in obj && "password" in obj;
-        )
+          Object.keys(obj).length == 2 && "user" in obj && "password" in obj
+        );
       }
 
       if (!CheckAuthDefinition(data["auth"])) {
