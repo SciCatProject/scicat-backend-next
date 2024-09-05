@@ -70,7 +70,7 @@ export class EmailJobAction<T> implements JobAction<T> {
 
       if (!CheckAuthDefinition(data["auth"])) {
         throw new NotFoundException(
-          "Param 'auth' should contain fields 'user' and 'password' only."
+          "Param 'auth' should contain fields 'user' and 'password' only.",
         );
       }
       this.auth = data["auth"] as Auth;
