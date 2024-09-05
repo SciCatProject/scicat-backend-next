@@ -46,7 +46,7 @@ export class EmailJobAction<T> implements JobAction<T> {
   private mailService: Transporter;
   private toTemplate: TemplateDelegate<JobClass>;
   private from: string;
-  private auth: Auth | Object = {};
+  private auth: Auth | object = {};
   private subjectTemplate: TemplateDelegate<JobClass>;
   private bodyTemplate: TemplateDelegate<JobClass>;
 
@@ -62,7 +62,7 @@ export class EmailJobAction<T> implements JobAction<T> {
 
     if (data["auth"]) {
       // check optional auth field
-      function CheckAuthDefinition(obj: Object): obj is Auth {
+      function CheckAuthDefinition(obj: object): obj is Auth {
         return (
           Object.keys(obj).length == 2 && "user" in obj && "password" in obj
         );
