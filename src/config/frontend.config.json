@@ -27,86 +27,6 @@
   "jupyterHubUrl": "",
   "landingPage": "doi.ess.eu/detail/",
   "lbBaseURL": "http://127.0.0.1:3000",
-  "localColumns": [
-    {
-      "name": "select",
-      "order": 0,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "pid",
-      "order": 1,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "datasetName",
-      "order": 2,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "runNumber",
-      "order": 3,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "sourceFolder",
-      "order": 4,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "size",
-      "order": 5,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "creationTime",
-      "order": 6,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "type",
-      "order": 7,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "image",
-      "order": 8,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "metadata",
-      "order": 9,
-      "type": "standard",
-      "enabled": false
-    },
-    {
-      "name": "proposalId",
-      "order": 10,
-      "type": "standard",
-      "enabled": true
-    },
-    {
-      "name": "ownerGroup",
-      "order": 11,
-      "type": "standard",
-      "enabled": false
-    },
-    {
-      "name": "dataStatus",
-      "order": 12,
-      "type": "standard",
-      "enabled": false
-    }
-  ],
   "logbookEnabled": true,
   "loginFormEnabled": true,
   "maxDirectDownloadSize": 5000000000,
@@ -181,18 +101,106 @@
       "authorization": ["#datasetAccess", "#datasetPublic"]
     }
   ],
-  "defaultSearchInterfaceSettings": {
-    "columns": [],
+  "labelMaps": {
+    "filters": {
+      "LocationFilter": "asdasd",
+      "PidFilter": "asdasdsad identifiler",
+      "GroupFilter": "fff",
+      "TypeFilter": "Typfggge",
+      "KeywordFilter": "ggg",
+      "DateRangeFilter": "Start Date - End Date",
+      "TextFilter": "Text"
+    }
+  },
+  "defaultDatasetsListSettings": {
+    "columns": [
+      {
+        "name": "select",
+        "order": 0,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "pid",
+        "order": 1,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "datasetName",
+        "order": 2,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "runNumber",
+        "order": 3,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "sourceFolder",
+        "order": 4,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "size",
+        "order": 5,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "creationTime",
+        "order": 6,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "type",
+        "order": 7,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "image",
+        "order": 8,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "metadata",
+        "order": 9,
+        "type": "standard",
+        "enabled": false
+      },
+      {
+        "name": "proposalId",
+        "order": 10,
+        "type": "standard",
+        "enabled": true
+      },
+      {
+        "name": "ownerGroup",
+        "order": 11,
+        "type": "standard",
+        "enabled": false
+      },
+      {
+        "name": "dataStatus",
+        "order": 12,
+        "type": "standard",
+        "enabled": false
+      }
+    ],
     "filters": [
-      { "type": "LocationFilterComponent", "visible": true },
-      { "type": "PidFilterComponent", "visible": true },
-      { "type": "PidFilterContainsComponent", "visible": false },
-      { "type": "PidFilterStartsWithComponent", "visible": false },
-      { "type": "GroupFilterComponent", "visible": true },
-      { "type": "TypeFilterComponent", "visible": true },
-      { "type": "KeywordFilterComponent", "visible": true },
-      { "type": "DateRangeFilterComponent", "visible": true },
-      { "type": "TextFilterComponent", "visible": true }
+      { "LocationFilter": true },
+      { "PidFilter": true },
+      { "GroupFilter": true },
+      { "TypeFilter": true },
+      { "KeywordFilter": true },
+      { "DateRangeFilter": true },
+      { "TextFilter": true }
     ],
     "conditions": []
   }

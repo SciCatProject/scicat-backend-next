@@ -42,7 +42,6 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
 
 @ApiBearerAuth()
 @ApiTags("users")

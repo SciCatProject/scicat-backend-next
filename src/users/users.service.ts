@@ -18,6 +18,7 @@ import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 import {
+  FilterComponentType,
   UserSettings,
   UserSettingsDocument,
 } from "./schemas/user-settings.schema";
@@ -273,16 +274,39 @@ export class UsersService implements OnModuleInit {
   }
 
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
-    return this.userSettingsModel.findOne({ userId }).exec();
+    const result = await this.userSettingsModel.findOne({ userId }).exec();
+
+    if (!result) {
+      return null;
+    }
+
+    // NOTE: The extra functions ensure filters in user setting record match the FilterComponentType format.
+    // If not, reset the user settings to maintain consistency.
+    const validFilters = result.filters.some((filter) => {
+      const [key, value] = Object.entries(filter)[0];
+      return this.isValidFilterComponentType(key, value);
+    });
+
+    if (!validFilters) {
+      return this.findOneAndUpdateUserSettings(userId, { filters: [] });
+    }
+
+    return result;
   }
 
   async findOneAndUpdateUserSettings(
     userId: string,
     updateUserSettingsDto: UpdateUserSettingsDto | PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
-    return this.userSettingsModel
-      .findOneAndUpdate({ userId }, updateUserSettingsDto, { new: true })
+    const result = await this.userSettingsModel
+      .findOneAndUpdate({ userId }, updateUserSettingsDto, {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      })
       .exec();
+
+    return result;
   }
 
   async findOneAndDeleteUserSettings(userId: string): Promise<unknown> {
@@ -338,5 +362,15 @@ export class UsersService implements OnModuleInit {
     signAndVerifyOptions.secret = this.configService.get<string>("jwt.secret");
     const jwtString = this.jwtService.sign(user, signAndVerifyOptions);
     return { jwt: jwtString };
+  }
+
+  private isValidFilterComponentType(
+    key: string,
+    value: unknown,
+  ): key is FilterComponentType {
+    return (
+      Object.keys(FilterComponentType).includes(key) &&
+      typeof value === "boolean"
+    );
   }
 }

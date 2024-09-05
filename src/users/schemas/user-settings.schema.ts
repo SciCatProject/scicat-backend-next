@@ -5,23 +5,23 @@ import { Document } from "mongoose";
 
 export type UserSettingsDocument = UserSettings & Document;
 
-// Define possible filter component types as a union of string literals
-export type FilterComponentType =
-  | "LocationFilterComponent"
-  | "PidFilterComponent"
-  | "PidFilterContainsComponent"
-  | "PidFilterStartsWithComponent"
-  | "GroupFilterComponent"
-  | "TypeFilterComponent"
-  | "KeywordFilterComponent"
-  | "DateRangeFilterComponent"
-  | "TextFilterComponent";
-
-// Define the Filter interface
-export interface FilterConfig {
-  type: FilterComponentType;
-  visible: boolean;
+// NOTE: PidFilterContains and PidFilterStartsWith filters are not implemented
+export enum FilterComponentType {
+  LocationFilter = "LocationFilter",
+  PidFilter = "PidFilter",
+  PidFilterContains = "PidFilterContains",
+  PidFilterStartsWith = "PidFilterStartsWith",
+  GroupFilter = "GroupFilter",
+  TypeFilter = "TypeFilter",
+  KeywordFilter = "KeywordFilter",
+  DateRangeFilter = "DateRangeFilter",
+  TextFilter = "TextFilter",
 }
+
+// NOTE: The key is one of FilterComponentType, and the value is a string
+export type FilterConfig = Partial<{
+  [K in FilterComponentType]: boolean;
+}>;
 
 // Define the Condition interface
 export interface ScientificCondition {
