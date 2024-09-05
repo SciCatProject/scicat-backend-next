@@ -103,11 +103,11 @@
   ],
   "labelMaps": {
     "filters": {
-      "LocationFilter": "asdasd",
-      "PidFilter": "asdasdsad identifiler",
-      "GroupFilter": "fff",
-      "TypeFilter": "Typfggge",
-      "KeywordFilter": "ggg",
+      "LocationFilter": "Location",
+      "PidFilter": "Pid",
+      "GroupFilter": "Group",
+      "TypeFilter": "Type",
+      "KeywordFilter": "Keyword",
       "DateRangeFilter": "Start Date - End Date",
       "TextFilter": "Text"
     }
