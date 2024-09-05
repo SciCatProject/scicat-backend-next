@@ -130,6 +130,18 @@ export class JobClass extends OwnableClass {
     required: true,
   })
   configVersion: string;
+
+  // initially empty, then provided during statusUpdate
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description: "Contains the dataset archiving results.",
+  })
+  @Prop({
+    type: Object,
+    required: false,
+  })
+  jobResultObject: Record<string, unknown>;
 }
 export const JobSchema = SchemaFactory.createForClass(JobClass);
 
