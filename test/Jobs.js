@@ -304,7 +304,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0065: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with empty jobParams parameter, which should fail", async () => {
+  it("0065: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with empty jobParams parameter", async () => {
     const newDataset = {
       type: "all_access",
       ownerUser: "admin",
@@ -318,11 +318,13 @@ describe("1100: Jobs: Test New Job Model", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("Job parameters need to be defined.");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("admin");
+        res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
       });
   });
 
@@ -3406,7 +3408,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(60);
+          res.body.should.be.an("array").to.have.lengthOf(61);
         });
   });
 
@@ -3421,7 +3423,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(36);
+          res.body.should.be.an("array").to.have.lengthOf(37);
         });
   });
 
@@ -3827,7 +3829,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(59);
+          res.body.should.be.an("array").to.have.lengthOf(60);
         });
   }); 
 
