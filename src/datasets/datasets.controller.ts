@@ -38,8 +38,8 @@ import { Request } from "express";
 import { DatasetsService } from "./datasets.service";
 import { PartialUpdateDatasetObsoleteDto } from "./dto/update-dataset-obsolete.dto";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
-import { CreateRawDatasetDto } from "./dto/create-raw-dataset.dto";
-import { CreateDerivedDatasetDto } from "./dto/create-derived-dataset.dto";
+import { CreateRawDatasetObsoleteDto } from "./dto/create-raw-dataset-obsolete.dto";
+import { CreateDerivedDatasetObsoleteDto } from "./dto/create-derived-dataset-obsolete.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -74,13 +74,13 @@ import { validate, ValidationError, ValidatorOptions } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 import { CreateDatasetOrigDatablockDto } from "src/origdatablocks/dto/create-dataset-origdatablock";
 import {
-  PartialUpdateRawDatasetDto,
-  UpdateRawDatasetDto,
-} from "./dto/update-raw-dataset.dto";
+  PartialUpdateRawDatasetObsoleteDto,
+  UpdateRawDatasetObsoleteDto,
+} from "./dto/update-raw-dataset-obsolete.dto";
 import {
-  PartialUpdateDerivedDatasetDto,
-  UpdateDerivedDatasetDto,
-} from "./dto/update-derived-dataset.dto";
+  PartialUpdateDerivedDatasetObsoleteDto,
+  UpdateDerivedDatasetObsoleteDto,
+} from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
   filterDescription,
@@ -99,12 +99,13 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
   CreateAttachmentDto,
-  CreateDerivedDatasetDto,
-  CreateRawDatasetDto,
+  CreateDerivedDatasetObsoleteDto,
+  CreateRawDatasetObsoleteDto,
   HistoryClass,
   TechniqueClass,
   RelationshipClass,
@@ -283,7 +284,7 @@ export class DatasetsController {
     return dataset;
   }
 
-  async checkPermissionsForDataset(request: Request, id: string) {
+  async checkPermissionsForDatasetObsolete(request: Request, id: string) {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
@@ -332,7 +333,10 @@ export class DatasetsController {
   }
 
   async generateDatasetInstanceForPermissions(
-    dataset: CreateRawDatasetDto | CreateDerivedDatasetDto | DatasetClass,
+    dataset:
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | DatasetClass,
   ): Promise<DatasetClass> {
     const datasetInstance = new DatasetClass();
     datasetInstance._id = "";
@@ -345,9 +349,9 @@ export class DatasetsController {
     return datasetInstance;
   }
 
-  async checkPermissionsForDatasetCreate(
+  async checkPermissionsForObsoleteDatasetCreate(
     request: Request,
-    dataset: CreateRawDatasetDto | CreateDerivedDatasetDto,
+    dataset: CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto,
   ) {
     const user: JWTUser = request.user as JWTUser;
 
@@ -388,6 +392,69 @@ export class DatasetsController {
     return dataset;
   }
 
+  convertObsoleteToCurrentSchema(
+    inputDataset: CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto,
+  ): CreateDatasetDto {
+    const propertiesModifier: Record<string, unknown> = {};
+    if (inputDataset.type == "raw") {
+      if ("proposalId" in inputDataset) {
+        propertiesModifier.proposalIds = [
+          (inputDataset as CreateRawDatasetObsoleteDto).proposalId,
+        ];
+      }
+      if ("sampleId" in inputDataset) {
+        propertiesModifier.sampleIds = [
+          (inputDataset as CreateRawDatasetObsoleteDto).sampleId,
+        ];
+      }
+      if ("instrumentIds" in inputDataset) {
+        propertiesModifier.instrumentIds = [
+          (inputDataset as CreateRawDatasetObsoleteDto).instrumentId,
+        ];
+      }
+    } else {
+      if ("investigator" in inputDataset) {
+        propertiesModifier.principalInvestigator = [
+          (inputDataset as CreateDerivedDatasetObsoleteDto).investigator,
+        ];
+      }
+    }
+
+    const outputDataset: CreateDatasetDto = {
+      ...(inputDataset as CreateDatasetDto),
+      ...propertiesModifier,
+    };
+
+    return outputDataset;
+  }
+
+  convertCurrentToObsoleteSchema(
+    inputDataset: DatasetClass,
+  ): OutputDatasetObsoleteDto {
+    const propertiesModifier: Record<string, unknown> = {};
+    if ("proposalIds" in inputDataset) {
+      propertiesModifier.proposalIds = inputDataset.proposalIds![0];
+    }
+    if ("sampleIds" in inputDataset) {
+      propertiesModifier.sampleIds = inputDataset.sampleIds![0];
+    }
+    if ("instrumentIds" in inputDataset) {
+      propertiesModifier.instrumentIds = inputDataset.instrumentIds![0];
+    }
+    if (inputDataset.type == "raw") {
+      if ("investigator" in inputDataset) {
+        propertiesModifier.investigator = inputDataset.principalInvestigator;
+      }
+    }
+
+    const outputDataset: OutputDatasetObsoleteDto = {
+      ...(inputDataset as OutputDatasetObsoleteDto),
+      ...propertiesModifier,
+    };
+
+    return outputDataset;
+  }
+
   // POST /datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -404,14 +471,14 @@ export class DatasetsController {
     description:
       "It creates a new dataset and returns it completed with systems fields.",
   })
-  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto)
   @ApiBody({
     description: "Input fields for the dataset to be created",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(CreateRawDatasetDto) },
-        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+        { $ref: getSchemaPath(CreateRawDatasetObsoleteDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetObsoleteDto) },
       ],
     },
   })
@@ -422,25 +489,34 @@ export class DatasetsController {
   })
   async create(
     @Req() request: Request,
-    @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
-  ): Promise<DatasetClass> {
+    @Body()
+    createDatasetObsoleteDto:
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto,
+  ): Promise<OutputDatasetObsoleteDto> {
     // validate dataset
-    await this.validateDataset(
-      createDatasetDto,
-      createDatasetDto.type === "raw"
-        ? CreateRawDatasetDto
-        : CreateDerivedDatasetDto,
+    await this.validateDatasetObsolete(
+      createDatasetObsoleteDto,
+      createDatasetObsoleteDto.type === "raw"
+        ? CreateRawDatasetObsoleteDto
+        : CreateDerivedDatasetObsoleteDto,
     );
 
-    const datasetDTO = await this.checkPermissionsForDatasetCreate(
-      request,
-      createDatasetDto,
-    );
+    const obsoleteDatasetDto =
+      await this.checkPermissionsForObsoleteDatasetCreate(
+        request,
+        createDatasetObsoleteDto,
+      );
 
     try {
-      const createdDataset = await this.datasetsService.create(datasetDTO);
+      const datasetDto =
+        this.convertObsoleteToCurrentSchema(obsoleteDatasetDto);
+      const createdDataset = await this.datasetsService.create(datasetDto);
 
-      return createdDataset;
+      const outputObsoleteDatasetDto =
+        this.convertCurrentToObsoleteSchema(createdDataset);
+
+      return outputObsoleteDatasetDto;
     } catch (error) {
       if ((error as MongoError).code === 11000) {
         throw new ConflictException(
@@ -452,21 +528,21 @@ export class DatasetsController {
     }
   }
 
-  async validateDataset(
+  async validateDatasetObsolete(
     inputDatasetDto:
-      | CreateRawDatasetDto
-      | CreateDerivedDatasetDto
-      | PartialUpdateRawDatasetDto
-      | PartialUpdateDerivedDatasetDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto,
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | PartialUpdateRawDatasetObsoleteDto
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | UpdateRawDatasetObsoleteDto
+      | UpdateDerivedDatasetObsoleteDto,
     dto: ClassConstructor<
-      | CreateRawDatasetDto
-      | CreateDerivedDatasetDto
-      | PartialUpdateRawDatasetDto
-      | PartialUpdateDerivedDatasetDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | PartialUpdateRawDatasetObsoleteDto
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | UpdateRawDatasetObsoleteDto
+      | UpdateDerivedDatasetObsoleteDto
     >,
   ) {
     const validateOptions: ValidatorOptions = {
@@ -481,7 +557,7 @@ export class DatasetsController {
 
     if (
       inputDatasetDto instanceof
-      (CreateRawDatasetDto || CreateDerivedDatasetDto)
+      (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto)
     ) {
       if (!(inputDatasetDto.type in DatasetType)) {
         throw new HttpException(
@@ -526,14 +602,14 @@ export class DatasetsController {
     description:
       "It validates the dataset provided as input, and returns true if the information is a valid dataset",
   })
-  @ApiExtraModels(CreateRawDatasetDto, CreateDerivedDatasetDto)
+  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto)
   @ApiBody({
     description: "Input fields for the dataset that needs to be validated",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(CreateRawDatasetDto) },
-        { $ref: getSchemaPath(CreateDerivedDatasetDto) },
+        { $ref: getSchemaPath(CreateRawDatasetObsoleteDto) },
+        { $ref: getSchemaPath(CreateDerivedDatasetObsoleteDto) },
       ],
     },
   })
@@ -545,9 +621,15 @@ export class DatasetsController {
   })
   async isValid(
     @Req() request: Request,
-    @Body() createDatasetDto: CreateRawDatasetDto | CreateDerivedDatasetDto,
+    @Body()
+    createDatasetObsoleteDto:
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto,
   ): Promise<{ valid: boolean }> {
-    await this.checkPermissionsForDatasetCreate(request, createDatasetDto);
+    await this.checkPermissionsForObsoleteDatasetCreate(
+      request,
+      createDatasetObsoleteDto,
+    );
 
     const dtoTestRawCorrect = plainToInstance(
       CreateRawDatasetDto,

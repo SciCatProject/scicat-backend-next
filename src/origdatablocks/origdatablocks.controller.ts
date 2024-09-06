@@ -45,8 +45,8 @@ import { PartialUpdateDatasetDto } from "src/datasets/dto/update-dataset.dto";
 import { filterDescription, filterExample } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
-import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset.dto";
-import { CreateDerivedDatasetDto } from "src/datasets/dto/create-derived-dataset.dto";
+import { CreateRawDatasetDto } from "src/datasets/dto/create-raw-dataset-obsolete.dto";
+import { CreateDerivedDatasetDto } from "src/datasets/dto/create-derived-dataset-obsolete.dto";
 import { logger } from "@user-office-software/duo-logger";
 
 @ApiBearerAuth()

@@ -348,7 +348,7 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsString({
     each: true,
   })
-  readonly proposalId?: string[];
+  readonly proposalIds?: string[];
 
   @ApiProperty({
     type: [String],
@@ -360,7 +360,7 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsString({
     each: true,
   })
-  readonly sampleId?: string[];
+  readonly sampleIds?: string[];
 
   @ApiProperty({
     type: String,
@@ -372,7 +372,7 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsString({
     each: false,
   })
-  readonly instrumentId?: string[];
+  readonly instrumentIds?: string[];
 
   @ApiProperty({
     type: [String],
