@@ -455,7 +455,7 @@ export class DatasetClass extends OwnableClass {
       "The ID of the proposal to which the dataset belongs to and it has been acquired under.",
   })
   @Prop({ type: String, ref: "Proposal", required: false })
-  proposalId?: string;
+  proposalIds?: string;
 
   @ApiProperty({
     type: [String],
@@ -464,7 +464,7 @@ export class DatasetClass extends OwnableClass {
       "Single ID or array of IDS of the samples used when collecting the data.",
   })
   @Prop({ type: [String], ref: "Sample", required: false })
-  sampleId?: string[];
+  sampleIds?: string[];
 
   @ApiProperty({
     type: [String],
@@ -473,7 +473,7 @@ export class DatasetClass extends OwnableClass {
       "Id of the instrument or array of IDS of the instruments where the data contained in this dataset was created/acquired.",
   })
   @Prop({ type: [String], ref: "Instrument", required: false })
-  instrumentId?: string[];
+  instrumentIds?: string[];
 
   /*
    * Derived Dataset

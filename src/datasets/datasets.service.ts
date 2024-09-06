@@ -24,7 +24,7 @@ import { ElasticSearchService } from "src/elastic-search/elastic-search.service"
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
-import { CreateDatasetObsoleteDto } from "./dto/create-dataset-obsolete.dto";
+import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetObsoleteDto,
   UpdateDatasetObsoleteDto,
@@ -32,11 +32,11 @@ import {
 import {
   PartialUpdateDerivedDatasetDto,
   UpdateDerivedDatasetDto,
-} from "./dto/update-derived-dataset.dto";
+} from "./dto/update-derived-dataset-obsolete.dto";
 import {
   PartialUpdateRawDatasetDto,
   UpdateRawDatasetDto,
-} from "./dto/update-raw-dataset.dto";
+} from "./dto/update-raw-dataset-obsolete.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 
@@ -58,9 +58,7 @@ export class DatasetsService {
     }
   }
 
-  async create(
-    createDatasetDto: CreateDatasetObsoleteDto,
-  ): Promise<DatasetDocument> {
+  async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
