@@ -100,7 +100,7 @@
     "@typescript-eslint/parser": "^7.3.0",
     "chai": "^5.0.0",
     "chai-http": "^4.3.6",
-    "concurrently": "^8.0.1",
+    "concurrently": "^9.0.0",
     "eslint": "^8.46.0",
     "eslint-config-loopback": "^13.1.0",
     "eslint-config-prettier": "^9.0.0",
