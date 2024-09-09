@@ -101,7 +101,10 @@ export class EmailJobAction<T> implements JobAction<T> {
     this.toTemplate = compile(data["to"]);
     this.subjectTemplate = compile(data["subject"]);
 
-    const templateFile = readFileSync(data["bodyTemplateFile"] as string, "utf8");
+    const templateFile = readFileSync(
+      data["bodyTemplateFile"] as string,
+      "utf8",
+    );
     this.bodyTemplate = compile(templateFile);
   }
 
