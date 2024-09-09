@@ -25,6 +25,17 @@
             "exchange": "jobs.write",
             "queue": "client.jobs.write",
             "key": "jobqueue"
+          },
+          {
+            "actionType": "email",
+            "auth": {
+              "user": "user",
+              "password": "password"
+            },
+            "to": "{{contactEmail}}",
+            "from": "from",
+            "subject": "[SciCat] Your {{type}} job was submitted successfully",
+            "bodyTemplateFile": "src/common/email-templates/job-template-simplified.html"
           }
         ]
       },
