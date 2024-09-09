@@ -84,8 +84,8 @@ export class EmailJobAction<T> implements JobAction<T> {
     if (!data["subject"]) {
       throw new NotFoundException("Param 'subject' is undefined");
     }
-    if (!data["bodyTemplate"]) {
-      throw new NotFoundException("Param 'bodyTemplate' is undefined");
+    if (!data["bodyTemplateFile"]) {
+      throw new NotFoundException("Param 'bodyTemplateFile' is undefined");
     }
     Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
 
@@ -101,7 +101,7 @@ export class EmailJobAction<T> implements JobAction<T> {
     this.toTemplate = compile(data["to"]);
     this.subjectTemplate = compile(data["subject"]);
 
-    const templateFile = readFileSync(data["bodyTemplate"] as string, "utf8");
+    const templateFile = readFileSync(data["bodyTemplateFile"] as string, "utf8");
     this.bodyTemplate = compile(templateFile);
   }
 

@@ -35,7 +35,7 @@
             "to": "{{contactEmail}}",
             "from": "from",
             "subject": "[SciCat] Your {{type}} job was submitted successfully",
-            "bodyTemplate": "src/common/email-templates/job-template-simplified.html"
+            "bodyTemplateFile": "src/common/email-templates/job-template-simplified.html"
           }
         ]
       },
