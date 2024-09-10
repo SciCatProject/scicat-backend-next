@@ -12,12 +12,11 @@ import {
   HttpException,
   Req,
   ForbiddenException,
-  UseInterceptors,
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
-import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
+import { CreateJobDto } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -46,7 +45,6 @@ import {
   filterDescriptionSimplified,
   filterExampleSimplified,
 } from "src/common/utils";
-import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
 
 @ApiBearerAuth()
@@ -616,7 +614,6 @@ export class JobsController {
   @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobCreate, JobClass),
   )
-  // @UseInterceptors(JobCreateInterceptor)
   @Post()
   @ApiOperation({
     summary: "It creates a new job.",
