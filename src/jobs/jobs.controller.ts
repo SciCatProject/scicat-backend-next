@@ -553,8 +553,7 @@ export class JobsController {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: `Invalid job input. Job '${jobInstance.type}' unable to perfom 
-            action '${action.getActionType()}' due to ${err}`,
+          message: `Invalid job input. Job '${jobInstance.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
         },
         HttpStatus.BAD_REQUEST,
       );
@@ -563,6 +562,17 @@ export class JobsController {
 
   async performJobCreateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
+
+    await Promise.all(
+      jobConfig.create.actions.map((action) => {
+        if (action.validate) {
+          return action.validate(jobInstance);
+        } else {
+          return Promise.resolve();
+        }
+      }),
+    );
+
     for (const action of jobConfig.create.actions) {
       await this.performJobAction(jobInstance, action);
     }
@@ -582,6 +592,16 @@ export class JobsController {
         "JobStatusUpdate",
       );
     }
+
+    await Promise.all(
+      jobConfig.statusUpdate.actions.map((action) => {
+        if (action.validate) {
+          return action.validate(jobInstance);
+        } else {
+          return Promise.resolve();
+        }
+      }),
+    );
 
     for (const action of jobConfig.statusUpdate.actions) {
       await this.performJobAction(jobInstance, action);
@@ -663,7 +683,7 @@ export class JobsController {
   @ApiResponse({
     status: HttpStatus.OK,
     type: JobClass,
-    description: "Updated job status",
+    description: "Updated job",
   })
   async update(
     @Req() request: Request,

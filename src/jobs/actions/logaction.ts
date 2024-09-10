@@ -4,14 +4,18 @@
  *
  */
 import { Logger } from "@nestjs/common";
-import { JobAction } from "../config/jobconfig";
+import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 
-export class LogJobAction<T> implements JobAction<T> {
+export class LogJobAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "log";
 
   getActionType(): string {
     return LogJobAction.actionType;
+  }
+
+  async validate(dto: T) {
+    Logger.log("Validating job dto: " + JSON.stringify(dto), "LogJobAction");
   }
 
   async performJob(job: JobClass) {
