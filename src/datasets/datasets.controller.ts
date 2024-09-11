@@ -632,14 +632,14 @@ export class DatasetsController {
     );
 
     const dtoTestRawCorrect = plainToInstance(
-      CreateRawDatasetDto,
-      createDatasetDto,
+      CreateRawDatasetObsoleteDto,
+      createDatasetObsoleteDto,
     );
     const errorsTestRawCorrect = await validate(dtoTestRawCorrect);
 
     const dtoTestDerivedCorrect = plainToInstance(
-      CreateDerivedDatasetDto,
-      createDatasetDto,
+      CreateDerivedDatasetObsoleteDto,
+      createDatasetObsoleteDto,
     );
     const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
 
@@ -1109,7 +1109,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") id: string,
   ): Promise<DatasetClass | null> {
-    const dataset = await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetObsolete(request, id);
 
     return dataset;
   }
@@ -1137,15 +1137,18 @@ export class DatasetsController {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(PartialUpdateRawDatasetDto, PartialUpdateDerivedDatasetDto)
+  @ApiExtraModels(
+    PartialUpdateRawDatasetObsoleteDto,
+    PartialUpdateDerivedDatasetObsoleteDto,
+  )
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(PartialUpdateRawDatasetDto) },
-        { $ref: getSchemaPath(PartialUpdateDerivedDatasetDto) },
+        { $ref: getSchemaPath(PartialUpdateRawDatasetObsoleteDto) },
+        { $ref: getSchemaPath(PartialUpdateDerivedDatasetObsoleteDto) },
       ],
     },
   })
@@ -1160,8 +1163,8 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Body()
     updateDatasetDto:
-      | PartialUpdateRawDatasetDto
-      | PartialUpdateDerivedDatasetDto,
+      | PartialUpdateRawDatasetObsoleteDto
+      | PartialUpdateDerivedDatasetObsoleteDto,
   ): Promise<DatasetClass | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
@@ -1170,11 +1173,11 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    await this.validateDataset(
+    await this.validateDatasetObsolete(
       updateDatasetDto,
       foundDataset.type === "raw"
-        ? PartialUpdateRawDatasetDto
-        : PartialUpdateDerivedDatasetDto,
+        ? PartialUpdateRawDatasetObsoleteDto
+        : PartialUpdateDerivedDatasetObsoleteDto,
     );
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
@@ -1220,15 +1223,15 @@ export class DatasetsController {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateRawDatasetDto, UpdateDerivedDatasetDto)
+  @ApiExtraModels(UpdateRawDatasetObsoleteDto, UpdateDerivedDatasetObsoleteDto)
   @ApiBody({
     description:
       "Dataset object that needs to be updated. The whole dataset object with updated fields have to be passed in.",
     required: true,
     schema: {
       oneOf: [
-        { $ref: getSchemaPath(UpdateRawDatasetDto) },
-        { $ref: getSchemaPath(UpdateDerivedDatasetDto) },
+        { $ref: getSchemaPath(UpdateRawDatasetObsoleteDto) },
+        { $ref: getSchemaPath(UpdateDerivedDatasetObsoleteDto) },
       ],
     },
   })
@@ -1241,7 +1244,10 @@ export class DatasetsController {
   async findByIdAndReplace(
     @Req() request: Request,
     @Param("pid") pid: string,
-    @Body() updateDatasetDto: UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+    @Body()
+    updateDatasetObsoleteDto:
+      | UpdateRawDatasetObsoleteDto
+      | UpdateDerivedDatasetObsoleteDto,
   ): Promise<DatasetClass | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
@@ -1250,11 +1256,11 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    const outputDto = await this.validateDataset(
-      updateDatasetDto,
+    const outputDto = await this.validateDatasetObsolete(
+      updateDatasetObsoleteDto,
       foundDataset.type === "raw"
-        ? UpdateRawDatasetDto
-        : UpdateDerivedDatasetDto,
+        ? UpdateRawDatasetObsoleteDto
+        : UpdateDerivedDatasetObsoleteDto,
     );
 
     const datasetInstance =
@@ -1274,7 +1280,9 @@ export class DatasetsController {
 
     return this.datasetsService.findByIdAndReplace(
       pid,
-      outputDto as UpdateRawDatasetDto | UpdateDerivedDatasetDto,
+      outputDto as
+        | UpdateRawDatasetObsoleteDto
+        | UpdateDerivedDatasetObsoleteDto,
     );
   }
 
@@ -2172,7 +2180,7 @@ export class DatasetsController {
       Action.DatasetLogbookRead,
     );
 
-    const proposalId = dataset?.proposalId;
+    const proposalId = (dataset?.proposalIds || [])[0];
 
     if (!proposalId) return null;
 
