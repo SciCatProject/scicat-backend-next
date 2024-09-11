@@ -43,8 +43,8 @@ export class JobsService {
     const createdJob = new this.jobModel(
       addStatusFields(
         addCreatedByFields(createJobDto, username),
-        "Job has been created.",
         "jobCreated",
+        "Job has been created.",
         {},
       ),
     );
@@ -77,7 +77,7 @@ export class JobsService {
 
   async fullfacet(
     filters: IFacets<FilterQuery<JobDocument>>,
-  ): Promise<Record<string, unknown>[]> {
+  ): Promise<JobClass[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
 
