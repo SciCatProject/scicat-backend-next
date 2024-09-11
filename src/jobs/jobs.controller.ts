@@ -45,6 +45,10 @@ import { UsersService } from "src/users/users.service";
 import {
   filterDescriptionSimplified,
   filterExampleSimplified,
+  fullQueryDescriptionLimits,
+  fullQueryExampleLimits,
+  jobsFullQueryExampleFields,
+  jobsFullQueryDescriptionFields,
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
@@ -725,18 +729,20 @@ export class JobsController {
   })
   @ApiQuery({
     name: "fields",
-    description: "Filters to apply when retrieving jobs.",
+    description: "Filters to apply when retrieving jobs.\n" +
+      jobsFullQueryDescriptionFields,
     required: false,
     type: String,
-    example: {},
+    example: jobsFullQueryExampleFields,
   })
   @ApiQuery({
     name: "limits",
     description:
-      "Define further query parameters like skip, limit, order.",
+      "Define further query parameters like skip, limit, order.\n" +
+      fullQueryDescriptionLimits,
     required: false,
     type: String,
-    example: {},
+    example: fullQueryExampleLimits,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -811,7 +817,6 @@ export class JobsController {
       "Define the filter conditions by specifying the name of values of fields requested.",
     required: false,
     type: String,
-    example: {},
   })
   @ApiQuery({
     name: "facets",
@@ -819,7 +824,6 @@ export class JobsController {
       "Define a list of field names, for which facet counts should be calculated.",
     required: false,
     type: String,
-    example: '["type","creationLocation","ownerGroup","keywords"]',
   })
   @ApiResponse({
     status: HttpStatus.OK,
