@@ -711,6 +711,166 @@ export class JobsController {
   }
 
   /**
+   * Get fullquery
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullquery")
+  @ApiOperation({
+    summary: "It returns a list of jobs matching the query provided.",
+    description:
+      "It returns a list of jobs matching the query provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description: "Filters to apply when retrieving jobs.",
+    required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order.",
+    required: false,
+    type: String,
+    example: {},
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Return jobs requested.",
+  })
+  async fullQuery(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<JobClass[] | null> {
+    try {
+      const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+        fields: JSON.parse(filters.fields ?? "{}" as string),
+        limits: JSON.parse(filters.limits ?? "{}" as string),
+      };
+      const jobsFound = await this.jobsService.fullquery(parsedFilters);
+      const jobsAccessible: JobClass[] = [];
+
+      // for each job run a casl JobReadOwner on a jobInstance
+      if (jobsFound != null) {
+        for (const i in jobsFound) {
+          const jobConfiguration = this.getJobTypeConfiguration(
+            jobsFound[i].type,
+          );
+          const ability = this.caslAbilityFactory.jobsInstanceAccess(
+            request.user as JWTUser,
+            jobConfiguration,
+          );
+          // check if the user can get this job
+          const jobInstance = await this.generateJobInstanceForPermissions(
+            jobsFound[i],
+          );
+          const canCreate =
+            ability.can(Action.JobReadAny, JobClass) ||
+            ability.can(Action.JobReadAccess, jobInstance);
+          if (canCreate) {
+            jobsAccessible.push(jobsFound[i]);
+          }
+        }
+      }
+      return jobsAccessible;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Get fullfacet
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullfacet")
+  @ApiOperation({
+    summary: "It returns a list of job facets matching the filter provided.",
+    description: `
+      This endpoint was added for completeness reasons, 
+      so that the frontend can work with the new backend version. 
+      For now, it always returns an empty array.
+    `,
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested.",
+    required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "facets",
+    description:
+      "Define a list of field names, for which facet counts should be calculated.",
+    required: false,
+    type: String,
+    example: '["type","creationLocation","ownerGroup","keywords"]',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Return jobs requested.",
+  })
+  async fullFacet(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<JobClass[]> {
+    try {
+      // const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
+      //   fields: JSON.parse(filters.fields ?? "{}" as string),
+      //   facets: JSON.parse(filters.facets ?? "[]" as string),
+      // };
+      // const jobsFound = await this.jobsService.fullfacet(parsedFilters);
+      const jobsAccessible: JobClass[] = [];
+
+      // for each job run a casl JobReadOwner on a jobInstance
+      // for (const i in jobsFound) {
+      //   const jobConfiguration = this.getJobTypeConfiguration(
+      //     jobsFound[i].type,
+      //   );
+      //   const ability = this.caslAbilityFactory.jobsInstanceAccess(
+      //     request.user as JWTUser,
+      //     jobConfiguration,
+      //   );
+      //   // check if the user can get this job
+      //   const jobInstance = await this.generateJobInstanceForPermissions(
+      //     jobsFound[i],
+      //   );
+      //   const canCreate =
+      //     ability.can(Action.JobReadAny, JobClass) ||
+      //     ability.can(Action.JobReadAccess, jobInstance);
+      //   if (canCreate) {
+      //     jobsAccessible.push(jobsFound[i]);
+      //   }
+      // }
+      return jobsAccessible;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
    * Get job by id
    */
   @UseGuards(PoliciesGuard)
@@ -804,163 +964,6 @@ export class JobsController {
       const jobsFound = await this.jobsService.findAll(parsedFilter);
       const jobsAccessible: JobClass[] = [];
 
-      for (const i in jobsFound) {
-        const jobConfiguration = this.getJobTypeConfiguration(
-          jobsFound[i].type,
-        );
-        const ability = this.caslAbilityFactory.jobsInstanceAccess(
-          request.user as JWTUser,
-          jobConfiguration,
-        );
-        // check if the user can get this job
-        const jobInstance = await this.generateJobInstanceForPermissions(
-          jobsFound[i],
-        );
-        const canCreate =
-          ability.can(Action.JobReadAny, JobClass) ||
-          ability.can(Action.JobReadAccess, jobInstance);
-        if (canCreate) {
-          jobsAccessible.push(jobsFound[i]);
-        }
-      }
-      return jobsAccessible;
-    } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: (e as Error).message,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  /**
-   * Get fullquery
-   */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get("/fullquery")
-  @ApiOperation({
-    summary: "It returns a list of jobs matching the query provided.",
-    description:
-      "It returns a list of jobs matching the query provided.",
-  })
-  @ApiQuery({
-    name: "fields",
-    description: "Filters to apply when retrieving jobs.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: [JobClass],
-    description: "Return jobs requested.",
-  })
-  async fullQuery(
-    @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
-  ): Promise<JobClass[] | null> {
-    try {
-      const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-        fields: JSON.parse(filters.fields ?? "{}" as string),
-        limits: JSON.parse(filters.limits ?? "{}" as string),
-      };
-      const jobsFound = await this.jobsService.fullquery(parsedFilters);
-      const jobsAccessible: JobClass[] = [];
-
-      // for each job run a casl JobReadOwner on a jobInstance
-      if (jobsFound != null) {
-        for (const i in jobsFound) {
-          const jobConfiguration = this.getJobTypeConfiguration(
-            jobsFound[i].type,
-          );
-          const ability = this.caslAbilityFactory.jobsInstanceAccess(
-            request.user as JWTUser,
-            jobConfiguration,
-          );
-          // check if the user can get this job
-          const jobInstance = await this.generateJobInstanceForPermissions(
-            jobsFound[i],
-          );
-          const canCreate =
-            ability.can(Action.JobReadAny, JobClass) ||
-            ability.can(Action.JobReadAccess, jobInstance);
-          if (canCreate) {
-            jobsAccessible.push(jobsFound[i]);
-          }
-        }
-      }
-      return jobsAccessible;
-    } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: (e as Error).message,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  /**
-   * Get fullfacet
-   */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get("/fullfacet")
-  @ApiOperation({
-    summary: "It returns a list of job facets matching the filter provided.",
-    description:
-      "It returns a list of job facets matching the filter provided.",
-  })
-  @ApiQuery({
-    name: "fields",
-    description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiQuery({
-    name: "facets",
-    description:
-      "Define a list of field names, for which facet counts should be calculated.",
-    required: false,
-    type: String,
-    example: '["type","creationLocation","ownerGroup","keywords"]',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: [JobClass],
-    description: "Return jobs requested.",
-  })
-  async fullFacet(
-    @Req() request: Request,
-    @Query() filters: { fields?: string; facets?: string },
-  ): Promise<JobClass[]> {
-    try {
-      const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
-        fields: JSON.parse(filters.fields ?? "{}" as string),
-        facets: JSON.parse(filters.facets ?? "[]" as string),
-      };
-      const jobsFound = await this.jobsService.fullfacet(parsedFilters);
-      const jobsAccessible: JobClass[] = [];
-
-      // for each job run a casl JobReadOwner on a jobInstance
       for (const i in jobsFound) {
         const jobConfiguration = this.getJobTypeConfiguration(
           jobsFound[i].type,
