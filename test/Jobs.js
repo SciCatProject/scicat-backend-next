@@ -3819,202 +3819,209 @@ describe("1100: Jobs: Test New Job Model", () => {
 
   it("1960: Access jobs as a user from ADMIN_GROUPS, which should be one less than before proving that delete works.", async () => {
     return request(appUrl)
-        .get(`/api/v3/Jobs/`)
-        .send({})
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(59);
-        });
+      .get(`/api/v3/Jobs/`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(59);
+      });
   }); 
 
-  it("1970: Fullquery jobs as a user from ADMIN_GROUPS ", async () => {
+  it("1970: Fullquery jobs as a user from ADMIN_GROUPS, limited by 5", async () => {
+    const query = { limit: 5 };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(59);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .query("limits=" + encodeURIComponent(JSON.stringify(query)))
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(5);
+      });
   });
 
   it("1980: Fullquery jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})        
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(35);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})        
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(35);
+      });
   });
 
   it("1990: Fullquery jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(11);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(11);
+      });
   });
 
   it("2000: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
-    const query = { createdBy: "user5.1" };
+    const queryFields = { createdBy: "user5.1" };
+    const queryLimits = { limit: 5 };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(10);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
+      .query("limits=" + encodeURIComponent(JSON.stringify(queryLimits)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(5);
+      });
   });
 
   it("2010: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { createdBy: "user5.2" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(1);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
   });
 
   it("2020: Fullquery jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
     const query = { createdBy: "anonymous" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(2);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
   });
 
-  it("2030: Fullquery jobs as a user from CREATE_JOB_GROUPS, limited by 1", async () => {
-    const query = { limit: 1 };
+  it("2040: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by admin", async () => {
+    const query = { createdBy: "admin" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("limits=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser1}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(1);
-        });
-  });
-
-  it("2040: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by admin, limited by 1", async () => {
-    const query1 = { createdBy: "admin" };
-    const query2 = { limit: 1 };
-    return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query(
-          "fields=" + encodeURIComponent(JSON.stringify(query1)) +
-          "&limits=" + encodeURIComponent(JSON.stringify(query2))
-        )
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser1}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(1);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(14);
+      });
   });
 
   it("2050: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser1}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(11);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(11);
+      });
   });
 
   it("2060: Fullquery jobs as a normal user", async () => {
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(10);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(10);
+      });
   });
 
   it("2070: Fullquery jobs as a normal user (user5.1) that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .query("fields=" + encodeURIComponent(JSON.stringify(query)))
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(0);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(0);
+      });
   });
 
   it("2080: Fullquery jobs as another normal user (user5.2)", async () => {
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser52}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(2);
-        });
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
   });
   
   it("2090: Fullquery jobs as unauthenticated user, which should be forbidden", async () => {
     return request(appUrl)
-        .get(`/api/v3/Jobs/fullquery`)
-        .send({})
-        .set("Accept", "application/json")
-        .expect(TestData.AccessForbiddenStatusCode)
-        .expect("Content-Type", /json/);
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("3000: Fullfacet jobs as a user from ADMIN_GROUPS, which should always return an empty array", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(0);
+      });
+  });
+
+  it("3010: Fullfacet jobs as unauthenticated user, which should be forbidden", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
   });
 
 });
