@@ -1297,7 +1297,7 @@ export class DatasetsController {
     updateDatasetObsoleteDto:
       | UpdateRawDatasetObsoleteDto
       | UpdateDerivedDatasetObsoleteDto,
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetObsoleteDto | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
     if (!foundDataset) {
@@ -1305,7 +1305,7 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    const outputDto = await this.validateDatasetObsolete(
+    const updateValidatedDto = await this.validateDatasetObsolete(
       updateDatasetObsoleteDto,
       foundDataset.type === "raw"
         ? UpdateRawDatasetObsoleteDto
@@ -1327,12 +1327,15 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    return this.datasetsService.findByIdAndReplace(
+    const updateDatasetDto =
+      await this.convertObsoleteToCurrentSchema(updateValidatedDto);
+
+    const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
-      outputDto as
-        | UpdateRawDatasetObsoleteDto
-        | UpdateDerivedDatasetObsoleteDto,
+      updateDatasetDto as UpdateDatasetDto,
     );
+
+    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // DELETE /datasets/:id
