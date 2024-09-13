@@ -25,20 +25,13 @@ import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.se
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { DatasetType } from "./dataset-type.enum";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import {
-  PartialUpdateDatasetObsoleteDto,
-  UpdateDatasetObsoleteDto,
-} from "./dto/update-dataset-obsolete.dto";
-import {
-  PartialUpdateDerivedDatasetDto,
-  UpdateDerivedDatasetDto,
-} from "./dto/update-derived-dataset-obsolete.dto";
-import {
-  PartialUpdateRawDatasetDto,
-  UpdateRawDatasetDto,
-} from "./dto/update-raw-dataset-obsolete.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import {
+  PartialUpdateDatasetDto,
+  PartialUpdateDatasetWithHistoryDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -205,10 +198,7 @@ export class DatasetsService {
   // we update the full dataset if exist or create a new one if it does not
   async findByIdAndReplace(
     id: string,
-    updateDatasetDto:
-      | UpdateDatasetObsoleteDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto,
+    updateDatasetDto: UpdateDatasetDto,
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
@@ -252,10 +242,8 @@ export class DatasetsService {
   async findByIdAndUpdate(
     id: string,
     updateDatasetDto:
-      | PartialUpdateDatasetObsoleteDto
-      | PartialUpdateRawDatasetDto
-      | PartialUpdateDerivedDatasetDto
-      | UpdateQuery<DatasetDocument>,
+      | PartialUpdateDatasetDto
+      | PartialUpdateDatasetWithHistoryDto,
   ): Promise<DatasetClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
@@ -434,7 +422,7 @@ export class DatasetsService {
   async updateHistory(
     req: Request,
     dataset: DatasetClass,
-    data: UpdateDatasetObsoleteDto,
+    data: PartialUpdateDatasetDto,
   ) {
     if (req.body.history) {
       delete req.body.history;
@@ -442,17 +430,17 @@ export class DatasetsService {
 
     if (!req.body.size && !req.body.packedSize) {
       const updatedFields: Omit<
-        UpdateDatasetObsoleteDto,
+        PartialUpdateDatasetDto,
         "updatedAt" | "updatedBy"
       > = data;
       const historyItem: Record<string, unknown> = {};
       Object.keys(updatedFields).forEach((updatedField) => {
-        historyItem[updatedField as keyof UpdateDatasetObsoleteDto] = {
-          currentValue: data[updatedField as keyof UpdateDatasetObsoleteDto],
+        historyItem[updatedField as keyof UpdateDatasetDto] = {
+          currentValue: data[updatedField as keyof UpdateDatasetDto],
           previousValue:
             dataset[
               updatedField as keyof Omit<
-                UpdateDatasetObsoleteDto,
+                UpdateDatasetDto,
                 "attachments" | "origdatablocks" | "datablocks"
               >
             ],
@@ -468,18 +456,15 @@ export class DatasetsService {
       if (logbookEnabled) {
         const user = (req.user as JWTUser).username.replace("ldap.", "");
         const datasetPid = dataset.pid;
-        const proposalId =
-          dataset.type === DatasetType.Raw
-            ? (dataset as unknown as DatasetClass).proposalId
-            : undefined;
-        if (proposalId) {
+        const proposalIds = dataset.proposalIds || [];
+        (proposalIds as Array<string>).forEach(async (proposalId) => {
           await Promise.all(
             Object.keys(updatedFields).map(async (updatedField) => {
               const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
               await this.logbooksService.sendMessage(proposalId, { message });
             }),
           );
-        }
+        });
       }
     }
   }
