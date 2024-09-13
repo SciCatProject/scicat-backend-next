@@ -724,12 +724,12 @@ export class JobsController {
   @Get("/fullquery")
   @ApiOperation({
     summary: "It returns a list of jobs matching the query provided.",
-    description:
-      "It returns a list of jobs matching the query provided.",
+    description: "It returns a list of jobs matching the query provided.",
   })
   @ApiQuery({
     name: "fields",
-    description: "Filters to apply when retrieving jobs.\n" +
+    description:
+      "Filters to apply when retrieving jobs.\n" +
       jobsFullQueryDescriptionFields,
     required: false,
     type: String,
@@ -755,8 +755,8 @@ export class JobsController {
   ): Promise<JobClass[] | null> {
     try {
       const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
-        fields: JSON.parse(filters.fields ?? "{}" as string),
-        limits: JSON.parse(filters.limits ?? "{}" as string),
+        fields: JSON.parse(filters.fields ?? ("{}" as string)),
+        limits: JSON.parse(filters.limits ?? ("{}" as string)),
       };
       const jobsFound = await this.jobsService.fullquery(parsedFilters);
       const jobsAccessible: JobClass[] = [];
