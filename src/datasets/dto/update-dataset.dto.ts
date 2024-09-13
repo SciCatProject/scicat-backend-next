@@ -24,6 +24,7 @@ import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
+import { HistoryClass } from "../schemas/history.schema";
 
 @ApiTags("datasets")
 export class UpdateDatasetDto extends OwnableDto {
@@ -420,3 +421,22 @@ export class UpdateDatasetDto extends OwnableDto {
 }
 
 export class PartialUpdateDatasetDto extends PartialType(UpdateDatasetDto) {}
+
+export class UpdateDatasetWithHistoryDto extends UpdateDatasetDto {
+  @ApiProperty({
+    type: "array",
+    items: { $ref: getSchemaPath(HistoryClass) },
+    required: false,
+    default: [],
+    description: "List of history objects containing old and new values.",
+  })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => HistoryClass)
+  readonly history?: HistoryClass[];
+}
+
+export class PartialUpdateDatasetWithHistoryDto extends PartialType(
+  UpdateDatasetWithHistoryDto,
+) {}

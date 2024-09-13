@@ -100,6 +100,10 @@ import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
+import {
+  PartialUpdateDatasetDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -393,60 +397,98 @@ export class DatasetsController {
   }
 
   convertObsoleteToCurrentSchema(
-    inputDataset: CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto,
-  ): CreateDatasetDto {
+    inputObsoleteDataset:
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | UpdateRawDatasetObsoleteDto
+      | UpdateDerivedDatasetObsoleteDto
+      | PartialUpdateRawDatasetObsoleteDto
+      | PartialUpdateDerivedDatasetObsoleteDto,
+  ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
     const propertiesModifier: Record<string, unknown> = {};
-    if (inputDataset.type == "raw") {
-      if ("proposalId" in inputDataset) {
+
+    if (
+      inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto
+    ) {
+      if ("proposalId" in inputObsoleteDataset) {
         propertiesModifier.proposalIds = [
-          (inputDataset as CreateRawDatasetObsoleteDto).proposalId,
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).proposalId,
         ];
       }
-      if ("sampleId" in inputDataset) {
+      if ("sampleId" in inputObsoleteDataset) {
         propertiesModifier.sampleIds = [
-          (inputDataset as CreateRawDatasetObsoleteDto).sampleId,
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).sampleId,
         ];
       }
-      if ("instrumentIds" in inputDataset) {
+      if ("instrumentIds" in inputObsoleteDataset) {
         propertiesModifier.instrumentIds = [
-          (inputDataset as CreateRawDatasetObsoleteDto).instrumentId,
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
         ];
       }
     } else {
-      if ("investigator" in inputDataset) {
+      if ("investigator" in inputObsoleteDataset) {
         propertiesModifier.principalInvestigator = [
-          (inputDataset as CreateDerivedDatasetObsoleteDto).investigator,
+          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
+            .investigator,
         ];
       }
     }
 
-    const outputDataset: CreateDatasetDto = {
-      ...(inputDataset as CreateDatasetDto),
-      ...propertiesModifier,
-    };
+    let outputDataset:
+      | CreateDatasetDto
+      | UpdateDatasetDto
+      | PartialUpdateDatasetDto = {};
+    if (
+      inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto
+    ) {
+      outputDataset = {
+        ...(inputObsoleteDataset as CreateDatasetDto),
+        ...propertiesModifier,
+      } as CreateDatasetDto;
+    } else if (
+      inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto
+    ) {
+      outputDataset = {
+        ...(inputObsoleteDataset as UpdateDatasetDto),
+        ...propertiesModifier,
+      } as UpdateDatasetDto;
+    } else if (
+      inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto
+    ) {
+      outputDataset = {
+        ...(inputObsoleteDataset as PartialUpdateDatasetDto),
+        ...propertiesModifier,
+      } as PartialUpdateDatasetDto;
+    }
 
     return outputDataset;
   }
 
   convertCurrentToObsoleteSchema(
-    inputDataset: DatasetClass,
+    inputDataset: DatasetClass | null,
   ): OutputDatasetObsoleteDto {
     const propertiesModifier: Record<string, unknown> = {};
-    if ("proposalIds" in inputDataset) {
-      propertiesModifier.proposalIds = inputDataset.proposalIds![0];
-    }
-    if ("sampleIds" in inputDataset) {
-      propertiesModifier.sampleIds = inputDataset.sampleIds![0];
-    }
-    if ("instrumentIds" in inputDataset) {
-      propertiesModifier.instrumentIds = inputDataset.instrumentIds![0];
-    }
-    if (inputDataset.type == "raw") {
-      if ("investigator" in inputDataset) {
-        propertiesModifier.investigator = inputDataset.principalInvestigator;
+    if (inputDataset) {
+      if ("proposalIds" in inputDataset) {
+        propertiesModifier.proposalIds = inputDataset.proposalIds![0];
+      }
+      if ("sampleIds" in inputDataset) {
+        propertiesModifier.sampleIds = inputDataset.sampleIds![0];
+      }
+      if ("instrumentIds" in inputDataset) {
+        propertiesModifier.instrumentIds = inputDataset.instrumentIds![0];
+      }
+      if (inputDataset.type == "raw") {
+        if ("investigator" in inputDataset) {
+          propertiesModifier.investigator = inputDataset.principalInvestigator;
+        }
       }
     }
-
     const outputDataset: OutputDatasetObsoleteDto = {
       ...(inputDataset as OutputDatasetObsoleteDto),
       ...propertiesModifier,
@@ -509,8 +551,9 @@ export class DatasetsController {
       );
 
     try {
-      const datasetDto =
-        this.convertObsoleteToCurrentSchema(obsoleteDatasetDto);
+      const datasetDto = this.convertObsoleteToCurrentSchema(
+        obsoleteDatasetDto,
+      ) as CreateDatasetDto;
       const createdDataset = await this.datasetsService.create(datasetDto);
 
       const outputObsoleteDatasetDto =
@@ -772,7 +815,7 @@ export class DatasetsController {
   async fullquery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<DatasetClass[] | null> {
+  ): Promise<OutputDatasetObsoleteDto[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -809,7 +852,9 @@ export class DatasetsController {
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    return this.datasetsService.fullquery(parsedFilters);
+    const results = await this.datasetsService.fullquery(parsedFilters);
+
+    return results as OutputDatasetObsoleteDto[];
   }
 
   // GET /fullfacets
@@ -1108,10 +1153,12 @@ export class DatasetsController {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-  ): Promise<DatasetClass | null> {
-    const dataset = await this.checkPermissionsForDatasetObsolete(request, id);
+  ): Promise<OutputDatasetObsoleteDto | null> {
+    const dataset = this.convertCurrentToObsoleteSchema(
+      await this.checkPermissionsForDatasetObsolete(request, id),
+    );
 
-    return dataset;
+    return dataset as OutputDatasetObsoleteDto;
   }
 
   // PATCH /datasets/:id
@@ -1165,7 +1212,7 @@ export class DatasetsController {
     updateDatasetDto:
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetObsoleteDto | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
     if (!foundDataset) {
@@ -1196,7 +1243,9 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    return this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto);
+    return this.convertCurrentToObsoleteSchema(
+      await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
+    );
   }
 
   // PUT /datasets/:id
