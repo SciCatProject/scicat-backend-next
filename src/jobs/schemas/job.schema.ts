@@ -9,7 +9,7 @@ export type JobDocument = JobClass & Document;
 @Schema({
   collection: "Job",
   minimize: false,
-  timestamps: { createdAt: "DateTime", updatedAt: false },
+  timestamps: true,
   toJSON: {
     getters: true,
   },

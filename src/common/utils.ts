@@ -873,9 +873,6 @@ export const filterDescription =
 export const fullQueryExampleLimits =
   '{"limit": 1, "skip": 1, "order": "creationTime:desc"}';
 
-export const datasetsFullQueryExampleFields =
-  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
-
 export const fullQueryDescriptionLimits =
   '<pre>\n \
 {\n \
@@ -884,6 +881,9 @@ export const fullQueryDescriptionLimits =
   "order": [ascending, descending]\n \
 }\n \
 </pre>';
+
+export const datasetsFullQueryExampleFields =
+  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
 
 export const datasetsFullQueryDescriptionFields =
   '<pre>\n  \
@@ -914,6 +914,28 @@ export const datasetsFullQueryDescriptionFields =
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
   "sharedWith": ["email", ...], <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryExampleFields =
+  '{"ownerGroup":["group1"], "statusCode": "jobCreated"}';
+
+export const jobsFullQueryDescriptionFields =
+  '<pre>\n  \
+{\n \
+  "createdBy": string, <optional>\n \
+  "updatedBy": string, <optional>\n \
+  "createdAt": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "ownerGroup": string, <optional>\n \
+  "accessGroups": ["group1", ...], <optional>\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "statusCode": string, <optional>\n \
+  "statusMessage": string, <optional>\n \
+  ... <optional>\n \
 }\n \
   </pre>';
 

@@ -348,7 +348,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId1 = res.body["id"];
         encodedJobId1 = encodeURIComponent(jobId1);
       });
@@ -376,7 +376,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId2 = res.body["id"];
         encodedJobId2 = encodeURIComponent(jobId2);
       });
@@ -403,7 +403,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId3 = res.body["id"];
         encodedJobId3 = encodeURIComponent(jobId3);
       });
@@ -429,7 +429,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobId6 = encodeURIComponent(jobId6);
       });
@@ -457,7 +457,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -482,7 +482,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -577,7 +577,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId4 = res.body["id"];
         encodedJobId4 = encodeURIComponent(jobId4);
       });
@@ -604,7 +604,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId5 = res.body["id"];
         encodedJobId5 = encodeURIComponent(jobId5);
       });
@@ -698,7 +698,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -746,7 +746,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -772,7 +772,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -798,7 +798,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -823,7 +823,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -847,7 +847,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -873,7 +873,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
   
@@ -899,7 +899,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -925,7 +925,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
   
@@ -972,7 +972,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerUser");
         res.body.should.not.have.property("ownerGroup");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1019,7 +1019,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1045,7 +1045,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });  
   it("0360: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
@@ -1069,7 +1069,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1093,7 +1093,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1119,7 +1119,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1145,7 +1145,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1192,7 +1192,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup1 = res.body["id"];
         encodedJobIdGroup1 = encodeURIComponent(jobIdGroup1);
       });
@@ -1220,7 +1220,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup2 = res.body["id"];
         encodedJobIdGroup2 = encodeURIComponent(jobIdGroup2);
       });
@@ -1247,7 +1247,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup3 = res.body["id"];
         encodedJobIdGroup3 = encodeURIComponent(jobIdGroup3);
       });
@@ -1274,7 +1274,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup5 = res.body["id"];
         encodedJobIdGroup5 = encodeURIComponent(jobIdGroup5);
       });
@@ -1300,7 +1300,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup6 = res.body["id"];
         encodedJobIdGroup6 = encodeURIComponent(jobIdGroup6);
       });
@@ -1328,7 +1328,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1354,7 +1354,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1403,7 +1403,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroup4 = res.body["id"];
         encodedJobIdGroup4 = encodeURIComponent(jobIdGroup4);
       });
@@ -1455,7 +1455,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser1 = res.body["id"];
         encodedJobIdUser1 = encodeURIComponent(jobIdUser1);
       });
@@ -1483,7 +1483,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1509,7 +1509,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser2 = res.body["id"];
         encodedJobIdUser2 = encodeURIComponent(jobIdUser2);
       });
@@ -1536,7 +1536,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser3 = res.body["id"];
         encodedJobIdUser3 = encodeURIComponent(jobIdUser3);
       });
@@ -1563,7 +1563,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser5 = res.body["id"];
         encodedJobIdUser5 = encodeURIComponent(jobIdUser5);
       });
@@ -1589,7 +1589,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser6 = res.body["id"];
         encodedJobIdUser6 = encodeURIComponent(jobIdUser6);
       });
@@ -1617,7 +1617,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1643,7 +1643,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1669,7 +1669,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUser4 = res.body["id"];
         encodedJobIdUser4 = encodeURIComponent(jobIdUser4);
       });
@@ -1721,7 +1721,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec1 = res.body["id"];
         encodedJobIdUserSpec1 = encodeURIComponent(jobIdUserSpec1);
       });
@@ -1749,7 +1749,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec2 = res.body["id"];
         encodedJobIdUserSpec2 = encodeURIComponent(jobIdUserSpec2);
       });
@@ -1776,7 +1776,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec3 = res.body["id"];
         encodedJobIdUserSpec3 = encodeURIComponent(jobIdUserSpec3);
       });
@@ -1803,7 +1803,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec5 = res.body["id"];
         encodedJobIdUserSpec5 = encodeURIComponent(jobIdUserSpec5);
       });
@@ -1831,7 +1831,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec7 = res.body["id"];
         encodedJobIdUserSpec7 = encodeURIComponent(jobIdUserSpec7);
       });
@@ -1858,7 +1858,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec6 = res.body["id"];
         encodedJobIdUserSpec6 = encodeURIComponent(jobIdUserSpec6);
       });
@@ -1886,7 +1886,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -1936,7 +1936,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdUserSpec4 = res.body["id"];
         encodedJobIdUserSpec4 = encodeURIComponent(jobIdUserSpec4);
       });
@@ -1963,7 +1963,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -2013,7 +2013,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec1 = res.body["id"];
         encodedJobIdGroupSpec1 = encodeURIComponent(jobIdGroupSpec1);
       });
@@ -2041,7 +2041,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec2 = res.body["id"];
         encodedJobIdGroupSpec2 = encodeURIComponent(jobIdGroupSpec2);
       });
@@ -2068,7 +2068,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec3 = res.body["id"];
         encodedJobIdGroupSpec3 = encodeURIComponent(jobIdGroupSpec3);
       });
@@ -2095,7 +2095,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec5 = res.body["id"];
         encodedJobIdGroupSpec5 = encodeURIComponent(jobIdGroupSpec5);
       });
@@ -2123,7 +2123,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group3");
         res.body.should.have.property("ownerUser").and.be.equal("user3");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec8 = res.body["id"];
         encodedJobIdGroupSpec8 = encodeURIComponent(jobIdGroupSpec8);
       });
@@ -2149,7 +2149,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec6 = res.body["id"];
         encodedJobIdGroupSpec6 = encodeURIComponent(jobIdGroupSpec6);
       });
@@ -2177,7 +2177,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -2227,7 +2227,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec4 = res.body["id"];
         encodedJobIdGroupSpec4 = encodeURIComponent(jobIdGroupSpec4);
       });
@@ -2254,7 +2254,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
 
@@ -2280,7 +2280,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.2");
-        res.body.should.have.property("statusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobIdGroupSpec7 = res.body["id"];
         encodedJobIdGroupSpec7 = encodeURIComponent(jobIdGroupSpec7);
       });
@@ -2314,8 +2314,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId1}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2327,8 +2327,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2340,8 +2340,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2353,8 +2353,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2363,12 +2363,11 @@ describe("1100: Jobs: Test New Job Model", () => {
   });
 
   it("0820: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#all' configuration", async () => {
-    
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2380,8 +2379,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2393,8 +2392,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2406,8 +2405,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2419,8 +2418,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2432,8 +2431,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2445,8 +2444,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2458,8 +2457,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2471,8 +2470,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2484,8 +2483,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2497,8 +2496,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .expect(TestData.SuccessfulPatchStatusCode)
@@ -2509,8 +2508,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2521,8 +2520,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2533,8 +2532,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser1}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2546,8 +2545,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2559,8 +2558,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2572,8 +2571,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2585,8 +2584,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2598,8 +2597,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2611,8 +2610,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2624,8 +2623,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2637,8 +2636,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2650,8 +2649,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2663,8 +2662,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2676,8 +2675,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2689,8 +2688,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2702,8 +2701,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2715,8 +2714,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2727,8 +2726,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup1}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2740,8 +2739,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2753,8 +2752,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2766,8 +2765,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2780,8 +2779,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
           .send({ 
-            statusCode: "update status of a job", 
-            statusMessage: "job finished/blocked/etc", 
+            statusMessage: "update status of a job", 
+            statusCode: "job finished/blocked/etc", 
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2792,8 +2791,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
           .send({ 
-            statusCode: "update status of a job", 
-            statusMessage: "job finished/blocked/etc", 
+            statusMessage: "update status of a job", 
+            statusCode: "job finished/blocked/etc", 
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2804,8 +2803,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
           .send({ 
-            statusCode: "update status of a job", 
-            statusMessage: "job finished/blocked/etc", 
+            statusMessage: "update status of a job", 
+            statusCode: "job finished/blocked/etc", 
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2816,8 +2815,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
           .send({ 
-            statusCode: "update status of a job", 
-            statusMessage: "job finished/blocked/etc", 
+            statusMessage: "update status of a job", 
+            statusCode: "job finished/blocked/etc", 
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2829,8 +2828,8 @@ describe("1100: Jobs: Test New Job Model", () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
           .send({ 
-            statusCode: "update status of a job", 
-            statusMessage: "job finished/blocked/etc", 
+            statusMessage: "update status of a job", 
+            statusCode: "job finished/blocked/etc", 
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2842,8 +2841,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2855,8 +2854,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2868,8 +2867,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2881,8 +2880,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2894,8 +2893,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2907,8 +2906,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2919,8 +2918,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec1}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2932,8 +2931,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2945,8 +2944,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2958,8 +2957,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2971,8 +2970,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2984,8 +2983,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2997,8 +2996,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3010,8 +3009,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3023,8 +3022,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3036,8 +3035,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3049,8 +3048,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3062,8 +3061,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3075,8 +3074,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3088,8 +3087,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3101,8 +3100,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec7}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3114,8 +3113,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3127,8 +3126,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3140,8 +3139,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec1}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3153,8 +3152,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3166,8 +3165,8 @@ describe("1100: Jobs: Test New Job Model", () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
       .send({ 
-        statusCode: "update status of a job", 
-        statusMessage: "job finished/blocked/etc", 
+        statusMessage: "update status of a job", 
+        statusCode: "job finished/blocked/etc", 
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3179,8 +3178,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3192,8 +3191,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3205,8 +3204,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3218,8 +3217,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3231,8 +3230,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3244,8 +3243,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3257,8 +3256,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3270,8 +3269,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3283,8 +3282,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3296,8 +3295,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3309,8 +3308,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3322,8 +3321,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec7}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3336,8 +3335,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3349,8 +3348,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3362,8 +3361,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec8}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser3}` })
@@ -3375,8 +3374,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser3}` })
@@ -3388,8 +3387,8 @@ describe("1100: Jobs: Test New Job Model", () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/badJobId`)
         .send({ 
-          statusCode: "update status of a job", 
-          statusMessage: "job finished/blocked/etc", 
+          statusMessage: "update status of a job", 
+          statusCode: "job finished/blocked/etc", 
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3818,17 +3817,211 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1960: Access jobs as a user from ADMIN_GROUPS, which should be one less that before prooving that delete works.", async () => {
+  it("1960: Access jobs as a user from ADMIN_GROUPS, which should be one less than before proving that delete works.", async () => {
     return request(appUrl)
-        .get(`/api/v3/Jobs/`)
-        .send({})
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        .expect(TestData.SuccessfulGetStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(59);
-        });
+      .get(`/api/v3/Jobs/`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(59);
+      });
   }); 
+
+  it("1970: Fullquery jobs as a user from ADMIN_GROUPS, limited by 5", async () => {
+    const query = { limit: 5 };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .query("limits=" + encodeURIComponent(JSON.stringify(query)))
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(5);
+      });
+  });
+
+  it("1980: Fullquery jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})        
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(35);
+      });
+  });
+
+  it("1990: Fullquery jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
+    const query = { createdBy: "user1" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(11);
+      });
+  });
+
+  it("2000: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+    const queryFields = { createdBy: "user5.1" };
+    const queryLimits = { limit: 5 };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
+      .query("limits=" + encodeURIComponent(JSON.stringify(queryLimits)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(5);
+      });
+  });
+
+  it("2010: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
+    const query = { createdBy: "user5.2" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
+  it("2020: Fullquery jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
+    const query = { createdBy: "anonymous" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
+  });
+
+  it("2040: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(14);
+      });
+  });
+
+  it("2050: Fullquery jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+    const query = { createdBy: "user1" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(11);
+      });
+  });
+
+  it("2060: Fullquery jobs as a normal user", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(10);
+      });
+  });
+
+  it("2070: Fullquery jobs as a normal user (user5.1) that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(0);
+      });
+  });
+
+  it("2080: Fullquery jobs as another normal user (user5.2)", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+      });
+  });
+  
+  it("2090: Fullquery jobs as unauthenticated user, which should be forbidden", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+  });
+
+  it("3000: Fullfacet jobs as a user from ADMIN_GROUPS, which should always return an empty array", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(0);
+      });
+  });
+
+  it("3010: Fullfacet jobs as unauthenticated user, which should be forbidden", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .expect(TestData.AccessForbiddenStatusCode)
+      .expect("Content-Type", /json/);
+  });
 
 });
