@@ -83,7 +83,6 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   });
 
   it("0010: adds dataset 1 as Admin Ingestor", async () => {
-    console.log(JSON.stringify(dataset1));
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -92,8 +91,6 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log("Results");
-        console.log(res.body);
         res.body.should.have.property("ownerGroup").and.equal("group4");
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("isPublished").and.equal(true);
@@ -103,23 +100,23 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       });
   });
 
-  // it("0020: adds dataset 2 as Admin Ingestor", async () => {
-  //   return request(appUrl)
-  //     .post("/api/v3/Datasets")
-  //     .send(dataset2)
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(TestData.EntryCreatedStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       res.body.should.have.property("ownerGroup").and.equal("group1");
-  //       res.body.should.have.property("type").and.equal("raw");
-  //       res.body.should.have.property("isPublished").and.equal(false);
-  //       res.body.should.have.property("pid").and.be.string;
-  //       datasetPid2 = res.body["pid"];
-  //       encodedDatasetPid2 = encodeURIComponent(datasetPid2);
-  //     });
-  // });
+  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+    return request(appUrl)
+      .post("/api/v3/Datasets")
+      .send(dataset2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.equal("group1");
+        res.body.should.have.property("type").and.equal("raw");
+        res.body.should.have.property("isPublished").and.equal(false);
+        res.body.should.have.property("pid").and.be.string;
+        datasetPid2 = res.body["pid"];
+        encodedDatasetPid2 = encodeURIComponent(datasetPid2);
+      });
+  });
 
   // it("0030: adds dataset 3 as Admin Ingestor", async () => {
   //   return request(appUrl)
