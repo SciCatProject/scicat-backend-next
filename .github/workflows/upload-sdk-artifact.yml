@@ -1,0 +1,82 @@
+name: Generate and upload latest SDK artifacts
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  NODE_VERSION: 20.x
+  SDK_VERSION: latest
+
+jobs:
+  start-backend-and-upload-swagger-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+
+      - name: Pull MongoDB Image
+        run: |
+          docker pull mongo:latest
+          docker run -d --name mongo-container -p 27017:27017 mongo:latest
+
+      - name: Install Backend and wait for it to be ready
+        env:
+          MONGODB_URI: "mongodb://localhost:27017/scicat"
+          JWT_SECRET: thisIsTheJwtSecret
+        run: |
+          npm install -g wait-on && npm install
+          npm run start & wait-on http://localhost:3000/api/v3/health --timeout 200000
+
+      - name: Download the Swagger schema
+        run: curl -o ./swagger-schema.json http://localhost:3000/explorer-json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swagger-schema
+          path: ./swagger-schema.json
+
+  generate-and-upload-sdk:
+    runs-on: ubuntu-latest
+    needs:
+      - start-backend-and-upload-swagger-schema
+    strategy:
+      matrix:
+        generator: [python, typescript, python-pydantic-v1]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: swagger-schema
+          path: .
+
+      - name: Generate Client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: ${{ matrix.generator }}
+          openapi-file: ./swagger-schema.json
+          config-file: .github/openapi/${{ matrix.generator }}-config.json
+          command-args: |
+            -o ./sdk/${{ matrix.generator }} $(
+            if [ "${{ matrix.generator }}" == "typescript" ]; then
+              echo "--additional-properties=npmVersion=${{env.SDK_VERSION}}";
+            elif [ "${{ matrix.generator }}" == "python" ]; then
+              echo "--additional-properties=packageVersion=${{env.SDK_VERSION}}";
+            elif [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
+              echo "--additional-properties=packageVersion=${{env.SDK_VERSION}}";
+            fi
+            )
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdk-${{ matrix.generator }}-${{ github.sha }}
+          path: ./sdk
