@@ -26,7 +26,7 @@
   "jsonMetadataEnabled": true,
   "jupyterHubUrl": "",
   "landingPage": "doi.ess.eu/detail/",
-  "lbBaseURL": "http://127.0.0.1:3000",
+  "lbBaseURL": "http://localhost:3000",
   "logbookEnabled": true,
   "loginFormEnabled": true,
   "maxDirectDownloadSize": 5000000000,

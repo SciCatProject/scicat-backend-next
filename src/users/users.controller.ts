@@ -11,7 +11,6 @@ import {
   Body,
   ForbiddenException,
   HttpCode,
-  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -43,7 +42,6 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
-import { UserSettingsInterceptor } from "./interceptors/user-settings.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -94,23 +92,22 @@ export class UsersController {
 
   @ApiBody({ type: CredentialsDto })
   @AllowAny()
-  @UseInterceptors(UserSettingsInterceptor)
   @UseGuards(LocalAuthGuard)
   @Post("login")
   @ApiOperation({
-    summary: "Functional accounts login.",
-    description: "It allows to login with functional (local) accounts.",
+    summary:
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
+    description:
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
   })
   @ApiResponse({
     status: 201,
     type: ReturnedAuthLoginDto,
     description:
-      "Create a new JWT token for anonymous or the user that is currently logged in",
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
   })
-  async login(
-    @Req() req: Record<string, unknown>,
-  ): Promise<ReturnedAuthLoginDto> {
-    return await this.authService.login(req.user as Omit<User, "password">);
+  async login(@Req() req: Record<string, unknown>): Promise<null> {
+    return null;
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)

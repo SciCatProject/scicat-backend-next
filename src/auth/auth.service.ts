@@ -10,6 +10,12 @@ import { flattenObject, parseBoolean } from "src/common/utils";
 import { Issuer } from "openid-client";
 import { ReturnedAuthLoginDto } from "./dto/returnedLogin.dto";
 import { ReturnedUserDto } from "src/users/dto/returned-user.dto";
+import { CreateUserSettingsDto } from "src/users/dto/create-user-settings.dto";
+import {
+  FilterComponentType,
+  UserSettings,
+} from "src/users/schemas/user-settings.schema";
+import { UpdateUserSettingsDto } from "src/users/dto/update-user-settings.dto";
 
 @Injectable()
 export class AuthService {
@@ -43,6 +49,7 @@ export class AuthService {
   async login(user: Omit<User, "password">): Promise<ReturnedAuthLoginDto> {
     const expiresIn = this.configService.get<number>("jwt.expiresIn");
     const accessToken = this.jwtService.sign(user, { expiresIn });
+    await this.postLoginTasks(user);
     return {
       access_token: accessToken,
       id: accessToken,
@@ -121,5 +128,63 @@ export class AuthService {
     }
 
     return { logout: "successful" };
+  }
+  /**
+   * postLoginTasks: Executes additional tasks after user login.
+   *
+   * - Checks if the user has userSettings record.
+   * - If user has no userSetting, it creates default userSetting for the user.
+   * - If userSetting exist but are invalid (filters does not belong to FilterComponentType), it resets the filters to default - empty array.
+   *
+   * @param user - The logged-in user (without password).
+   */
+  async postLoginTasks(user: Omit<User, "password">) {
+    if (!user) return;
+
+    const userId = user._id;
+
+    const userSettings = await this.usersService.findByIdUserSettings(userId);
+
+    if (!userSettings) {
+      Logger.log(
+        `Adding default settings to user ${user.username}`,
+        "UserSettingsInterceptor",
+      );
+      const createUserSettingsDto: CreateUserSettingsDto = {
+        userId,
+        filters: [],
+        conditions: [],
+        columns: [],
+      };
+      await this.usersService.createUserSettings(userId, createUserSettingsDto);
+    } else {
+      const isValidFilters = (userSettings: UserSettings): boolean => {
+        if (userSettings.filters.length === 0) {
+          return true;
+        }
+        return userSettings.filters.every((filter) => {
+          const [key, value] = Object.entries(filter)[0];
+          return (
+            Object.keys(FilterComponentType).includes(key) &&
+            typeof value === "boolean"
+          );
+        });
+      };
+
+      if (!isValidFilters) {
+        Logger.log(
+          `Reset default settings to user ${user.username}`,
+          "UserSettingsInterceptor",
+        );
+        const updateUserSettingsDto: UpdateUserSettingsDto = {
+          ...userSettings,
+          filters: [],
+        };
+        await this.usersService.findOneAndUpdateUserSettings(
+          userId,
+          updateUserSettingsDto,
+        );
+      }
+    }
   }
 }

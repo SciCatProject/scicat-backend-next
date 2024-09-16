@@ -4,6 +4,7 @@ import { CaslModule } from "src/casl/casl.module";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import { Request } from "express";
 
 class UsersServiceMock {
   findByIdUserIdentity(id: string) {
@@ -28,10 +29,7 @@ const mockUserSettings = {
   columns: [],
   datasetCount: 25,
   jobCount: 25,
-  filters: [
-    { type: "LocationFilterComponent", visible: true },
-    { type: "PidFilterComponent", visible: true },
-  ],
+  filters: [{ LocationFilter: true }, { PidFilter: true }],
   conditions: [{ field: "status", value: "active", operator: "equals" }],
 };
 
@@ -54,7 +52,6 @@ describe("UsersController", () => {
     controller = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
 
-    // bypass authorization
     jest
       .spyOn(controller as UsersController, "checkUserAuthorization")
       .mockImplementation(() => Promise.resolve());
@@ -65,45 +62,56 @@ describe("UsersController", () => {
   });
 
   it("should return user settings with filters and conditions", async () => {
-    jest
-      .spyOn(usersService, "findByIdUserSettings")
-      .mockResolvedValue(mockUserSettings);
-
     const userId = "user1";
-    const result = await controller.getSettings(
-      { user: { _id: userId } },
-      userId,
-    );
+    mockUserSettings._id = userId;
 
+    const mockRequest: Partial<Request> = {
+      user: { _id: userId },
+    };
+
+    const result = await controller.getSettings(mockRequest as Request, userId);
+
+    // Assert
     expect(result).toEqual(mockUserSettings);
-    expect(result.filters).toBeDefined();
-    expect(result.filters.length).toBeGreaterThan(0);
-    expect(result.conditions).toBeDefined();
-    expect(result.conditions.length).toBeGreaterThan(0);
+    expect(result?.filters).toBeDefined();
+    expect(result?.filters.length).toBeGreaterThan(0);
+    expect(result?.conditions).toBeDefined();
+    expect(result?.conditions.length).toBeGreaterThan(0);
   });
 
   it("should update user settings with filters and conditions", async () => {
+    const userId = "user-id";
+    mockUserSettings._id = userId;
+
     const updatedSettings = {
       ...mockUserSettings,
-      filters: [{ type: "PidFilterContainsComponent", visible: false }],
+      filters: [{ PidFilter: true }],
       conditions: [{ field: "status", value: "inactive", operator: "equals" }],
+    };
+
+    const mockRequest: Partial<Request> = {
+      user: { _id: userId },
+    };
+
+    const expectedResponse = {
+      ...updatedSettings,
+      _id: userId,
     };
 
     jest
       .spyOn(usersService, "findOneAndUpdateUserSettings")
-      .mockResolvedValue(updatedSettings);
+      .mockResolvedValue(expectedResponse);
 
-    const userId = "user-id";
     const result = await controller.updateSettings(
-      { user: { _id: userId } },
+      mockRequest as Request,
       userId,
       updatedSettings,
     );
 
     expect(result).toEqual(updatedSettings);
-    expect(result.filters).toBeDefined();
-    expect(result.filters.length).toBe(1);
-    expect(result.conditions).toBeDefined();
-    expect(result.conditions.length).toBe(1);
+    expect(result?.filters).toBeDefined();
+    expect(result?.filters.length).toBe(1);
+    expect(result?.conditions).toBeDefined();
+    expect(result?.conditions.length).toBe(1);
   });
 });
