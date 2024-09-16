@@ -1,8 +1,5 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import {
-  FilterConfig,
-  ScientificCondition,
-} from "../schemas/user-settings.schema";
+import { ScientificCondition } from "../schemas/user-settings.schema";
 import { IsArray, IsNumber } from "class-validator";
 
 export class UpdateUserSettingsDto {
@@ -20,7 +17,7 @@ export class UpdateUserSettingsDto {
 
   @ApiProperty()
   @IsArray()
-  readonly filters: FilterConfig[];
+  readonly filters: Record<string, unknown>[];
 
   @ApiProperty()
   @IsArray()

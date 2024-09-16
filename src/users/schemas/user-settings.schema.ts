@@ -5,24 +5,6 @@ import { Document } from "mongoose";
 
 export type UserSettingsDocument = UserSettings & Document;
 
-// NOTE: PidFilterContains and PidFilterStartsWith filters are not implemented
-export enum FilterComponentType {
-  LocationFilter = "LocationFilter",
-  PidFilter = "PidFilter",
-  PidFilterContains = "PidFilterContains",
-  PidFilterStartsWith = "PidFilterStartsWith",
-  GroupFilter = "GroupFilter",
-  TypeFilter = "TypeFilter",
-  KeywordFilter = "KeywordFilter",
-  DateRangeFilter = "DateRangeFilter",
-  TextFilter = "TextFilter",
-}
-
-// NOTE: The key is one of FilterComponentType
-export type FilterConfig = Partial<{
-  [K in FilterComponentType]: boolean;
-}>;
-
 // Define the Condition interface
 export interface ScientificCondition {
   field: string;
@@ -78,7 +60,7 @@ export class UserSettings {
     type: [{ type: Object }],
     default: [],
   })
-  filters: FilterConfig[];
+  filters: Record<string, unknown>[];
 
   @ApiProperty({
     type: [Object],

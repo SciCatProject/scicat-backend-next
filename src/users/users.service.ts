@@ -18,7 +18,6 @@ import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import * as fs from "fs";
 import {
-  FilterComponentType,
   UserSettings,
   UserSettingsDocument,
 } from "./schemas/user-settings.schema";
