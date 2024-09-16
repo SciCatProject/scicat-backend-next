@@ -449,13 +449,13 @@ export class DatasetClass extends OwnableClass {
   dataFormat?: string;
 
   @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
     description:
       "The ID of the proposal to which the dataset belongs to and it has been acquired under.",
   })
-  @Prop({ type: String, ref: "Proposal", required: false })
-  proposalIds?: string;
+  @Prop({ type: [String], ref: "Proposal", required: false })
+  proposalIds?: string[];
 
   @ApiProperty({
     type: [String],

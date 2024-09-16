@@ -61,7 +61,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { UpdateQuery } from "mongoose";
+import { Document, UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";
@@ -405,7 +405,9 @@ export class DatasetsController {
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
   ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {};
+    const propertiesModifier: Record<string, unknown> = {
+      version: "v3",
+    };
 
     if (
       inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
@@ -489,8 +491,9 @@ export class DatasetsController {
         }
       }
     }
+
     const outputDataset: OutputDatasetObsoleteDto = {
-      ...(inputDataset as OutputDatasetObsoleteDto),
+      ...(inputDataset as DatasetDocument).toObject(),
       ...propertiesModifier,
     };
 
@@ -537,17 +540,17 @@ export class DatasetsController {
       | CreateDerivedDatasetObsoleteDto,
   ): Promise<OutputDatasetObsoleteDto> {
     // validate dataset
-    await this.validateDatasetObsolete(
+    const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
       createDatasetObsoleteDto.type === "raw"
         ? CreateRawDatasetObsoleteDto
         : CreateDerivedDatasetObsoleteDto,
-    );
+    )) as CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto;
 
     const obsoleteDatasetDto =
       await this.checkPermissionsForObsoleteDatasetCreate(
         request,
-        createDatasetObsoleteDto,
+        validatedDatasetObsoleteDto,
       );
 
     try {
@@ -598,11 +601,18 @@ export class DatasetsController {
       },
     };
 
+    // first we convert input object to the correct class
+    const outputDatasetDto = plainToInstance(dto, inputDatasetDto);
+
     if (
-      inputDatasetDto instanceof
+      outputDatasetDto instanceof
       (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto)
     ) {
-      if (!(inputDatasetDto.type in DatasetType)) {
+      if (
+        !(Object.values(DatasetType) as string[]).includes(
+          outputDatasetDto.type,
+        )
+      ) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
@@ -613,7 +623,6 @@ export class DatasetsController {
       }
     }
 
-    const outputDatasetDto = plainToInstance(dto, inputDatasetDto);
     const errors = await validate(outputDatasetDto, validateOptions);
 
     if (errors.length > 0) {
