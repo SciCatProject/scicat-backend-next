@@ -556,6 +556,7 @@ export class DatasetsController {
       const datasetDto = this.convertObsoleteToCurrentSchema(
         obsoleteDatasetDto,
       ) as CreateDatasetDto;
+      console.log(datasetDto);
       const createdDataset = await this.datasetsService.create(datasetDto);
 
       const outputObsoleteDatasetDto =
@@ -1063,30 +1064,34 @@ export class DatasetsController {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
-    const dataset = (await this.datasetsService.findOne(
-      mergedFilters,
-    )) as OutputDatasetObsoleteDto;
+    const databaseDataset = await this.datasetsService.findOne(mergedFilters);
 
-    if (dataset) {
+    const outputDataset =
+      await this.convertCurrentToObsoleteSchema(databaseDataset);
+
+    if (outputDataset) {
       const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
         includeFilters.map(async ({ relation }) => {
           switch (relation) {
             case "attachments": {
-              dataset.attachments = await this.attachmentsService.findAll({
-                datasetId: dataset.pid,
-              });
-              break;
-            }
-            case "origdatablocks": {
-              dataset.origdatablocks = await this.origDatablocksService.findAll(
-                { where: { datasetId: dataset.pid } },
+              outputDataset.attachments = await this.attachmentsService.findAll(
+                {
+                  datasetId: outputDataset.pid,
+                },
               );
               break;
             }
+            case "origdatablocks": {
+              outputDataset.origdatablocks =
+                await this.origDatablocksService.findAll({
+                  where: { datasetId: outputDataset.pid },
+                });
+              break;
+            }
             case "datablocks": {
-              dataset.datablocks = await this.datablocksService.findAll({
-                datasetId: dataset.pid,
+              outputDataset.datablocks = await this.datablocksService.findAll({
+                datasetId: outputDataset.pid,
               });
               break;
             }
@@ -1094,7 +1099,7 @@ export class DatasetsController {
         }),
       );
     }
-    return dataset;
+    return outputDataset;
   }
 
   // GET /datasets/count
