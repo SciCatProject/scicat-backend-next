@@ -23,7 +23,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -304,6 +304,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
+        console.log(res.body);
         res.body["pid"].should.be.equal(decodeURIComponent(datasetPid1));
         res.body.origdatablocks.should.be
           .instanceof(Array)
