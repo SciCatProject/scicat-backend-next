@@ -140,14 +140,12 @@ export class AuthService {
 
     if (!userSettings) {
       Logger.log(
-        `Adding default settings to user ${user.username}`,
-        "UserSettingsInterceptor",
+        `Adding default settings to user ${user.username} with userId: ${user._id}`,
+        "postLoginTasks",
       );
       const createUserSettingsDto: CreateUserSettingsDto = {
         userId,
-        filters: [],
-        conditions: [],
-        columns: [],
+        frontendSettings: {},
       };
       await this.usersService.createUserSettings(userId, createUserSettingsDto);
     }

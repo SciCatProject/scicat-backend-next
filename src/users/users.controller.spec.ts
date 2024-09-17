@@ -5,6 +5,7 @@ import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { Request } from "express";
+import { UserSettings } from "./schemas/user-settings.schema";
 
 class UsersServiceMock {
   findByIdUserIdentity(id: string) {
@@ -26,11 +27,13 @@ class UsersServiceMock {
 const mockUserSettings = {
   _id: "user1",
   userId: "user1",
-  columns: [],
   datasetCount: 25,
   jobCount: 25,
-  filters: [{ LocationFilter: true }, { PidFilter: true }],
-  conditions: [{ field: "status", value: "active", operator: "equals" }],
+  frontendSettings: {
+    filters: [{ LocationFilter: true }, { PidFilter: true }],
+    conditions: [{ field: "status", value: "active", operator: "equals" }],
+    columns: [],
+  },
 };
 
 class AuthServiceMock {}
@@ -72,11 +75,11 @@ describe("UsersController", () => {
     const result = await controller.getSettings(mockRequest as Request, userId);
 
     // Assert
-    expect(result).toEqual(mockUserSettings);
-    expect(result?.filters).toBeDefined();
-    expect(result?.filters.length).toBeGreaterThan(0);
-    expect(result?.conditions).toBeDefined();
-    expect(result?.conditions.length).toBeGreaterThan(0);
+    expect(result?.frontendSettings).toEqual(mockUserSettings);
+    expect(result?.frontendSettings?.filters).toBeDefined();
+    expect(result?.frontendSettings?.filters.length).toBeGreaterThan(0);
+    expect(result?.frontendSettings?.conditions).toBeDefined();
+    expect(result?.frontendSettings?.conditions.length).toBeGreaterThan(0);
   });
 
   it("should update user settings with filters and conditions", async () => {
@@ -85,17 +88,26 @@ describe("UsersController", () => {
 
     const updatedSettings = {
       ...mockUserSettings,
-      filters: [{ PidFilter: true }],
-      conditions: [{ field: "status", value: "inactive", operator: "equals" }],
+      frontendSettings: {
+        filters: [{ PidFilter: true }],
+        conditions: [
+          { field: "status", value: "inactive", operator: "equals" },
+        ],
+        columns: [],
+      },
     };
 
     const mockRequest: Partial<Request> = {
       user: { _id: userId },
     };
 
-    const expectedResponse = {
+    const expectedResponse: UserSettings = {
       ...updatedSettings,
       _id: userId,
+      userId: userId, // Ensure all required properties are included
+      datasetCount: updatedSettings.datasetCount,
+      jobCount: updatedSettings.jobCount,
+      frontendSettings: updatedSettings.frontendSettings,
     };
 
     jest
@@ -108,10 +120,10 @@ describe("UsersController", () => {
       updatedSettings,
     );
 
-    expect(result).toEqual(updatedSettings);
-    expect(result?.filters).toBeDefined();
-    expect(result?.filters.length).toBe(1);
-    expect(result?.conditions).toBeDefined();
-    expect(result?.conditions.length).toBe(1);
+    expect(result?.frontendSettings).toEqual(updatedSettings);
+    expect(result?.frontendSettings?.filters).toBeDefined();
+    expect(result?.frontendSettings?.filters.length).toBe(1);
+    expect(result?.frontendSettings?.conditions).toBeDefined();
+    expect(result?.frontendSettings?.conditions.length).toBe(1);
   });
 });

@@ -24,14 +24,6 @@ export class UserSettings {
   id?: string;
 
   @ApiProperty({
-    type: [Object],
-    default: [],
-    description: "Array of the users preferred columns in dataset table",
-  })
-  @Prop({ type: [Object], default: [] })
-  columns: Record<string, unknown>[];
-
-  @ApiProperty({
     type: Number,
     default: 25,
     description: "The users preferred number of datasets to view per page",
@@ -52,23 +44,13 @@ export class UserSettings {
   userId: string;
 
   @ApiProperty({
-    type: [Object],
-    default: [],
-    description: "Array of filters the user has set",
+    type: "object",
+    additionalProperties: { type: "array", items: {} },
+    default: {},
+    description: "users preferred ui settings in dataset table",
   })
-  @Prop({
-    type: [{ type: Object }],
-    default: [],
-  })
-  filters: Record<string, unknown>[];
-
-  @ApiProperty({
-    type: [Object],
-    default: [],
-    description: "Array of conditions the user has set",
-  })
-  @Prop({ type: [{ type: Object }], default: [] })
-  conditions: ScientificCondition[];
+  @Prop({ type: Object, default: {}, required: false })
+  frontendSettings?: Record<string, unknown[]>;
 }
 
 export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);
