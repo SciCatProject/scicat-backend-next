@@ -925,6 +925,30 @@ export const samplesFullQueryDescriptionFields =
 }\n \
   </pre>';
 
+export const filterUserIdentityExample =
+  '{ "profile.email": "this_email@your.site" }';
+
+export const filterUserIdentityDescription =
+  '<pre>\n \
+  this_email@some.site\n \
+or \n \
+  {\n \
+    "email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "profile.email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "where?": {\n \
+      "profile.email": "this_email@some.site"\n \
+    }\n \
+  }\n \
+This last version is deprecated and will be discontinued as soon as the FE is updated.\n \
+It has been maintanined for backward compatibility.\n \
+</pre>';
+
 export const parseBoolean = (v: unknown): boolean => {
   switch (v) {
     case true:
