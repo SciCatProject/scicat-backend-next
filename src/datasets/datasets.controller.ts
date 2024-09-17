@@ -431,10 +431,9 @@ export class DatasetsController {
       }
     } else {
       if ("investigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigator = [
-          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
-            .investigator,
-        ];
+        propertiesModifier.principalInvestigator = (
+          inputObsoleteDataset as CreateDerivedDatasetObsoleteDto
+        ).investigator;
       }
     }
 
