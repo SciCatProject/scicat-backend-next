@@ -304,6 +304,7 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
+        console.log(res.body);
         res.body["pid"].should.be.equal(decodeURIComponent(datasetPid1));
         res.body.origdatablocks.should.be
           .instanceof(Array)
