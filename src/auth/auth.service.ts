@@ -145,7 +145,7 @@ export class AuthService {
       );
       const createUserSettingsDto: CreateUserSettingsDto = {
         userId,
-        frontendSettings: {},
+        externalSettings: {},
       };
       await this.usersService.createUserSettings(userId, createUserSettingsDto);
     }

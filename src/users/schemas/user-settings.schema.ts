@@ -45,12 +45,12 @@ export class UserSettings {
 
   @ApiProperty({
     type: "object",
-    additionalProperties: { type: "array", items: {} },
     default: {},
-    description: "users preferred ui settings in dataset table",
+    description:
+      "A customizable object for storing the user's external settings, which can contain various nested properties and configurations.",
   })
   @Prop({ type: Object, default: {}, required: false })
-  frontendSettings?: Record<string, unknown[]>;
+  externalSettings?: Record<string, unknown>;
 }
 
 export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);

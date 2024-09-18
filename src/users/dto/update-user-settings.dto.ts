@@ -11,13 +11,13 @@ export class UpdateUserSettingsDto {
   readonly jobCount?: number;
 
   @ApiProperty({
-    type: "object",
-    additionalProperties: { type: "array", items: {} },
+    type: Object,
     required: false,
+    default: {},
   })
   @IsOptional()
   @IsObject()
-  readonly frontendSettings?: Record<string, unknown[]>;
+  readonly externalSettings?: Record<string, unknown>;
 }
 
 export class PartialUpdateUserSettingsDto extends PartialType(

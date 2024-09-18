@@ -29,7 +29,7 @@ const mockUserSettings = {
   userId: "user1",
   datasetCount: 25,
   jobCount: 25,
-  frontendSettings: {
+  externalSettings: {
     filters: [{ LocationFilter: true }, { PidFilter: true }],
     conditions: [{ field: "status", value: "active", operator: "equals" }],
     columns: [],
@@ -75,11 +75,15 @@ describe("UsersController", () => {
     const result = await controller.getSettings(mockRequest as Request, userId);
 
     // Assert
-    expect(result?.frontendSettings).toEqual(mockUserSettings);
-    expect(result?.frontendSettings?.filters).toBeDefined();
-    expect(result?.frontendSettings?.filters.length).toBeGreaterThan(0);
-    expect(result?.frontendSettings?.conditions).toBeDefined();
-    expect(result?.frontendSettings?.conditions.length).toBeGreaterThan(0);
+    expect(result?.externalSettings).toEqual(mockUserSettings);
+    expect(result?.externalSettings?.filters).toBeDefined();
+    expect(
+      (result?.externalSettings?.filters as Record<string, unknown>).length,
+    ).toBeGreaterThan(0);
+    expect(result?.externalSettings?.conditions).toBeDefined();
+    expect(
+      (result?.externalSettings?.conditions as Record<string, unknown>).length,
+    ).toBeGreaterThan(0);
   });
 
   it("should update user settings with filters and conditions", async () => {
@@ -88,7 +92,7 @@ describe("UsersController", () => {
 
     const updatedSettings = {
       ...mockUserSettings,
-      frontendSettings: {
+      externalSettings: {
         filters: [{ PidFilter: true }],
         conditions: [
           { field: "status", value: "inactive", operator: "equals" },
@@ -107,7 +111,7 @@ describe("UsersController", () => {
       userId: userId, // Ensure all required properties are included
       datasetCount: updatedSettings.datasetCount,
       jobCount: updatedSettings.jobCount,
-      frontendSettings: updatedSettings.frontendSettings,
+      externalSettings: updatedSettings.externalSettings,
     };
 
     jest
@@ -120,10 +124,15 @@ describe("UsersController", () => {
       updatedSettings,
     );
 
-    expect(result?.frontendSettings).toEqual(updatedSettings);
-    expect(result?.frontendSettings?.filters).toBeDefined();
-    expect(result?.frontendSettings?.filters.length).toBe(1);
-    expect(result?.frontendSettings?.conditions).toBeDefined();
-    expect(result?.frontendSettings?.conditions.length).toBe(1);
+    expect(result?.externalSettings).toEqual(updatedSettings);
+    expect(result?.externalSettings?.filters).toBeDefined();
+    expect(
+      (result?.externalSettings?.filters as Record<string, unknown[]>).length,
+    ).toBe(1);
+    expect(result?.externalSettings?.conditions).toBeDefined();
+    expect(
+      (result?.externalSettings?.conditions as Record<string, unknown[]>)
+        .length,
+    ).toBe(1);
   });
 });

@@ -284,16 +284,40 @@ export class UsersController {
   async patchSettings(
     @Req() request: Request,
     @Param("id") id: string,
-    updateUserSettingsDto: PartialUpdateUserSettingsDto,
+    @Body() updateUserSettingsDto: PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     await this.checkUserAuthorization(
       request,
       [Action.UserUpdateAny, Action.UserUpdateOwn],
       id,
     );
-    return this.usersService.findOneAndUpdateUserSettings(
+    return this.usersService.findOneAndPatchUserSettings(
       id,
       updateUserSettingsDto,
+    );
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies(
+    "users",
+    (ability: AppAbility) =>
+      ability.can(Action.UserUpdateOwn, User) ||
+      ability.can(Action.UserUpdateAny, User),
+  )
+  @Patch("/:id/settings/external")
+  async patchExternalSettings(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() externalSettings: Record<string, unknown>,
+  ): Promise<UserSettings | null> {
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserUpdateAny, Action.UserUpdateOwn],
+      id,
+    );
+    return this.usersService.findOneAndPatchUserExternalSettings(
+      id,
+      externalSettings,
     );
   }
 
