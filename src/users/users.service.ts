@@ -273,18 +273,57 @@ export class UsersService implements OnModuleInit {
   }
 
   async findByIdUserSettings(userId: string): Promise<UserSettings | null> {
-    return this.userSettingsModel.findOne({ userId }).exec();
+    const result = await this.userSettingsModel
+      .findOne({ userId })
+      .lean()
+      .exec();
+
+    return result;
   }
 
   async findOneAndUpdateUserSettings(
     userId: string,
     updateUserSettingsDto: UpdateUserSettingsDto | PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
-    return this.userSettingsModel
-      .findOneAndUpdate({ userId }, updateUserSettingsDto, { new: true })
+    const result = await this.userSettingsModel
+      .findOneAndUpdate({ userId }, updateUserSettingsDto, {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      })
       .exec();
+
+    return result;
   }
 
+  async findOneAndPatchUserSettings(
+    userId: string,
+    updateUserSettingsDto: UpdateUserSettingsDto | PartialUpdateUserSettingsDto,
+  ): Promise<UserSettings | null> {
+    const result = await this.userSettingsModel
+      .findOneAndUpdate(
+        { userId },
+        { $set: updateUserSettingsDto },
+        { new: true },
+      )
+      .exec();
+    return result;
+  }
+
+  async findOneAndPatchUserExternalSettings(
+    userId: string,
+    externalSettings: Record<string, unknown>,
+  ): Promise<UserSettings | null> {
+    const updateQuery: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(externalSettings)) {
+      updateQuery[`externalSettings.${key}`] = value;
+    }
+    const result = await this.userSettingsModel
+      .findOneAndUpdate({ userId }, { $set: updateQuery }, { new: true })
+      .exec();
+    return result;
+  }
   async findOneAndDeleteUserSettings(userId: string): Promise<unknown> {
     return this.userSettingsModel.findOneAndDelete({ userId }).exec();
   }

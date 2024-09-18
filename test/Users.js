@@ -10,7 +10,7 @@ let userIdUser1 = null,
 describe("2350: Users: Login with functional accounts", () => {
   it("0010: Admin ingestor login fails with incorrect credentials", async () => {
     return request(appUrl)
-      .post("/api/v3/Users/Login?include=user")
+      .post("/api/v3/auth/Login?include=user")
       .send({
         username: "adminIngestor",
         password: TestData.Accounts["user1"]["password"],
@@ -23,7 +23,7 @@ describe("2350: Users: Login with functional accounts", () => {
 
   it("0020: Login should succeed with correct credentials", async () => {
     return request(appUrl)
-      .post("/api/v3/Users/Login?include=user")
+      .post("/api/v3/auth/Login?include=user")
       .send({
         username: "adminIngestor",
         password: TestData.Accounts["adminIngestor"]["password"],
@@ -38,18 +38,19 @@ describe("2350: Users: Login with functional accounts", () => {
 });
 
 describe("2360: Users settings", () => {
-  beforeEach(async() => {
+  beforeEach(async () => {
     const loginResponseUser1 = await utils.getIdAndToken(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
     });
     userIdUser1 = loginResponseUser1.userId;
-    accessTokenUser1  = loginResponseUser1.token;
+    accessTokenUser1 = loginResponseUser1.token;
   });
 
-  it("0010: Update users settings with valid value should success ", async () => {
+  it("0020: Update users settings with valid value should success ", async () => {
     return request(appUrl)
       .put(`/api/v3/Users/${userIdUser1}/settings`)
+      .send(TestData.userSettingsCorrect)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulPatchStatusCode)
@@ -58,8 +59,39 @@ describe("2360: Users settings", () => {
         res.body.should.have.property("userId", userIdUser1);
         res.body.should.have.property("datasetCount");
         res.body.should.have.property("jobCount");
-        res.body.should.have.property("filters");
-        res.body.should.have.property("conditions");
+        res.body.should.have.property("externalSettings");
+      });
+  });
+
+  it("0030: Patch users settings with valid value should success ", async () => {
+    return request(appUrl)
+      .patch(`/api/v3/Users/${userIdUser1}/settings`)
+      .send(TestData.userSettingsCorrect)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("userId", userIdUser1);
+        res.body.should.have.property("datasetCount");
+        res.body.should.have.property("jobCount");
+        res.body.should.have.property("externalSettings");
+      });
+  });
+
+  it("0040: Patch users external settings with valid value should success ", async () => {
+    return request(appUrl)
+      .patch(`/api/v3/Users/${userIdUser1}/settings/external`)
+      .send(TestData.userSettingsCorrect.externalSettings)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("userId", userIdUser1);
+        res.body.should.have.property("datasetCount");
+        res.body.should.have.property("jobCount");
+        res.body.should.have.property("externalSettings");
       });
   });
 });

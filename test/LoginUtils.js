@@ -4,7 +4,7 @@ var request = require("supertest");
 exports.getToken = function (appUrl, user) {
   return new Promise((resolve, reject) => {
     request(appUrl)
-      .post("/api/v3/Users/Login?include=user")
+      .post("/api/v3/auth/Login?include=user")
       .send(user)
       .set("Accept", "application/json")
       .end((err, res) => {
@@ -20,17 +20,17 @@ exports.getToken = function (appUrl, user) {
 exports.getIdAndToken = function (appUrl, user) {
   return new Promise((resolve, reject) => {
     request(appUrl)
-      .post("/api/v3/Users/Login?include=user")
+      .post("/api/v3/auth/Login?include=user")
       .send(user)
       .set("Accept", "application/json")
       .end((err, res) => {
         if (err) {
           reject(err);
         } else {
-          resolve({userId:res.body.userId,  token:res.body.id});
+          resolve({ userId: res.body.userId, token: res.body.id });
         }
       });
-    });
+  });
 };
 
 exports.getTokenAD = function (appUrl, user, cb) {
