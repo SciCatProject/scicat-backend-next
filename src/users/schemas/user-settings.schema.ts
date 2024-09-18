@@ -50,7 +50,7 @@ export class UserSettings {
       "A customizable object for storing the user's external settings, which can contain various nested properties and configurations.",
   })
   @Prop({ type: Object, default: {}, required: false })
-  externalSettings?: Record<string, unknown>;
+  externalSettings: Record<string, unknown>;
 }
 
 export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);
