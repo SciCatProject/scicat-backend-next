@@ -75,7 +75,7 @@ describe("UsersController", () => {
     const result = await controller.getSettings(mockRequest as Request, userId);
 
     // Assert
-    expect(result?.externalSettings).toEqual(mockUserSettings);
+    expect(result).toEqual(mockUserSettings);
     expect(result?.externalSettings?.filters).toBeDefined();
     expect(
       (result?.externalSettings?.filters as Record<string, unknown>).length,
@@ -108,7 +108,7 @@ describe("UsersController", () => {
     const expectedResponse: UserSettings = {
       ...updatedSettings,
       _id: userId,
-      userId: userId, // Ensure all required properties are included
+      userId: userId,
       datasetCount: updatedSettings.datasetCount,
       jobCount: updatedSettings.jobCount,
       externalSettings: updatedSettings.externalSettings,
@@ -124,7 +124,7 @@ describe("UsersController", () => {
       updatedSettings,
     );
 
-    expect(result?.externalSettings).toEqual(updatedSettings);
+    expect(result).toEqual(expectedResponse);
     expect(result?.externalSettings?.filters).toBeDefined();
     expect(
       (result?.externalSettings?.filters as Record<string, unknown[]>).length,
