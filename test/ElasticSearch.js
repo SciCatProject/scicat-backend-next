@@ -45,12 +45,12 @@ const scientificMetadata = (values) => {
     before(() => {
       db.collection("Dataset").deleteMany({});
     });
-    beforeEach(async() => {
+    beforeEach(async () => {
       accessTokenAdminIngestor = await utils.getToken(appUrl, {
         username: "adminIngestor",
         password: TestData.Accounts["adminIngestor"]["password"],
       });
-  
+
       accessTokenArchiveManager = await utils.getToken(appUrl, {
         username: "archiveManager",
         password: TestData.Accounts["archiveManager"]["password"],

@@ -818,6 +818,7 @@ const TestData = {
     creationLocation: faker.location.city(),
     principalInvestigator: faker.internet.userName(),
     type: "raw",
+    datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
