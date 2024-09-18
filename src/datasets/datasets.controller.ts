@@ -556,7 +556,6 @@ export class DatasetsController {
       const datasetDto = this.convertObsoleteToCurrentSchema(
         obsoleteDatasetDto,
       ) as CreateDatasetDto;
-      console.log(datasetDto);
       const createdDataset = await this.datasetsService.create(datasetDto);
 
       const outputObsoleteDatasetDto =
