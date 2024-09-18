@@ -36,8 +36,9 @@ async function bootstrap() {
       docExpansion: "none",
     },
   };
+  const swaggerPath = process.env.SWAGGER_PATH || "explorer";
 
-  SwaggerModule.setup("explorer", app, document, swaggerOptions);
+  SwaggerModule.setup(swaggerPath, app, document, swaggerOptions);
 
   app.useGlobalPipes(
     /**
