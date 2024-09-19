@@ -131,7 +131,7 @@ jobs:
       - start-backend-export-swagger
     strategy:
       matrix:
-        generator: [python, python-pydantic-v1, typescript]
+        generator: [python, python-pydantic-v1, typescript-angular]
 
     steps:
       - name: Checkout repository
@@ -152,7 +152,7 @@ jobs:
             --git-repo-id scicat-backend-next \
             --git-user-id SciCatProject \
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript" ]; then
+            if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
             elif [ "${{ matrix.generator }}" == "python" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
@@ -183,10 +183,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Download TypeScript SDK Artifact
+      - name: Download TypeScript Angular SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-typescript-${{github.sha}}
+          name: sdk-typescript-angular-${{github.sha}}
           path: ./sdk
 
       - name: Publish package
@@ -194,7 +194,7 @@ jobs:
           npm install
           npm run build
           npm publish --access public
-        working-directory: ./sdk/typescript/
+        working-directory: ./sdk/typescript-angular/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
