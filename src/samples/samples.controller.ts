@@ -566,7 +566,7 @@ export class SamplesController {
       "Returns a boolean indicating whether the user has access to the sample with the specified ID.",
   })
   @ApiParam({
-    name: "pid",
+    name: "id",
     description: "ID of the sample to check access for",
     type: String,
   })
@@ -774,17 +774,17 @@ export class SamplesController {
   })
   async findOneAttachment(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
     @Param("fk") attachmentId: string,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForSample(
       request,
-      sampleId,
+      id,
       Action.SampleAttachmentRead,
     );
     return this.attachmentsService.findOne({
       id: attachmentId,
-      sampleId: sampleId,
+      sampleId: id,
     });
   }
 
@@ -816,17 +816,17 @@ export class SamplesController {
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
     @Param("fk") attachmentId: string,
   ): Promise<unknown> {
     await this.checkPermissionsForSample(
       request,
-      sampleId,
+      id,
       Action.SampleAttachmentDelete,
     );
     return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
-      sampleId: sampleId,
+      sampleId: id,
     });
   }
 
@@ -867,7 +867,7 @@ export class SamplesController {
   })
   async findAllDatasets(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
@@ -900,7 +900,7 @@ export class SamplesController {
     }
 
     const dataset = await this.datasetsService.fullquery({
-      where: { sampleId },
+      where: { sampleId: id },
       fields: fields,
     });
     return dataset;
