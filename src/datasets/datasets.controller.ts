@@ -888,6 +888,29 @@ export class DatasetsController {
     return this.datasetsService.metadataKeys(parsedFilters);
   }
 
+  // GET /datasets/metadataTypes
+  // @UseGuards(PoliciesGuard)
+  // @CheckPolicies((ability: AppAbility) =>
+  //   ability.can(Action.DatasetRead, DatasetClass),
+  // )
+  @Get("/metadataTypes")
+  @ApiOperation({
+    summary: "Retrieve all available scientific metadata field types.",
+    description:
+      "This endpoint returns the field names and their corresponding data types from the `scientificMetadata` fields of all datasets in the system. It aggregates all the unique field names and their associated types from the dataset collection.",
+  })
+  @ApiResponse({
+    status: 200,
+    type: Array,
+    description:
+      "Returns an array of objects where each object contains a metadata field name and its associated type.",
+  })
+  async metadataTypes(): Promise<any[]> {
+    const result = this.datasetsService.getScientificMetadataTypes();
+
+    return result;
+  }
+
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>

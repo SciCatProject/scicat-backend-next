@@ -476,6 +476,43 @@ export class DatasetsService {
     }
   }
 
+  async getScientificMetadataTypes() {
+    // TODO performance research required, say 1K records, 100K and 1M
+    return this.datasetModel.aggregate([
+      {
+        // Step 1: Convert the scientificMetadata object into an array of key-value pairs
+        $project: {
+          scientificMetadataArray: { $objectToArray: "$scientificMetadata" },
+        },
+      },
+      {
+        // Step 2: Unwind the array to treat each field individually
+        $unwind: "$scientificMetadataArray",
+      },
+      {
+        // Step 3: Group by the field name and accumulate types
+        $group: {
+          _id: "$scientificMetadataArray.k", // Group by field name (key)
+          types: { $addToSet: { $type: "$scientificMetadataArray.v.value" } }, // Add the data type of the value
+        },
+      },
+      {
+        // Step 4: Convert the array of types into a string for each field name
+        $project: {
+          _id: 0, // Don't include the default _id
+          metadataKey: "$_id",
+          metadataType: {
+            $cond: {
+              if: { $eq: [{ $size: "$types" }, 1] }, // If only one type is present
+              then: { $arrayElemAt: ["$types", 0] }, // Use the type
+              else: "mixed", // If there are multiple types, mark it as 'mixed'
+            },
+          },
+        },
+      },
+    ]);
+  }
+
   async isElasticSearchDBEmpty() {
     if (!this.ESClient) return;
     const count = await this.ESClient.getCount();
