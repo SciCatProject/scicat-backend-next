@@ -175,6 +175,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ES_FIELDS_LIMIT` | number | | The total number of fields in an index. | 1000 |
 | `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
 | `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
+| `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available| "explorer"|
 
 ## Migrating from the old SciCat Backend
 
