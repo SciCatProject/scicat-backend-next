@@ -43,6 +43,37 @@ const TestData = {
     accessGroups: [],
   },
 
+  userSettingsCorrect: {
+    datasetCount: 10,
+    jobCount: 25,
+    externalSettings: {
+      columns: [
+        {
+          name: "select",
+          order: 0,
+          type: "standard",
+          enabled: true,
+        },
+      ],
+      filters: [
+        {
+          LocationFilter: true,
+        },
+      ],
+      conditions: [
+        {
+          condition: {
+            lhs: "test",
+            relation: "GREATER_THAN",
+            rhs: 1,
+            unit: "",
+          },
+          enabled: true,
+        },
+      ],
+    },
+  },
+
   ProposalCorrectComplete: {
     proposalId: "20170267",
     pi_email: "pi@uni.edu",

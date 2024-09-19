@@ -21,7 +21,7 @@ let accessTokenAdminIngestor = null,
   userIdArchiveManager = null;
 
 describe("2300: User Authorization: test that user authorization are correct", () => {
-  beforeEach(async() => {
+  beforeEach(async () => {
     const loginResponseIngestor = await utils.getIdAndToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -34,7 +34,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
       password: TestData.Accounts["user1"]["password"],
     });
     userIdUser1 = loginResponseUser1.userId;
-    accessTokenUser1  = loginResponseUser1.token;
+    accessTokenUser1 = loginResponseUser1.token;
 
     const loginResponseUser2 = await utils.getIdAndToken(appUrl, {
       username: "user2",
@@ -47,8 +47,8 @@ describe("2300: User Authorization: test that user authorization are correct", (
       username: "user3",
       password: TestData.Accounts["user3"]["password"],
     });
-    userIdUser3 = loginResponseUser3.userId
-    accessTokenUser3 = loginResponseUser3.token
+    userIdUser3 = loginResponseUser3.userId;
+    accessTokenUser3 = loginResponseUser3.token;
 
     const loginResponseUser4 = await utils.getIdAndToken(appUrl, {
       username: "user4",
@@ -56,7 +56,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     });
     userIdUser4 = loginResponseUser4.userId;
     accessTokenUser4 = loginResponseUser4.token;
-    
+
     const loginResponseAdmin = await utils.getIdAndToken(appUrl, {
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
@@ -71,7 +71,7 @@ describe("2300: User Authorization: test that user authorization are correct", (
     userIdArchiveManager = loginResponseArchiveManager.userId;
     accessTokenArchiveManager = loginResponseArchiveManager.token;
   });
-  
+
   afterEach((done) => {
     sandbox.restore();
     done();
