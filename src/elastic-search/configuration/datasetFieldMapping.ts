@@ -50,6 +50,10 @@ export const datasetMappings: MappingObject = {
     type: "keyword",
     ignore_above: 256,
   },
+  instrumentIds: {
+    type: "keyword",
+    ignore_above: 256,
+  },
   sourceFolder: {
     type: "keyword",
     ignore_above: 256,
