@@ -58,8 +58,8 @@ const configuration = () => {
   });
 
   const config = {
-    versions: {
-      api: process.env.API_VERSION || "v3",
+    VERSIONS: {
+      API: "v3",
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],

@@ -18,7 +18,7 @@ async function bootstrap() {
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
     ConfigService,
   );
-  const apiVersion = configService.get<string>("versions.api") ?? "v3";
+  const apiVersion = configService.get<string>("VERSIONS.API");
   const swaggerPath = `${configService.get<string>("swaggerPath")}`;
 
   const scicatLogger = app.get<ScicatLogger>(ScicatLogger);
