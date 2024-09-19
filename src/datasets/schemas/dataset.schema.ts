@@ -1,19 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import {
-  Attachment,
-  AttachmentSchema,
-} from "src/attachments/schemas/attachment.schema";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
-import {
-  Datablock,
-  DatablockSchema,
-} from "src/datablocks/schemas/datablock.schema";
-import {
-  OrigDatablock,
-  OrigDatablockSchema,
-} from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
 import { HistoryClass, HistorySchema } from "./history.schema";

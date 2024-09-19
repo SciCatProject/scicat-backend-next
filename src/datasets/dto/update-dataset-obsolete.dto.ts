@@ -24,9 +24,6 @@ import { CreateTechniqueDto } from "./create-technique.dto";
 import { RelationshipClass } from "../schemas/relationship.schema";
 import { CreateRelationshipDto } from "./create-relationship.dto";
 import { LifecycleClass } from "../schemas/lifecycle.schema";
-import { Attachment } from "../../attachments/schemas/attachment.schema";
-import { OrigDatablock } from "../../origdatablocks/schemas/origdatablock.schema";
-import { Datablock } from "../../datablocks/schemas/datablock.schema";
 
 @ApiTags("datasets")
 export class UpdateDatasetObsoleteDto extends OwnableDto {

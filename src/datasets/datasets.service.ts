@@ -23,7 +23,6 @@ import {
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import { DatasetType } from "./dataset-type.enum";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";

@@ -61,7 +61,7 @@ import { DatablocksService } from "src/datablocks/datablocks.service";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { CreateDatablockDto } from "src/datablocks/dto/create-datablock.dto";
 import { PartialUpdateDatablockDto } from "src/datablocks/dto/update-datablock.dto";
-import { Document, UpdateQuery } from "mongoose";
+import { UpdateQuery } from "mongoose";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { DataFile } from "src/common/schemas/datafile.schema";

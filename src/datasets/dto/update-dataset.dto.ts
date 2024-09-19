@@ -383,7 +383,7 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   @IsOptional()
   @IsString({
-    each: false,
+    each: true,
   })
   readonly inputDatasets?: string[];
 
