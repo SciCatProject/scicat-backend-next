@@ -209,7 +209,7 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   @IsOptional()
   @IsBoolean()
-  readonly isPublished?: boolean = false;
+  readonly isPublished?: boolean;
 
   @ApiProperty({
     type: "array",
@@ -371,7 +371,7 @@ export class UpdateDatasetDto extends OwnableDto {
   })
   @IsOptional()
   @IsString({
-    each: false,
+    each: true,
   })
   readonly instrumentIds?: string[];
 

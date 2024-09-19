@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CreateDatasetDto } from "./create-dataset.dto";
-import { IsString } from "class-validator";
+import { IsDateString, IsString } from "class-validator";
 
 export class OutputDatasetDto extends CreateDatasetDto {
   @ApiProperty({
@@ -27,7 +27,7 @@ export class OutputDatasetDto extends CreateDatasetDto {
     description:
       "Date and time when this record was created. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
-  @IsString()
+  @IsDateString()
   createdAt: Date;
 
   @ApiProperty({
@@ -36,6 +36,6 @@ export class OutputDatasetDto extends CreateDatasetDto {
     description:
       "Date and time when this record was updated last. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
-  @IsString()
+  @IsDateString()
   updatedAt: Date;
 }
