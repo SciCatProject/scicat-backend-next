@@ -15,6 +15,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+  const configService: ConfigService<Record<string, unknown>, false> = app.get(
+    ConfigService,
+  );
+  const apiVersion = configService.get<string>("versions.api");
+  const swaggerPath = `${configService.get<string>("swaggerPath")}`;
 
   const scicatLogger = app.get<ScicatLogger>(ScicatLogger);
 
@@ -23,13 +28,15 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(scicatLogger));
 
   app.enableCors();
-  app.setGlobalPrefix("api/v3");
+
+  app.setGlobalPrefix(`api/${apiVersion}`);
   const config = new DocumentBuilder()
     .setTitle("SciCat backend API")
     .setDescription("This is the API for the SciCat Backend")
-    .setVersion("" + process.env.npm_package_version)
+    .setVersion(`api/${apiVersion}`)
     .addBearerAuth()
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   const swaggerOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -37,7 +44,7 @@ async function bootstrap() {
     },
   };
 
-  SwaggerModule.setup("explorer", app, document, swaggerOptions);
+  SwaggerModule.setup(swaggerPath, app, document, swaggerOptions);
 
   app.useGlobalPipes(
     /**
@@ -69,10 +76,6 @@ async function bootstrap() {
   );
 
   app.use(json({ limit: "16mb" }));
-
-  const configService: ConfigService<Record<string, unknown>, false> = app.get(
-    ConfigService,
-  );
 
   const expressSessionSecret = configService.get<string>(
     "expressSessionSecret",
