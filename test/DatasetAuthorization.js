@@ -45,7 +45,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -76,7 +76,7 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       password: TestData.Accounts["archiveManager"]["password"],
     });
   });
-  
+
   afterEach((done) => {
     sandbox.restore();
     done();
@@ -662,7 +662,6 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       pid: TestData.PidPrefix + "/" + uuidv4(),
       ownerGroup: "admin",
     };
-    console.log("0502: pid : " + datasetWithPid["pid"]);
 
     return request(appUrl)
       .post("/api/v3/Datasets")

@@ -13,7 +13,7 @@ describe("0750: DerivedDatasetDatablock: Test Datablocks and their relation to d
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

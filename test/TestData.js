@@ -150,6 +150,7 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
+    datasetName: faker.string.sample(),
   },
 
   RawCorrect: {
@@ -415,13 +416,14 @@ const TestData = {
 
   DerivedCorrectMin: {
     investigator: faker.internet.email(),
-    inputDatasets: [faker.system.filePath()],
+    inputDatasets: [faker.string.uuid()],
     usedSoftware: [faker.internet.url()],
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
     ownerGroup: faker.string.alphanumeric(6),
+    datasetName: faker.string.sample(),
     type: "derived",
   },
 
@@ -847,6 +849,7 @@ const TestData = {
     creationLocation: faker.location.city(),
     principalInvestigator: faker.internet.userName(),
     type: "raw",
+    datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),

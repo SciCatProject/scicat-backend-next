@@ -23,22 +23,14 @@ import {
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import { DatasetType } from "./dataset-type.enum";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
-import {
-  PartialUpdateDatasetDto,
-  UpdateDatasetDto,
-} from "./dto/update-dataset.dto";
-import {
-  PartialUpdateDerivedDatasetDto,
-  UpdateDerivedDatasetDto,
-} from "./dto/update-derived-dataset.dto";
-import {
-  PartialUpdateRawDatasetDto,
-  UpdateRawDatasetDto,
-} from "./dto/update-raw-dataset.dto";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
+import {
+  PartialUpdateDatasetDto,
+  PartialUpdateDatasetWithHistoryDto,
+  UpdateDatasetDto,
+} from "./dto/update-dataset.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -205,10 +197,7 @@ export class DatasetsService {
   // we update the full dataset if exist or create a new one if it does not
   async findByIdAndReplace(
     id: string,
-    updateDatasetDto:
-      | UpdateDatasetDto
-      | UpdateRawDatasetDto
-      | UpdateDerivedDatasetDto,
+    updateDatasetDto: UpdateDatasetDto,
   ): Promise<DatasetClass> {
     const username = (this.request.user as JWTUser).username;
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
@@ -253,9 +242,7 @@ export class DatasetsService {
     id: string,
     updateDatasetDto:
       | PartialUpdateDatasetDto
-      | PartialUpdateRawDatasetDto
-      | PartialUpdateDerivedDatasetDto
-      | UpdateQuery<DatasetDocument>,
+      | PartialUpdateDatasetWithHistoryDto,
   ): Promise<DatasetClass | null> {
     const existingDataset = await this.datasetModel.findOne({ pid: id }).exec();
     // check if we were able to find the dataset
@@ -434,20 +421,28 @@ export class DatasetsService {
   async updateHistory(
     req: Request,
     dataset: DatasetClass,
-    data: UpdateDatasetDto,
+    data: PartialUpdateDatasetDto,
   ) {
     if (req.body.history) {
       delete req.body.history;
     }
 
     if (!req.body.size && !req.body.packedSize) {
-      const updatedFields: Omit<UpdateDatasetDto, "updatedAt" | "updatedBy"> =
-        data;
+      const updatedFields: Omit<
+        PartialUpdateDatasetDto,
+        "updatedAt" | "updatedBy"
+      > = data;
       const historyItem: Record<string, unknown> = {};
       Object.keys(updatedFields).forEach((updatedField) => {
         historyItem[updatedField as keyof UpdateDatasetDto] = {
           currentValue: data[updatedField as keyof UpdateDatasetDto],
-          previousValue: dataset[updatedField as keyof UpdateDatasetDto],
+          previousValue:
+            dataset[
+              updatedField as keyof Omit<
+                UpdateDatasetDto,
+                "attachments" | "origdatablocks" | "datablocks"
+              >
+            ],
         };
       });
       dataset.history = dataset.history ?? [];
@@ -460,18 +455,15 @@ export class DatasetsService {
       if (logbookEnabled) {
         const user = (req.user as JWTUser).username.replace("ldap.", "");
         const datasetPid = dataset.pid;
-        const proposalId =
-          dataset.type === DatasetType.Raw
-            ? (dataset as unknown as DatasetClass).proposalId
-            : undefined;
-        if (proposalId) {
+        const proposalIds = dataset.proposalIds || [];
+        (proposalIds as Array<string>).forEach(async (proposalId) => {
           await Promise.all(
             Object.keys(updatedFields).map(async (updatedField) => {
               const message = `${user} updated "${updatedField}" of dataset with PID ${datasetPid}`;
               await this.logbooksService.sendMessage(proposalId, { message });
             }),
           );
-        }
+        });
       }
     }
   }
