@@ -424,7 +424,7 @@ export class DatasetsController {
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).sampleId,
         ];
       }
-      if ("instrumentIds" in inputObsoleteDataset) {
+      if ("instrumentId" in inputObsoleteDataset) {
         propertiesModifier.instrumentIds = [
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
         ];
@@ -557,7 +557,7 @@ export class DatasetsController {
         obsoleteDatasetDto,
       ) as CreateDatasetDto;
       const createdDataset = await this.datasetsService.create(datasetDto);
-
+      console.log("====createdDataset====", createdDataset);
       const outputObsoleteDatasetDto =
         this.convertCurrentToObsoleteSchema(createdDataset);
 

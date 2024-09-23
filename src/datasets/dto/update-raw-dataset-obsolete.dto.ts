@@ -77,7 +77,7 @@ export class UpdateRawDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   })
   @IsOptional()
   @IsString()
-  readonly instrumentId: string;
+  readonly instrumentId?: string;
 
   @IsOptional()
   investigator?: string;
