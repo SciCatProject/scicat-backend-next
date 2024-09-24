@@ -746,7 +746,8 @@ export class DatasetsController {
       const includeFilters = mergedFilters.include ?? [];
       await Promise.all(
         datasets.map(async (dataset) => {
-          if (includeFilters) {
+	  dataset = this.convertCurrentToObsoleteSchema(dataset);
+          if (includeFilters) {
             await Promise.all(
               includeFilters.map(async ({ relation }) => {
                 switch (relation) {
@@ -1169,7 +1170,7 @@ export class DatasetsController {
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
 
-    return dataset as OutputDatasetObsoleteDto;
+    return this.convertCurrentToObsoleteSchema(dataset) as OutputDatasetObsoleteDto;
   }
 
   // PATCH /datasets/:id
