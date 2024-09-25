@@ -409,16 +409,16 @@ export class DatasetsController {
       version: "v3",
     };
 
+    if ("proposalId" in inputObsoleteDataset) {
+      propertiesModifier.proposalIds = [
+        (inputObsoleteDataset as CreateRawDatasetObsoleteDto).proposalId,
+      ];
+    }
     if (
       inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
       inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
       inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto
     ) {
-      if ("proposalId" in inputObsoleteDataset) {
-        propertiesModifier.proposalIds = [
-          (inputObsoleteDataset as CreateRawDatasetObsoleteDto).proposalId,
-        ];
-      }
       if ("sampleId" in inputObsoleteDataset) {
         propertiesModifier.sampleIds = [
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).sampleId,
@@ -476,15 +476,15 @@ export class DatasetsController {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
       if ("proposalIds" in inputDataset) {
-        propertiesModifier.proposalIds = inputDataset.proposalIds![0];
+        propertiesModifier.proposalId = inputDataset.proposalIds![0];
       }
       if ("sampleIds" in inputDataset) {
-        propertiesModifier.sampleIds = inputDataset.sampleIds![0];
+        propertiesModifier.sampleId = inputDataset.sampleIds![0];
       }
       if ("instrumentIds" in inputDataset) {
-        propertiesModifier.instrumentIds = inputDataset.instrumentIds![0];
+        propertiesModifier.instrumentId = inputDataset.instrumentIds![0];
       }
-      if (inputDataset.type == "raw") {
+      if (inputDataset.type == "derived") {
         if ("investigator" in inputDataset) {
           propertiesModifier.investigator = inputDataset.principalInvestigator;
         }
@@ -499,7 +499,7 @@ export class DatasetsController {
     return outputDataset;
   }
 
-  // POST /datasets
+  // POST https://scicat.ess.eu/api/v3/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetCreate, DatasetClass),
@@ -739,15 +739,16 @@ export class DatasetsController {
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
     // this should be implemented at database level
-    const datasets = (await this.datasetsService.findAll(
-      mergedFilters,
-    )) as OutputDatasetObsoleteDto[];
+    const datasets = await this.datasetsService.findAll(mergedFilters);
+    let outputDatasets: OutputDatasetObsoleteDto[] = [];
     if (datasets && datasets.length > 0) {
       const includeFilters = mergedFilters.include ?? [];
+      outputDatasets = datasets.map((dataset) =>
+        this.convertCurrentToObsoleteSchema(dataset),
+      );
       await Promise.all(
-        datasets.map(async (dataset) => {
-	  dataset = this.convertCurrentToObsoleteSchema(dataset);
-          if (includeFilters) {
+        outputDatasets.map(async (dataset) => {
+          if (includeFilters) {
             await Promise.all(
               includeFilters.map(async ({ relation }) => {
                 switch (relation) {
@@ -781,7 +782,7 @@ export class DatasetsController {
         }),
       );
     }
-    return datasets;
+    return outputDatasets;
   }
 
   // GET /datasets/fullquery
@@ -1170,7 +1171,7 @@ export class DatasetsController {
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
 
-    return this.convertCurrentToObsoleteSchema(dataset) as OutputDatasetObsoleteDto;
+    return dataset as OutputDatasetObsoleteDto;
   }
 
   // PATCH /datasets/:id
