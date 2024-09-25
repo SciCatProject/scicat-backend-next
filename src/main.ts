@@ -7,7 +7,7 @@ import {
   SwaggerModule,
 } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
-import { Logger, ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AllExceptionsFilter, ScicatLogger } from "./loggers/logger.service";
 
@@ -29,11 +29,20 @@ async function bootstrap() {
 
   app.enableCors();
 
-  app.setGlobalPrefix(`api/${apiVersion}`);
+  app.setGlobalPrefix("api");
+
+  // NOTE: This is a workaround to enable versioning for individual routes
+  // Version decorator can be used to specify the version for a route
+  // Read more on https://docs.nestjs.com/techniques/versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: apiVersion,
+  });
+
   const config = new DocumentBuilder()
     .setTitle("SciCat backend API")
     .setDescription("This is the API for the SciCat Backend")
-    .setVersion(`api/${apiVersion}`)
+    .setVersion(`api/v${apiVersion}`)
     .addBearerAuth()
     .build();
 
