@@ -288,6 +288,15 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   @IsOptional()
   @IsNumber()
   readonly dataQualityMetrics?: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "The ID of the proposal to which the dataset belongs.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly proposalId?: string;
 }
 
 export class PartialUpdateDatasetObsoleteDto extends PartialType(
