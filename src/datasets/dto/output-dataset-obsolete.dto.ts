@@ -95,15 +95,6 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
     type: String,
     required: false,
-    description: "The ID of the proposal to which the dataset belongs.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly proposalId?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
     description: "ID of the sample used when collecting the data.",
   })
   @IsOptional()

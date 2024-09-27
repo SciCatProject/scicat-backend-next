@@ -52,14 +52,14 @@ export class UpdateRawDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @IsString()
   readonly dataFormat?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "The ID of the proposal to which the dataset belongs.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly proposalId?: string;
+  // @ApiProperty({
+  //   type: String,
+  //   required: false,
+  //   description: "The ID of the proposal to which the dataset belongs.",
+  // })
+  // @IsOptional()
+  // @IsString()
+  // readonly proposalId?: string;
 
   @ApiProperty({
     type: String,

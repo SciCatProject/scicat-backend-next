@@ -232,6 +232,8 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
+    instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
     type: "raw",
     keywords: ["sls", "protein"],
   },
@@ -451,6 +453,9 @@ const TestData = {
     ownerGroup: "p34123",
     accessGroups: [],
     type: "derived",
+    proposalId: "10.540.16635/20110123",
+    //instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    //sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
   },
 
   DerivedWrong: {
