@@ -99,6 +99,9 @@ describe("0700: DerivedDataset: Derived Datasets", () => {
           .and.be.equal(TestData.DerivedCorrect.owner);
         res.body.should.have.property("type").and.be.equal("derived");
         res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        //res.body.should.have.property("sampleId").and.be.string;
+        //res.body.should.have.property("instrumentId").and.be.string;
         pid = res.body["pid"];
       });
   });
