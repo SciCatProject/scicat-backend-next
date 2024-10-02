@@ -558,13 +558,13 @@ export class JobsController {
     });
   }
 
-  async performJobCreateAction(jobInstance: JobClass): Promise<void> {
+  async performJobCreateAction(jobInstance: JobClass, dto: CreateJobDto): Promise<void> {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
 
     await Promise.all(
       jobConfig.create.actions.map((action) => {
         if (action.validate) {
-          return action.validate(jobInstance);
+          return action.validate(dto);
         } else {
           return Promise.resolve();
         }
@@ -656,7 +656,7 @@ export class JobsController {
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    await this.performJobCreateAction(createdJobInstance);
+    await this.performJobCreateAction(createdJobInstance, createJobDto);
     return createdJobInstance;
   }
 
