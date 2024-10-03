@@ -58,7 +58,13 @@
     {
       "jobType": "public",
       "create": {
-        "auth": "#all"
+        "auth": "#all",
+        "actions": [
+          {
+            "actionType": "validate",
+            "required": ["jobParams.datasetIds[0]"]
+          }
+        ]
       },
       "statusUpdate": {
         "auth": "#all"

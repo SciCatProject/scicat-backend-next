@@ -22,6 +22,5 @@ describe("Job configuration", () => {
     const action = create.actions[0];
     expect(action instanceof LogJobAction);
     expect(action.getActionType()).toBe("log");
-    // action.validate({ config: null });
   });
 });
