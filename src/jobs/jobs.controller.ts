@@ -621,19 +621,6 @@ export class JobsController {
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
-    // throw an error if no jobParams are passed
-    if (
-      !createJobDto.jobParams ||
-      Object.keys(createJobDto.jobParams).length == 0
-    ) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Job parameters need to be defined.",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     // Validate that request matches the current configuration
     // Check job authorization
     const jobInstance = await this.instanceAuthorizationJobCreate(
