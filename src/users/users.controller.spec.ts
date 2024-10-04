@@ -4,8 +4,6 @@ import { CaslModule } from "src/casl/casl.module";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
-import { Request } from "express";
-import { UserSettings } from "./schemas/user-settings.schema";
 
 class UsersServiceMock {
   findByIdUserIdentity(id: string) {
@@ -27,13 +25,14 @@ class UsersServiceMock {
 const mockUserSettings = {
   _id: "user1",
   userId: "user1",
+  columns: [],
   datasetCount: 25,
   jobCount: 25,
-  externalSettings: {
-    filters: [{ LocationFilter: true }, { PidFilter: true }],
-    conditions: [{ field: "status", value: "active", operator: "equals" }],
-    columns: [],
-  },
+  filters: [
+    { type: "LocationFilterComponent", visible: true },
+    { type: "PidFilterComponent", visible: true },
+  ],
+  conditions: [{ field: "status", value: "active", operator: "equals" }],
 };
 
 class AuthServiceMock {}
@@ -55,6 +54,7 @@ describe("UsersController", () => {
     controller = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
 
+    // bypass authorization
     jest
       .spyOn(controller as UsersController, "checkUserAuthorization")
       .mockImplementation(() => Promise.resolve());
@@ -65,74 +65,45 @@ describe("UsersController", () => {
   });
 
   it("should return user settings with filters and conditions", async () => {
+    jest
+      .spyOn(usersService, "findByIdUserSettings")
+      .mockResolvedValue(mockUserSettings);
+
     const userId = "user1";
-    mockUserSettings._id = userId;
+    const result = await controller.getSettings(
+      { user: { _id: userId } },
+      userId,
+    );
 
-    const mockRequest: Partial<Request> = {
-      user: { _id: userId },
-    };
-
-    const result = await controller.getSettings(mockRequest as Request, userId);
-
-    // Assert
     expect(result).toEqual(mockUserSettings);
-    expect(result?.externalSettings?.filters).toBeDefined();
-    expect(
-      (result?.externalSettings?.filters as Record<string, unknown>).length,
-    ).toBeGreaterThan(0);
-    expect(result?.externalSettings?.conditions).toBeDefined();
-    expect(
-      (result?.externalSettings?.conditions as Record<string, unknown>).length,
-    ).toBeGreaterThan(0);
+    expect(result.filters).toBeDefined();
+    expect(result.filters.length).toBeGreaterThan(0);
+    expect(result.conditions).toBeDefined();
+    expect(result.conditions.length).toBeGreaterThan(0);
   });
 
   it("should update user settings with filters and conditions", async () => {
-    const userId = "user-id";
-    mockUserSettings._id = userId;
-
     const updatedSettings = {
       ...mockUserSettings,
-      externalSettings: {
-        filters: [{ PidFilter: true }],
-        conditions: [
-          { field: "status", value: "inactive", operator: "equals" },
-        ],
-        columns: [],
-      },
-    };
-
-    const mockRequest: Partial<Request> = {
-      user: { _id: userId },
-    };
-
-    const expectedResponse: UserSettings = {
-      ...updatedSettings,
-      _id: userId,
-      userId: userId,
-      datasetCount: updatedSettings.datasetCount,
-      jobCount: updatedSettings.jobCount,
-      externalSettings: updatedSettings.externalSettings,
+      filters: [{ type: "PidFilterContainsComponent", visible: false }],
+      conditions: [{ field: "status", value: "inactive", operator: "equals" }],
     };
 
     jest
       .spyOn(usersService, "findOneAndUpdateUserSettings")
-      .mockResolvedValue(expectedResponse);
+      .mockResolvedValue(updatedSettings);
 
+    const userId = "user-id";
     const result = await controller.updateSettings(
-      mockRequest as Request,
+      { user: { _id: userId } },
       userId,
       updatedSettings,
     );
 
-    expect(result).toEqual(expectedResponse);
-    expect(result?.externalSettings?.filters).toBeDefined();
-    expect(
-      (result?.externalSettings?.filters as Record<string, unknown[]>).length,
-    ).toBe(1);
-    expect(result?.externalSettings?.conditions).toBeDefined();
-    expect(
-      (result?.externalSettings?.conditions as Record<string, unknown[]>)
-        .length,
-    ).toBe(1);
+    expect(result).toEqual(updatedSettings);
+    expect(result.filters).toBeDefined();
+    expect(result.filters.length).toBe(1);
+    expect(result.conditions).toBeDefined();
+    expect(result.conditions.length).toBe(1);
   });
 });
