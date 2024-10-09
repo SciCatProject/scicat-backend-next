@@ -789,7 +789,8 @@ export class JobsController {
   @Get("/fullfacet")
   @ApiOperation({
     summary: "It returns a list of job facets matching the filter provided.",
-    description: "It returns a list of job facets matching the filter provided.",
+    description:
+      "It returns a list of job facets matching the filter provided.",
   })
   @ApiQuery({
     name: "fields",
