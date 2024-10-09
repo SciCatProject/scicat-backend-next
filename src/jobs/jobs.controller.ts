@@ -52,6 +52,7 @@ import {
 } from "src/common/utils";
 import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
+import { IJobFields } from "./interfaces/job-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -575,8 +576,6 @@ export class JobsController {
 
   async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
-
-    // TODO - what shall we do when configVersion does not match?
     if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
@@ -586,7 +585,6 @@ export class JobsController {
         "JobStatusUpdate",
       );
     }
-
     for (const action of jobConfig.statusUpdate.actions) {
       await this.performJobAction(jobInstance, action);
     }
@@ -688,7 +686,6 @@ export class JobsController {
     if (!canUpdateStatus) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
-
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(
       id,
@@ -762,10 +759,10 @@ export class JobsController {
           const jobInstance = await this.generateJobInstanceForPermissions(
             jobsFound[i],
           );
-          const canCreate =
+          const canRead =
             ability.can(Action.JobReadAny, JobClass) ||
             ability.can(Action.JobReadAccess, jobInstance);
-          if (canCreate) {
+          if (canRead) {
             jobsAccessible.push(jobsFound[i]);
           }
         }
@@ -792,11 +789,7 @@ export class JobsController {
   @Get("/fullfacet")
   @ApiOperation({
     summary: "It returns a list of job facets matching the filter provided.",
-    description: `
-      This endpoint was added for completeness reasons, 
-      so that the frontend can work with the new backend version. 
-      For now, it always returns an empty array.
-    `,
+    description: "It returns a list of job facets matching the filter provided.",
   })
   @ApiQuery({
     name: "fields",
@@ -820,36 +813,44 @@ export class JobsController {
   async fullFacet(
     @Req() request: Request,
     @Query() filters: { fields?: string; facets?: string },
-  ): Promise<JobClass[]> {
+  ): Promise<Record<string, unknown>[]> {
     try {
-      // const parsedFilters: IFacets<FilterQuery<JobDocument>> = {
-      //   fields: JSON.parse(filters.fields ?? "{}" as string),
-      //   facets: JSON.parse(filters.facets ?? "[]" as string),
-      // };
-      // const jobsFound = await this.jobsService.fullfacet(parsedFilters);
-      const jobsAccessible: JobClass[] = [];
+      const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
+      const queryFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+        fields: fields,
+        limits: JSON.parse("{}" as string),
+      };
+      const jobsFound = await this.jobsService.fullquery(queryFilters);
+      const jobIdsAccessible: string[] = [];
 
       // for each job run a casl JobReadOwner on a jobInstance
-      // for (const i in jobsFound) {
-      //   const jobConfiguration = this.getJobTypeConfiguration(
-      //     jobsFound[i].type,
-      //   );
-      //   const ability = this.caslAbilityFactory.jobsInstanceAccess(
-      //     request.user as JWTUser,
-      //     jobConfiguration,
-      //   );
-      //   // check if the user can get this job
-      //   const jobInstance = await this.generateJobInstanceForPermissions(
-      //     jobsFound[i],
-      //   );
-      //   const canCreate =
-      //     ability.can(Action.JobReadAny, JobClass) ||
-      //     ability.can(Action.JobReadAccess, jobInstance);
-      //   if (canCreate) {
-      //     jobsAccessible.push(jobsFound[i]);
-      //   }
-      // }
-      return jobsAccessible;
+      if (jobsFound != null) {
+        for (const i in jobsFound) {
+          const jobConfiguration = this.getJobTypeConfiguration(
+            jobsFound[i].type,
+          );
+          const ability = this.caslAbilityFactory.jobsInstanceAccess(
+            request.user as JWTUser,
+            jobConfiguration,
+          );
+          // check if the user can get this job
+          const jobInstance = await this.generateJobInstanceForPermissions(
+            jobsFound[i],
+          );
+          const canRead =
+            ability.can(Action.JobReadAny, JobClass) ||
+            ability.can(Action.JobReadAccess, jobInstance);
+          if (canRead) {
+            jobIdsAccessible.push(jobsFound[i]._id);
+          }
+        }
+      }
+      fields._id = { $in: jobIdsAccessible };
+      const facetFilters: IFacets<IJobFields> = {
+        fields: fields,
+        facets: JSON.parse(filters.facets ?? ("[]" as string)),
+      };
+      return await this.jobsService.fullfacet(facetFilters);
     } catch (e) {
       throw new HttpException(
         {
@@ -967,10 +968,10 @@ export class JobsController {
         const jobInstance = await this.generateJobInstanceForPermissions(
           jobsFound[i],
         );
-        const canCreate =
+        const canRead =
           ability.can(Action.JobReadAny, JobClass) ||
           ability.can(Action.JobReadAccess, jobInstance);
-        if (canCreate) {
+        if (canRead) {
           jobsAccessible.push(jobsFound[i]);
         }
       }
@@ -1017,7 +1018,6 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-
     Logger.log(`Deleting job with id ${id}!`);
     return this.jobsService.remove({ _id: id });
   }
