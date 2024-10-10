@@ -3877,7 +3877,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("2000: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+  it("2000: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.1, limited by 5", async () => {
     const queryFields = { createdBy: "user5.1" };
     const queryLimits = { limit: 5 };
     return request(appUrl)
@@ -4004,19 +4004,6 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("3000: Fullfacet jobs as a user from ADMIN_GROUPS, which should always return an empty array", async () => {
-    return request(appUrl)
-      .get(`/api/v3/Jobs/fullfacet`)
-      .send({})
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(0);
-      });
-  });
-
   it("3010: Fullfacet jobs as unauthenticated user, which should be forbidden", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4026,4 +4013,149 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
+  it("3020: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})        
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 36 }] });
+      });
+  });
+
+  it("3030: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
+    const query = { createdBy: "user1" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 11 }] });
+      });
+  });
+
+  it("3040: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+    const queryFields = { createdBy: "user5.1" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 10 }] });
+      });
+  });
+
+  it("3050: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
+    const query = { createdBy: "user5.2" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
+      });
+  });
+
+  it("3060: Fullfacet jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
+    const query = { createdBy: "anonymous" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 2 }] });
+      });
+  });
+
+  it("3070: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 14 }] });
+      });
+  });
+
+  it("3080: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+    const query = { createdBy: "user1" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 11 }] });
+      });
+  });
+
+  it("3090: Fullfacet jobs as a normal user", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 10 }] });
+      });
+  });
+
+  it("3100: Fullfacet jobs as a normal user (user5.1) that were created by admin", async () => {
+    const query = { createdBy: "admin" };
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .query("fields=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [] });
+      });
+  });
+
+  it("3110: Fullfacet jobs as another normal user (user5.2)", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullfacet`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 2 }] });
+      });
+  });
 });
