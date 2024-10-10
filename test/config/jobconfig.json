@@ -68,6 +68,27 @@
     "statusUpdate": {
       "auth": "@group5"
     }
+  },
+  {
+    "jobType": "validate",
+    "create": {
+      "auth": "admin",
+      "actions": [
+        {
+          "actionType": "validate",
+          "required": ["jobParams.requiredParam"]
+        }
+      ]
+    },
+    "statusUpdate": {
+      "auth": "admin",
+      "actions": [
+        {
+          "actionType": "validate",
+          "required": ["jobResultObject.requiredParam"]
+        }
+      ]
+    }
   }
   ]
 }

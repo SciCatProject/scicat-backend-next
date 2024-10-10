@@ -1,10 +1,6 @@
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsEmail, IsObject, IsOptional, IsString } from "class-validator";
-import { JobConfig } from "../config/jobconfig";
 
-export type CreateJobDtoWithConfig = CreateJobDto & {
-  configuration: JobConfig;
-};
 @ApiTags("jobs")
 export class CreateJobDto {
   @ApiProperty({
