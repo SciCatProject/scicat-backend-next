@@ -32,7 +32,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import configuration from "src/config/configuration";
@@ -44,8 +44,13 @@ import { UsersService } from "src/users/users.service";
 import {
   filterDescriptionSimplified,
   filterExampleSimplified,
+  fullQueryDescriptionLimits,
+  fullQueryExampleLimits,
+  jobsFullQueryExampleFields,
+  jobsFullQueryDescriptionFields,
 } from "src/common/utils";
 import { JobAction, JobDto, JobConfig } from "./config/jobconfig";
+import { IJobFields } from "./interfaces/job-filters.interface";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -650,19 +655,6 @@ export class JobsController {
     @Body() createJobDto: CreateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
-    // throw an error if no jobParams are passed
-    if (
-      !createJobDto.jobParams ||
-      Object.keys(createJobDto.jobParams).length == 0
-    ) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: "Job parameters need to be defined.",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     // Validate that request matches the current configuration
     // Check job authorization
     const jobInstance = await this.instanceAuthorizationJobCreate(
@@ -748,6 +740,171 @@ export class JobsController {
       await this.performActions(jobConfig.statusUpdate.actions, updatedJob);
     }
     return updatedJob;
+  }
+
+  /**
+   * Get fullquery
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullquery")
+  @ApiOperation({
+    summary: "It returns a list of jobs matching the query provided.",
+    description: "It returns a list of jobs matching the query provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Filters to apply when retrieving jobs.\n" +
+      jobsFullQueryDescriptionFields,
+    required: false,
+    type: String,
+    example: jobsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order.\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Return jobs requested.",
+  })
+  async fullQuery(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<JobClass[] | null> {
+    try {
+      const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+        fields: JSON.parse(filters.fields ?? ("{}" as string)),
+        limits: JSON.parse(filters.limits ?? ("{}" as string)),
+      };
+      const jobsFound = await this.jobsService.fullquery(parsedFilters);
+      const jobsAccessible: JobClass[] = [];
+
+      // for each job run a casl JobReadOwner on a jobInstance
+      if (jobsFound != null) {
+        for (const i in jobsFound) {
+          const jobConfiguration = this.getJobTypeConfiguration(
+            jobsFound[i].type,
+          );
+          const ability = this.caslAbilityFactory.jobsInstanceAccess(
+            request.user as JWTUser,
+            jobConfiguration,
+          );
+          // check if the user can get this job
+          const jobInstance = await this.generateJobInstanceForPermissions(
+            jobsFound[i],
+          );
+          const canRead =
+            ability.can(Action.JobReadAny, JobClass) ||
+            ability.can(Action.JobReadAccess, jobInstance);
+          if (canRead) {
+            jobsAccessible.push(jobsFound[i]);
+          }
+        }
+      }
+      return jobsAccessible;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Get fullfacet
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullfacet")
+  @ApiOperation({
+    summary: "It returns a list of job facets matching the filter provided.",
+    description:
+      "It returns a list of job facets matching the filter provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested.",
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: "facets",
+    description:
+      "Define a list of field names, for which facet counts should be calculated.",
+    required: false,
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Return jobs requested.",
+  })
+  async fullFacet(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    try {
+      const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
+      const queryFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
+        fields: fields,
+        limits: JSON.parse("{}" as string),
+      };
+      const jobsFound = await this.jobsService.fullquery(queryFilters);
+      const jobIdsAccessible: string[] = [];
+
+      // for each job run a casl JobReadOwner on a jobInstance
+      if (jobsFound != null) {
+        for (const i in jobsFound) {
+          const jobConfiguration = this.getJobTypeConfiguration(
+            jobsFound[i].type,
+          );
+          const ability = this.caslAbilityFactory.jobsInstanceAccess(
+            request.user as JWTUser,
+            jobConfiguration,
+          );
+          // check if the user can get this job
+          const jobInstance = await this.generateJobInstanceForPermissions(
+            jobsFound[i],
+          );
+          const canRead =
+            ability.can(Action.JobReadAny, JobClass) ||
+            ability.can(Action.JobReadAccess, jobInstance);
+          if (canRead) {
+            jobIdsAccessible.push(jobsFound[i]._id);
+          }
+        }
+      }
+      fields._id = { $in: jobIdsAccessible };
+      const facetFilters: IFacets<IJobFields> = {
+        fields: fields,
+        facets: JSON.parse(filters.facets ?? ("[]" as string)),
+      };
+      return await this.jobsService.fullfacet(facetFilters);
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: (e as Error).message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   /**
@@ -856,10 +1013,10 @@ export class JobsController {
         const jobInstance = await this.generateJobInstanceForPermissions(
           jobsFound[i],
         );
-        const canCreate =
+        const canRead =
           ability.can(Action.JobReadAny, JobClass) ||
           ability.can(Action.JobReadAccess, jobInstance);
-        if (canCreate) {
+        if (canRead) {
           jobsAccessible.push(jobsFound[i]);
         }
       }
@@ -906,7 +1063,6 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-
     Logger.log(`Deleting job with id ${id}!`);
     return this.jobsService.remove({ _id: id });
   }
