@@ -76,7 +76,15 @@
       "actions": [
         {
           "actionType": "validate",
-          "required": ["jobParams.requiredParam"]
+          "request": {
+            "jobParams.requiredParam": {"type":"string"},
+            "jobParams.arrayOfStrings": {
+              "type":"array",
+              "items":{
+                "type":"string"
+              }
+            }
+          }
         }
       ]
     },
@@ -85,7 +93,22 @@
       "actions": [
         {
           "actionType": "validate",
-          "required": ["jobResultObject.requiredParam"]
+          "request": {
+            "$": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "required": ["jobResultObject"],
+              "properties": {
+                "jobResultObject":{
+                  "type":"object",
+                  "required": ["requiredParam", "arrayOfStrings"],
+                  "properties": {
+                    "requiredParam":{"type":"string"},
+                    "arrayOfStrings":{"type":"array","items":{"type":"string"}}
+                  }
+                }
+              }
+            }
+          }
         }
       ]
     }

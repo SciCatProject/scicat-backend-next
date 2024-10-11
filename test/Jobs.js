@@ -3829,99 +3829,191 @@ describe("1100: Jobs: Test New Job Model", () => {
         });
   });
 
-  it("1970: validation fails without required parameters", async () => {
-    const newDataset = {
-      ...jobValidate,
-      jobParams: {
-        optionalParam: false,
-      },
-    };
+  describe("1970: Validate Job Action", () => {
 
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(newDataset)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("type")
-        res.body.should.have.property("message").and.be.equal("Invalid request. Requires 'jobParams.requiredParam'");
-      });
+    it("1970: create validate job fails without required parameters", async () => {
+      const newDataset = {
+        ...jobValidate,
+        jobParams: {
+          optionalParam: false,
+        },
+      };
+
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Requires 'jobParams.requiredParam'");
+        });
+    });
+
+    it("1980: create validate job fails with the wrong types", async () => {
+      const newDataset = {
+        type: "validate",
+        jobParams: {
+          requiredParam: 123,
+          arrayOfStrings: ["ok"]
+        },
+      };
+
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.requiredParam'");
+        });
+    });
+    it("1981: create validate job fails with the wrong types", async () => {
+      const newDataset = {
+        type: "validate",
+        jobParams: {
+          requiredParam: "ok",
+          arrayOfStrings: "bad"
+        },
+      };
+
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings'");
+        });
+    });
+    it("1982: create validate job fails with the wrong types", async () => {
+      const newDataset = {
+        type: "validate",
+        jobParams: {
+          requiredParam: "ok",
+          arrayOfStrings: [123]
+        },
+      };
+
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings[*]'");
+        });
+    });
+
+    it("1985: create validate succeeds with the right types", async () => {
+      const newDataset = {
+        type: "validate",
+        jobParams: {
+          requiredParam: "ok",
+          arrayOfStrings: ["ok"]
+        },
+      };
+
+      return request(appUrl)
+        .post("/api/v3/Jobs")
+        .send(newDataset)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        //.expect(TestData.EntryCreatedStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("type").and.equal("validate");
+          res.body.should.have.property("createdBy").and.equal("admin");
+          res.body.should.have.property("jobParams").that.deep.equals(newDataset.jobParams);
+
+          jobIdValidate1 = res.body["id"];
+          encodedJobIdValidate1 = encodeURIComponent(jobIdValidate1);
+        });
+    });
+
+    it("1990: update validate fails without the required parameters", async () => {
+      const update = {
+        statusCode: "finished",
+        statusMessage: "done",
+        jobResultObject: {
+          requiredParam: "ok",
+          arrayOfStringsMissing: ["fail"]
+        }
+      };
+
+      return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .send(update)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for '$'");
+        });
+
+    });
+
+    it("1991: update validate fails with incorrect types", async () => {
+      const update = {
+        statusCode: "finished",
+        statusMessage: "done",
+        jobResultObject: {
+          requiredParam: "ok",
+          arrayOfStringsMissing: [123]
+        }
+      };
+
+      return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .send(update)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.not.have.property("type")
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for '$'");
+        });
+
+    });
+
+
+    it("2000: updating validate succeeds with the required parameters", async () => {
+      const update = {
+        statusCode: "finished",
+        statusMessage: "done",
+        jobResultObject: {
+          requiredParam: "ok",
+          arrayOfStrings: ["ok"]
+        }
+      };
+
+      return request(appUrl)
+        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .send(update)
+        .set("Accept", "application/json")
+        .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.have.property("type").and.equal("validate");
+          res.body.should.have.property("createdBy").and.equal("admin");
+          res.body.should.have.property("jobParams").that.deep.equals(update.jobResultObject);
+          res.body.should.have.property("jobResultObject").that.deep.equals(update.jobResultObject);
+        });
+    });
   });
-
-
-  it("1980: validation succeeds with the required parameter", async () => {
-    const newDataset = {
-      type: "validate",
-      jobParams: {
-        requiredParam: false,
-      },
-    };
-
-    return request(appUrl)
-      .post("/api/v3/Jobs")
-      .send(newDataset)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.EntryCreatedStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.equal("validate");
-        res.body.should.have.property("createdBy").and.equal("admin");
-        res.body.should.have.property("jobParams").that.deep.equals({requiredParam: false});
-
-        jobIdValidate1 = res.body["id"];
-        encodedJobIdValidate1 = encodeURIComponent(jobIdValidate1);
-      });
-  });
-
-  it("1990: updating fails without the required parameter", async () => {
-    const update = {
-      statusCode: "finished",
-      statusMessage: "done",
-      jobResultObject: {
-        optionalParam: true
-      }
-    };
-
-    return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
-      .send(update)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.BadRequestStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.not.have.property("type")
-        res.body.should.have.property("message").and.be.equal("Invalid request. Requires 'jobResultObject.requiredParam'");
-      });
-
-  });
-
-  it("2000: updating succeeds with the required parameter", async () => {
-    const update = {
-      statusCode: "finished",
-      statusMessage: "done",
-      jobResultObject: {
-        requiredParam: true
-      }
-    };
-
-    return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
-      .send(update)
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulPatchStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.have.property("type").and.equal("validate");
-        res.body.should.have.property("createdBy").and.equal("admin");
-        res.body.should.have.property("jobParams").that.deep.equals({requiredParam: false});
-        res.body.should.have.property("jobResultObject").that.deep.equals({requiredParam: true});
-      });
-  });
-
-
 });
