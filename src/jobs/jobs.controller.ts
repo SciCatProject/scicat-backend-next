@@ -17,7 +17,7 @@ import {
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
-import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
+import { CreateJobDto } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -50,7 +50,6 @@ import {
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
-import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
 import { IJobFields } from "./interfaces/job-filters.interface";
 
@@ -558,7 +557,7 @@ export class JobsController {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: `Invalid job input. Job '${jobInstance.type}' unable to perfom 
+          message: `Invalid job input. Job '${jobInstance.type}' unable to perfom
             action '${action.getActionType()}' due to ${err}`,
         },
         HttpStatus.BAD_REQUEST,
