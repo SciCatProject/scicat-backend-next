@@ -1,24 +1,4 @@
-/**
- * Validates job DTOs at runtime
- *
- * This allows validation of untyped portions of the request body to be configured
- * in the jobconfig file.
- *
- * Example config:
- * <pre>{
- *   "actionType": "validate",
- *   "required": ["jobParms.datasetIds"]
- * }</pre>
- *
- * Each element of the "required" array is a JSONPath expression that must be present in
- * the request body.
- */
-import {
-  HttpException,
-  HttpStatus,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
+import { HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
 import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import { JSONPath } from "jsonpath-plus";
@@ -62,10 +42,10 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
 
   async validate(dto: T) {
     for (const [path, schema] of Object.entries(this.request)) {
-      const result: any[] = JSONPath({ path: path, json: dto });
+      const result: unknown[] = JSONPath({ path: path, json: dto });
       if (result !== null && result?.length > 0) {
         result.forEach((entry) => {
-          if(!schema(entry)) {
+          if (!schema(entry)) {
             throw new HttpException(
               {
                 status: HttpStatus.BAD_REQUEST,
@@ -100,12 +80,20 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
         `Missing connection parameter in 'validate' action: 'request'`,
       );
     }
-    const request = data["request"] as Record<string, any>;
+    const request = data["request"] as Record<string, unknown>;
 
-    const ajv = new Ajv();
+    const ajv = new Ajv({
+      strictSchema: false,
+      strictTypes: false,
+    });
     this.request = Object.fromEntries(
-      Object.entries(request).map(([path, schema]) =>
-      [path, ajv.compile<T>(schema)])
+      Object.entries(request).map(([path, schema]) => {
+        if (typeof schema !== "object" || schema === null) {
+          throw new Error("Schema must be a valid object.");
+        }
+
+        return [path, ajv.compile<T>(schema)];
+      }),
     );
   }
 }

@@ -6,16 +6,16 @@ const createJobBase = {
   ownerUser: "owner",
   ownerGroup: "group",
   contactEmail: "email@example.com",
-}
+};
 
 describe("ValiateAction", () => {
   const config = {
     actionType: "validate",
     request: {
-      "jobParams.stringVal": {type: "string"},
-      "jobParams.requiredArray[*]": {type: "string"},
-      "jobParams.numberVal": {type: "number"},
-      "jobParams": {"required": ["nonNull"]},
+      "jobParams.stringVal": { type: "string" },
+      "jobParams.requiredArray[*]": { type: "string" },
+      "jobParams.numberVal": { type: "number" },
+      jobParams: { required: ["nonNull"] },
     },
   };
   const action = new ValidateAction<CreateJobDto>(config);
@@ -48,21 +48,25 @@ describe("ValiateAction", () => {
       },
     };
 
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Invalid value for 'jobParams'");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Invalid value for 'jobParams'",
+    );
   });
 
   it("should fail if string type is wrong", async () => {
     const dto: CreateJobDto = {
       ...createJobBase,
       jobParams: {
-        stringVal: 0xDEADBEEF, // wrong type
+        stringVal: 0xdeadbeef, // wrong type
         numberVal: 1,
         nonNull: "value1",
         requiredArray: ["ok"],
       },
     };
 
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Invalid value for 'jobParams.stringVal");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Invalid value for 'jobParams.stringVal",
+    );
   });
 
   it("should fail if number type is wrong", async () => {
@@ -76,9 +80,10 @@ describe("ValiateAction", () => {
       },
     };
 
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Invalid value for 'jobParams.numberVal'");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Invalid value for 'jobParams.numberVal'",
+    );
   });
-
 
   it("should fail if requiredArray is ommitted", async () => {
     const dto: CreateJobDto = {
@@ -91,7 +96,9 @@ describe("ValiateAction", () => {
       },
     };
 
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Requires 'jobParams.requiredArray[*]'");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Requires 'jobParams.requiredArray[*]'",
+    );
   });
 
   it("should fail if requiredArray is empty", async () => {
@@ -104,7 +111,9 @@ describe("ValiateAction", () => {
         requiredArray: [],
       },
     };
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Requires 'jobParams.requiredArray[*]'");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Requires 'jobParams.requiredArray[*]'",
+    );
   });
 
   it("should fail if requiredArray has the wrong type", async () => {
@@ -114,10 +123,12 @@ describe("ValiateAction", () => {
         stringVal: "ok",
         numberVal: "error",
         nonNull: "value1",
-        requiredArray: [0xDEADBEEF],
+        requiredArray: [0xdeadbeef],
       },
     };
 
-    await expect(action.validate(dto)).rejects.toThrow("Invalid request. Invalid value for 'jobParams.requiredArray[*]'");
+    await expect(action.validate(dto)).rejects.toThrow(
+      "Invalid request. Invalid value for 'jobParams.requiredArray[*]'",
+    );
   });
 });
