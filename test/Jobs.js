@@ -2313,9 +2313,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0780: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId1}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2326,9 +2326,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0790: Adds a Status update to a job as a user from ADMIN_GROUPS for another user's job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2339,9 +2339,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0800: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2352,9 +2352,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0810: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2365,9 +2365,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0820: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2378,9 +2378,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0830: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2391,9 +2391,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0840: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2404,9 +2404,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0850: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2417,9 +2417,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0860: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2430,9 +2430,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0870: Adds a Status update to a job as a normal user  for his/her job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2443,9 +2443,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0880: Adds a Status update to a job as a normal user for another user's job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2456,9 +2456,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0890: Adds a Status update to a job as a normal user for his/her group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2469,9 +2469,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0900: Adds a Status update to a job as a normal user for another user's group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2482,9 +2482,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0910: Adds a Status update to a job as a normal user for anonymous user's group in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2495,9 +2495,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0920: Adds a Status update to a job as unauthhenticated user for anonymous job in '#all' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .expect(TestData.SuccessfulPatchStatusCode)
@@ -2507,9 +2507,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0930: Adds a Status update to a job as unauthhenticated user for anouther group's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2519,9 +2519,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0940: Adds a Status update to a job as unauthhenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobId2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2531,9 +2531,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0950: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser1}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2544,9 +2544,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0960: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerUser' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2557,9 +2557,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0970: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2570,9 +2570,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0980: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2583,9 +2583,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("0990: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2596,9 +2596,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1000: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2609,9 +2609,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1010: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2622,9 +2622,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1020: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2635,9 +2635,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1030: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2648,9 +2648,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1040: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2661,9 +2661,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1050: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2674,9 +2674,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1060: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2687,9 +2687,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1070: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2700,9 +2700,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1080: Adds a Status update to a job as a normal user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2713,9 +2713,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1090: Adds a Status update to a job as unauthhenticated user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUser6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2725,9 +2725,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1100: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup1}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2738,9 +2738,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1110: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerGroup' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2751,9 +2751,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1120: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerGroup' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2764,9 +2764,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1130: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2778,9 +2778,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     it("1140: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
-          .send({ 
-            statusMessage: "update status of a job", 
-            statusCode: "job finished/blocked/etc", 
+          .send({
+            statusMessage: "update status of a job",
+            statusCode: "job finished/blocked/etc",
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2790,9 +2790,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     it("1150: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
-          .send({ 
-            statusMessage: "update status of a job", 
-            statusCode: "job finished/blocked/etc", 
+          .send({
+            statusMessage: "update status of a job",
+            statusCode: "job finished/blocked/etc",
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2802,9 +2802,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     it("1160: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerGroup' configuration", async () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
-          .send({ 
-            statusMessage: "update status of a job", 
-            statusCode: "job finished/blocked/etc", 
+          .send({
+            statusMessage: "update status of a job",
+            statusCode: "job finished/blocked/etc",
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2814,9 +2814,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     it("1170: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
-          .send({ 
-            statusMessage: "update status of a job", 
-            statusCode: "job finished/blocked/etc", 
+          .send({
+            statusMessage: "update status of a job",
+            statusCode: "job finished/blocked/etc",
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2827,9 +2827,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     it("1180: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
       return request(appUrl)
           .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
-          .send({ 
-            statusMessage: "update status of a job", 
-            statusCode: "job finished/blocked/etc", 
+          .send({
+            statusMessage: "update status of a job",
+            statusCode: "job finished/blocked/etc",
           })
           .set("Accept", "application/json")
           .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2840,9 +2840,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1190: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2853,9 +2853,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1200: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2866,9 +2866,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1210: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2879,9 +2879,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1220: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2892,9 +2892,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1230: Adds a Status update to a job as a normal user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -2905,9 +2905,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1240: Adds a Status update to a job as unauthhenticated user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroup6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .expect(TestData.AccessForbiddenStatusCode)
@@ -2917,9 +2917,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1250: Adds a Status update to a job as a user from ADMIN_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec1}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2930,9 +2930,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1260: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in 'USER5.1' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2943,9 +2943,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1270: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2956,9 +2956,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1280: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -2969,9 +2969,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1290: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2982,9 +2982,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1300: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -2995,9 +2995,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1310: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3008,9 +3008,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1320: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3021,9 +3021,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1330: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3034,9 +3034,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1340: Adds a Status update to a job as user5.1 for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3047,9 +3047,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1350: Adds a Status update to a job as user5.1 for another user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3060,9 +3060,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1360: Adds a Status update to a job as user5.1 for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3073,9 +3073,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1370: Adds a Status update to a job as user5.1 for another user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3086,9 +3086,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1380: Adds a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3099,9 +3099,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1390: Adds a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec7}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3112,9 +3112,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1400: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3125,9 +3125,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1410: Adds a Status update to a job as user5.2 for another user in his/her group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdUserSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3138,9 +3138,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1420: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec1}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3151,9 +3151,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1430: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '@group5' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3164,9 +3164,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1440: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
   return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
-      .send({ 
-        statusMessage: "update status of a job", 
-        statusCode: "job finished/blocked/etc", 
+      .send({
+        statusMessage: "update status of a job",
+        statusCode: "job finished/blocked/etc",
       })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3177,9 +3177,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1450: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3190,9 +3190,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1460: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3203,9 +3203,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1470: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3216,9 +3216,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1480: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec3}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3229,9 +3229,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1490: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3242,9 +3242,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1500: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -3255,9 +3255,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1510: Adds a Status update to a job as user5.1 for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3268,9 +3268,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1520: Adds a Status update to a job as user5.1 for another user's job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec2}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3281,9 +3281,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1530: Adds a Status update to a job as user5.1 for his/her group in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3294,9 +3294,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1540: Adds a Status update to a job as user5.1 for another user's group in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3307,9 +3307,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1550: Adds a Status update to a job as user5.1 for anonymous user's group in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec6}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -3320,9 +3320,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1560: Adds a Status update to a job as user5.2 for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec7}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3334,9 +3334,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1570: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3347,9 +3347,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1580: Adds a Status update to a job as user5.2 for another user in his/her group job in '@group5' configuration", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec5}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -3360,9 +3360,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1590: Adds a Status update to a job as user3 for his/her job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec8}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser3}` })
@@ -3373,9 +3373,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1600: Adds a Status update to a job as user3 for user's 5.1 job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/${encodedJobIdGroupSpec4}`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser3}` })
@@ -3386,9 +3386,9 @@ describe("1100: Jobs: Test New Job Model", () => {
   it("1610: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration with non-existing jobId, which should fail as bad request", async () => {
     return request(appUrl)
         .patch(`/api/v3/Jobs/badJobId`)
-        .send({ 
-          statusMessage: "update status of a job", 
-          statusCode: "job finished/blocked/etc", 
+        .send({
+          statusMessage: "update status of a job",
+          statusCode: "job finished/blocked/etc",
         })
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3828,7 +3828,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(60);
       });
-  }); 
+  });
 
   it("1970: Fullquery jobs as a user from ADMIN_GROUPS, limited by 5", async () => {
     const query = { limit: 5 };
@@ -3849,7 +3849,7 @@ describe("1100: Jobs: Test New Job Model", () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullquery`)
-      .send({})        
+      .send({})
       .query("fields=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -3992,7 +3992,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
-  
+
   it("2090: Fullquery jobs as unauthenticated user, which should be forbidden", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/fullquery`)
@@ -4015,7 +4015,7 @@ describe("1100: Jobs: Test New Job Model", () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
-      .send({})        
+      .send({})
       .query("fields=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -4157,9 +4157,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  describe("0000: Validate Job Action", () => {
+  describe("3120: Validate Job Action", () => {
 
-    it("1970: create validate job fails without required parameters", async () => {
+    it("0010: create validate job fails without required parameters", async () => {
       const newDataset = {
         ...jobValidate,
         jobParams: {
@@ -4180,7 +4180,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         });
     });
 
-    it("1980: create validate job fails with the wrong types", async () => {
+    it("0020: create validate job fails with the wrong types", async () => {
       const newDataset = {
         type: "validate",
         jobParams: {
@@ -4201,7 +4201,7 @@ describe("1100: Jobs: Test New Job Model", () => {
           res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.requiredParam'");
         });
     });
-    it("1981: create validate job fails with the wrong types", async () => {
+    it("0030: create validate job fails with the wrong types", async () => {
       const newDataset = {
         type: "validate",
         jobParams: {
@@ -4222,7 +4222,7 @@ describe("1100: Jobs: Test New Job Model", () => {
           res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings'");
         });
     });
-    it("1982: create validate job fails with the wrong types", async () => {
+    it("0040: create validate job fails with the wrong types", async () => {
       const newDataset = {
         type: "validate",
         jobParams: {
@@ -4244,7 +4244,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         });
     });
 
-    it("1985: create validate succeeds with the right types", async () => {
+    it("0050: create validate succeeds with the right types", async () => {
       const newDataset = {
         type: "validate",
         jobParams: {
@@ -4270,7 +4270,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         });
     });
 
-    it("1990: update validate fails without the required parameters", async () => {
+    it("0060: update validate fails without the required parameters", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",
@@ -4294,7 +4294,7 @@ describe("1100: Jobs: Test New Job Model", () => {
 
     });
 
-    it("1991: update validate fails with incorrect types", async () => {
+    it("0070: update validate fails with incorrect types", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",
@@ -4319,7 +4319,7 @@ describe("1100: Jobs: Test New Job Model", () => {
     });
 
 
-    it("2000: updating validate succeeds with the required parameters", async () => {
+    it("0080: updating validate succeeds with the required parameters", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",
