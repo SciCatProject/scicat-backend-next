@@ -23,6 +23,8 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 
+export type JobDto = CreateJobDto | StatusUpdateJobDto;
+
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
@@ -84,7 +86,7 @@ export class JobConfig {
 /**
  * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
  */
-export class JobOperation<DtoType> {
+export class JobOperation<DtoType extends JobDto> {
   auth: JobsAuth | undefined;
   actions: JobAction<DtoType>[];
 
@@ -93,7 +95,7 @@ export class JobOperation<DtoType> {
     this.auth = auth;
   }
 
-  static parse<DtoType>(
+  static parse<DtoType extends JobDto>(
     actionList: Record<string, JobActionClass<DtoType>>,
     data: Record<string, unknown>,
   ): JobOperation<DtoType> {
@@ -133,7 +135,7 @@ export class JobOperation<DtoType> {
  * @param data JSON configuration data
  * @returns
  */
-function parseAction<DtoType>(
+function parseAction<DtoType extends JobDto>(
   actionList: Record<string, JobActionClass<DtoType>>,
   data: Record<string, unknown>,
 ): JobAction<DtoType> {
@@ -154,7 +156,19 @@ function parseAction<DtoType>(
 /**
  * Superclass for all responses to Job changes
  */
-export interface JobAction<DtoType> {
+export interface JobAction<DtoType extends JobDto> {
+  /**
+   * Validate that the request body for this job operation.
+   *
+   * Note that the configuration of this action is validated in the constructor.
+   * Actions that don't need custom DTO methods can omit this method.
+   *
+   * @param dto data transfer object received from the client
+   * @throw HttpException if the DTO is invalid
+   * @returns
+   */
+  validate?: (dto: DtoType) => Promise<void>;
+
   /**
    * Respond to the action
    */
@@ -170,7 +184,7 @@ export interface JobAction<DtoType> {
 /**
  * Describes the constructor and static members for JobAction implementations
  */
-export interface JobActionClass<DtoType> {
+export interface JobActionClass<DtoType extends JobDto> {
   /**
    * Action type, eg "url". Matched during parsing of the action
    */

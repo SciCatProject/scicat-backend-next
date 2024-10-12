@@ -1,12 +1,12 @@
 import { Logger, NotFoundException } from "@nestjs/common";
 import amqp, { Connection } from "amqplib/callback_api";
-import { JobAction } from "../config/jobconfig";
+import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 
 /**
  * Publish a message in a RabbitMQ queue
  */
-export class RabbitMQJobAction<T> implements JobAction<T> {
+export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "rabbitmq";
   private connection;
   private binding;

@@ -1,5 +1,5 @@
 import { Logger, NotFoundException, HttpException } from "@nestjs/common";
-import { JobAction } from "../config/jobconfig";
+import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
 import * as Handlebars from "handlebars";
 
@@ -37,7 +37,7 @@ function isStringRecord(obj: any): obj is Record<string, string> {
 /**
  * Respond to Job events by making an HTTP call.
  */
-export class URLAction<T> implements JobAction<T> {
+export class URLAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "url";
 
   private urlTemplate: Handlebars.TemplateDelegate<JobClass>;
@@ -54,7 +54,7 @@ export class URLAction<T> implements JobAction<T> {
 
   async performJob(job: JobClass) {
     const url = encodeURI(this.urlTemplate(job, jobTemplateOptions));
-    Logger.log(`Requesting ${url}`, "UrlJobAction");
+    Logger.log(`Requesting ${url}`, "URLAction");
 
     const response = await fetch(url, {
       method: this.method,
@@ -71,11 +71,7 @@ export class URLAction<T> implements JobAction<T> {
         : undefined,
     });
 
-    Logger.log(
-      `Request for ${url} returned ${response.status}`,
-      "UrlJobAction",
-    );
-
+    Logger.log(`Request for ${url} returned ${response.status}`, "URLAction");
     if (!response.ok) {
       throw new HttpException(
         {
@@ -102,11 +98,6 @@ export class URLAction<T> implements JobAction<T> {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
-    Logger.log(
-      "Initializing UrlJobAction. Params: " + JSON.stringify(data),
-      "UrlJobAction",
-    );
-
     if (!data["url"]) {
       throw new NotFoundException("Param 'url' is undefined in url action");
     }
