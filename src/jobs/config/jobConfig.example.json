@@ -62,7 +62,12 @@
         "actions": [
           {
             "actionType": "validate",
-            "required": ["jobParams.datasetIds[0]"]
+            "request": {
+              "jobParams.datasetIds[*]": {
+                "type": "object",
+                "required": ["pid","files"]
+              }
+            }
           }
         ]
       },
