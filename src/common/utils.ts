@@ -2,7 +2,7 @@
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
-import { format, unit } from "mathjs";
+import { format, unit, Unit, createUnit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
@@ -13,14 +13,23 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
+// add Å to mathjs accepted units as equivalent to angstrom
+const isAlphaOriginal = Unit.isValidAlpha
+Unit.isValidAlpha = function (c) {
+  return isAlphaOriginal(c) ||  c == 'Å'
+}
+createUnit('Å', '1 angstrom')
+
 export const convertToSI = (
   inputValue: number,
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
+    // catch and normalize the different versions of Å in unicode
+    const normalizedUnit = inputUnit.normalize('NFC');
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
-    const quantity = unit(inputValue, inputUnit)
-      .to(unit(inputUnit).toSI().toJSON().unit)
+    const quantity = unit(inputValue, normalizedUnit)
+      .to(unit(normalizedUnit).toSI().toJSON().unit)
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
