@@ -6,6 +6,12 @@ const TestAccounts = Object.fromEntries(
   RawTestAccounts.map((account) => [account.username, account]),
 );
 
+const DatasetDates = faker.date.betweens({
+  from: faker.date.recent({ days: 15 }).toISOString(),
+  to: faker.date.soon({ days: 10 }).toISOString(),
+  count: 2,
+});
+
 const TestData = {
   EntryCreatedStatusCode: 201,
   EntryValidStatusCode: 200,
@@ -18,6 +24,7 @@ const TestData = {
   BadRequestStatusCode: 400,
   AccessForbiddenStatusCode: 403,
   UnauthorizedStatusCode: 401,
+  CreationUnauthorizedStatusCode: 401,
   ConflictStatusCode: 409,
   ApplicationErrorStatusCode: 500,
   LoginSuccessfulStatusCode: 201,
@@ -34,6 +41,37 @@ const TestData = {
     abstract: "Abstract of test proposal",
     ownerGroup: "20170251-group",
     accessGroups: [],
+  },
+
+  userSettingsCorrect: {
+    datasetCount: 10,
+    jobCount: 25,
+    externalSettings: {
+      columns: [
+        {
+          name: "select",
+          order: 0,
+          type: "standard",
+          enabled: true,
+        },
+      ],
+      filters: [
+        {
+          LocationFilter: true,
+        },
+      ],
+      conditions: [
+        {
+          condition: {
+            lhs: "test",
+            relation: "GREATER_THAN",
+            rhs: 1,
+            unit: "",
+          },
+          enabled: true,
+        },
+      ],
+    },
   },
 
   ProposalCorrectComplete: {
@@ -112,10 +150,12 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
+    datasetName: faker.string.sample(),
   },
 
   RawCorrect: {
     principalInvestigator: "scicatingestor@your.site",
+    startTime: "2011-09-14T05:29:11.000Z",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
@@ -192,13 +232,16 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
+    instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
     type: "raw",
     keywords: ["sls", "protein"],
   },
 
   RawCorrectRandom: {
     principalInvestigator: faker.internet.email(),
-    endTime: faker.date.past().toISOString(),
+    startTime: DatasetDates[0],
+    endTime: DatasetDates[1],
     creationLocation: faker.system.directoryPath(),
     dataFormat: faker.lorem.words(3),
     scientificMetadata: {
@@ -298,6 +341,7 @@ const TestData = {
 
   RawWrong_2: {
     principalInvestigator: "bertram.astor@grumble.com",
+    startTime: "2011-09-15T02:13:52.000Z",
     endTime: "2011-09-14T06:31:25.000Z",
     creationLocation: "/SU/XQX/RAMJET",
     dataFormat: "Upchuck pre 2017",
@@ -374,13 +418,14 @@ const TestData = {
 
   DerivedCorrectMin: {
     investigator: faker.internet.email(),
-    inputDatasets: [faker.system.filePath()],
+    inputDatasets: [faker.string.uuid()],
     usedSoftware: [faker.internet.url()],
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
     ownerGroup: faker.string.alphanumeric(6),
+    datasetName: faker.string.sample(),
     type: "derived",
   },
 
@@ -408,6 +453,9 @@ const TestData = {
     ownerGroup: "p34123",
     accessGroups: [],
     type: "derived",
+    proposalId: "10.540.16635/20110123",
+    //instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    //sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
   },
 
   DerivedWrong: {
@@ -806,6 +854,7 @@ const TestData = {
     creationLocation: faker.location.city(),
     principalInvestigator: faker.internet.userName(),
     type: "raw",
+    datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),

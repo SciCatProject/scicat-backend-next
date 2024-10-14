@@ -30,28 +30,27 @@ export const datasetMappings: MappingObject = {
   creationTime: {
     type: "date",
   },
+  endTime: {
+    type: "date",
+  },
   scientificMetadata: {
     type: "nested",
     dynamic: true,
-    properties: {
-      runNumber: {
-        properties: {
-          value: {
-            type: "long",
-          },
-        },
-      },
-    },
+    properties: {},
   },
   history: {
     type: "nested",
     dynamic: false,
   },
-  proposalId: {
+  proposalIds: {
     type: "keyword",
     ignore_above: 256,
   },
-  sampleId: {
+  sampleIds: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  instrumentIds: {
     type: "keyword",
     ignore_above: 256,
   },

@@ -62,6 +62,10 @@ const RawCorrect3 = {
       value: 6,
       unit: "",
     },
+    test_field_string: {
+      value: "test_string_value",
+      unit: "",
+    },
   },
   datasetName: "This is the third correct test raw dataset",
   description:
@@ -92,59 +96,31 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
   before(() => {
     db.collection("Dataset").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "user1",
-            password: TestData.Accounts["user1"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenUser1 = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user2",
-                password: TestData.Accounts["user2"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser2 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user2"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser3 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        done();
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser2 = await utils.getToken(appUrl, {
+      username: "user2",
+      password: TestData.Accounts["user2"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {
@@ -790,9 +766,9 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       mode: {},
       scientific: [
         {
-          lhs: "test_field_1",
+          lhs: "test_field_string",
           relation: "EQUAL_TO_STRING",
-          rhs: "6",
+          rhs: "test_string_value",
           unit: "",
         },
       ],
@@ -808,7 +784,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.length.should.be.equal(0);
+        res.body.length.should.be.equal(1);
       });
   });
 

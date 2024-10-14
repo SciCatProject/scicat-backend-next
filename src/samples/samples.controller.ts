@@ -63,6 +63,7 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
+import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -96,7 +97,7 @@ export class SamplesController {
     );
 
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
 
     try {
       switch (group) {
@@ -165,9 +166,8 @@ export class SamplesController {
 
     if (sample) {
       const canDoAction = await this.permissionChecker(group, sample, request);
-
       if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized to update this sample");
+        throw new ForbiddenException("Unauthorized to this sample");
       }
     }
 
@@ -198,7 +198,7 @@ export class SamplesController {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const authorizationFilter: Record<string, any> = { where: {} };
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
       if (!canViewAll) {
         const canViewAccess = ability.can(
@@ -242,8 +242,8 @@ export class SamplesController {
     return mergedFilters;
   }
   // POST /samples
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleCreate, SampleClass),
   )
   @UseInterceptors(
@@ -281,7 +281,7 @@ export class SamplesController {
 
   // GET /samples
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get()
@@ -314,8 +314,8 @@ export class SamplesController {
   }
 
   // GET /samples/fullquery
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/fullquery")
@@ -356,7 +356,7 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -391,8 +391,8 @@ export class SamplesController {
   }
 
   // GET /samples/metadataKeys
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/metadataKeys")
@@ -427,7 +427,7 @@ export class SamplesController {
     const fields: ISampleFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
     if (user) {
-      const ability = this.caslAbilityFactory.createForUser(user);
+      const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
       const canViewAll = ability.can(Action.SampleReadAny, SampleClass);
 
       if (!canViewAll) {
@@ -463,8 +463,8 @@ export class SamplesController {
   }
 
   // GET /samples/findOne
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/findOne")
@@ -523,7 +523,7 @@ export class SamplesController {
 
   // GET /samples/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id")
@@ -546,13 +546,55 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<SampleClass | null> {
-    await this.checkPermissionsForSample(request, id, Action.SampleRead);
-    return this.samplesService.findOne({ sampleId: id });
+    const sample = await this.checkPermissionsForSample(
+      request,
+      id,
+      Action.SampleRead,
+    );
+    return sample;
+  }
+
+  // GET /samples/:id/authorization
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
+    ability.can(Action.SampleRead, SampleClass),
+  )
+  @Get("/:id/authorization")
+  @ApiOperation({
+    summary: "Check user access to a specific sample.",
+    description:
+      "Returns a boolean indicating whether the user has access to the sample with the specified ID.",
+  })
+  @ApiParam({
+    name: "id",
+    description: "ID of the sample to check access for",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Boolean,
+    description:
+      "Returns true if the user has access to the specified sample, otherwise false.",
+  })
+  async findByIdAccess(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<{ canAccess: boolean }> {
+    const sample = await this.samplesService.findOne({
+      sampleId: id,
+    });
+    if (!sample) return { canAccess: false };
+    const canAccess = await this.permissionChecker(
+      Action.SampleRead,
+      sample,
+      request,
+    );
+    return { canAccess };
   }
 
   // PATCH /samples/:id
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleUpdate, SampleClass),
   )
   @UseInterceptors(
@@ -592,7 +634,7 @@ export class SamplesController {
 
   // DELETE /samples/:id
   @UseGuards()
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleDelete, SampleClass),
   )
   @Delete("/:id")
@@ -618,8 +660,8 @@ export class SamplesController {
   }
 
   // POST /samples/:id/attachments
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Post("/:id/attachments")
@@ -671,7 +713,7 @@ export class SamplesController {
 
   // GET /samples/:id/attachments
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments")
@@ -704,8 +746,8 @@ export class SamplesController {
   }
 
   // GET /samples/:id/attachments/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentRead, SampleClass),
   )
   @Get("/:id/attachments/:fk")
@@ -732,23 +774,23 @@ export class SamplesController {
   })
   async findOneAttachment(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
     @Param("fk") attachmentId: string,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForSample(
       request,
-      sampleId,
+      id,
       Action.SampleAttachmentRead,
     );
     return this.attachmentsService.findOne({
       id: attachmentId,
-      sampleId: sampleId,
+      sampleId: id,
     });
   }
 
   // DELETE /samples/:id/attachments/:fk
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleAttachmentDelete, SampleClass),
   )
   @Delete("/:id/attachments/:fk")
@@ -774,23 +816,23 @@ export class SamplesController {
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
     @Param("fk") attachmentId: string,
   ): Promise<unknown> {
     await this.checkPermissionsForSample(
       request,
-      sampleId,
+      id,
       Action.SampleAttachmentDelete,
     );
     return this.attachmentsService.findOneAndDelete({
       _id: attachmentId,
-      sampleId: sampleId,
+      sampleId: id,
     });
   }
 
   // POST /samples/:id/datasets
-  /*   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Dataset))
+  /*   @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Create, Dataset))
   @Post("/:id/datasets")
   async createDataset(
     @Param("id") id: string,
@@ -802,8 +844,8 @@ export class SamplesController {
  */
 
   // GET /samples/:id/datasets
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) =>
     ability.can(Action.SampleDatasetRead, SampleClass),
   )
   @Get("/:id/datasets")
@@ -825,10 +867,10 @@ export class SamplesController {
   })
   async findAllDatasets(
     @Req() request: Request,
-    @Param("id") sampleId: string,
+    @Param("id") id: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const fields: IDatasetFields = JSON.parse("{}");
 
@@ -858,15 +900,15 @@ export class SamplesController {
     }
 
     const dataset = await this.datasetsService.fullquery({
-      where: { sampleId },
+      where: { sampleId: id },
       fields: fields,
     });
     return dataset;
   }
 
   // PATCH /samples/:id/datasets/:fk
-  /* @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Dataset))
+  /* @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Update, Dataset))
   @Patch("/:id/datasets/:fk")
   async findOneDatasetAndUpdate(
     @Param("id") sampleId: string,
@@ -880,8 +922,8 @@ export class SamplesController {
   } */
 
   // DELETE /samples/:id/datasets/:fk
-  /*   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Dataset))
+  /*   @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies("samples", (ability: AppAbility) => ability.can(Action.Delete, Dataset))
   @Delete("/:id/datasets/:fk")
   async findOneDatasetAndRemove(
     @Param("id") sampleId: string,

@@ -69,7 +69,7 @@ export class PublishedDataController {
 
   // POST /publisheddata
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Create, PublishedData),
   )
   @Post()
@@ -155,7 +155,7 @@ export class PublishedDataController {
 
   // GET /publisheddata/formpopulate
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Read, PublishedData),
   )
   @Get("/formpopulate")
@@ -166,13 +166,17 @@ export class PublishedDataController {
   })
   async formPopulate(@Query("pid") pid: string) {
     const formData: IFormPopulateData = {};
-    const dataset = await this.datasetsService.findOne({ where: { pid } });
+    const dataset = (await this.datasetsService.findOne({
+      where: { pid },
+    })) as unknown as DatasetClass;
 
     let proposalId;
     if (dataset) {
       formData.resourceType = dataset.type;
       formData.description = dataset.description;
-      proposalId = (dataset as unknown as DatasetClass).proposalId;
+      if ("proposalIds" in dataset) {
+        proposalId = dataset.proposalIds![0];
+      }
     }
 
     let proposal;
@@ -221,7 +225,7 @@ export class PublishedDataController {
 
   // PATCH /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @Patch("/:id")
@@ -237,7 +241,7 @@ export class PublishedDataController {
 
   // DELETE /publisheddata/:id
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Delete, PublishedData),
   )
   @Delete("/:id")
@@ -247,7 +251,7 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/register
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
@@ -428,7 +432,7 @@ export class PublishedDataController {
 
   // POST /publisheddata/:id/resync
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) =>
+  @CheckPolicies("publisheddata", (ability: AppAbility) =>
     ability.can(Action.Update, PublishedData),
   )
   @ApiOperation({

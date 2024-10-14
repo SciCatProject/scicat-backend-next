@@ -9,7 +9,7 @@ let accessTokenProposalIngestor = null,
   accessTokenArchiveManager = null,
   accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
-  accessTokenUser2 = null;
+  accessTokenUser3 = null;
 
 let proposalPid1 = null,
   encodedProposalPid1 = null,
@@ -17,6 +17,8 @@ let proposalPid1 = null,
   encodedProposalPid2 = null,
   proposalPid3 = null,
   encodedProposalPid3 = null;
+// proposalPid10 = null,
+// encodedProposalPid10 = null;
 
 const proposal1 = {
   ...TestData.ProposalCorrectMin,
@@ -39,64 +41,43 @@ const proposal3 = {
   accessGroups: ["group3"],
 };
 
+// const proposal10 = {
+//   ...TestData.ProposalCorrectMin,
+//   proposalId: "20170271",
+//   ownerGroup: "admin",
+//   accessGroups: ["admin"],
+//   isPublished: true,
+// };
+
 describe("1400: ProposalAuthorization: Test access to proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
 
-        utils.getToken(
-          appUrl,
-          {
-            username: "proposalIngestor",
-            password: TestData.Accounts["proposalIngestor"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenProposalIngestor = tokenVal;
-            utils.getToken(
-              appUrl,
-              {
-                username: "user1",
-                password: TestData.Accounts["user1"]["password"],
-              },
-              (tokenVal) => {
-                accessTokenUser1 = tokenVal;
-                utils.getToken(
-                  appUrl,
-                  {
-                    username: "user3",
-                    password: TestData.Accounts["user3"]["password"],
-                  },
-                  (tokenVal) => {
-                    accessTokenUser2 = tokenVal;
-                    utils.getToken(
-                      appUrl,
-                      {
-                        username: "archiveManager",
-                        password:
-                          TestData.Accounts["archiveManager"]["password"],
-                      },
-                      (tokenVal) => {
-                        accessTokenArchiveManager = tokenVal;
-                        done();
-                      },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+    accessTokenProposalIngestor = await utils.getToken(appUrl, {
+      username: "proposalIngestor",
+      password: TestData.Accounts["proposalIngestor"]["password"],
+    });
+
+    accessTokenUser1 = await utils.getToken(appUrl, {
+      username: "user1",
+      password: TestData.Accounts["user1"]["password"],
+    });
+
+    accessTokenUser3 = await utils.getToken(appUrl, {
+      username: "user3",
+      password: TestData.Accounts["user3"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   afterEach((done) => {
@@ -152,13 +133,37 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  // it("0035: adds proposal 10", async () => {
+  //   return request(appUrl)
+  //     .post("/api/v3/proposals")
+  //     .send(proposal10)
+  //     .set("Accept", "application/json")
+  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+  //     .expect(TestData.EntryCreatedStatusCode)
+  //     .expect("Content-Type", /json/)
+  //     .then((res) => {
+  //       res.body.should.have.property("ownerGroup").and.equal("admin");
+  //       res.body.should.have.property("proposalId").and.be.string;
+  //       proposalPid10 = res.body["proposalId"];
+  //       encodedProposalPid10 = encodeURIComponent(proposalPid10);
+  //     });
+  // });
+
   it("0040: cannot access proposal as unauthenticated user", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
       .expect("Content-Type", /json/)
-      .expect(TestData.UnauthorizedStatusCode);
+      .expect(TestData.AccessForbiddenStatusCode);
   });
+
+  // it("0045: can access public proposal as unauthenticated user", async () => {
+  //   return request(appUrl)
+  //     .get("/api/v3/proposals/" + encodedProposalPid10)
+  //     .set("Accept", "application/json")
+  //     .expect("Content-Type", /json/)
+  //     .expect(TestData.SuccessfulGetStatusCode);
+  // });
 
   it("0050: admin can list all proposals", async () => {
     return request(appUrl)
@@ -181,6 +186,18 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["proposalId"].should.be.equal(proposalPid1);
+      });
+  });
+
+  it("0061: check admin access to proposal 1 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid1 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
       });
   });
 
@@ -208,6 +225,18 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  it("0081: check admin access to proposal 2 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid2 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
+      });
+  });
+
   it("0090: access proposal 3 as admin", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
@@ -217,6 +246,18 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         res.body["proposalId"].should.be.equal(proposalPid3);
+      });
+  });
+
+  it("0091: check admin access to proposal 3 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid3 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
       });
   });
 
@@ -233,13 +274,25 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("0110: access proposal 1 as user 1", async () => {
+  it("0110: access proposal 1 as user 1 should fail", async () => {
     return request(appUrl)
-      .get("/api/v3/proposals/" + 20170268)
+      .get("/api/v3/proposals/" + encodedProposalPid1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
       .expect(TestData.AccessForbiddenStatusCode);
+  });
+
+  it("0111: check user 1 access to proposal 1 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid1 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
   });
 
   it("0120: access proposal 2 as user 1", async () => {
@@ -254,13 +307,37 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("0130: access proposal 3 as user 1", async () => {
+  it("0121: check user 1 access to proposal 2 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid2 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
+      });
+  });
+
+  it("0130: access proposal 3 as user 1 should fail", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect("Content-Type", /json/)
       .expect(TestData.AccessForbiddenStatusCode);
+  });
+
+  it("0131: check user 1 access to proposal 3 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid3 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
   });
 
   it("0140: full query for proposals for user 1", async () => {
@@ -280,7 +357,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get("/api/v3/proposals")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -289,20 +366,32 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
-  it("0160: access proposal 1 as user 2", async () => {
+  it("0160: access proposal 1 as user 2 should fail", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid1)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.AccessForbiddenStatusCode);
   });
 
-  it("0160: access proposal 2 as user 2", async () => {
+  it("0161: check user 2 access to proposal 1 should return false", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid1 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(false);
+      });
+  });
+
+  it("0165: access proposal 2 as user 2", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid2)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -310,11 +399,23 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  it("0166: check user 2 access to proposal 2 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid2 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
+      });
+  });
+
   it("0170: access proposal 3 as user 2", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/" + encodedProposalPid3)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect("Content-Type", /json/)
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
@@ -322,11 +423,23 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
       });
   });
 
+  it("0171: check user 2 access to proposal 3 should return true", async () => {
+    return request(appUrl)
+      .get("/api/v3/proposals/" + encodedProposalPid3 + "/authorization")
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.should.have.property("canAccess").and.be.equal(true);
+      });
+  });
+
   it("0180: full query for proposals for user 2", async () => {
     return request(appUrl)
       .get("/api/v3/proposals/fullquery")
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
@@ -340,7 +453,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
     return request(appUrl)
       .get(`/api/v3/proposals/fullfacet`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser2}` })
+      .set({ Authorization: `Bearer ${accessTokenUser3}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {

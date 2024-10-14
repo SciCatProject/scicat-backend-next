@@ -6,6 +6,7 @@
 
 [![Test](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/test.yml/badge.svg)](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/test.yml)
 [![Deploy](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/deploy.yml/badge.svg)](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/deploy.yml)
+[![Generate and upload latest SDK artifacts](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/upload-sdk-artifact.yml/badge.svg?branch=master)](https://github.com/SciCatProject/scicat-backend-next/actions/workflows/upload-sdk-artifact.yml)
 [![DeepScan grade](https://deepscan.io/api/teams/8394/projects/19251/branches/494247/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=8394&pid=19251&bid=494247)
 [![Known Vulnerabilities](https://snyk.io/test/github/SciCatProject/scicat-backend-next/master/badge.svg?targetFile=package.json)](https://snyk.io/test/github/SciCatProject/scicat-backend-next/master?targetFile=package.json)
 
@@ -21,6 +22,16 @@ The repo for backend v3.x is archived and read-only
 
 If you have any questions, please feel free to contact any member of the development team,
 or the SciCat team at ESS.
+
+## Contributing
+
+If you're planning to contribute to this project by adding new functionality, we encourage you to discuss it first in the Discussions tab. This helps ensure that your proposed changes align with the project's goals and prevents duplicate efforts. Here's how you can initiate a discussion:
+
+1. Go to the [Discussions tab](https://github.com/SciCatProject/scicat-backend-next/discussions).
+2. Start a new discussion thread outlining your proposed changes.
+3. Wait for feedback and consensus before proceeding with creating a pull request.
+
+Thank you for your interest in contributing to our project!
 
 ## Get started
 
@@ -165,6 +176,7 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ES_FIELDS_LIMIT` | number | | The total number of fields in an index. | 1000 |
 | `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
 | `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
+| `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available| "explorer"|
 
 ## Migrating from the old SciCat Backend
 
@@ -207,45 +219,6 @@ Following are the post that I found useful working on the migration:
   - https://docs.nestjs.com/openapi/introduction
   - https://docs.nestjs.com/openapi/types-and-parameters
   - https://docs.nestjs.com/openapi/decorators
-
-## New Release Version Bump Workflow
-
-### Workflow Overview
-
-Scicat Backend controls new releases with the `GitHub-tag-and-release` GitHub Action. This workflow is triggered by push events to the release branch. It automates the version bumping and release processes based on semantic commit messages. Full documentation of the action package can be found on [github-tag-action](https://github.com/marketplace/actions/github-tag)
-
-The image below shows visualized workflow.
-![image](https://github.com/SciCatProject/scicat-backend-next/assets/78078898/0f3c5386-4a16-4ed1-a2ee-d71ef6f34e99)
-
-### Workflow Trigger Condition
-
-> [!Caution]  
-> Any push to the `release` branch initiates the workflow.
-
-### Versioning and Release Strategy
-
-**Semantic Versioning:**
-
-- The version is automatically bumped according to the semantic PR titles, using the [semantic-release](https://github.com/semantic-release/semantic-release) conventions:
-
-  - `fix:` prefixed titles generate a patch release.
-  - `feat:` prefixed titles generate a minor release.
-  - `BREAKING CHANGE:` in the commit message triggers a major release.
-
-**Auto-generated Release Notes:**
-
-The release log is automatically populated with all commit messages since the last tag, providing a detailed changelog for the release. By default semantic-release uses [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines).
-
-In order to generate detailed changelog for the release, the following type for the `commit message`/`PR title` should be used:
-
-- feat: message - A new feature
-- fix: message - A bug fix
-- docs: message - Documentation only changes
-- style: message - Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- refactor: message - A code change that neither fixes a bug nor adds a feature
-- perf: message - A code change that improves performance
-- test: message - Adding missing or correcting existing tests
-- chore: message - Changes to the build process or auxiliary tools and libraries such as documentation generation
 
 ## License
 

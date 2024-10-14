@@ -150,28 +150,16 @@ var foundId1 = null;
 var foundId2 = null;
 
 describe("2100: ResetDataset: Create Dataset and its Datablocks, then reset Datablocks and embedded Datasetlifecycle status", () => {
-  beforeEach((done) => {
-    utils.getToken(
-      appUrl,
-      {
-        username: "adminIngestor",
-        password: TestData.Accounts["adminIngestor"]["password"],
-      },
-      (tokenVal) => {
-        accessTokenAdminIngestor = tokenVal;
-        utils.getToken(
-          appUrl,
-          {
-            username: "archiveManager",
-            password: TestData.Accounts["archiveManager"]["password"],
-          },
-          (tokenVal) => {
-            accessTokenArchiveManager = tokenVal;
-            done();
-          },
-        );
-      },
-    );
+  beforeEach(async() => {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+      username: "adminIngestor",
+      password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
+    });
   });
 
   // first get existing datasets with the test archieId to allow to delete them

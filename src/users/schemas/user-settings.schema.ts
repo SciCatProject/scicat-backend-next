@@ -5,6 +5,13 @@ import { Document } from "mongoose";
 
 export type UserSettingsDocument = UserSettings & Document;
 
+// Define the Condition interface
+export interface ScientificCondition {
+  field: string;
+  value: string;
+  operator: string;
+}
+
 @Schema({
   collection: "UserSetting",
   toJSON: {
@@ -15,14 +22,6 @@ export class UserSettings {
   _id: string;
 
   id?: string;
-
-  @ApiProperty({
-    type: [Object],
-    default: [],
-    description: "Array of the users preferred columns in dataset table",
-  })
-  @Prop({ type: [Object], default: [] })
-  columns: Record<string, unknown>[];
 
   @ApiProperty({
     type: Number,
@@ -43,6 +42,15 @@ export class UserSettings {
   @ApiProperty({ type: String, required: true })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: "User", required: true })
   userId: string;
+
+  @ApiProperty({
+    type: "object",
+    default: {},
+    description:
+      "A customizable object for storing the user's external settings, which can contain various nested properties and configurations.",
+  })
+  @Prop({ type: Object, default: {}, required: false })
+  externalSettings: Record<string, unknown>;
 }
 
 export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);

@@ -1,8 +1,8 @@
-import { UpdateDatasetDto } from "./update-dataset.dto";
+import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { IsObject, IsOptional, IsString } from "class-validator";
 
-export class UpdateDerivedDatasetDto extends UpdateDatasetDto {
+export class UpdateDerivedDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -55,6 +55,6 @@ export class UpdateDerivedDatasetDto extends UpdateDatasetDto {
   readonly jobLogData?: string;
 }
 
-export class PartialUpdateDerivedDatasetDto extends PartialType(
-  UpdateDerivedDatasetDto,
+export class PartialUpdateDerivedDatasetObsoleteDto extends PartialType(
+  UpdateDerivedDatasetObsoleteDto,
 ) {}

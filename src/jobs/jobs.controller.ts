@@ -179,25 +179,26 @@ export class JobsController {
           // Indexing originDataBlock with pid and create set of files for each dataset
           const datasets = await this.datasetsService.findAll(filter);
           // Include origdatablocks
-          await Promise.all(
+          const aggregatedData = await Promise.all(
             datasets.map(async (dataset) => {
-              dataset.origdatablocks = await this.origDatablocksService.findAll(
-                {
+              return {
+                dataset: dataset,
+                origdatablocks: await this.origDatablocksService.findAll({
                   datasetId: dataset.pid,
-                },
-              );
+                }),
+              };
             }),
           );
-          const result: Record<string, Set<string>> = datasets.reduce(
-            (acc: Record<string, Set<string>>, dataset) => {
+          const result: Record<string, Set<string>> = aggregatedData.reduce(
+            (acc: Record<string, Set<string>>, data) => {
               // Using Set make searching more efficient
-              const files = dataset.origdatablocks.reduce((acc, block) => {
+              const files = data.origdatablocks.reduce((acc, block) => {
                 block.dataFileList.forEach((file) => {
                   acc.add(file.path);
                 });
                 return acc;
               }, new Set<string>());
-              acc[dataset.pid] = files;
+              acc[data.dataset.pid] = files;
               return acc;
             },
             {},
@@ -288,7 +289,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get()
   @ApiQuery({
     name: "filter",
@@ -304,7 +307,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get("/fullquery")
   async fullquery(
     @Query() filters: { fields?: string; limits?: string },
@@ -317,7 +322,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get("/fullfacet")
   async fullfacet(
     @Query() filters: { fields?: string; facets?: string },
@@ -330,14 +337,18 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Read, JobClass),
+  )
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<JobClass | null> {
     return this.jobsService.findOne({ _id: id });
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Update, JobClass),
+  )
   @Patch(":id")
   async update(
     @Param("id") id: string,
@@ -356,7 +367,9 @@ export class JobsController {
   }
 
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, JobClass))
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.Delete, JobClass),
+  )
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<unknown> {
     return this.jobsService.remove({ _id: id });

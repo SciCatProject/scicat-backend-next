@@ -7,6 +7,7 @@ import {
   IFullFacets,
   IShould,
   ObjectType,
+  ScientificQuery,
 } from "../interfaces/es-common.type";
 import {
   FilterFields,
@@ -125,7 +126,7 @@ export class SearchQueryService {
         );
 
         const esScientificFilterQuery = convertToElasticSearchQuery(
-          scientificFilterQuery,
+          scientificFilterQuery as ScientificQuery,
         );
         filterArray.push({
           nested: {
