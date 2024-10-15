@@ -12,13 +12,13 @@ import {
   HttpException,
   Req,
   ForbiddenException,
-  UseInterceptors,
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
-import { CreateJobDto, CreateJobDtoWithConfig } from "./dto/create-job.dto";
+import { CreateJobDto } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
+import { DatasetListDto } from "./dto/dataset-list.dto"; 
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -50,8 +50,8 @@ import {
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
-import { JobCreateInterceptor } from "./interceptors/job-create.interceptor";
 import { JobAction } from "./config/jobconfig";
+import { JobType, DatasetState, JobParams } from "./types/job-types.enum"; 
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -80,192 +80,6 @@ export class JobsController {
     }
   }
 
-  // /**
-  //  * Check that all dataset exists
-  //  * @param {List of dataset id} ids
-  //  */
-  // async checkDatasetsExistence(ids: string[]) {
-  //   if (ids.length === 0) {
-  //     throw new HttpException(
-  //       {
-  //         status: HttpStatus.BAD_REQUEST,
-  //         message: "Empty list of datasets - no Job sent",
-  //       },
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  //   const filter = {
-  //     fields: {
-  //       pid: true,
-  //     },
-  //     where: {
-  //       pid: {
-  //         $in: ids,
-  //       },
-  //     },
-  //   };
-
-  //   const datasets = await this.datasetsService.findAll(filter);
-  //   if (datasets.length != ids.length) {
-  //     throw new HttpException(
-  //       {
-  //         status: HttpStatus.BAD_REQUEST,
-  //         message:
-  //           "At least one of the datasets could not be found - no Job sent",
-  //       },
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-  // }
-
-  // /**
-  //  * Check that datasets is in state which the job can be performed
-  //  * For retrieve jobs all datasets must be in state retrievable
-  //  * For archive jobs all datasets must be in state archivable
-  //  *      * For copy jobs no need to check only need to filter out datasets that have already been copied when submitting to job queue
-  //  * ownerGroup is tested implicitly via Ownable
-  //  */
-  // async checkDatasetsState(type: string, ids: string[]) {
-  //   switch (type) {
-  //     case JobType.Retrieve: //Intentional fall through
-  //     case JobType.Archive:
-  //       {
-  //         const filter = {
-  //           fields: {
-  //             pid: true,
-  //           },
-  //           where: {
-  //             [`datasetlifecycle.${DatasetState[type]}`]: false,
-  //             pid: {
-  //               $in: ids,
-  //             },
-  //           },
-  //         };
-  //         const result = await this.datasetsService.findAll(filter);
-  //         if (result.length > 0) {
-  //           throw new HttpException(
-  //             {
-  //               status: HttpStatus.CONFLICT,
-  //               message: `The following datasets are not in ${DatasetState[type]} state - no ${type} job sent:\n`,
-  //               error: JSON.stringify(result),
-  //             },
-  //             HttpStatus.CONFLICT,
-  //           );
-  //         }
-  //       }
-  //       break;
-  //     case JobType.Public:
-  //       {
-  //         const filter = {
-  //           fields: {
-  //             pid: true,
-  //           },
-  //           where: {
-  //             [DatasetState.public]: true,
-  //             pid: {
-  //               $in: ids,
-  //             },
-  //           },
-  //         };
-  //         const result = await this.datasetsService.findAll(filter);
-  //         if (result.length !== ids.length) {
-  //           throw new HttpException(
-  //             {
-  //               status: HttpStatus.CONFLICT,
-  //               message: "The following datasets are not public - no job sent",
-  //               error: JSON.stringify(result),
-  //             },
-  //             HttpStatus.CONFLICT,
-  //           );
-  //         }
-  //       }
-  //       break;
-  //     default:
-  //       //Not check other job types
-  //       break;
-  //   }
-  // }
-
-  // async checkFilesExistence(crateJobDto: CreateJobDto) {
-  //   const datasetsToCheck = crateJobDto.datasetList.filter(
-  //     (x) => x.files.length > 0,
-  //   );
-  //   const ids = datasetsToCheck.map((x) => x.pid);
-  //   switch (crateJobDto.type) {
-  //     case JobType.Public:
-  //       if (ids.length > 0) {
-  //         const filter = {
-  //           fields: {
-  //             pid: true,
-  //             datasetId: true,
-  //             dataFileList: true,
-  //           },
-  //           where: {
-  //             pid: {
-  //               $in: ids,
-  //             },
-  //           },
-  //         };
-  //         // Indexing originDataBlock with pid and create set of files for each dataset
-  //         const datasets = await this.datasetsService.findAll(filter);
-  //         // Include origdatablocks
-  //         await Promise.all(
-  //           datasets.map(async (dataset) => {
-  //             dataset.origdatablocks = await this.origDatablocksService.findAll(
-  //               {
-  //                 datasetId: dataset.pid,
-  //               },
-  //             );
-  //           }),
-  //         );
-  //         const result: Record<string, Set<string>> = datasets.reduce(
-  //           (acc: Record<string, Set<string>>, dataset) => {
-  //             // Using Set make searching more efficient
-  //             const files = dataset.origdatablocks.reduce((acc, block) => {
-  //               block.dataFileList.forEach((file) => {
-  //                 acc.add(file.path);
-  //               });
-  //               return acc;
-  //             }, new Set<string>());
-  //             acc[dataset.pid] = files;
-  //             return acc;
-  //           },
-  //           {},
-  //         );
-  //         // Get a list of requested files that is not in originDataBlocks
-  //         const checkResults = datasetsToCheck.reduce(
-  //           (acc: { pid: string; nonExistFiles: string[] }[], x) => {
-  //             const pid = x.pid;
-  //             const referenceFiles = result[pid];
-  //             const nonExistFiles = x.files.filter(
-  //               (f) => !referenceFiles.has(f),
-  //             );
-  //             if (nonExistFiles.length > 0) {
-  //               acc.push({ pid, nonExistFiles });
-  //             }
-  //             return acc;
-  //           },
-  //           [],
-  //         );
-
-  //         if (checkResults.length > 0) {
-  //           throw new HttpException(
-  //             {
-  //               status: HttpStatus.BAD_REQUEST,
-  //               message:
-  //                 "At least one requested file could not be found - no job created",
-  //             },
-  //             HttpStatus.BAD_REQUEST,
-  //           );
-  //         }
-  //       }
-  //       break;
-  //     default:
-  //       // Not check for other job
-  //       break;
-  //   }
-  // }
-
   /**
    * Validate filter for GET
    */
@@ -281,40 +95,72 @@ export class JobsController {
   };
 
   /**
-   * Check that the dataset ids list is valid
+   * Check that jobParams.datasetList is of valid type and contains valid values
    */
-  async checkDatasetIds(jobParams: Record<string, unknown>): Promise<string[]> {
-    const field = JobsConfigSchema.DatasetIds;
-    const datasetIds = (
-      typeof jobParams[field] === "string"
-        ? Array(jobParams[field])
-        : jobParams[field]
-    ) as Array<string>;
-
-    if (!Array.isArray(datasetIds)) {
+  async validateDatasetList(
+    jobParams: Record<string, unknown>,
+    jobType: string,
+  ): Promise<DatasetListDto[]> {
+    const datasetList = jobParams[JobParams.DatasetList] as Array<DatasetListDto>;
+    // check that datasetList is a non empty array
+    if (!Array.isArray(datasetList)) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: "Invalid dataset ids list",
+          message: "Invalid dataset list",
         },
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (datasetIds.length == 0) {
+    if (datasetList.length == 0) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: "List of passed dataset IDs is empty.",
+          message: "List of passed datasets is empty.",
         },
         HttpStatus.BAD_REQUEST,
       );
     }
 
+    // check that datasetList is of type DatasetListDto[]
+    const datasetListDtos: DatasetListDto[] = datasetList.map(item => {
+      return Object.assign(new DatasetListDto(), item);
+    });
+    const allowedKeys = [JobParams.Pid, JobParams.Files] as string[];
+    for (const datasetListDto of datasetListDtos) {
+      const keys = Object.keys(datasetListDto);
+      if (keys.length !== 2 || !keys.every(key => allowedKeys.includes(key))) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "Dataset list is expected to contain sets of pid and files.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    // check that all requested pids exist
+    await this.checkDatasetPids(datasetListDtos);
+    // check that dataset state is compatible with the job type
+    await this.checkDatasetState(datasetListDtos, jobType);
+    // check that all requested files exist
+    await this.checkDatasetFiles(datasetListDtos, jobType);
+
+    return datasetListDtos;
+  }
+
+  /**
+   * Check that the dataset pids are valid
+   */
+  async checkDatasetPids(datasetList: DatasetListDto[]): Promise<void> {
     interface condition {
       where: {
         pid: { $in: string[] };
       };
     }
+
+    const datasetIds = datasetList.map(x => x.pid);
     const filter: condition = {
       where: {
         pid: { $in: datasetIds },
@@ -324,16 +170,176 @@ export class JobsController {
     const findDatasetsById = await this.datasetsService.findAll(filter);
     const findIds = findDatasetsById.map(({ pid }) => pid);
     const nonExistIds = datasetIds.filter((x) => !findIds.includes(x));
+
     if (nonExistIds.length != 0) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message: `Datasets with pid ${nonExistIds} don't exist.`,
+          message: `Datasets with pid ${nonExistIds} do not exist.`,
         },
         HttpStatus.BAD_REQUEST,
       );
     }
-    return datasetIds;
+    return;
+  }
+
+  /**
+   * Check that datasets are in a state at which the job can be performed:
+   * For retrieve jobs all datasets must be in state retrievable
+   * For archive jobs all datasets must be in state archivable
+   * For public jobs all datasets must be published
+   */
+  async checkDatasetState(
+    datasetList: DatasetListDto[],
+    jobType: string,
+  ): Promise<void> {
+    const datasetIds = datasetList.map(x => x.pid);
+    switch (jobType) {
+      case JobType.Retrieve:
+        // Intentional fall through
+      case JobType.Archive:
+        {
+          const filter = {
+            fields: {
+              pid: true,
+            },
+            where: {
+              [`datasetlifecycle.${DatasetState[jobType]}`]: false,
+              pid: {
+                $in: datasetIds,
+              },
+            },
+          };
+          const result = await this.datasetsService.findAll(filter);
+          if (result.length > 0) {
+            throw new HttpException(
+              {
+                status: HttpStatus.CONFLICT,
+                message: `The following datasets are not in ${DatasetState[jobType]} state for a ${jobType} job.`,
+                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
+              },
+              HttpStatus.CONFLICT,
+            );
+          }
+        }
+        break;
+      case JobType.Public:
+        {
+          const filter = {
+            fields: {
+              pid: true,
+            },
+            where: {
+              [DatasetState.public]: true,
+              pid: {
+                $in: datasetIds,
+              },
+            },
+          };
+          const result = await this.datasetsService.findAll(filter);
+          if (result.length !== datasetIds.length) {
+            throw new HttpException(
+              {
+                status: HttpStatus.CONFLICT,
+                message: "The following datasets are not public.",
+                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
+              },
+              HttpStatus.CONFLICT,
+            );
+          }
+        }
+        break;
+      default:
+        // Do not check for other job types
+        break;
+    }
+  }
+
+  /**
+   * Check that the dataset files are valid
+   */
+  async checkDatasetFiles(
+    datasetList: DatasetListDto[],
+    jobType: string,
+  ): Promise<void> {
+    const datasetsToCheck = datasetList.filter(
+      (x) => x.files.length > 0,
+    );
+    const ids = datasetsToCheck.map((x) => x.pid);
+
+    switch (jobType) {
+      case JobType.Public:
+        if (ids.length > 0) {
+          const filter = {
+            fields: {
+              pid: true,
+              datasetId: true,
+              dataFileList: true,
+            },
+            where: {
+              pid: {
+                $in: ids,
+              },
+            },
+          };
+          // Indexing originDataBlock with pid and create set of files for each dataset
+          const datasets = await this.datasetsService.findAll(filter);
+          // Include origdatablocks
+          await Promise.all(
+            datasets.map(async (dataset) => {
+              dataset.origdatablocks = await this.origDatablocksService.findAll(
+                {
+                  datasetId: dataset.pid,
+                },
+              );
+            }),
+          );
+          const result: Record<string, Set<string>> = datasets.reduce(
+            (acc: Record<string, Set<string>>, dataset) => {
+              // Using Set make searching more efficient
+              const files = dataset.origdatablocks.reduce((acc, block) => {
+                block.dataFileList.forEach((file) => {
+                  acc.add(file.path);
+                });
+                return acc;
+              }, new Set<string>());
+              acc[dataset.pid] = files;
+              return acc;
+            },
+            {},
+          );
+          // Get a list of requested files that were not found
+          const checkResults = datasetsToCheck.reduce(
+            (acc: { pid: string; nonExistFiles: string[] }[], x) => {
+              const pid = x.pid;
+              const referenceFiles = result[pid];
+              const nonExistFiles = x.files.filter(
+                (f) => !referenceFiles.has(f),
+              );
+              if (nonExistFiles.length > 0) {
+                acc.push({ pid, nonExistFiles });
+              }
+              return acc;
+            },
+            [],
+          );
+          if (checkResults.length > 0) {
+            throw new HttpException(
+              {
+                status: HttpStatus.BAD_REQUEST,
+                message: "At least one requested file could not be found.",
+                error: JSON.stringify(checkResults.map(({ pid, nonExistFiles }) => ({ pid, nonExistFiles }))),
+              },
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+        }
+        break;
+      default:
+        // Do not check for other job types
+        break;
+    }
+    return;
   }
 
   /**
@@ -401,13 +407,13 @@ export class JobsController {
     jobInstance.statusMessage =
       "Building and validating job, verifying authorization";
 
-    // if datasetIds property in jobParams is passed, check if such IDs exist in data base
-    let datasetIds: string[] = [];
-    if (JobsConfigSchema.DatasetIds in jobCreateDto.jobParams) {
-      datasetIds = await this.checkDatasetIds(jobCreateDto.jobParams);
+    // validate datasetList, if it exists in jobParams
+    let datasetList: DatasetListDto[] = [];
+    if (JobParams.DatasetList in jobCreateDto.jobParams) {
+      datasetList = await this.validateDatasetList(jobCreateDto.jobParams, jobCreateDto.type);
       jobInstance.jobParams = {
         ...jobInstance.jobParams,
-        [JobsConfigSchema.DatasetIds]: datasetIds,
+        [JobParams.DatasetList]: datasetList,
       };
     }
     if (user) {
@@ -469,7 +475,7 @@ export class JobsController {
       )
     ) {
       // check that jobParams are passed for #dataset jobs
-      if (!jobCreateDto.jobParams) {
+      if (!(JobParams.DatasetList in jobCreateDto.jobParams)) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
@@ -493,6 +499,7 @@ export class JobsController {
         };
       }
 
+      const datasetIds = datasetList.map(x => x.pid);
       const datasetsWhere: datasetsWhere = {
         where: {
           pid: { $in: datasetIds },
@@ -515,6 +522,7 @@ export class JobsController {
         datasetIds.length - numberOfDatasetsWithAccess.count;
       jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
+
     if (!user && jobCreateDto.ownerGroup) {
       throw new HttpException(
         {
@@ -600,7 +608,6 @@ export class JobsController {
   @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobCreate, JobClass),
   )
-  // @UseInterceptors(JobCreateInterceptor)
   @Post()
   @ApiOperation({
     summary: "It creates a new job.",

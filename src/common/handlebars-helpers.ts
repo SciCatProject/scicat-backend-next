@@ -4,7 +4,7 @@
  * Helpers should be registered in app.module.ts
  */
 import { JobClass } from "src/jobs/schemas/job.schema";
-import { JobsConfigSchema } from "src/jobs/types/jobs-config-schema.enum";
+import { JobParams } from "src/jobs/types/job-types.enum"; 
 
 /**
  * Convert json objects to HTML
@@ -95,15 +95,9 @@ interface JobV3 {
  * @param context
  */
 export const job_v3 = (job: JobClass): JobV3 => {
-  let datasetList: DatasetIdV3[];
-  if (JobsConfigSchema.DatasetIds in job.jobParams) {
-    const datasetIds = job.jobParams[JobsConfigSchema.DatasetIds] as string[];
-    datasetList = datasetIds.map((pid) => ({
-      pid: pid,
-      files: [],
-    }));
-  } else {
-    datasetList = [];
+  let datasetList: DatasetIdV3[] = [];
+  if (JobParams.DatasetList in job.jobParams) {
+    datasetList = job.jobParams[JobParams.DatasetList] as DatasetIdV3[];
   }
   return {
     id: job.id,
@@ -114,7 +108,7 @@ export const job_v3 = (job: JobClass): JobV3 => {
       ...job.jobParams,
       username: job.createdBy,
     },
-    //v3 statusMessages were generally concise, so use the statusCode
+    // v3 statusMessages were generally concise, so use the statusCode
     jobStatusMessage: job.statusCode,
     datasetList: datasetList,
   };
