@@ -22,6 +22,7 @@ import {
 import { CreateJobDto } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
+import { IJobFields } from "./interfaces/job-filters.interface";
 
 @Injectable({ scope: Scope.REQUEST })
 export class JobsService {
@@ -76,14 +77,14 @@ export class JobsService {
   }
 
   async fullfacet(
-    filters: IFacets<FilterQuery<JobDocument>>,
-  ): Promise<JobClass[]> {
+    filters: IFacets<IJobFields>,
+  ): Promise<Record<string, unknown>[]> {
     const fields = filters.fields ?? {};
     const facets = filters.facets ?? [];
 
     const pipeline: PipelineStage[] = createFullfacetPipeline<
       JobDocument,
-      FilterQuery<JobDocument>
+      IJobFields
     >(this.jobModel, "id", fields, facets);
 
     return await this.jobModel.aggregate(pipeline).exec();
