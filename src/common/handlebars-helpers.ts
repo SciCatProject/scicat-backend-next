@@ -4,7 +4,7 @@
  * Helpers should be registered in app.module.ts
  */
 import { JobClass } from "src/jobs/schemas/job.schema";
-import { JobParams } from "src/jobs/types/job-types.enum"; 
+import { JobParams } from "src/jobs/types/job-types.enum";
 
 /**
  * Convert json objects to HTML

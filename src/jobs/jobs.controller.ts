@@ -18,7 +18,7 @@ import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
-import { DatasetListDto } from "./dto/dataset-list.dto"; 
+import { DatasetListDto } from "./dto/dataset-list.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -51,7 +51,7 @@ import {
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
 import { JobAction } from "./config/jobconfig";
-import { JobType, DatasetState, JobParams } from "./types/job-types.enum"; 
+import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
 
 @ApiBearerAuth()
@@ -102,7 +102,9 @@ export class JobsController {
     jobParams: Record<string, unknown>,
     jobType: string,
   ): Promise<DatasetListDto[]> {
-    const datasetList = jobParams[JobParams.DatasetList] as Array<DatasetListDto>;
+    const datasetList = jobParams[
+      JobParams.DatasetList
+    ] as Array<DatasetListDto>;
     // check that datasetList is a non empty array
     if (!Array.isArray(datasetList)) {
       throw new HttpException(
@@ -125,12 +127,15 @@ export class JobsController {
 
     // check that datasetList is of type DatasetListDto[]
     const datasetListDtos: DatasetListDto[] = datasetList.map(item => {
-      return Object.assign(new DatasetListDto(), item);
+      return Object.assign(new DatasetListDto(), (item));
     });
     const allowedKeys = [JobParams.Pid, JobParams.Files] as string[];
     for (const datasetListDto of datasetListDtos) {
       const keys = Object.keys(datasetListDto);
-      if (keys.length !== 2 || !keys.every(key => allowedKeys.includes(key))) {
+      if (
+        keys.length !== 2 ||
+        !keys.every((key) => allowedKeys.includes(key))
+      ) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
@@ -161,7 +166,7 @@ export class JobsController {
       };
     }
 
-    const datasetIds = datasetList.map(x => x.pid);
+    const datasetIds = datasetList.map((x) => x.pid);
     const filter: condition = {
       where: {
         pid: { $in: datasetIds },
@@ -194,10 +199,9 @@ export class JobsController {
     datasetList: DatasetListDto[],
     jobType: string,
   ): Promise<void> {
-    const datasetIds = datasetList.map(x => x.pid);
+    const datasetIds = datasetList.map((x) => x.pid);
     switch (jobType) {
-      case JobType.Retrieve:
-        // Intentional fall through
+      case JobType.Retrieve: // Intentional fall through
       case JobType.Archive:
         {
           const filter = {
@@ -329,7 +333,12 @@ export class JobsController {
               {
                 status: HttpStatus.BAD_REQUEST,
                 message: "At least one requested file could not be found.",
-                error: JSON.stringify(checkResults.map(({ pid, nonExistFiles }) => ({ pid, nonExistFiles }))),
+                error: JSON.stringify(
+                  checkResults.map(({ pid, nonExistFiles }) => ({
+                    pid,
+                    nonExistFiles,
+                  }))
+                ),
               },
               HttpStatus.BAD_REQUEST,
             );
@@ -411,7 +420,10 @@ export class JobsController {
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
-      datasetList = await this.validateDatasetList(jobCreateDto.jobParams, jobCreateDto.type);
+      datasetList = await this.validateDatasetList(
+        jobCreateDto.jobParams,
+        jobCreateDto.type,
+      );
       jobInstance.jobParams = {
         ...jobInstance.jobParams,
         [JobParams.DatasetList]: datasetList,
@@ -500,7 +512,7 @@ export class JobsController {
         };
       }
 
-      const datasetIds = datasetList.map(x => x.pid);
+      const datasetIds = datasetList.map((x) => x.pid);
       const datasetsWhere: datasetsWhere = {
         where: {
           pid: { $in: datasetIds },
