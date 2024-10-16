@@ -126,8 +126,8 @@ export class JobsController {
     }
 
     // check that datasetList is of type DatasetListDto[]
-    const datasetListDtos: DatasetListDto[] = datasetList.map(item => {
-      return Object.assign(new DatasetListDto(), (item));
+    const datasetListDtos: DatasetListDto[] = datasetList.map((item) => {
+      return Object.assign(new DatasetListDto(), item);
     });
     const allowedKeys = [JobParams.Pid, JobParams.Files] as string[];
     for (const datasetListDto of datasetListDtos) {
@@ -139,7 +139,8 @@ export class JobsController {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message: "Dataset list is expected to contain sets of pid and files.",
+            message:
+              "Dataset list is expected to contain sets of pid and files.",
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -267,9 +268,7 @@ export class JobsController {
     datasetList: DatasetListDto[],
     jobType: string,
   ): Promise<void> {
-    const datasetsToCheck = datasetList.filter(
-      (x) => x.files.length > 0,
-    );
+    const datasetsToCheck = datasetList.filter((x) => x.files.length > 0);
     const ids = datasetsToCheck.map((x) => x.pid);
 
     switch (jobType) {
@@ -337,7 +336,7 @@ export class JobsController {
                   checkResults.map(({ pid, nonExistFiles }) => ({
                     pid,
                     nonExistFiles,
-                  }))
+                  })),
                 ),
               },
               HttpStatus.BAD_REQUEST,
