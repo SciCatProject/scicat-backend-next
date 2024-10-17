@@ -266,9 +266,7 @@ export class JobsController {
   /**
    * Check that the dataset files are valid
    */
-  async checkDatasetFiles(
-    datasetList: DatasetListDto[],
-  ): Promise<void> {
+  async checkDatasetFiles(datasetList: DatasetListDto[]): Promise<void> {
     const datasetsToCheck = datasetList.filter((x) => x.files.length > 0);
     const ids = datasetsToCheck.map((x) => x.pid);
     if (ids.length > 0) {
@@ -289,11 +287,9 @@ export class JobsController {
       // Include origdatablocks
       await Promise.all(
         datasets.map(async (dataset) => {
-          dataset.origdatablocks = await this.origDatablocksService.findAll(
-            {
-              datasetId: dataset.pid,
-            },
-          );
+          dataset.origdatablocks = await this.origDatablocksService.findAll({
+            datasetId: dataset.pid,
+          });
         }),
       );
       const result: Record<string, Set<string>> = datasets.reduce(
@@ -315,9 +311,7 @@ export class JobsController {
         (acc: { pid: string; nonExistFiles: string[] }[], x) => {
           const pid = x.pid;
           const referenceFiles = result[pid];
-          const nonExistFiles = x.files.filter(
-            (f) => !referenceFiles.has(f),
-          );
+          const nonExistFiles = x.files.filter((f) => !referenceFiles.has(f));
           if (nonExistFiles.length > 0) {
             acc.push({ pid, nonExistFiles });
           }
