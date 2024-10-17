@@ -1,73 +1,100 @@
 {
   "configVersion": "v1.0 2024-03-01 6f3f38",
   "jobs": [
-  {
-    "jobType": "all_access",
-    "create": {
-      "auth": "#all",
-      "actions": [
-        {
-          "actionType": "log"
-        }
-      ]
-    },
-    "statusUpdate": {
-      "auth": "#all"
-    }
- },
- {
-    "jobType": "public_access",
-    "create": {
-      "auth": "#datasetPublic"
-    },
-    "statusUpdate": {
-      "auth": "#all"
-    }
+    {
+      "jobType": "all_access",
+      "create": {
+        "auth": "#all",
+        "actions": [
+          {
+            "actionType": "log"
+          }
+        ]
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
   },
   {
-    "jobType": "authenticated_access",
-    "create": {
-      "auth": "#authenticated"
+      "jobType": "public_access",
+      "create": {
+        "auth": "#datasetPublic"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
     },
-    "statusUpdate": {
-      "auth": "#all"
-    }
-  },
-  {
-    "jobType": "dataset_access",
-    "create": {
-      "auth": "#datasetAccess"
+    {
+      "jobType": "authenticated_access",
+      "create": {
+        "auth": "#authenticated"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
     },
-    "statusUpdate": {
-      "auth": "#jobOwnerGroup"
-    }
-  },
-  {
-    "jobType": "owner_access",
-    "create": {
-      "auth": "#datasetOwner"
+    {
+      "jobType": "dataset_access",
+      "create": {
+        "auth": "#datasetAccess"
+      },
+      "statusUpdate": {
+        "auth": "#jobOwnerGroup"
+      }
     },
-    "statusUpdate": {
-      "auth": "#jobOwnerUser"
-    }
-  },
-  {
-    "jobType": "user_access",
-    "create": {
-      "auth": "user5.1"
+    {
+      "jobType": "owner_access",
+      "create": {
+        "auth": "#datasetOwner"
+      },
+      "statusUpdate": {
+        "auth": "#jobOwnerUser"
+      }
     },
-    "statusUpdate": {
-      "auth": "user5.1"
-    }
-  },
-  {
-    "jobType": "group_access",
-    "create": {
-      "auth": "@group5"
+    {
+      "jobType": "user_access",
+      "create": {
+        "auth": "user5.1"
+      },
+      "statusUpdate": {
+        "auth": "user5.1"
+      }
     },
-    "statusUpdate": {
-      "auth": "@group5"
+    {
+      "jobType": "group_access",
+      "create": {
+        "auth": "@group5"
+      },
+      "statusUpdate": {
+        "auth": "@group5"
+      }
+    },
+    {
+      "jobType": "archive",
+      "create": {
+        "auth": "#all"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
+    },
+    {
+      "jobType": "retrieve",
+      "create": {
+        "auth": "#all"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
+    },
+    {
+      "jobType": "public",
+      "create": {
+        "auth": "#all"
+      },
+      "statusUpdate": {
+        "auth": "#all"
+      }
     }
-  }
   ]
 }
