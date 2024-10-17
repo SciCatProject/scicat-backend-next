@@ -152,7 +152,7 @@ export class JobsController {
     // check that dataset state is compatible with the job type
     await this.checkDatasetState(datasetListDtos, jobType);
     // check that all requested files exist
-    await this.checkDatasetFiles(datasetListDtos, jobType);
+    await this.checkDatasetFiles(datasetListDtos);
 
     return datasetListDtos;
   }
@@ -204,6 +204,7 @@ export class JobsController {
     switch (jobType) {
       case JobType.Retrieve: // Intentional fall through
       case JobType.Archive:
+        // can I archive some files of a dataset or is it always every file?
         {
           const filter = {
             fields: {
@@ -230,6 +231,7 @@ export class JobsController {
         }
         break;
       case JobType.Public:
+        // isPublished applies to the full dataset not the files
         {
           const filter = {
             fields: {
@@ -266,87 +268,78 @@ export class JobsController {
    */
   async checkDatasetFiles(
     datasetList: DatasetListDto[],
-    jobType: string,
   ): Promise<void> {
     const datasetsToCheck = datasetList.filter((x) => x.files.length > 0);
     const ids = datasetsToCheck.map((x) => x.pid);
-
-    switch (jobType) {
-      case JobType.Public:
-        if (ids.length > 0) {
-          const filter = {
-            fields: {
-              pid: true,
-              datasetId: true,
-              dataFileList: true,
+    if (ids.length > 0) {
+      const filter = {
+        fields: {
+          pid: true,
+          datasetId: true,
+          dataFileList: true,
+        },
+        where: {
+          pid: {
+            $in: ids,
+          },
+        },
+      };
+      // Indexing originDataBlock with pid and create set of files for each dataset
+      const datasets = await this.datasetsService.findAll(filter);
+      // Include origdatablocks
+      await Promise.all(
+        datasets.map(async (dataset) => {
+          dataset.origdatablocks = await this.origDatablocksService.findAll(
+            {
+              datasetId: dataset.pid,
             },
-            where: {
-              pid: {
-                $in: ids,
-              },
-            },
-          };
-          // Indexing originDataBlock with pid and create set of files for each dataset
-          const datasets = await this.datasetsService.findAll(filter);
-          // Include origdatablocks
-          await Promise.all(
-            datasets.map(async (dataset) => {
-              dataset.origdatablocks = await this.origDatablocksService.findAll(
-                {
-                  datasetId: dataset.pid,
-                },
-              );
-            }),
           );
-          const result: Record<string, Set<string>> = datasets.reduce(
-            (acc: Record<string, Set<string>>, dataset) => {
-              // Using Set make searching more efficient
-              const files = dataset.origdatablocks.reduce((acc, block) => {
-                block.dataFileList.forEach((file) => {
-                  acc.add(file.path);
-                });
-                return acc;
-              }, new Set<string>());
-              acc[dataset.pid] = files;
-              return acc;
-            },
-            {},
+        }),
+      );
+      const result: Record<string, Set<string>> = datasets.reduce(
+        (acc: Record<string, Set<string>>, dataset) => {
+          // Using Set make searching more efficient
+          const files = dataset.origdatablocks.reduce((acc, block) => {
+            block.dataFileList.forEach((file) => {
+              acc.add(file.path);
+            });
+            return acc;
+          }, new Set<string>());
+          acc[dataset.pid] = files;
+          return acc;
+        },
+        {},
+      );
+      // Get a list of requested files that were not found
+      const checkResults = datasetsToCheck.reduce(
+        (acc: { pid: string; nonExistFiles: string[] }[], x) => {
+          const pid = x.pid;
+          const referenceFiles = result[pid];
+          const nonExistFiles = x.files.filter(
+            (f) => !referenceFiles.has(f),
           );
-          // Get a list of requested files that were not found
-          const checkResults = datasetsToCheck.reduce(
-            (acc: { pid: string; nonExistFiles: string[] }[], x) => {
-              const pid = x.pid;
-              const referenceFiles = result[pid];
-              const nonExistFiles = x.files.filter(
-                (f) => !referenceFiles.has(f),
-              );
-              if (nonExistFiles.length > 0) {
-                acc.push({ pid, nonExistFiles });
-              }
-              return acc;
-            },
-            [],
-          );
-          if (checkResults.length > 0) {
-            throw new HttpException(
-              {
-                status: HttpStatus.BAD_REQUEST,
-                message: "At least one requested file could not be found.",
-                error: JSON.stringify(
-                  checkResults.map(({ pid, nonExistFiles }) => ({
-                    pid,
-                    nonExistFiles,
-                  })),
-                ),
-              },
-              HttpStatus.BAD_REQUEST,
-            );
+          if (nonExistFiles.length > 0) {
+            acc.push({ pid, nonExistFiles });
           }
-        }
-        break;
-      default:
-        // Do not check for other job types
-        break;
+          return acc;
+        },
+        [],
+      );
+      if (checkResults.length > 0) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "At least one requested file could not be found.",
+            error: JSON.stringify(
+              checkResults.map(({ pid, nonExistFiles }) => ({
+                pid,
+                nonExistFiles,
+              })),
+            ),
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
     return;
   }
