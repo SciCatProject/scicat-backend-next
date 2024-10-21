@@ -14,18 +14,18 @@ import {
 import { ScientificRelation } from "./scientific-relation.enum";
 
 // add Å to mathjs accepted units as equivalent to angstrom
-const isAlphaOriginal = Unit.isValidAlpha
+const isAlphaOriginal = Unit.isValidAlpha;
 Unit.isValidAlpha = function (c) {
-  return isAlphaOriginal(c) ||  c == 'Å'
-}
-createUnit('Å', '1 angstrom')
+  return isAlphaOriginal(c) || c == "Å";
+};
+createUnit("Å", "1 angstrom");
 
 export const convertToSI = (
   inputValue: number,
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    const normalizedUnit = inputUnit.normalize('NFC'); // catch and normalize the different versions of Å in unicode
+    const normalizedUnit = inputUnit.normalize("NFC"); // catch and normalize the different versions of Å in unicode
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
     const quantity = unit(inputValue, normalizedUnit)
       .to(unit(normalizedUnit).toSI().toJSON().unit)
