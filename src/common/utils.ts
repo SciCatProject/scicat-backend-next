@@ -25,8 +25,7 @@ export const convertToSI = (
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
-    // catch and normalize the different versions of Å in unicode
-    const normalizedUnit = inputUnit.normalize('NFC');
+    const normalizedUnit = inputUnit.normalize('NFC'); // catch and normalize the different versions of Å in unicode
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
     const quantity = unit(inputValue, normalizedUnit)
       .to(unit(normalizedUnit).toSI().toJSON().unit)
