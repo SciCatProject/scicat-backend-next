@@ -51,12 +51,11 @@ export class PublishedData {
 
   @ApiProperty({
     type: String,
-    required: false,
     description:
       "Creator Affiliation.  This field has the semantics of" +
       " [DataCite Creator/affiliation](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#affiliation).",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   affiliation: string;
 
   @ApiProperty({
@@ -105,10 +104,9 @@ export class PublishedData {
 
   @ApiProperty({
     type: String,
-    required: false,
     description: "Full URL to the landing page for this DOI",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   url: string;
 
   @ApiProperty({
@@ -144,18 +142,16 @@ export class PublishedData {
 
   @ApiProperty({
     type: Number,
-    required: false,
     description: "Number of files",
   })
-  @Prop({ type: Number, required: false })
+  @Prop({ type: Number })
   numberOfFiles: number;
 
   @ApiProperty({
     type: Number,
-    required: false,
     description: "Size of archive",
   })
-  @Prop({ type: Number, required: false })
+  @Prop({ type: Number })
   sizeOfArchive: number;
 
   @ApiProperty({
@@ -170,10 +166,9 @@ export class PublishedData {
 
   @ApiProperty({
     type: [String],
-    required: false,
     description: "List of Names of authors of the to be published data",
   })
-  @Prop({ type: [String], required: false })
+  @Prop({ type: [String] })
   authors: string[];
 
   @ApiProperty({
@@ -188,41 +183,37 @@ export class PublishedData {
     description:
       "Indication of position in publication workflow e.g. doiRegistered",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   status: string;
 
   @ApiProperty({
     type: String,
-    required: false,
     description:
       "The username of the user that clicks the publish button in the client",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   scicatUser: string;
 
   @ApiProperty({
     type: String,
-    required: false,
     description: "Small, less than 16 MB base 64 image preview of dataset",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   thumbnail: string;
 
   @ApiProperty({
     type: [String],
-    required: false,
     description:
       "List of URLs pointing to related publications like DOI URLS of journal articles",
   })
-  @Prop({ type: [String], required: false })
+  @Prop({ type: [String] })
   relatedPublications: string[];
 
   @ApiProperty({
     type: String,
-    required: false,
     description: "URL pointing to page from which data can be downloaded",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String })
   downloadLink: string;
 
   @ApiProperty({
