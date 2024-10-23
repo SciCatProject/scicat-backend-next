@@ -65,7 +65,7 @@ jobs:
           generator: ${{ matrix.generator }}
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
-          docker-image: openapitools/openapi-generator-cli:latest
+          generator-tag: latest
           command-args: |
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
