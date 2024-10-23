@@ -47,7 +47,7 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
 
-      ## The setup-qemu-action simplifies the setup of QEMU for cross-platform builds
+      ## The setup-qemu-action simplifies the setup of QEMU for cross-platform builds.
       ## https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -71,7 +71,7 @@ jobs:
         run: npm ci
 
       ## The metadata-action dynamically generates and manages metadata for Docker images,
-      ## like tags and labels, based on the provided inputs and workflow context.
+      ## like tags and labels, based on the provided inputs and workflow context
       ## https://github.com/docker/metadata-action
       - name: Docker meta
         id: meta
@@ -83,14 +83,6 @@ jobs:
             type=raw,value=${{ steps.tag_version.outputs.new_tag }}
             type=semver,pattern={{version}}
             type=raw,value={{date 'YYYY_MM'}},prefix=r_
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
 
   start-backend-export-swagger:
     runs-on: ubuntu-latest
@@ -131,7 +123,7 @@ jobs:
       - start-backend-export-swagger
     strategy:
       matrix:
-        generator: [python, python-pydantic-v1, typescript-angular]
+        generator: [python, python-pydantic-v1, typescript]
 
     steps:
       - name: Checkout repository
@@ -149,10 +141,10 @@ jobs:
           openapi-file: ./swagger-schema.json
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |
-            --git-repo-id scicat-backend-next \
-            --git-user-id SciCatProject \
+            --git-repo-id github-action-test-be \
+            --git-user-id Junjiequan \
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
+            if [ "${{ matrix.generator }}" == "typescript" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
             elif [ "${{ matrix.generator }}" == "python" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
@@ -171,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: npm-sdk-package
-      url: https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts
+      url: https://www.npmjs.com/package/@scicatproject/test-package
 
     steps:
       - name: Checkout repository
@@ -183,10 +175,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Download TypeScript Angular SDK Artifact
+      - name: Download TypeScript SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-typescript-angular-${{github.sha}}
+          name: sdk-typescript-${{github.sha}}
           path: ./sdk
 
       - name: Publish package
@@ -194,7 +186,7 @@ jobs:
           npm install
           npm run build
           npm publish --access public
-        working-directory: ./sdk/typescript-angular/
+        working-directory: ./sdk/typescript/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -206,7 +198,7 @@ jobs:
         sdk_type: [python, python-pydantic-v1]
     environment:
       name: ${{ matrix.sdk_type }}-sdk-package
-      url: ${{ matrix.sdk_type == 'python' && 'https://pypi.org/project/scicat-sdk-py' || 'https://pypi.org/project/scicat-sdk-pydantic' }}
+      url: ${{ matrix.sdk_type == 'python' && 'https://pypi.org/project/Scicat-Python-SDK/' || 'https://pypi.org/project/Scicat-Pydantic-SDK/' }}
     permissions:
       id-token: write
 
@@ -215,7 +207,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
