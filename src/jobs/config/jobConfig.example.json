@@ -63,7 +63,7 @@
           {
             "actionType": "validate",
             "request": {
-              "jobParams.datasetIds[*]": {
+              "jobParams.datasetList[*]": {
                 "type": "object",
                 "required": ["pid","files"]
               }
