@@ -15,8 +15,9 @@ const raw2 = { ...TestData.RawCorrect };
 describe("0500: DatasetLifecycle: Test facet and filter queries", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
+    db.collection("Policy").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

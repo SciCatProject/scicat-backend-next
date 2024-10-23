@@ -66,6 +66,11 @@ export class LogbooksService {
           ),
         );
 
+        if (!res.data) {
+          Logger.log("Logbook not found", { name });
+          return null;
+        }
+
         Logger.log("Found logbook " + name, "LogbooksService.findByName");
         const { skip, limit, sortField } = JSON.parse(filters);
         Logger.log(

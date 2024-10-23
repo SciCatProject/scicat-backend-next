@@ -1,9 +1,9 @@
-import { UpdateDerivedDatasetDto } from "./update-derived-dataset.dto";
+import { UpdateRawDatasetObsoleteDto } from "./update-raw-dataset-obsolete.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsOptional, IsString } from "class-validator";
 import { DatasetType } from "../dataset-type.enum";
 
-export class CreateDerivedDatasetDto extends UpdateDerivedDatasetDto {
+export class CreateRawDatasetObsoleteDto extends UpdateRawDatasetObsoleteDto {
   @ApiProperty({
     type: String,
     required: false,
@@ -14,7 +14,7 @@ export class CreateDerivedDatasetDto extends UpdateDerivedDatasetDto {
   pid?: string;
 
   @IsEnum(DatasetType)
-  readonly type: string = DatasetType.Derived;
+  readonly type: string = DatasetType.Raw;
 
   @ApiProperty({
     type: String,

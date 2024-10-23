@@ -7,12 +7,10 @@ import {
   Req,
   Patch,
   Delete,
-  UseInterceptors,
   Put,
   Body,
   ForbiddenException,
   HttpCode,
-  CanActivate,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -32,12 +30,8 @@ import { Request } from "express";
 import { JWTUser } from "../auth/interfaces/jwt-user.interface";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { CreateUserSettingsDto } from "./dto/create-user-settings.dto";
-import {
-  PartialUpdateUserSettingsDto,
-  UpdateUserSettingsDto,
-} from "./dto/update-user-settings.dto";
+import { PartialUpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { User } from "./schemas/user.schema";
-import { CreateUserSettingsInterceptor } from "./interceptors/create-user-settings.interceptor";
 import { AuthService } from "src/auth/auth.service";
 import { CredentialsDto } from "src/auth/dto/credentials.dto";
 import { LocalAuthGuard } from "src/auth/guards/local-auth.guard";
@@ -48,8 +42,6 @@ import { CreateCustomJwt } from "./dto/create-custom-jwt.dto";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
 import { ReturnedUserDto } from "./dto/returned-user.dto";
 import { ReturnedAuthLoginDto } from "src/auth/dto/returnedLogin.dto";
-import { PoliciesGuard } from "src/casl/guards/policies.guard";
-import { DefaultUserSettingsInterceptor } from "./interceptors/default-user-settings.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("users")
@@ -103,26 +95,25 @@ export class UsersController {
   @UseGuards(LocalAuthGuard)
   @Post("login")
   @ApiOperation({
-    summary: "Functional accounts login.",
-    description: "It allows to login with functional (local) accounts.",
+    summary:
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
+    description:
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
   })
   @ApiResponse({
     status: 201,
     type: ReturnedAuthLoginDto,
     description:
-      "Create a new JWT token for anonymous or the user that is currently logged in",
+      "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
   })
-  async login(
-    @Req() req: Record<string, unknown>,
-  ): Promise<ReturnedAuthLoginDto> {
-    return await this.authService.login(req.user as Omit<User, "password">);
+  async login(@Req() req: Record<string, unknown>): Promise<null> {
+    return null;
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)
   @CheckPolicies("users", (ability: AppAbility) =>
     ability.can(Action.UserReadOwn, User),
   )
-  @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/my/self")
   @ApiOperation({
     summary: "Returns the information of the user currently logged in.",
@@ -184,7 +175,6 @@ export class UsersController {
       ability.can(Action.UserReadOwn, User) ||
       ability.can(Action.UserReadAny, User),
   )
-  @UseInterceptors(CreateUserSettingsInterceptor)
   @Get("/:id")
   async findById(
     @Req() request: Request,
@@ -294,16 +284,40 @@ export class UsersController {
   async patchSettings(
     @Req() request: Request,
     @Param("id") id: string,
-    updateUserSettingsDto: PartialUpdateUserSettingsDto,
+    @Body() updateUserSettingsDto: PartialUpdateUserSettingsDto,
   ): Promise<UserSettings | null> {
     await this.checkUserAuthorization(
       request,
       [Action.UserUpdateAny, Action.UserUpdateOwn],
       id,
     );
-    return this.usersService.findOneAndUpdateUserSettings(
+    return this.usersService.findOneAndPatchUserSettings(
       id,
       updateUserSettingsDto,
+    );
+  }
+
+  @UseGuards(AuthenticatedPoliciesGuard)
+  @CheckPolicies(
+    "users",
+    (ability: AppAbility) =>
+      ability.can(Action.UserUpdateOwn, User) ||
+      ability.can(Action.UserUpdateAny, User),
+  )
+  @Patch("/:id/settings/external")
+  async patchExternalSettings(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() externalSettings: Record<string, unknown>,
+  ): Promise<UserSettings | null> {
+    await this.checkUserAuthorization(
+      request,
+      [Action.UserUpdateAny, Action.UserUpdateOwn],
+      id,
+    );
+    return this.usersService.findOneAndPatchUserExternalSettings(
+      id,
+      externalSettings,
     );
   }
 
@@ -325,22 +339,6 @@ export class UsersController {
       id,
     );
     return this.usersService.findOneAndDeleteUserSettings(id);
-  }
-
-  @UseInterceptors(DefaultUserSettingsInterceptor)
-  @UseGuards(
-    class ByPassAuthenticatedPoliciesGuard
-      extends PoliciesGuard
-      implements CanActivate
-    {
-      async canActivate(): Promise<boolean> {
-        return Promise.resolve(true);
-      }
-    },
-  )
-  @Get("/settings/default")
-  async getDefaultSettings(): Promise<UserSettings> {
-    return Promise.resolve(new UserSettings());
   }
 
   @UseGuards(AuthenticatedPoliciesGuard)

@@ -12,8 +12,6 @@ let accessTokenAdminIngestor = null,
   accessTokenAdmin = null,
   accessTokenArchiveManager = null;
 
-
-
 let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
@@ -91,7 +89,6 @@ let datasetPid1 = null,
   jobIdValidate1 = null,
   encodedJobIdValidate1 = null;
 
-
 const dataset1 = {
   ...TestData.RawCorrect,
   isPublished: true,
@@ -112,6 +109,7 @@ const dataset3 = {
   ownerGroup: "group5",
   accessGroups: ["group1"],
 };
+
 const jobAll = {
   type: "all_access",
 };
@@ -132,6 +130,15 @@ const jobUser51 = {
 };
 const jobGroup5 = {
   type: "group_access"
+};
+const archiveJob = {
+  type: "archive"
+};
+const retrieveJob = {
+  type: "retrieve"
+};
+const publicJob = {
+  type: "public"
 };
 const jobValidate = {
   type: "validate"
@@ -180,7 +187,7 @@ describe("1100: Jobs: Test New Job Model", () => {
     });
   });
 
-  after(() => { //because we're not deleting all the jobs and don't delete datasets
+  after(() => { // because we're not deleting all the jobs and don't delete datasets
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
   });
@@ -242,8 +249,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [],
+        datasetList: [],
       },
     };
 
@@ -256,7 +262,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id")
-        res.body.should.have.property("message").and.be.equal("List of passed dataset IDs is empty.");
+        res.body.should.have.property("message").and.be.equal("List of passed datasets is empty.");
       });
   });
 
@@ -266,8 +272,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: ["fakeID", "fakeID2"],
+        datasetList: [
+          { pid: "fakeID", files: [] },
+          { pid: "fakeID2", files: [] },
+        ],
       },
     };
 
@@ -280,6 +288,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id")
+        res.body.should.have.property("message").and.be.equal("Datasets with pid fakeID,fakeID2 do not exist.");
       });
   });
 
@@ -307,8 +316,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       type: "all_access",
       ownerUser: "admin",
       ownerGroup: "admin",
-      jobParams: {
-      },
+      jobParams: {},
     };
 
     return request(appUrl)
@@ -332,8 +340,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -360,8 +369,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -387,8 +397,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -413,8 +424,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -441,8 +453,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -466,8 +479,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -492,8 +506,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -515,8 +530,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAll,
       ownerGroup: "group5",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -537,8 +553,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -561,8 +578,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid2],
+        datasetList: [
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -583,13 +601,14 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0170:Add a new job as a normal user for his/her group in '#all' configuration", async () => {
+  it("0170: Add a new job as a normal user for his/her group in '#all' configuration", async () => {
     const newDataset = {
       ...jobAll,
       ownerGroup: "group5",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -616,8 +635,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -639,8 +659,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -661,8 +682,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -683,8 +705,9 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAll,
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -707,8 +730,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAll,
       ownerGroup: "group1",
       jobParams: {
-        ...jobAll.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -730,8 +754,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -756,8 +781,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -782,8 +809,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -807,8 +836,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobDatasetPublic,
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -831,8 +862,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -857,8 +890,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -883,8 +918,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -903,14 +940,15 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0300: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0300: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with a published dataset", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1,],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -929,14 +967,17 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should fail as forbidden", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -953,12 +994,166 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
+  it("0311: Add a new public job as a normal user himself/herself with a published dataset", async () => {
+    const newDataset = {
+      ...publicJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("ownerGroup").and.be.equal("group5");
+        res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0312: Add a new public job as a normal user himself/herself with unpublished datasets, which should fail", async () => {
+    const newDataset = {
+      ...publicJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.ConflictStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("The following datasets are not public.");
+      });
+  });
+
+  it("0313: Add a new archive job as a normal user himself/herself with an archivable dataset", async () => {
+    const newDataset = {
+      ...archiveJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0314: Add a new retrieve job as a normal user himself/herself with a non retrievable dataset, which should fail", async () => {
+    const newDataset = {
+      ...retrieveJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.ConflictStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("The following datasets are not in retrievable state for a retrieve job.");
+      });
+  });
+
+  it("0315: Add a new public job as a normal user himself/herself with unknown files, which should fail", async () => {
+    const newDataset = {
+      ...publicJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [ "fakeID" ] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("At least one requested file could not be found.");
+      });
+  });
+
+  it("0316: Add a new public job as a normal user himself/herself choosing only specific files", async () => {
+    const newDataset = {
+      ...publicJob,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [ "N1039-1.tif", "N1039-2.tif" ] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+      });
+  });
+
   it("0320: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -980,8 +1175,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobDatasetPublic,
       jobParams: {
-        ...jobDatasetPublic.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1003,8 +1200,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1029,8 +1228,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1053,8 +1254,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobAuthenticated,
       ownerGroup: "group1",
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1077,8 +1280,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAuthenticated,
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1103,8 +1308,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1129,8 +1336,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1153,8 +1362,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobAuthenticated,
       jobParams: {
-        ...jobAuthenticated.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1176,8 +1387,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1204,8 +1417,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1231,8 +1447,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobDatasetAccess,
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1258,8 +1477,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobDatasetAccess,
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1284,8 +1506,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobDatasetAccess,
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1312,8 +1536,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1338,8 +1564,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1359,27 +1588,30 @@ describe("1100: Jobs: Test New Job Model", () => {
   });
 
   it("0470: Adds a new job as user1 for user5.1 ownerUser and group5 ownerGroup for #datasetAccess, which should fail", async () => {
-      const newDataset = {
-        ...jobDatasetAccess,
-        ownerUser: "user5.1",
-        ownerGroup: "group5",
-        jobParams: {
-          ...jobDatasetAccess.jobParams,
-          datasetIds: [datasetPid1, datasetPid2, datasetPid3],
-        },
-      };
-      return request(appUrl)
-        .post("/api/v3/Jobs")
-        .send(newDataset)
-        .set("Accept", "application/json")
-        .set({ Authorization: `Bearer ${accessTokenUser1}` })
-        .expect(TestData.BadRequestStatusCode)
-        .expect("Content-Type", /json/)
-        .then((res) => {
-          res.body.should.not.have.property("id");
-          res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
-        });
-    });
+    const newDataset = {
+      ...jobDatasetAccess,
+      ownerUser: "user5.1",
+      ownerGroup: "group5",
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
+      },
+    };
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+      });
+  });
 
   it("0480: Add a new job as a normal user for himself/herself in '#datasetAccess' configuration with access to datasets", async () => {
     const newDataset = {
@@ -1387,8 +1619,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1415,8 +1649,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetAccess.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1439,8 +1676,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -1467,8 +1705,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1493,8 +1734,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1520,8 +1764,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobDatasetOwner,
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1547,8 +1794,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobDatasetOwner,
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1573,8 +1823,11 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobDatasetOwner,
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid2, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1601,8 +1854,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -1627,8 +1881,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1, datasetPid3],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1653,8 +1909,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid3],
+        datasetList: [
+          { pid: datasetPid3, files: [] },
+        ],
       },
     };
 
@@ -1681,8 +1938,9 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobDatasetOwner.jobParams,
-        datasetIds: [datasetPid1],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
       },
     };
 
@@ -1705,8 +1963,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1733,8 +1993,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1760,8 +2022,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobUser51,
       ownerGroup: "group1",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1787,8 +2051,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobUser51,
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1815,8 +2081,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.2",
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1842,8 +2110,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobUser51,
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1870,8 +2140,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1896,8 +2168,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1920,8 +2194,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1947,8 +2223,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobUser51,
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1973,8 +2251,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.2",
       ownerGroup: "group5",
       jobParams: {
-        ...jobUser51.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -1997,8 +2277,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "admin",
       ownerGroup: "admin",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2025,8 +2307,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2052,8 +2336,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobGroup5,
       ownerGroup: "group1",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2079,8 +2365,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobGroup5,
       ownerGroup: "group5",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2107,8 +2395,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user3",
       ownerGroup: "group3",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2133,8 +2423,10 @@ describe("1100: Jobs: Test New Job Model", () => {
     const newDataset = {
       ...jobGroup5,
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2161,8 +2453,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user1",
       ownerGroup: "group1",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2187,8 +2481,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2211,8 +2507,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.1",
       ownerGroup: "group5",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2238,8 +2536,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ...jobGroup5,
       ownerGroup: "group5",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2264,8 +2564,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user5.2",
       ownerGroup: "group5",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -2292,8 +2594,10 @@ describe("1100: Jobs: Test New Job Model", () => {
       ownerUser: "user3",
       ownerGroup: "group3",
       jobParams: {
-        ...jobGroup5.jobParams,
-        datasetIds: [datasetPid1, datasetPid2],
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+          { pid: datasetPid2, files: [] },
+        ],
       },
     };
 
@@ -3405,7 +3709,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(61);
+          res.body.should.be.an("array").to.have.lengthOf(64);
         });
   });
 
@@ -3450,7 +3754,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(10);
+          res.body.should.be.an("array").to.have.lengthOf(13);
         });
   });
 
@@ -3536,7 +3840,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.be.an("array").to.have.lengthOf(10);
+          res.body.should.be.an("array").to.have.lengthOf(13);
         });
   });
 
@@ -3826,7 +4130,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(60);
+        res.body.should.be.an("array").to.have.lengthOf(63);
       });
   });
 
@@ -3961,7 +4265,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(10);
+        res.body.should.be.an("array").to.have.lengthOf(13);
       });
   });
 
@@ -4002,7 +4306,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("3010: Fullfacet jobs as unauthenticated user, which should be forbidden", async () => {
+  it("2100: Fullfacet jobs as unauthenticated user, which should be forbidden", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
       .send({})
@@ -4011,7 +4315,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("3020: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
+  it("2110: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4026,7 +4330,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3030: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
+  it("2120: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4041,7 +4345,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3040: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
+  it("2130: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const queryFields = { createdBy: "user5.1" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4052,11 +4356,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 10 }] });
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 13 }] });
       });
   });
 
-  it("3050: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
+  it("2140: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { createdBy: "user5.2" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4071,7 +4375,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3060: Fullfacet jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
+  it("2150: Fullfacet jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
     const query = { createdBy: "anonymous" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4086,7 +4390,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3070: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by admin", async () => {
+  it("2160: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4101,7 +4405,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3080: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
+  it("2170: Fullfacet jobs as a user from CREATE_JOB_GROUPS that were created by User1", async () => {
     const query = { createdBy: "user1" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4116,7 +4420,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3090: Fullfacet jobs as a normal user", async () => {
+  it("2180: Fullfacet jobs as a normal user", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
       .send({})
@@ -4125,11 +4429,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 10 }] });
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 13 }] });
       });
   });
 
-  it("3100: Fullfacet jobs as a normal user (user5.1) that were created by admin", async () => {
+  it("2190: Fullfacet jobs as a normal user (user5.1) that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -4144,7 +4448,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       });
   });
 
-  it("3110: Fullfacet jobs as another normal user (user5.2)", async () => {
+  it("2200: Fullfacet jobs as another normal user (user5.2)", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
       .send({})

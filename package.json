@@ -1,6 +1,6 @@
 {
   "name": "scicat-backend-next",
-  "version": "4.0.0",
+  "version": "4.5.0",
   "description": "scicat-backend-next",
   "author": "",
   "private": true,
@@ -26,7 +26,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:api": "npm run test:api:jest --maxWorkers=50% && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
     "test:api:jest": "jest --config ./test/config/jest-e2e.json --maxWorkers=50%",
-    "test:api:mocha": "mocha --config ./test/config/.mocharc.json -r chai/register-should.js ",
+    "test:api:mocha": "mocha --config ./test/config/.mocharc.json -r chai/register-should.js",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.test functionalAccounts.json"
   },
   "dependencies": {
@@ -79,12 +79,12 @@
     }
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.0.1",
+    "@faker-js/faker": "^9.0.0",
     "@nestjs/cli": "^10.0.5",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.3.8",
     "@types/bcrypt": "^5.0.0",
-    "@types/chai": "^4.3.6",
+    "@types/chai": "^5.0.0",
     "@types/express": "^4.17.13",
     "@types/express-session": "^1.17.4",
     "@types/jest": "^27.0.2",
@@ -103,7 +103,7 @@
     "@typescript-eslint/parser": "^7.3.0",
     "chai": "^5.0.0",
     "chai-http": "^4.3.6",
-    "concurrently": "^8.0.1",
+    "concurrently": "^9.0.0",
     "eslint": "^8.46.0",
     "eslint-config-loopback": "^13.1.0",
     "eslint-config-prettier": "^9.0.0",

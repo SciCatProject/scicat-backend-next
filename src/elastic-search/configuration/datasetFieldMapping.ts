@@ -42,11 +42,15 @@ export const datasetMappings: MappingObject = {
     type: "nested",
     dynamic: false,
   },
-  proposalId: {
+  proposalIds: {
     type: "keyword",
     ignore_above: 256,
   },
-  sampleId: {
+  sampleIds: {
+    type: "keyword",
+    ignore_above: 256,
+  },
+  instrumentIds: {
     type: "keyword",
     ignore_above: 256,
   },
