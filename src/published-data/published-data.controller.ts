@@ -166,13 +166,17 @@ export class PublishedDataController {
   })
   async formPopulate(@Query("pid") pid: string) {
     const formData: IFormPopulateData = {};
-    const dataset = await this.datasetsService.findOne({ where: { pid } });
+    const dataset = (await this.datasetsService.findOne({
+      where: { pid },
+    })) as unknown as DatasetClass;
 
     let proposalId;
     if (dataset) {
       formData.resourceType = dataset.type;
       formData.description = dataset.description;
-      proposalId = (dataset as unknown as DatasetClass).proposalId;
+      if ("proposalIds" in dataset) {
+        proposalId = dataset.proposalIds![0];
+      }
     }
 
     let proposal;

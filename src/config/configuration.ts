@@ -71,25 +71,14 @@ const configuration = () => {
     }
   });
 
-  // Logger.log("Config SETUP");
-  // Logger.log("- Access groups static values : " + accessGroupsStaticValues);
-  // Logger.log("- Admin groups : " + adminGroups);
-  // Logger.log("- Delete groups : " + deleteGroups);
-  // Logger.log("- Create dataset groups : " + createDatasetGroups);
-  // Logger.log(
-  //   "- Create dataset with pid groups : " + createDatasetWithPidGroups,
-  // );
-  // Logger.log(
-  //   "- Create dataset privileged groups : " + createDatasetPrivilegedGroups,
-  // );
-  // Logger.log("- Create job groups : " + createJobGroups);
-  // Logger.log("- Update job groups : " + statusUpdateJobGroups);
-
-  // Register built-in job actions
   registerDefaultActions();
   const job_configs = loadJobConfig(jobConfigurationFile);
 
   const config = {
+    versions: {
+      api: "3",
+    },
+    swaggerPath: process.env.SWAGGER_PATH || "explorer",
     jobConfiguration: job_configs,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],

@@ -43,6 +43,37 @@ const TestData = {
     accessGroups: [],
   },
 
+  userSettingsCorrect: {
+    datasetCount: 10,
+    jobCount: 25,
+    externalSettings: {
+      columns: [
+        {
+          name: "select",
+          order: 0,
+          type: "standard",
+          enabled: true,
+        },
+      ],
+      filters: [
+        {
+          LocationFilter: true,
+        },
+      ],
+      conditions: [
+        {
+          condition: {
+            lhs: "test",
+            relation: "GREATER_THAN",
+            rhs: 1,
+            unit: "",
+          },
+          enabled: true,
+        },
+      ],
+    },
+  },
+
   ProposalCorrectComplete: {
     proposalId: "20170267",
     pi_email: "pi@uni.edu",
@@ -119,6 +150,7 @@ const TestData = {
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
+    datasetName: faker.string.sample(),
   },
 
   RawCorrect: {
@@ -200,6 +232,8 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
+    instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
     type: "raw",
     keywords: ["sls", "protein"],
   },
@@ -384,13 +418,14 @@ const TestData = {
 
   DerivedCorrectMin: {
     investigator: faker.internet.email(),
-    inputDatasets: [faker.system.filePath()],
+    inputDatasets: [faker.string.uuid()],
     usedSoftware: [faker.internet.url()],
     owner: faker.internet.userName(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
     ownerGroup: faker.string.alphanumeric(6),
+    datasetName: faker.string.sample(),
     type: "derived",
   },
 
@@ -418,6 +453,9 @@ const TestData = {
     ownerGroup: "p34123",
     accessGroups: [],
     type: "derived",
+    proposalId: "10.540.16635/20110123",
+    //instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
+    //sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
   },
 
   DerivedWrong: {
@@ -816,6 +854,7 @@ const TestData = {
     creationLocation: faker.location.city(),
     principalInvestigator: faker.internet.userName(),
     type: "raw",
+    datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
     owner: faker.internet.userName(),
