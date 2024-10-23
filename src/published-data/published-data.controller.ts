@@ -76,10 +76,7 @@ export class PublishedDataController {
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    return this.publishedDataService.create({
-      ...createPublishedDataDto,
-      status: "pending_registration",
-    });
+    return this.publishedDataService.create(createPublishedDataDto);
   }
 
   // GET /publisheddata

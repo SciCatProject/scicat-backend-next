@@ -50,12 +50,15 @@ export class PublishedDataService {
     createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
     const username = (this.request.user as JWTUser).username;
-    const createdPublished = new this.publishedDataModel(
-      addCreatedByFields<CreatePublishedDataDto>(
-        createPublishedDataDto,
-        username,
-      ),
+    const addedCreatedBy = addCreatedByFields<CreatePublishedDataDto>(
+      createPublishedDataDto,
+      username,
     );
+    const createdPublished = new this.publishedDataModel({
+      ...addedCreatedBy,
+      status: "pending_registration",
+    });
+
     return createdPublished.save();
   }
 

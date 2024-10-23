@@ -29,7 +29,6 @@ export class PublishedData {
 
   @ApiProperty({
     type: String,
-    required: true,
     description:
       "Digital Object Identifier; e.g.," +
       ' "10.xxx/9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d".',
@@ -52,11 +51,12 @@ export class PublishedData {
 
   @ApiProperty({
     type: String,
+    required: false,
     description:
       "Creator Affiliation.  This field has the semantics of" +
       " [DataCite Creator/affiliation](https://datacite-metadata-schema.readthedocs.io/en/4.5/properties/creator/#affiliation).",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   affiliation: string;
 
   @ApiProperty({
@@ -105,9 +105,10 @@ export class PublishedData {
 
   @ApiProperty({
     type: String,
+    required: false,
     description: "Full URL to the landing page for this DOI",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   url: string;
 
   @ApiProperty({
@@ -143,16 +144,18 @@ export class PublishedData {
 
   @ApiProperty({
     type: Number,
+    required: false,
     description: "Number of files",
   })
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: false })
   numberOfFiles: number;
 
   @ApiProperty({
     type: Number,
+    required: false,
     description: "Size of archive",
   })
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: false })
   sizeOfArchive: number;
 
   @ApiProperty({
@@ -167,9 +170,10 @@ export class PublishedData {
 
   @ApiProperty({
     type: [String],
+    required: false,
     description: "List of Names of authors of the to be published data",
   })
-  @Prop({ type: [String] })
+  @Prop({ type: [String], required: false })
   authors: string[];
 
   @ApiProperty({
@@ -184,37 +188,41 @@ export class PublishedData {
     description:
       "Indication of position in publication workflow e.g. doiRegistered",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   status: string;
 
   @ApiProperty({
     type: String,
+    required: false,
     description:
       "The username of the user that clicks the publish button in the client",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   scicatUser: string;
 
   @ApiProperty({
     type: String,
+    required: false,
     description: "Small, less than 16 MB base 64 image preview of dataset",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   thumbnail: string;
 
   @ApiProperty({
     type: [String],
+    required: false,
     description:
       "List of URLs pointing to related publications like DOI URLS of journal articles",
   })
-  @Prop({ type: [String] })
+  @Prop({ type: [String], required: false })
   relatedPublications: string[];
 
   @ApiProperty({
     type: String,
+    required: false,
     description: "URL pointing to page from which data can be downloaded",
   })
-  @Prop({ type: String })
+  @Prop({ type: String, required: false })
   downloadLink: string;
 
   @ApiProperty({
