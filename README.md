@@ -1,6 +1,6 @@
 # SciCat Backend
 
-..
+...
 
 ## Version: v4.x
 
