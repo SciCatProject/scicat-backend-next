@@ -188,7 +188,7 @@ export class PublishedData {
     description:
       "Indication of position in publication workflow e.g. doiRegistered",
   })
-  @Prop({ type: String, required: false })
+  @Prop({ type: String, required: false, default: "pending_registration" })
   status: string;
 
   @ApiProperty({
