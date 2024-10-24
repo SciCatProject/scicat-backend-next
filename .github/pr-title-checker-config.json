@@ -9,7 +9,7 @@
   },
   "MESSAGES": {
     "success": "All OK",
-    "failure": "PR title not following the semantic-release guidelines. Please check https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines for more information.",
+    "failure": "PR title not following the semantic-release guidelines (<type>(<scope>): <subject>). Please check https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines for more information.",
     "notice": ""
   }
 }
