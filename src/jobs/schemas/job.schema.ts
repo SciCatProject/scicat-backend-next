@@ -131,7 +131,7 @@ export class JobClass extends OwnableClass {
   })
   configVersion: string;
 
-  // initially empty, then provided during statusUpdate
+  // initially empty, then provided during update
   @ApiProperty({
     type: Object,
     required: false,

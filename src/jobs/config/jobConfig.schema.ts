@@ -28,7 +28,7 @@ export const JobConfigSchema = {
             },
             additionalProperties: true,
           },
-          statusUpdate: {
+          update: {
             type: "object",
             properties: {
               auth: { type: "string" },

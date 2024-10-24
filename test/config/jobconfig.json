@@ -11,7 +11,7 @@
           }
         ]
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
   },
@@ -20,7 +20,7 @@
       "create": {
         "auth": "#datasetPublic"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
     },
@@ -29,7 +29,7 @@
       "create": {
         "auth": "#authenticated"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
     },
@@ -38,7 +38,7 @@
       "create": {
         "auth": "#datasetAccess"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#jobOwnerGroup"
       }
     },
@@ -47,7 +47,7 @@
       "create": {
         "auth": "#datasetOwner"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#jobOwnerUser"
       }
     },
@@ -56,7 +56,7 @@
       "create": {
         "auth": "user5.1"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "user5.1"
       }
     },
@@ -65,7 +65,7 @@
       "create": {
         "auth": "@group5"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "@group5"
       }
     },
@@ -74,7 +74,7 @@
       "create": {
         "auth": "#all"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
     },
@@ -83,7 +83,7 @@
       "create": {
         "auth": "#all"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
     },
@@ -92,7 +92,7 @@
       "create": {
         "auth": "#all"
       },
-      "statusUpdate": {
+      "update": {
         "auth": "#all"
       }
     }
