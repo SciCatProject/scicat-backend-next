@@ -11,6 +11,7 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { ValidateAction } from "src/jobs/actions/validateaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -230,10 +231,12 @@ export function registerDefaultActions() {
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
   registerCreateAction(RabbitMQJobAction);
+  registerCreateAction(ValidateAction);
   // Status Update
   registerStatusUpdateAction(LogJobAction);
   registerStatusUpdateAction(EmailJobAction);
   registerStatusUpdateAction(RabbitMQJobAction);
+  registerStatusUpdateAction(ValidateAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];

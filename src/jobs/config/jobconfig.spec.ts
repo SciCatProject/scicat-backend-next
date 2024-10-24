@@ -14,7 +14,7 @@ describe("Job configuration", () => {
     const path = "test/config/jobconfig.json";
     const config = await loadJobConfig(path);
     expect(config).toBeDefined();
-    expect(config.length).toBe(10);
+    expect(config.length).toBe(11);
     expect(config[0].jobType).toBe("all_access");
     expect(config[0].create).toBeDefined();
     const create = config[0].create;
@@ -22,6 +22,5 @@ describe("Job configuration", () => {
     const action = create.actions[0];
     expect(action instanceof LogJobAction);
     expect(action.getActionType()).toBe("log");
-    // action.validate({ config: null });
   });
 });

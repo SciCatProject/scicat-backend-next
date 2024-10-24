@@ -58,7 +58,18 @@
     {
       "jobType": "public",
       "create": {
-        "auth": "#all"
+        "auth": "#all",
+        "actions": [
+          {
+            "actionType": "validate",
+            "request": {
+              "jobParams.datasetList[*]": {
+                "type": "object",
+                "required": ["pid","files"]
+              }
+            }
+          }
+        ]
       },
       "statusUpdate": {
         "auth": "#all"

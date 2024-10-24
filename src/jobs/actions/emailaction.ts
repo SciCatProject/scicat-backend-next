@@ -7,9 +7,8 @@ import { readFileSync } from "fs";
 import { compile, TemplateDelegate } from "handlebars";
 import { createTransport, Transporter } from "nodemailer";
 import { Logger, NotFoundException } from "@nestjs/common";
-import { JobAction } from "../config/jobconfig";
+import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
-import configuration from "src/config/configuration";
 
 // Handlebar options for JobClass templates
 const jobTemplateOptions = {
@@ -40,7 +39,7 @@ type Auth = {
 /**
  * Send an email following a job
  */
-export class EmailJobAction<T> implements JobAction<T> {
+export class EmailJobAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "email";
 
   private mailService: Transporter;

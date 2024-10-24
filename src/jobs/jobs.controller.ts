@@ -50,7 +50,7 @@ import {
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
-import { JobAction } from "./config/jobconfig";
+import { JobAction, JobDto, JobConfig } from "./config/jobconfig";
 import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
@@ -553,37 +553,80 @@ export class JobsController {
   }
 
   /**
-   * Send off to external service
+   * Validate the DTO against all actions.
+   *
+   * Validation is performed in parallel. Invalid DTOs will result in an HTTPException.
+   * @param actions
+   * @param dto
+   * @returns
    */
-  async performJobAction(
-    jobInstance: JobClass,
-    action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>,
+  async validateDTO<DtoType extends JobDto>(
+    actions: JobAction<DtoType>[],
+    dto: DtoType,
   ): Promise<void> {
-    await action.performJob(jobInstance).catch((err: Error) => {
-      if (err instanceof HttpException) {
-        throw err;
-      }
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message: `Invalid job input. Job '${jobInstance.type}' unable to perfom
-            action '${action.getActionType()}' due to ${err}`,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    });
+    await Promise.all(
+      actions.map((action) => {
+        if (action.validate) {
+          return action.validate(dto).catch((err: Error) => {
+            if (err instanceof HttpException) {
+              throw err;
+            }
+            throw new HttpException(
+              {
+                status: HttpStatus.BAD_REQUEST,
+                message: `Invalid job input. Invalid request body for '${action.getActionType()}' due to ${err}`,
+              },
+              HttpStatus.BAD_REQUEST,
+            );
+          });
+        } else {
+          return Promise.resolve();
+        }
+      }),
+    );
   }
 
-  async performJobCreateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
-    for (const action of jobConfig.create.actions) {
-      await this.performJobAction(jobInstance, action);
+  /**
+   * Perform all actions serially.
+   *
+   * Actions should throw a HTTPException for most errors. Other exceptions will be converted to HTTPExceptions, resulting
+   * in a 400 response.
+   * @param actions List of actions to perform
+   * @param jobInstance
+   * @returns
+   */
+  async performActions<DtoType extends JobDto>(
+    actions: JobAction<DtoType>[],
+    jobInstance: JobClass,
+  ): Promise<void> {
+    for (const action of actions) {
+      await action.performJob(jobInstance).catch((err: Error) => {
+        if (err instanceof HttpException) {
+          throw err;
+        }
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: `Invalid job input. Job '${jobInstance.type}' unable to perform action '${action.getActionType()}' due to ${err}`,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
     }
-    return;
   }
 
-  async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
-    const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
+  /**
+   * Check for mismatches between the config version used to create the job and the currently loaded version.
+   *
+   * Currently this is only logged.
+   * @param jobInstance
+   * @returns
+   */
+  async checkConfigVersion(
+    jobConfig: JobConfig,
+    jobInstance: JobClass,
+  ): Promise<void> {
+    // TODO - what shall we do when configVersion does not match?
     if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
@@ -593,10 +636,6 @@ export class JobsController {
         "JobStatusUpdate",
       );
     }
-    for (const action of jobConfig.statusUpdate.actions) {
-      await this.performJobAction(jobInstance, action);
-    }
-    return;
   }
 
   /**
@@ -632,10 +671,13 @@ export class JobsController {
       createJobDto,
       request.user as JWTUser,
     );
+    // Allow actions to validate DTO
+    const jobConfig = this.getJobTypeConfiguration(createJobDto.type);
+    await this.validateDTO(jobConfig.create.actions, createJobDto);
     // Create actual job in database
     const createdJobInstance = await this.jobsService.create(jobInstance);
     // Perform the action that is specified in the create portion of the job configuration
-    await this.performJobCreateAction(createdJobInstance);
+    await this.performActions(jobConfig.create.actions, createdJobInstance);
     return createdJobInstance;
   }
 
@@ -659,7 +701,7 @@ export class JobsController {
   @ApiResponse({
     status: HttpStatus.OK,
     type: JobClass,
-    description: "Updated job status",
+    description: "Updated job",
   })
   async update(
     @Req() request: Request,
@@ -680,10 +722,10 @@ export class JobsController {
     }
     const currentJobInstance =
       await this.generateJobInstanceForPermissions(currentJob);
-    const jobConfiguration = this.getJobTypeConfiguration(currentJob.type);
+    const jobConfig = this.getJobTypeConfiguration(currentJob.type);
     const ability = this.caslAbilityFactory.jobsInstanceAccess(
       request.user as JWTUser,
-      jobConfiguration,
+      jobConfig,
     );
     // check if the user can update this job
     const canUpdateStatus =
@@ -693,6 +735,10 @@ export class JobsController {
     if (!canUpdateStatus) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
+
+    // Allow actions to validate DTO
+    await this.validateDTO(jobConfig.statusUpdate.actions, statusUpdateJobDto);
+
     // Update job in database
     const updatedJob = await this.jobsService.statusUpdate(
       id,
@@ -700,7 +746,8 @@ export class JobsController {
     );
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
-      await this.performJobStatusUpdateAction(updatedJob);
+      await this.checkConfigVersion(jobConfig, updatedJob);
+      await this.performActions(jobConfig.statusUpdate.actions, updatedJob);
     }
     return updatedJob;
   }
