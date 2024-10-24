@@ -32,7 +32,7 @@ export const convertToSI = (
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
-    console.error(error);
+    Logger.warn(`Error converting unit to SI: {error}`);
     return { valueSI: inputValue, unitSI: inputUnit };
   }
 };
