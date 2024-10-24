@@ -65,9 +65,7 @@ export class JobConfig {
       throw new Error(`No ${Action.Create} configured for job type "${type}"`);
     }
     if (!(Action.Update in jobData)) {
-      throw new Error(
-        `No ${Action.Update} configured for job type "${type}"`,
-      );
+      throw new Error(`No ${Action.Update} configured for job type "${type}"`);
     }
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
@@ -186,10 +184,7 @@ export type JobUpdateAction = JobAction<UpdateJobDto>;
  * Action registration
  */
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
-const updateActions: Record<
-  string,
-  JobActionClass<UpdateJobDto>
-> = {};
+const updateActions: Record<string, JobActionClass<UpdateJobDto>> = {};
 
 /**
  * Registers an action to handle jobs of a particular type
@@ -199,9 +194,7 @@ export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
   createActions[action.actionType] = action;
 }
 
-export function registerUpdateAction(
-  action: JobActionClass<UpdateJobDto>,
-) {
+export function registerUpdateAction(action: JobActionClass<UpdateJobDto>) {
   updateActions[action.actionType] = action;
 }
 

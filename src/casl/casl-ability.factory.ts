@@ -26,11 +26,7 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import configuration from "src/config/configuration";
-import {
-  CreateJobAuth,
-  UpdateJobAuth,
-} from "src/jobs/types/jobs-auth.enum";
-
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobConfig } from "src/jobs/config/jobconfig";
 
 type Subjects =

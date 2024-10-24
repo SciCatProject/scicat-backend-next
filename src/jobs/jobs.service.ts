@@ -108,10 +108,7 @@ export class JobsService {
       .findOneAndUpdate(
         { id: id },
         addStatusFields(
-          addUpdatedByField(
-            updateJobDto as UpdateQuery<JobDocument>,
-            username,
-          ),
+          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
           updateJobDto.statusCode,
           updateJobDto.statusMessage,
           updateJobDto.jobResultObject,
