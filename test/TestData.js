@@ -834,6 +834,10 @@ const TestData = {
     name: "ESS-wrong",
   },
 
+  PatchProposal1: {
+    proposalId: "10.540.16635/20240124",
+  },
+
   PatchComment: {
     comment: "test",
   },

@@ -276,6 +276,22 @@ describe("1900: RawDataset: Raw Datasets", () => {
     );
   });
 
+  it("0125: should update proposal of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchProposal1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.should.have
+          .property("proposalId")
+          .and.be.equal(TestData.PatchProposal1["proposal"]);
+      });
+  });
+
   it("0130: should update comment of the dataset", async () => {
     return request(appUrl)
       .patch("/api/v3/datasets/" + pid)
