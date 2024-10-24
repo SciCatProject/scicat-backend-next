@@ -53,7 +53,7 @@ import {
 import { JobAction } from "./config/jobconfig";
 import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
-import { OrigDatablock} from "src/origdatablocks/schemas/origdatablock.schema";
+import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
