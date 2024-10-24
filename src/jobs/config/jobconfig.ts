@@ -16,7 +16,7 @@
 import * as fs from "fs";
 import { JobClass } from "../schemas/job.schema";
 import { CreateJobDto } from "../dto/create-job.dto";
-import { StatusUpdateJobDto } from "../dto/status-update-job.dto";
+import { UpdateJobDto } from "../dto/update-job.dto";
 import { JobsConfigSchema } from "../types/jobs-config-schema.enum";
 import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
@@ -30,18 +30,18 @@ export class JobConfig {
   jobType: string;
   configVersion: string;
   create: JobOperation<CreateJobDto>;
-  statusUpdate: JobOperation<StatusUpdateJobDto>;
+  update: JobOperation<UpdateJobDto>;
 
   constructor(
     jobType: string,
     configVersion: string,
     create: JobOperation<CreateJobDto>,
-    statusUpdate: JobOperation<StatusUpdateJobDto>,
+    update: JobOperation<UpdateJobDto>,
   ) {
     this.jobType = jobType;
     this.configVersion = configVersion;
     this.create = create;
-    this.statusUpdate = statusUpdate;
+    this.update = update;
   }
 
   /**
@@ -64,25 +64,25 @@ export class JobConfig {
     if (!(Action.Create in jobData)) {
       throw new Error(`No ${Action.Create} configured for job type "${type}"`);
     }
-    if (!(Action.StatusUpdate in jobData)) {
+    if (!(Action.Update in jobData)) {
       throw new Error(
-        `No ${Action.StatusUpdate} configured for job type "${type}"`,
+        `No ${Action.Update} configured for job type "${type}"`,
       );
     }
     const create = JobOperation.parse<CreateJobDto>(
       createActions,
       jobData[Action.Create] as Record<string, unknown>,
     );
-    const statusUpdate = JobOperation.parse<StatusUpdateJobDto>(
-      statusUpdateActions,
-      jobData[Action.StatusUpdate] as Record<string, unknown>,
+    const update = JobOperation.parse<UpdateJobDto>(
+      updateActions,
+      jobData[Action.Update] as Record<string, unknown>,
     );
-    return new JobConfig(type, configVersion, create, statusUpdate);
+    return new JobConfig(type, configVersion, create, update);
   }
 }
 
 /**
- * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
+ * Encapsulates all information for a particular job operation (eg "create", "update")
  */
 export class JobOperation<DtoType> {
   auth: JobsAuth | undefined;
@@ -180,15 +180,15 @@ export interface JobActionClass<DtoType> {
 
 export type JobCreateAction = JobAction<CreateJobDto>;
 // export type JobReadAction = JobAction<ReadJobDto>;
-export type JobStatusUpdateAction = JobAction<StatusUpdateJobDto>;
+export type JobUpdateAction = JobAction<UpdateJobDto>;
 
 /**
  * Action registration
  */
 const createActions: Record<string, JobActionClass<CreateJobDto>> = {};
-const statusUpdateActions: Record<
+const updateActions: Record<
   string,
-  JobActionClass<StatusUpdateJobDto>
+  JobActionClass<UpdateJobDto>
 > = {};
 
 /**
@@ -199,10 +199,10 @@ export function registerCreateAction(action: JobActionClass<CreateJobDto>) {
   createActions[action.actionType] = action;
 }
 
-export function registerStatusUpdateAction(
-  action: JobActionClass<StatusUpdateJobDto>,
+export function registerUpdateAction(
+  action: JobActionClass<UpdateJobDto>,
 ) {
-  statusUpdateActions[action.actionType] = action;
+  updateActions[action.actionType] = action;
 }
 
 /**
@@ -213,8 +213,8 @@ export function getRegisteredCreateActions(): string[] {
   return Object.keys(createActions);
 }
 
-export function getRegisteredStatusUpdateActions(): string[] {
-  return Object.keys(statusUpdateActions);
+export function getRegisteredUpdateActions(): string[] {
+  return Object.keys(updateActions);
 }
 
 /**

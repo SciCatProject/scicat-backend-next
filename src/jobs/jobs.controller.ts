@@ -17,7 +17,7 @@ import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
+import { UpdateJobDto } from "./dto/update-job.dto";
 import { DatasetListDto } from "./dto/dataset-list.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -557,7 +557,7 @@ export class JobsController {
    */
   async performJobAction(
     jobInstance: JobClass,
-    action: JobAction<CreateJobDto> | JobAction<StatusUpdateJobDto>,
+    action: JobAction<CreateJobDto> | JobAction<UpdateJobDto>,
   ): Promise<void> {
     await action.performJob(jobInstance).catch((err: Error) => {
       if (err instanceof HttpException) {
@@ -582,7 +582,7 @@ export class JobsController {
     return;
   }
 
-  async performJobStatusUpdateAction(jobInstance: JobClass): Promise<void> {
+  async performJobUpdateAction(jobInstance: JobClass): Promise<void> {
     const jobConfig = this.getJobTypeConfiguration(jobInstance.type);
     if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
@@ -590,10 +590,10 @@ export class JobsController {
           Job was created with configVersion ${jobInstance.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
-        "JobStatusUpdate",
+        "JobUpdate",
       );
     }
-    for (const action of jobConfig.statusUpdate.actions) {
+    for (const action of jobConfig.update.actions) {
       await this.performJobAction(jobInstance, action);
     }
     return;
@@ -640,31 +640,31 @@ export class JobsController {
   }
 
   /**
-   * Update job status
+   * Update job
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobStatusUpdate, JobClass),
+    ability.can(Action.JobUpdate, JobClass),
   )
   @Patch(":id")
   @ApiOperation({
-    summary: "It updates the status of an existing job.",
-    description: "It updates the status of an existing job.",
+    summary: "It updates an existing job.",
+    description: "It updates an existing job.",
   })
   @ApiBody({
-    description: "Status fields for the job to be updated",
+    description: "Fields for the job to be updated",
     required: true,
-    type: StatusUpdateJobDto,
+    type: UpdateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
     type: JobClass,
-    description: "Updated job status",
+    description: "Updated job",
   })
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() statusUpdateJobDto: StatusUpdateJobDto,
+    @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
@@ -686,21 +686,21 @@ export class JobsController {
       jobConfiguration,
     );
     // check if the user can update this job
-    const canUpdateStatus =
-      ability.can(Action.JobStatusUpdateAny, JobClass) ||
-      ability.can(Action.JobStatusUpdateOwner, currentJobInstance) ||
-      ability.can(Action.JobStatusUpdateConfiguration, currentJobInstance);
-    if (!canUpdateStatus) {
+    const canUpdate =
+      ability.can(Action.JobUpdateAny, JobClass) ||
+      ability.can(Action.JobUpdateOwner, currentJobInstance) ||
+      ability.can(Action.JobUpdateConfiguration, currentJobInstance);
+    if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
     // Update job in database
-    const updatedJob = await this.jobsService.statusUpdate(
+    const updatedJob = await this.jobsService.update(
       id,
-      statusUpdateJobDto,
+      updateJobDto,
     );
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
-      await this.performJobStatusUpdateAction(updatedJob);
+      await this.performJobUpdateAction(updatedJob);
     }
     return updatedJob;
   }

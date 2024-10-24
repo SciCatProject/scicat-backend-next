@@ -1,7 +1,7 @@
 import {
   loadJobConfig,
   registerCreateAction,
-  registerStatusUpdateAction,
+  registerUpdateAction,
 } from "../jobs/config/jobconfig";
 import { LogJobAction } from "../jobs/actions/logaction";
 import { EmailJobAction } from "../jobs/actions/emailaction";
@@ -29,7 +29,7 @@ const configuration = () => {
     process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
@@ -98,7 +98,7 @@ const configuration = () => {
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
-    statusUpdateJobGroups: statusUpdateJobGroups,
+    updateJobGroups: updateJobGroups,
     deleteJobGroups: deleteJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
@@ -230,10 +230,10 @@ export function registerDefaultActions() {
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
   registerCreateAction(RabbitMQJobAction);
-  // Status Update
-  registerStatusUpdateAction(LogJobAction);
-  registerStatusUpdateAction(EmailJobAction);
-  registerStatusUpdateAction(RabbitMQJobAction);
+  // Update
+  registerUpdateAction(LogJobAction);
+  registerUpdateAction(EmailJobAction);
+  registerUpdateAction(RabbitMQJobAction);
 }
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
