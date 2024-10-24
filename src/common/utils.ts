@@ -2,7 +2,7 @@
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
-import { format, unit } from "mathjs";
+import { format, unit, Unit, createUnit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
 import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
@@ -13,14 +13,22 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 
+// add Å to mathjs accepted units as equivalent to angstrom
+const isAlphaOriginal = Unit.isValidAlpha;
+Unit.isValidAlpha = function (c) {
+  return isAlphaOriginal(c) || c == "Å";
+};
+createUnit("Å", "1 angstrom");
+
 export const convertToSI = (
   inputValue: number,
   inputUnit: string,
 ): { valueSI: number; unitSI: string } => {
   try {
+    const normalizedUnit = inputUnit.normalize("NFC"); // catch and normalize the different versions of Å in unicode
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
-    const quantity = unit(inputValue, inputUnit)
-      .to(unit(inputUnit).toSI().toJSON().unit)
+    const quantity = unit(inputValue, normalizedUnit)
+      .to(unit(normalizedUnit).toSI().toJSON().unit)
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
@@ -924,6 +932,30 @@ export const samplesFullQueryDescriptionFields =
   ],\n \
 }\n \
   </pre>';
+
+export const filterUserIdentityExample =
+  '{ "profile.email": "this_email@your.site" }';
+
+export const filterUserIdentityDescription =
+  '<pre>\n \
+  this_email@some.site\n \
+or \n \
+  {\n \
+    "email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "profile.email": "this_email@some.site"\n \
+  }\n \
+or \n \
+  {\n \
+    "where?": {\n \
+      "profile.email": "this_email@some.site"\n \
+    }\n \
+  }\n \
+This last version is deprecated and will be discontinued as soon as the FE is updated.\n \
+It has been maintanined for backward compatibility.\n \
+</pre>';
 
 export const parseBoolean = (v: unknown): boolean => {
   switch (v) {

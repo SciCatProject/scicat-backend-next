@@ -22,13 +22,4 @@ export class CreateDatasetDto extends UpdateDatasetDto {
   })
   @IsEnum(DatasetType)
   readonly type: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Version of the API used in creation of the dataset.",
-  })
-  @IsOptional()
-  @IsString()
-  readonly version?: string;
 }

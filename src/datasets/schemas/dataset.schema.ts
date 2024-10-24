@@ -1,19 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
-import {
-  Attachment,
-  AttachmentSchema,
-} from "src/attachments/schemas/attachment.schema";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
-import {
-  Datablock,
-  DatablockSchema,
-} from "src/datablocks/schemas/datablock.schema";
-import {
-  OrigDatablock,
-  OrigDatablockSchema,
-} from "src/origdatablocks/schemas/origdatablock.schema";
 import { v4 as uuidv4 } from "uuid";
 import { DatasetType } from "../dataset-type.enum";
 import { HistoryClass, HistorySchema } from "./history.schema";
@@ -244,28 +232,21 @@ export class DatasetClass extends OwnableClass {
 
   @ApiProperty({
     type: String,
-    required: false,
+    required: true,
     description:
-      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid. Will be autofilled if missing using info from sourceFolder.",
+      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid.",
   })
   @Prop({
     type: String,
-    required: false,
-    default: function datasetName() {
-      const sourceFolder = (this as DatasetDocument).sourceFolder;
-      if (!sourceFolder) return "";
-      const arr = sourceFolder.split("/");
-      if (arr.length == 1) return arr[0];
-      else return arr[arr.length - 2] + "/" + arr[arr.length - 1];
-    },
+    required: true,
   })
-  datasetName?: string;
+  datasetName: string;
 
   @ApiProperty({
     type: String,
     required: false,
     description:
-      "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'",
+      "ACIA information about AUthenticity,COnfidentiality,INtegrity and AVailability requirements of dataset. E.g. AV(ailabilty)=medium could trigger the creation of a two tape copies. Format 'AV=medium,CO=low'. Please check the following post for more info: https://en.wikipedia.org/wiki/Parkerian_Hexad",
   })
   @Prop({ type: String, required: false })
   classification?: string;
@@ -280,11 +261,12 @@ export class DatasetClass extends OwnableClass {
 
   @ApiProperty({
     type: String,
-    required: false,
-    description: "Version of the API used in creation of the dataset.",
+    required: true,
+    description:
+      "Version of the API used when the dataset was created or last updated. API version is defined in code for each release. Managed by the system.",
   })
-  @Prop({ type: String, required: false })
-  version?: string;
+  @Prop({ type: String, required: true })
+  version: string;
 
   @ApiProperty({
     type: "array",
@@ -298,12 +280,12 @@ export class DatasetClass extends OwnableClass {
 
   @ApiProperty({
     type: LifecycleClass,
-    required: false,
+    required: true,
     default: {},
     description:
       "Describes the current status of the dataset during its lifetime with respect to the storage handling systems.",
   })
-  @Prop({ type: LifecycleSchema, default: {}, required: false })
+  @Prop({ type: LifecycleSchema, default: {}, required: true })
   datasetlifecycle?: LifecycleClass;
 
   @ApiProperty({
@@ -311,7 +293,8 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(TechniqueClass) },
     required: false,
     default: [],
-    description: "Stores the metadata information for techniques.",
+    description:
+      "Array of techniques information, with technique name and pid.",
   })
   @Prop({ type: [TechniqueSchema], required: false, default: [] })
   techniques?: TechniqueClass[];
@@ -321,7 +304,8 @@ export class DatasetClass extends OwnableClass {
     items: { $ref: getSchemaPath(RelationshipClass) },
     required: false,
     default: [],
-    description: "Stores the relationships with other datasets.",
+    description:
+      "Array of relationships with other datasets. It contains relationship type and destination dataset",
   })
   @Prop({ type: [RelationshipSchema], required: false, default: [] })
   relationships?: RelationshipClass[];
@@ -330,7 +314,8 @@ export class DatasetClass extends OwnableClass {
     type: [String],
     required: false,
     default: [],
-    description: "List of users that the dataset has been shared with.",
+    description:
+      "List of additional users that the dataset has been shared with.",
   })
   @Prop({
     type: [String],
@@ -339,37 +324,37 @@ export class DatasetClass extends OwnableClass {
   })
   sharedWith?: string[];
 
-  @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(Attachment) },
-    required: false,
-    description:
-      "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
-  })
-  @Prop({ type: [AttachmentSchema], default: [] })
-  attachments?: Attachment[];
+  // @ApiProperty({
+  //   type: "array",
+  //   items: { $ref: getSchemaPath(Attachment) },
+  //   required: false,
+  //   description:
+  //     "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
+  // })
+  // @Prop({ type: [AttachmentSchema], default: [] })
+  // attachments?: Attachment[];
 
-  @ApiProperty({
-    isArray: true,
-    type: OrigDatablock,
-    items: { $ref: getSchemaPath(OrigDatablock) },
-    required: false,
-    description:
-      "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
-  })
-  @Prop({ type: [OrigDatablockSchema], default: [] })
-  origdatablocks: OrigDatablock[];
+  // @ApiProperty({
+  //   isArray: true,
+  //   type: OrigDatablock,
+  //   items: { $ref: getSchemaPath(OrigDatablock) },
+  //   required: false,
+  //   description:
+  //     "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
+  // })
+  // @Prop({ type: [OrigDatablockSchema], default: [] })
+  // origdatablocks: OrigDatablock[];
 
-  @ApiProperty({
-    isArray: true,
-    type: Datablock,
-    items: { $ref: getSchemaPath(Datablock) },
-    required: false,
-    description:
-      "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with manageable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
-  })
-  @Prop({ type: [DatablockSchema], default: [] })
-  datablocks: Datablock[];
+  // @ApiProperty({
+  //   isArray: true,
+  //   type: Datablock,
+  //   items: { $ref: getSchemaPath(Datablock) },
+  //   required: false,
+  //   description:
+  //     "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with manageable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
+  // })
+  // @Prop({ type: [DatablockSchema], default: [] })
+  // datablocks: Datablock[];
 
   @ApiProperty({
     type: Object,
@@ -383,7 +368,8 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
-    description: "Comment the user has about a given dataset.",
+    description:
+      "Short comment provided by the user about a given dataset. This is additional to the description field.",
   })
   @Prop({
     type: String,
@@ -400,7 +386,7 @@ export class DatasetClass extends OwnableClass {
     type: Number,
     required: false,
   })
-  dataQualityMetrics: number;
+  dataQualityMetrics?: number;
 
   /*
    * fields related to Raw Datasets
@@ -436,7 +422,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: true,
     description:
-      "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset.",
+      "Unique location identifier where data was acquired. Usually in the form /Site-name/facility-name/instrumentOrBeamline-name.",
   })
   @Prop({ type: String, required: false, index: true })
   creationLocation?: string;
@@ -451,46 +437,49 @@ export class DatasetClass extends OwnableClass {
   dataFormat?: string;
 
   @ApiProperty({
-    type: String,
-    required: false,
-    description: "The ID of the proposal to which the dataset belongs.",
-  })
-  @Prop({ type: String, ref: "Proposal", required: false })
-  proposalId?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "ID of the sample used when collecting the data.",
-  })
-  @Prop({ type: String, ref: "Sample", required: false })
-  sampleId?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "ID of the instrument where the data was created.",
-  })
-  @Prop({ type: String, ref: "Instrument", required: false })
-  instrumentId?: string;
-
-  /*
-   * Derived Dataset
-   */
-  @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
     description:
-      "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
+      "The ID of the proposal to which the dataset belongs to and it has been acquired under.",
   })
-  @Prop({ type: String, required: false, index: true })
-  investigator?: string;
+  @Prop({ type: [String], ref: "Proposal", required: false })
+  proposalIds?: string[];
 
   @ApiProperty({
     type: [String],
     required: false,
     description:
-      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs. This field is required if the dataset is a Derived dataset.",
+      "Single ID or array of IDS of the samples used when collecting the data.",
+  })
+  @Prop({ type: [String], ref: "Sample", required: false })
+  sampleIds?: string[];
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description:
+      "Id of the instrument or array of IDS of the instruments where the data contained in this dataset was created/acquired.",
+  })
+  @Prop({ type: [String], ref: "Instrument", required: false })
+  instrumentIds?: string[];
+
+  /*
+   * Derived Dataset
+   */
+  // @ApiProperty({
+  //   type: String,
+  //   required: false,
+  //   description:
+  //     "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
+  // })
+  // @Prop({ type: String, required: false, index: true })
+  // investigator?: string;
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description:
+      "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
   })
   @Prop({ type: [String], required: false })
   inputDatasets?: string[];
@@ -499,7 +488,7 @@ export class DatasetClass extends OwnableClass {
     type: [String],
     required: false,
     description:
-      "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data. This field is required if the dataset is a Derived dataset.",
+      "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data.",
   })
   @Prop({ type: [String], required: false })
   usedSoftware?: string[];

@@ -22,6 +22,7 @@ import {
 } from "./dto/update-published-data.dto";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -76,10 +77,7 @@ export class PublishedDataController {
   async create(
     @Body() createPublishedDataDto: CreatePublishedDataDto,
   ): Promise<PublishedData> {
-    return this.publishedDataService.create({
-      ...createPublishedDataDto,
-      status: "pending_registration",
-    });
+    return this.publishedDataService.create(createPublishedDataDto);
   }
 
   // GET /publisheddata
@@ -166,13 +164,17 @@ export class PublishedDataController {
   })
   async formPopulate(@Query("pid") pid: string) {
     const formData: IFormPopulateData = {};
-    const dataset = await this.datasetsService.findOne({ where: { pid } });
+    const dataset = (await this.datasetsService.findOne({
+      where: { pid },
+    })) as unknown as DatasetClass;
 
     let proposalId;
     if (dataset) {
       formData.resourceType = dataset.type;
       formData.description = dataset.description;
-      proposalId = (dataset as unknown as DatasetClass).proposalId;
+      if ("proposalIds" in dataset) {
+        proposalId = dataset.proposalIds![0];
+      }
     }
 
     let proposal;
@@ -441,8 +443,7 @@ export class PublishedDataController {
     description: "The DOI of the published data.",
     type: String,
   })
-  @ApiParam({
-    name: "data",
+  @ApiBody({
     description:
       "The edited data that will be updated in the database and with OAI Provider if defined.",
     type: UpdatePublishedDataDto,

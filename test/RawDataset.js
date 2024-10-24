@@ -93,6 +93,9 @@ describe("1900: RawDataset: Raw Datasets", () => {
         res.body.should.have.property("owner").and.be.string;
         res.body.should.have.property("type").and.equal("raw");
         res.body.should.have.property("pid").and.be.string;
+        res.body.should.have.property("instrumentId").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.should.have.property("sampleId").and.be.string;
         pid = encodeURIComponent(res.body["pid"]);
       });
   });

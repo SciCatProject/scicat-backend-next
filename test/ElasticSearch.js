@@ -45,12 +45,12 @@ const scientificMetadata = (values) => {
     before(() => {
       db.collection("Dataset").deleteMany({});
     });
-    beforeEach(async() => {
+    beforeEach(async () => {
       accessTokenAdminIngestor = await utils.getToken(appUrl, {
         username: "adminIngestor",
         password: TestData.Accounts["adminIngestor"]["password"],
       });
-  
+
       accessTokenArchiveManager = await utils.getToken(appUrl, {
         username: "archiveManager",
         password: TestData.Accounts["archiveManager"]["password"],
@@ -178,11 +178,11 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0030: should fetching dataset with correct proposalId and size", async () => {
+    it("0030: should fetching dataset with correct proposalIds and size", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send({
-          proposalId: TestData.ScientificMetadataForElasticSearch.proposalId,
+          proposalIds: TestData.ScientificMetadataForElasticSearch.proposalId,
           size: TestData.ScientificMetadataForElasticSearch.size,
         })
         .set("Accept", "application/json")
@@ -194,11 +194,11 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0031: should fail fetching dataset with correct proposalId but wrong size", async () => {
+    it("0031: should fail fetching dataset with correct proposalIds but wrong size", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send({
-          proposalId: TestData.ScientificMetadataForElasticSearch.proposalId,
+          proposalIds: [TestData.ScientificMetadataForElasticSearch.proposalId],
           size: faker.number.int({ min: 100000001, max: 100400000 }),
         })
         .set("Accept", "application/json")
@@ -209,11 +209,11 @@ const scientificMetadata = (values) => {
           res.body.data.should.be.length(0);
         });
     });
-    it("0032: should fail fetching dataset with wrong proposalId but correct size", async () => {
+    it("0032: should fail fetching dataset with wrong proposalIds but correct size", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send({
-          proposalId: "wrongProposalId",
+          proposalIds: ["wrongProposalId"],
           size: TestData.ScientificMetadataForElasticSearch.size,
         })
         .set("Accept", "application/json")
@@ -225,11 +225,11 @@ const scientificMetadata = (values) => {
         });
     });
 
-    it("0033: should fail fetching dataset with incorrect proposalId and size", async () => {
+    it("0033: should fail fetching dataset with incorrect proposalIds and size", async () => {
       return request(appUrl)
         .post("/api/v3/elastic-search/search")
         .send({
-          proposalId: "wrongProposalId",
+          proposalIds: ["wrongProposalId"],
           size: faker.number.int({ min: 100000001, max: 100400000 }),
         })
         .set("Accept", "application/json")
