@@ -1222,7 +1222,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Body()
-    updateDatasetDto:
+    updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
@@ -1234,7 +1234,7 @@ export class DatasetsController {
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
     await this.validateDatasetObsolete(
-      updateDatasetDto,
+      updateDatasetObsoleteDto,
       foundDataset.type === "raw"
         ? PartialUpdateRawDatasetObsoleteDto
         : PartialUpdateDerivedDatasetObsoleteDto,
@@ -1255,6 +1255,10 @@ export class DatasetsController {
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
+
+    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
+      updateDatasetObsoleteDto,
+    ) as UpdateDatasetDto;
 
     return this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
