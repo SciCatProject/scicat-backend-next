@@ -53,6 +53,7 @@ import {
 import { JobAction } from "./config/jobconfig";
 import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
+import { OrigDatablock} from "src/origdatablocks/schemas/origdatablock.schema";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -285,9 +286,10 @@ export class JobsController {
       // Indexing originDataBlock with pid and create set of files for each dataset
       const datasets = await this.datasetsService.findAll(filter);
       // Include origdatablocks
+      let datasetOrigDatablocks: OrigDatablock[] = [];
       await Promise.all(
         datasets.map(async (dataset) => {
-          dataset.origdatablocks = await this.origDatablocksService.findAll({
+          datasetOrigDatablocks = await this.origDatablocksService.findAll({
             datasetId: dataset.pid,
           });
         }),
@@ -295,7 +297,7 @@ export class JobsController {
       const result: Record<string, Set<string>> = datasets.reduce(
         (acc: Record<string, Set<string>>, dataset) => {
           // Using Set make searching more efficient
-          const files = dataset.origdatablocks.reduce((acc, block) => {
+          const files = datasetOrigDatablocks.reduce((acc, block) => {
             block.dataFileList.forEach((file) => {
               acc.add(file.path);
             });
