@@ -4544,7 +4544,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.not.have.property("type")
-          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings[*]'");
+          res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'jobParams.arrayOfStrings'");
         });
     });
 
@@ -4562,7 +4562,7 @@ describe("1100: Jobs: Test New Job Model", () => {
         .send(newDataset)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-        //.expect(TestData.EntryCreatedStatusCode)
+        .expect(TestData.EntryCreatedStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
           res.body.should.have.property("type").and.equal("validate");
