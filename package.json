@@ -54,7 +54,7 @@
     "dotenv": "^16.0.3",
     "express-session": "^1.17.3",
     "handlebars": "^4.7.7",
-    "jsonpath-plus": "^9.0.0",
+    "jsonpath-plus": "^10.1.0",
     "lodash": "^4.17.21",
     "luxon": "^3.2.1",
     "mathjs": "^13.0.0",
