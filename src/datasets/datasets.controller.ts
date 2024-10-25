@@ -1233,12 +1233,15 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    await this.validateDatasetObsolete(
-      updateDatasetObsoleteDto,
-      foundDataset.type === "raw"
-        ? PartialUpdateRawDatasetObsoleteDto
-        : PartialUpdateDerivedDatasetObsoleteDto,
-    );
+    const validatedUpdateDatasetObsoleteDto =
+      (await this.validateDatasetObsolete(
+        updateDatasetObsoleteDto,
+        foundDataset.type === "raw"
+          ? PartialUpdateRawDatasetObsoleteDto
+          : PartialUpdateDerivedDatasetObsoleteDto,
+      )) as
+        | PartialUpdateRawDatasetObsoleteDto
+        | PartialUpdateDerivedDatasetObsoleteDto;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
@@ -1257,12 +1260,13 @@ export class DatasetsController {
     }
 
     const updateDatasetDto = this.convertObsoleteToCurrentSchema(
-      updateDatasetObsoleteDto,
+      validatedUpdateDatasetObsoleteDto,
     ) as UpdateDatasetDto;
 
-    return this.convertCurrentToObsoleteSchema(
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
+    return res;
   }
 
   // PUT /datasets/:id

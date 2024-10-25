@@ -288,7 +288,39 @@ describe("1900: RawDataset: Raw Datasets", () => {
         res.body.should.have.property("proposalId").and.be.string;
         res.body.should.have
           .property("proposalId")
-          .and.be.equal(TestData.PatchProposal1["proposal"]);
+          .and.be.equal(TestData.PatchProposal1["proposalId"]);
+      });
+  });
+
+  it("0126: should update instrument of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchInstrument1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("instrumentId").and.be.string;
+        res.body.should.have
+          .property("instrumentId")
+          .and.be.equal(TestData.PatchInstrument1["instrumentId"]);
+      });
+  });
+
+  it("0127: should update sample of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchSample1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("sampleId").and.be.string;
+        res.body.should.have
+          .property("sampleId")
+          .and.be.equal(TestData.PatchSample1["sampleId"]);
       });
   });
 
