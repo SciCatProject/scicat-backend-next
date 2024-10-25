@@ -27,7 +27,8 @@
     "test:api": "npm run test:api:jest --maxWorkers=50% && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
     "test:api:jest": "jest --config ./test/config/jest-e2e.json --maxWorkers=50%",
     "test:api:mocha": "mocha --config ./test/config/.mocharc.json -r chai/register-should.js",
-    "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.test functionalAccounts.json"
+    "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.test functionalAccounts.json",
+    "generate:sdk:local": "rimraf sdk && docker run --rm -v \"%cd%:/local\" openapitools/openapi-generator-cli:v7.9.0 generate -i http://host.docker.internal:3000/explorer-json -g typescript-angular -o local/sdk/typescript-angular --additional-properties=ngVersion=18.0.0,npmName=restClient,supportsES6=true,npmVersion=10.8.2,withInterfaces=true"
   },
   "dependencies": {
     "@casl/ability": "^6.3.2",

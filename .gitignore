@@ -3,6 +3,7 @@
 /node_modules
 functionalAccounts.json
 loggers.json
+sdk
 
 # Configs
 .env
