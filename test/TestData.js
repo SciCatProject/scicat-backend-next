@@ -834,6 +834,18 @@ const TestData = {
     name: "ESS-wrong",
   },
 
+  PatchProposal1: {
+    proposalId: "10.540.16635/20240124",
+  },
+
+  PatchInstrument1: {
+    instrumentId: "fb0f3b58-92c9-11ef-9aeb-632c6e2960a1",
+  },
+
+  PatchSample1: {
+    sampleId: "f3cfc114-92c9-11ef-8ed4-f3b97158e36b",
+  },
+
   PatchComment: {
     comment: "test",
   },
