@@ -45,8 +45,7 @@ const configuration = () => {
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE ||
-    ("jobConfig.yaml" as string);
+    process.env.JOB_CONFIGURATION_FILE || ("jobConfig.yaml" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",

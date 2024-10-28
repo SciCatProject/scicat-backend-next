@@ -23,7 +23,6 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 import { load } from "js-yaml";
-import { SchemaFactory } from "@nestjs/mongoose";
 
 export type JobDto = CreateJobDto | StatusUpdateJobDto;
 
@@ -250,15 +249,20 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   }
 
   const yaml = fs.readFileSync(filePath, "utf8");
-  const data = load(yaml, {filename:filePath});
+  const data = load(yaml, { filename: filePath });
 
   // Validate schema
-  type JobConfigWrapper = { configVersion: string, jobs: Record<string, unknown>[] };
+  type JobConfigWrapper = {
+    configVersion: string;
+    jobs: Record<string, unknown>[];
+  };
   const ajv = new Ajv();
   const validate = ajv.compile<JobConfigWrapper>(JobConfigSchema);
 
   if (!validate(data)) {
-    throw new Error(`Invalid job configuration (${filePath}): ${JSON.stringify(validate.errors, null, 2)}`);
+    throw new Error(
+      `Invalid job configuration (${filePath}): ${JSON.stringify(validate.errors, null, 2)}`,
+    );
   }
 
   jobConfig = data.jobs.map((jobData) =>
