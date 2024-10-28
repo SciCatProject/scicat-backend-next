@@ -46,7 +46,7 @@ const configuration = () => {
 
   const jobConfigurationFile =
     process.env.JOB_CONFIGURATION_FILE ||
-    ("src/jobs/config/jobConfig.example.json" as string);
+    ("jobConfig.yaml" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",

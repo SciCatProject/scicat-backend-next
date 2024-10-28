@@ -10,8 +10,8 @@ describe("Job configuration", () => {
     const actions = getRegisteredCreateActions();
     expect("log" in actions);
   });
-  it("Should be able to load from json", async () => {
-    const path = "test/config/jobconfig.json";
+  it("Should be able to load from yaml", async () => {
+    const path = "test/config/jobconfig.yaml";
     const config = await loadJobConfig(path);
     expect(config).toBeDefined();
     expect(config.length).toBe(11);
