@@ -22,8 +22,15 @@ import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
+import { Logger } from "@nestjs/common";
 
 export type JobDto = CreateJobDto | StatusUpdateJobDto;
+
+// Top-level wrapper for the jobConfig file
+interface JobConfigList {
+  configVersion: string;
+  jobs: Record<string, unknown>[];
+}
 
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
@@ -60,7 +67,7 @@ export class JobConfig {
       !(JobsConfigSchema.JobType in jobData) ||
       typeof jobData[JobsConfigSchema.JobType] !== "string"
     ) {
-      throw new Error(`Invalid job type`);
+      throw new Error(`Invalid jobType`);
     }
     const type = jobData[JobsConfigSchema.JobType] as string;
     if (!(Action.Create in jobData)) {
@@ -252,12 +259,14 @@ export function loadJobConfig(filePath: string): JobConfig[] {
 
   // Validate schema
   const ajv = new Ajv();
-  const validate = ajv.compile(JobConfigSchema);
+  const validate = ajv.compile<JobConfigList>(JobConfigSchema);
 
   if (validate(data)) {
-    console.log("Schema is valid!");
+    Logger.log(`Loaded job config from ${filePath}`);
   } else {
-    console.log("Invalid Schema", JSON.stringify(validate.errors, null, 2));
+    throw new Error(
+      `Invalid job config in ${filePath}: ${JSON.stringify(validate.errors, null, 2)}`,
+    );
   }
   jobConfig = data.jobs.map((jobData: Record<string, unknown>) =>
     JobConfig.parse(jobData, data.configVersion),

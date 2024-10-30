@@ -1,8 +1,20 @@
-import { HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import { JobAction, JobDto } from "../config/jobconfig";
 import { JobClass } from "../schemas/job.schema";
-import { JSONPath } from "jsonpath-plus";
+import { JSONPath, JSONPathOptions } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
+import { JobParams } from "../types/job-types.enum";
+import { CreateJobDto } from "../dto/create-job.dto";
+import { DatasetsService } from "src/datasets/datasets.service";
+import { DatasetListDto } from "../dto/dataset-list.dto";
+
+type JSONData = JSONPathOptions["json"];
 
 /**
  * Validates the job DTO for the presence of required fields. Can also check types or
@@ -34,35 +46,63 @@ import Ajv, { ValidateFunction } from "ajv";
  */
 export class ValidateAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "validate";
-  private request: Record<string, ValidateFunction<T>>;
+  protected request?: Record<string, ValidateFunction<T>>;
 
   getActionType(): string {
     return ValidateAction.actionType;
   }
 
+  constructor(data: Record<string, unknown>, ajv?: Ajv) {
+    ajv =
+      ajv ||
+      new Ajv({
+        strictSchema: false,
+        strictTypes: false,
+      });
+    if ("request" in data) {
+      const request = data["request"] as Record<string, unknown>;
+      this.request = this.compileSchemas(ajv, request);
+    }
+  }
+
+  protected compileSchemas(
+    ajv: Ajv,
+    schemasMap: Record<string, unknown>,
+  ): Record<string, ValidateFunction<T>> {
+    return Object.fromEntries(
+      Object.entries(schemasMap).map(([path, schema]) => {
+        if (typeof schema !== "object" || schema === null) {
+          throw new Error("Schema must be a valid object.");
+        }
+
+        return [path, ajv.compile<T>(schema)];
+      }),
+    );
+  }
+
   async validate(dto: T) {
-    for (const [path, schema] of Object.entries(this.request)) {
-      const result: unknown[] = JSONPath({ path: path, json: dto });
+    if (this.request) {
+      // validate request body
+      this.validateJson(dto, this.request);
+    }
+  }
+
+  protected validateJson(
+    json: JSONData,
+    schemaMap: Record<string, ValidateFunction<T>>,
+  ) {
+    for (const [path, schema] of Object.entries(schemaMap)) {
+      const result: JSONData[] = JSONPath<JSONData[]>({ path, json });
       if (result !== null && result?.length > 0) {
         result.forEach((entry) => {
           if (!schema(entry)) {
-            throw new HttpException(
-              {
-                status: HttpStatus.BAD_REQUEST,
-                message: `Invalid request. Invalid value for '${path}'`,
-              },
-              HttpStatus.BAD_REQUEST,
+            throw makeHttpException(
+              `Invalid request. Invalid value for '${path}'`,
             );
           }
         });
       } else {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            message: `Invalid request. Requires '${path}'`,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw makeHttpException(`Invalid request. Requires '${path}'`);
       }
     }
   }
@@ -73,27 +113,75 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async performJob(job: JobClass) {}
+}
 
-  constructor(data: Record<string, unknown>) {
-    if (!("request" in data)) {
-      throw new NotFoundException(
-        `Missing connection parameter in 'validate' action: 'request'`,
-      );
+@Injectable()
+export class ValidateCreateAction extends ValidateAction<CreateJobDto> {
+  @Inject(DatasetsService) private datasetsService: DatasetsService;
+  private datasets?: Record<string, ValidateFunction<CreateJobDto>>;
+
+  constructor(data: Record<string, unknown>, ajv?: Ajv) {
+    ajv =
+      ajv ||
+      new Ajv({
+        strictSchema: false,
+        strictTypes: false,
+      });
+    super(data, ajv);
+    if ("datasets" in data) {
+      const datasets = data["datasets"] as Record<string, unknown>;
+      this.datasets = this.compileSchemas(ajv, datasets);
     }
-    const request = data["request"] as Record<string, unknown>;
+  }
 
-    const ajv = new Ajv({
-      strictSchema: false,
-      strictTypes: false,
-    });
-    this.request = Object.fromEntries(
-      Object.entries(request).map(([path, schema]) => {
-        if (typeof schema !== "object" || schema === null) {
-          throw new Error("Schema must be a valid object.");
-        }
-
-        return [path, ajv.compile<T>(schema)];
-      }),
+  async validate(dto: CreateJobDto): Promise<void> {
+    await super.validate(dto);
+    if (!this.datasets) {
+      return;
+    }
+    const datasets = await this.loadDatasets(dto);
+    await Promise.all(
+      datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),
     );
   }
+
+  private async loadDatasets(dto: CreateJobDto) {
+    // Require datasetList
+    if (!(JobParams.DatasetList in dto.jobParams)) {
+      throw makeHttpException(
+        `'jobParams.${JobParams.DatasetList}' is required.`,
+      );
+    }
+    const datasetList = dto.jobParams[
+      JobParams.DatasetList
+    ] as DatasetListDto[];
+    const datasetIds = datasetList.map((x) => x.pid);
+
+    // Load linked datasets
+    const filter = {
+      where: {
+        pid: {
+          $in: datasetIds,
+        },
+      },
+    };
+    const result = await this.datasetsService.findAll(filter);
+    if (result.length != datasetIds.length) {
+      Logger.error(
+        `Unable to get a dataset for job (${JSON.stringify(datasetIds)})`,
+      );
+      throw makeHttpException(`Unable to get a dataset.`);
+    }
+    return result;
+  }
+}
+
+function makeHttpException(message: string): HttpException {
+  return new HttpException(
+    {
+      status: HttpStatus.BAD_REQUEST,
+      message: message,
+    },
+    HttpStatus.BAD_REQUEST,
+  );
 }
