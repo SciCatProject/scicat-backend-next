@@ -509,12 +509,25 @@ export class JobsController {
       if (jobConfiguration.create.auth === "#datasetPublic") {
         datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
-        datasetsWhere["where"]["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { isPublished: true },
-        ];
+        if (user) {
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+            { isPublished: true },
+          ];
+        } else {
+          datasetsWhere["where"]["isPublished"] = true;
+        }
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
+        if (!user) {
+          throw new HttpException(
+            {
+              status: HttpStatus.UNAUTHORIZED,
+              message: "User not authenticated",
+            },
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
         datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
       }
       const numberOfDatasetsWithAccess =
