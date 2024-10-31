@@ -172,7 +172,7 @@ jobs:
           STACK_VERSION: 8.8.2
           CLUSTER_NAME: es-cluster
           MEM_LIMIT: 4G
-          JOB_CONFIGURATION_FILE: test/config/jobconfig.json
+          JOB_CONFIGURATION_FILE: test/config/jobconfig.yaml
 
         # Start mongo container and app before running api tests
         run: |

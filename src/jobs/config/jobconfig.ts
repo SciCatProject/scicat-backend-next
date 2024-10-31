@@ -23,6 +23,7 @@ import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
 import { Logger } from "@nestjs/common";
+import { load } from "js-yaml";
 
 export type JobDto = CreateJobDto | StatusUpdateJobDto;
 
@@ -244,7 +245,7 @@ export function getRegisteredStatusUpdateActions(): string[] {
 let jobConfig: JobConfig[] | null = null; // singleton
 
 /**
- * Load jobconfig.json file.
+ * Load jobconfig.yaml (or json) file.
  * Expects one or more JobConfig configurations (see JobConfig.parse)
  * @param filePath path to json config file
  * @returns
@@ -254,21 +255,20 @@ export function loadJobConfig(filePath: string): JobConfig[] {
     return jobConfig;
   }
 
-  const json = fs.readFileSync(filePath, "utf8");
-  const data = JSON.parse(json);
+  const yaml = fs.readFileSync(filePath, "utf8");
+  const data = load(yaml, { filename: filePath });
 
   // Validate schema
   const ajv = new Ajv();
   const validate = ajv.compile<JobConfigList>(JobConfigSchema);
 
-  if (validate(data)) {
-    Logger.log(`Loaded job config from ${filePath}`);
-  } else {
+  if (!validate(data)) {
     throw new Error(
-      `Invalid job config in ${filePath}: ${JSON.stringify(validate.errors, null, 2)}`,
+      `Invalid job configuration (${filePath}): ${JSON.stringify(validate.errors, null, 2)}`,
     );
   }
-  jobConfig = data.jobs.map((jobData: Record<string, unknown>) =>
+
+  jobConfig = data.jobs.map((jobData) =>
     JobConfig.parse(jobData, data.configVersion),
   );
   return jobConfig as JobConfig[];

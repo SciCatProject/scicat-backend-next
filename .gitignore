@@ -4,6 +4,7 @@
 functionalAccounts.json
 loggers.json
 jobConfig.json
+jobConfig.yaml
 
 # Configs
 .env
@@ -44,4 +45,3 @@ lerna-debug.log*
 /mongodb_data
 test-data/*
 .vscode*
-
