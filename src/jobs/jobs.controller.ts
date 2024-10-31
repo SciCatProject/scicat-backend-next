@@ -51,7 +51,7 @@ import {
   jobsFullQueryDescriptionFields,
 } from "src/common/utils";
 import { JobAction, JobDto, JobConfig } from "./config/jobconfig";
-import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
+import { JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 
@@ -150,8 +150,6 @@ export class JobsController {
 
     // check that all requested pids exist
     await this.checkDatasetPids(datasetListDtos);
-    // check that dataset state is compatible with the job type
-    await this.checkDatasetState(datasetListDtos, jobType);
     // check that all requested files exist
     await this.checkDatasetFiles(datasetListDtos);
 
@@ -189,79 +187,6 @@ export class JobsController {
       );
     }
     return;
-  }
-
-  /**
-   * Check that datasets are in a state at which the job can be performed:
-   * For retrieve jobs all datasets must be in state retrievable
-   * For archive jobs all datasets must be in state archivable
-   * For public jobs all datasets must be published
-   */
-  async checkDatasetState(
-    datasetList: DatasetListDto[],
-    jobType: string,
-  ): Promise<void> {
-    const datasetIds = datasetList.map((x) => x.pid);
-    switch (jobType) {
-      case JobType.Retrieve: // Intentional fall through
-      case JobType.Archive:
-        // can I archive some files of a dataset or is it always every file?
-        {
-          const filter = {
-            fields: {
-              pid: true,
-            },
-            where: {
-              [`datasetlifecycle.${DatasetState[jobType]}`]: false,
-              pid: {
-                $in: datasetIds,
-              },
-            },
-          };
-          const result = await this.datasetsService.findAll(filter);
-          if (result.length > 0) {
-            throw new HttpException(
-              {
-                status: HttpStatus.CONFLICT,
-                message: `The following datasets are not in ${DatasetState[jobType]} state for a ${jobType} job.`,
-                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
-              },
-              HttpStatus.CONFLICT,
-            );
-          }
-        }
-        break;
-      case JobType.Public:
-        // isPublished applies to the full dataset not the files
-        {
-          const filter = {
-            fields: {
-              pid: true,
-            },
-            where: {
-              [DatasetState.public]: true,
-              pid: {
-                $in: datasetIds,
-              },
-            },
-          };
-          const result = await this.datasetsService.findAll(filter);
-          if (result.length !== datasetIds.length) {
-            throw new HttpException(
-              {
-                status: HttpStatus.CONFLICT,
-                message: "The following datasets are not public.",
-                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
-              },
-              HttpStatus.CONFLICT,
-            );
-          }
-        }
-        break;
-      default:
-        // Do not check for other job types
-        break;
-    }
   }
 
   /**
