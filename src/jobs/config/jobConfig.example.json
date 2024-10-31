@@ -4,10 +4,15 @@
     {
       "jobType": "archive",
       "create": {
-        "auth": "#all",
+        "auth": "#datasetOwner",
         "actions": [
           {
-            "actionType": "log"
+            "actionType": "validate",
+            "datasets": {
+              "datasetlifecycle.archivable": {
+                "const": true
+              }
+            }
           },
           {
             "actionType": "url",
@@ -56,23 +61,42 @@
       }
     },
     {
-      "jobType": "public",
+      "jobType": "retrieve",
       "create": {
-        "auth": "#all",
+        "auth": "#datasetOwner",
         "actions": [
           {
             "actionType": "validate",
-            "request": {
-              "jobParams.datasetList[*]": {
-                "type": "object",
-                "required": ["pid","files"]
+            "datasets": {
+              "datasetlifecycle.retrievable": {
+                "const": true
               }
             }
           }
         ]
       },
       "statusUpdate": {
-        "auth": "#all"
+        "auth": "archivemanager",
+        "actions": []
+      }
+    },
+    {
+      "jobType": "public",
+      "create": {
+        "auth": "#all",
+        "actions": [
+          {
+            "actionType": "validate",
+            "datasets": {
+              "isPublished": {
+                "const": true
+              }
+            }
+          }
+        ]
+      },
+      "statusUpdate": {
+        "auth": "archivemanager"
       }
     }
   ]

@@ -17,11 +17,10 @@ import { DatasetListDto } from "../dto/dataset-list.dto";
 type JSONData = JSONPathOptions["json"];
 
 /**
- * Validates the job DTO for the presence of required fields. Can also check types or
+ * Validates the job for the presence of required fields. Can also check types or
  * validate against a JSON Schema.
  *
- * ValidateAction is configured with a single parameter, `request`, which is checked
- * against the request body (aka the DTO). The config file will look like this:
+ * The config file for a validate action will look like this:
  *
  * <pre>{
  *   "actionType": "validate",
@@ -32,7 +31,8 @@ type JSONData = JSONPathOptions["json"];
  * }</pre>
  *
  * Usually `path` will be a dot-delimited field in the DTO, eg. "jobParams.name".
- * Technically it is a JSONPath-Plus expression; see https://github.com/JSONPath-Plus/JSONPath.
+ * Technically it is a JSONPath-Plus expression; see
+ * https://github.com/JSONPath-Plus/JSONPath.
  *
  * Here are some example typecheck expressions:
  * <pre>{
@@ -43,6 +43,14 @@ type JSONData = JSONPathOptions["json"];
  *     "metadata": {"$ref": "https://json.schemastore.org/schema-org-thing.json"}, // JSON Schema
  *   }
  * }</pre>
+ *
+ * This base class includes only the `request` field, which validates the request body
+ * received from the client (aka the DTO). It is registed for the `update` job
+ * operation.
+ *
+ * ValidateCreateAction extends this with an additional `datasets` field, which works
+ * identically to `request` but is applied to any datasets mentioned in
+ * `jobParams.datasetList`. This is used for the `create` job operation.
  */
 export class ValidateAction<T extends JobDto> implements JobAction<T> {
   public static readonly actionType = "validate";
@@ -115,6 +123,31 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
   async performJob(job: JobClass) {}
 }
 
+/**
+ * Validates a request to create a new job for the presence of required fields. Can
+ * check types or validate against a JSON Schema.
+ *
+ * The config file for a validate action will look like this:
+ *
+ * <pre>{
+ *   "actionType": "validate",
+ *   "request": {
+ *     "path": typecheck,
+ *     ...
+ *   },
+ *  "datasets": {
+ *     "path": typecheck,
+ *     ...
+ *   }
+ * }</pre>
+ *
+ * The constraints in the 'datasets' section are applied to all datasets listed in the
+ * `jobParams.datasetList` array. Since the dataset list needs to be set at job
+ * creation, this form of the action is only applicable to the `CreateJobDto` and cannot
+ * be included during an update operation.
+ *
+ * See ValidateAction for more information about the form of `path` and `typecheck`.
+ */
 @Injectable()
 export class ValidateCreateAction extends ValidateAction<CreateJobDto> {
   @Inject(DatasetsService) private datasetsService: DatasetsService;
