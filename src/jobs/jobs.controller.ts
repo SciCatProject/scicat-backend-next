@@ -78,7 +78,7 @@ export class JobsController {
     if (configuration().rabbitMq.enabled) {
       // TODO: This should publish the job to the message broker.
       // job.publishJob(ctx.instance, "jobqueue");
-      console.log("Saved Job %s#%s and published to message broker");
+      Logger.log("Saved Job %s#%s and published to message broker");
     }
   }
 
@@ -101,7 +101,6 @@ export class JobsController {
    */
   async validateDatasetList(
     jobParams: Record<string, unknown>,
-    jobType: string,
   ): Promise<DatasetListDto[]> {
     const datasetList = jobParams[
       JobParams.DatasetList
@@ -333,10 +332,7 @@ export class JobsController {
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
-      datasetList = await this.validateDatasetList(
-        jobCreateDto.jobParams,
-        jobCreateDto.type,
-      );
+      datasetList = await this.validateDatasetList(jobCreateDto.jobParams);
       jobInstance.jobParams = {
         ...jobInstance.jobParams,
         [JobParams.DatasetList]: datasetList,

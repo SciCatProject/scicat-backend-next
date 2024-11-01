@@ -22,7 +22,6 @@ import { Action } from "src/casl/action.enum";
 import { CreateJobAuth, JobsAuth } from "../types/jobs-auth.enum";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobConfig.schema";
-import { Logger } from "@nestjs/common";
 import { load } from "js-yaml";
 
 export type JobDto = CreateJobDto | StatusUpdateJobDto;
