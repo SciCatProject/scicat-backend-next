@@ -22,27 +22,27 @@ type JSONData = JSONPathOptions["json"];
  *
  * The config file for a validate action will look like this:
  *
- * <pre>{
- *   "actionType": "validate",
- *   "request": {
- *     "path": typecheck,
- *     ...
- *   }
- * }</pre>
+ * <pre>
+ * actionType: validate
+ * request:
+ *   path: typecheck
+ * </pre>
  *
  * Usually `path` will be a dot-delimited field in the DTO, eg. "jobParams.name".
  * Technically it is a JSONPath-Plus expression; see
  * https://github.com/JSONPath-Plus/JSONPath.
  *
  * Here are some example typecheck expressions:
- * <pre>{
- *   "actionType": "validate",
- *   "request": {
- *     "name": { "type": "string"}, // match simple types
- *     "answers[*]": { "enum": ["yes","no"]}, // literal values (here applied to an array)
- *     "metadata": {"$ref": "https://json.schemastore.org/schema-org-thing.json"}, // JSON Schema
- *   }
- * }</pre>
+ * <pre>
+ * actionType: validate
+ * request:
+ *   name:
+ *     type: string
+ *   answers[*]:
+ *     enum: ["yes", "no" ]
+ *   metadata:
+ *     "$ref": https://json.schemastore.org/schema-org-thing.json
+ * </pre>
  *
  * This base class includes only the `request` field, which validates the request body
  * received from the client (aka the DTO). It is registed for the `update` job
@@ -129,17 +129,13 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
  *
  * The config file for a validate action will look like this:
  *
- * <pre>{
- *   "actionType": "validate",
- *   "request": {
- *     "path": typecheck,
- *     ...
- *   },
- *  "datasets": {
- *     "path": typecheck,
- *     ...
- *   }
- * }</pre>
+ * <pre>
+ * actionType: validate
+ * request:
+ *   path: typecheck
+ * datasets:
+ *   path: typecheck
+ * </pre>
  *
  * The constraints in the 'datasets' section are applied to all datasets listed in the
  * `jobParams.datasetList` array. Since the dataset list needs to be set at job
