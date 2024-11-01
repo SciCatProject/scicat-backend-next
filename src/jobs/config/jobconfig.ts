@@ -26,6 +26,12 @@ import { load } from "js-yaml";
 
 export type JobDto = CreateJobDto | StatusUpdateJobDto;
 
+// Top-level wrapper for the jobConfig file
+interface JobConfigList {
+  configVersion: string;
+  jobs: Record<string, unknown>[];
+}
+
 /**
  * Encapsulates all responses to a particular job type (eg "archive")
  */
@@ -61,7 +67,7 @@ export class JobConfig {
       !(JobsConfigSchema.JobType in jobData) ||
       typeof jobData[JobsConfigSchema.JobType] !== "string"
     ) {
-      throw new Error(`Invalid job type`);
+      throw new Error(`Invalid jobType`);
     }
     const type = jobData[JobsConfigSchema.JobType] as string;
     if (!(Action.Create in jobData)) {
@@ -252,12 +258,8 @@ export function loadJobConfig(filePath: string): JobConfig[] {
   const data = load(yaml, { filename: filePath });
 
   // Validate schema
-  type JobConfigWrapper = {
-    configVersion: string;
-    jobs: Record<string, unknown>[];
-  };
   const ajv = new Ajv();
-  const validate = ajv.compile<JobConfigWrapper>(JobConfigSchema);
+  const validate = ajv.compile<JobConfigList>(JobConfigSchema);
 
   if (!validate(data)) {
     throw new Error(

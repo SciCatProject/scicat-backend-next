@@ -11,7 +11,10 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
-import { ValidateAction } from "src/jobs/actions/validateaction";
+import {
+  ValidateAction,
+  ValidateCreateAction,
+} from "src/jobs/actions/validateaction";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -230,7 +233,7 @@ export function registerDefaultActions() {
   registerCreateAction(EmailJobAction);
   registerCreateAction(URLAction);
   registerCreateAction(RabbitMQJobAction);
-  registerCreateAction(ValidateAction);
+  registerCreateAction(ValidateCreateAction);
   // Status Update
   registerStatusUpdateAction(LogJobAction);
   registerStatusUpdateAction(EmailJobAction);
