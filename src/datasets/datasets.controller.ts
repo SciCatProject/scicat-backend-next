@@ -104,6 +104,7 @@ import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -2230,7 +2231,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    // type: Logbook,
+    type: Logbook,
     isArray: false,
     description: "It returns all messages from specificied Logbook room",
   })

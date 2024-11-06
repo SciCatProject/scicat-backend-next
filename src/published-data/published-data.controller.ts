@@ -39,7 +39,7 @@ import {
 } from "./schemas/published-data.schema";
 import {
   ICount,
-  IFormPopulateData,
+  FormPopulateData,
   IPublishedDataFilters,
   IRegister,
 } from "./interfaces/published-data.interface";
@@ -162,8 +162,14 @@ export class PublishedDataController {
     description: "Dataset pid used to fetch form data.",
     required: true,
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FormPopulateData,
+    isArray: false,
+    description: "Return form populate data",
+  })
   async formPopulate(@Query("pid") pid: string) {
-    const formData: IFormPopulateData = {};
+    const formData: FormPopulateData = {};
     const dataset = (await this.datasetsService.findOne({
       where: { pid },
     })) as unknown as DatasetClass;
