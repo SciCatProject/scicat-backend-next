@@ -504,7 +504,11 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
       .expect(TestData.SuccessfulPatchStatusCode)
-      .expect("Content-Type", /json/);
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body["pid"].should.be.equal(datasetPid2);
+        res.body["isPublished"].should.be.equal(true);
+      });
   });
 
   it("0350: full query for datasets for User 2", async () => {
