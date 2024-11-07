@@ -20,7 +20,7 @@ import { Request } from "express";
 import { PoliciesService } from "./policies.service";
 import { CreatePolicyDto } from "./dto/create-policy.dto";
 import { PartialUpdatePolicyDto } from "./dto/update-policy.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -34,6 +34,7 @@ import { IFilters } from "src/common/interfaces/common.interface";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { replaceLikeOperator } from "src/common/utils";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { CountApiResponse } from "src/datasets/datasets.controller";
 
 @ApiBearerAuth()
 @ApiTags("policies")
@@ -142,7 +143,19 @@ export class PoliciesController {
     ability.can(Action.Read, Policy),
   )
   @Get("/count")
-  async count(@Query("where") where?: string): Promise<{ count: number }> {
+  @ApiQuery({
+    name: "where",
+    description: "Database filters to apply when retrieving count for polices",
+    required: false,
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description:
+      "Return the number of datasets in the following format: { count: integer }",
+  })
+  async count(@Query("where") where?: string) {
     const parsedWhere: FilterQuery<PolicyDocument> = JSON.parse(where ?? "{}");
     return this.policiesService.count(parsedWhere);
   }

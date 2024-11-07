@@ -27,6 +27,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiParam,
+  ApiProperty,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -64,6 +65,11 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
+
+export class FindByIdAccessResponse {
+  @ApiProperty({ type: Boolean })
+  canAccess: boolean;
+}
 
 @ApiBearerAuth()
 @ApiTags("samples")
@@ -560,11 +566,6 @@ export class SamplesController {
     ability.can(Action.SampleRead, SampleClass),
   )
   @Get("/:id/authorization")
-  @ApiOperation({
-    summary: "Check user access to a specific sample.",
-    description:
-      "Returns a boolean indicating whether the user has access to the sample with the specified ID.",
-  })
   @ApiParam({
     name: "id",
     description: "ID of the sample to check access for",
@@ -572,14 +573,11 @@ export class SamplesController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: FindByIdAccessResponse,
     description:
-      "Returns true if the user has access to the specified sample, otherwise false.",
+      "Returns canAccess property with boolean true if the user has access to the specified sample, otherwise false.",
   })
-  async findByIdAccess(
-    @Req() request: Request,
-    @Param("id") id: string,
-  ): Promise<{ canAccess: boolean }> {
+  async findByIdAccess(@Req() request: Request, @Param("id") id: string) {
     const sample = await this.samplesService.findOne({
       sampleId: id,
     });

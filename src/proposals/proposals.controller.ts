@@ -63,6 +63,7 @@ import {
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { FindByIdAccessResponse } from "src/samples/samples.controller";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -567,9 +568,9 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: FindByIdAccessResponse,
     description:
-      "Returns true if the user has access to the specified proposal, otherwise false.",
+      "Returns canAccess property with boolean true if the user has access to the specified sample, otherwise false.",
   })
   async findByIdAccess(
     @Req() request: Request,

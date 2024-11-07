@@ -29,6 +29,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiParam,
+  ApiProperty,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -105,6 +106,32 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
+
+class FullFacetFilters {
+  @ApiProperty()
+  facets?: string;
+
+  @ApiProperty()
+  fields?: string;
+}
+
+class TotalSets {
+  @ApiProperty({ type: Number })
+  totalSets: number;
+}
+
+export class FullFacetResponse implements IFullFacets {
+  @ApiProperty({ type: TotalSets, isArray: true })
+  all: [TotalSets];
+
+  [key: string]: object;
+}
+
+export class CountApiResponse {
+  @ApiProperty({ type: Number })
+  count: number;
+}
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -874,33 +901,19 @@ export class DatasetsController {
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
-  @ApiOperation({
-    summary:
-      "It returns a list of dataset facets matching the filter provided.",
-    description:
-      "It returns a list of dataset facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
-  })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiQuery({
-    name: "facets",
+    name: "filter",
     description:
       "Defines list of field names, for which facet counts should be calculated",
     required: false,
-    type: String,
+    type: FullFacetFilters,
     example: '["type","creationLocation","ownerGroup","keywords"]',
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: FullFacetResponse,
     isArray: true,
-    description: "Return datasets requested",
+    description: "Return fullfacet response for datasets requested",
   })
   async fullfacet(
     @Req() request: Request,
@@ -913,8 +926,6 @@ export class DatasetsController {
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
-      // delete fields.isPublished;
-
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
         DatasetClass,
@@ -923,23 +934,14 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      // const canViewPublic = ability.can(
-      //   Action.DatasetReadManyPublic,
-      //   DatasetClass,
-      // );
 
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        // fields.isPublished = true;
-        // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
       }
-      // else if (canViewPublic) {
-      //   fields.isPublished = true;
-      // }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {
@@ -979,14 +981,14 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: String,
     isArray: true,
-    description: "Return metadata keys list of datasets selected",
+    description: "Return metadata keys  for list of datasets selected",
   })
   async metadataKeys(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<string[]> {
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -1123,7 +1125,8 @@ export class DatasetsController {
       '{"where": {"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}}',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
+    type: CountApiResponse,
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
@@ -1131,7 +1134,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<{ count: number }> {
+  ) {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,

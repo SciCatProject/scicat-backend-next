@@ -94,11 +94,17 @@ export class PublishedDataController {
     description: "Database limits to apply when retrieve all published data",
     required: false,
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: PublishedData,
+    isArray: true,
+    description: "Results with a published documents array",
+  })
   async findAll(
     @Query("filter") filter?: string,
     @Query("limits") limits?: string,
     @Query("fields") fields?: string,
-  ): Promise<PublishedData[]> {
+  ) {
     const publishedDataFilters: IPublishedDataFilters = JSON.parse(
       filter ?? "{}",
     );
@@ -128,9 +134,13 @@ export class PublishedDataController {
     description: "Database filters to apply when retrieve published data count",
     required: false,
   })
-  async count(
-    @Query() filter?: { filter: string; fields: string },
-  ): Promise<ICount> {
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: ICount,
+    isArray: false,
+    description: "Results with a count of the published documents",
+  })
+  async count(@Query() filter?: { filter: string; fields: string }) {
     const jsonFilters: IPublishedDataFilters = filter?.filter
       ? JSON.parse(filter.filter)
       : {};

@@ -15,7 +15,8 @@ export interface IPublishedDataFilters {
   };
 }
 
-export interface ICount {
+export class ICount {
+  @ApiProperty()
   count: number;
 }
 
