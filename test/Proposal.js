@@ -146,7 +146,20 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0080: adds a new complete proposal with an extra field, which should fail", async () => {
+  it("0080: check if complete proposal with two similar MeasurementPeriod.id is valid", async () => {
+    return request(appUrl)
+      .post("/api/v3/Proposals/isValid")
+      .send(TestData.ProposalWrong_2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.EntryValidStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("valid").and.equal(false);
+      });
+  });
+
+  it("0090: adds a new complete proposal with an extra field, which should fail", async () => {
     return request(appUrl)
       .post("/api/v3/Proposals")
       .send(TestData.ProposalWrong_1)
@@ -159,7 +172,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0090: should fetch this new proposal", async () => {
+  it("0100: should fetch this new proposal", async () => {
     return request(appUrl)
       .get("/api/v3/Proposals/" + proposalId)
       .set("Accept", "application/json")
@@ -172,7 +185,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0100: should add a new attachment to this proposal", async () => {
+  it("0110: should add a new attachment to this proposal", async () => {
     let testAttachment = { ...TestData.AttachmentCorrect };
     testAttachment.proposalId = defaultProposalId;
     return request(appUrl)
@@ -203,7 +216,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0110: should fetch this proposal attachment", async () => {
+  it("0120: should fetch this proposal attachment", async () => {
     return request(appUrl)
       .get("/api/v3/Proposals/" + proposalId + "/attachments")
       .set("Accept", "application/json")
@@ -216,7 +229,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0120: should delete this proposal attachment", async () => {
+  it("0130: should delete this proposal attachment", async () => {
     return request(appUrl)
       .delete(
         "/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId,
@@ -226,7 +239,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
-  it("0130: admin can remove all existing proposals", async () => {
+  it("0140: admin can remove all existing proposals", async () => {
     return await request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")
