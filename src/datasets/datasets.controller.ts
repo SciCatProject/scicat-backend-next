@@ -528,7 +528,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 201,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description: "Create a new dataset and return its representation in SciCat",
   })
   async create(
@@ -722,7 +722,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     isArray: true,
     description: "Return the datasets requested",
   })
@@ -817,7 +817,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     isArray: true,
     description: "Return datasets requested",
   })
@@ -897,7 +897,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: Object,
     isArray: true,
     description: "Return datasets requested",
   })
@@ -978,7 +978,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: String,
     isArray: true,
     description: "Return metadata keys list of datasets selected",
   })
@@ -1049,7 +1049,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description: "Return the datasets requested",
   })
   async findOne(
@@ -1159,7 +1159,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     isArray: false,
     description: "Return dataset with pid specified",
   })
@@ -1214,7 +1214,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
   })
@@ -1307,7 +1307,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
   })
@@ -1434,7 +1434,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: 200,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description: "Return new value of the dataset",
   })
   async appendToArrayField(
@@ -1442,7 +1442,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetObsoleteDto | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
@@ -1473,7 +1473,12 @@ export class DatasetsController {
       },
     };
 
-    return this.datasetsService.findByIdAndUpdate(pid, updateQuery);
+    const outputDatasetDto = await this.datasetsService.findByIdAndUpdate(
+      pid,
+      updateQuery,
+    );
+
+    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // GET /datasets/:id/thumbnail
