@@ -55,9 +55,8 @@ import {
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
-  samplesFullQueryDescriptionFields,
+  FullQueryFilters,
   samplesFullQueryExampleFields,
 } from "src/common/utils";
 import { Request } from "express";
@@ -331,22 +330,11 @@ export class SamplesController {
       "It returns a list of samples matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Full query filters to apply when retrieve samples\n" +
-      samplesFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: samplesFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example: `{"limits": ${fullQueryExampleLimits}, fields: ${samplesFullQueryExampleFields}}`,
   })
   @ApiResponse({
     status: HttpStatus.OK,

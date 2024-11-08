@@ -56,8 +56,8 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
+  FullQueryFilters,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
@@ -377,25 +377,14 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Full query filters to apply when retrieving proposals\n" +
-      proposalsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: proposalsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: true,
     description: "Return proposals requested",
