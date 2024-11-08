@@ -1176,7 +1176,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Body()
-    updateDatasetDto:
+    updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
@@ -1187,12 +1187,15 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    await this.validateDatasetObsolete(
-      updateDatasetDto,
-      foundDataset.type === "raw"
-        ? PartialUpdateRawDatasetObsoleteDto
-        : PartialUpdateDerivedDatasetObsoleteDto,
-    );
+    const validatedUpdateDatasetObsoleteDto =
+      (await this.validateDatasetObsolete(
+        updateDatasetObsoleteDto,
+        foundDataset.type === "raw"
+          ? PartialUpdateRawDatasetObsoleteDto
+          : PartialUpdateDerivedDatasetObsoleteDto,
+      )) as
+        | PartialUpdateRawDatasetObsoleteDto
+        | PartialUpdateDerivedDatasetObsoleteDto;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
@@ -1210,9 +1213,14 @@ export class DatasetsController {
       throw new ForbiddenException("Unauthorized to update this dataset");
     }
 
-    return this.convertCurrentToObsoleteSchema(
+    const updateDatasetDto = this.convertObsoleteToCurrentSchema(
+      validatedUpdateDatasetObsoleteDto,
+    ) as UpdateDatasetDto;
+
+    const res = this.convertCurrentToObsoleteSchema(
       await this.datasetsService.findByIdAndUpdate(pid, updateDatasetDto),
     );
+    return res;
   }
 
   // PUT /datasets/:id
@@ -1378,7 +1386,7 @@ export class DatasetsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: DatasetClass,
+    type: OutputDatasetObsoleteDto,
     description: "Return new value of the dataset",
   })
   async appendToArrayField(
@@ -1386,7 +1394,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetObsoleteDto | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
@@ -1417,7 +1425,12 @@ export class DatasetsController {
       },
     };
 
-    return this.datasetsService.findByIdAndUpdate(pid, updateQuery);
+    const outputDatasetDto = await this.datasetsService.findByIdAndUpdate(
+      pid,
+      updateQuery,
+    );
+
+    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // GET /datasets/:id/thumbnail

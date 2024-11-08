@@ -232,6 +232,7 @@ const TestData = {
     ownerGroup: "p13388",
     accessGroups: [],
     proposalId: "10.540.16635/20110123",
+    runNumber: "123456",
     instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
     sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
     type: "raw",
@@ -319,6 +320,7 @@ const TestData = {
     proposalId: process.env.PID_PREFIX
       ? process.env.PID_PREFIX
       : "" + faker.string.numeric(6),
+    runNumber: faker.string.numeric(6),
     type: "raw",
     keywords: ["sls", "protein"],
   },
@@ -454,6 +456,7 @@ const TestData = {
     accessGroups: [],
     type: "derived",
     proposalId: "10.540.16635/20110123",
+    runNumber: "654321",
     //instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
     //sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
   },
@@ -832,6 +835,18 @@ const TestData = {
   },
   InstrumentWrong1: {
     name: "ESS-wrong",
+  },
+
+  PatchProposal1: {
+    proposalId: "10.540.16635/20240124",
+  },
+
+  PatchInstrument1: {
+    instrumentId: "fb0f3b58-92c9-11ef-9aeb-632c6e2960a1",
+  },
+
+  PatchSample1: {
+    sampleId: "f3cfc114-92c9-11ef-8ed4-f3b97158e36b",
   },
 
   PatchComment: {

@@ -324,38 +324,6 @@ export class DatasetClass extends OwnableClass {
   })
   sharedWith?: string[];
 
-  // @ApiProperty({
-  //   type: "array",
-  //   items: { $ref: getSchemaPath(Attachment) },
-  //   required: false,
-  //   description:
-  //     "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
-  // })
-  // @Prop({ type: [AttachmentSchema], default: [] })
-  // attachments?: Attachment[];
-
-  // @ApiProperty({
-  //   isArray: true,
-  //   type: OrigDatablock,
-  //   items: { $ref: getSchemaPath(OrigDatablock) },
-  //   required: false,
-  //   description:
-  //     "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
-  // })
-  // @Prop({ type: [OrigDatablockSchema], default: [] })
-  // origdatablocks: OrigDatablock[];
-
-  // @ApiProperty({
-  //   isArray: true,
-  //   type: Datablock,
-  //   items: { $ref: getSchemaPath(Datablock) },
-  //   required: false,
-  //   description:
-  //     "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with manageable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
-  // })
-  // @Prop({ type: [DatablockSchema], default: [] })
-  // datablocks: Datablock[];
-
   @ApiProperty({
     type: Object,
     required: false,
@@ -388,9 +356,6 @@ export class DatasetClass extends OwnableClass {
   })
   dataQualityMetrics?: number;
 
-  /*
-   * fields related to Raw Datasets
-   */
   @ApiProperty({
     type: String,
     required: false,
@@ -437,6 +402,15 @@ export class DatasetClass extends OwnableClass {
   dataFormat?: string;
 
   @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Run number assigned by the system to the data acquisition for the current dataset.",
+  })
+  @Prop({ type: String, required: false })
+  runNumber?: string;
+
+  @ApiProperty({
     type: [String],
     required: false,
     description:
@@ -462,18 +436,6 @@ export class DatasetClass extends OwnableClass {
   })
   @Prop({ type: [String], ref: "Instrument", required: false })
   instrumentIds?: string[];
-
-  /*
-   * Derived Dataset
-   */
-  // @ApiProperty({
-  //   type: String,
-  //   required: false,
-  //   description:
-  //     "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
-  // })
-  // @Prop({ type: String, required: false, index: true })
-  // investigator?: string;
 
   @ApiProperty({
     type: [String],

@@ -1016,18 +1016,18 @@ export const sleep = (ms: number) => {
 };
 
 export class FullFacetFilters {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   facets?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   fields?: string;
 }
 
 export class FullQueryFilters {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   limits?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   fields?: string;
 }
 
