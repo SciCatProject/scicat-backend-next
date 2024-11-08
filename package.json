@@ -26,7 +26,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:api": "npm run test:api:jest --maxWorkers=50% && concurrently -k -s first \"wait-on http://localhost:3000/explorer/ && npm run test:api:mocha\" \"npm run start\"",
     "test:api:jest": "jest --config ./test/config/jest-e2e.json --maxWorkers=50%",
-    "test:api:mocha": "mocha --config ./test/config/.mocharc.json -r chai/register-should.js --grep \"1300: Policy\"",
+    "test:api:mocha": "mocha --config ./test/config/.mocharc.json -r chai/register-should.js",
     "prepare:local": "docker-compose -f CI/E2E/docker-compose-local.yaml --env-file CI/E2E/.env.elastic-search up  -d && cp functionalAccounts.json.test functionalAccounts.json"
   },
   "dependencies": {
