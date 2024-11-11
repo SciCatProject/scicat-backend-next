@@ -14,7 +14,7 @@ describe("AdminService", () => {
 
       return config[propertyPath];
     }),
-  } as unknown as ConfigService<Record<string, unknown>>;
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
