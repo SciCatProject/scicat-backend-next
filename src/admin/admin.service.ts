@@ -9,6 +9,7 @@ export class AdminService {
 
   async getConfig(): Promise<Record<string, unknown> | null> {
     const modifiedConfig = this.applyBackendConfigAdjustments();
+
     return modifiedConfig;
   }
 
