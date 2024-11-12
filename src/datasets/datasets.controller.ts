@@ -98,6 +98,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
+import { CACHE_MANAGER, CacheInterceptor } from "@nestjs/cache-manager";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -905,6 +906,7 @@ export class DatasetsController {
     description:
       "Returns an array of objects where each object contains a metadata field name and its associated type.",
   })
+  @UseInterceptors(CacheInterceptor)
   async metadataTypes(): Promise<any[]> {
     const result = this.datasetsService.getScientificMetadataTypes();
 

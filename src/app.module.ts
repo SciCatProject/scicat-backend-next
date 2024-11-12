@@ -32,6 +32,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { CacheModule } from "@nestjs/cache-manager";
 
 @Module({
   imports: [
@@ -94,6 +95,14 @@ import { LoggerModule } from "./loggers/logger.module";
     UsersModule,
     AdminModule,
     HealthModule,
+    CacheModule.register({
+      ttl: 3600, // cache duration in seconds (1 hour)
+      max: 100, // maximum number of items in cache
+      // Uncomment and configure Redis as needed
+      // store: redisStore,
+      // host: 'localhost',
+      // port: 6379,
+    }),
   ],
   controllers: [],
   providers: [
