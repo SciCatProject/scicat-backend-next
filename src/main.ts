@@ -84,7 +84,9 @@ async function bootstrap() {
     }),
   );
 
-  const fileUploadLimitInMb = configService.get<number>("fileUploadLimitInMb");
+  const fileUploadLimitInMb = configService.get<number>(
+    "maxFileUploadSizeInMb",
+  );
 
   app.useBodyParser("json", { limit: fileUploadLimitInMb });
   app.useBodyParser("urlencoded", {
