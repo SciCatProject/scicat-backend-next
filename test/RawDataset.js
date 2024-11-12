@@ -18,7 +18,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Proposals").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessProposalToken = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],
@@ -46,6 +46,8 @@ describe("1900: RawDataset: Raw Datasets", () => {
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
         res.body.should.have.property("proposalId").and.be.string;
+        // NOTE: Add real proposal in the testdata instead of fixed (non-existing) one
+        TestData.RawCorrect.proposalId = res.body["proposalId"];
         proposalId = encodeURIComponent(res.body["proposalId"]);
       });
   });
@@ -278,6 +280,22 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.be.an("array");
         })
     );
+  });
+
+  it("01250: adds a new proposal for pattching in the existing dataset", async () => {
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(TestData.ProposalCorrectComplete)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessProposalToken}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        // NOTE: Add real proposal in the testdata instead of fixed (non-existing) one
+        TestData.PatchProposal1.proposalId = res.body["proposalId"];
+      });
   });
 
   it("0125: should update proposal of the dataset", async () => {

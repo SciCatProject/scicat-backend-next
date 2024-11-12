@@ -17,6 +17,7 @@ import {
   BadRequestException,
   Logger,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -578,7 +579,10 @@ export class ProposalsController {
     const proposal = await this.proposalsService.findOne({
       proposalId,
     });
-    if (!proposal) return { canAccess: false };
+
+    if (!proposal) {
+      throw new NotFoundException(`Proposal with ${proposalId} not found`);
+    }
 
     const canAccess = await this.permissionChecker(
       Action.ProposalsRead,

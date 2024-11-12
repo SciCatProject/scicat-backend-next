@@ -167,6 +167,21 @@ export class ProposalClass extends OwnableClass {
   })
   @Prop({ type: Object, required: false, default: {} })
   metadata?: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Parent proposal id",
+    default: null,
+    nullable: true,
+  })
+  @Prop({
+    type: String,
+    required: false,
+    default: null,
+    ref: "Proposal",
+  })
+  parentProposalId: string;
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
