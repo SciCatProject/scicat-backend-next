@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
+const { faker } = require("@faker-js/faker");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -283,9 +284,13 @@ describe("1900: RawDataset: Raw Datasets", () => {
   });
 
   it("01250: adds a new proposal for pattching in the existing dataset", async () => {
+    const newProposal = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+    };
     return request(appUrl)
       .post("/api/v3/Proposals")
-      .send(TestData.ProposalCorrectComplete)
+      .send(newProposal)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessProposalToken}` })
       .expect(TestData.EntryCreatedStatusCode)

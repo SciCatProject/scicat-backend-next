@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
+const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const sandbox = require("sinon").createSandbox();
@@ -22,21 +23,21 @@ let proposalPid1 = null,
 
 const proposal1 = {
   ...TestData.ProposalCorrectMin,
-  proposalId: "20170268",
+  proposalId: faker.string.numeric(8),
   ownerGroup: "group4",
   accessGroups: ["group5"],
 };
 
 const proposal2 = {
   ...TestData.ProposalCorrectComplete,
-  proposalId: "20170269",
+  proposalId: faker.string.numeric(8),
   ownerGroup: "group1",
   accessGroups: ["group3"],
 };
 
 const proposal3 = {
   ...TestData.ProposalCorrectMin,
-  proposalId: "20170270",
+  proposalId: faker.string.numeric(8),
   ownerGroup: "group2",
   accessGroups: ["group3"],
 };
@@ -53,7 +54,7 @@ describe("1400: ProposalAuthorization: Test access to proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
