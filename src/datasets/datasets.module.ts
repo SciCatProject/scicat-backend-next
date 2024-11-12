@@ -13,6 +13,7 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
+import { CacheModule } from "@nestjs/cache-manager";
 
 @Module({
   imports: [
@@ -62,6 +63,14 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
         inject: [PoliciesService],
       },
     ]),
+    CacheModule.register({
+      ttl: 3600, // cache duration in seconds (1 hour)
+      max: 100, // maximum number of items in cache
+      // Uncomment and configure Redis as needed
+      // store: redisStore,
+      // host: 'localhost',
+      // port: 6379,
+    }),
   ],
   exports: [DatasetsService],
   controllers: [DatasetsController],
