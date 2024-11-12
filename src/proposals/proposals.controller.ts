@@ -56,13 +56,14 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
+  FullQueryFilters,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { FindByIdAccessResponse } from "src/samples/samples.controller";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -376,25 +377,14 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Full query filters to apply when retrieving proposals\n" +
-      proposalsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: proposalsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: true,
     description: "Return proposals requested",
@@ -567,9 +557,9 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: FindByIdAccessResponse,
     description:
-      "Returns true if the user has access to the specified proposal, otherwise false.",
+      "Returns canAccess property with boolean true if the user has access to the specified sample, otherwise false.",
   })
   async findByIdAccess(
     @Req() request: Request,

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { IDatasetList } from "../interfaces/dataset-list.interface";
 import { JobType } from "../job-type.enum";
 
 export type JobDocument = JobClass & Document;
@@ -58,22 +59,25 @@ export class JobClass {
       "Object of key-value pairs defining job input parameters, e.g. 'destinationPath' for retrieve jobs or 'tapeCopies' for archive jobs.",
   })
   @Prop({ type: Object, required: false })
-  jobParams: Record<string, unknown>;
+  jobParams: object;
 
   @ApiProperty({ description: "Defines current status of job lifecycle." })
   @Prop({ type: String, required: false })
   jobStatusMessage: string;
 
   @ApiProperty({
+    type: IDatasetList,
+    isArray: true,
+    required: false,
     description:
       "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected.",
   })
   @Prop({ type: [Object], required: false })
-  datasetList: Record<string, unknown>[];
+  datasetList: IDatasetList[];
 
   @ApiProperty({ description: "Detailed return value after job is finished." })
   @Prop({ type: Object, required: false })
-  jobResultObject: Record<string, unknown>;
+  jobResultObject: object;
 
   @ApiProperty({
     type: String,
