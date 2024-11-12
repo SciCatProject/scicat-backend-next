@@ -58,6 +58,7 @@ const configuration = () => {
   });
 
   const config = {
+    maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
       api: "3",
     },
