@@ -106,7 +106,7 @@ export class UsersController {
     description:
       "This endpoint is deprecated and will be removed soon. Use /auth/login instead",
   })
-  async login(@Req() req: Record<string, unknown>): Promise<null> {
+  async login(): Promise<null> {
     return null;
   }
 
