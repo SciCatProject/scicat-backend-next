@@ -1,4 +1,5 @@
 import typescriptEslintEslintPlugin from "@typescript-eslint/eslint-plugin";
+import stylistic from "@stylistic/eslint-plugin";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
@@ -51,7 +52,7 @@ export default [...compat.extends(
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-inferrable-types": "error",
 
-        "@typescript-eslint/quotes": ["error", "double", {
+        "quotes": ["error", "double", {
             allowTemplateLiterals: true,
             avoidEscape: true,
         }],
