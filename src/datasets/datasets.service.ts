@@ -282,7 +282,7 @@ export class DatasetsService {
     return await this.datasetModel.findOneAndDelete({ pid: id });
   }
   // GET datasets without _id which is used for elastic search data synchronization
-  async getDatasetsWithoutId() {
+  async getDatasetsWithoutId(): Promise<DatasetClass[]> {
     try {
       const datasets = this.datasetModel.find({}, { _id: 0 }).lean().exec();
       return datasets;
