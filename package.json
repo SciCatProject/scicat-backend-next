@@ -83,6 +83,7 @@
     "@nestjs/cli": "^10.0.5",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.3.8",
+    "@stylistic/eslint-plugin": "^2.10.1",
     "@types/bcrypt": "^5.0.0",
     "@types/chai": "^5.0.0",
     "@types/express": "^5.0.0",

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/quotes */
+/* eslint-disable @/quotes */
 import {
   Controller,
   Get,
