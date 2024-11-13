@@ -14,10 +14,8 @@ import {
   Req,
   ForbiddenException,
   ConflictException,
-  BadRequestException,
   Logger,
   InternalServerErrorException,
-  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -90,14 +88,17 @@ export class ProposalsController {
     return proposalInstance;
   }
 
-  private async permissionChecker(
+  private permissionChecker(
     group: Action,
-    proposal: ProposalClass | CreateProposalDto,
+    proposal: ProposalClass | CreateProposalDto | null,
     request: Request,
   ) {
-    const proposalInstance = this.generateProposalInstanceForPermissions(
-      proposal as ProposalClass,
-    );
+    if (!proposal) {
+      return false;
+    }
+
+    const proposalInstance =
+      this.generateProposalInstanceForPermissions(proposal);
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
@@ -173,34 +174,29 @@ export class ProposalsController {
       proposalId: id,
     });
 
-    if (proposal) {
-      const canDoAction = await this.permissionChecker(
-        group,
-        proposal,
-        request,
-      );
+    const canDoAction = this.permissionChecker(group, proposal, request);
 
-      if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized to this proposal");
-      }
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to this proposal");
     }
+
     return proposal;
   }
 
-  private async checkPermissionsForProposalCreate(
+  private checkPermissionsForProposalCreate(
     request: Request,
     proposal: CreateProposalDto,
     group: Action,
   ) {
-    if (!proposal) {
-      throw new BadRequestException("Not able to create this proposal");
-    }
-    const canDoAction = await this.permissionChecker(group, proposal, request);
+    const canDoAction = this.permissionChecker(group, proposal, request);
+
     if (!canDoAction) {
       throw new ForbiddenException("Unauthorized to create this proposal");
     }
+
     return proposal;
   }
+
   updateFiltersForList(
     request: Request,
     mergedFilters: IFilters<ProposalDocument, IProposalFields>,
@@ -273,7 +269,7 @@ export class ProposalsController {
     @Req() request: Request,
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<ProposalClass> {
-    const proposalDTO = await this.checkPermissionsForProposalCreate(
+    const proposalDTO = this.checkPermissionsForProposalCreate(
       request,
       createProposalDto,
       Action.ProposalsCreate,
@@ -580,11 +576,7 @@ export class ProposalsController {
       proposalId,
     });
 
-    if (!proposal) {
-      throw new NotFoundException(`Proposal with ${proposalId} not found`);
-    }
-
-    const canAccess = await this.permissionChecker(
+    const canAccess = this.permissionChecker(
       Action.ProposalsRead,
       proposal,
       request,
