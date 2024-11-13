@@ -4,12 +4,14 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
 import { OwnableDto } from "../../common/dto/ownable.dto";
+import { ProposalType } from "../proposal-type.enum";
 import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
 
 @ApiTags("proposals")
@@ -133,6 +135,21 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly parentProposalId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    enum: [
+      ProposalType.DefaultProposal,
+      ProposalType.DOORProposal,
+      ProposalType.Beamtime,
+    ],
+    description:
+      "Characterize type of proposal, either 'Default Proposal', 'DOOR Proposal' or 'Beamtime'",
+  })
+  @IsOptional()
+  @IsEnum(ProposalType)
+  readonly type?: string;
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}

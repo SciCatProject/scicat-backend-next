@@ -3,6 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
 import { OwnableClass } from "src/common/schemas/ownable.schema";
+import { ProposalType } from "../proposal-type.enum";
 import {
   MeasurementPeriodClass,
   MeasurementPeriodSchema,
@@ -182,6 +183,30 @@ export class ProposalClass extends OwnableClass {
     ref: "Proposal",
   })
   parentProposalId: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    enum: [
+      ProposalType.DefaultProposal,
+      ProposalType.DOORProposal,
+      ProposalType.Beamtime,
+    ],
+    default: ProposalType.DefaultProposal,
+    description:
+      "Characterize type of proposal, either 'Default Proposal', 'DOOR Proposal' or 'Beamtime'",
+  })
+  @Prop({
+    type: String,
+    required: true,
+    enum: [
+      ProposalType.DefaultProposal,
+      ProposalType.DOORProposal,
+      ProposalType.Beamtime,
+    ],
+    default: ProposalType.DefaultProposal,
+  })
+  type: string;
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
