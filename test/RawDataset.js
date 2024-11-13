@@ -283,7 +283,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
     );
   });
 
-  it("01250: adds a new proposal for pattching in the existing dataset", async () => {
+  it("0124: adds a new proposal for pattching in the existing dataset", async () => {
     const newProposal = {
       ...TestData.ProposalCorrectComplete,
       proposalId: faker.string.numeric(8),

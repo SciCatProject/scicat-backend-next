@@ -218,7 +218,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0120: adds a new proposal with parent proposal", async () => {
+  it("0115: adds a new proposal with parent proposal", async () => {
     const proposalWithParentProposal = {
       ...TestData.ProposalCorrectComplete,
       proposalId: faker.string.numeric(8),
