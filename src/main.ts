@@ -1,5 +1,4 @@
 import session from "express-session";
-import { json } from "body-parser";
 import { NestFactory } from "@nestjs/core";
 import {
   DocumentBuilder,
@@ -10,9 +9,10 @@ import { AppModule } from "./app.module";
 import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AllExceptionsFilter, ScicatLogger } from "./loggers/logger.service";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
   const configService: ConfigService<Record<string, unknown>, false> = app.get(
@@ -84,7 +84,15 @@ async function bootstrap() {
     }),
   );
 
-  app.use(json({ limit: "16mb" }));
+  const fileUploadLimitInMb = configService.get<number>(
+    "maxFileUploadSizeInMb",
+  );
+
+  app.useBodyParser("json", { limit: fileUploadLimitInMb });
+  app.useBodyParser("urlencoded", {
+    limit: fileUploadLimitInMb,
+    extended: true,
+  });
 
   const expressSessionSecret = configService.get<string>(
     "expressSessionSecret",
