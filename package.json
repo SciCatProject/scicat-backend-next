@@ -74,6 +74,9 @@
   "overrides": {
     "pac-resolver": {
       "degenerator": "~5"
+    },
+    "socks": {
+      "ip": "^2.0.2"
     }
   },
   "devDependencies": {
