@@ -32,6 +32,8 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { MetricsModule } from "./metrics/metrics.module";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -94,6 +96,8 @@ import { LoggerModule } from "./loggers/logger.module";
     UsersModule,
     AdminModule,
     HealthModule,
+    MetricsModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [],
   providers: [

@@ -104,6 +104,7 @@ import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { MetricsTrackInterceptor } from "src/metrics/interceptors/metrics-track.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1144,6 +1145,7 @@ export class DatasetsController {
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
+  @UseInterceptors(MetricsTrackInterceptor)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
