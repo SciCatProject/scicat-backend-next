@@ -124,6 +124,15 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @IsObject()
   readonly metadata?: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Parent proposal id.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly parentProposalId?: string;
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}

@@ -12,7 +12,7 @@ class UsersServiceMock {
     return { id };
   }
 
-  async findByIdUserSettings(userId: string) {
+  async findByIdUserSettings() {
     return mockUserSettings;
   }
 
