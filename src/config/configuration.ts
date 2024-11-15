@@ -57,6 +57,11 @@ const configuration = () => {
     }
   });
 
+  const proposalTypesData = fs.readFileSync("proposalTypes.json", "utf8");
+  const proposalTypes: Record<string, string> = JSON.parse(
+    proposalTypesData || '{"DefaultProposal": "Default Proposal"}',
+  );
+
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -203,6 +208,7 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    proposalTypes: proposalTypes,
   };
   return merge(config, localconfiguration);
 };

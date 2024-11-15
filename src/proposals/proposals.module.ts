@@ -1,4 +1,4 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { BadRequestException, forwardRef, Module } from "@nestjs/common";
 import { ProposalsService } from "./proposals.service";
 import { ProposalsController } from "./proposals.controller";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -6,6 +6,7 @@ import { ProposalClass, ProposalSchema } from "./schemas/proposal.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -14,7 +15,11 @@ import { DatasetsModule } from "src/datasets/datasets.module";
     MongooseModule.forFeatureAsync([
       {
         name: ProposalClass.name,
-        useFactory: () => {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService: ConfigService) => {
+          const proposalTypes = configService.get("proposalTypes");
+          const proposalTypesArray = Object.values(proposalTypes);
           const schema = ProposalSchema;
 
           schema.pre<ProposalClass>("save", function (next) {
@@ -22,6 +27,17 @@ import { DatasetsModule } from "src/datasets/datasets.module";
             // set _id to proposalId
             if (!this._id) {
               this._id = this.proposalId;
+            }
+
+            // TODO: Check if there is a better way of doing this. So far I haven't found a way to load the confituration into the schema and DTOs.
+            if (!this.type) {
+              this.type = proposalTypes?.DefaultProposal;
+            } else {
+              if (!proposalTypesArray.includes(this.type)) {
+                throw new BadRequestException(
+                  `type must be one of the following values: ${proposalTypesArray.join(", ")}`,
+                );
+              }
             }
             next();
           });
