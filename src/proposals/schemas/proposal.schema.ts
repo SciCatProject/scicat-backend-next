@@ -9,7 +9,7 @@ import {
 } from "./measurement-period.schema";
 
 // NOTE: This is the proposal default type and it will be used if no proposalTypes.json config file is provided
-const DEFAULT_PROPOSAL_TYPE = "Default Proposal";
+export const DEFAULT_PROPOSAL_TYPE = "Default Proposal";
 
 export type ProposalDocument = ProposalClass & Document;
 @Schema({

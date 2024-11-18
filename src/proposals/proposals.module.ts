@@ -29,16 +29,12 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
               this._id = this.proposalId;
             }
 
-            // TODO: Check if there is a better way of doing this. So far I haven't found a way to load the confituration into the schema and DTOs.
-            if (!this.type) {
-              this.type = proposalTypes?.DefaultProposal;
-            } else {
-              if (!proposalTypesArray.includes(this.type)) {
-                throw new BadRequestException(
-                  `type must be one of the following values: ${proposalTypesArray.join(", ")}`,
-                );
-              }
+            if (this.type && !proposalTypesArray.includes(this.type)) {
+              throw new BadRequestException(
+                `type must be one of the following values: ${proposalTypesArray.join(", ")}`,
+              );
             }
+
             next();
           });
 

@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -57,9 +58,23 @@ const configuration = () => {
     }
   });
 
-  const proposalTypesData = fs.readFileSync("proposalTypes.json", "utf8");
+  let proposalTypesData;
+
+  try {
+    proposalTypesData = fs.readFileSync("proposalTypes.json", "utf8");
+  } catch (error) {
+    // NOTE: If there is no proposalTypes.json file provided we just use the DEFAULT_PROPOSAL_TYPE type
+    console.warn(error);
+  }
+
+  if (!proposalTypesData) {
+    console.warn(
+      `Proposal types configuration file not provided. The "${DEFAULT_PROPOSAL_TYPE}" type will be used`,
+    );
+  }
+
   const proposalTypes: Record<string, string> = JSON.parse(
-    proposalTypesData || '{"DefaultProposal": "Default Proposal"}',
+    proposalTypesData || `{"DefaultProposal": "${DEFAULT_PROPOSAL_TYPE}"}`,
   );
 
   const config = {
