@@ -73,9 +73,10 @@ const configuration = () => {
     );
   }
 
-  const proposalTypes: Record<string, string> = JSON.parse(
-    proposalTypesData || `{"DefaultProposal": "${DEFAULT_PROPOSAL_TYPE}"}`,
-  );
+  const proposalTypes: Record<string, string> = {
+    ...JSON.parse(proposalTypesData || "{}"),
+    DefaultProposal: DEFAULT_PROPOSAL_TYPE,
+  };
 
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
