@@ -40,9 +40,10 @@ Thank you for your interest in contributing to our project!
 3. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
 4. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
 5. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
-6. `npm run start:dev`
-7. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
-8. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
+6. _Optional_ Add [proposalTypes.json](#prpopsal-types-configuration) file to the root folder and configure the proposal types.
+7. `npm run start:dev`
+8. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+9. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
 ## Develop in a container using the docker-compose.dev file
 
@@ -50,10 +51,11 @@ Thank you for your interest in contributing to our project!
 2. docker-compose -f docker-compose.dev.yaml up -d
 3. _Optional_ Mount [functionalAccounts.json](#local-user-accounts) file to a volume in the container to create local users.
 4. _Optional_ Mount [loggers.json](#loggers-configuration) file to a volume in the container to configure multiple loggers.
-5. _Optional_ change the container env variables
-6. Attach to the container
-7. `npm run start:dev`
-8. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+5. _Optional_ Mount [proposalTypes.json](#prpopsal-types-configuration) file to a volume in the container to configure the proposal types.
+6. _Optional_ change the container env variables
+7. Attach to the container
+8. `npm run start:dev`
+9. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
@@ -95,6 +97,12 @@ your own _functionalAccounts.json_ file.
 Providing a file called _loggers.json_ at the root of the project, locally or in the container, and create an external logger class in the `src/loggers/loggingProviders/`directory will automatically create specified one or multiple loggers instances.
 
 The `loggers.json.example` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
+
+### Prpopsal types configuration
+
+Providing a file called _proposalTypes.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `proposalTypes` and used for validation against proposal creation and update.
+
+The `proposalTypes.json.example` file in the root directory showcases the example of configuration structure for proposal types.
 
 ## Environment variables
 

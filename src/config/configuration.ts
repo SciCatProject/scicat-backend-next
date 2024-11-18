@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -56,6 +57,25 @@ const configuration = () => {
       }
     }
   });
+
+  let proposalTypesData;
+
+  try {
+    proposalTypesData = fs.readFileSync("proposalTypes.json", "utf8");
+  } catch (error) {
+    // NOTE: If there is no proposalTypes.json file provided we just use the DEFAULT_PROPOSAL_TYPE type
+    console.warn(error);
+  }
+
+  if (!proposalTypesData) {
+    console.warn(
+      `Proposal types configuration file not provided. The "${DEFAULT_PROPOSAL_TYPE}" type will be used`,
+    );
+  }
+
+  const proposalTypes: Record<string, string> = JSON.parse(
+    proposalTypesData || `{"DefaultProposal": "${DEFAULT_PROPOSAL_TYPE}"}`,
+  );
 
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
@@ -203,6 +223,7 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    proposalTypes: proposalTypes,
   };
   return merge(config, localconfiguration);
 };

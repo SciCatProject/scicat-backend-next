@@ -11,7 +11,6 @@ import {
   ValidateNested,
 } from "class-validator";
 import { OwnableDto } from "../../common/dto/ownable.dto";
-import { ProposalType } from "../proposal-type.enum";
 import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
 
 @ApiTags("proposals")
@@ -139,16 +138,11 @@ export class UpdateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    enum: [
-      ProposalType.DefaultProposal,
-      ProposalType.DOORProposal,
-      ProposalType.Beamtime,
-    ],
     description:
-      "Characterize type of proposal, either 'Default Proposal', 'DOOR Proposal' or 'Beamtime'",
+      "Characterize type of proposal, use some of the configured values",
   })
   @IsOptional()
-  @IsEnum(ProposalType)
+  @IsString()
   readonly type?: string;
 }
 

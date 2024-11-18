@@ -1,4 +1,4 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { InjectModel } from "@nestjs/mongoose";
@@ -97,15 +97,17 @@ export class ProposalsService {
   ): Promise<ProposalClass | null> {
     const username = (this.request.user as JWTUser).username;
 
-    return this.proposalModel
-      .findOneAndUpdate(
-        filter,
-        addUpdatedByField(updateProposalDto, username),
-        {
-          new: true,
-        },
-      )
-      .exec();
+    const proposal = await this.proposalModel.findOne(filter);
+
+    if (!proposal) {
+      throw new NotFoundException(`Proposal with filter: ${filter} not found`);
+    }
+
+    Object.assign(proposal, addUpdatedByField(updateProposalDto, username));
+
+    const updatedProposal = new this.proposalModel(proposal);
+
+    return updatedProposal.save();
   }
 
   async remove(filter: FilterQuery<ProposalDocument>): Promise<unknown> {

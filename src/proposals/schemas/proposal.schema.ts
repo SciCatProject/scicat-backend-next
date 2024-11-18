@@ -3,11 +3,13 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Document, Schema as MongooseSchema } from "mongoose";
 
 import { OwnableClass } from "src/common/schemas/ownable.schema";
-import { ProposalType } from "../proposal-type.enum";
 import {
   MeasurementPeriodClass,
   MeasurementPeriodSchema,
 } from "./measurement-period.schema";
+
+// NOTE: This is the proposal default type and it will be used if no proposalTypes.json config file is provided
+export const DEFAULT_PROPOSAL_TYPE = "Default Proposal";
 
 export type ProposalDocument = ProposalClass & Document;
 @Schema({
@@ -188,24 +190,14 @@ export class ProposalClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,
-    enum: [
-      ProposalType.DefaultProposal,
-      ProposalType.DOORProposal,
-      ProposalType.Beamtime,
-    ],
-    default: ProposalType.DefaultProposal,
+    default: DEFAULT_PROPOSAL_TYPE,
     description:
-      "Characterize type of proposal, either 'Default Proposal', 'DOOR Proposal' or 'Beamtime'",
+      "Characterize type of proposal, use some of the configured values",
   })
   @Prop({
     type: String,
     required: true,
-    enum: [
-      ProposalType.DefaultProposal,
-      ProposalType.DOORProposal,
-      ProposalType.Beamtime,
-    ],
-    default: ProposalType.DefaultProposal,
+    default: DEFAULT_PROPOSAL_TYPE,
   })
   type: string;
 }
