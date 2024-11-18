@@ -8,6 +8,9 @@ import {
   MeasurementPeriodSchema,
 } from "./measurement-period.schema";
 
+// NOTE: This is the proposal default type and it will be used if no proposalTypes.json config file is provided
+const DEFAULT_PROPOSAL_TYPE = "Default Proposal";
+
 export type ProposalDocument = ProposalClass & Document;
 @Schema({
   collection: "Proposal",
@@ -185,13 +188,15 @@ export class ProposalClass extends OwnableClass {
 
   @ApiProperty({
     type: String,
-    required: false,
+    required: true,
+    default: DEFAULT_PROPOSAL_TYPE,
     description:
-      "Characterize type of proposal, either 'Default Proposal', 'DOOR Proposal' or 'Beamtime'",
+      "Characterize type of proposal, use some of the configured values",
   })
   @Prop({
     type: String,
-    required: false,
+    required: true,
+    default: DEFAULT_PROPOSAL_TYPE,
   })
   type: string;
 }

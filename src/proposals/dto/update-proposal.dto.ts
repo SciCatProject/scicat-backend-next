@@ -138,7 +138,6 @@ export class UpdateProposalDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
-    // TODO: Maybe the description should be updated based on the config if possible
     description:
       "Characterize type of proposal, use some of the configured values",
   })

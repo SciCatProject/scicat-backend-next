@@ -18,8 +18,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => {
-          const proposalTypes = configService.get("proposalTypes");
-          const proposalTypesArray = Object.values(proposalTypes);
+          const proposalTypes = configService.get("proposalTypes") || "{}";
+          const proposalTypesArray: string[] = Object.values(proposalTypes);
           const schema = ProposalSchema;
 
           schema.pre<ProposalClass>("save", function (next) {
@@ -41,6 +41,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
             }
             next();
           });
+
           return schema;
         },
       },
