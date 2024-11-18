@@ -171,6 +171,8 @@ describe("1500: Proposal: Simple Proposal", () => {
       .then((res) => {
         res.body.should.have.property("createdBy").and.be.string;
         res.body.should.have.property("updatedBy").and.be.string;
+        res.body.should.have.property("type").and.be.string;
+        res.body.type.should.be.equal("Default Proposal");
       });
   });
 
@@ -239,6 +241,45 @@ describe("1500: Proposal: Simple Proposal", () => {
         res.body.should.have.property("parentProposalId").and.be.string;
         res.body.parentProposalId.should.be.equal(proposalId);
       });
+  });
+
+  it("0116: adds a new proposal with a type different than default", async () => {
+    const proposalType = "DOOR Proposal";
+    const proposalWithType = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+      type: proposalType,
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(proposalWithType)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.type.should.be.equal(proposalType);
+      });
+  });
+
+  it("0117: cannot add a new proposal with a type different than predefined proposal types", async () => {
+    const proposalType = "Incorrect type";
+    const proposalWithIncorrectType = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+      type: proposalType,
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(proposalWithIncorrectType)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/);
   });
 
   it("0120: updates a proposal with a new parent proposal", async () => {

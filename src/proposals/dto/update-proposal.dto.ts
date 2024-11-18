@@ -4,6 +4,7 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsObject,
   IsOptional,
   IsString,
@@ -133,6 +134,16 @@ export class UpdateProposalDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly parentProposalId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Characterize type of proposal, use some of the configured values",
+  })
+  @IsOptional()
+  @IsString()
+  readonly type?: string;
 }
 
 export class PartialUpdateProposalDto extends PartialType(UpdateProposalDto) {}

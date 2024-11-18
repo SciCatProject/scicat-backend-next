@@ -1,4 +1,4 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { BadRequestException, forwardRef, Module } from "@nestjs/common";
 import { ProposalsService } from "./proposals.service";
 import { ProposalsController } from "./proposals.controller";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -6,6 +6,7 @@ import { ProposalClass, ProposalSchema } from "./schemas/proposal.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -14,7 +15,11 @@ import { DatasetsModule } from "src/datasets/datasets.module";
     MongooseModule.forFeatureAsync([
       {
         name: ProposalClass.name,
-        useFactory: () => {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService: ConfigService) => {
+          const proposalTypes = configService.get("proposalTypes") || "{}";
+          const proposalTypesArray: string[] = Object.values(proposalTypes);
           const schema = ProposalSchema;
 
           schema.pre<ProposalClass>("save", function (next) {
@@ -23,8 +28,16 @@ import { DatasetsModule } from "src/datasets/datasets.module";
             if (!this._id) {
               this._id = this.proposalId;
             }
+
+            if (this.type && !proposalTypesArray.includes(this.type)) {
+              throw new BadRequestException(
+                `type must be one of the following values: ${proposalTypesArray.join(", ")}`,
+              );
+            }
+
             next();
           });
+
           return schema;
         },
       },
