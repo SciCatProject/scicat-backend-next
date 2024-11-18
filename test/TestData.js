@@ -75,7 +75,7 @@ const TestData = {
   },
 
   ProposalCorrectComplete: {
-    proposalId: "20170267",
+    proposalId: faker.string.numeric(8),
     pi_email: "pi@uni.edu",
     pi_firstname: "principal",
     pi_lastname: "investigator",
@@ -102,7 +102,7 @@ const TestData = {
   },
 
   ProposalWrong_1: {
-    proposalId: "20170267",
+    proposalId: faker.string.numeric(8),
     pi_email: "pi@uni.edu",
     pi_firstname: "principal",
     pi_lastname: "investigator",
@@ -144,11 +144,11 @@ const TestData = {
   RawCorrectMin: {
     ownerGroup: faker.company.name(),
     creationLocation: faker.location.city(),
-    principalInvestigator: faker.internet.userName(),
+    principalInvestigator: faker.internet.username(),
     type: "raw",
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     datasetName: faker.string.sample(),
   },
@@ -231,7 +231,7 @@ const TestData = {
     isPublished: false,
     ownerGroup: "p13388",
     accessGroups: [],
-    proposalId: "10.540.16635/20110123",
+    proposalId: "",
     runNumber: "123456",
     instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
     sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
@@ -422,7 +422,7 @@ const TestData = {
     investigator: faker.internet.email(),
     inputDatasets: [faker.string.uuid()],
     usedSoftware: [faker.internet.url()],
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
@@ -838,7 +838,7 @@ const TestData = {
   },
 
   PatchProposal1: {
-    proposalId: "10.540.16635/20240124",
+    proposalId: "",
   },
 
   PatchInstrument1: {
@@ -867,12 +867,12 @@ const TestData = {
   ScientificMetadataForElasticSearch: {
     ownerGroup: faker.company.name(),
     creationLocation: faker.location.city(),
-    principalInvestigator: faker.internet.userName(),
+    principalInvestigator: faker.internet.username(),
     type: "raw",
     datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     size: faker.number.int({ min: 0, max: 100000000 }),
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),

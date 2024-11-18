@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
-
+const { faker } = require("@faker-js/faker");
 const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -8,14 +8,16 @@ let accessTokenProposalIngestor = null,
   accessTokenAdminIngestor = null,
   accessTokenArchiveManager = null,
   defaultProposalId = null,
+  minimalProposalId = null,
   proposalId = null,
+  proposalWithParentId = null,
   attachmentId = null;
 
 describe("1500: Proposal: Simple Proposal", () => {
   before(() => {
     db.collection("Proposal").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenProposalIngestor = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],
@@ -89,7 +91,7 @@ describe("1500: Proposal: Simple Proposal", () => {
         res.body.should.have.property("ownerGroup").and.be.string;
         res.body.should.have.property("proposalId").and.be.string;
         defaultProposalId = res.body["proposalId"];
-        proposalId = encodeURIComponent(res.body["proposalId"]);
+        minimalProposalId = encodeURIComponent(res.body["proposalId"]);
       });
   });
 
@@ -216,7 +218,46 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0120: should delete this proposal attachment", async () => {
+  it("0115: adds a new proposal with parent proposal", async () => {
+    const proposalWithParentProposal = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+      parentProposalId: proposalId,
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(proposalWithParentProposal)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        proposalWithParentId = res.body.proposalId;
+        res.body.should.have.property("parentProposalId").and.be.string;
+        res.body.parentProposalId.should.be.equal(proposalId);
+      });
+  });
+
+  it("0120: updates a proposal with a new parent proposal", async () => {
+    return request(appUrl)
+      .patch("/api/v3/Proposals/" + proposalWithParentId)
+      .send({ parentProposalId: minimalProposalId })
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.should.have.property("parentProposalId").and.be.string;
+        res.body.parentProposalId.should.be.equal(minimalProposalId);
+      });
+  });
+
+  it("0130: should delete this proposal attachment", async () => {
     return request(appUrl)
       .delete(
         "/api/v3/Proposals/" + proposalId + "/attachments/" + attachmentId,
@@ -226,7 +267,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       .expect(TestData.SuccessfulDeleteStatusCode);
   });
 
-  it("0130: admin can remove all existing proposals", async () => {
+  it("0140: admin can remove all existing proposals", async () => {
     return await request(appUrl)
       .get("/api/v3/Proposals")
       .set("Accept", "application/json")

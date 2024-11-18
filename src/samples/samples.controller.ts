@@ -92,14 +92,17 @@ export class SamplesController {
 
     return sampleInstance;
   }
-  private async permissionChecker(
+
+  private permissionChecker(
     group: Action,
-    sample: SampleClass | CreateSampleDto,
+    sample: SampleClass | CreateSampleDto | null,
     request: Request,
   ) {
-    const sampleInstance = this.generateSampleInstanceForPermissions(
-      sample as SampleClass,
-    );
+    if (!sample) {
+      return false;
+    }
+
+    const sampleInstance = this.generateSampleInstanceForPermissions(sample);
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
@@ -169,28 +172,26 @@ export class SamplesController {
       sampleId: id,
     });
 
-    if (sample) {
-      const canDoAction = await this.permissionChecker(group, sample, request);
-      if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized to this sample");
-      }
+    const canDoAction = this.permissionChecker(group, sample, request);
+
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to this sample");
     }
 
     return sample;
   }
 
-  private async checkPermissionsForSampleCreate(
+  private checkPermissionsForSampleCreate(
     request: Request,
     sample: CreateSampleDto,
     group: Action,
   ) {
-    if (!sample) {
-      throw new BadRequestException("Not able to create this sample");
-    }
-    const canDoAction = await this.permissionChecker(group, sample, request);
+    const canDoAction = this.permissionChecker(group, sample, request);
+
     if (!canDoAction) {
       throw new ForbiddenException("Unauthorized to create this sample");
     }
+
     return sample;
   }
 
@@ -276,11 +277,12 @@ export class SamplesController {
     @Req() request: Request,
     @Body() createSampleDto: CreateSampleDto,
   ): Promise<SampleClass> {
-    const sampleDTO = await this.checkPermissionsForSampleCreate(
+    const sampleDTO = this.checkPermissionsForSampleCreate(
       request,
       createSampleDto,
       Action.SampleCreate,
     );
+
     return this.samplesService.create(sampleDTO);
   }
 
@@ -545,6 +547,7 @@ export class SamplesController {
       id,
       Action.SampleRead,
     );
+
     return sample;
   }
 
@@ -569,8 +572,8 @@ export class SamplesController {
     const sample = await this.samplesService.findOne({
       sampleId: id,
     });
-    if (!sample) return { canAccess: false };
-    const canAccess = await this.permissionChecker(
+
+    const canAccess = this.permissionChecker(
       Action.SampleRead,
       sample,
       request,
