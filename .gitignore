@@ -2,6 +2,7 @@
 /dist
 /node_modules
 functionalAccounts.json
+proposalTypes.json
 loggers.json
 
 # Configs

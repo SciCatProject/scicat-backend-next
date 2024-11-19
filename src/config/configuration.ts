@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -38,9 +39,12 @@ const configuration = () => {
     modulePath: "./loggingProviders/defaultLogger",
     config: {},
   };
-  const jsonConfigMap: { [key: string]: object[] | boolean } = {};
+  const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
+    proposalTypes: {},
+  };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+    proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -55,6 +59,11 @@ const configuration = () => {
         jsonConfigMap[key] = false;
       }
     }
+  });
+
+  // NOTE: Add the default proposal type here
+  Object.assign(jsonConfigMap.proposalTypes, {
+    DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
 
   const config = {
@@ -203,6 +212,7 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);
 };
