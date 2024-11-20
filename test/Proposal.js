@@ -244,11 +244,10 @@ describe("1500: Proposal: Simple Proposal", () => {
   });
 
   it("0116: adds a new proposal with a type different than default", async () => {
-    const proposalType = "DOOR Proposal";
     const proposalWithType = {
       ...TestData.ProposalCorrectComplete,
       proposalId: faker.string.numeric(8),
-      type: proposalType,
+      type: "DOOR Proposal",
     };
 
     return request(appUrl)
@@ -261,7 +260,31 @@ describe("1500: Proposal: Simple Proposal", () => {
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
         res.body.should.have.property("proposalId").and.be.string;
-        res.body.type.should.be.equal(proposalType);
+        res.body.type.should.be.equal(proposalWithType.type);
+      });
+  });
+
+  it("0117: adds a new proposal with metadata", async () => {
+    const proposalWithMetadata = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+      metadata: TestData.RawCorrectRandom.scientificMetadata,
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(proposalWithMetadata)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.should.have.property("metadata").and.be.an("object");
+        JSON.stringify(res.body.metadata).should.be.equal(
+          JSON.stringify(proposalWithMetadata.metadata),
+        );
       });
   });
 

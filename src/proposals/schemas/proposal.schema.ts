@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import {
@@ -18,6 +18,7 @@ export type ProposalDocument = ProposalClass & Document;
     getters: true,
   },
   timestamps: true,
+  minimize: false,
 })
 export class ProposalClass extends OwnableClass {
   @ApiProperty({
@@ -163,12 +164,12 @@ export class ProposalClass extends OwnableClass {
   MeasurementPeriodList?: MeasurementPeriodClass[];
 
   @ApiProperty({
-    type: Object,
+    type: MongooseSchema.Types.Mixed,
     required: false,
     default: {},
     description: "JSON object containing the proposal metadata.",
   })
-  @Prop({ type: Object, required: false, default: {} })
+  @Prop({ type: MongooseSchema.Types.Mixed, required: false, default: {} })
   metadata?: Record<string, unknown>;
 
   @ApiProperty({
