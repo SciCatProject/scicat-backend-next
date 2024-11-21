@@ -23,6 +23,11 @@ export class JobClass {
   @Prop({ type: String, default: () => uuidv4() })
   _id: string;
 
+  @ApiProperty({
+    type: String,
+    description: "Globally unique identifier of a job.",
+    readOnly: true,
+  })
   id?: string;
 
   @ApiProperty({
