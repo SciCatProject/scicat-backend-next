@@ -64,7 +64,7 @@ import { CacheModule } from "@nestjs/cache-manager";
       },
     ]),
     CacheModule.register({
-      ttl: 3600, // cache duration in seconds (1 hour)
+      ttl: 3600000, // cache duration in seconds (1 hour)
       max: 100, // maximum number of items in cache
       // Uncomment and configure Redis as needed
       // store: redisStore,
