@@ -1609,7 +1609,7 @@ export class DatasetsController {
   async findOneAttachmentAndUpdate(
     @Req() request: Request,
     @Param("pid", DecodeURIPipe) pid: string,
-    @Param("aid") aid: string,
+    @Param("aid", DecodeURIPipe) aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForDatasetExtended(

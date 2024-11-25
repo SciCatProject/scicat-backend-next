@@ -54,6 +54,7 @@ import { ConfigService } from "@nestjs/config";
 import { firstValueFrom } from "rxjs";
 import { handleAxiosRequestError } from "src/common/utils";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
+import { DecodeURIPipe } from "src/common/pipes/decodeURI.pipe";
 
 @ApiBearerAuth()
 @ApiTags("published data")
@@ -233,7 +234,9 @@ export class PublishedDataController {
     description: "Return published data with id specified",
   })
   @Get("/:id")
-  async findOne(@Param("id") id: string): Promise<PublishedData | null> {
+  async findOne(
+    @Param("id", DecodeURIPipe) id: string,
+  ): Promise<PublishedData | null> {
     return this.publishedDataService.findOne({ doi: id });
   }
 
@@ -269,7 +272,9 @@ export class PublishedDataController {
     ability.can(Action.Update, PublishedData),
   )
   @Post("/:id/register")
-  async register(@Param("id") id: string): Promise<IRegister | null> {
+  async register(
+    @Param("id", DecodeURIPipe) id: string,
+  ): Promise<IRegister | null> {
     const publishedData = await this.publishedDataService.findOne({ doi: id });
 
     if (publishedData) {
@@ -472,7 +477,7 @@ export class PublishedDataController {
   })
   @Post("/:id/resync")
   async resync(
-    @Param("id") id: string,
+    @Param("id", DecodeURIPipe) id: string,
     @Body() data: UpdatePublishedDataDto,
   ): Promise<IRegister | null> {
     const { ...publishedData } = data;
