@@ -55,7 +55,7 @@
     "handlebars": "^4.7.7",
     "lodash": "^4.17.21",
     "luxon": "^3.2.1",
-    "mathjs": "^13.0.0",
+    "mathjs": "^14.0.0",
     "migrate-mongo": "^11.0.0",
     "mongoose": "^8.4.0",
     "node-fetch": "^3.3.0",
