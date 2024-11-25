@@ -55,6 +55,7 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
+  FullFacetResponse,
   fullQueryExampleLimits,
   FullQueryFilters,
   proposalsFullQueryDescriptionFields,
@@ -453,7 +454,7 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: ProposalClass,
+    type: FullFacetResponse,
     isArray: true,
     description: "Return proposals requested",
   })
