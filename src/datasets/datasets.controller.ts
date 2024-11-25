@@ -418,7 +418,7 @@ export class DatasetsController {
     }
     if ("principalInvestigator" in whereFilter) {
       whereFilter.investigator = whereFilter.principalInvestigator;
-      delete whereFilter.instrumentId;
+      delete whereFilter.principalInvestigator;
     }
     return whereFilter;
   }
