@@ -125,7 +125,9 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
 
     if (!dataset) {
-      throw new NotFoundException(`Dataset: ${id} not found`);
+      throw new NotFoundException(
+        `Dataset: ${id} not found for attaching an origdatablock`,
+      );
     }
 
     const origDatablockInstance =
