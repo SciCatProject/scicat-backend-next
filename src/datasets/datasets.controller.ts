@@ -703,7 +703,8 @@ export class DatasetsController {
     @Body()
     createDatasetObsoleteDto:
       | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto,
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ): Promise<{ valid: boolean }> {
     await this.checkPermissionsForObsoleteDatasetCreate(
       request,
@@ -722,8 +723,14 @@ export class DatasetsController {
     );
     const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
 
+    const dtoTestCustomCorrect = plainToInstance(
+      CreateDatasetDto,
+      createDatasetObsoleteDto,
+    );
+    const errorsTestCustomCorrect = await validate(dtoTestCustomCorrect);
+
     const valid =
-      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0;
+      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0 || errorsTestCustomCorrect.length == 0;
 
     return { valid: valid };
   }
