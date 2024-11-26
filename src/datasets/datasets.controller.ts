@@ -522,7 +522,7 @@ export class DatasetsController {
   )
   @Post()
   @ApiOperation({
-    summary: "It creates a new dataset which can be a raw or derived one.",
+    summary: "It creates a new dataset which can be a raw, derived or custom one.",
     description:
       "It creates a new dataset and returns it completed with systems fields.",
   })
@@ -633,7 +633,7 @@ export class DatasetsController {
 
     if (
       outputDatasetDto instanceof
-      (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto)
+      (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto || CreateDatasetDto)
     ) {
       if (
         !(Object.values(configuration().datasetTypes) as string[]).includes(
@@ -643,7 +643,7 @@ export class DatasetsController {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message: "Wrong dataset type!",
+            message: "Invalid dataset type!",
           },
           HttpStatus.BAD_REQUEST,
         );
