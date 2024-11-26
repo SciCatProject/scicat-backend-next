@@ -681,7 +681,7 @@ export class DatasetsController {
     description:
       "It validates the dataset provided as input, and returns true if the information is a valid dataset",
   })
-  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto)
+  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto, CreateDatasetDto)
   @ApiBody({
     description: "Input fields for the dataset that needs to be validated",
     required: true,
@@ -689,6 +689,7 @@ export class DatasetsController {
       oneOf: [
         { $ref: getSchemaPath(CreateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(CreateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(CreateDatasetDto) },
       ],
     },
   })
@@ -1238,6 +1239,7 @@ export class DatasetsController {
   @ApiExtraModels(
     PartialUpdateRawDatasetObsoleteDto,
     PartialUpdateDerivedDatasetObsoleteDto,
+    PartialUpdateDatasetDto,
   )
   @ApiBody({
     description:
@@ -1247,6 +1249,7 @@ export class DatasetsController {
       oneOf: [
         { $ref: getSchemaPath(PartialUpdateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(PartialUpdateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(PartialUpdateDatasetDto) },
       ],
     },
   })
@@ -1262,7 +1265,8 @@ export class DatasetsController {
     @Body()
     updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto,
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
@@ -1271,15 +1275,26 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    let dtoType;
+    switch (foundDataset.type) {
+      case DatasetType.Raw:
+        dtoType = PartialUpdateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = PartialUpdateDatasetDto;
+        break;
+    }
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
-        foundDataset.type === "raw"
-          ? PartialUpdateRawDatasetObsoleteDto
-          : PartialUpdateDerivedDatasetObsoleteDto,
+        dtoType,
       )) as
         | PartialUpdateRawDatasetObsoleteDto
-        | PartialUpdateDerivedDatasetObsoleteDto;
+        | PartialUpdateDerivedDatasetObsoleteDto
+        | PartialUpdateDatasetDto;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
