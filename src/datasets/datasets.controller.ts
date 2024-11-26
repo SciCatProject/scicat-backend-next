@@ -1664,7 +1664,7 @@ export class DatasetsController {
 
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
-      pid,
+      datasetId: pid,
     });
   }
 
