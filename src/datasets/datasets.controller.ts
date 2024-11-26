@@ -1346,7 +1346,7 @@ export class DatasetsController {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateRawDatasetObsoleteDto, UpdateDerivedDatasetObsoleteDto)
+  @ApiExtraModels(UpdateRawDatasetObsoleteDto, UpdateDerivedDatasetObsoleteDto, UpdateDatasetDto)
   @ApiBody({
     description:
       "Dataset object that needs to be updated. The whole dataset object with updated fields have to be passed in.",
@@ -1355,6 +1355,7 @@ export class DatasetsController {
       oneOf: [
         { $ref: getSchemaPath(UpdateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(UpdateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(UpdateDatasetDto) },
       ],
     },
   })
@@ -1370,7 +1371,8 @@ export class DatasetsController {
     @Body()
     updateDatasetObsoleteDto:
       | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto,
+      | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
     const foundDataset = await this.datasetsService.findOne({ where: { pid } });
 
@@ -1379,11 +1381,21 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    let dtoType;
+    switch (foundDataset.type) {
+      case DatasetType.Raw:
+        dtoType = PartialUpdateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = PartialUpdateDatasetDto;
+        break;
+    }
     const updateValidatedDto = await this.validateDatasetObsolete(
       updateDatasetObsoleteDto,
-      foundDataset.type === "raw"
-        ? UpdateRawDatasetObsoleteDto
-        : UpdateDerivedDatasetObsoleteDto,
+      dtoType,
     );
 
     const datasetInstance =
@@ -1402,14 +1414,14 @@ export class DatasetsController {
     }
 
     const updateDatasetDto =
-      await this.convertObsoleteToCurrentSchema(updateValidatedDto);
+      this.convertObsoleteToCurrentSchema(updateValidatedDto);
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
       updateDatasetDto as UpdateDatasetDto,
     );
 
-    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
+    return this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // DELETE /datasets/:id
