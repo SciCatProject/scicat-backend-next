@@ -64,6 +64,7 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { FindByIdAccessResponse } from "src/samples/samples.controller";
+import { DecodeURIPipe } from "src/common/pipes/decodeURI.pipe";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -526,7 +527,7 @@ export class ProposalsController {
   })
   async findById(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
   ): Promise<ProposalClass | null> {
     const proposal = await this.checkPermissionsForProposal(
       request,
@@ -561,7 +562,7 @@ export class ProposalsController {
   })
   async findByIdAccess(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
   ): Promise<{ canAccess: boolean }> {
     const proposal = await this.proposalsService.findOne({
       proposalId,
@@ -609,7 +610,7 @@ export class ProposalsController {
   })
   async update(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
     @Body() updateProposalDto: PartialUpdateProposalDto,
   ): Promise<ProposalClass | null> {
     await this.checkPermissionsForProposal(
@@ -644,7 +645,7 @@ export class ProposalsController {
   })
   async remove(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
   ): Promise<unknown> {
     await this.checkPermissionsForProposal(
       request,
@@ -683,7 +684,7 @@ export class ProposalsController {
   })
   async createAttachment(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment> {
     await this.checkPermissionsForProposal(
@@ -725,7 +726,7 @@ export class ProposalsController {
   })
   async findAllAttachments(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
   ): Promise<Attachment[]> {
     await this.checkPermissionsForProposal(
       request,
@@ -767,8 +768,8 @@ export class ProposalsController {
   })
   async findOneAttachmentAndUpdate(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
-    @Param("aid") attachmentId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
+    @Param("aid", DecodeURIPipe) attachmentId: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForProposal(
@@ -812,8 +813,8 @@ export class ProposalsController {
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
-    @Param("aid") attachmentId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
+    @Param("aid", DecodeURIPipe) attachmentId: string,
   ): Promise<unknown> {
     await this.checkPermissionsForProposal(
       request,
@@ -853,7 +854,7 @@ export class ProposalsController {
   })
   async findAllDatasets(
     @Req() request: Request,
-    @Param("pid") proposalId: string,
+    @Param("pid", DecodeURIPipe) proposalId: string,
   ): Promise<DatasetClass[] | null> {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
