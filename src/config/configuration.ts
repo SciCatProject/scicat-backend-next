@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { DatasetType } from "src/datasets/dataset-type.enum";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
@@ -44,6 +45,7 @@ const configuration = () => {
   };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+    datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
@@ -61,6 +63,11 @@ const configuration = () => {
     }
   });
 
+  // NOTE: Add the default dataset types here
+  Object.assign(jsonConfigMap.datasetTypes, {
+    Raw: DatasetType.Raw,
+    Derived: DatasetType.Derived,
+  });
   // NOTE: Add the default proposal type here
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
@@ -212,6 +219,7 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    datasetTypes: jsonConfigMap.datasetTypes,
     proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);
