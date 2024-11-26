@@ -1,11 +1,11 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { BadRequestException, forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
 import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
@@ -26,8 +26,11 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
     MongooseModule.forFeatureAsync([
       {
         name: DatasetClass.name,
-        imports: [PoliciesModule],
-        useFactory: (policyService: PoliciesService) => {
+        imports: [PoliciesModule, ConfigModule], //TEST: remove ConfigModule import here
+        inject: [PoliciesService, ConfigService],
+        useFactory: (policyService: PoliciesService, configService: ConfigService) => {
+          const datasetTypes = configService.get("datasetTypes") || "{}";
+          const datasetTypesArray: string[] = Object.values(datasetTypes);
           const schema = DatasetSchema;
 
           schema.pre<DatasetClass>("save", async function (next) {
@@ -35,6 +38,11 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
             // set _id to pid
             if (!this._id) {
               this._id = this.pid;
+            }
+            if (this.type && !datasetTypesArray.includes(this.type)) {
+              throw new BadRequestException(
+                `type must be one of the following values: ${datasetTypesArray.join(", ")}`,
+              );
             }
             const policy = await policyService.findOne({
               ownerGroup: this.ownerGroup,
@@ -59,7 +67,6 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 
           return schema;
         },
-        inject: [PoliciesService],
       },
     ]),
   ],
