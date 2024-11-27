@@ -28,7 +28,10 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
         name: DatasetClass.name,
         imports: [PoliciesModule, ConfigModule], //TEST: remove ConfigModule import here
         inject: [PoliciesService, ConfigService],
-        useFactory: (policyService: PoliciesService, configService: ConfigService) => {
+        useFactory: (
+          policyService: PoliciesService,
+          configService: ConfigService
+        ) => {
           const datasetTypes = configService.get("datasetTypes") || "{}";
           const datasetTypesArray: string[] = Object.values(datasetTypes);
           const schema = DatasetSchema;
