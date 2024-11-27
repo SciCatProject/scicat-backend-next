@@ -400,9 +400,7 @@ export class DatasetsController {
     return dataset;
   }
 
-  getDtoType(
-    datasetType: string,
-  ) {
+  getDtoType(datasetType: string) {
     switch (datasetType) {
       case DatasetType.Raw:
         return PartialUpdateRawDatasetObsoleteDto;
