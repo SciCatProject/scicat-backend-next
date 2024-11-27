@@ -459,8 +459,8 @@ export class CaslAbilityFactory {
          * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
          */
         can(Action.JobDelete, JobClass);
-      } else{
-        cannot(Action.JobDelete, JobClass)
+      } else {
+        cannot(Action.JobDelete, JobClass);
       }
     }
 
