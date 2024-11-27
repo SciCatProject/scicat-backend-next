@@ -16,6 +16,7 @@ import {
   ConflictException,
   Logger,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -173,6 +174,10 @@ export class ProposalsController {
     const proposal = await this.proposalsService.findOne({
       proposalId: id,
     });
+
+    if (!proposal) {
+      throw new NotFoundException(`Proposal: ${id} not found`);
+    }
 
     const canDoAction = this.permissionChecker(group, proposal, request);
 

@@ -24,6 +24,7 @@ const TestData = {
   BadRequestStatusCode: 400,
   AccessForbiddenStatusCode: 403,
   UnauthorizedStatusCode: 401,
+  NotFoundStatusCode: 404,
   CreationUnauthorizedStatusCode: 401,
   ConflictStatusCode: 409,
   ApplicationErrorStatusCode: 500,
