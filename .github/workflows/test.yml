@@ -155,7 +155,7 @@ jobs:
           ACCESS_GROUPS_STATIC_VALUES: "ess"
           CREATE_JOB_GROUPS: group1,group2
           UPDATE_JOB_GROUPS: group1
-          DELETE_JOB_GROUPS: "archivemanager"
+          DELETE_JOB_GROUPS: "archivemanager,admin"
           PROPOSAL_GROUPS: "proposalingestor"
           SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
           SAMPLE_GROUPS: "group1"
