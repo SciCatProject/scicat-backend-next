@@ -43,7 +43,7 @@
     "@nestjs/mongoose": "^10.0.0",
     "@nestjs/passport": "^10.0.0",
     "@nestjs/platform-express": "^10.3.8",
-    "@nestjs/swagger": "^7.1.7",
+    "@nestjs/swagger": "^8.0.7",
     "@nestjs/terminus": "^10.1.1",
     "@user-office-software/duo-logger": "^2.1.1",
     "@user-office-software/duo-message-broker": "^1.4.0",
