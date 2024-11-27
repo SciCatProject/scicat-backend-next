@@ -13,9 +13,11 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
+import { MetricsModule } from "src/metrics/metrics.module";
 
 @Module({
   imports: [
+    MetricsModule,
     AttachmentsModule,
     ConfigModule,
     DatablocksModule,
