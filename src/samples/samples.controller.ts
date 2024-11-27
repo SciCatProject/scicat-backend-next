@@ -17,6 +17,7 @@ import {
   BadRequestException,
   Req,
   Header,
+  NotFoundException,
 } from "@nestjs/common";
 import { SamplesService } from "./samples.service";
 import { CreateSampleDto } from "./dto/create-sample.dto";
@@ -171,6 +172,10 @@ export class SamplesController {
     const sample = await this.samplesService.findOne({
       sampleId: id,
     });
+
+    if (!sample) {
+      throw new NotFoundException(`Sample: ${id} not found`);
+    }
 
     const canDoAction = this.permissionChecker(group, sample, request);
 

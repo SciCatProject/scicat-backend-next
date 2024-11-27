@@ -209,82 +209,84 @@ export class DatasetsController {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
+    if (!dataset) {
+      throw new NotFoundException(`dataset: ${id} not found`);
+    }
 
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
 
-      let canDoAction = false;
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
 
-      if (group == Action.DatasetRead) {
-        canDoAction =
-          ability.can(Action.DatasetReadAny, DatasetClass) ||
-          ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-          ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-          ability.can(Action.DatasetReadOnePublic, datasetInstance);
-      } else if (group == Action.DatasetAttachmentRead) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
-      } else if (group == Action.DatasetAttachmentCreate) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetAttachmentUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetAttachmentDelete) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockRead) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockCreate) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockDelete) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockRead) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
-      } else if (group == Action.DatasetDatablockCreate) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockDelete) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetLogbookRead) {
-        canDoAction =
-          ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
-          ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
-      }
-      if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
-      }
+    let canDoAction = false;
+
+    if (group == Action.DatasetRead) {
+      canDoAction =
+        ability.can(Action.DatasetReadAny, DatasetClass) ||
+        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+        ability.can(Action.DatasetReadOnePublic, datasetInstance);
+    } else if (group == Action.DatasetAttachmentRead) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
+    } else if (group == Action.DatasetAttachmentCreate) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetAttachmentUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetAttachmentDelete) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockRead) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockCreate) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockDelete) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockRead) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
+    } else if (group == Action.DatasetDatablockCreate) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockDelete) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetLogbookRead) {
+      canDoAction =
+        ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
+        ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
+    }
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized access");
     }
 
     return dataset;
@@ -294,20 +296,22 @@ export class DatasetsController {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
+    if (!dataset) {
+      throw new NotFoundException(`dataset: ${id} not found`);
+    }
 
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-      const canView =
-        ability.can(Action.DatasetReadAny, DatasetClass) ||
-        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-        ability.can(Action.DatasetReadOnePublic, datasetInstance);
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
 
-      if (!canView) {
-        throw new ForbiddenException("Unauthorized access");
-      }
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canView =
+      ability.can(Action.DatasetReadAny, DatasetClass) ||
+      ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+      ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+      ability.can(Action.DatasetReadOnePublic, datasetInstance);
+
+    if (!canView) {
+      throw new ForbiddenException("Unauthorized access");
     }
 
     return dataset;
@@ -361,38 +365,34 @@ export class DatasetsController {
   ) {
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
-      // instantiate the casl matrix for the user
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-      // check if he/she can create this dataset
-      const canCreate =
-        ability.can(Action.DatasetCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
-        ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
+    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
+    // instantiate the casl matrix for the user
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    // check if he/she can create this dataset
+    const canCreate =
+      ability.can(Action.DatasetCreateAny, DatasetClass) ||
+      ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
+      ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
 
-      if (!canCreate) {
-        throw new ForbiddenException("Unauthorized to create this dataset");
+    if (!canCreate) {
+      throw new ForbiddenException("Unauthorized to create this dataset");
+    }
+
+    // now checks if we need to validate the pid
+    if (
+      configuration().datasetCreationValidationEnabled &&
+      configuration().datasetCreationValidationRegex &&
+      dataset.pid
+    ) {
+      const re = new RegExp(configuration().datasetCreationValidationRegex);
+
+      if (!re.test(dataset.pid)) {
+        throw new BadRequestException(
+          "PID is not following required standards",
+        );
       }
-
-      // now checks if we need to validate the pid
-      if (
-        configuration().datasetCreationValidationEnabled &&
-        configuration().datasetCreationValidationRegex &&
-        dataset.pid
-      ) {
-        const re = new RegExp(configuration().datasetCreationValidationRegex);
-
-        if (!re.test(dataset.pid)) {
-          throw new BadRequestException(
-            "PID is not following required standards",
-          );
-        }
-      }
-    } else {
-      throw new ForbiddenException("Unauthorized to create datasets");
     }
 
     return dataset;
