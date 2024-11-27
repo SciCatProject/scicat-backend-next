@@ -389,16 +389,6 @@ export class CaslAbilityFactory {
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);
         can(Action.JobStatusUpdate, JobClass);
-        cannot(Action.JobDelete, JobClass);
-      } else if (
-        user.currentGroups.some((g) =>
-          configuration().deleteJobGroups.includes(g),
-        )
-      ) {
-        /**
-         * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
-         */
-        can(Action.JobDelete, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
@@ -459,7 +449,18 @@ export class CaslAbilityFactory {
             can(Action.JobStatusUpdate, JobClass);
           }
         }
-        cannot(Action.JobDelete, JobClass);
+      }
+      if (
+        user.currentGroups.some((g) =>
+          configuration().deleteJobGroups.includes(g),
+        )
+      ) {
+        /**
+         * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
+         */
+        can(Action.JobDelete, JobClass);
+      } else{
+        cannot(Action.JobDelete, JobClass)
       }
     }
 
