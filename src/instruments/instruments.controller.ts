@@ -34,7 +34,6 @@ import {
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
-import { DecodeURIPipe } from "src/common/pipes/decodeURI.pipe";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -122,9 +121,7 @@ export class InstrumentsController {
     ability.can(Action.InstrumentRead, Instrument),
   )
   @Get(":id")
-  async findById(
-    @Param("id", DecodeURIPipe) pid: string,
-  ): Promise<Instrument | null> {
+  async findById(@Param("id") pid: string): Promise<Instrument | null> {
     return this.instrumentsService.findOne({ where: { _id: pid } });
   }
 
@@ -137,7 +134,7 @@ export class InstrumentsController {
   )
   @Patch(":id")
   async update(
-    @Param("id", DecodeURIPipe) id: string,
+    @Param("id") id: string,
     @Body() updateInstrumentDto: PartialUpdateInstrumentDto,
   ): Promise<Instrument | null> {
     try {
@@ -159,7 +156,7 @@ export class InstrumentsController {
     ability.can(Action.InstrumentDelete, Instrument),
   )
   @Delete(":id")
-  async remove(@Param("id", DecodeURIPipe) id: string): Promise<unknown> {
+  async remove(@Param("id") id: string): Promise<unknown> {
     return this.instrumentsService.remove({ pid: id });
   }
 }

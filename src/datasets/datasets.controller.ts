@@ -106,7 +106,6 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
-import { DecodeURIPipe } from "src/common/pipes/decodeURI.pipe";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1123,10 +1122,7 @@ export class DatasetsController {
     isArray: false,
     description: "Return dataset with pid specified",
   })
-  async findById(
-    @Req() request: Request,
-    @Param("pid", DecodeURIPipe) id: string,
-  ) {
+  async findById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
@@ -1180,7 +1176,7 @@ export class DatasetsController {
   })
   async findByIdAndUpdate(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body()
     updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
@@ -1275,7 +1271,7 @@ export class DatasetsController {
   })
   async findByIdAndReplace(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body()
     updateDatasetObsoleteDto:
       | UpdateRawDatasetObsoleteDto
@@ -1343,10 +1339,7 @@ export class DatasetsController {
     type: DatasetClass,
     description: "DatasetClass value is returned that is removed",
   })
-  async findByIdAndDelete(
-    @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
-  ) {
+  async findByIdAndDelete(@Req() request: Request, @Param("pid") pid: string) {
     const foundDataset = await this.datasetsService.findOne({
       where: { pid },
     });
@@ -1406,7 +1399,7 @@ export class DatasetsController {
   })
   async appendToArrayField(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<OutputDatasetObsoleteDto | null> {
@@ -1472,7 +1465,7 @@ export class DatasetsController {
   })
   async thumbnail(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
   ): Promise<Partial<Attachment>> {
     await this.checkPermissionsForDatasetExtended(
       request,
@@ -1522,7 +1515,7 @@ export class DatasetsController {
   })
   async createAttachment(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body() createAttachmentDto: CreateAttachmentDto,
   ): Promise<Attachment | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
@@ -1568,7 +1561,7 @@ export class DatasetsController {
   })
   async findAllAttachments(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
   ): Promise<Attachment[]> {
     await this.checkPermissionsForDatasetExtended(
       request,
@@ -1610,8 +1603,8 @@ export class DatasetsController {
   })
   async findOneAttachmentAndUpdate(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
-    @Param("aid", DecodeURIPipe) aid: string,
+    @Param("pid") pid: string,
+    @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForDatasetExtended(
@@ -1655,7 +1648,7 @@ export class DatasetsController {
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Param("aid") aid: string,
   ) {
     await this.checkPermissionsForDatasetExtended(
@@ -1703,7 +1696,7 @@ export class DatasetsController {
   })
   async createOrigDatablock(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body() createDatasetOrigDatablockDto: CreateDatasetOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
@@ -1765,7 +1758,7 @@ export class DatasetsController {
   })
   async origDatablockIsValid(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body() createOrigDatablock: unknown,
   ): Promise<{ valid: boolean; errors: ValidationError[] }> {
     await this.checkPermissionsForDatasetExtended(
@@ -1811,7 +1804,7 @@ export class DatasetsController {
   })
   async findAllOrigDatablocks(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
   ): Promise<OrigDatablock[]> {
     await this.checkPermissionsForDatasetExtended(
       request,
@@ -1860,7 +1853,7 @@ export class DatasetsController {
   })
   async findOneOrigDatablockAndUpdate(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Param("oid") oid: string,
     @Body() updateOrigdatablockDto: UpdateOrigDatablockDto,
   ): Promise<OrigDatablock | null> {
@@ -1922,7 +1915,7 @@ export class DatasetsController {
   })
   async findOneOrigDatablockAndRemove(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Param("oid") oid: string,
   ): Promise<unknown> {
     const dataset = await this.checkPermissionsForDatasetExtended(
@@ -1986,7 +1979,7 @@ export class DatasetsController {
   })
   async createDatablock(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Body() createDatablockDto: CreateDatasetDatablockDto,
   ): Promise<Datablock | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
@@ -2042,7 +2035,7 @@ export class DatasetsController {
   })
   async findAllDatablocks(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
   ): Promise<Datablock[]> {
     await this.checkPermissionsForDatasetExtended(
       request,
@@ -2088,7 +2081,7 @@ export class DatasetsController {
   })
   async findOneDatablockAndUpdate(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Param("did") did: string,
     @Body() updateDatablockDto: PartialUpdateDatablockDto,
   ): Promise<Datablock | null> {
@@ -2152,7 +2145,7 @@ export class DatasetsController {
   })
   async findOneDatablockAndRemove(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Param("did") did: string,
   ): Promise<unknown> {
     const dataset = await this.checkPermissionsForDatasetExtended(
@@ -2216,7 +2209,7 @@ export class DatasetsController {
   })
   async findLogbookByPid(
     @Req() request: Request,
-    @Param("pid", DecodeURIPipe) pid: string,
+    @Param("pid") pid: string,
     @Query("filters") filters: string,
   ) {
     const dataset = await this.checkPermissionsForDatasetExtended(
