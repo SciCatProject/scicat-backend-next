@@ -356,7 +356,10 @@ export class DatasetsController {
 
   async checkPermissionsForObsoleteDatasetCreate(
     request: Request,
-    dataset: CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto | CreateDatasetDto,
+    dataset: 
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ) {
     const user: JWTUser = request.user as JWTUser;
 
@@ -522,11 +525,16 @@ export class DatasetsController {
   )
   @Post()
   @ApiOperation({
-    summary: "It creates a new dataset which can be a raw, derived or custom one.",
+    summary: 
+      "It creates a new dataset which can be a raw, derived or custom one.",
     description:
       "It creates a new dataset and returns it completed with systems fields.",
   })
-  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto, CreateDatasetDto)
+  @ApiExtraModels(
+    CreateRawDatasetObsoleteDto,
+    CreateDerivedDatasetObsoleteDto,
+    CreateDatasetDto
+  )
   @ApiBody({
     description: "Input fields for the dataset to be created",
     required: true,
@@ -566,8 +574,11 @@ export class DatasetsController {
     }
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
-      dtoType
-    )) as CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto | CreateDatasetDto;
+      dtoType,
+    )) as
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto;
 
     const obsoleteDatasetDto =
       await this.checkPermissionsForObsoleteDatasetCreate(
@@ -633,7 +644,11 @@ export class DatasetsController {
 
     if (
       outputDatasetDto instanceof
-      (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto || CreateDatasetDto)
+      (
+        CreateRawDatasetObsoleteDto ||
+        CreateDerivedDatasetObsoleteDto ||
+        CreateDatasetDto
+      )
     ) {
       if (
         !(Object.values(configuration().datasetTypes) as string[]).includes(
@@ -681,7 +696,11 @@ export class DatasetsController {
     description:
       "It validates the dataset provided as input, and returns true if the information is a valid dataset",
   })
-  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto, CreateDatasetDto)
+  @ApiExtraModels(
+    CreateRawDatasetObsoleteDto,
+    CreateDerivedDatasetObsoleteDto,
+    CreateDatasetDto
+  )
   @ApiBody({
     description: "Input fields for the dataset that needs to be validated",
     required: true,
@@ -731,7 +750,9 @@ export class DatasetsController {
     const errorsTestCustomCorrect = await validate(dtoTestCustomCorrect);
 
     const valid =
-      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0 || errorsTestCustomCorrect.length == 0;
+      errorsTestRawCorrect.length == 0 ||
+      errorsTestDerivedCorrect.length == 0 ||
+      errorsTestCustomCorrect.length == 0;
 
     return { valid: valid };
   }
@@ -1346,7 +1367,11 @@ export class DatasetsController {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateRawDatasetObsoleteDto, UpdateDerivedDatasetObsoleteDto, UpdateDatasetDto)
+  @ApiExtraModels(
+    UpdateRawDatasetObsoleteDto,
+    UpdateDerivedDatasetObsoleteDto,
+    UpdateDatasetDto
+  )
   @ApiBody({
     description:
       "Dataset object that needs to be updated. The whole dataset object with updated fields have to be passed in.",

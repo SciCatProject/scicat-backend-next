@@ -30,7 +30,7 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
         inject: [PoliciesService, ConfigService],
         useFactory: (
           policyService: PoliciesService,
-          configService: ConfigService
+          configService: ConfigService,
         ) => {
           const datasetTypes = configService.get("datasetTypes") || "{}";
           const datasetTypesArray: string[] = Object.values(datasetTypes);
