@@ -26,14 +26,9 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
     MongooseModule.forFeatureAsync([
       {
         name: DatasetClass.name,
-        imports: [PoliciesModule, ConfigModule], //TEST: remove ConfigModule import here
-        inject: [PoliciesService, ConfigService],
-        useFactory: (
-          policyService: PoliciesService,
-          configService: ConfigService,
-        ) => {
-          const datasetTypes = configService.get("datasetTypes") || "{}";
-          const datasetTypesArray: string[] = Object.values(datasetTypes);
+        imports: [PoliciesModule],
+        inject: [PoliciesService],
+        useFactory: (policyService: PoliciesService) => {
           const schema = DatasetSchema;
 
           schema.pre<DatasetClass>("save", async function (next) {
@@ -41,11 +36,6 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
             // set _id to pid
             if (!this._id) {
               this._id = this.pid;
-            }
-            if (this.type && !datasetTypesArray.includes(this.type)) {
-              throw new BadRequestException(
-                `type must be one of the following values: ${datasetTypesArray.join(", ")}`,
-              );
             }
             const policy = await policyService.findOne({
               ownerGroup: this.ownerGroup,
