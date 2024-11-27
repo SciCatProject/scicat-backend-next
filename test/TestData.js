@@ -479,8 +479,8 @@ const TestData = {
     type: "derived",
   },
 
-  CustomDatsetCorrectMin: {
-    investigator: faker.internet.email(),
+  CustomDatasetCorrectMin: {
+    principalInvestigator: faker.internet.email(),
     owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
@@ -490,8 +490,8 @@ const TestData = {
     type: "custom",
   },
 
-  CustomDatsetCorrect: {
-    investigator: "egon.meier@web.de",
+  CustomDatasetCorrect: {
+    principalInvestigator: "egon.meier@web.de",
     inputDatasets: ["/data/input/file1.dat"],
     usedSoftware: [
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
@@ -521,7 +521,7 @@ const TestData = {
   },
 
   CustomDatasetWrongType: {
-    investigator: "egon.meier@web.de",
+    principalInvestigator: "egon.meier@web.de",
     jobParameters: {
       nscans: 10,
     },
@@ -539,7 +539,7 @@ const TestData = {
   },
 
   CustomDatasetWrongData: {
-    investigator: "egon.meier@web.de",
+    principalInvestigator: "egon.meier@web.de",
     jobParameters: {
       nscans: 10,
     },
@@ -554,6 +554,23 @@ const TestData = {
     isPublished: false,
     ownerGroup: "p34123",
     proposalId: "abcdefg", // should be proposalIds for custom types
+    type: "custom",
+  },
+
+  CustomDatasetIncompleteData: {
+    principalInvestigator: "egon.meier@web.de",
+    jobParameters: {
+      nscans: 10,
+    },
+    jobLogData: "Output of log file...",
+    owner: "Egon Meier",
+    ownerEmail: "egon.meier@web.de",
+    sourceFolder: "/data/example/2017",
+    creationTime: "2017-01-31T09:20:19.562Z",
+    keywords: ["Test", "Custom", "Science", "Math"],
+    description: "Some fancy description",
+    isPublished: false,
+    ownerGroup: "p34123",
     type: "custom",
   },
 
