@@ -400,6 +400,19 @@ export class DatasetsController {
     return dataset;
   }
 
+  getDtoType(
+    datasetType: string,
+  ) {
+    switch (datasetType) {
+      case DatasetType.Raw:
+        return PartialUpdateRawDatasetObsoleteDto;
+      case DatasetType.Derived:
+        return PartialUpdateDerivedDatasetObsoleteDto;
+      default:
+        return PartialUpdateDatasetDto;
+    }
+  }
+
   convertObsoleteToCurrentSchema(
     inputObsoleteDataset:
       | CreateRawDatasetObsoleteDto
@@ -560,21 +573,9 @@ export class DatasetsController {
       | CreateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto> {
     // validate dataset
-    let dtoType;
-    switch (createDatasetObsoleteDto.type) {
-      case DatasetType.Raw:
-        dtoType = CreateRawDatasetObsoleteDto;
-        break;
-      case DatasetType.Derived:
-        dtoType = CreateDerivedDatasetObsoleteDto;
-        break;
-      default:
-        dtoType = CreateDatasetDto;
-        break;
-    }
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
-      dtoType,
+      this.getDtoType(createDatasetObsoleteDto.type),
     )) as
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
@@ -1294,22 +1295,10 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    let dtoType;
-    switch (foundDataset.type) {
-      case DatasetType.Raw:
-        dtoType = PartialUpdateRawDatasetObsoleteDto;
-        break;
-      case DatasetType.Derived:
-        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
-        break;
-      default:
-        dtoType = PartialUpdateDatasetDto;
-        break;
-    }
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
-        dtoType,
+        this.getDtoType(foundDataset.type),
       )) as
         | PartialUpdateRawDatasetObsoleteDto
         | PartialUpdateDerivedDatasetObsoleteDto
@@ -1404,21 +1393,9 @@ export class DatasetsController {
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
-    let dtoType;
-    switch (foundDataset.type) {
-      case DatasetType.Raw:
-        dtoType = PartialUpdateRawDatasetObsoleteDto;
-        break;
-      case DatasetType.Derived:
-        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
-        break;
-      default:
-        dtoType = PartialUpdateDatasetDto;
-        break;
-    }
     const updateValidatedDto = await this.validateDatasetObsolete(
       updateDatasetObsoleteDto,
-      dtoType,
+      this.getDtoType(foundDataset.type),
     );
 
     const datasetInstance =
