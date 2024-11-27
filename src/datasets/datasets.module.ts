@@ -1,11 +1,11 @@
-import { BadRequestException, forwardRef, Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
 import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
