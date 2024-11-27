@@ -15,7 +15,7 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -384,20 +384,20 @@ describe("0800: DerivedDatasetOrigDatablock: Test OrigDatablocks and their relat
       });
   });
 
-  it("0200: add a new origDatablock with invalid pid should fail", async () => {
+  it("0200: add a new origDatablock to the non-existent dataset should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({ ...TestData.OrigDataBlockCorrect1, datasetId: "wrong" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.NotFoundStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");
       });
   });
 
-  it("0210: add a new origDatablock with valid pid should success", async () => {
+  it("0210: add a new origDatablock to the existent dataset should success", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({
