@@ -41,6 +41,7 @@ const configuration = () => {
     config: {},
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
+    datasetTypes: {},
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
