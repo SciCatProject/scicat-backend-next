@@ -405,7 +405,7 @@ export class SamplesController {
     required: false,
     type: String,
     // NOTE: This is custom example because the service function metadataKeys expects input like the following.
-    // eslint-disable-next-line @typescript-eslint/quotes
+    // eslint-disable-next-line @/quotes
     example: '{ "fields": { "metadataKey": "chemical_formula" } }',
   })
   @ApiResponse({

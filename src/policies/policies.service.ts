@@ -157,7 +157,7 @@ export class PoliciesService implements OnModuleInit {
 
     const ownerGroups = ownerGroupList
       .split(",")
-      // eslint-disable-next-line @typescript-eslint/quotes
+      // eslint-disable-next-line @/quotes
       .map((ownerGroup) => ownerGroup.trim().replace(new RegExp('"', "g"), ""));
     if (!ownerGroups) {
       throw new InternalServerErrorException(
