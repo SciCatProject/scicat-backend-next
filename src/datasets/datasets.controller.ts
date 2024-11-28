@@ -180,10 +180,11 @@ export class DatasetsController {
       DatasetClass,
     );
 
+    if (!mergedFilters.where) {
+      mergedFilters.where = {};
+    }
+
     if (!canViewAny) {
-      if (!mergedFilters.where) {
-        mergedFilters.where = {};
-      }
       if (canViewAccess) {
         mergedFilters.where["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
@@ -197,6 +198,10 @@ export class DatasetsController {
         mergedFilters.where = { isPublished: true };
       }
     }
+
+    mergedFilters.where = this.convertObsoleteWhereFilterToCurrentSchema(
+      mergedFilters.where,
+    );
 
     return mergedFilters;
   }
@@ -398,6 +403,27 @@ export class DatasetsController {
     return dataset;
   }
 
+  convertObsoleteWhereFilterToCurrentSchema(
+    whereFilter: Record<string, unknown>,
+  ): IFilters<DatasetDocument, IDatasetFields> {
+    if ("proposalId" in whereFilter) {
+      whereFilter.proposalIds = whereFilter.proposalId;
+      delete whereFilter.proposalId;
+    }
+    if ("sampleId" in whereFilter) {
+      whereFilter.sampleIds = whereFilter.sampleId;
+      delete whereFilter.sampleId;
+    }
+    if ("instrumentId" in whereFilter) {
+      whereFilter.instrumentIds = whereFilter.instrumentId;
+      delete whereFilter.instrumentId;
+    }
+    if ("principalInvestigator" in whereFilter) {
+      whereFilter.investigator = whereFilter.principalInvestigator;
+      delete whereFilter.principalInvestigator;
+    }
+    return whereFilter;
+  }
   convertObsoleteToCurrentSchema(
     inputObsoleteDataset:
       | CreateRawDatasetObsoleteDto
