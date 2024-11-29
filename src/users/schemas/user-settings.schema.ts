@@ -51,7 +51,6 @@ export class UserSettings {
   @ApiProperty({
     type: "object",
     default: {},
-    additionalProperties: true,
     description:
       "A customizable object for storing the user's external settings, which can contain various nested properties and configurations.",
   })
