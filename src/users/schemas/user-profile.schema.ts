@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
 export type UserProfileDocument = UserProfile & Document;
 
 @Schema()
 export class UserProfile {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Prop()
   displayName?: string;
 
@@ -18,15 +18,15 @@ export class UserProfile {
   @Prop()
   username: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Prop()
   thumbnailPhoto?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Prop()
   id?: string;
 
-  @ApiProperty({ type: [Object] })
+  @ApiPropertyOptional({ type: [Object] })
   @Prop({ type: [Object] })
   emails?: Record<string, string>[];
 
@@ -34,7 +34,7 @@ export class UserProfile {
   @Prop({ type: [String] })
   accessGroups: string[];
 
-  @ApiProperty({ type: [Object] })
+  @ApiPropertyOptional({ type: [Object] })
   @Prop({ type: Object })
   oidcClaims?: Record<string, unknown>;
 }

@@ -12,7 +12,7 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
 
 // add Å to mathjs accepted units as equivalent to angstrom
@@ -1016,18 +1016,18 @@ export const sleep = (ms: number) => {
 };
 
 export class FullFacetFilters {
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   facets?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   fields?: string;
 }
 
 export class FullQueryFilters {
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   limits?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   fields?: string;
 }
 
