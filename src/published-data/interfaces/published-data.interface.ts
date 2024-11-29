@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { FilterQuery } from "mongoose";
 import { PublishedDataDocument } from "../schemas/published-data.schema";
 
@@ -14,15 +15,25 @@ export interface IPublishedDataFilters {
   };
 }
 
-export interface ICount {
+export class ICount {
+  @ApiProperty()
   count: number;
 }
 
-export interface IFormPopulateData {
+export class FormPopulateData {
+  @ApiPropertyOptional()
   resourceType?: string;
+
+  @ApiPropertyOptional()
   description?: string;
+
+  @ApiPropertyOptional()
   title?: string;
+
+  @ApiPropertyOptional()
   abstract?: string;
+
+  @ApiPropertyOptional()
   thumbnail?: string;
 }
 

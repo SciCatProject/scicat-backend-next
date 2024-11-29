@@ -21,6 +21,11 @@ export interface ScientificCondition {
 export class UserSettings {
   _id: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Globally unique identifier of a user setting",
+  })
   id?: string;
 
   @ApiProperty({
