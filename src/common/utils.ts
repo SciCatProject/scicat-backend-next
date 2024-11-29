@@ -283,12 +283,13 @@ export const handleAxiosRequestError = (
 export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
   dateKeys.forEach((key) => {
     if (instance[key]) {
-      const dateField = instance[key] as unknown as string;
+      const dateField = instance[key] as string;
       instance[key] = DateTime.fromISO(dateField, {
         zone: DateTime.local().zoneName as string,
-      }).toISO() as unknown as T[keyof T];
+      }).toISO() as T[keyof T];
     }
   });
+
   return instance;
 };
 
