@@ -287,7 +287,7 @@ export class DatasetsService {
       const datasets = this.datasetModel.find({}, { _id: 0 }).lean().exec();
       return datasets;
     } catch (error) {
-      throw new NotFoundException();
+      throw new NotFoundException(error);
     }
   }
   // Get metadata keys

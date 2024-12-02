@@ -164,7 +164,7 @@ export class ProposalsController {
           return false;
       }
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error);
     }
   }
 

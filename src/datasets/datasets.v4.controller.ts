@@ -1,4 +1,3 @@
-/* eslint-disable @/quotes */
 import {
   Body,
   Controller,

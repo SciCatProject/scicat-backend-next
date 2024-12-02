@@ -1,4 +1,3 @@
-/* eslint-disable @/quotes */
 import {
   Body,
   Controller,
@@ -595,7 +594,7 @@ export class DatasetsController {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(error);
       }
     }
   }

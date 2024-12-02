@@ -20,16 +20,16 @@ export class FilterPipe
       let filter = inValue.filter;
       // subsitute the loopback operators to mongo equivalent
       // nin => $in
-      // eslint-disable-next-line @/quotes
+
       filter = filter.replace(/{"inq":/g, '{"$in":');
       // nin => $nin
-      // eslint-disable-next-line @/quotes
+
       filter = filter.replace(/{"nin":/g, '{"$nin":');
       // and => $and
-      // eslint-disable-next-line @/quotes
+
       filter = filter.replace(/{"and":\[/g, '{"$and":[');
       // and => $or
-      // eslint-disable-next-line @/quotes
+
       filter = filter.replace(/{"or":\[/g, '{"$or":[');
       outValue.filter = filter;
     }

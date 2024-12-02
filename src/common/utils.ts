@@ -1,4 +1,3 @@
-/* eslint-disable @/quotes */
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
