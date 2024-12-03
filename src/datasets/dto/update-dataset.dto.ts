@@ -291,13 +291,14 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataQualityMetrics?: number;
 
   @ApiProperty({
-    type: String,
-    required: true,
+    type: [String],
+    required: false,
     description:
       "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
   })
+  @IsOptional()
   @IsString()
-  readonly principalInvestigator: string;
+  readonly principalInvestigators?: string[];
 
   @ApiProperty({
     type: Date,
