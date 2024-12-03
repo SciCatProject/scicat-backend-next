@@ -70,7 +70,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import configuration from "src/config/configuration";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
@@ -78,6 +77,7 @@ import {
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import { ConfigService } from "@nestjs/config";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -97,7 +97,29 @@ export class DatasetsV4Controller {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
+    private congigService: ConfigService,
   ) {}
+
+  private validateDatasetPid(dataset: CreateDatasetDto) {
+    const datasetCreationValidationRegex: string | undefined =
+      this.congigService.get("datasetCreationValidationRegex");
+    const datasetCreationValidationEnabled = this.congigService.get(
+      "datasetCreationValidationEnabled",
+    );
+    // now checks if we need to validate the pid
+    if (
+      datasetCreationValidationEnabled &&
+      datasetCreationValidationRegex &&
+      dataset.pid
+    ) {
+      const re = new RegExp(datasetCreationValidationRegex);
+      if (!re.test(dataset.pid)) {
+        throw new BadRequestException(
+          "PID is not following required standards",
+        );
+      }
+    }
+  }
 
   async generateDatasetInstanceForPermissions(
     dataset: DatasetClass | CreateDatasetDto,
@@ -113,81 +135,25 @@ export class DatasetsV4Controller {
     return datasetInstance;
   }
 
-  async checkPermissionsForDatasetCreate(
-    request: Request,
-    dataset: CreateDatasetDto,
-  ) {
-    const user: JWTUser = request.user as JWTUser;
-
-    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(dataset);
-    // instantiate the casl matrix for the user
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
-    const canCreate =
-      ability.can(Action.DatasetCreateAny, DatasetClass) ||
-      ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
-      ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
-
-    if (!canCreate) {
-      throw new ForbiddenException("Unauthorized to create this dataset");
-    }
-
-    // now checks if we need to validate the pid
-    if (
-      configuration().datasetCreationValidationEnabled &&
-      configuration().datasetCreationValidationRegex &&
-      dataset.pid
-    ) {
-      const re = new RegExp(configuration().datasetCreationValidationRegex);
-
-      if (!re.test(dataset.pid)) {
-        throw new BadRequestException(
-          "PID is not following required standards",
-        );
-      }
-    }
-
-    return dataset;
-  }
-
-  async checkPermissionsForDataset(request: Request, id: string) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    const user: JWTUser = request.user as JWTUser;
-
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${id} not found`);
-    }
-
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(dataset);
-
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    const canView =
-      ability.can(Action.DatasetReadAny, DatasetClass) ||
-      ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-      ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-      ability.can(Action.DatasetReadOnePublic, datasetInstance);
-
-    if (!canView) {
-      throw new ForbiddenException("Unauthorized access");
-    }
-
-    return dataset;
-  }
-
   async checkPermissionsForDatasetExtended(
     request: Request,
-    id: string,
+    datasetInput: CreateDatasetDto | string,
     group: Action,
   ) {
-    const dataset = await this.datasetsService.findOne({ where: { pid: id } });
-    const user: JWTUser = request.user as JWTUser;
+    let dataset = null;
 
-    if (!dataset) {
-      throw new NotFoundException(`dataset: ${id} not found`);
+    if (typeof datasetInput === "string") {
+      dataset = await this.datasetsService.findOne({
+        where: { pid: datasetInput },
+      });
+
+      if (!dataset) {
+        throw new NotFoundException(`dataset: ${datasetInput} not found`);
+      }
+    } else {
+      dataset = datasetInput;
     }
+    const user: JWTUser = request.user as JWTUser;
 
     const datasetInstance =
       await this.generateDatasetInstanceForPermissions(dataset);
@@ -202,6 +168,11 @@ export class DatasetsV4Controller {
         ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
         ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
         ability.can(Action.DatasetReadOnePublic, datasetInstance);
+    } else if (group == Action.DatasetCreate) {
+      canDoAction =
+        ability.can(Action.DatasetCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
+        ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
     } else if (group == Action.DatasetAttachmentRead) {
       canDoAction =
         ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
@@ -373,9 +344,11 @@ export class DatasetsV4Controller {
     @Body()
     createDatasetDto: CreateDatasetDto,
   ): Promise<OutputDatasetDto> {
-    const datasetDto = await this.checkPermissionsForDatasetCreate(
+    this.validateDatasetPid(createDatasetDto);
+    const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
+      Action.DatasetCreate,
     );
 
     const createdDataset = await this.datasetsService.create(datasetDto);
@@ -415,9 +388,12 @@ export class DatasetsV4Controller {
     @Body()
     createDatasetDto: CreateDatasetDto,
   ) {
-    const datasetDto = await this.checkPermissionsForDatasetCreate(
+    this.validateDatasetPid(createDatasetDto);
+
+    const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
+      Action.DatasetCreate,
     );
 
     const errors = await validate(datasetDto);
@@ -475,6 +451,35 @@ export class DatasetsV4Controller {
       await Promise.all(
         datasets.map(async (dataset) => {
           if (includeFilters) {
+            /**
+             * Query that works with the aggregation $lookup
+             * db.getCollection("Dataset").aggregate([{$match: {}},
+                  {
+                      $lookup: {
+                        from: "Attachment",
+                        localField: "pid",
+                        foreignField: "datasetId",
+                        as: "attachments",
+                      }
+                  },
+                  {
+                      $lookup: {
+                        from: "OrigDatablock",
+                        localField: "pid",
+                        foreignField: "datasetId",
+                        as: "origdatablocks",
+                      },
+                  },
+                  {
+                      $lookup: {
+                        from: "Datablock",
+                        localField: "pid",
+                        foreignField: "datasetId",
+                        as: "datablocks",
+                      },
+                  }
+              ])
+             */
             // TODO: We should use the aggregation to include the relations of attachments, origdatablocks and datablocks here instead of calling the database separately.
             await Promise.all(
               includeFilters.map(async ({ relation }) => {
@@ -503,10 +508,6 @@ export class DatasetsV4Controller {
                 }
               }),
             );
-          } else {
-            /* eslint-disable @typescript-eslint/no-unused-expressions */
-            // TODO: check the eslint error  "Expected an assignment or function call and instead saw an expression"
-            dataset;
           }
         }),
       );
@@ -773,7 +774,11 @@ export class DatasetsV4Controller {
     description: "Return dataset with pid specified",
   })
   async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = await this.checkPermissionsForDataset(request, id);
+    const dataset = await this.checkPermissionsForDatasetExtended(
+      request,
+      id,
+      Action.DatasetRead,
+    );
 
     return dataset;
   }
