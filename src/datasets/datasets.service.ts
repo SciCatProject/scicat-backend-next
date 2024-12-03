@@ -13,6 +13,7 @@ import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addApiVersionField,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
@@ -52,6 +53,11 @@ export class DatasetsService {
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
+    // Add version to the datasets based on the apiVersion extracted from the route path or use default one
+    addApiVersionField(
+      createDatasetDto,
+      this.request.route.path || this.configService.get("versions.api"),
+    );
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),

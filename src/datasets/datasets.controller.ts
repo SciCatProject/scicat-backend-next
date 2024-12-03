@@ -116,7 +116,7 @@ import { Logbook } from "src/logbooks/schemas/logbook.schema";
   RelationshipClass,
 )
 @ApiTags("datasets")
-@Controller("datasets")
+@Controller({ path: "datasets", version: "3" })
 export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
@@ -450,9 +450,7 @@ export class DatasetsController {
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
   ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {
-      version: "v3",
-    };
+    const propertiesModifier: Record<string, unknown> = {};
 
     if ("proposalId" in inputObsoleteDataset) {
       propertiesModifier.proposalIds = [

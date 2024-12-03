@@ -13,6 +13,7 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
+import { DatasetsV4Controller } from "./datasets.v4.controller";
 
 @Module({
   imports: [
@@ -64,7 +65,7 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
     ]),
   ],
   exports: [DatasetsService],
-  controllers: [DatasetsController],
+  controllers: [DatasetsController, DatasetsV4Controller],
   providers: [DatasetsService, CaslAbilityFactory],
 })
 export class DatasetsModule {}

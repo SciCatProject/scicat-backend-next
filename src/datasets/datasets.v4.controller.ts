@@ -89,7 +89,7 @@ import { OutputDatasetDto } from "./dto/output-dataset.dto";
 )
 @ApiTags("datasets")
 @Controller({ path: "datasets", version: "4" })
-export class DatasetsController {
+export class DatasetsV4Controller {
   constructor(
     private attachmentsService: AttachmentsService,
     private datablocksService: DatablocksService,
@@ -380,7 +380,7 @@ export class DatasetsController {
 
     const createdDataset = await this.datasetsService.create(datasetDto);
 
-    return createdDataset as OutputDatasetDto;
+    return createdDataset;
   }
 
   @UseGuards(PoliciesGuard)
@@ -679,7 +679,7 @@ export class DatasetsController {
 
     const databaseDataset = await this.datasetsService.findOne(mergedFilters);
 
-    // TODO: Check if we can use the aggragation here as well.
+    // TODO: Check if we can use the aggragation $lookup here as well.
     // if (databaseDataset) {
     //   const includeFilters = mergedFilters.include ?? [];
     //   await Promise.all(
@@ -711,7 +711,7 @@ export class DatasetsController {
     //   );
     // }
 
-    return databaseDataset as OutputDatasetDto;
+    return databaseDataset;
   }
 
   // GET /datasets/count
@@ -848,7 +848,7 @@ export class DatasetsController {
       updateDatasetDto,
     );
 
-    return updatedDataset as OutputDatasetDto;
+    return updatedDataset;
   }
 
   // PUT /datasets/:id
@@ -921,7 +921,7 @@ export class DatasetsController {
       updateDatasetDto,
     );
 
-    return outputDatasetDto as OutputDatasetDto;
+    return outputDatasetDto;
   }
 
   // DELETE /datasets/:id
@@ -970,7 +970,7 @@ export class DatasetsController {
 
     const removedDataset = await this.datasetsService.findByIdAndDelete(pid);
 
-    return removedDataset as OutputDatasetDto;
+    return removedDataset;
   }
 
   @UseGuards(PoliciesGuard)
@@ -1045,7 +1045,7 @@ export class DatasetsController {
       updateQuery,
     );
 
-    return outputDatasetDto as OutputDatasetDto;
+    return outputDatasetDto;
   }
 
   // GET /datasets/:id/thumbnail

@@ -793,6 +793,16 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline;
 };
 
+export const addApiVersionField = <T extends object>(
+  obj: T,
+  routePath: string,
+) => {
+  // Extract the number from the route path. For now this is the only solution.
+  const apiVersion = routePath.match(/\d/g)?.join("");
+
+  Object.assign(obj, { version: apiVersion });
+};
+
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,
