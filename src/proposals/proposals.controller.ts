@@ -14,9 +14,9 @@ import {
   Req,
   ForbiddenException,
   ConflictException,
-  BadRequestException,
   Logger,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -56,13 +56,15 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionLimits,
+  FullFacetResponse,
   fullQueryExampleLimits,
+  FullQueryFilters,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { FindByIdAccessResponse } from "src/samples/samples.controller";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -89,14 +91,17 @@ export class ProposalsController {
     return proposalInstance;
   }
 
-  private async permissionChecker(
+  private permissionChecker(
     group: Action,
-    proposal: ProposalClass | CreateProposalDto,
+    proposal: ProposalClass | CreateProposalDto | null,
     request: Request,
   ) {
-    const proposalInstance = this.generateProposalInstanceForPermissions(
-      proposal as ProposalClass,
-    );
+    if (!proposal) {
+      return false;
+    }
+
+    const proposalInstance =
+      this.generateProposalInstanceForPermissions(proposal);
 
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
@@ -172,34 +177,33 @@ export class ProposalsController {
       proposalId: id,
     });
 
-    if (proposal) {
-      const canDoAction = await this.permissionChecker(
-        group,
-        proposal,
-        request,
-      );
-
-      if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized to this proposal");
-      }
+    if (!proposal) {
+      throw new NotFoundException(`Proposal: ${id} not found`);
     }
+
+    const canDoAction = this.permissionChecker(group, proposal, request);
+
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized to this proposal");
+    }
+
     return proposal;
   }
 
-  private async checkPermissionsForProposalCreate(
+  private checkPermissionsForProposalCreate(
     request: Request,
     proposal: CreateProposalDto,
     group: Action,
   ) {
-    if (!proposal) {
-      throw new BadRequestException("Not able to create this proposal");
-    }
-    const canDoAction = await this.permissionChecker(group, proposal, request);
+    const canDoAction = this.permissionChecker(group, proposal, request);
+
     if (!canDoAction) {
       throw new ForbiddenException("Unauthorized to create this proposal");
     }
+
     return proposal;
   }
+
   updateFiltersForList(
     request: Request,
     mergedFilters: IFilters<ProposalDocument, IProposalFields>,
@@ -272,7 +276,7 @@ export class ProposalsController {
     @Req() request: Request,
     @Body() createProposalDto: CreateProposalDto,
   ): Promise<ProposalClass> {
-    const proposalDTO = await this.checkPermissionsForProposalCreate(
+    const proposalDTO = this.checkPermissionsForProposalCreate(
       request,
       createProposalDto,
       Action.ProposalsCreate,
@@ -376,25 +380,14 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Full query filters to apply when retrieving proposals\n" +
-      proposalsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: proposalsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: true,
     description: "Return proposals requested",
@@ -466,7 +459,7 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: 200,
-    type: ProposalClass,
+    type: FullFacetResponse,
     isArray: true,
     description: "Return proposals requested",
   })
@@ -567,9 +560,9 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: FindByIdAccessResponse,
     description:
-      "Returns true if the user has access to the specified proposal, otherwise false.",
+      "Returns canAccess property with boolean true if the user has access to the specified sample, otherwise false.",
   })
   async findByIdAccess(
     @Req() request: Request,
@@ -578,9 +571,8 @@ export class ProposalsController {
     const proposal = await this.proposalsService.findOne({
       proposalId,
     });
-    if (!proposal) return { canAccess: false };
 
-    const canAccess = await this.permissionChecker(
+    const canAccess = this.permissionChecker(
       Action.ProposalsRead,
       proposal,
       request,

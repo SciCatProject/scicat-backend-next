@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Get,
   Headers,
+  HttpStatus,
   NotFoundException,
   Query,
   Req,
@@ -47,12 +48,6 @@ export class UserIdentitiesController {
       ability.can(Action.UserReadAny, User),
   )
   @Get("/findOne")
-  @ApiOperation({
-    summary:
-      "It returns the user identity profile of the first user matching the query",
-    description:
-      "This endpoint returns the user identity profile of the first user matching teh condition",
-  })
   @ApiQuery({
     name: "filter",
     description:
@@ -63,10 +58,11 @@ export class UserIdentitiesController {
     example: filterUserIdentityExample,
   })
   @ApiResponse({
-    status: 201,
-    type: boolean,
+    status: HttpStatus.OK,
+    type: UserIdentity,
+    isArray: false,
     description:
-      "Results is true if a registered user exists that have the emailed provided listed as main email",
+      "Results with UserIdentity object if a registered user exists that have the email provided listed as main email",
   })
   async findOne(
     // NOTE: This now supports both headers filter and query filter.
@@ -75,7 +71,7 @@ export class UserIdentitiesController {
     @Headers() headers: Record<string, string>,
     @Req() request: Request,
     @Query("filter") queryFilters?: string,
-  ): Promise<UserIdentity | null> {
+  ) {
     const parsedQueryFilters = JSON.parse(queryFilters ?? "{}");
     let filter = {};
     if (headers.filter) {
