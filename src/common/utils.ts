@@ -798,7 +798,7 @@ export const addApiVersionField = <T extends object>(
   routePath: string,
 ) => {
   // Extract the number from the route path. For now this is the only solution.
-  const apiVersion = routePath.match(/\d/g)?.join("");
+  const apiVersion = routePath.match(/(?<=\/v)(.*?)(?=\/)/gi)?.[0];
 
   Object.assign(obj, { version: apiVersion });
 };
