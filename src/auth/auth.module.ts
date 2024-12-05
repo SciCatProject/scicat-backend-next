@@ -7,7 +7,7 @@ import { AuthController } from "./auth.controller";
 import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LdapStrategy } from "./strategies/ldap.strategy";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { UsersService } from "src/users/users.service";
 import { OidcConfig } from "src/config/configuration";
 import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
@@ -42,9 +42,7 @@ const OidcStrategyFactory = {
 
 @Module({
   imports: [
-    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>("jwt.secret"),
         signOptions: { expiresIn: configService.get<number>("jwt.expiresIn") },

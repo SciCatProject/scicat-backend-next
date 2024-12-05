@@ -35,13 +35,15 @@ import { LoggerModule } from "./loggers/logger.module";
 
 @Module({
   imports: [
-    AttachmentsModule,
-    AuthModule,
-    CaslModule,
-    CommonModule,
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
+      cache: true,
     }),
+    AuthModule,
+    CaslModule,
+    AttachmentsModule,
+    CommonModule,
     LoggerModule,
     DatablocksModule,
     DatasetsModule,
@@ -51,7 +53,6 @@ import { LoggerModule } from "./loggers/logger.module";
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const port = configService.get<string>("smtp.port");
         return {
@@ -80,7 +81,6 @@ import { LoggerModule } from "./loggers/logger.module";
       inject: [ConfigService],
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>("mongodbUri"),
       }),

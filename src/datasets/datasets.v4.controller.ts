@@ -97,22 +97,27 @@ export class DatasetsV4Controller {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-    private congigService: ConfigService,
-  ) {}
-
-  private validateDatasetPid(dataset: CreateDatasetDto) {
-    const datasetCreationValidationRegex: string | undefined =
-      this.congigService.get("datasetCreationValidationRegex");
-    const datasetCreationValidationEnabled = this.congigService.get(
+    private configService: ConfigService,
+  ) {
+    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
       "datasetCreationValidationEnabled",
     );
+    this.datasetCreationValidationRegex = this.configService.get<string>(
+      "datasetCreationValidationRegex",
+    );
+  }
+
+  private datasetCreationValidationEnabled;
+  private datasetCreationValidationRegex;
+
+  private validateDatasetPid(dataset: CreateDatasetDto) {
     // now checks if we need to validate the pid
     if (
-      datasetCreationValidationEnabled &&
-      datasetCreationValidationRegex &&
+      this.datasetCreationValidationEnabled &&
+      this.datasetCreationValidationRegex &&
       dataset.pid
     ) {
-      const re = new RegExp(datasetCreationValidationRegex);
+      const re = new RegExp(this.datasetCreationValidationRegex);
       if (!re.test(dataset.pid)) {
         throw new BadRequestException(
           "PID is not following required standards",

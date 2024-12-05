@@ -96,7 +96,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import configuration from "src/config/configuration";
 import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
@@ -105,6 +104,8 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { ConfigService } from "@nestjs/config";
+import { AccessGroupsType } from "src/config/configuration";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -125,7 +126,20 @@ export class DatasetsController {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
+    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
+      "datasetCreationValidationEnabled",
+    );
+    this.datasetCreationValidationRegex = this.configService.get<string>(
+      "datasetCreationValidationRegex",
+    );
+  }
+  private accessGroups;
+  private datasetCreationValidationEnabled;
+  private datasetCreationValidationRegex;
 
   getFilters(
     headers: Record<string, string>,
@@ -323,18 +337,18 @@ export class DatasetsController {
 
   getUserPermissionsFromGroups(user: JWTUser) {
     const userIsAdmin = user.currentGroups.some((g) =>
-      configuration().adminGroups.includes(g),
+      this.accessGroups?.admin.includes(g),
     );
     const userCanCreateDatasetPrivileged =
-      configuration().createDatasetPrivilegedGroups.some((value) =>
+      this.accessGroups?.createDatasetPrivileged.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithPid =
-      configuration().createDatasetWithPidGroups.some((value) =>
+      this.accessGroups?.createDatasetWithPid.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithoutPid =
-      configuration().createDatasetGroups.some((value) =>
+      this.accessGroups?.createDataset.some((value) =>
         user.currentGroups.includes(value),
       );
 
@@ -386,11 +400,11 @@ export class DatasetsController {
 
     // now checks if we need to validate the pid
     if (
-      configuration().datasetCreationValidationEnabled &&
-      configuration().datasetCreationValidationRegex &&
+      this.datasetCreationValidationEnabled &&
+      this.datasetCreationValidationRegex &&
       dataset.pid
     ) {
-      const re = new RegExp(configuration().datasetCreationValidationRegex);
+      const re = new RegExp(this.datasetCreationValidationRegex);
 
       if (!re.test(dataset.pid)) {
         throw new BadRequestException(
