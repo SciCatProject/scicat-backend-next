@@ -9,6 +9,7 @@ import { JwtService } from "@nestjs/jwt";
 import { UserSettings } from "./schemas/user-settings.schema";
 import { AccessGroupService } from "src/auth/access-group-provider/access-group.service";
 import { AccessGroupFromStaticValuesService } from "src/auth/access-group-provider/access-group-from-static-values.service";
+import { ConfigService } from "@nestjs/config";
 
 class RolesServiceMock {}
 class JwtServiceMock {}
@@ -128,6 +129,7 @@ describe("UsersService", () => {
           },
         },
         UsersService,
+        ConfigService,
         {
           provide: AccessGroupService,
           useValue: () =>
