@@ -152,7 +152,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly validationStatus?: string;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     description:
@@ -213,8 +213,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly isPublished?: boolean;
 
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(TechniqueClass) },
+    type: TechniqueClass,
     required: false,
     isArray: true,
     default: [],
@@ -228,7 +227,7 @@ export class UpdateDatasetDto extends OwnableDto {
 
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     default: [],
@@ -242,8 +241,7 @@ export class UpdateDatasetDto extends OwnableDto {
 
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(RelationshipClass) },
+    type: RelationshipClass,
     required: false,
     isArray: true,
     default: [],
@@ -295,7 +293,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataQualityMetrics?: number;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     description: "Array of first and last name of principal investigator(s).",
     isArray: true,
@@ -345,7 +343,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataFormat?: string;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     description:
@@ -358,7 +356,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly proposalIds?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     description:
@@ -384,7 +382,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly instrumentIds?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: true,
     isArray: true,
     description:
@@ -397,7 +395,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly inputDatasets?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     description:

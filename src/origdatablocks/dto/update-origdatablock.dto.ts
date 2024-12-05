@@ -34,8 +34,8 @@ export class UpdateOrigDatablockDto extends OwnableDto {
   readonly chkAlg: string;
 
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(DataFile) },
+    type: DataFile,
+    isArray: true,
     required: true,
     description: "List of the files contained in this orig datablock.",
   })
