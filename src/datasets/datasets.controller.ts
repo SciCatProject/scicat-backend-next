@@ -749,7 +749,8 @@ export class DatasetsController {
     @Body()
     createDatasetObsoleteDto:
       | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto,
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ): Promise<{ valid: boolean }> {
     await this.checkPermissionsForObsoleteDatasetCreate(
       request,
