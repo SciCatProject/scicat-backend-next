@@ -1,10 +1,8 @@
-/* eslint-disable @/quotes */
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
 import { format, unit, Unit, createUnit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
-import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
   IFilters,
@@ -12,8 +10,11 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import {
+  DatasetLookupKeys,
+  DATASET_LOOKUP_FIELDS,
+} from "src/datasets/types/dataset-lookup";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -283,12 +284,13 @@ export const handleAxiosRequestError = (
 export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
   dateKeys.forEach((key) => {
     if (instance[key]) {
-      const dateField = instance[key] as unknown as string;
+      const dateField = instance[key] as string;
       instance[key] = DateTime.fromISO(dateField, {
         zone: DateTime.local().zoneName as string,
-      }).toISO() as unknown as T[keyof T];
+      }).toISO() as T[keyof T];
     }
   });
+
   return instance;
 };
 
@@ -793,6 +795,16 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline;
 };
 
+export const addApiVersionField = <T extends object>(
+  obj: T,
+  routePath: string,
+) => {
+  // Extract the number from the route path. For now this is the only solution.
+  const apiVersion = routePath.match(/(?<=\/v)(.*?)(?=\/)/gi)?.[0];
+
+  Object.assign(obj, { version: apiVersion });
+};
+
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,
@@ -817,6 +829,17 @@ export const addUpdatedByField = <T>(
     ...obj,
     updatedBy: username,
   };
+};
+
+export const addLookupFields = (
+  pipeline: PipelineStage[],
+  datasetLookupFields?: DatasetLookupKeys[],
+) => {
+  datasetLookupFields?.forEach((field) => {
+    DATASET_LOOKUP_FIELDS[field].$lookup.as = field;
+
+    pipeline.push(DATASET_LOOKUP_FIELDS[field]);
+  });
 };
 
 export const filterExample =
@@ -1014,41 +1037,3 @@ const replaceLikeOperatorRecursive = (
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-
-export class FullFacetFilters {
-  @ApiPropertyOptional()
-  facets?: string;
-
-  @ApiPropertyOptional()
-  fields?: string;
-}
-
-export class FullQueryFilters {
-  @ApiPropertyOptional()
-  limits?: string;
-
-  @ApiPropertyOptional()
-  fields?: string;
-}
-
-class TotalSets {
-  @ApiProperty({ type: Number })
-  totalSets: number;
-}
-
-export class FullFacetResponse implements IFullFacets {
-  @ApiProperty({ type: TotalSets, isArray: true })
-  all: [TotalSets];
-
-  [key: string]: object;
-}
-
-export class CountApiResponse {
-  @ApiProperty({ type: Number })
-  count: number;
-}
-
-export class IsValidResponse {
-  @ApiProperty({ type: Boolean })
-  isvalid: boolean;
-}

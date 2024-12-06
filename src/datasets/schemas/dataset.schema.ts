@@ -3,7 +3,7 @@ import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
-import { DatasetType } from "../dataset-type.enum";
+import { DatasetType } from "../types/dataset-type.enum";
 import { HistoryClass, HistorySchema } from "./history.schema";
 import { LifecycleClass, LifecycleSchema } from "./lifecycle.schema";
 import { RelationshipClass, RelationshipSchema } from "./relationship.schema";
@@ -362,8 +362,8 @@ export class DatasetClass extends OwnableClass {
     description:
       "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
   })
-  @Prop({ type: String, required: false })
-  principalInvestigator?: string;
+  @Prop({ type: [String], required: false })
+  principalInvestigators?: string[];
 
   @ApiProperty({
     type: Date,
