@@ -39,6 +39,8 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { JobConfigModule } from "./config/job-config/jobconfig.module";
+import { DefaultJobActionFactories } from "./config/job-config/actions/defaultjobactions.module";
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { LoggerModule } from "./loggers/logger.module";
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    DefaultJobActionFactories,
+    JobConfigModule,
     LoggerModule,
     DatablocksModule,
     DatasetsModule,

@@ -1,7 +1,11 @@
-import { Logger, NotFoundException } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 import amqp, { Connection } from "amqplib/callback_api";
-import { JobAction, JobDto } from "../config/jobconfig";
-import { JobClass } from "../schemas/job.schema";
+import { JobAction, JobDto } from "../../jobconfig.interface";
+import { JobClass } from "../../../../jobs/schemas/job.schema";
+import {
+  actionType,
+  RabbitMQJobActionOptions,
+} from "./rabbitmqaction.interface";
 
 /**
  * Publish a message in a RabbitMQ queue
@@ -11,47 +15,28 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
   private connection;
   private binding;
 
-  constructor(data: Record<string, unknown>) {
+  constructor(options: RabbitMQJobActionOptions) {
     Logger.log(
-      "Initializing RabbitMQJobAction. Params: " + JSON.stringify(data),
+      "Initializing RabbitMQJobAction. Params: " + JSON.stringify(options),
       "RabbitMQJobAction",
     );
 
-    // Validate that all necessary params are present
-    const requiredConnectionParams = [
-      "hostname",
-      "port",
-      "username",
-      "password",
-    ];
-    for (const param of requiredConnectionParams) {
-      if (!data[param]) {
-        throw new NotFoundException(`Missing connection parameter: ${param}`);
-      }
-    }
-
-    const requiredBindingParams = ["exchange", "queue", "key"];
-    for (const param of requiredBindingParams) {
-      if (!data[param]) {
-        throw new NotFoundException(`Missing binding parameter: ${param}`);
-      }
-    }
     this.connection = {
       protocol: "amqp",
-      hostname: data.hostname as string,
-      port: data.port as number,
-      username: data.username as string,
-      password: data.password as string,
+      hostname: options.hostname,
+      port: options.port,
+      username: options.username,
+      password: options.password,
     };
     this.binding = {
-      exchange: data.exchange as string,
-      queue: data.queue as string,
-      key: data.key as string,
+      exchange: options.exchange,
+      queue: options.queue,
+      key: options.key,
     };
   }
 
   getActionType(): string {
-    return RabbitMQJobAction.actionType;
+    return actionType;
   }
 
   async performJob(job: JobClass) {

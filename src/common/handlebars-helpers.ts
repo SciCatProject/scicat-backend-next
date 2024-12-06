@@ -131,3 +131,13 @@ export const urlencode = (context: string): string => {
 export const base64enc = (context: string): string => {
   return btoa(context);
 };
+
+export const handlebarsHelpers = {
+  unwrapJSON: unwrapJSON,
+  keyToWord: formatCamelCase,
+  eq: (a: unknown, b: unknown) => a === b,
+  jsonify: jsonify,
+  job_v3: job_v3,
+  urlencode: urlencode,
+  base64enc: base64enc,
+};

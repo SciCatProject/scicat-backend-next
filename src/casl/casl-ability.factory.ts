@@ -26,12 +26,13 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import configuration from "src/config/configuration";
+import { JobConfigService } from "src/config/job-config/jobconfig.service";
 import {
   CreateJobAuth,
   StatusUpdateJobAuth,
 } from "src/jobs/types/jobs-auth.enum";
 
-import { JobConfig } from "src/jobs/config/jobconfig";
+import { JobConfig } from "src/config/job-config/jobconfig.interface";
 
 type Subjects =
   | string
@@ -60,6 +61,10 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
+  constructor(private jobConfigService: JobConfigService) {
+    //Logger.log(`Creating CaslAbilityFactory with ${jobConfigService ? Object.keys(jobConfigService.allJobConfigs).length : 0} job types`);
+  }
+
   private endpointAccessors: {
     [endpoint: string]: (user: JWTUser) => AppAbility;
   } = {
@@ -356,7 +361,7 @@ export class CaslAbilityFactory {
 
       // job creation
       if (
-        configuration().jobConfiguration.some(
+        Object.values(this.jobConfigService.allJobConfigs).some(
           (j) => j.create.auth == CreateJobAuth.All,
         )
       ) {
@@ -366,7 +371,7 @@ export class CaslAbilityFactory {
       }
       cannot(Action.JobRead, JobClass);
       if (
-        configuration().jobConfiguration.some(
+        Object.values(this.jobConfigService.allJobConfigs).some(
           (j) => j.statusUpdate.auth == StatusUpdateJobAuth.All,
         )
       ) {
@@ -425,7 +430,7 @@ export class CaslAbilityFactory {
           can(Action.JobRead, JobClass);
 
           if (
-            configuration().jobConfiguration.some(
+            Object.values(this.jobConfigService.allJobConfigs).some(
               (j) =>
                 j.create.auth &&
                 jobCreateEndPointAuthorizationValues.includes(
@@ -448,7 +453,7 @@ export class CaslAbilityFactory {
           can(Action.JobStatusUpdate, JobClass);
         } else {
           if (
-            configuration().jobConfiguration.some(
+            Object.values(this.jobConfigService.allJobConfigs).some(
               (j) =>
                 j.statusUpdate.auth &&
                 jobUpdateEndPointAuthorizationValues.includes(

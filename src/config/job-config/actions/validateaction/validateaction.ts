@@ -1,8 +1,12 @@
 import { HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
-import { JobAction, JobDto } from "../config/jobconfig";
-import { JobClass } from "../schemas/job.schema";
+import { JobAction, JobDto } from "../../jobconfig.interface";
+import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { JSONPath } from "jsonpath-plus";
 import Ajv, { ValidateFunction } from "ajv";
+import {
+  actionType,
+  ValidateJobActionOptions,
+} from "./validateaction.interface";
 
 /**
  * Validates the job DTO for the presence of required fields. Can also check types or
@@ -32,12 +36,34 @@ import Ajv, { ValidateFunction } from "ajv";
  *   }
  * }</pre>
  */
-export class ValidateAction<T extends JobDto> implements JobAction<T> {
-  public static readonly actionType = "validate";
+export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
   private request: Record<string, ValidateFunction<T>>;
 
   getActionType(): string {
-    return ValidateAction.actionType;
+    return actionType;
+  }
+
+  constructor(options: ValidateJobActionOptions) {
+    if (!("request" in options)) {
+      throw new NotFoundException(
+        `Missing connection parameter in 'validate' action: 'request'`,
+      );
+    }
+    const request = options["request"] as Record<string, unknown>;
+
+    const ajv = new Ajv({
+      strictSchema: false,
+      strictTypes: false,
+    });
+    this.request = Object.fromEntries(
+      Object.entries(request).map(([path, schema]) => {
+        if (typeof schema !== "object" || schema === null) {
+          throw new Error("Schema must be a valid object.");
+        }
+
+        return [path, ajv.compile<T>(schema)];
+      }),
+    );
   }
 
   async validate(dto: T) {
@@ -73,27 +99,4 @@ export class ValidateAction<T extends JobDto> implements JobAction<T> {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async performJob(job: JobClass) {}
-
-  constructor(data: Record<string, unknown>) {
-    if (!("request" in data)) {
-      throw new NotFoundException(
-        `Missing connection parameter in 'validate' action: 'request'`,
-      );
-    }
-    const request = data["request"] as Record<string, unknown>;
-
-    const ajv = new Ajv({
-      strictSchema: false,
-      strictTypes: false,
-    });
-    this.request = Object.fromEntries(
-      Object.entries(request).map(([path, schema]) => {
-        if (typeof schema !== "object" || schema === null) {
-          throw new Error("Schema must be a valid object.");
-        }
-
-        return [path, ajv.compile<T>(schema)];
-      }),
-    );
-  }
 }

@@ -1,17 +1,7 @@
-import {
-  loadJobConfig,
-  registerCreateAction,
-  registerStatusUpdateAction,
-} from "../jobs/config/jobconfig";
-import { LogJobAction } from "../jobs/actions/logaction";
-import { EmailJobAction } from "../jobs/actions/emailaction";
-import { URLAction } from "src/jobs/actions/urlaction";
-import { RabbitMQJobAction } from "src/jobs/actions/rabbitmqaction";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
-import { ValidateAction } from "src/jobs/actions/validateaction";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
@@ -46,7 +36,7 @@ const configuration = () => {
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE || ("jobConfig.yaml" as string);
+    process.env.JOB_CONFIGURATION_FILE || ("" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -75,9 +65,6 @@ const configuration = () => {
     }
   });
 
-  registerDefaultActions();
-  const job_configs = loadJobConfig(jobConfigurationFile);
-
   // NOTE: Add the default proposal type here
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
@@ -89,7 +76,7 @@ const configuration = () => {
       api: "3",
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
-    jobConfiguration: job_configs,
+    jobConfigurationFile: jobConfigurationFile,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -231,23 +218,6 @@ const configuration = () => {
   };
   return merge(config, localconfiguration);
 };
-
-/**
- * Registers built-in JobActions. Should be called exactly once.
- */
-export function registerDefaultActions() {
-  // Create
-  registerCreateAction(LogJobAction);
-  registerCreateAction(EmailJobAction);
-  registerCreateAction(URLAction);
-  registerCreateAction(RabbitMQJobAction);
-  registerCreateAction(ValidateAction);
-  // Status Update
-  registerStatusUpdateAction(LogJobAction);
-  registerStatusUpdateAction(EmailJobAction);
-  registerStatusUpdateAction(RabbitMQJobAction);
-  registerStatusUpdateAction(ValidateAction);
-}
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
 
