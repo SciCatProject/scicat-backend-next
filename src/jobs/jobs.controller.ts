@@ -26,10 +26,10 @@ import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobType, DatasetState } from "./job-type.enum";
-import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { ConfigService } from "@nestjs/config";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -40,10 +40,11 @@ export class JobsController {
     private readonly datasetsService: DatasetsService,
     private readonly origDatablocksService: OrigDatablocksService,
     private eventEmitter: EventEmitter2,
+    private congigService: ConfigService,
   ) {}
 
   publishJob() {
-    if (configuration().rabbitMq.enabled) {
+    if (this.congigService.get("rabbitMq").enabled) {
       // TODO: This should publish the job to the message broker.
       // job.publishJob(ctx.instance, "jobqueue");
       console.log("Saved Job %s#%s and published to message broker");

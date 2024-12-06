@@ -4,7 +4,6 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
-  IsEnum,
   IsObject,
   IsOptional,
   IsString,
