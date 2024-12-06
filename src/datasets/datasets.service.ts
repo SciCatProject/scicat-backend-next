@@ -9,12 +9,19 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import {
+  FilterQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addApiVersionField,
   addCreatedByFields,
+  addLookupFields,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
@@ -32,6 +39,8 @@ import {
   PartialUpdateDatasetWithHistoryDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { isEmpty } from "lodash";
+import { DatasetLookupKeys } from "./types/dataset-lookup";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -177,6 +186,25 @@ export class DatasetsService {
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
 
     return this.datasetModel.findOne(whereFilter, fieldsProjection).exec();
+  }
+
+  async findOneComplete(
+    filter: FilterQuery<DatasetDocument>,
+    datasetIncludeFields?: DatasetLookupKeys[],
+  ): Promise<DatasetClass | null> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      pipeline.push({ $project: fieldsProjection });
+    }
+
+    addLookupFields(pipeline, datasetIncludeFields);
+
+    const [data] = await this.datasetModel.aggregate(pipeline).exec();
+
+    return data;
   }
 
   async count(

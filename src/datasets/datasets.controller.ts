@@ -82,13 +82,8 @@ import {
 } from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
-  CountApiResponse,
   filterDescription,
   filterExample,
-  FullFacetFilters,
-  FullFacetResponse,
-  FullQueryFilters,
-  IsValidResponse,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -96,7 +91,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
@@ -106,6 +100,14 @@ import {
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { ConfigService } from "@nestjs/config";
 import { AccessGroupsType } from "src/config/configuration";
+import { DatasetType } from "./types/dataset-type.enum";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+  FullQueryFilters,
+  IsValidResponse,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiExtraModels(

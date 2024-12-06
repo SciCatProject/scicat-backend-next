@@ -7,12 +7,12 @@ import {
   IsString,
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
-import { DatasetType } from "../dataset-type.enum";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { Type } from "class-transformer";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
+import { DatasetType } from "../types/dataset-type.enum";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({

@@ -3,7 +3,6 @@ import { inspect } from "util";
 import { DateTime } from "luxon";
 import { format, unit, Unit, createUnit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
-import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
   IFilters,
@@ -11,8 +10,11 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import {
+  DatasetLookupKeys,
+  DATASET_LOOKUP_FIELDS,
+} from "src/datasets/types/dataset-lookup";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -829,6 +831,17 @@ export const addUpdatedByField = <T>(
   };
 };
 
+export const addLookupFields = (
+  pipeline: PipelineStage[],
+  datasetLookupFields?: DatasetLookupKeys[],
+) => {
+  datasetLookupFields?.forEach((field) => {
+    DATASET_LOOKUP_FIELDS[field].$lookup.as = field;
+
+    pipeline.push(DATASET_LOOKUP_FIELDS[field]);
+  });
+};
+
 export const filterExample =
   '{ "where": { "field": "value" }, "include": [ { "relation": "target" } ], "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
 
@@ -1024,41 +1037,3 @@ const replaceLikeOperatorRecursive = (
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-
-export class FullFacetFilters {
-  @ApiPropertyOptional()
-  facets?: string;
-
-  @ApiPropertyOptional()
-  fields?: string;
-}
-
-export class FullQueryFilters {
-  @ApiPropertyOptional()
-  limits?: string;
-
-  @ApiPropertyOptional()
-  fields?: string;
-}
-
-class TotalSets {
-  @ApiProperty({ type: Number })
-  totalSets: number;
-}
-
-export class FullFacetResponse implements IFullFacets {
-  @ApiProperty({ type: TotalSets, isArray: true })
-  all: [TotalSets];
-
-  [key: string]: object;
-}
-
-export class CountApiResponse {
-  @ApiProperty({ type: Number })
-  count: number;
-}
-
-export class IsValidResponse {
-  @ApiProperty({ type: Boolean })
-  isvalid: boolean;
-}

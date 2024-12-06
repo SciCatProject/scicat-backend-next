@@ -57,12 +57,8 @@ import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
 import {
-  CountApiResponse,
   filterDescription,
   filterExample,
-  FullFacetFilters,
-  FullFacetResponse,
-  IsValidResponse,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -78,6 +74,16 @@ import {
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
 import { ConfigService } from "@nestjs/config";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+  IsValidResponse,
+} from "src/common/types";
+import {
+  DatasetLookupKeys,
+  DATASET_LOOKUP_FIELDS,
+} from "./types/dataset-lookup";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -129,6 +135,7 @@ export class DatasetsV4Controller {
   async generateDatasetInstanceForPermissions(
     dataset: DatasetClass | CreateDatasetDto,
   ): Promise<DatasetClass> {
+    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance = new DatasetClass();
     datasetInstance._id = "";
     datasetInstance.pid = dataset.pid || "";
@@ -142,9 +149,13 @@ export class DatasetsV4Controller {
 
   async checkPermissionsForDatasetExtended(
     request: Request,
-    datasetInput: CreateDatasetDto | string,
+    datasetInput: CreateDatasetDto | string | null,
     group: Action,
   ) {
+    if (!datasetInput) {
+      throw new NotFoundException(`dataset: ${datasetInput} not found`);
+    }
+
     let dataset = null;
 
     if (typeof datasetInput === "string") {
@@ -178,6 +189,14 @@ export class DatasetsV4Controller {
         ability.can(Action.DatasetCreateAny, DatasetClass) ||
         ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
         ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
+    } else if (group == Action.DatasetUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetDelete) {
+      canDoAction =
+        ability.can(Action.DatasetDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetDeleteOwner, datasetInstance);
     } else if (group == Action.DatasetAttachmentRead) {
       canDoAction =
         ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
@@ -318,6 +337,23 @@ export class DatasetsV4Controller {
     return mergedFilters;
   }
 
+  getIncludeFilters(
+    includeFilters: IFilters<DatasetDocument, IDatasetFields>["include"],
+  ) {
+    // Check if the includeFilters contains the right values from DATASET_LOOKUP_FIELDS for including the right relations on the Dataset
+    return includeFilters
+      ?.map((field) => {
+        if (Object.keys(DATASET_LOOKUP_FIELDS).includes(field.relation)) {
+          return field.relation;
+        } else {
+          throw new BadRequestException(
+            `Provided include field ${JSON.stringify(field)} is not part of the dataset relations`,
+          );
+        }
+      })
+      .filter((field): field is DatasetLookupKeys => !!field);
+  }
+
   // POST /api/v4/datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -447,76 +483,15 @@ export class DatasetsV4Controller {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
+    const includeFilters = mergedFilters.include ?? [];
+
+    // TODO: Include those in the response with aggregation
+    if (includeFilters) {
+    }
+
     // this should be implemented at database level
     const datasets = await this.datasetsService.findAll(mergedFilters);
 
-    if (datasets && datasets.length > 0) {
-      const includeFilters = mergedFilters.include ?? [];
-
-      await Promise.all(
-        datasets.map(async (dataset) => {
-          if (includeFilters) {
-            /**
-             * Query that works with the aggregation $lookup
-             * db.getCollection("Dataset").aggregate([{$match: {}},
-                  {
-                      $lookup: {
-                        from: "Attachment",
-                        localField: "pid",
-                        foreignField: "datasetId",
-                        as: "attachments",
-                      }
-                  },
-                  {
-                      $lookup: {
-                        from: "OrigDatablock",
-                        localField: "pid",
-                        foreignField: "datasetId",
-                        as: "origdatablocks",
-                      },
-                  },
-                  {
-                      $lookup: {
-                        from: "Datablock",
-                        localField: "pid",
-                        foreignField: "datasetId",
-                        as: "datablocks",
-                      },
-                  }
-              ])
-             */
-            // TODO: We should use the aggregation to include the relations of attachments, origdatablocks and datablocks here instead of calling the database separately.
-            await Promise.all(
-              includeFilters.map(async ({ relation }) => {
-                switch (relation) {
-                  case "attachments": {
-                    // dataset.attachments = await this.attachmentsService.findAll(
-                    //   {
-                    //     datasetId: dataset.pid,
-                    //   },
-                    // );
-                    break;
-                  }
-                  case "origdatablocks": {
-                    // dataset.origdatablocks =
-                    //   await this.origDatablocksService.findAll({
-                    //     datasetId: dataset.pid,
-                    //   });
-                    break;
-                  }
-                  case "datablocks": {
-                    // dataset.datablocks = await this.datablocksService.findAll({
-                    //   datasetId: dataset.pid,
-                    // });
-                    break;
-                  }
-                }
-              }),
-            );
-          }
-        }),
-      );
-    }
     return datasets;
   }
 
@@ -575,6 +550,7 @@ export class DatasetsV4Controller {
       fields: fields,
       facets: JSON.parse(filters.facets ?? "[]"),
     };
+
     return this.datasetsService.fullFacet(parsedFilters);
   }
 
@@ -683,41 +659,9 @@ export class DatasetsV4Controller {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
-    const databaseDataset = await this.datasetsService.findOne(mergedFilters);
+    const includeFilters = this.getIncludeFilters(mergedFilters.include ?? []);
 
-    // TODO: Check if we can use the aggragation $lookup here as well.
-    // if (databaseDataset) {
-    //   const includeFilters = mergedFilters.include ?? [];
-    //   await Promise.all(
-    //     includeFilters.map(async ({ relation }) => {
-    //       switch (relation) {
-    //         case "attachments": {
-    //           outputDataset.attachments = await this.attachmentsService.findAll(
-    //             {
-    //               datasetId: outputDataset.pid,
-    //             },
-    //           );
-    //           break;
-    //         }
-    //         case "origdatablocks": {
-    //           outputDataset.origdatablocks =
-    //             await this.origDatablocksService.findAll({
-    //               where: { datasetId: outputDataset.pid },
-    //             });
-    //           break;
-    //         }
-    //         case "datablocks": {
-    //           outputDataset.datablocks = await this.datablocksService.findAll({
-    //             datasetId: outputDataset.pid,
-    //           });
-    //           break;
-    //         }
-    //       }
-    //     }),
-    //   );
-    // }
-
-    return databaseDataset;
+    return this.datasetsService.findOneComplete(mergedFilters, includeFilters);
   }
 
   // GET /datasets/count
@@ -779,9 +723,26 @@ export class DatasetsV4Controller {
     description: "Return dataset with pid specified",
   })
   async findById(@Req() request: Request, @Param("pid") id: string) {
-    const dataset = await this.checkPermissionsForDatasetExtended(
+    // TODO: Do we want this to be sent as part of the request or we want to controll it here?
+    const includeFields: DatasetLookupKeys[] = [
+      "instruments",
+      "attachments",
+      "datablocks",
+      "origdatablocks",
+      "proposals",
+      "samples",
+    ];
+
+    const dataset = await this.datasetsService.findOneComplete(
+      {
+        where: { pid: id },
+      },
+      includeFields,
+    );
+
+    await this.checkPermissionsForDatasetExtended(
       request,
-      id,
+      dataset,
       Action.DatasetRead,
     );
 
@@ -833,25 +794,11 @@ export class DatasetsV4Controller {
       where: { pid },
     });
 
-    if (!foundDataset) {
-      throw new NotFoundException();
-    }
-
-    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
-
-    // instantiate the casl matrix for the user
-    const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-      ability.can(Action.DatasetUpdateOwner, datasetInstance);
-
-    if (!canUpdate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
-    }
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      foundDataset,
+      Action.DatasetUpdate,
+    );
 
     const updatedDataset = await this.datasetsService.findByIdAndUpdate(
       pid,
@@ -907,24 +854,11 @@ export class DatasetsV4Controller {
       where: { pid },
     });
 
-    if (!foundDataset) {
-      throw new NotFoundException();
-    }
-
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
-
-    // instantiate the casl matrix for the user
-    const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetUpdateAny, DatasetClass) ||
-      ability.can(Action.DatasetUpdateOwner, datasetInstance);
-
-    if (!canUpdate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
-    }
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      foundDataset,
+      Action.DatasetUpdate,
+    );
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
@@ -959,24 +893,11 @@ export class DatasetsV4Controller {
       where: { pid },
     });
 
-    if (!foundDataset) {
-      throw new NotFoundException();
-    }
-
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(foundDataset);
-
-    // instantiate the casl matrix for the user
-    const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-    // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetDeleteAny, DatasetClass) ||
-      ability.can(Action.DatasetDeleteOwner, datasetInstance);
-
-    if (!canUpdate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
-    }
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      foundDataset,
+      Action.DatasetDelete,
+    );
 
     const removedDataset = await this.datasetsService.findByIdAndDelete(pid);
 
@@ -1020,27 +941,32 @@ export class DatasetsV4Controller {
     @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<OutputDatasetDto | null> {
-    const user: JWTUser = request.user as JWTUser;
-    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
       where: { pid },
     });
 
-    if (!datasetToUpdate) {
-      throw new NotFoundException();
-    }
+    await this.checkPermissionsForDatasetExtended(
+      request,
+      datasetToUpdate,
+      Action.DatasetUpdate,
+    );
 
-    const datasetInstance =
-      await this.generateDatasetInstanceForPermissions(datasetToUpdate);
+    // if (!datasetToUpdate) {
+    //   throw new NotFoundException();
+    // }
 
-    // check if he/she can create this dataset
-    const canUpdate =
-      ability.can(Action.DatasetDeleteAny, DatasetClass) ||
-      ability.can(Action.DatasetDeleteOwner, datasetInstance);
+    // const datasetInstance =
+    //   await this.generateDatasetInstanceForPermissions(datasetToUpdate);
 
-    if (!canUpdate) {
-      throw new ForbiddenException("Unauthorized to update this dataset");
-    }
+    // TODO: This most probably should be "can update" as the variable says "canUpdate". Doublecheck it!!!
+    // // check if he/she can create this dataset
+    // const canUpdate =
+    //   ability.can(Action.DatasetDeleteAny, DatasetClass) ||
+    //   ability.can(Action.DatasetDeleteOwner, datasetInstance);
+
+    // if (!canUpdate) {
+    //   throw new ForbiddenException("Unauthorized to update this dataset");
+    // }
 
     const parsedData = JSON.parse(data);
 
