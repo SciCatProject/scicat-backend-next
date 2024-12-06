@@ -83,12 +83,13 @@ import {
 } from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
+  CountApiResponse,
   filterDescription,
   filterExample,
-  datasetsFullQueryDescriptionFields,
-  fullQueryDescriptionLimits,
-  datasetsFullQueryExampleFields,
-  fullQueryExampleLimits,
+  FullFacetFilters,
+  FullFacetResponse,
+  FullQueryFilters,
+  IsValidResponse,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -104,6 +105,7 @@ import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -178,10 +180,11 @@ export class DatasetsController {
       DatasetClass,
     );
 
+    if (!mergedFilters.where) {
+      mergedFilters.where = {};
+    }
+
     if (!canViewAny) {
-      if (!mergedFilters.where) {
-        mergedFilters.where = {};
-      }
       if (canViewAccess) {
         mergedFilters.where["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
@@ -195,6 +198,10 @@ export class DatasetsController {
         mergedFilters.where = { isPublished: true };
       }
     }
+
+    mergedFilters.where = this.convertObsoleteWhereFilterToCurrentSchema(
+      mergedFilters.where,
+    );
 
     return mergedFilters;
   }
@@ -400,6 +407,27 @@ export class DatasetsController {
     return dataset;
   }
 
+  convertObsoleteWhereFilterToCurrentSchema(
+    whereFilter: Record<string, unknown>,
+  ): IFilters<DatasetDocument, IDatasetFields> {
+    if ("proposalId" in whereFilter) {
+      whereFilter.proposalIds = whereFilter.proposalId;
+      delete whereFilter.proposalId;
+    }
+    if ("sampleId" in whereFilter) {
+      whereFilter.sampleIds = whereFilter.sampleId;
+      delete whereFilter.sampleId;
+    }
+    if ("instrumentId" in whereFilter) {
+      whereFilter.instrumentIds = whereFilter.instrumentId;
+      delete whereFilter.instrumentId;
+    }
+    if ("principalInvestigator" in whereFilter) {
+      whereFilter.investigator = whereFilter.principalInvestigator;
+      delete whereFilter.principalInvestigator;
+    }
+    return whereFilter;
+  }
   convertObsoleteToCurrentSchema(
     inputObsoleteDataset:
       | CreateRawDatasetObsoleteDto
@@ -547,7 +575,7 @@ export class DatasetsController {
     },
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: OutputDatasetObsoleteDto,
     description: "Create a new dataset and return its representation in SciCat",
   })
@@ -711,8 +739,8 @@ export class DatasetsController {
     },
   })
   @ApiResponse({
-    status: 200,
-    type: Boolean,
+    status: HttpStatus.OK,
+    type: IsValidResponse,
     description:
       "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
@@ -722,7 +750,6 @@ export class DatasetsController {
     createDatasetObsoleteDto:
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto,
   ): Promise<{ valid: boolean }> {
     await this.checkPermissionsForObsoleteDatasetCreate(
       request,
@@ -777,7 +804,7 @@ export class DatasetsController {
     example: filterExample,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: true,
     description: "Return the datasets requested",
@@ -786,7 +813,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<OutputDatasetObsoleteDto[] | null> {
+  ) {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -856,33 +883,23 @@ export class DatasetsController {
       "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Database filters to apply when retrieving datasets\n" +
-      datasetsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: datasetsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example:
+      '{"limits": {"limit": 1, "skip": 1, "order": "creationTime:desc"}, fields: {"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"}]}}',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: true,
-    description: "Return datasets requested",
+    description: "Return fullquery response for datasets requested",
   })
   async fullquery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<OutputDatasetObsoleteDto[] | null> {
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -898,21 +915,13 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      // const canViewPublic = ability.can(
-      //   Action.DatasetReadManyPublic,
-      //   DatasetClass,
-      // );
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
       }
-      // else if (canViewPublic) {
-      //   fields.isPublished = true;
-      // }
     }
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
@@ -931,33 +940,20 @@ export class DatasetsController {
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
-  @ApiOperation({
-    summary:
-      "It returns a list of dataset facets matching the filter provided.",
-    description:
-      "It returns a list of dataset facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
-  })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiQuery({
-    name: "facets",
+    name: "filters",
     description:
       "Defines list of field names, for which facet counts should be calculated",
     required: false,
-    type: String,
-    example: '["type","creationLocation","ownerGroup","keywords"]',
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
   })
   @ApiResponse({
-    status: 200,
-    type: Object,
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
     isArray: true,
-    description: "Return datasets requested",
+    description: "Return fullfacet response for datasets requested",
   })
   async fullfacet(
     @Req() request: Request,
@@ -970,8 +966,6 @@ export class DatasetsController {
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
-      // delete fields.isPublished;
-
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
         DatasetClass,
@@ -980,23 +974,14 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      // const canViewPublic = ability.can(
-      //   Action.DatasetReadManyPublic,
-      //   DatasetClass,
-      // );
 
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        // fields.isPublished = true;
-        // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
       }
-      // else if (canViewPublic) {
-      //   fields.isPublished = true;
-      // }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {
@@ -1035,15 +1020,15 @@ export class DatasetsController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: String,
     isArray: true,
-    description: "Return metadata keys list of datasets selected",
+    description: "Return metadata keys  for list of datasets selected",
   })
   async metadataKeys(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<string[]> {
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -1106,7 +1091,7 @@ export class DatasetsController {
     example: filterExample,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description: "Return the datasets requested",
   })
@@ -1180,7 +1165,8 @@ export class DatasetsController {
       '{"where": {"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}}',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
+    type: CountApiResponse,
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
@@ -1188,7 +1174,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<{ count: number }> {
+  ) {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -1206,25 +1192,18 @@ export class DatasetsController {
     ability.can(Action.DatasetRead, DatasetClass),
   )
   @Get("/:pid")
-  @ApiOperation({
-    summary: "It returns the dataset requested.",
-    description: "It returns the dataset requested through the pid specified.",
-  })
   @ApiParam({
     name: "pid",
     description: "Id of the dataset to return",
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: false,
     description: "Return dataset with pid specified",
   })
-  async findById(
-    @Req() request: Request,
-    @Param("pid") id: string,
-  ): Promise<OutputDatasetObsoleteDto | null> {
+  async findById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
@@ -1273,7 +1252,7 @@ export class DatasetsController {
     },
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
@@ -1287,7 +1266,9 @@ export class DatasetsController {
       | PartialUpdateDerivedDatasetObsoleteDto
       | PartialUpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -1383,7 +1364,7 @@ export class DatasetsController {
     },
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
@@ -1397,7 +1378,9 @@ export class DatasetsController {
       | UpdateDerivedDatasetObsoleteDto
       | UpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -1463,14 +1446,14 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    description: "No value is returned",
+    status: HttpStatus.OK,
+    type: DatasetClass,
+    description: "DatasetClass value is returned that is removed",
   })
-  async findByIdAndDelete(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<unknown> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+  async findByIdAndDelete(@Req() request: Request, @Param("pid") pid: string) {
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -1521,7 +1504,7 @@ export class DatasetsController {
     type: Array,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description: "Return new value of the dataset",
   })
@@ -1534,7 +1517,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
-      where: { pid: pid },
+      where: { pid },
     });
 
     if (!datasetToUpdate) {
@@ -1587,7 +1570,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     description: "Return new value of the dataset",
   })
@@ -1636,7 +1619,7 @@ export class DatasetsController {
     type: CreateAttachmentDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: Attachment,
     description:
       "Returns the new attachment for the dataset identified by the pid specified",
@@ -1681,7 +1664,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     isArray: true,
     description:
@@ -1724,7 +1707,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     isArray: false,
     description: "Returns the attachment updated.",
@@ -1771,14 +1754,14 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned.",
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
     @Param("pid") pid: string,
     @Param("aid") aid: string,
-  ): Promise<unknown> {
+  ) {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1787,7 +1770,7 @@ export class DatasetsController {
 
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
-      pid,
+      datasetId: pid,
     });
   }
 
@@ -1818,7 +1801,7 @@ export class DatasetsController {
     type: CreateDatasetOrigDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: OrigDatablock,
     description: "It returns the new original datablock created",
   })
@@ -1880,7 +1863,7 @@ export class DatasetsController {
     type: CreateDatasetOrigDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     description:
       "It returns true if the values passed in are a valid original datablock",
   })
@@ -1924,7 +1907,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OrigDatablock,
     isArray: true,
     description:
@@ -1973,7 +1956,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OrigDatablock,
     isArray: false,
     description:
@@ -2038,7 +2021,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned",
   })
   async findOneOrigDatablockAndRemove(
@@ -2101,7 +2084,7 @@ export class DatasetsController {
     type: CreateDatasetDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: Datablock,
     description: "It returns the new datablock created",
   })
@@ -2155,7 +2138,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Datablock,
     isArray: true,
     description:
@@ -2201,7 +2184,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Datablock,
     isArray: false,
     description:
@@ -2268,7 +2251,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned",
   })
   async findOneDatablockAndRemove(
@@ -2330,8 +2313,8 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    // type: Logbook,
+    status: HttpStatus.OK,
+    type: Logbook,
     isArray: false,
     description: "It returns all messages from specificied Logbook room",
   })

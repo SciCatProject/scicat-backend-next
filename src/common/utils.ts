@@ -12,6 +12,8 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IFullFacets } from "src/elastic-search/interfaces/es-common.type";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -1012,3 +1014,41 @@ const replaceLikeOperatorRecursive = (
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export class FullFacetFilters {
+  @ApiPropertyOptional()
+  facets?: string;
+
+  @ApiPropertyOptional()
+  fields?: string;
+}
+
+export class FullQueryFilters {
+  @ApiPropertyOptional()
+  limits?: string;
+
+  @ApiPropertyOptional()
+  fields?: string;
+}
+
+class TotalSets {
+  @ApiProperty({ type: Number })
+  totalSets: number;
+}
+
+export class FullFacetResponse implements IFullFacets {
+  @ApiProperty({ type: TotalSets, isArray: true })
+  all: [TotalSets];
+
+  [key: string]: object;
+}
+
+export class CountApiResponse {
+  @ApiProperty({ type: Number })
+  count: number;
+}
+
+export class IsValidResponse {
+  @ApiProperty({ type: Boolean })
+  isvalid: boolean;
+}
