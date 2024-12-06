@@ -418,6 +418,16 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly jobLogData?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Run number assigned by the system to the data acquisition for the current dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly runNumber?: string;
 }
 
 export class PartialUpdateDatasetDto extends PartialType(UpdateDatasetDto) {}
