@@ -3,12 +3,13 @@ import { LogbooksService } from "./logbooks.service";
 import { LogbooksController } from "./logbooks.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { HttpModule } from "@nestjs/axios";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ProposalsModule } from "src/proposals/proposals.module";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
     ConfigModule,
+    CaslModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -21,6 +22,6 @@ import { ProposalsModule } from "src/proposals/proposals.module";
   ],
   exports: [LogbooksService],
   controllers: [LogbooksController],
-  providers: [LogbooksService, CaslAbilityFactory],
+  providers: [LogbooksService],
 })
 export class LogbooksModule {}

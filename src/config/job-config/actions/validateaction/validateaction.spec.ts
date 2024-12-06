@@ -1,5 +1,6 @@
-import { ValidateAction } from "./validateaction";
-import { CreateJobDto } from "../dto/create-job.dto";
+import { ValidateJobAction } from "./validateaction";
+import { CreateJobDto } from "../../../../jobs/dto/create-job.dto";
+import { ValidateJobActionOptions } from "./validateaction.interface";
 
 const createJobBase = {
   type: "validate",
@@ -9,7 +10,7 @@ const createJobBase = {
 };
 
 describe("ValiateAction", () => {
-  const config = {
+  const config: ValidateJobActionOptions = {
     actionType: "validate",
     request: {
       "jobParams.stringVal": { type: "string" },
@@ -18,7 +19,7 @@ describe("ValiateAction", () => {
       jobParams: { required: ["nonNull"] },
     },
   };
-  const action = new ValidateAction<CreateJobDto>(config);
+  const action = new ValidateJobAction<CreateJobDto>(config);
   it("should be configured successfully", async () => {
     expect(action).toBeDefined();
   });

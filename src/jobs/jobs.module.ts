@@ -3,19 +3,26 @@ import { JobsService } from "./jobs.service";
 import { JobsController } from "./jobs.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { JobClass, JobSchema } from "./schemas/job.schema";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
-import { CommonModule } from "src/common/common.module";
 import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { UsersModule } from "src/users/users.module";
+import { JobConfigModule } from "../config/job-config/jobconfig.module";
+import { JobConfigService } from "../config/job-config/jobconfig.service";
+import { DefaultJobActionFactories } from "../config/job-config/actions/defaultjobactions.module";
+import { EmailJobActionFactory } from "src/config/job-config/actions/emailaction/emailaction.factory";
+import { CommonModule } from "src/common/common.module";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   controllers: [JobsController],
   imports: [
     CommonModule,
+    CaslModule,
     ConfigModule,
+    DefaultJobActionFactories,
+    JobConfigModule,
     DatasetsModule,
     UsersModule,
     MongooseModule.forFeatureAsync([
@@ -40,6 +47,6 @@ import { UsersModule } from "src/users/users.module";
     PoliciesModule,
     OrigDatablocksModule,
   ],
-  providers: [JobsService, CaslAbilityFactory],
+  providers: [JobsService, JobConfigService, EmailJobActionFactory],
 })
 export class JobsModule {}
