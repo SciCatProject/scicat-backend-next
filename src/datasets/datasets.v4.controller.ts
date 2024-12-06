@@ -483,13 +483,9 @@ export class DatasetsV4Controller {
       ) as Record<string, unknown>,
     ) as IFilters<DatasetDocument, IDatasetFields>;
 
-    const includeFilters = mergedFilters.include ?? [];
+    const includeFilters = this.getIncludeFilters(mergedFilters.include ?? []);
 
-    // TODO: Include those in the response with aggregation
-    if (includeFilters) {
-    }
-
-    // this should be implemented at database level
+    // const datasets = await this.datasetsService.findAllComplete(mergedFilters, includeFilters);
     const datasets = await this.datasetsService.findAll(mergedFilters);
 
     return datasets;
@@ -588,6 +584,7 @@ export class DatasetsV4Controller {
     isArray: true,
     description: "Return metadata keys  for list of datasets selected",
   })
+  // NOTE: This one needs to be discussed as well but it gets the metadata keys from the dataset but it doesnt do it with the nested fields. Think about it
   async metadataKeys(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
@@ -724,6 +721,7 @@ export class DatasetsV4Controller {
   })
   async findById(@Req() request: Request, @Param("pid") id: string) {
     // TODO: Do we want this to be sent as part of the request or we want to controll it here?
+    // TODO: Add option to have "all" of them at once.
     const includeFields: DatasetLookupKeys[] = [
       "instruments",
       "attachments",
@@ -908,7 +906,7 @@ export class DatasetsV4Controller {
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetUpdate, DatasetClass),
   )
-  @Post("/:pid/appendToArrayField")
+  @Post("/:pid/appendMetadataField")
   @ApiOperation({
     summary: "It appends a new value to the specific field.",
     description:
@@ -935,10 +933,11 @@ export class DatasetsV4Controller {
     type: OutputDatasetDto,
     description: "Return new value of the dataset",
   })
-  async appendToArrayField(
+  // TODO: appendMetadataField new name and check inputs
+  async appendMetadataField(
     @Req() request: Request,
     @Param("pid") pid: string,
-    @Query("fieldName") fieldName: string,
+    // @Query("fieldName") fieldName: string,
     @Query("data") data: string,
   ): Promise<OutputDatasetDto | null> {
     const datasetToUpdate = await this.datasetsService.findOne({
@@ -951,28 +950,11 @@ export class DatasetsV4Controller {
       Action.DatasetUpdate,
     );
 
-    // if (!datasetToUpdate) {
-    //   throw new NotFoundException();
-    // }
-
-    // const datasetInstance =
-    //   await this.generateDatasetInstanceForPermissions(datasetToUpdate);
-
-    // TODO: This most probably should be "can update" as the variable says "canUpdate". Doublecheck it!!!
-    // // check if he/she can create this dataset
-    // const canUpdate =
-    //   ability.can(Action.DatasetDeleteAny, DatasetClass) ||
-    //   ability.can(Action.DatasetDeleteOwner, datasetInstance);
-
-    // if (!canUpdate) {
-    //   throw new ForbiddenException("Unauthorized to update this dataset");
-    // }
-
     const parsedData = JSON.parse(data);
 
     const updateQuery: UpdateQuery<DatasetDocument> = {
       $addToSet: {
-        [fieldName]: { $each: parsedData },
+        scientificMetadata: { $each: parsedData },
       },
     };
 
@@ -984,6 +966,7 @@ export class DatasetsV4Controller {
     return outputDatasetDto;
   }
 
+  // TODO: Include the first attachment as thumbnail and we already include the attachments in the lookup. If possible remove this endpoint
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -1028,167 +1011,6 @@ export class DatasetsV4Controller {
     return attachment;
   }
 
-  // POST /datasets/:id/attachments
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentCreate, DatasetClass),
-  )
-  @HttpCode(HttpStatus.CREATED)
-  @Post("/:pid/attachments")
-  @ApiOperation({
-    summary: "It creates a new attachement for the dataset specified.",
-    description:
-      "It creates a new attachement for the dataset specified by the pid passed.",
-  })
-  @ApiParam({
-    name: "pid",
-    description:
-      "Persisten identifier of the dataset we would like to create a new attachment for",
-    type: String,
-  })
-  @ApiExtraModels(CreateAttachmentDto)
-  @ApiBody({
-    type: CreateAttachmentDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    type: Attachment,
-    description:
-      "Returns the new attachment for the dataset identified by the pid specified",
-  })
-  async createAttachment(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
-  ): Promise<Attachment | null> {
-    const dataset = await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetAttachmentCreate,
-    );
-
-    if (dataset) {
-      const createAttachment: CreateAttachmentDto = {
-        ...createAttachmentDto,
-        datasetId: pid,
-        ownerGroup: dataset.ownerGroup,
-      };
-      return this.attachmentsService.create(createAttachment);
-    }
-    return null;
-  }
-
-  // GET /datasets/:id/attachments
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetAttachmentRead, DatasetClass),
-  )
-  @Get("/:pid/attachments")
-  @ApiOperation({
-    summary: "It returns all the attachments for the dataset specified.",
-    description:
-      "It returns all the attachments for the dataset specified by the pid passed.",
-  })
-  @ApiParam({
-    name: "pid",
-    description:
-      "Persisten Identifier of the dataset for which we would like to retrieve all the attachments",
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Attachment,
-    isArray: true,
-    description:
-      "Array with all the attachments associated with the dataset with the pid specified",
-  })
-  async findAllAttachments(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<Attachment[]> {
-    await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetAttachmentRead,
-    );
-
-    return this.attachmentsService.findAll({ datasetId: pid });
-  }
-
-  // GET /datasets/:id/origdatablocks
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) => {
-    return ability.can(Action.DatasetOrigdatablockRead, DatasetClass);
-  })
-  @Get("/:pid/origdatablocks")
-  @ApiOperation({
-    summary: "It returns all the origDatablock for the dataset specified.",
-    description:
-      "It returns all the original datablocks for the dataset specified by the pid passed.",
-  })
-  @ApiParam({
-    name: "pid",
-    description:
-      "Persistent identifier of the dataset for which we would like to retrieve all the original datablocks",
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: OrigDatablock,
-    isArray: true,
-    description:
-      "Array with all the original datablocks associated with the dataset with the pid specified",
-  })
-  async findAllOrigDatablocks(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<OrigDatablock[]> {
-    await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetOrigdatablockRead,
-    );
-
-    return this.origDatablocksService.findAll({ where: { datasetId: pid } });
-  }
-
-  // GET /datasets/:id/datablocks
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetDatablockRead, DatasetClass),
-  )
-  @Get("/:pid/datablocks")
-  @ApiOperation({
-    summary: "It returns all the datablock for the dataset specified.",
-    description:
-      "It returns all the datablocks for the dataset specified by the pid passed.",
-  })
-  @ApiParam({
-    name: "pid",
-    description:
-      "Persistent identifier of the dataset for which we would like to retrieve all the datablocks",
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Datablock,
-    isArray: true,
-    description:
-      "Array with all the datablocks associated with the dataset with the pid specified",
-  })
-  async findAllDatablocks(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<Datablock[]> {
-    await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetDatablockRead,
-    );
-
-    return this.datablocksService.findAll({ datasetId: pid });
-  }
-
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetLogbookRead, DatasetClass),
@@ -1226,6 +1048,7 @@ export class DatasetsV4Controller {
     if (!proposalId) return null;
 
     const result = await this.logbooksService.findByName(proposalId, filters);
+
     return result;
   }
 }
