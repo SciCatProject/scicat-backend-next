@@ -6,6 +6,7 @@ import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
+import { ConfigService } from "@nestjs/config";
 
 class AttachmentsServiceMock {}
 
@@ -30,6 +31,7 @@ describe("DatasetsController", () => {
         { provide: DatablocksService, useClass: DatablocksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
+        ConfigService,
       ],
     }).compile();
 

@@ -38,4 +38,13 @@ export class OutputDatasetDto extends CreateDatasetDto {
   })
   @IsDateString()
   updatedAt: Date;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "Version of the API used when the dataset was created or last updated. API version is defined in code for each release. Managed by the system.",
+  })
+  @IsString()
+  version: string;
 }

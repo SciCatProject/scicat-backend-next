@@ -1,4 +1,3 @@
-/* eslint-disable @/quotes */
 import {
   Body,
   Controller,
@@ -83,13 +82,8 @@ import {
 } from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
-  CountApiResponse,
   filterDescription,
   filterExample,
-  FullFacetFilters,
-  FullFacetResponse,
-  FullQueryFilters,
-  IsValidResponse,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -97,8 +91,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import configuration from "src/config/configuration";
-import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
@@ -106,6 +98,16 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { ConfigService } from "@nestjs/config";
+import { AccessGroupsType } from "src/config/configuration";
+import { DatasetType } from "./types/dataset-type.enum";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+  FullQueryFilters,
+  IsValidResponse,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -117,7 +119,7 @@ import { Logbook } from "src/logbooks/schemas/logbook.schema";
   RelationshipClass,
 )
 @ApiTags("datasets")
-@Controller("datasets")
+@Controller({ path: "datasets", version: "3" })
 export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
@@ -126,7 +128,20 @@ export class DatasetsController {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
+    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
+      "datasetCreationValidationEnabled",
+    );
+    this.datasetCreationValidationRegex = this.configService.get<string>(
+      "datasetCreationValidationRegex",
+    );
+  }
+  private accessGroups;
+  private datasetCreationValidationEnabled;
+  private datasetCreationValidationRegex;
 
   getFilters(
     headers: Record<string, string>,
@@ -324,18 +339,18 @@ export class DatasetsController {
 
   getUserPermissionsFromGroups(user: JWTUser) {
     const userIsAdmin = user.currentGroups.some((g) =>
-      configuration().adminGroups.includes(g),
+      this.accessGroups?.admin.includes(g),
     );
     const userCanCreateDatasetPrivileged =
-      configuration().createDatasetPrivilegedGroups.some((value) =>
+      this.accessGroups?.createDatasetPrivileged.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithPid =
-      configuration().createDatasetWithPidGroups.some((value) =>
+      this.accessGroups?.createDatasetWithPid.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithoutPid =
-      configuration().createDatasetGroups.some((value) =>
+      this.accessGroups?.createDataset.some((value) =>
         user.currentGroups.includes(value),
       );
 
@@ -387,11 +402,11 @@ export class DatasetsController {
 
     // now checks if we need to validate the pid
     if (
-      configuration().datasetCreationValidationEnabled &&
-      configuration().datasetCreationValidationRegex &&
+      this.datasetCreationValidationEnabled &&
+      this.datasetCreationValidationRegex &&
       dataset.pid
     ) {
-      const re = new RegExp(configuration().datasetCreationValidationRegex);
+      const re = new RegExp(this.datasetCreationValidationRegex);
 
       if (!re.test(dataset.pid)) {
         throw new BadRequestException(
@@ -418,10 +433,28 @@ export class DatasetsController {
       whereFilter.instrumentIds = whereFilter.instrumentId;
       delete whereFilter.instrumentId;
     }
+    if ("investigator" in whereFilter) {
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.investigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.investigator;
+      }
+
+      delete whereFilter.investigator;
+    }
     if ("principalInvestigator" in whereFilter) {
-      whereFilter.investigator = whereFilter.principalInvestigator;
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.principalInvestigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.principalInvestigator;
+      }
       delete whereFilter.principalInvestigator;
     }
+
     return whereFilter;
   }
   convertObsoleteToCurrentSchema(
@@ -433,9 +466,7 @@ export class DatasetsController {
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto,
   ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {
-      version: "v3",
-    };
+    const propertiesModifier: Record<string, unknown> = {};
 
     if ("proposalId" in inputObsoleteDataset) {
       propertiesModifier.proposalIds = [
@@ -457,11 +488,18 @@ export class DatasetsController {
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
         ];
       }
+      if ("principalInvestigator" in inputObsoleteDataset) {
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto)
+            .principalInvestigator,
+        ];
+      }
     } else {
       if ("investigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigator = (
-          inputObsoleteDataset as CreateDerivedDatasetObsoleteDto
-        ).investigator;
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
+            .investigator,
+        ];
       }
     }
 
@@ -503,18 +541,34 @@ export class DatasetsController {
   ): OutputDatasetObsoleteDto {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
-      if ("proposalIds" in inputDataset) {
-        propertiesModifier.proposalId = inputDataset.proposalIds![0];
+      if ("proposalIds" in inputDataset && inputDataset.proposalIds?.length) {
+        propertiesModifier.proposalId = inputDataset.proposalIds[0];
       }
-      if ("sampleIds" in inputDataset) {
-        propertiesModifier.sampleId = inputDataset.sampleIds![0];
+      if ("sampleIds" in inputDataset && inputDataset.sampleIds?.length) {
+        propertiesModifier.sampleId = inputDataset.sampleIds[0];
       }
-      if ("instrumentIds" in inputDataset) {
-        propertiesModifier.instrumentId = inputDataset.instrumentIds![0];
+      if (
+        "instrumentIds" in inputDataset &&
+        inputDataset.instrumentIds?.length
+      ) {
+        propertiesModifier.instrumentId = inputDataset.instrumentIds[0];
       }
+
+      if (
+        "principalInvestigators" in inputDataset &&
+        inputDataset.principalInvestigators?.length
+      ) {
+        propertiesModifier.principalInvestigator =
+          inputDataset.principalInvestigators[0];
+      }
+
       if (inputDataset.type == "derived") {
-        if ("investigator" in inputDataset) {
-          propertiesModifier.investigator = inputDataset.principalInvestigator;
+        if (
+          "investigator" in inputDataset &&
+          inputDataset.principalInvestigators?.length
+        ) {
+          propertiesModifier.investigator =
+            inputDataset.principalInvestigators[0];
         }
       }
     }
@@ -595,7 +649,7 @@ export class DatasetsController {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(error);
       }
     }
   }

@@ -1,4 +1,3 @@
-/* eslint-disable @/quotes */
 import {
   Controller,
   Get,
@@ -32,8 +31,9 @@ import { HistoryInterceptor } from "src/common/interceptors/history.interceptor"
 import { UpdateWherePolicyDto } from "./dto/update-where-policy.dto";
 import { IFilters } from "src/common/interfaces/common.interface";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
-import { CountApiResponse, replaceLikeOperator } from "src/common/utils";
+import { replaceLikeOperator } from "src/common/utils";
 import { FilterPipe } from "src/common/pipes/filter.pipe";
+import { CountApiResponse } from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("policies")

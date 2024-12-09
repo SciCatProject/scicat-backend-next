@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   HttpException,
   HttpStatus,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
@@ -57,12 +58,8 @@ export class InstrumentsController {
         await this.instrumentsService.create(createInstrumentDto);
       return instrument;
     } catch (error) {
-      let message;
-      if (error instanceof Error) message = error.message;
-      else message = String(error);
-      // we'll proceed, but let's report it
       throw new HttpException(
-        `Instrument with the same unique name already exists: ${message}`,
+        `Instrument creation was not successful. Reason: ${String(error)}`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -142,12 +139,10 @@ export class InstrumentsController {
         { _id: id },
         updateInstrumentDto,
       );
+
       return instrument;
-    } catch (e) {
-      throw new HttpException(
-        "Instrument with the same unique name already exists",
-        HttpStatus.BAD_REQUEST,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 
