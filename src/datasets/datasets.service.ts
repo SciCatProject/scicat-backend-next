@@ -40,7 +40,6 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { isEmpty } from "lodash";
-import { DatasetLookupKeys } from "./types/dataset-lookup";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -190,7 +189,6 @@ export class DatasetsService {
 
   async findOneComplete(
     filter: FilterQuery<DatasetDocument>,
-    datasetIncludeFields?: DatasetLookupKeys[],
   ): Promise<DatasetClass | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
@@ -200,7 +198,7 @@ export class DatasetsService {
       pipeline.push({ $project: fieldsProjection });
     }
 
-    addLookupFields(pipeline, datasetIncludeFields);
+    addLookupFields(pipeline, filter.include);
 
     const [data] = await this.datasetModel.aggregate(pipeline).exec();
 

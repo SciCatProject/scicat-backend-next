@@ -12,7 +12,7 @@ import {
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
 import {
-  DatasetLookupKeys,
+  DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
 } from "src/datasets/types/dataset-lookup";
 
@@ -833,8 +833,14 @@ export const addUpdatedByField = <T>(
 
 export const addLookupFields = (
   pipeline: PipelineStage[],
-  datasetLookupFields?: DatasetLookupKeys[],
+  datasetLookupFields?: DatasetLookupKeysEnum[],
 ) => {
+  if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
+    datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
+      (field) => field !== DatasetLookupKeysEnum.all,
+    ) as DatasetLookupKeysEnum[];
+  }
+
   datasetLookupFields?.forEach((field) => {
     DATASET_LOOKUP_FIELDS[field].$lookup.as = field;
 

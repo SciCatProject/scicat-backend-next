@@ -81,7 +81,7 @@ import {
   IsValidResponse,
 } from "src/common/types";
 import {
-  DatasetLookupKeys,
+  DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
 } from "./types/dataset-lookup";
 
@@ -337,21 +337,17 @@ export class DatasetsV4Controller {
     return mergedFilters;
   }
 
-  getIncludeFilters(
-    includeFilters: IFilters<DatasetDocument, IDatasetFields>["include"],
-  ) {
+  validateInclude(include?: DatasetLookupKeysEnum[]) {
     // Check if the includeFilters contains the right values from DATASET_LOOKUP_FIELDS for including the right relations on the Dataset
-    return includeFilters
-      ?.map((field) => {
-        if (Object.keys(DATASET_LOOKUP_FIELDS).includes(field.relation)) {
-          return field.relation;
-        } else {
-          throw new BadRequestException(
-            `Provided include field ${JSON.stringify(field)} is not part of the dataset relations`,
-          );
-        }
-      })
-      .filter((field): field is DatasetLookupKeys => !!field);
+    return include?.map((field) => {
+      if (Object.keys(DATASET_LOOKUP_FIELDS).includes(field)) {
+        return field;
+      } else {
+        throw new BadRequestException(
+          `Provided include field ${JSON.stringify(field)} is not part of the dataset relations`,
+        );
+      }
+    });
   }
 
   // POST /api/v4/datasets
@@ -481,9 +477,9 @@ export class DatasetsV4Controller {
         request,
         this.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
-    ) as IFilters<DatasetDocument, IDatasetFields>;
+    ) as any;
 
-    const includeFilters = this.getIncludeFilters(mergedFilters.include ?? []);
+    this.validateInclude(mergedFilters.include);
 
     // const datasets = await this.datasetsService.findAllComplete(mergedFilters, includeFilters);
     const datasets = await this.datasetsService.findAll(mergedFilters);
@@ -654,11 +650,11 @@ export class DatasetsV4Controller {
         request,
         this.getFilters(headers, queryFilter),
       ) as Record<string, unknown>,
-    ) as IFilters<DatasetDocument, IDatasetFields>;
+    ) as any;
 
-    const includeFilters = this.getIncludeFilters(mergedFilters.include ?? []);
+    this.validateInclude(mergedFilters.include);
 
-    return this.datasetsService.findOneComplete(mergedFilters, includeFilters);
+    return this.datasetsService.findOneComplete(mergedFilters);
   }
 
   // GET /datasets/count
@@ -719,24 +715,26 @@ export class DatasetsV4Controller {
     isArray: false,
     description: "Return dataset with pid specified",
   })
-  async findById(@Req() request: Request, @Param("pid") id: string) {
-    // TODO: Do we want this to be sent as part of the request or we want to controll it here?
-    // TODO: Add option to have "all" of them at once.
-    const includeFields: DatasetLookupKeys[] = [
-      "instruments",
-      "attachments",
-      "datablocks",
-      "origdatablocks",
-      "proposals",
-      "samples",
-    ];
+  @ApiQuery({
+    name: "include",
+    enum: DatasetLookupKeysEnum,
+    type: String,
+    required: false,
+    isArray: true,
+  })
+  async findById(
+    @Req() request: Request,
+    @Param("pid") id: string,
+    @Query("include") include: DatasetLookupKeysEnum[],
+  ) {
+    // TODO: Test this with postman!!!
+    const includeArray = Array.isArray(include) ? include : Array(include);
+    this.validateInclude(includeArray);
 
-    const dataset = await this.datasetsService.findOneComplete(
-      {
-        where: { pid: id },
-      },
-      includeFields,
-    );
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: id },
+      include: includeArray,
+    });
 
     await this.checkPermissionsForDatasetExtended(
       request,
@@ -900,115 +898,6 @@ export class DatasetsV4Controller {
     const removedDataset = await this.datasetsService.findByIdAndDelete(pid);
 
     return removedDataset;
-  }
-
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetUpdate, DatasetClass),
-  )
-  @Post("/:pid/appendMetadataField")
-  @ApiOperation({
-    summary: "It appends a new value to the specific field.",
-    description:
-      "It appends a new value to the specified field of the dataset with provided pid.<br>The SciCat project is reviewing the purpose of this function and will decide if it will be dropped or changed",
-  })
-  @ApiParam({
-    name: "pid",
-    description: "Id of the dataset to be modified",
-    type: String,
-  })
-  @ApiQuery({
-    name: "fieldName",
-    description: "Name of the field to be updated",
-    type: String,
-  })
-  @ApiQuery({
-    name: "data",
-    description: "Json object with the fields to be updated and their values",
-    required: true,
-    type: Array,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: OutputDatasetDto,
-    description: "Return new value of the dataset",
-  })
-  // TODO: appendMetadataField new name and check inputs
-  async appendMetadataField(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-    // @Query("fieldName") fieldName: string,
-    @Query("data") data: string,
-  ): Promise<OutputDatasetDto | null> {
-    const datasetToUpdate = await this.datasetsService.findOne({
-      where: { pid },
-    });
-
-    await this.checkPermissionsForDatasetExtended(
-      request,
-      datasetToUpdate,
-      Action.DatasetUpdate,
-    );
-
-    const parsedData = JSON.parse(data);
-
-    const updateQuery: UpdateQuery<DatasetDocument> = {
-      $addToSet: {
-        scientificMetadata: { $each: parsedData },
-      },
-    };
-
-    const outputDatasetDto = await this.datasetsService.findByIdAndUpdate(
-      pid,
-      updateQuery,
-    );
-
-    return outputDatasetDto;
-  }
-
-  // TODO: Include the first attachment as thumbnail and we already include the attachments in the lookup. If possible remove this endpoint
-  // GET /datasets/:id/thumbnail
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
-  )
-  // @UseGuards(PoliciesGuard)
-  @Get("/:pid/thumbnail")
-  @ApiOperation({
-    summary: "It returns the thumbnail associated with the dataset.",
-    description:
-      "It returns the thumbnail associated with the dataset with the provided pid.",
-  })
-  @ApiParam({
-    name: "pid",
-    description: "Persistent identifier of the dataset",
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: Attachment,
-    description: "Return new value of the dataset",
-  })
-  async thumbnail(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<Partial<Attachment>> {
-    await this.checkPermissionsForDatasetExtended(
-      request,
-      pid,
-      Action.DatasetRead,
-    );
-
-    const attachment = await this.attachmentsService.findOne(
-      { datasetId: pid },
-      { _id: false, thumbnail: true },
-    );
-
-    if (!attachment || !attachment.thumbnail) {
-      return {};
-    }
-
-    return attachment;
   }
 
   @UseGuards(PoliciesGuard)

@@ -1,12 +1,17 @@
 import { PipelineStage } from "mongoose";
 
+export enum DatasetLookupKeysEnum {
+  instruments = "instruments",
+  proposals = "proposals",
+  origdatablocks = "origdatablocks",
+  datablocks = "datablocks",
+  attachments = "attachments",
+  samples = "samples",
+  all = "all",
+}
+
 export const DATASET_LOOKUP_FIELDS: Record<
-  | "instruments"
-  | "proposals"
-  | "origdatablocks"
-  | "datablocks"
-  | "attachments"
-  | "samples",
+  DatasetLookupKeysEnum,
   PipelineStage.Lookup
 > = {
   instruments: {
@@ -57,6 +62,12 @@ export const DATASET_LOOKUP_FIELDS: Record<
       as: "",
     },
   },
+  all: {
+    $lookup: {
+      from: "",
+      localField: "",
+      foreignField: "",
+      as: "",
+    },
+  },
 };
-
-export type DatasetLookupKeys = keyof typeof DATASET_LOOKUP_FIELDS;
