@@ -1,0 +1,5 @@
+{
+  "generatorName": "typescript-fetch",
+  "npmName": "@scicatproject/scicat-ts-fetch",
+  "supportsES6": true
+}
