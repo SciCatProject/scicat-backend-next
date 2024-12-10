@@ -152,7 +152,7 @@ jobs:
             --git-repo-id scicat-backend-next \
             --git-user-id SciCatProject \
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch"  ]; then
+            if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
             elif [ "${{ matrix.generator }}" == "python" ] || [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
@@ -227,7 +227,7 @@ jobs:
       - name: Download Python SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-${{ matrix.sdk_type }}-${{github.sha}}
+          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
 
       - name: Install dependencies
