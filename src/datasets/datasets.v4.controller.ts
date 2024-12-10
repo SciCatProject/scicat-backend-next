@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Param,
   Post,
   Patch,
@@ -13,7 +12,6 @@ import {
   UseInterceptors,
   HttpCode,
   HttpStatus,
-  HttpException,
   NotFoundException,
   Req,
   ForbiddenException,
@@ -41,26 +39,18 @@ import {
   MainDatasetsPublicInterceptor,
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { AttachmentsService } from "src/attachments/attachments.service";
-import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
-import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
-import { DatablocksService } from "src/datablocks/datablocks.service";
-import { Datablock } from "src/datablocks/schemas/datablock.schema";
-import { UpdateQuery } from "mongoose";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFacets, IFilters } from "src/common/interfaces/common.interface";
+import {
+  IFacets,
+  IFilters,
+  ILimitsFilter,
+} from "src/common/interfaces/common.interface";
 import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
-import {
-  filterDescription,
-  filterExample,
-  replaceLikeOperator,
-} from "src/common/utils";
+import { filterDescription, filterExample } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
@@ -80,10 +70,17 @@ import {
   FullFacetResponse,
   IsValidResponse,
 } from "src/common/types";
-import {
-  DatasetLookupKeysEnum,
-  DATASET_LOOKUP_FIELDS,
-} from "./types/dataset-lookup";
+import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
+import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
+import { FilterQuery } from "mongoose";
+import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
+
+export interface IDatasetFiltersV4<T, Y = null> {
+  where?: FilterQuery<T>;
+  include?: DatasetLookupKeysEnum[];
+  fields?: Y;
+  limits?: ILimitsFilter;
+}
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -97,10 +94,7 @@ import {
 @Controller({ path: "datasets", version: "4" })
 export class DatasetsV4Controller {
   constructor(
-    private attachmentsService: AttachmentsService,
-    private datablocksService: DatablocksService,
     private datasetsService: DatasetsService,
-    private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
     private configService: ConfigService,
@@ -263,44 +257,10 @@ export class DatasetsV4Controller {
     return dataset;
   }
 
-  getFilters(
-    headers: Record<string, string>,
-    queryFilter: { filter?: string },
-  ) {
-    // NOTE: If both headers and query filters are present return error because we don't want to support this scenario.
-    if (queryFilter?.filter && (headers?.filter || headers?.where)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "Using two different types(query and headers) of filters is not supported and can result with inconsistencies",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (queryFilter?.filter) {
-      const jsonQueryFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(queryFilter.filter);
-
-      return jsonQueryFilters;
-    } else if (headers?.filter) {
-      const jsonHeadersFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.filter);
-
-      return jsonHeadersFilters;
-    } else if (headers?.where) {
-      const jsonHeadersWhereFilters: IFilters<DatasetDocument, IDatasetFields> =
-        JSON.parse(headers.where);
-
-      return jsonHeadersWhereFilters;
-    }
-
-    return {};
-  }
-
-  updateMergedFiltersForList(
+  addAccessBasedFilters(
     request: Request,
-    mergedFilters: IFilters<DatasetDocument, IDatasetFields>,
-  ): IFilters<DatasetDocument, IDatasetFields> {
+    filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
+  ): IDatasetFiltersV4<DatasetDocument, IDatasetFields> {
     const user: JWTUser = request.user as JWTUser;
 
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
@@ -315,39 +275,26 @@ export class DatasetsV4Controller {
       DatasetClass,
     );
 
-    if (!mergedFilters.where) {
-      mergedFilters.where = {};
+    if (!filter.where) {
+      filter.where = {};
     }
 
     if (!canViewAny) {
       if (canViewAccess) {
-        mergedFilters.where["$or"] = [
+        filter.where["$or"] = [
           { ownerGroup: { $in: user.currentGroups } },
           { accessGroups: { $in: user.currentGroups } },
           { sharedWith: { $in: user.email } },
           { isPublished: true },
         ];
       } else if (canViewOwner) {
-        mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
+        filter.where = [{ ownerGroup: { $in: user.currentGroups } }];
       } else if (canViewPublic) {
-        mergedFilters.where = { isPublished: true };
+        filter.where = { isPublished: true };
       }
     }
 
-    return mergedFilters;
-  }
-
-  validateInclude(include?: DatasetLookupKeysEnum[]) {
-    // Check if the includeFilters contains the right values from DATASET_LOOKUP_FIELDS for including the right relations on the Dataset
-    return include?.map((field) => {
-      if (Object.keys(DATASET_LOOKUP_FIELDS).includes(field)) {
-        return field;
-      } else {
-        throw new BadRequestException(
-          `Provided include field ${JSON.stringify(field)} is not part of the dataset relations`,
-        );
-      }
-    });
+    return filter;
   }
 
   // POST /api/v4/datasets
@@ -469,17 +416,13 @@ export class DatasetsV4Controller {
   })
   async findAll(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
   ) {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
-    ) as any;
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+    const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
 
-    this.validateInclude(mergedFilters.include);
+    console.log(parsedFilter);
 
     // const datasets = await this.datasetsService.findAllComplete(mergedFilters, includeFilters);
     const datasets = await this.datasetsService.findAll(mergedFilters);
@@ -642,17 +585,12 @@ export class DatasetsV4Controller {
   })
   async findOne(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
-    ) as any;
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
-    this.validateInclude(mergedFilters.include);
+    const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
 
     return this.datasetsService.findOneComplete(mergedFilters);
   }
@@ -684,17 +622,13 @@ export class DatasetsV4Controller {
   })
   async count(
     @Req() request: Request,
-    @Headers() headers: Record<string, string>,
-    @Query(new FilterPipe()) queryFilter: { filter?: string },
+    @Query("filter", new FilterValidationPipe()) queryFilter?: string,
   ) {
-    const mergedFilters = replaceLikeOperator(
-      this.updateMergedFiltersForList(
-        request,
-        this.getFilters(headers, queryFilter),
-      ) as Record<string, unknown>,
-    ) as IFilters<DatasetDocument, IDatasetFields>;
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
-    return this.datasetsService.count(mergedFilters);
+    const finalFilters = this.addAccessBasedFilters(request, parsedFilter);
+
+    return this.datasetsService.count(finalFilters);
   }
 
   // GET /datasets/:id
@@ -725,11 +659,12 @@ export class DatasetsV4Controller {
   async findById(
     @Req() request: Request,
     @Param("pid") id: string,
-    @Query("include") include: DatasetLookupKeysEnum[],
+    @Query("include", new IncludeValidationPipe())
+    include: DatasetLookupKeysEnum[] | DatasetLookupKeysEnum,
   ) {
-    // TODO: Test this with postman!!!
-    const includeArray = Array.isArray(include) ? include : Array(include);
-    this.validateInclude(includeArray);
+    const includeArray = Array.isArray(include)
+      ? include
+      : include && Array(include);
 
     const dataset = await this.datasetsService.findOneComplete({
       where: { pid: id },

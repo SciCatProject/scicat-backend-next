@@ -14,6 +14,7 @@ import {
   Model,
   PipelineStage,
   QueryOptions,
+  RootFilterQuery,
   UpdateQuery,
 } from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -76,11 +77,9 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(
-    filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<DatasetClass[]> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+  async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
+    const whereFilter = filter.where ?? {};
+    const fieldsProjection = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
@@ -208,7 +207,7 @@ export class DatasetsService {
   async count(
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
     let count = 0;
     if (this.ESClient && !filter.where) {
       const totalDocCount = await this.datasetModel.countDocuments();
