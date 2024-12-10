@@ -26,6 +26,7 @@ import { DatasetsV4Controller } from "./datasets.v4.controller";
       {
         name: DatasetClass.name,
         imports: [PoliciesModule],
+        inject: [PoliciesService],
         useFactory: (policyService: PoliciesService) => {
           const schema = DatasetSchema;
 
@@ -58,7 +59,6 @@ import { DatasetsV4Controller } from "./datasets.v4.controller";
 
           return schema;
         },
-        inject: [PoliciesService],
       },
     ]),
   ],

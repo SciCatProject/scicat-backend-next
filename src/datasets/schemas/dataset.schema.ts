@@ -192,14 +192,12 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,
-    enum: [DatasetType.Raw, DatasetType.Derived],
     description:
-      "Characterize type of dataset, either 'raw' or 'derived'. Autofilled when choosing the proper inherited models.",
+      "Characterize type of dataset. Either 'raw' or 'derived' by default, additional custom options are defined in datasetTypes.json.",
   })
   @Prop({
     type: String,
     required: true,
-    enum: [DatasetType.Raw, DatasetType.Derived],
     index: true,
   })
   type: string;
