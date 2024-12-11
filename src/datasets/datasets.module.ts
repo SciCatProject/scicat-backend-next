@@ -27,6 +27,7 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
       {
         name: DatasetClass.name,
         imports: [PoliciesModule],
+        inject: [PoliciesService],
         useFactory: (policyService: PoliciesService) => {
           const schema = DatasetSchema;
 
@@ -59,7 +60,6 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 
           return schema;
         },
-        inject: [PoliciesService],
       },
     ]),
   ],

@@ -192,14 +192,12 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: true,
-    enum: [DatasetType.Raw, DatasetType.Derived],
     description:
-      "Characterize type of dataset, either 'raw' or 'derived'. Autofilled when choosing the proper inherited models.",
+      "Characterize type of dataset. Either 'raw' or 'derived' by default, additional custom options are defined in datasetTypes.json.",
   })
   @Prop({
     type: String,
     required: true,
-    enum: [DatasetType.Raw, DatasetType.Derived],
     index: true,
   })
   type: string;
@@ -360,7 +358,7 @@ export class DatasetClass extends OwnableClass {
     type: String,
     required: false,
     description:
-      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
+      "First and last name of principal investigator(s). Multiple PIs can be provided as separate strings in the array. This field is required if the dataset is a Raw dataset.",
   })
   @Prop({ type: [String], required: false })
   principalInvestigators?: string[];

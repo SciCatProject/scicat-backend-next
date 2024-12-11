@@ -294,7 +294,7 @@ export class UpdateDatasetDto extends OwnableDto {
     type: [String],
     required: false,
     description:
-      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
+      "First and last name of principal investigator(s). Multiple PIs can be provided as separate strings in the array. This field is required if the dataset is a Raw dataset.",
   })
   @IsOptional()
   @IsString()
@@ -419,6 +419,16 @@ export class UpdateDatasetDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly jobLogData?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Run number assigned by the system to the data acquisition for the current dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly runNumber?: string;
 }
 
 export class PartialUpdateDatasetDto extends PartialType(UpdateDatasetDto) {}
