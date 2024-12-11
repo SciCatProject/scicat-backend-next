@@ -2,6 +2,7 @@
 /dist
 /node_modules
 functionalAccounts.json
+datasetTypes.json
 proposalTypes.json
 loggers.json
 
