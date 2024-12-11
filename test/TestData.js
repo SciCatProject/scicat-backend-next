@@ -481,7 +481,7 @@ const TestData = {
   },
 
   CustomDatasetCorrectMin: {
-    principalInvestigator: faker.internet.email(),
+    principalInvestigators: [faker.internet.email()],
     owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
@@ -492,7 +492,7 @@ const TestData = {
   },
 
   CustomDatasetCorrect: {
-    principalInvestigator: "egon.meier@web.de",
+    principalInvestigators: ["egon.meier@web.de"],
     inputDatasets: ["/data/input/file1.dat"],
     usedSoftware: [
       "https://gitlab.psi.ch/ANALYSIS/csaxs/commit/7d5888bfffc440bb613bc7fa50adc0097853446c",
@@ -522,7 +522,7 @@ const TestData = {
   },
 
   CustomDatasetWrongType: {
-    principalInvestigator: "egon.meier@web.de",
+    principalInvestigators: ["egon.meier@web.de"],
     jobParameters: {
       nscans: 10,
     },
@@ -540,7 +540,7 @@ const TestData = {
   },
 
   CustomDatasetWrongData: {
-    principalInvestigator: "egon.meier@web.de",
+    principalInvestigators: ["egon.meier@web.de"],
     jobParameters: {
       nscans: 10,
     },
@@ -559,7 +559,7 @@ const TestData = {
   },
 
   CustomDatasetIncompleteData: {
-    principalInvestigator: "egon.meier@web.de",
+    principalInvestigators: ["egon.meier@web.de"],
     jobParameters: {
       nscans: 10,
     },

@@ -292,12 +292,14 @@ export class UpdateDatasetDto extends OwnableDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
+    isArray: true,
     description:
-      "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
+      "First and last name of principal investigator(s). Multiple PIs can be provided as separate strings in the array. This field is required if the dataset is a Raw dataset.",
   })
-  @IsString()
-  readonly principalInvestigator: string;
+  @IsOptional()
+  @IsString({ each: true })
+  readonly principalInvestigators?: string[];
 
   @ApiProperty({
     type: Date,

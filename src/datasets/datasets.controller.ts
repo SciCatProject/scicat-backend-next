@@ -421,10 +421,28 @@ export class DatasetsController {
       whereFilter.instrumentIds = whereFilter.instrumentId;
       delete whereFilter.instrumentId;
     }
+    if ("investigator" in whereFilter) {
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.investigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.investigator;
+      }
+
+      delete whereFilter.investigator;
+    }
     if ("principalInvestigator" in whereFilter) {
-      whereFilter.investigator = whereFilter.principalInvestigator;
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.principalInvestigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.principalInvestigator;
+      }
       delete whereFilter.principalInvestigator;
     }
+
     return whereFilter;
   }
   convertObsoleteToCurrentSchema(
@@ -463,15 +481,22 @@ export class DatasetsController {
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
         ];
       }
+      if ("principalInvestigator" in inputObsoleteDataset) {
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto)
+            .principalInvestigator,
+        ];
+      }
     } else if (
       inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto ||
       inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto ||
       inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto
     ) {
       if ("investigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigator = (
-          inputObsoleteDataset as CreateDerivedDatasetObsoleteDto
-        ).investigator;
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
+            .investigator,
+        ];
       }
     }
 
@@ -516,18 +541,34 @@ export class DatasetsController {
   ): OutputDatasetObsoleteDto {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
-      if ("proposalIds" in inputDataset) {
-        propertiesModifier.proposalId = inputDataset.proposalIds![0];
+      if ("proposalIds" in inputDataset && inputDataset.proposalIds?.length) {
+        propertiesModifier.proposalId = inputDataset.proposalIds[0];
       }
-      if ("sampleIds" in inputDataset) {
-        propertiesModifier.sampleId = inputDataset.sampleIds![0];
+      if ("sampleIds" in inputDataset && inputDataset.sampleIds?.length) {
+        propertiesModifier.sampleId = inputDataset.sampleIds[0];
       }
-      if ("instrumentIds" in inputDataset) {
-        propertiesModifier.instrumentId = inputDataset.instrumentIds![0];
+      if (
+        "instrumentIds" in inputDataset &&
+        inputDataset.instrumentIds?.length
+      ) {
+        propertiesModifier.instrumentId = inputDataset.instrumentIds[0];
       }
+
+      if (
+        "principalInvestigators" in inputDataset &&
+        inputDataset.principalInvestigators?.length
+      ) {
+        propertiesModifier.principalInvestigator =
+          inputDataset.principalInvestigators[0];
+      }
+
       if (inputDataset.type == "derived") {
-        if ("investigator" in inputDataset) {
-          propertiesModifier.investigator = inputDataset.principalInvestigator;
+        if (
+          "investigator" in inputDataset &&
+          inputDataset.principalInvestigators?.length
+        ) {
+          propertiesModifier.investigator =
+            inputDataset.principalInvestigators[0];
         }
       }
     }
