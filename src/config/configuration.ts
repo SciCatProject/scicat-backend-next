@@ -48,6 +48,7 @@ const configuration = () => {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
+    metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -81,6 +82,7 @@ const configuration = () => {
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
+    metricsConfig: jsonConfigMap.metricsConfig,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
