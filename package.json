@@ -107,7 +107,7 @@
     "chai": "^5.0.0",
     "chai-http": "^5.1.1",
     "concurrently": "^9.0.0",
-    "eslint": "^9.16.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "globals": "^15.12.0",
