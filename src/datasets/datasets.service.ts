@@ -28,6 +28,7 @@ import {
   createFullqueryFilter,
   extractMetadataKeys,
   parseLimitFilters,
+  parsePipelineSort,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
@@ -41,6 +42,7 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { isEmpty } from "lodash";
+import { OutputDatasetDto } from "./dto/output-dataset.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -90,6 +92,44 @@ export class DatasetsService {
     const datasets = await datasetPromise.exec();
 
     return datasets;
+  }
+
+  async findAllComplete(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<OutputDatasetDto[]> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+      limit: 100,
+      skip: 0,
+      sort: {},
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      pipeline.push({ $project: fieldsProjection });
+    }
+
+    if (limits.sort) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    if (limits.limit) {
+      pipeline.push({ $limit: limits.limit });
+    }
+
+    if (limits.skip) {
+      pipeline.push({ $skip: limits.skip });
+    }
+
+    addLookupFields(pipeline, filter.include);
+
+    const data = await this.datasetModel
+      .aggregate<OutputDatasetDto>(pipeline)
+      .exec();
+
+    return data;
   }
 
   async fullquery(
@@ -188,7 +228,7 @@ export class DatasetsService {
 
   async findOneComplete(
     filter: FilterQuery<DatasetDocument>,
-  ): Promise<DatasetClass | null> {
+  ): Promise<OutputDatasetDto | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
 
@@ -199,9 +239,11 @@ export class DatasetsService {
 
     addLookupFields(pipeline, filter.include);
 
-    const [data] = await this.datasetModel.aggregate(pipeline).exec();
+    const [data] = await this.datasetModel
+      .aggregate<OutputDatasetDto | undefined>(pipeline)
+      .exec();
 
-    return data;
+    return data || null;
   }
 
   async count(

@@ -75,7 +75,7 @@ import { FilterQuery } from "mongoose";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
-import { swaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 
 export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
@@ -386,7 +386,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: false,
     type: String,
-    content: swaggerDatasetFilterContent,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -402,10 +402,7 @@ export class DatasetsV4Controller {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
     const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
 
-    console.log(parsedFilter);
-
-    // const datasets = await this.datasetsService.findAllComplete(mergedFilters, includeFilters);
-    const datasets = await this.datasetsService.findAll(mergedFilters);
+    const datasets = await this.datasetsService.findAllComplete(mergedFilters);
 
     return datasets;
   }
@@ -554,7 +551,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: true,
     type: String,
-    content: swaggerDatasetFilterContent,
+    content: getSwaggerDatasetFilterContent(false),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -563,10 +560,13 @@ export class DatasetsV4Controller {
   })
   async findOne(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    @Query(
+      "filter",
+      new FilterValidationPipe(false),
+      new IncludeValidationPipe(),
+    )
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
-    console.log(process.env);
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
     const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
@@ -598,7 +598,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    content: swaggerDatasetFilterContent,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -606,6 +606,7 @@ export class DatasetsV4Controller {
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
+  // TODO: Maybe we need to make the filters more granular and allow only needed ones. For example here we need only where filter.
   async count(
     @Req() request: Request,
     @Query("filter", new FilterValidationPipe()) queryFilter?: string,

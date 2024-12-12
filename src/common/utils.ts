@@ -327,6 +327,15 @@ export const parseLimitFilters = (
   return { limit, skip, sort };
 };
 
+export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
+  const pipelineSort: Record<string, 1 | -1> = {};
+  for (const property in sort) {
+    pipelineSort[property] = sort[property] === "asc" ? 1 : -1;
+  }
+
+  return pipelineSort;
+};
+
 export const parseLimitFiltersForPipeline = (
   limits: ILimitsFilter | undefined,
 ): PipelineStage[] => {

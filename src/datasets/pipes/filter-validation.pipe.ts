@@ -5,15 +5,13 @@ import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
 
 // Dataset specific keys that are allowed
 const ALLOWED_DATASET_KEYS = Object.keys(new OutputDatasetDto());
+
+const ALLOWED_LIMIT_KEYS = ["limits", "limit", "skip", "sort"];
 // Allowed keys taken from mongoose QuerySelector.
 const ALLOWED_FILTER_KEYS = [
   "where",
   "include",
   "fields",
-  "limits",
-  "limit",
-  "skip",
-  "order",
   "$in",
   "$eq",
   "$gt",
@@ -28,14 +26,13 @@ const ALLOWED_FILTER_KEYS = [
   "$options",
 ];
 
-const ALL_ALLOWED_FILTER_KEYS = [
-  ...ALLOWED_DATASET_KEYS,
-  ...ALLOWED_FILTER_KEYS,
-];
-
 @Injectable()
 export class FilterValidationPipe implements PipeTransform<string, string> {
+  constructor(private includeLimits = true) {}
   transform(inValue: string): string {
+    const allAllowedKeys = this.includeLimits
+      ? [...ALLOWED_DATASET_KEYS, ...ALLOWED_FILTER_KEYS, ...ALLOWED_LIMIT_KEYS]
+      : [...ALLOWED_DATASET_KEYS, ...ALLOWED_FILTER_KEYS];
     const inValueParsed = JSON.parse(inValue ?? "{}");
     const flattenFilterKeys = Object.keys(flattenObject(inValueParsed));
 
@@ -45,7 +42,7 @@ export class FilterValidationPipe implements PipeTransform<string, string> {
     flattenFilterKeys.forEach((key) => {
       const keyParts = key.split(".");
       const isInAllowedKeys = keyParts.every((part) =>
-        ALL_ALLOWED_FILTER_KEYS.includes(part),
+        allAllowedKeys.includes(part),
       );
 
       if (!isInAllowedKeys) {
