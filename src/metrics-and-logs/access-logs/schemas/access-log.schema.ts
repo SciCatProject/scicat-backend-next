@@ -4,7 +4,10 @@ import { Document } from "mongoose";
 
 export type AccessLogsDocument = AccessLogs & Document;
 
-// Define the structure of the AccessLogSchema
+@Schema({
+  collection: "accessLog",
+  timestamps: true,
+})
 @Schema()
 export class AccessLogs {
   @ApiProperty({

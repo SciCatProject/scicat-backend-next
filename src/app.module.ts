@@ -1,9 +1,4 @@
-import {
-  Logger,
-  MiddlewareConsumer,
-  Module,
-  OnApplicationBootstrap,
-} from "@nestjs/common";
+import { Logger, Module, OnApplicationBootstrap } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
@@ -37,8 +32,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
-import { MetricsMiddleware } from "./metrics/middlewares/metrics.middleware";
-import { MetricsModule } from "./metrics/metrics.module";
+import { MetricsAndLogsModule } from "./metrics-and-logs/metrics-and-logs.module";
 
 @Module({
   imports: [
@@ -50,7 +44,7 @@ import { MetricsModule } from "./metrics/metrics.module";
       load: [configuration],
     }),
     ConditionalModule.registerWhen(
-      MetricsModule,
+      MetricsAndLogsModule,
       (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",
     ),
     LoggerModule,
