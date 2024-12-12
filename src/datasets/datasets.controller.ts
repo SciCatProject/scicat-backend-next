@@ -82,13 +82,8 @@ import {
 } from "./dto/update-derived-dataset-obsolete.dto";
 import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-datablock";
 import {
-  CountApiResponse,
   filterDescription,
   filterExample,
-  FullFacetFilters,
-  FullFacetResponse,
-  FullQueryFilters,
-  IsValidResponse,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -96,8 +91,6 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import configuration from "src/config/configuration";
-import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
@@ -105,6 +98,16 @@ import {
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { ConfigService } from "@nestjs/config";
+import { AccessGroupsType } from "src/config/configuration";
+import { DatasetType } from "./types/dataset-type.enum";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+  FullQueryFilters,
+  IsValidResponse,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -116,7 +119,7 @@ import { Logbook } from "src/logbooks/schemas/logbook.schema";
   RelationshipClass,
 )
 @ApiTags("datasets")
-@Controller("datasets")
+@Controller({ path: "datasets", version: "3" })
 export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
@@ -125,7 +128,22 @@ export class DatasetsController {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
+    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
+      "datasetCreationValidationEnabled",
+    );
+    this.datasetCreationValidationRegex = this.configService.get<string>(
+      "datasetCreationValidationRegex",
+    );
+    this.datasetTypes = this.configService.get<string>("datasetTypes");
+  }
+  private accessGroups;
+  private datasetCreationValidationEnabled;
+  private datasetCreationValidationRegex;
+  private datasetTypes;
 
   getFilters(
     headers: Record<string, string>,
@@ -323,18 +341,18 @@ export class DatasetsController {
 
   getUserPermissionsFromGroups(user: JWTUser) {
     const userIsAdmin = user.currentGroups.some((g) =>
-      configuration().adminGroups.includes(g),
+      this.accessGroups?.admin.includes(g),
     );
     const userCanCreateDatasetPrivileged =
-      configuration().createDatasetPrivilegedGroups.some((value) =>
+      this.accessGroups?.createDatasetPrivileged.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithPid =
-      configuration().createDatasetWithPidGroups.some((value) =>
+      this.accessGroups?.createDatasetWithPid.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithoutPid =
-      configuration().createDatasetGroups.some((value) =>
+      this.accessGroups?.createDataset.some((value) =>
         user.currentGroups.includes(value),
       );
 
@@ -390,11 +408,11 @@ export class DatasetsController {
 
     // now checks if we need to validate the pid
     if (
-      configuration().datasetCreationValidationEnabled &&
-      configuration().datasetCreationValidationRegex &&
+      this.datasetCreationValidationEnabled &&
+      this.datasetCreationValidationRegex &&
       dataset.pid
     ) {
-      const re = new RegExp(configuration().datasetCreationValidationRegex);
+      const re = new RegExp(this.datasetCreationValidationRegex);
 
       if (!re.test(dataset.pid)) {
         throw new BadRequestException(
@@ -457,9 +475,7 @@ export class DatasetsController {
       | PartialUpdateDerivedDatasetObsoleteDto
       | PartialUpdateDatasetDto,
   ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {
-      version: "v3",
-    };
+    const propertiesModifier: Record<string, unknown> = {};
 
     if ("proposalId" in inputObsoleteDataset) {
       propertiesModifier.proposalIds = [
@@ -669,7 +685,7 @@ export class DatasetsController {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(error);
       }
     }
   }
@@ -717,9 +733,8 @@ export class DatasetsController {
         CreateDatasetDto)
     ) {
       if (
-        !(Object.values(configuration().datasetTypes) as string[]).includes(
-          outputDatasetDto.type,
-        )
+        this.datasetTypes &&
+        !Object.values(this.datasetTypes).includes(outputDatasetDto.type)
       ) {
         throw new HttpException(
           {

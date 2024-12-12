@@ -9,11 +9,20 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import {
+  FilterQuery,
+  Model,
+  PipelineStage,
+  QueryOptions,
+  RootFilterQuery,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addApiVersionField,
   addCreatedByFields,
+  addLookupFields,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
@@ -31,6 +40,7 @@ import {
   PartialUpdateDatasetWithHistoryDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { isEmpty } from "lodash";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -52,6 +62,11 @@ export class DatasetsService {
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
+    // Add version to the datasets based on the apiVersion extracted from the route path or use default one
+    addApiVersionField(
+      createDatasetDto,
+      this.request.route.path || this.configService.get("versions.api"),
+    );
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
@@ -62,11 +77,9 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(
-    filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<DatasetClass[]> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+  async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
+    const whereFilter = filter.where ?? {};
+    const fieldsProjection = filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
@@ -173,10 +186,28 @@ export class DatasetsService {
     return this.datasetModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
+  async findOneComplete(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<DatasetClass | null> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      pipeline.push({ $project: fieldsProjection });
+    }
+
+    addLookupFields(pipeline, filter.include);
+
+    const [data] = await this.datasetModel.aggregate(pipeline).exec();
+
+    return data;
+  }
+
   async count(
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
     let count = 0;
     if (this.ESClient && !filter.where) {
       const totalDocCount = await this.datasetModel.countDocuments();
@@ -287,7 +318,7 @@ export class DatasetsService {
       const datasets = this.datasetModel.find({}, { _id: 0 }).lean().exec();
       return datasets;
     } catch (error) {
-      throw new NotFoundException();
+      throw new NotFoundException(error);
     }
   }
   // Get metadata keys

@@ -5,7 +5,6 @@ import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
-import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
 import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
@@ -13,11 +12,11 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
+import { DatasetsV4Controller } from "./datasets.v4.controller";
 
 @Module({
   imports: [
     AttachmentsModule,
-    ConfigModule,
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
@@ -64,7 +63,7 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
     ]),
   ],
   exports: [DatasetsService],
-  controllers: [DatasetsController],
+  controllers: [DatasetsController, DatasetsV4Controller],
   providers: [DatasetsService, CaslAbilityFactory],
 })
 export class DatasetsModule {}

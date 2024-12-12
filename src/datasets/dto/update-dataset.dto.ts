@@ -152,8 +152,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly validationStatus?: string;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     description:
       "Array of tags associated with the meaning or contents of this dataset. Values should ideally come from defined vocabularies, taxonomies, ontologies or knowledge graphs.",
   })
@@ -212,9 +213,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly isPublished?: boolean;
 
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(TechniqueClass) },
+    type: TechniqueClass,
     required: false,
+    isArray: true,
     default: [],
     description: "Stores the metadata information for techniques.",
   })
@@ -226,8 +227,9 @@ export class UpdateDatasetDto extends OwnableDto {
 
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     default: [],
     description: "List of users that the dataset has been shared with.",
   })
@@ -239,9 +241,9 @@ export class UpdateDatasetDto extends OwnableDto {
 
   // it needs to be discussed if this fields is managed by the user or by the system
   @ApiProperty({
-    type: "array",
-    items: { $ref: getSchemaPath(RelationshipClass) },
+    type: RelationshipClass,
     required: false,
+    isArray: true,
     default: [],
     description: "Stores the relationships with other datasets.",
   })
@@ -293,9 +295,8 @@ export class UpdateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
+    description: "Array of first and last name of principal investigator(s).",
     isArray: true,
-    description:
-      "First and last name of principal investigator(s). Multiple PIs can be provided as separate strings in the array. This field is required if the dataset is a Raw dataset.",
   })
   @IsOptional()
   @IsString({ each: true })
@@ -342,8 +343,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataFormat?: string;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     description:
       "ID of the proposal or proposals which the dataset belongs to.<br>This dataset might have been acquired under the listed proposals or is derived from datasets acquired from datasets belonging to the listed datasets.",
   })
@@ -354,8 +356,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly proposalIds?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     description:
       "ID of the sample or samples used when collecting the data included or used in this dataset.",
   })
@@ -368,6 +371,7 @@ export class UpdateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
+    isArray: true,
     description:
       "ID of the instrument or instruments where the data included or used in this datasets was collected on.",
   })
@@ -378,8 +382,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly instrumentIds?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: true,
+    isArray: true,
     description:
       "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
   })
@@ -390,8 +395,9 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly inputDatasets?: string[];
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     description:
       "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data.",
   })

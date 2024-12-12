@@ -11,8 +11,9 @@ export class OwnableDto {
   readonly ownerGroup: string;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
+    isArray: true,
     description: "List of groups which have access to this item.",
   })
   @IsOptional()
