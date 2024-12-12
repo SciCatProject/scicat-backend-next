@@ -6,7 +6,8 @@ on:
       - master
 on:
   pull_request:
-    branches: [master]
+    branches:
+      - master
 
 env:
   NODE_VERSION: 20.x
