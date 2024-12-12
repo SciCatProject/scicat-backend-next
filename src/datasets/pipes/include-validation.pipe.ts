@@ -5,7 +5,7 @@ import { DATASET_LOOKUP_FIELDS } from "src/datasets/types/dataset-lookup";
 function isJsonString(str: string) {
   try {
     JSON.parse(str);
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;

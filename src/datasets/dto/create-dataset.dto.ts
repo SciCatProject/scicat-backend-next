@@ -1,7 +1,6 @@
 import { IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { UpdateDatasetDto } from "./update-dataset.dto";
-import { DatasetType } from "../types/dataset-type.enum";
 
 export class CreateDatasetDto extends UpdateDatasetDto {
   @ApiProperty({

@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath, PartialType } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { OwnableDto } from "../../common/dto/ownable.dto";
 import {
   ArrayNotEmpty,
