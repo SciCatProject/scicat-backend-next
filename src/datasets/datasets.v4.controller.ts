@@ -15,7 +15,8 @@ import {
   NotFoundException,
   Req,
   ForbiddenException,
-  BadRequestException,
+  InternalServerErrorException,
+  ConflictException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -28,6 +29,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
+import { MongoError } from "mongodb";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass, DatasetDocument } from "./schemas/dataset.schema";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
@@ -50,7 +52,6 @@ import {
 import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
-import { filterDescription, filterExample } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
@@ -63,7 +64,6 @@ import {
 } from "./dto/update-dataset.dto";
 import { Logbook } from "src/logbooks/schemas/logbook.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
-import { ConfigService } from "@nestjs/config";
 import {
   CountApiResponse,
   FullFacetFilters,
@@ -71,9 +71,11 @@ import {
   IsValidResponse,
 } from "src/common/types";
 import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
-import { FilterValidationPipe } from "src/common/pipes/filter-validation.pipe";
 import { FilterQuery } from "mongoose";
-import { IncludeValidationPipe } from "src/common/pipes/include-validation.pipe";
+import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
+import { PidValidationPipe } from "./pipes/pid-validation.pipe";
+import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
+import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 
 export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
@@ -81,6 +83,8 @@ export interface IDatasetFiltersV4<T, Y = null> {
   fields?: Y;
   limits?: ILimitsFilter;
 }
+
+const test = true;
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -97,34 +101,7 @@ export class DatasetsV4Controller {
     private datasetsService: DatasetsService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-    private configService: ConfigService,
-  ) {
-    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
-      "datasetCreationValidationEnabled",
-    );
-    this.datasetCreationValidationRegex = this.configService.get<string>(
-      "datasetCreationValidationRegex",
-    );
-  }
-
-  private datasetCreationValidationEnabled;
-  private datasetCreationValidationRegex;
-
-  private validateDatasetPid(dataset: CreateDatasetDto) {
-    // now checks if we need to validate the pid
-    if (
-      this.datasetCreationValidationEnabled &&
-      this.datasetCreationValidationRegex &&
-      dataset.pid
-    ) {
-      const re = new RegExp(this.datasetCreationValidationRegex);
-      if (!re.test(dataset.pid)) {
-        throw new BadRequestException(
-          "PID is not following required standards",
-        );
-      }
-    }
-  }
+  ) {}
 
   async generateDatasetInstanceForPermissions(
     dataset: DatasetClass | CreateDatasetDto,
@@ -325,19 +302,28 @@ export class DatasetsV4Controller {
   })
   async create(
     @Req() request: Request,
-    @Body()
+    @Body(PidValidationPipe)
     createDatasetDto: CreateDatasetDto,
   ): Promise<OutputDatasetDto> {
-    this.validateDatasetPid(createDatasetDto);
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
       Action.DatasetCreate,
     );
 
-    const createdDataset = await this.datasetsService.create(datasetDto);
+    try {
+      const createdDataset = await this.datasetsService.create(datasetDto);
 
-    return createdDataset;
+      return createdDataset;
+    } catch (error) {
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "A dataset with this this unique key already exists!",
+        );
+      } else {
+        throw new InternalServerErrorException(error);
+      }
+    }
   }
 
   @UseGuards(PoliciesGuard)
@@ -369,11 +355,9 @@ export class DatasetsV4Controller {
   })
   async isValid(
     @Req() request: Request,
-    @Body()
+    @Body(PidValidationPipe)
     createDatasetDto: CreateDatasetDto,
   ) {
-    this.validateDatasetPid(createDatasetDto);
-
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
       createDatasetDto,
@@ -401,12 +385,10 @@ export class DatasetsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description:
-      "Database filters to apply when retrieving datasets\n" +
-      filterDescription,
+    description: "Database filters to apply when retrieving datasets",
     required: false,
     type: String,
-    example: filterExample,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -569,14 +551,13 @@ export class DatasetsV4Controller {
     description:
       "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
   })
+  // NOTE: We use "content" property here as it is described in the swagger specification: https://swagger.io/docs/specification/v3_0/describing-parameters/#schema-vs-content:~:text=explode%3A%20false-,content,-is%20used%20in
   @ApiQuery({
     name: "filter",
-    description:
-      "Database filters to apply when retrieving datasets\n" +
-      filterDescription,
-    required: false,
+    description: "Database filters to apply when retrieving datasets",
+    required: true,
     type: String,
-    example: filterExample,
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -588,11 +569,20 @@ export class DatasetsV4Controller {
     @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
+    console.log(process.env);
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
     const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
 
-    return this.datasetsService.findOneComplete(mergedFilters);
+    const foundDataset =
+      await this.datasetsService.findOneComplete(mergedFilters);
+
+    if (!foundDataset) {
+      // TODO: Do we want to throw here if the dataset is not found!?
+      // something like: throw new NotFoundException(`Dataset with provided filters: ${queryFilter} was not found. Please check your filter and try again`);
+    }
+
+    return foundDataset;
   }
 
   // GET /datasets/count
@@ -611,8 +601,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    example:
-      '{"where": {"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}}',
+    content: getSwaggerDatasetFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,

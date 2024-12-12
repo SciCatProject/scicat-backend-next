@@ -1,7 +1,7 @@
 import { PipeTransform, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
+import { flattenObject } from "src/common/utils";
 import { OutputDatasetDto } from "src/datasets/dto/output-dataset.dto";
-import { flattenObject } from "../utils";
 
 // Dataset specific keys that are allowed
 const ALLOWED_DATASET_KEYS = Object.keys(new OutputDatasetDto());
