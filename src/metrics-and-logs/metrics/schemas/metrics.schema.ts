@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Date, Document } from "mongoose";
 import { MetricsRecord } from "./metrics-record.schema";
 
@@ -11,12 +11,12 @@ export type MetricsDocument = Metrics & Document;
   versionKey: false,
 })
 export class Metrics {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: "The date the metric was recorded",
-    type: String,
+    type: Date,
   })
-  @Prop({ type: Date, required: false, default: Date.now })
-  date: Date;
+  @Prop({ type: Date, default: Date.now })
+  createdAt?: Date;
 
   @ApiProperty({
     description: "A list of endpoints with their access log compacted details",

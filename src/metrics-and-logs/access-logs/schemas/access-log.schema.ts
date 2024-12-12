@@ -9,7 +9,6 @@ export type AccessLogDocument = AccessLog & Document;
   timestamps: { createdAt: true, updatedAt: false },
   versionKey: false,
 })
-@Schema()
 export class AccessLog {
   @ApiPropertyOptional({
     description: "User ID associated with the access log",
