@@ -75,7 +75,7 @@ import { FilterQuery } from "mongoose";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
-import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { swaggerDatasetFilterContent } from "./types/dataset-filter-content";
 
 export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
@@ -83,8 +83,6 @@ export interface IDatasetFiltersV4<T, Y = null> {
   fields?: Y;
   limits?: ILimitsFilter;
 }
-
-const test = true;
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -388,7 +386,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: swaggerDatasetFilterContent,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -551,13 +549,12 @@ export class DatasetsV4Controller {
     description:
       "It returns the first dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
   })
-  // NOTE: We use "content" property here as it is described in the swagger specification: https://swagger.io/docs/specification/v3_0/describing-parameters/#schema-vs-content:~:text=explode%3A%20false-,content,-is%20used%20in
   @ApiQuery({
     name: "filter",
     description: "Database filters to apply when retrieving datasets",
     required: true,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: swaggerDatasetFilterContent,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -601,7 +598,7 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: swaggerDatasetFilterContent,
   })
   @ApiResponse({
     status: HttpStatus.OK,
