@@ -6,8 +6,9 @@ import { MetricsRecord } from "./metrics-record.schema";
 export type MetricsDocument = Metrics & Document;
 
 @Schema({
-  collection: "metrics",
-  timestamps: true,
+  collection: "Metrics",
+  timestamps: { createdAt: true, updatedAt: false },
+  versionKey: false,
 })
 export class Metrics {
   @ApiProperty({

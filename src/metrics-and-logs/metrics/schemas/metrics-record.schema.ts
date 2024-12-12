@@ -2,7 +2,9 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
-@Schema()
+@Schema({
+  versionKey: false,
+})
 export class MetricsRecord {
   @ApiProperty({
     description: "The endpoint path being tracked",
