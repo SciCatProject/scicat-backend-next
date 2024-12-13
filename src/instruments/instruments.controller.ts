@@ -9,10 +9,10 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
-  HttpException,
-  HttpStatus,
   InternalServerErrorException,
+  ConflictException,
 } from "@nestjs/common";
+import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
@@ -35,6 +35,7 @@ import {
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
+import { logger } from "@user-office-software/duo-logger";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -58,10 +59,20 @@ export class InstrumentsController {
         await this.instrumentsService.create(createInstrumentDto);
       return instrument;
     } catch (error) {
-      throw new HttpException(
-        `Instrument creation was not successful. Reason: ${String(error)}`,
-        HttpStatus.BAD_REQUEST,
-      );
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "Instrument with the same unique name already exists",
+        );
+      } else {
+        logger.logException(
+          "Something went wrong while creating instrument",
+          error,
+        );
+
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+        );
+      }
     }
   }
 
@@ -142,7 +153,20 @@ export class InstrumentsController {
 
       return instrument;
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "Instrument with the same unique name already exists",
+        );
+      } else {
+        logger.logException(
+          "Something went wrong while updating instrument",
+          error,
+        );
+
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+        );
+      }
     }
   }
 

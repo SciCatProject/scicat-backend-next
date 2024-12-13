@@ -1,9 +1,8 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
 import { CaslAbilityFactory } from "./casl-ability.factory";
 
 @Module({
-  imports: [ConfigModule],
+  imports: [],
   providers: [CaslAbilityFactory],
   exports: [CaslAbilityFactory],
 })

@@ -12,7 +12,7 @@ export enum DatasetLookupKeysEnum {
 
 export const DATASET_LOOKUP_FIELDS: Record<
   DatasetLookupKeysEnum,
-  PipelineStage.Lookup
+  PipelineStage.Lookup | undefined
 > = {
   instruments: {
     $lookup: {
@@ -62,12 +62,5 @@ export const DATASET_LOOKUP_FIELDS: Record<
       as: "",
     },
   },
-  all: {
-    $lookup: {
-      from: "",
-      localField: "",
-      foreignField: "",
-      as: "",
-    },
-  },
+  all: undefined,
 };

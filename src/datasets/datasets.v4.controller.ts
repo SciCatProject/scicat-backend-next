@@ -76,6 +76,7 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { logger } from "@user-office-software/duo-logger";
 
 export interface IDatasetFiltersV4<T, Y = null> {
   where?: FilterQuery<T>;
@@ -92,7 +93,7 @@ export interface IDatasetFiltersV4<T, Y = null> {
   TechniqueClass,
   RelationshipClass,
 )
-@ApiTags("datasets")
+@ApiTags("datasets v4")
 @Controller({ path: "datasets", version: "4" })
 export class DatasetsV4Controller {
   constructor(
@@ -172,54 +173,18 @@ export class DatasetsV4Controller {
         ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
         ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
         ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
-    } else if (group == Action.DatasetAttachmentCreate) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetAttachmentUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetAttachmentDelete) {
-      canDoAction =
-        ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
     } else if (group == Action.DatasetOrigdatablockRead) {
       canDoAction =
         ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
         ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
         ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
         ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockCreate) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetOrigdatablockDelete) {
-      canDoAction =
-        ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
     } else if (group == Action.DatasetDatablockRead) {
       canDoAction =
         ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
         ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
         ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
         ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
-    } else if (group == Action.DatasetDatablockCreate) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
-    } else if (group == Action.DatasetDatablockUpdate) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
-    } else if (group == Action.DatasetDatablockDelete) {
-      canDoAction =
-        ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
-        ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
     } else if (group == Action.DatasetLogbookRead) {
       canDoAction =
         ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
@@ -256,16 +221,34 @@ export class DatasetsV4Controller {
 
     if (!canViewAny) {
       if (canViewAccess) {
-        filter.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { sharedWith: { $in: user.email } },
-          { isPublished: true },
-        ];
+        if (filter.where["$and"]) {
+          filter.where["$and"].push({
+            $or: [
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+              { sharedWith: { $in: [user.email] } },
+              { isPublished: true },
+            ],
+          });
+        } else {
+          filter.where["$and"] = [
+            {
+              $or: [
+                { ownerGroup: { $in: user.currentGroups } },
+                { accessGroups: { $in: user.currentGroups } },
+                { sharedWith: { $in: [user.email] } },
+                { isPublished: true },
+              ],
+            },
+          ];
+        }
       } else if (canViewOwner) {
-        filter.where = [{ ownerGroup: { $in: user.currentGroups } }];
+        filter.where = {
+          ...filter.where,
+          ownerGroup: { $in: user.currentGroups },
+        };
       } else if (canViewPublic) {
-        filter.where = { isPublished: true };
+        filter.where = { ...filter.where, isPublished: true };
       }
     }
 
@@ -284,7 +267,8 @@ export class DatasetsV4Controller {
   )
   @Post()
   @ApiOperation({
-    summary: "It creates a new dataset which can be a raw or derived one.",
+    summary:
+      "It creates a new dataset. Type should be raw, derived or any of the customized types available in your instance",
     description:
       "It creates a new dataset and returns it completed with systems fields.",
   })
@@ -319,7 +303,14 @@ export class DatasetsV4Controller {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        throw new InternalServerErrorException(error);
+        logger.logException(
+          "Something went wrong while creating the dataset",
+          error,
+        );
+
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+        );
       }
     }
   }
@@ -551,7 +542,12 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving datasets",
     required: true,
     type: String,
-    content: getSwaggerDatasetFilterContent(false),
+    content: getSwaggerDatasetFilterContent({
+      where: true,
+      include: true,
+      fields: true,
+      limits: true,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -562,7 +558,12 @@ export class DatasetsV4Controller {
     @Req() request: Request,
     @Query(
       "filter",
-      new FilterValidationPipe(false),
+      new FilterValidationPipe({
+        where: true,
+        include: true,
+        fields: true,
+        limits: true,
+      }),
       new IncludeValidationPipe(),
     )
     queryFilter: string,
@@ -598,7 +599,12 @@ export class DatasetsV4Controller {
     description: "Database filters to apply when retrieving count for datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerDatasetFilterContent({
+      where: true,
+      include: false,
+      fields: false,
+      limits: false,
+    }),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -609,7 +615,16 @@ export class DatasetsV4Controller {
   // TODO: Maybe we need to make the filters more granular and allow only needed ones. For example here we need only where filter.
   async count(
     @Req() request: Request,
-    @Query("filter", new FilterValidationPipe()) queryFilter?: string,
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: true,
+        include: false,
+        fields: false,
+        limits: false,
+      }),
+    )
+    queryFilter?: string,
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
 

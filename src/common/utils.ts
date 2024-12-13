@@ -336,6 +336,15 @@ export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
   return pipelineSort;
 };
 
+export const parsePipelineProjection = (fieldsProjection: string[]) => {
+  const pipelineProjection: Record<string, boolean> = {};
+  fieldsProjection.forEach((field) => {
+    pipelineProjection[field] = true;
+  });
+
+  return pipelineProjection;
+};
+
 export const parseLimitFiltersForPipeline = (
   limits: ILimitsFilter | undefined,
 ): PipelineStage[] => {
@@ -838,23 +847,6 @@ export const addUpdatedByField = <T>(
     ...obj,
     updatedBy: username,
   };
-};
-
-export const addLookupFields = (
-  pipeline: PipelineStage[],
-  datasetLookupFields?: DatasetLookupKeysEnum[],
-) => {
-  if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
-    datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
-      (field) => field !== DatasetLookupKeysEnum.all,
-    ) as DatasetLookupKeysEnum[];
-  }
-
-  datasetLookupFields?.forEach((field) => {
-    DATASET_LOOKUP_FIELDS[field].$lookup.as = field;
-
-    pipeline.push(DATASET_LOOKUP_FIELDS[field]);
-  });
 };
 
 export const filterExample =

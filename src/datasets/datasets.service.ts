@@ -13,6 +13,7 @@ import {
   FilterQuery,
   Model,
   PipelineStage,
+  ProjectionType,
   QueryOptions,
   RootFilterQuery,
   UpdateQuery,
@@ -22,12 +23,12 @@ import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addApiVersionField,
   addCreatedByFields,
-  addLookupFields,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
   parseLimitFilters,
+  parsePipelineProjection,
   parsePipelineSort,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
@@ -43,6 +44,10 @@ import {
 } from "./dto/update-dataset.dto";
 import { isEmpty } from "lodash";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import {
+  DatasetLookupKeysEnum,
+  DATASET_LOOKUP_FIELDS,
+} from "./types/dataset-lookup";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -60,6 +65,27 @@ export class DatasetsService {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
     }
+  }
+
+  addLookupFields(
+    pipeline: PipelineStage[],
+    datasetLookupFields?: DatasetLookupKeysEnum[],
+  ) {
+    if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
+      datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
+        (field) => field !== DatasetLookupKeysEnum.all,
+      ) as DatasetLookupKeysEnum[];
+    }
+
+    datasetLookupFields?.forEach((field) => {
+      const fieldValue = DATASET_LOOKUP_FIELDS[field];
+
+      if (fieldValue) {
+        fieldValue.$lookup.as = field;
+
+        pipeline.push(fieldValue);
+      }
+    });
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
@@ -80,8 +106,9 @@ export class DatasetsService {
   }
 
   async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
-    const whereFilter = filter.where ?? {};
-    const fieldsProjection = filter.fields ?? {};
+    const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: ProjectionType<DatasetDocument> =
+      filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
@@ -98,16 +125,17 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<OutputDatasetDto[]> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
-      limit: 100,
+      limit: 10,
       skip: 0,
       sort: {},
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     if (!isEmpty(fieldsProjection)) {
-      pipeline.push({ $project: fieldsProjection });
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
     }
 
     if (limits.sort) {
@@ -123,7 +151,7 @@ export class DatasetsService {
       pipeline.push({ $skip: limits.skip });
     }
 
-    addLookupFields(pipeline, filter.include);
+    this.addLookupFields(pipeline, filter.include);
 
     const data = await this.datasetModel
       .aggregate<OutputDatasetDto>(pipeline)
@@ -230,14 +258,15 @@ export class DatasetsService {
     filter: FilterQuery<DatasetDocument>,
   ): Promise<OutputDatasetDto | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     if (!isEmpty(fieldsProjection)) {
-      pipeline.push({ $project: fieldsProjection });
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
     }
 
-    addLookupFields(pipeline, filter.include);
+    this.addLookupFields(pipeline, filter.include);
 
     const [data] = await this.datasetModel
       .aggregate<OutputDatasetDto | undefined>(pipeline)
