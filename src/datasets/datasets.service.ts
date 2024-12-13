@@ -83,6 +83,55 @@ export class DatasetsService {
       if (fieldValue) {
         fieldValue.$lookup.as = field;
 
+        // TODO: Should implement something similar like addAccessBasedFilters in the controller including the access based checks on each relational field
+        // For example if we have proposals included we should check something like:
+        /*
+            const ability = this.caslAbilityFactory.proposalInstanceAccess(user);
+            const canViewAny = ability.can(Action.ProposalReadAny, Proposal);
+            const canViewOwner = ability.can(Action.ProposalReadManyOwner, Proposal);
+            const canViewAccess = ability.can(
+              Action.ProposalReadManyAccess,
+              Proposal,
+            );
+            const canViewPublic = ability.can(
+              Action.ProposalReadManyPublic,
+              Proposal,
+            );
+
+            if (!canViewAny) {
+              if (canViewAccess) {
+                fieldValue.$lookup.pipeline = [
+                  {
+                    $match: {
+                      $or: [
+                        { ownerGroup: { $in: user.currentGroups } },
+                        { accessGroups: { $in: user.currentGroups } },
+                        { sharedWith: { $in: [user.email] } },
+                        { isPublished: true },
+                      ],
+                    },
+                  },
+                ];
+              } else if (canViewOwner) {
+               fieldValue.$lookup.pipeline = [
+                  {
+                    $match: {
+                      ownerGroup: { $in: user.currentGroups } 
+                    }
+                  },
+                ];
+              } else if (canViewPublic) {
+               fieldValue.$lookup.pipeline = [
+                  {
+                    $match: {
+                      isPublished: true
+                    }
+                  },
+                ];
+              }
+            }
+        */
+
         pipeline.push(fieldValue);
       }
     });

@@ -198,11 +198,9 @@ export class DatasetsV4Controller {
   }
 
   addAccessBasedFilters(
-    request: Request,
+    user: JWTUser,
     filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>,
   ): IDatasetFiltersV4<DatasetDocument, IDatasetFields> {
-    const user: JWTUser = request.user as JWTUser;
-
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
     const canViewOwner = ability.can(Action.DatasetReadManyOwner, DatasetClass);
@@ -391,7 +389,10 @@ export class DatasetsV4Controller {
     queryFilter: string,
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
-    const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
+    const mergedFilters = this.addAccessBasedFilters(
+      request.user as JWTUser,
+      parsedFilter,
+    );
 
     const datasets = await this.datasetsService.findAllComplete(mergedFilters);
 
@@ -570,7 +571,10 @@ export class DatasetsV4Controller {
   ): Promise<OutputDatasetDto | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
-    const mergedFilters = this.addAccessBasedFilters(request, parsedFilter);
+    const mergedFilters = this.addAccessBasedFilters(
+      request.user as JWTUser,
+      parsedFilter,
+    );
 
     const foundDataset =
       await this.datasetsService.findOneComplete(mergedFilters);
@@ -628,7 +632,10 @@ export class DatasetsV4Controller {
   ) {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
 
-    const finalFilters = this.addAccessBasedFilters(request, parsedFilter);
+    const finalFilters = this.addAccessBasedFilters(
+      request.user as JWTUser,
+      parsedFilter,
+    );
 
     return this.datasetsService.count(finalFilters);
   }
