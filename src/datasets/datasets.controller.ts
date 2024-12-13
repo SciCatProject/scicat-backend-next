@@ -203,16 +203,32 @@ export class DatasetsController {
 
     if (!canViewAny) {
       if (canViewAccess) {
-        // FIXME: This here doesn't work if we want to pass $or in the original query itself. This is overwriting it! Double-check it!
-        // Here is an example: { "where": { "$or": [{"datasetName": "test"}, {"description": "Dataset"}] }} gets overwritten with: {"where":{"$or":[{"ownerGroup":{"$in":["group1","ess","swap"]}},{"accessGroups":{"$in":["group1","ess","swap"]}},{"sharedWith":{"$in":"user1@your.site"}},{"isPublished":true}]}}
-        mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { sharedWith: { $in: user.email } },
-          { isPublished: true },
-        ];
+        if (mergedFilters.where["$and"]) {
+          mergedFilters.where["$and"].push({
+            $or: [
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+              { sharedWith: { $in: [user.email] } },
+              { isPublished: true },
+            ],
+          });
+        } else {
+          mergedFilters.where["$and"] = [
+            {
+              $or: [
+                { ownerGroup: { $in: user.currentGroups } },
+                { accessGroups: { $in: user.currentGroups } },
+                { sharedWith: { $in: [user.email] } },
+                { isPublished: true },
+              ],
+            },
+          ];
+        }
       } else if (canViewOwner) {
-        mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
+        mergedFilters.where = {
+          ...mergedFilters.where,
+          ownerGroup: { $in: user.currentGroups },
+        };
       } else if (canViewPublic) {
         mergedFilters.where = { isPublished: true };
       }
