@@ -4,13 +4,9 @@ import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
 
 // Nest Token for CREATE job actions
-export const CREATE_JOB_ACTION_CREATORS = Symbol(
-  "CREATE_JOB_ACTION_CREATORS",
-);
+export const CREATE_JOB_ACTION_CREATORS = Symbol("CREATE_JOB_ACTION_CREATORS");
 // Nest Token for UPDATE job actions
-export const UPDATE_JOB_ACTION_CREATORS = Symbol(
-  "UPDATE_JOB_ACTION_CREATORS",
-);
+export const UPDATE_JOB_ACTION_CREATORS = Symbol("UPDATE_JOB_ACTION_CREATORS");
 
 export interface JobConfigListOptions {
   configVersion: string;
