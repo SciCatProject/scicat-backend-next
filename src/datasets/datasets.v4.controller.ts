@@ -37,10 +37,7 @@ import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { IDatasetFields } from "./interfaces/dataset-filters.interface";
-import {
-  MainDatasetsPublicInterceptor,
-  SubDatasetsPublicInterceptor,
-} from "./interceptors/datasets-public.interceptor";
+import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
@@ -208,10 +205,6 @@ export class DatasetsV4Controller {
       Action.DatasetReadManyAccess,
       DatasetClass,
     );
-    const canViewPublic = ability.can(
-      Action.DatasetReadManyPublic,
-      DatasetClass,
-    );
 
     if (!filter.where) {
       filter.where = {};
@@ -245,12 +238,18 @@ export class DatasetsV4Controller {
           ...filter.where,
           ownerGroup: { $in: user.currentGroups },
         };
-      } else if (canViewPublic) {
-        filter.where = { ...filter.where, isPublished: true };
       }
     }
 
     return filter;
+  }
+
+  addPublicFilter(filter: IDatasetFiltersV4<DatasetDocument, IDatasetFields>) {
+    if (!filter.where) {
+      filter.where = {};
+    }
+
+    filter.where = { ...filter.where, isPublished: true };
   }
 
   // POST /api/v4/datasets
@@ -358,12 +357,45 @@ export class DatasetsV4Controller {
     return { valid: valid };
   }
 
+  // GET /datasets/public
+  @Get("/public")
+  @ApiOperation({
+    summary: "It returns a list of public datasets.",
+    description:
+      "It returns a list of public datasets. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Database filters to apply when retrieving the public datasets",
+    required: false,
+    type: String,
+    content: getSwaggerDatasetFilterContent(),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputDatasetDto,
+    isArray: true,
+    description: "Return the datasets requested",
+  })
+  async findAllPublic(
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
+  ) {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    this.addPublicFilter(parsedFilter);
+
+    const datasets = await this.datasetsService.findAllComplete(parsedFilter);
+
+    return datasets;
+  }
+
   // GET /datasets
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
-  @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
   @ApiOperation({
     summary: "It returns a list of datasets.",
@@ -401,6 +433,7 @@ export class DatasetsV4Controller {
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
+  // TODO: Check if this should be closed or oppened endpoint for public!?
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
@@ -490,7 +523,7 @@ export class DatasetsV4Controller {
     status: HttpStatus.OK,
     type: String,
     isArray: true,
-    description: "Return metadata keys  for list of datasets selected",
+    description: "Return metadata keys for list of datasets selected",
   })
   // NOTE: This one needs to be discussed as well but it gets the metadata keys from the dataset but it doesnt do it with the nested fields. Think about it
   async metadataKeys(
@@ -527,6 +560,51 @@ export class DatasetsV4Controller {
     return this.datasetsService.metadataKeys(parsedFilters);
   }
 
+  // GET /datasets/public/metadataKeys
+  @Get("/public/metadataKeys")
+  @ApiOperation({
+    summary:
+      "It returns a list of metadata keys contained in the public datasets matching the filter provided.",
+    description:
+      "It returns a list of metadata keys contained in the public datasets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
+    required: false,
+    type: String,
+    example: {},
+  })
+  @ApiQuery({
+    name: "limits",
+    description: "Define further query parameters like skip, limit, order",
+    required: false,
+    type: String,
+    example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: String,
+    isArray: true,
+    description: "Return metadata keys for list of public datasets selected",
+  })
+  // NOTE: This one needs to be discussed as well but it gets the metadata keys from the dataset but it doesnt do it with the nested fields. Think about it
+  async publicMetadataKeys(
+    @Query() filters: { fields?: string; limits?: string },
+  ) {
+    let fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+
+    fields = { ...fields, isPublished: true };
+
+    const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
+      fields: fields,
+      limits: JSON.parse(filters.limits ?? "{}"),
+    };
+
+    return this.datasetsService.metadataKeys(parsedFilters);
+  }
+
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
   @CheckPolicies("datasets", (ability: AppAbility) =>
@@ -540,7 +618,7 @@ export class DatasetsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving datasets",
+    description: "Database filters to apply when retrieving dataset",
     required: true,
     type: String,
     content: getSwaggerDatasetFilterContent({
@@ -557,16 +635,7 @@ export class DatasetsV4Controller {
   })
   async findOne(
     @Req() request: Request,
-    @Query(
-      "filter",
-      new FilterValidationPipe({
-        where: true,
-        include: true,
-        fields: true,
-        limits: true,
-      }),
-      new IncludeValidationPipe(),
-    )
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -578,6 +647,49 @@ export class DatasetsV4Controller {
 
     const foundDataset =
       await this.datasetsService.findOneComplete(mergedFilters);
+
+    if (!foundDataset) {
+      // TODO: Do we want to throw here if the dataset is not found!?
+      // something like: throw new NotFoundException(`Dataset with provided filters: ${queryFilter} was not found. Please check your filter and try again`);
+    }
+
+    return foundDataset;
+  }
+
+  // GET /datasets/findOne/public
+  @Get("/findOne/public")
+  @ApiOperation({
+    summary: "It returns the first public dataset found.",
+    description:
+      "It returns the first public dataset of the ones that matches the filter provided. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description: "Database filters to apply when retrieving public dataset",
+    required: true,
+    type: String,
+    content: getSwaggerDatasetFilterContent({
+      where: true,
+      include: true,
+      fields: true,
+      limits: true,
+    }),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputDatasetDto,
+    description: "Return the datasets requested",
+  })
+  async findOnePublic(
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
+    queryFilter: string,
+  ): Promise<OutputDatasetDto | null> {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    this.addPublicFilter(parsedFilter);
+
+    const foundDataset =
+      await this.datasetsService.findOneComplete(parsedFilter);
 
     if (!foundDataset) {
       // TODO: Do we want to throw here if the dataset is not found!?
@@ -616,7 +728,6 @@ export class DatasetsV4Controller {
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
-  // TODO: Maybe we need to make the filters more granular and allow only needed ones. For example here we need only where filter.
   async count(
     @Req() request: Request,
     @Query(
@@ -638,6 +749,51 @@ export class DatasetsV4Controller {
     );
 
     return this.datasetsService.count(finalFilters);
+  }
+
+  // GET /datasets/count/public
+  @Get("/count/public")
+  @ApiOperation({
+    summary: "It returns the number of public datasets.",
+    description:
+      "It returns a number of public datasets matching the where filter if provided.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Database filters to apply when retrieving count for public datasets",
+    required: false,
+    type: String,
+    content: getSwaggerDatasetFilterContent({
+      where: true,
+      include: false,
+      fields: false,
+      limits: false,
+    }),
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: CountApiResponse,
+    description:
+      "Return the number of public datasets in the following format: { count: integer }",
+  })
+  async countPublic(
+    @Query(
+      "filter",
+      new FilterValidationPipe({
+        where: true,
+        include: false,
+        fields: false,
+        limits: false,
+      }),
+    )
+    queryFilter?: string,
+  ) {
+    const parsedFilter = JSON.parse(queryFilter ?? "{}");
+
+    this.addPublicFilter(parsedFilter);
+
+    return this.datasetsService.count(parsedFilter);
   }
 
   // GET /datasets/:id
@@ -685,6 +841,43 @@ export class DatasetsV4Controller {
       dataset,
       Action.DatasetRead,
     );
+
+    return dataset;
+  }
+
+  // GET /datasets/public/:id
+  @Get("public/:pid")
+  @ApiParam({
+    name: "pid",
+    description: "Id of the public dataset to return",
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutputDatasetDto,
+    isArray: false,
+    description: "Return public dataset with pid specified",
+  })
+  @ApiQuery({
+    name: "include",
+    enum: DatasetLookupKeysEnum,
+    type: String,
+    required: false,
+    isArray: true,
+  })
+  async findByIdPublic(
+    @Param("pid") id: string,
+    @Query("include", new IncludeValidationPipe())
+    include: DatasetLookupKeysEnum[] | DatasetLookupKeysEnum,
+  ) {
+    const includeArray = Array.isArray(include)
+      ? include
+      : include && Array(include);
+
+    const dataset = await this.datasetsService.findOneComplete({
+      where: { pid: id, isPublished: true },
+      include: includeArray,
+    });
 
     return dataset;
   }

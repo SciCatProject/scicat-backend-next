@@ -858,8 +858,11 @@ export class DatasetsController {
 
   // GET /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
@@ -946,8 +949,11 @@ export class DatasetsController {
 
   // GET /datasets/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
@@ -1009,8 +1015,11 @@ export class DatasetsController {
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
@@ -1067,8 +1076,11 @@ export class DatasetsController {
 
   // GET /datasets/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/metadataKeys")
@@ -1146,8 +1158,11 @@ export class DatasetsController {
 
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -1221,8 +1236,11 @@ export class DatasetsController {
 
   // GET /datasets/count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @Get("/count")
   @ApiOperation({
@@ -1262,8 +1280,11 @@ export class DatasetsController {
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   @Get("/:pid")
   @ApiParam({
@@ -1628,8 +1649,11 @@ export class DatasetsController {
 
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")

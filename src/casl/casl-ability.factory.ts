@@ -98,17 +98,34 @@ export class CaslAbilityFactory {
       /*  unauthenticated users
       **/
 
+      can(Action.DatasetReadManyPublic, DatasetClass);
+      can(Action.DatasetReadOnePublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetAttachmentReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetOrigdatablockReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+      // -
+      can(Action.DatasetDatablockReadPublic, DatasetClass, {
+        isPublished: true,
+      });
+
       cannot(Action.DatasetCreate, DatasetClass);
-      can(Action.DatasetRead, DatasetClass);
+      cannot(Action.DatasetRead, DatasetClass);
       cannot(Action.DatasetUpdate, DatasetClass);
       // -
       cannot(Action.DatasetAttachmentCreate, DatasetClass);
-      can(Action.DatasetAttachmentRead, DatasetClass);
+      cannot(Action.DatasetAttachmentRead, DatasetClass);
       cannot(Action.DatasetAttachmentUpdate, DatasetClass);
       cannot(Action.DatasetAttachmentDelete, DatasetClass);
       // -
       cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-      can(Action.DatasetOrigdatablockRead, DatasetClass);
+      cannot(Action.DatasetOrigdatablockRead, DatasetClass);
       cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
       // -
       cannot(Action.DatasetDatablockCreate, DatasetClass);
