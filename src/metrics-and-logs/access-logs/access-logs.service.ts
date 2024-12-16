@@ -7,7 +7,6 @@ export class AccessLogsService {
     @InjectModel(AccessLog.name)
     private accessLogModel: Model<AccessLogDocument>,
   ) {}
-  // Method to log/store metrics
 
   async create(accessLogData: AccessLog): Promise<AccessLog> {
     const accessLog = new this.accessLogModel(accessLogData);

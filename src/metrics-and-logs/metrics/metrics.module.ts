@@ -3,6 +3,7 @@ import { MetricsService } from "./metrics.service";
 import { MetricsController } from "./metrics.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Metrics, MetricsSchema } from "./schemas/metrics.schema";
+import { AccessLogsModule } from "../access-logs/access-logs.module";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { Metrics, MetricsSchema } from "./schemas/metrics.schema";
         schema: MetricsSchema,
       },
     ]),
+    AccessLogsModule,
   ],
   providers: [MetricsService, MetricsController],
   exports: [],
