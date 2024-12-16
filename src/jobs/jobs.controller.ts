@@ -36,7 +36,6 @@ import {
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
-import configuration from "src/config/configuration";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
@@ -49,11 +48,18 @@ import {
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
+  parseBoolean,
 } from "src/common/utils";
-import { JobAction, JobDto, JobConfig } from "./config/jobconfig";
+import {
+  JobAction,
+  JobDto,
+  JobConfig,
+} from "../config/job-config/jobconfig.interface";
 import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { ConfigService } from "@nestjs/config";
+import { JobConfigService } from "../config/job-config/jobconfig.service";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -68,6 +74,8 @@ export class JobsController {
     private caslAbilityFactory: CaslAbilityFactory,
     private readonly usersService: UsersService,
     private eventEmitter: EventEmitter2,
+    private configService: ConfigService,
+    private jobConfigService: JobConfigService,
   ) {
     this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
@@ -75,7 +83,7 @@ export class JobsController {
   }
 
   publishJob() {
-    if (configuration().rabbitMq.enabled) {
+    if (parseBoolean(this.configService.get<string>("rabbitMq.enabled"))) {
       // TODO: This should publish the job to the message broker.
       // job.publishJob(ctx.instance, "jobqueue");
       console.log("Saved Job %s#%s and published to message broker");
@@ -359,17 +367,8 @@ export class JobsController {
    * Check job type matching configuration
    */
   getJobTypeConfiguration = (jobType: string) => {
-    const jobConfigs = configuration().jobConfiguration;
-    const matchingConfig = jobConfigs.filter((j) => j.jobType == jobType);
-
-    if (matchingConfig.length != 1) {
-      if (matchingConfig.length > 1) {
-        Logger.error(
-          "More than one job configurations matching type " + jobType,
-        );
-      } else {
-        Logger.error("No job configuration matching type " + jobType);
-      }
+    const jobConfig = this.jobConfigService.get(jobType);
+    if (!jobConfig) {
       // return error that job type does not exists
       throw new HttpException(
         {
@@ -379,7 +378,7 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return matchingConfig[0];
+    return jobConfig;
   };
 
   /**
@@ -419,9 +418,8 @@ export class JobsController {
     }
     if (user) {
       // the request comes from a user who is logged in.
-      if (
-        user.currentGroups.some((g) => configuration().adminGroups.includes(g))
-      ) {
+      const adminGroups = this.configService.get<string[]>("adminGroups") || [];
+      if (user.currentGroups.some((g) => adminGroups.includes(g))) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {
