@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import {
-  JobActionFactory,
+  JobActionCreator,
   JobActionOptions,
   JobDto,
 } from "../../jobconfig.interface";
@@ -8,7 +8,7 @@ import { ValidateJobAction } from "./validateaction";
 import { isValidateJobActionOptions } from "./validateaction.interface";
 
 @Injectable()
-export class ValidateJobActionFactory implements JobActionFactory<JobDto> {
+export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
   constructor() {}
 
   public create<Options extends JobActionOptions>(options: Options) {

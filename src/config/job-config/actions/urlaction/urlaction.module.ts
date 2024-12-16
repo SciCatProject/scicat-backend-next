@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { URLJobActionFactory } from "./urlaction.factory";
+import { URLJobActionCreator } from "./urlaction.service";
 
 @Module({
-  providers: [URLJobActionFactory],
-  exports: [URLJobActionFactory],
+  providers: [URLJobActionCreator],
+  exports: [URLJobActionCreator],
 })
 export class URLJobActionModule {}

@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { RabbitMQJobActionFactory } from "./rabbitmqaction.factory";
+import { RabbitMQJobActionCreator } from "./rabbitmqaction.service";
 import { CommonModule } from "src/common/common.module";
 
 @Module({
   imports: [CommonModule],
-  providers: [RabbitMQJobActionFactory],
-  exports: [RabbitMQJobActionFactory],
+  providers: [RabbitMQJobActionCreator],
+  exports: [RabbitMQJobActionCreator],
 })
 export class RabbitMQJobActionModule {}

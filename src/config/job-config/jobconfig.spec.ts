@@ -5,25 +5,25 @@ import { Test } from "@nestjs/testing";
 import { actionType as logActionType } from "./actions/logaction/logaction.interface";
 import { actionType as validateActionType } from "./actions/validateaction/validateaction.interface";
 import {
-  CREATE_JOB_ACTION_FACTORIES,
-  UPDATE_JOB_ACTION_FACTORIES,
+  CREATE_JOB_ACTION_CREATORS,
+  UPDATE_JOB_ACTION_CREATORS,
 } from "./jobconfig.interface";
 
-const actionFactoryMock = {
+const actionCreatorMock = {
   create: jest.fn(() => new LogJobAction({ actionType: "log" })),
 };
-const factoriesMock = {
-  [logActionType]: actionFactoryMock,
-  [validateActionType]: actionFactoryMock,
+const creatorsMock = {
+  [logActionType]: actionCreatorMock,
+  [validateActionType]: actionCreatorMock,
 };
-const factoryProviders = [
+const creatorProviders = [
   {
-    provide: CREATE_JOB_ACTION_FACTORIES,
-    useValue: factoriesMock,
+    provide: CREATE_JOB_ACTION_CREATORS,
+    useValue: creatorsMock,
   },
   {
-    provide: UPDATE_JOB_ACTION_FACTORIES,
-    useValue: factoriesMock,
+    provide: UPDATE_JOB_ACTION_CREATORS,
+    useValue: creatorsMock,
   },
 ];
 
@@ -37,7 +37,7 @@ describe("Job configuration", () => {
           load: [() => ({ jobConfigurationFile: path })],
         }),
       ],
-      providers: [...factoryProviders, JobConfigService],
+      providers: [...creatorProviders, JobConfigService],
     }).compile();
 
     const jobConfigService = module.get<JobConfigService>(JobConfigService);

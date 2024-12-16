@@ -1,6 +1,6 @@
 import { isLogJobActionOptions } from "./logaction.interface";
 import {
-  JobActionFactory,
+  JobActionCreator,
   JobActionOptions,
   JobDto,
 } from "../../jobconfig.interface";
@@ -8,7 +8,7 @@ import { Injectable } from "@nestjs/common";
 import { LogJobAction } from "./logaction";
 
 @Injectable()
-export class LogJobActionFactory implements JobActionFactory<JobDto> {
+export class LogJobActionCreator implements JobActionCreator<JobDto> {
   constructor() {}
 
   public create(options: JobActionOptions) {

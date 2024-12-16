@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { JobConfigService } from "./jobconfig.service";
 import { ConfigModule } from "@nestjs/config";
-import { DefaultJobActionFactories } from "./actions/defaultjobactions.module";
+import { CoreJobActionCreators } from "./actions/corejobactioncreators.module";
 
 @Module({
-  imports: [ConfigModule, DefaultJobActionFactories],
+  imports: [ConfigModule, CoreJobActionCreators],
   providers: [JobConfigService],
   exports: [JobConfigService],
 })

@@ -10,8 +10,8 @@ import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { UsersModule } from "src/users/users.module";
 import { JobConfigModule } from "../config/job-config/jobconfig.module";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
-import { DefaultJobActionFactories } from "../config/job-config/actions/defaultjobactions.module";
-import { EmailJobActionFactory } from "src/config/job-config/actions/emailaction/emailaction.factory";
+import { CoreJobActionCreators } from "../config/job-config/actions/corejobactioncreators.module";
+import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
 import { CommonModule } from "src/common/common.module";
 import { CaslModule } from "src/casl/casl.module";
 
@@ -21,7 +21,7 @@ import { CaslModule } from "src/casl/casl.module";
     CommonModule,
     CaslModule,
     ConfigModule,
-    DefaultJobActionFactories,
+    CoreJobActionCreators,
     JobConfigModule,
     DatasetsModule,
     UsersModule,
@@ -47,6 +47,6 @@ import { CaslModule } from "src/casl/casl.module";
     PoliciesModule,
     OrigDatablocksModule,
   ],
-  providers: [JobsService, JobConfigService, EmailJobActionFactory],
+  providers: [JobsService, JobConfigService, EmailJobActionCreator],
 })
 export class JobsModule {}

@@ -4,16 +4,16 @@ import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
 
 // Nest Token for CREATE job actions
-export const CREATE_JOB_ACTION_FACTORIES = Symbol(
-  "CREATE_JOB_ACTION_FACTORIES",
+export const CREATE_JOB_ACTION_CREATORS = Symbol(
+  "CREATE_JOB_ACTION_CREATORS",
 );
 // Nest Token for UPDATE job actions
-export const UPDATE_JOB_ACTION_FACTORIES = Symbol(
-  "UPDATE_JOB_ACTION_FACTORIES",
+export const UPDATE_JOB_ACTION_CREATORS = Symbol(
+  "UPDATE_JOB_ACTION_CREATORS",
 );
 
 export interface JobConfigListOptions {
-  configVersion?: string;
+  configVersion: string;
   jobs: JobConfigOptions[];
 }
 
@@ -28,7 +28,7 @@ export interface JobConfig {
 }
 export interface JobConfigOptions {
   jobType: string;
-  configVersion?: string;
+  configVersion: string;
   create: JobOperationOptions;
   statusUpdate: JobOperationOptions;
 }
@@ -80,6 +80,6 @@ export interface JobActionOptions {
 /**
  * Represents a class that can create a JobAction after reading the jobConfigurationFile
  */
-export type JobActionFactory<DtoType extends JobDto> = {
+export type JobActionCreator<DtoType extends JobDto> = {
   create: (options: JobActionOptions) => JobAction<DtoType>;
 };

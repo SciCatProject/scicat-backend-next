@@ -1,14 +1,14 @@
 import { Inject, Injectable } from "@nestjs/common";
 import {
-  CREATE_JOB_ACTION_FACTORIES,
-  JobActionFactory,
+  CREATE_JOB_ACTION_CREATORS,
+  JobActionCreator,
   JobConfig,
   JobConfigListOptions,
   JobConfigOptions,
   JobDto,
   JobOperation,
   JobOperationOptions,
-  UPDATE_JOB_ACTION_FACTORIES,
+  UPDATE_JOB_ACTION_CREATORS,
 } from "./jobconfig.interface";
 import Ajv from "ajv";
 import { JobConfigSchema } from "./jobconfig.schema";
@@ -27,12 +27,12 @@ export class JobConfigService {
   private readonly filePath: string;
 
   constructor(
-    @Inject(CREATE_JOB_ACTION_FACTORIES)
-    private create_factories: Record<string, JobActionFactory<CreateJobDto>>,
-    @Inject(UPDATE_JOB_ACTION_FACTORIES)
-    private update_factories: Record<
+    @Inject(CREATE_JOB_ACTION_CREATORS)
+    private create_creators: Record<string, JobActionCreator<CreateJobDto>>,
+    @Inject(UPDATE_JOB_ACTION_CREATORS)
+    private update_creators: Record<
       string,
-      JobActionFactory<StatusUpdateJobDto>
+      JobActionCreator<StatusUpdateJobDto>
     >,
     configService: ConfigService,
   ) {
@@ -76,8 +76,8 @@ export class JobConfigService {
     return jobConfigListOptions.jobs.reduce(
       (acc, jobConfigOptions) => {
         const jobConfig: JobConfig = this.parseJobConfig({
-          configVersion: jobConfigListOptions.configVersion,
           ...jobConfigOptions,
+          configVersion: jobConfigListOptions.configVersion,
         });
         if (jobConfig.jobType in acc) {
           throw new Error(
@@ -102,27 +102,27 @@ export class JobConfigService {
       configVersion: options.configVersion,
       create: this.parseJobOperation<CreateJobDto>(
         options.create,
-        this.create_factories,
+        this.create_creators,
       ),
       statusUpdate: this.parseJobOperation<StatusUpdateJobDto>(
         options.statusUpdate,
-        this.update_factories,
+        this.update_creators,
       ),
     };
   }
 
   private parseJobOperation<Dto extends JobDto>(
     options: JobOperationOptions,
-    factories: Record<string, JobActionFactory<Dto>>,
+    creators: Record<string, JobActionCreator<Dto>>,
   ): JobOperation<Dto> {
     const actionOptions = options.actions || [];
     const actions = actionOptions.map((opt) => {
-      if (!(opt.actionType in factories)) {
+      if (!(opt.actionType in creators)) {
         throw new Error(
           `Unknown action type ${opt.actionType} in ${this.filePath}`,
         );
       }
-      return factories[opt.actionType].create(opt);
+      return creators[opt.actionType].create(opt);
     });
     return {
       auth: options.auth,

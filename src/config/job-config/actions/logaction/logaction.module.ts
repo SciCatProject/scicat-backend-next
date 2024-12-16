@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { LogJobActionFactory } from "./logaction.factory";
+import { LogJobActionCreator } from "./logaction.service";
 
 @Module({
-  providers: [LogJobActionFactory],
-  exports: [LogJobActionFactory],
+  providers: [LogJobActionCreator],
+  exports: [LogJobActionCreator],
 })
 export class LogJobActionModule {}

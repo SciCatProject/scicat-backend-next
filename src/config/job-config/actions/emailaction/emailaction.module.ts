@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { EmailJobActionFactory } from "./emailaction.factory";
+import { EmailJobActionCreator } from "./emailaction.service";
 import { CommonModule } from "src/common/common.module";
 
 @Module({
   imports: [CommonModule],
-  providers: [EmailJobActionFactory],
-  exports: [EmailJobActionFactory],
+  providers: [EmailJobActionCreator],
+  exports: [EmailJobActionCreator],
 })
 export class EmailJobActionModule {}

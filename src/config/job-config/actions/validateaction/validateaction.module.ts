@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { ValidateJobActionFactory } from "./validateaction.factory";
+import { ValidateJobActionCreator } from "./validateaction.service";
 
 @Module({
-  providers: [ValidateJobActionFactory],
-  exports: [ValidateJobActionFactory],
+  providers: [ValidateJobActionCreator],
+  exports: [ValidateJobActionCreator],
 })
 export class ValidateJobActionModule {}

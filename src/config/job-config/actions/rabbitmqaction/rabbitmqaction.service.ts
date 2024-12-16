@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import {
-  JobActionFactory,
+  JobActionCreator,
   JobActionOptions,
   JobDto,
 } from "../../jobconfig.interface";
-import { isRabbitMQJobActionOptions } from "../rabbitmqaction/rabbitmqaction.interface";
+import { isRabbitMQJobActionOptions } from "./rabbitmqaction.interface";
 import { RabbitMQJobAction } from "./rabbitmqaction";
 
 @Injectable()
-export class RabbitMQJobActionFactory implements JobActionFactory<JobDto> {
+export class RabbitMQJobActionCreator implements JobActionCreator<JobDto> {
   constructor() {}
 
   public create<Options extends JobActionOptions>(options: Options) {
