@@ -1170,110 +1170,128 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    if (user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))) {
-      /*
+    if (!user) {
+      /**
+      /*  unauthenticated users
+      **/
+
+      can(Action.OrigdatablockReadManyPublic, SampleClass);
+      can(Action.OrigdatablockReadOnePublic, SampleClass, {
+        isPublished: true,
+      });
+      can(Action.DatasetOrigdatablockReadPublic, SampleClass, {
+        isPublished: true,
+      });
+    } else {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /*
       / user that belongs to any of the group listed in DELETE_GROUPS
       */
 
-      can(Action.OrigdatablockDeleteAny, OrigDatablock);
-    }
-    if (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) {
-      /*
+        can(Action.OrigdatablockDeleteAny, OrigDatablock);
+      }
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /*
       / user that belongs to any of the group listed in ADMIN_GROUPS
       */
 
-      can(Action.OrigdatablockReadAny, OrigDatablock);
-      can(Action.OrigdatablockCreateAny, OrigDatablock);
-      can(Action.OrigdatablockUpdateAny, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDatasetPrivileged.includes(g),
-      )
-    ) {
-      /**
+        can(Action.OrigdatablockReadAny, OrigDatablock);
+        can(Action.OrigdatablockCreateAny, OrigDatablock);
+        can(Action.OrigdatablockUpdateAny, OrigDatablock);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetPrivileged.includes(g),
+        )
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
       **/
-      can(Action.OrigdatablockCreateAny, OrigDatablock);
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDatasetWithPid.includes(g),
-      ) ||
-      this.accessGroups?.createDatasetWithPid.includes("#all")
-    ) {
-      /**
+        can(Action.OrigdatablockCreateAny, OrigDatablock);
+        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetWithPid.includes(g),
+        ) ||
+        this.accessGroups?.createDatasetWithPid.includes("#all")
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
       **/
 
-      can(Action.OrigdatablockCreateOwner, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        isPublished: true,
-      });
-      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDataset.includes(g),
-      ) ||
-      this.accessGroups?.createDataset.includes("#all")
-    ) {
-      /**
+        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          isPublished: true,
+        });
+        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDataset.includes(g),
+        ) ||
+        this.accessGroups?.createDataset.includes("#all")
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_GROUPS
       **/
 
-      can(Action.OrigdatablockCreateOwner, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        isPublished: true,
-      });
-      can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-    } else if (user) {
-      /**
+        can(Action.OrigdatablockCreateOwner, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          isPublished: true,
+        });
+        can(Action.OrigdatablockUpdateOwner, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+      } else if (user) {
+        /**
       /*  authenticated users
       **/
 
-      can(Action.OrigdatablockReadManyAccess, OrigDatablock);
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        ownerGroup: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        accessGroups: { $in: user.currentGroups },
-      });
-      can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
-        isPublished: true,
-      });
+        can(Action.OrigdatablockReadManyAccess, OrigDatablock);
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          accessGroups: { $in: user.currentGroups },
+        });
+        can(Action.OrigdatablockReadOneAccess, OrigDatablock, {
+          isPublished: true,
+        });
+      }
     }
     return build({
       detectSubjectType: (item) =>

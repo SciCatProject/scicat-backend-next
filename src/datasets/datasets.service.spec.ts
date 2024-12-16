@@ -7,6 +7,7 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class InitialDatasetsServiceMock {}
 
@@ -107,6 +108,7 @@ describe("DatasetsService", () => {
         },
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
+        CaslAbilityFactory,
       ],
     }).compile();
 

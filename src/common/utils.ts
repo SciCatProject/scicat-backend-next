@@ -11,10 +11,6 @@ import {
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
-import {
-  DatasetLookupKeysEnum,
-  DATASET_LOOKUP_FIELDS,
-} from "src/datasets/types/dataset-lookup";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
