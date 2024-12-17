@@ -15,7 +15,7 @@ export class RabbitMQService implements OnModuleDestroy {
     Logger.log("Initializing RabbitMQService.", "RabbitMQService");
 
     const rabbitMqEnabled =
-      (this.configService.get<string>("rabbitMq.enabled") === "yes");
+      this.configService.get<string>("rabbitMq.enabled") === "yes";
 
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
@@ -49,7 +49,7 @@ export class RabbitMQService implements OnModuleDestroy {
               return;
             }
             this.connection = connection;
-    
+
             this.connection.createChannel(
               (channelError: Error, channel: Channel) => {
                 if (channelError) {
@@ -62,7 +62,7 @@ export class RabbitMQService implements OnModuleDestroy {
                 }
                 this.channel = channel;
                 Logger.log(this.channel);
-              }
+              },
             );
           },
         );
@@ -72,11 +72,7 @@ export class RabbitMQService implements OnModuleDestroy {
     }
   }
 
-  connect(
-    queue: string,
-    exchange: string,
-    key: string,
-  ) {
+  connect(queue: string, exchange: string, key: string) {
     try {
       this.channel.assertQueue(queue, { durable: true });
       this.channel.assertExchange(exchange, "topic", {
@@ -92,13 +88,10 @@ export class RabbitMQService implements OnModuleDestroy {
     }
   }
 
-  sendMessage(
-    queue: string,
-    message: string,
-  ) {
+  sendMessage(queue: string, message: string) {
     try {
       this.channel.sendToQueue(queue, Buffer.from(message), {
-        persistent: true
+        persistent: true,
       });
     } catch (error) {
       Logger.error(
