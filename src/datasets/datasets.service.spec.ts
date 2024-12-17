@@ -8,6 +8,7 @@ import { ElasticSearchService } from "src/elastic-search/elastic-search.service"
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { DatasetsAccessService } from "./datasets-access.service";
 
 class InitialDatasetsServiceMock {}
 
@@ -102,6 +103,7 @@ describe("DatasetsService", () => {
           },
         },
         DatasetsService,
+        DatasetsAccessService,
         {
           provide: InitialDatasetsService,
           useClass: InitialDatasetsServiceMock,

@@ -71,7 +71,6 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-import { logger } from "@user-office-software/duo-logger";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -283,13 +282,9 @@ export class DatasetsV4Controller {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        logger.logException(
-          "Something went wrong while creating the dataset",
-          error,
-        );
-
         throw new InternalServerErrorException(
           "Something went wrong. Please try again later.",
+          { cause: error },
         );
       }
     }
