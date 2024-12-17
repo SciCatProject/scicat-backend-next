@@ -31,7 +31,6 @@ import {
   parsePipelineProjection,
   parsePipelineSort,
 } from "src/common/utils";
-import { Action } from "src/casl/action.enum";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
@@ -49,10 +48,7 @@ import {
   DatasetLookupKeysEnum,
   DATASET_LOOKUP_FIELDS,
 } from "./types/dataset-lookup";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { ProposalClass } from "src/proposals/schemas/proposal.schema";
-import { Instrument } from "src/instruments/schemas/instrument.schema";
-import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { DatasetsAccessService } from "./datasets-access.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -63,162 +59,13 @@ export class DatasetsService {
     private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
-    private caslAbilityFactory: CaslAbilityFactory,
+    private datasetsAccessService: DatasetsAccessService,
     @Inject(ElasticSearchService)
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
   ) {
     if (this.elasticSearchService.connected) {
       this.ESClient = this.elasticSearchService;
-    }
-  }
-
-  getRelationViewAccess(field: DatasetLookupKeysEnum, user: JWTUser) {
-    switch (field) {
-      case DatasetLookupKeysEnum.proposals: {
-        const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-        const canViewAny = ability.can(Action.ProposalsReadAny, ProposalClass);
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-
-        return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
-      }
-      case DatasetLookupKeysEnum.origdatablocks: {
-        const ability =
-          this.caslAbilityFactory.origDatablockInstanceAccess(user);
-        const canViewAny = ability.can(
-          Action.OrigdatablockReadAny,
-          OrigDatablock,
-        );
-        const canViewAccess = ability.can(
-          Action.OrigdatablockReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.OrigdatablockReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.OrigdatablockReadManyPublic,
-          ProposalClass,
-        );
-
-        return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
-      }
-      case DatasetLookupKeysEnum.datablocks: {
-        const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-        const canViewAny = ability.can(
-          Action.DatasetDatablockReadAny,
-          OrigDatablock,
-        );
-        const canViewAccess = ability.can(
-          Action.DatasetDatablockReadAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.DatasetDatablockReadOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.DatasetDatablockReadPublic,
-          ProposalClass,
-        );
-
-        return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
-      }
-      case DatasetLookupKeysEnum.samples: {
-        const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
-        const canViewAny = ability.can(Action.SampleReadAny, OrigDatablock);
-        const canViewAccess = ability.can(
-          Action.SampleReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.SampleReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.SampleReadManyPublic,
-          ProposalClass,
-        );
-
-        return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
-      }
-      case DatasetLookupKeysEnum.instruments: {
-        // TODO: Fix this if the instrument access change
-        const ability = this.caslAbilityFactory.instrumentEndpointAccess(user);
-        const canViewAny = ability.can(Action.InstrumentRead, Instrument);
-
-        return {
-          canViewAny,
-          canViewOwner: false,
-          canViewAccess: false,
-          canViewPublic: true,
-        };
-      }
-      default:
-        return {
-          canViewAny: false,
-          canViewOwner: false,
-          canViewAccess: false,
-          canViewPublic: true,
-        };
-    }
-  }
-
-  addRelationFieldAccess(fieldValue: PipelineStage.Lookup) {
-    const currentUser = this.request.user as JWTUser;
-
-    const access = this.getRelationViewAccess(
-      fieldValue.$lookup.as as DatasetLookupKeysEnum,
-      currentUser,
-    );
-
-    if (access) {
-      const { canViewAny, canViewAccess, canViewOwner, canViewPublic } = access;
-
-      if (!canViewAny) {
-        if (canViewAccess) {
-          fieldValue.$lookup.pipeline = [
-            {
-              $match: {
-                $or: [
-                  { ownerGroup: { $in: currentUser.currentGroups } },
-                  { accessGroups: { $in: currentUser.currentGroups } },
-                  { sharedWith: { $in: [currentUser.email] } },
-                  { isPublished: true },
-                ],
-              },
-            },
-          ];
-        } else if (canViewOwner) {
-          fieldValue.$lookup.pipeline = [
-            {
-              $match: {
-                ownerGroup: { $in: currentUser.currentGroups },
-              },
-            },
-          ];
-        } else if (canViewPublic) {
-          fieldValue.$lookup.pipeline = [
-            {
-              $match: {
-                isPublished: true,
-              },
-            },
-          ];
-        }
-      }
     }
   }
 
@@ -238,7 +85,7 @@ export class DatasetsService {
       if (fieldValue) {
         fieldValue.$lookup.as = field;
 
-        this.addRelationFieldAccess(fieldValue);
+        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
 
         pipeline.push(fieldValue);
       }
@@ -286,7 +133,7 @@ export class DatasetsService {
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
       limit: 10,
       skip: 0,
-      sort: undefined,
+      sort: { createdAt: "desc" },
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];

@@ -35,7 +35,6 @@ import {
   filterExample,
   replaceLikeOperator,
 } from "src/common/utils";
-import { logger } from "@user-office-software/duo-logger";
 
 @ApiBearerAuth()
 @ApiTags("instruments")
@@ -64,13 +63,9 @@ export class InstrumentsController {
           "Instrument with the same unique name already exists",
         );
       } else {
-        logger.logException(
-          "Something went wrong while creating instrument",
-          error,
-        );
-
         throw new InternalServerErrorException(
           "Something went wrong. Please try again later.",
+          { cause: error },
         );
       }
     }
@@ -158,13 +153,9 @@ export class InstrumentsController {
           "Instrument with the same unique name already exists",
         );
       } else {
-        logger.logException(
-          "Something went wrong while updating instrument",
-          error,
-        );
-
         throw new InternalServerErrorException(
           "Something went wrong. Please try again later.",
+          { cause: error },
         );
       }
     }
