@@ -1,7 +1,6 @@
 import { IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { UpdateDatasetDto } from "./update-dataset.dto";
-import { Prop } from "@nestjs/mongoose";
 
 export class CreateDatasetDto extends UpdateDatasetDto {
   @ApiProperty({
