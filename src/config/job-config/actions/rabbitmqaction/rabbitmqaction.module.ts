@@ -4,10 +4,7 @@ import { RabbitMQJobActionCreator } from "./rabbitmqaction.service";
 import { CommonModule } from "src/common/common.module";
 
 @Module({
-  imports: [
-    CommonModule,
-    ConfigModule,
-  ],
+  imports: [CommonModule, ConfigModule],
   providers: [RabbitMQJobActionCreator],
   exports: [RabbitMQJobActionCreator],
 })

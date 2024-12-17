@@ -14,7 +14,7 @@ import { ConfigService } from "@nestjs/config";
 export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
   private connection: amqp.Options.Connect;
   private binding: RabbitMQJobActionOptions;
-  private rabbitMqReady: boolean = false;
+  private rabbitMqReady = false;
 
   getActionType(): string {
     return actionType;
@@ -30,9 +30,9 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
     );
 
     const rabbitMqEnabled =
-    this.configService.get<string>("rabbitMq.enabled") === "yes"
-      ? true
-      : false;
+      this.configService.get<string>("rabbitMq.enabled") === "yes"
+        ? true
+        : false;
 
     if (rabbitMqEnabled) {
       const hostname = this.configService.get<string>("rabbitMq.hostname");
@@ -45,8 +45,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
           "RabbitMQ is enabled but missing one or more config variables.",
           "RabbitMQJobAction",
         );
-      }
-      else {
+      } else {
         this.connection = {
           protocol: "amqp",
           hostname: hostname,
@@ -62,12 +61,8 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
         };
         this.rabbitMqReady = true;
       }
-    }
-    else {
-      Logger.error(
-        "RabbitMQ is not enabled.",
-        "RabbitMQJobAction",
-      );
+    } else {
+      Logger.error("RabbitMQ is not enabled.", "RabbitMQJobAction");
     }
   }
 
@@ -89,7 +84,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
             );
             return;
           }
-  
+
           connection.createChannel((channelError: Error, channel) => {
             if (channelError) {
               Logger.error(
@@ -99,7 +94,7 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
               );
               return;
             }
-  
+
             channel.assertQueue(this.binding.queue, { durable: true });
             channel.assertExchange(this.binding.exchange, "topic", {
               durable: true,
@@ -113,15 +108,14 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
               this.binding.queue,
               Buffer.from(JSON.stringify(job)),
             );
-  
+
             channel.close(() => {
               connection.close();
             });
           });
         },
       );
-    }
-    else {
+    } else {
       Logger.error(
         "RabbitMQ is either not enabled or not configured properly.",
         "RabbitMQJobAction",
