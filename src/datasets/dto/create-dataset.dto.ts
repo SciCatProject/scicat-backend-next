@@ -29,5 +29,5 @@ export class CreateDatasetDto extends UpdateDatasetDto {
       "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid.",
   })
   @IsString()
-  declare datasetName: string;
+  declare readonly datasetName: string;
 }
