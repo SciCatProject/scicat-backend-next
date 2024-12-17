@@ -143,13 +143,10 @@ export class InstrumentsController {
         updateInstrumentDto,
       );
       return instrument;
-    } catch (error) {
+    } catch (e) {
       throw new HttpException(
         "Instrument with the same unique name already exists",
         HttpStatus.BAD_REQUEST,
-        {
-          cause: error,
-        },
       );
     }
   }
