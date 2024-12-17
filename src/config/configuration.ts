@@ -185,6 +185,7 @@ const configuration = () => {
     rabbitMq: {
       enabled: process.env.RABBITMQ_ENABLED ?? "no",
       hostname: process.env.RABBITMQ_HOSTNAME,
+      port: process.env.RABBITMQ_PORT,
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
