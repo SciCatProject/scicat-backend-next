@@ -3,7 +3,6 @@ import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
-import { DatasetType } from "../dataset-type.enum";
 import { HistoryClass, HistorySchema } from "./history.schema";
 import { LifecycleClass, LifecycleSchema } from "./lifecycle.schema";
 import { RelationshipClass, RelationshipSchema } from "./relationship.schema";
