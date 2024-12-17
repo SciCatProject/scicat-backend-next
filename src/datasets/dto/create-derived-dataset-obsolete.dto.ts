@@ -24,4 +24,13 @@ export class CreateDerivedDatasetObsoleteDto extends UpdateDerivedDatasetObsolet
   @IsOptional()
   @IsString()
   readonly version?: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid.",
+  })
+  @IsString()
+  declare readonly datasetName: string;
 }
