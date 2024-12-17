@@ -1,6 +1,7 @@
 import { IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { UpdateDatasetDto } from "./update-dataset.dto";
+import { Prop } from "@nestjs/mongoose";
 
 export class CreateDatasetDto extends UpdateDatasetDto {
   @ApiProperty({
@@ -20,4 +21,13 @@ export class CreateDatasetDto extends UpdateDatasetDto {
   })
   @IsString()
   readonly type: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    description:
+      "A name for the dataset, given by the creator to carry some semantic meaning. Useful for display purposes e.g. instead of displaying the pid.",
+  })
+  @IsString()
+  declare datasetName: string;
 }
