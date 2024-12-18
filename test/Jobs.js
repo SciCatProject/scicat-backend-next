@@ -4085,18 +4085,18 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("1920: Delete job 1 as Admin, which should fail", async () => {
+  it("1920: Delete job 1 as Admin", async () => {
     return request(appUrl)
-      .delete("/api/v3/jobs/" + encodedJobIdUser1)
+      .delete("/api/v3/jobs/" + encodedJobIdUser2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.DeleteForbiddenStatusCode)
+      .expect(TestData.SuccessfulDeleteStatusCode)
       .expect("Content-Type", /json/);
   });
 
   it("1930: Delete job 1 as CREATE_JOB_GROUPS user, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/jobs/" + encodedJobIdUser1)
+      .delete("/api/v3/jobs/" + encodedJobIdUser3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.DeleteForbiddenStatusCode)
@@ -4105,7 +4105,7 @@ describe("1100: Jobs: Test New Job Model", () => {
 
   it("1940: Delete job 1 as normal user, which should fail", async () => {
     return request(appUrl)
-      .delete("/api/v3/jobs/" + encodedJobIdUser1)
+      .delete("/api/v3/jobs/" + encodedJobIdUser3)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
       .expect(TestData.DeleteForbiddenStatusCode)
@@ -4130,7 +4130,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(63);
+        res.body.should.be.an("array").to.have.lengthOf(62);
       });
   });
 
@@ -4160,7 +4160,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(36);
+        res.body.should.be.an("array").to.have.lengthOf(35);
       });
   });
 
@@ -4237,7 +4237,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(14);
+        res.body.should.be.an("array").to.have.lengthOf(13);
       });
   });
 
@@ -4326,7 +4326,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 36 }] });
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 35 }] });
       });
   });
 
@@ -4401,7 +4401,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 14 }] });
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 13 }] });
       });
   });
 
