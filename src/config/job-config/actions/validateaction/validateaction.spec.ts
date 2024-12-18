@@ -244,6 +244,10 @@ describe("ValidateAction", () => {
         ],
       }).compile();
 
+      // Run onModuleInit() methods
+      const app = module.createNestApplication();
+      await app.init();
+
       const config: ValidateCreateJobActionOptions = {
         actionType: "validate",
         datasets: {
