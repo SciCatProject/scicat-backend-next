@@ -10,10 +10,6 @@ jobs:
           headers:
             accept: application/json
         - actionType: rabbitmq
-          hostname: rabbitmq
-          port: 5672
-          username: guest
-          password: guest
           exchange: jobs.write
           queue: client.jobs.write
           key: jobqueue
@@ -29,10 +25,6 @@ jobs:
       auth: archivemanager
       actions:
         - actionType: rabbitmq
-          hostname: rabbitmq
-          port: 5672
-          username: guest
-          password: guest
           exchange: jobs.write
           queue: client.jobs.write
           key: jobqueue

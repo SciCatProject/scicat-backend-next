@@ -1,8 +1,11 @@
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { MailService } from "./mail.service";
+import { RabbitMQService } from "./rabbitmq/rabbitmq.service";
 
 @Module({
-  providers: [MailService],
-  exports: [MailService],
+  imports: [ConfigModule],
+  providers: [MailService, RabbitMQService],
+  exports: [MailService, RabbitMQService],
 })
 export class CommonModule {}
