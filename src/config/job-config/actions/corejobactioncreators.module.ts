@@ -7,7 +7,10 @@ import { actionType as logActionType } from "./logaction/logaction.interface";
 import { actionType as emailActionType } from "./emailaction/emailaction.interface";
 import { ValidateJobActionModule } from "./validateaction/validateaction.module";
 import { actionType as validateActionType } from "./validateaction/validateaction.interface";
-import { ValidateJobActionCreator } from "./validateaction/validateaction.service";
+import {
+  ValidateCreateJobActionCreator,
+  ValidateJobActionCreator,
+} from "./validateaction/validateaction.service";
 import { URLJobActionModule } from "./urlaction/urlaction.module";
 import { URLJobActionCreator } from "./urlaction/urlaction.service";
 import { actionType as urlActionType } from "./urlaction/urlaction.interface";
@@ -39,14 +42,14 @@ import {
       useFactory: (
         logJobActionCreator,
         emailJobActionCreator,
-        validateJobActionCreator,
+        validateCreateJobActionCreator,
         urlJobActionCreator,
         rabbitMQJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
           [emailActionType]: emailJobActionCreator,
-          [validateActionType]: validateJobActionCreator,
+          [validateActionType]: validateCreateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
         };
@@ -54,7 +57,7 @@ import {
       inject: [
         LogJobActionCreator,
         EmailJobActionCreator,
-        ValidateJobActionCreator,
+        ValidateCreateJobActionCreator,
         URLJobActionCreator,
         RabbitMQJobActionCreator,
       ],

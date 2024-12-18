@@ -23,7 +23,7 @@ export class CreateJobDto {
     type: String,
     required: false,
     description:
-      "User that this job belongs to. Applicable only if requesting user has dequate permissions level",
+      "User that this job belongs to. Applicable only if requesting user has adequate permissions level",
   })
   @IsString()
   @IsOptional()
@@ -33,7 +33,7 @@ export class CreateJobDto {
     type: String,
     required: false,
     description:
-      "Group that this job belongs to. Applicable only if requesting user has dequate permissions level",
+      "Group that this job belongs to. Applicable only if requesting user has adequate permissions level",
   })
   @IsString()
   @IsOptional()
