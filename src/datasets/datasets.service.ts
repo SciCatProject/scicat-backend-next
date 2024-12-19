@@ -261,7 +261,7 @@ export class DatasetsService {
     const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
       skip: 0,
-      sort: undefined,
+      sort: { createdAt: "desc" },
     };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
