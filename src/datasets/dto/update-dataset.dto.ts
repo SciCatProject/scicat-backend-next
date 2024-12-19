@@ -30,7 +30,7 @@ import { HistoryClass } from "../schemas/history.schema";
 export class UpdateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "Owner or custodian of the dataset, usually first name + last name. The string may contain a list of persons, which should then be separated by semicolons.",
   })
@@ -125,7 +125,7 @@ export class UpdateDatasetDto extends OwnableDto {
   @ApiProperty({
     type: Number,
     default: 0,
-    required: true,
+    required: false,
     description: "Total number of files in all Datablocks for this dataset.",
   })
   @IsOptional()
@@ -291,7 +291,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataQualityMetrics?: number;
 
   @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
     isArray: true,
     description:
@@ -366,7 +366,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly sampleIds?: string[];
 
   @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
     description:
       "ID of the instrument or instruments where the data included or used in this datasets was collected on.",
@@ -379,7 +379,7 @@ export class UpdateDatasetDto extends OwnableDto {
 
   @ApiProperty({
     type: [String],
-    required: true,
+    required: false,
     description:
       "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
   })
