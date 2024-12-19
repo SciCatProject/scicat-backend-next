@@ -36,19 +36,15 @@ import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
-import { IDatasetFields } from "./interfaces/dataset-filters.interface";
 import {
-  MainDatasetsPublicInterceptor,
-  SubDatasetsPublicInterceptor,
-} from "./interceptors/datasets-public.interceptor";
+  IDatasetFields,
+  IDatasetFiltersV4,
+} from "./interfaces/dataset-filters.interface";
+import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
 import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import {
-  IFacets,
-  IFilters,
-  ILimitsFilter,
-} from "src/common/interfaces/common.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { validate } from "class-validator";
 import { HistoryInterceptor } from "src/common/interceptors/history.interceptor";
 
@@ -71,18 +67,10 @@ import {
   IsValidResponse,
 } from "src/common/types";
 import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
-import { FilterQuery } from "mongoose";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
-
-export interface IDatasetFiltersV4<T, Y = null> {
-  where?: FilterQuery<T>;
-  include?: DatasetLookupKeysEnum[];
-  fields?: Y;
-  limits?: ILimitsFilter;
-}
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -207,10 +195,6 @@ export class DatasetsV4Controller {
       Action.DatasetReadManyAccess,
       DatasetClass,
     );
-    const canViewPublic = ability.can(
-      Action.DatasetReadManyPublic,
-      DatasetClass,
-    );
 
     if (!filter.where) {
       filter.where = {};
@@ -244,8 +228,6 @@ export class DatasetsV4Controller {
           ...filter.where,
           ownerGroup: { $in: user.currentGroups },
         };
-      } else if (canViewPublic) {
-        filter.where = { ...filter.where, isPublished: true };
       }
     }
 
@@ -358,7 +340,6 @@ export class DatasetsV4Controller {
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
-  @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
   @ApiOperation({
     summary: "It returns a list of datasets.",
@@ -485,7 +466,7 @@ export class DatasetsV4Controller {
     status: HttpStatus.OK,
     type: String,
     isArray: true,
-    description: "Return metadata keys  for list of datasets selected",
+    description: "Return metadata keys for list of datasets selected",
   })
   // NOTE: This one needs to be discussed as well but it gets the metadata keys from the dataset but it doesnt do it with the nested fields. Think about it
   async metadataKeys(
@@ -535,7 +516,7 @@ export class DatasetsV4Controller {
   })
   @ApiQuery({
     name: "filter",
-    description: "Database filters to apply when retrieving datasets",
+    description: "Database filters to apply when retrieving dataset",
     required: true,
     type: String,
     content: getSwaggerDatasetFilterContent({
@@ -552,16 +533,7 @@ export class DatasetsV4Controller {
   })
   async findOne(
     @Req() request: Request,
-    @Query(
-      "filter",
-      new FilterValidationPipe({
-        where: true,
-        include: true,
-        fields: true,
-        limits: true,
-      }),
-      new IncludeValidationPipe(),
-    )
+    @Query("filter", new FilterValidationPipe(), new IncludeValidationPipe())
     queryFilter: string,
   ): Promise<OutputDatasetDto | null> {
     const parsedFilter = JSON.parse(queryFilter ?? "{}");
@@ -571,15 +543,7 @@ export class DatasetsV4Controller {
       parsedFilter,
     );
 
-    const foundDataset =
-      await this.datasetsService.findOneComplete(mergedFilters);
-
-    if (!foundDataset) {
-      // TODO: Do we want to throw here if the dataset is not found!?
-      // something like: throw new NotFoundException(`Dataset with provided filters: ${queryFilter} was not found. Please check your filter and try again`);
-    }
-
-    return foundDataset;
+    return this.datasetsService.findOneComplete(mergedFilters);
   }
 
   // GET /datasets/count
@@ -611,7 +575,6 @@ export class DatasetsV4Controller {
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
-  // TODO: Maybe we need to make the filters more granular and allow only needed ones. For example here we need only where filter.
   async count(
     @Req() request: Request,
     @Query(

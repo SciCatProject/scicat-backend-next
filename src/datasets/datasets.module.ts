@@ -13,6 +13,7 @@ import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
+import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
 
 @Module({
@@ -64,7 +65,11 @@ import { DatasetsAccessService } from "./datasets-access.service";
     ]),
   ],
   exports: [DatasetsService],
-  controllers: [DatasetsController, DatasetsV4Controller],
+  controllers: [
+    DatasetsPublicV4Controller,
+    DatasetsController,
+    DatasetsV4Controller,
+  ],
   providers: [DatasetsService, CaslAbilityFactory, DatasetsAccessService],
 })
 export class DatasetsModule {}
