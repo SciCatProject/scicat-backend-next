@@ -13,13 +13,17 @@ import {
   IDatasetFields,
   IDatasetFiltersV4,
 } from "./interfaces/dataset-filters.interface";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 
 import { HistoryClass } from "./schemas/history.schema";
 import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { OutputDatasetDto } from "./dto/output-dataset.dto";
-import { CountApiResponse } from "src/common/types";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+} from "src/common/types";
 import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
@@ -71,6 +75,38 @@ export class DatasetsPublicV4Controller {
     const datasets = await this.datasetsService.findAllComplete(parsedFilter);
 
     return datasets;
+  }
+
+  // GET /datasets/public/fullfacets
+  @Get("/fullfacet")
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Defines list of field names, for which facet counts should be calculated",
+    required: false,
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
+    isArray: true,
+    description: "Return fullfacet response for datasets requested",
+  })
+  async fullfacet(
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
+
+    fields.isPublished = true;
+
+    const parsedFilters: IFacets<IDatasetFields> = {
+      fields: fields,
+      facets: JSON.parse(filters.facets ?? "[]"),
+    };
+
+    return this.datasetsService.fullFacet(parsedFilters);
   }
 
   // GET /datasets/public/metadataKeys
@@ -150,15 +186,7 @@ export class DatasetsPublicV4Controller {
 
     this.addPublicFilter(parsedFilter);
 
-    const foundDataset =
-      await this.datasetsService.findOneComplete(parsedFilter);
-
-    if (!foundDataset) {
-      // TODO: Do we want to throw here if the dataset is not found!?
-      // something like: throw new NotFoundException(`Dataset with provided filters: ${queryFilter} was not found. Please check your filter and try again`);
-    }
-
-    return foundDataset;
+    return this.datasetsService.findOneComplete(parsedFilter);
   }
 
   // GET /datasets/public/count

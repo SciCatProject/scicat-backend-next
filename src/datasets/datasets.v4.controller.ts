@@ -377,7 +377,6 @@ export class DatasetsV4Controller {
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
-  // TODO: Check if this should be closed or oppened endpoint for public!?
   @CheckPolicies("datasets", (ability: AppAbility) =>
     ability.can(Action.DatasetRead, DatasetClass),
   )
@@ -544,15 +543,7 @@ export class DatasetsV4Controller {
       parsedFilter,
     );
 
-    const foundDataset =
-      await this.datasetsService.findOneComplete(mergedFilters);
-
-    if (!foundDataset) {
-      // TODO: Do we want to throw here if the dataset is not found!?
-      // something like: throw new NotFoundException(`Dataset with provided filters: ${queryFilter} was not found. Please check your filter and try again`);
-    }
-
-    return foundDataset;
+    return this.datasetsService.findOneComplete(mergedFilters);
   }
 
   // GET /datasets/count
