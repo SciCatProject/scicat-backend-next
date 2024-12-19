@@ -41,7 +41,6 @@ import {
   IDatasetFiltersV4,
 } from "./interfaces/dataset-filters.interface";
 import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
@@ -74,7 +73,6 @@ import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 
 @ApiBearerAuth()
 @ApiExtraModels(
-  CreateAttachmentDto,
   CreateDatasetDto,
   HistoryClass,
   TechniqueClass,

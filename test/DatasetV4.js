@@ -9,6 +9,7 @@ var accessTokenAdminIngestor = null;
 var accessTokenArchiveManager = null;
 var accessTokenUser1 = null;
 var accessTokenUser2 = null;
+var derivedDatasetMinPid = null;
 
 describe("2500: Datasets v4 tests", () => {
   before(() => {
@@ -37,7 +38,15 @@ describe("2500: Datasets v4 tests", () => {
   });
 
   describe("Datasets validation tests", () => {
-    it("0100: check if minimal derived dataset is valid", async () => {
+    it("0100: should not be able to validate dataset if not logged in", async () => {
+      return request(appUrl)
+        .post("/api/v4/datasets/isValid")
+        .send(TestData.DerivedCorrectMinV4)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0101: check if minimal derived dataset is valid", async () => {
       return request(appUrl)
         .post("/api/v4/datasets/isValid")
         .send(TestData.DerivedCorrectMinV4)
@@ -49,7 +58,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0101: check if minimal raw dataset is valid", async () => {
+    it("0102: check if minimal raw dataset is valid", async () => {
       return request(appUrl)
         .post("/api/v4/datasets/isValid")
         .send(TestData.RawCorrectMinV4)
@@ -61,7 +70,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0102: check if custom dataset is valid", async () => {
+    it("0103: check if custom dataset is valid", async () => {
       return request(appUrl)
         .post("/api/v4/datasets/isValid")
         .send(TestData.CustomDatasetCorrect)
@@ -73,7 +82,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0103: check if invalid derived dataset is valid", async () => {
+    it("0104: check if invalid derived dataset is valid", async () => {
       return request(appUrl)
         .post("/api/v3/Datasets/isValid")
         .send(TestData.DerivedWrong)
@@ -87,7 +96,15 @@ describe("2500: Datasets v4 tests", () => {
   });
 
   describe("Datasets creation tests", () => {
-    it("0110: adds a new minimal derived dataset", async () => {
+    it("0110: should not be able to create dataset if not logged in", async () => {
+      return request(appUrl)
+        .post("/api/v4/datasets")
+        .send(TestData.DerivedCorrectMinV4)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0111: adds a new minimal derived dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.DerivedCorrectMinV4)
@@ -98,10 +115,11 @@ describe("2500: Datasets v4 tests", () => {
           res.body.should.have.property("owner").and.be.a("string");
           res.body.should.have.property("type").and.equal("derived");
           res.body.should.have.property("pid").and.be.a("string");
+          derivedDatasetMinPid = res.body.pid;
         });
     });
 
-    it("0111: adds a new minimal raw dataset", async () => {
+    it("0112: adds a new minimal raw dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.RawCorrectMinV4)
@@ -117,7 +135,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0112: adds a new minimal custom dataset", async () => {
+    it("0113: adds a new minimal custom dataset", async () => {
       return request(appUrl)
         .post("/api/v3/Datasets")
         .send(TestData.CustomDatasetCorrectMin)
@@ -131,7 +149,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0113: adds a new derived dataset", async () => {
+    it("0114: adds a new derived dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.DerivedCorrectV4)
@@ -145,7 +163,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0114: adds a new raw dataset", async () => {
+    it("0115: adds a new raw dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.RawCorrectV4)
@@ -159,7 +177,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0115: adds a new custom dataset", async () => {
+    it("0116: adds a new custom dataset", async () => {
       return request(appUrl)
         .post("/api/v4/datasets")
         .send(TestData.CustomDatasetCorrect)
@@ -276,8 +294,26 @@ describe("2500: Datasets v4 tests", () => {
     });
   });
 
-  describe("Datasets v4 fetching tests", () => {
-    it("0200: should fetch several datasets using limits sort filter", async () => {
+  describe("Datasets v4 findAll tests", () => {
+    it("0200: should not be able to fetch datasets if not logged in", async () => {
+      const filter = {
+        limits: {
+          limit: 2,
+          skip: 0,
+          sort: {
+            datasetName: "asc",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .get("/api/v4/datasets")
+        .query({ filter: JSON.stringify(filter) })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0201: should fetch several datasets using limits sort filter", async () => {
       const filter = {
         limits: {
           limit: 2,
@@ -327,7 +363,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0201: should fetch different dataset if skip is used in limits filter", async () => {
+    it("0202: should fetch different dataset if skip is used in limits filter", async () => {
       let responseBody;
       const filter = {
         limits: {
@@ -370,7 +406,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0202: should fetch specific dataset fields only if fields is provided in the filter", async () => {
+    it("0203: should fetch specific dataset fields only if fields is provided in the filter", async () => {
       const filter = {
         fields: ["datasetName", "pid"],
       };
@@ -391,7 +427,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0203: should fetch dataset relation fields if provided in the filter", async () => {
+    it("0204: should fetch dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["instruments", "proposals"],
       };
@@ -413,7 +449,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0204: should fetch all dataset relation fields if provided in the filter", async () => {
+    it("0205: should fetch all dataset relation fields if provided in the filter", async () => {
       const filter = {
         include: ["all"],
       };
@@ -438,7 +474,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0205: should be able to fetch the datasets providing where filter", async () => {
+    it("0206: should be able to fetch the datasets providing where filter", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -463,7 +499,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0206: should be able to fetch the datasets providing all allowed filters together", async () => {
+    it("0207: should be able to fetch the datasets providing all allowed filters together", async () => {
       const filter = {
         where: {
           datasetName: {
@@ -510,7 +546,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0206: should not be able to provide filters that are not allowed", async () => {
+    it("0208: should not be able to provide filters that are not allowed", async () => {
       const filter = {
         customField: { datasetName: "test" },
       };
@@ -522,86 +558,403 @@ describe("2500: Datasets v4 tests", () => {
         .expect(TestData.BadRequestStatusCode)
         .expect("Content-Type", /json/);
     });
-
-    // it("0190: should fetch this derived dataset", async () => {
-    //   const filter = {
-    //     where: {
-    //       pid: pid,
-    //     },
-    //   };
-
-    //   return request(appUrl)
-    //     .get(
-    //       `/api/v3/datasets/findOne?filter=${encodeURIComponent(
-    //         JSON.stringify(filter),
-    //       )}`,
-    //     )
-    //     .set("Accept", "application/json")
-    //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-    //     .expect(TestData.SuccessfulGetStatusCode)
-    //     .then((res) => {
-    //       res.body.should.have.property("pid").and.equal(pid);
-    //     });
-    // });
-
-    // it("0200: should fetch all derived datasets", async () => {
-    //   const filter = {
-    //     where: {
-    //       type: "derived",
-    //     },
-    //   };
-
-    //   return request(appUrl)
-    //     .get(
-    //       "/api/v3/Datasets?filter=" +
-    //         encodeURIComponent(JSON.stringify(filter)),
-    //     )
-    //     .set("Accept", "application/json")
-    //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-    //     .expect(TestData.SuccessfulGetStatusCode)
-    //     .expect("Content-Type", /json/)
-    //     .then((res) => {
-    //       res.body.should.be.instanceof(Array);
-    //     });
-    // });
   });
 
-  // it("0220: should delete a derived dataset", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + encodeURIComponent(pid))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(TestData.SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+  describe("Datasets v4 findOne tests", () => {
+    it("0300: should not be able to fetch dataset if not logged in", async () => {
+      const filter = {
+        limits: {
+          skip: 0,
+          sort: {
+            datasetName: "asc",
+          },
+        },
+      };
 
-  // it("0230: should delete a minimal derived dataset", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + encodeURIComponent(minPid))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(TestData.SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+      return request(appUrl)
+        .get("/api/v4/datasets/findOne")
+        .query({ filter: JSON.stringify(filter) })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
 
-  // it("0240: should delete a derived dataset with explicit PID", async () => {
-  //   return request(appUrl)
-  //     .delete("/api/v3/Datasets/" + encodeURIComponent(explicitPid))
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenArchiveManager}` })
-  //     .expect(TestData.SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/);
-  // });
+    it("0301: should fetch different dataset if skip is used in limits filter", async () => {
+      let responseBody;
+      const filter = {
+        limits: {
+          skip: 0,
+          sort: {
+            datasetName: "asc",
+          },
+        },
+      };
 
-  // it("0250: delete all dataset as archivemanager", async () => {
-  //   return await request(appUrl)
-  //     .get("/api/v3/datasets")
-  //     .set("Accept", "application/json")
-  //     .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-  //     .expect(TestData.SuccessfulDeleteStatusCode)
-  //     .expect("Content-Type", /json/)
-  //     .then((res) => {
-  //       return processArray(res.body);
-  //     });
-  // });
+      await request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          responseBody = res.body;
+        });
+
+      filter.limits.skip = 1;
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          JSON.stringify(responseBody).should.not.be.equal(
+            JSON.stringify(res.body),
+          );
+        });
+    });
+
+    it("0302: should fetch specific dataset fields only if fields is provided in the filter", async () => {
+      const filter = {
+        fields: ["datasetName", "pid"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+          res.body.should.have.property("pid");
+          res.body.should.not.have.property("description");
+        });
+    });
+
+    it("0303: should fetch dataset relation fields if provided in the filter", async () => {
+      const filter = {
+        include: ["instruments", "proposals"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0304: should fetch all dataset relation fields if provided in the filter", async () => {
+      const filter = {
+        include: ["all"],
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.have.property("datablocks");
+          res.body.should.have.property("attachments");
+          res.body.should.have.property("origdatablocks");
+          res.body.should.have.property("samples");
+        });
+    });
+
+    it("0305: should be able to fetch the dataset providing where filter", async () => {
+      const filter = {
+        where: {
+          datasetName: {
+            $regex: "Dataset",
+            $options: "i",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.datasetName.should.match(/Dataset/i);
+        });
+    });
+
+    it("0306: should be able to fetch a dataset providing all allowed filters together", async () => {
+      const filter = {
+        where: {
+          datasetName: {
+            $regex: "Dataset",
+            $options: "i",
+          },
+        },
+        include: ["all"],
+        fields: ["datasetName", "pid"],
+        limits: {
+          skip: 0,
+          sort: {
+            datasetName: "asc",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("datasetName");
+          res.body.should.have.property("pid");
+          res.body.should.not.have.property("description");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.have.property("datablocks");
+          res.body.should.have.property("attachments");
+          res.body.should.have.property("origdatablocks");
+          res.body.should.have.property("samples");
+
+          res.body.datasetName.should.match(/Dataset/i);
+        });
+    });
+
+    it("0307: should not be able to provide filters that are not allowed", async () => {
+      const filter = {
+        customField: { datasetName: "test" },
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/findOne`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.BadRequestStatusCode)
+        .expect("Content-Type", /json/);
+    });
+  });
+
+  describe("Datasets v4 count tests", () => {
+    it("0400: should not be able to fetch datasets count if not logged in", async () => {
+      const filter = {
+        limits: {
+          skip: 0,
+          sort: {
+            datasetName: "asc",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .get("/api/v4/datasets/count")
+        .query({ filter: JSON.stringify(filter) })
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0401: should be able to fetch the datasets count providing where filter", async () => {
+      const filter = {
+        where: {
+          datasetName: {
+            $regex: "Dataset",
+            $options: "i",
+          },
+        },
+      };
+
+      return request(appUrl)
+        .get(`/api/v4/datasets/count`)
+        .query({ filter: JSON.stringify(filter) })
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+          res.body.should.have.property("count");
+          res.body.count.should.be.a("number");
+          res.body.count.should.be.greaterThan(0);
+        });
+    });
+  });
+
+  describe("Datasets v4 findById tests", () => {
+    it("0500: should not be able to fetch dataset by id if not logged in", () => {
+      return request(appUrl)
+        .get(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0501: should fetch dataset by id", () => {
+      return request(appUrl)
+        .get(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.pid.should.be.eq(derivedDatasetMinPid);
+        });
+    });
+
+    it("0502: should fetch dataset relation fields if provided in the filter", () => {
+      return request(appUrl)
+        .get(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}?include=instruments&include=proposals`,
+        )
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.not.have.property("datablocks");
+        });
+    });
+
+    it("0503: should fetch all dataset relation fields if provided in the filter", () => {
+      return request(appUrl)
+        .get(
+          `/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}?include=all`,
+        )
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulGetStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("instruments");
+          res.body.should.have.property("proposals");
+          res.body.should.have.property("datablocks");
+          res.body.should.have.property("attachments");
+          res.body.should.have.property("origdatablocks");
+          res.body.should.have.property("samples");
+        });
+    });
+  });
+
+  describe("Datasets v4 update tests", () => {
+    it("0600: should not be able to update dataset if not logged in", () => {
+      const updatedDataset = {
+        ...TestData.DerivedCorrectMinV4,
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .put(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0601: should be able to update dataset", () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { type, ...updatedDataset } = {
+        ...TestData.DerivedCorrectMinV4,
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .put(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+          res.body.datasetName.should.be.eq(updatedDataset.datasetName);
+        });
+    });
+
+    it("0600: should not be able to partially update dataset if not logged in", () => {
+      const updatedDataset = {
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0601: should be able to partially update dataset", () => {
+      const updatedDataset = {
+        datasetName: "Updated dataset name",
+      };
+
+      return request(appUrl)
+        .patch(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .send(updatedDataset)
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulPatchStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+          res.body.datasetName.should.be.eq(updatedDataset.datasetName);
+        });
+    });
+  });
+
+  describe("Datasets v4 update tests", () => {
+    it("0700: should not be able to delete dataset if not logged in", () => {
+      return request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .expect(TestData.AccessForbiddenStatusCode)
+        .expect("Content-Type", /json/);
+    });
+
+    it("0701: should be able to delete dataset", () => {
+      return request(appUrl)
+        .delete(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
+        .auth(accessTokenArchiveManager, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          res.body.should.be.a("object");
+
+          res.body.should.have.property("pid");
+          res.body.should.have.property("datasetName");
+        });
+    });
+  });
 });
