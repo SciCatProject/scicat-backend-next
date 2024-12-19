@@ -123,12 +123,12 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   @ApiProperty({
     type: Number,
     default: 0,
-    required: true,
+    required: false,
     description: "Total number of files in all Datablocks for this dataset.",
   })
   @IsOptional()
   @IsInt()
-  readonly numberOfFilesArchived?: number;
+  readonly numberOfFilesArchived?: number = 0;
 
   @ApiProperty({
     type: Date,

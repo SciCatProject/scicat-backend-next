@@ -17,7 +17,7 @@ import { Datablock } from "src/datablocks/schemas/datablock.schema";
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
     type: String,
-    required: false,
+    required: true,
     description: "Persistent identifier of the dataset.",
   })
   @IsString()
@@ -44,7 +44,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "First name and last name of principal investigator(s). If multiple PIs are present, use a semicolon separated list. This field is required if the dataset is a Raw dataset.",
   })
@@ -74,7 +74,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "Unique location identifier where data was taken, usually in the form /Site-name/facility-name/instrumentOrBeamline-name. This field is required if the dataset is a Raw dataset.",
   })
@@ -112,7 +112,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     description:
       "First name and last name of the person or people pursuing the data analysis. The string may contain a list of names, which should then be separated by semicolons.",
   })
@@ -122,7 +122,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: [String],
-    required: true,
+    required: false,
     description:
       "Array of input dataset identifiers used in producing the derived dataset. Ideally these are the global identifier to existing datasets inside this or federated data catalogs.",
   })
@@ -134,7 +134,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: [String],
-    required: true,
+    required: false,
     description:
       "A list of links to software repositories which uniquely identifies the pieces of software, including versions, used for yielding the derived data.",
   })
@@ -183,6 +183,9 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "Containers that list all files and their attributes which make up a dataset. Usually filled at the time the dataset's metadata is created in the data catalog. Can be used by subsequent archiving processes to create the archived datasets.",
   })
+  @IsOptional()
+  @IsArray()
+  @Type(() => OrigDatablock)
   origdatablocks?: OrigDatablock[];
 
   @ApiProperty({
@@ -192,6 +195,9 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "When archiving a dataset, all files contained in the dataset are listed here together with their checksum information. Several datablocks can be created if the file listing is too long for a single datablock. This partitioning decision is done by the archiving system to allow for chunks of datablocks with manageable sizes. E.g a datasets consisting of 10 TB of data could be split into 10 datablocks of about 1 TB each. The upper limit set by the data catalog system itself is given by the fact that documents must be smaller than 16 MB, which typically allows for datasets of about 100000 files.",
   })
+  @IsOptional()
+  @IsArray()
+  @Type(() => Datablock)
   datablocks?: Datablock[];
 
   @ApiProperty({
@@ -200,6 +206,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "Indicate the user who created this record. This property is added and maintained by the system.",
   })
+  @IsString()
   createdBy: string;
 
   @ApiProperty({
@@ -208,6 +215,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "Indicate the user who updated this record last. This property is added and maintained by the system.",
   })
+  @IsString()
   updatedBy: string;
 
   @ApiProperty({
@@ -216,6 +224,7 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "Date and time when this record was created. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
+  @IsDateString()
   createdAt: Date;
 
   @ApiProperty({
@@ -224,5 +233,6 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
     description:
       "Date and time when this record was updated last. This field is managed by mongoose with through the timestamp settings. The field should be a string containing a date in ISO 8601 format (2024-02-27T12:26:57.313Z)",
   })
+  @IsDateString()
   updatedAt: Date;
 }
