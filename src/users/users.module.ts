@@ -12,7 +12,7 @@ import { Role, RoleSchema } from "./schemas/role.schema";
 import { UserRole, UserRoleSchema } from "./schemas/user-role.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import {
   UserSettings,
   UserSettingsSchema,
@@ -25,14 +25,12 @@ import { accessGroupServiceFactory } from "src/auth/access-group-provider/access
 @Module({
   imports: [
     JwtModule.registerAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>("jwt.secret"),
         signOptions: { expiresIn: configService.get<number>("jwt.expiresIn") },
       }),
       inject: [ConfigService],
     }),
-    ConfigModule,
     MongooseModule.forFeature([
       {
         name: UserIdentity.name,

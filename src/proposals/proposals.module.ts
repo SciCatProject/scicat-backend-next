@@ -6,7 +6,7 @@ import { ProposalClass, ProposalSchema } from "./schemas/proposal.schema";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -15,7 +15,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     MongooseModule.forFeatureAsync([
       {
         name: ProposalClass.name,
-        imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => {
           const proposalTypes = configService.get("proposalTypes") || "{}";

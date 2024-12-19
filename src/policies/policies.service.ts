@@ -157,7 +157,7 @@ export class PoliciesService implements OnModuleInit {
 
     const ownerGroups = ownerGroupList
       .split(",")
-      // eslint-disable-next-line @/quotes
+
       .map((ownerGroup) => ownerGroup.trim().replace(new RegExp('"', "g"), ""));
     if (!ownerGroups) {
       throw new InternalServerErrorException(
@@ -179,7 +179,7 @@ export class PoliciesService implements OnModuleInit {
         try {
           await this.addDefaultPolicy(ownerGroup, [], email, "low");
         } catch (error) {
-          throw new InternalServerErrorException();
+          throw new InternalServerErrorException(error);
         }
 
         if (!userIdentity) {
@@ -189,7 +189,7 @@ export class PoliciesService implements OnModuleInit {
               .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
-            throw new InternalServerErrorException();
+            throw new InternalServerErrorException(error);
           }
         } else {
           const hasPermission = await this.validatePermission(
@@ -208,7 +208,7 @@ export class PoliciesService implements OnModuleInit {
               .updateOne({ ownerGroup }, data, {})
               .exec();
           } catch (error) {
-            throw new InternalServerErrorException();
+            throw new InternalServerErrorException(error);
           }
         }
       }),

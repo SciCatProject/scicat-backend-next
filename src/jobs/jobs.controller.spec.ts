@@ -1,3 +1,4 @@
+import { ConfigService } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -22,6 +23,7 @@ describe("JobsController", () => {
         { provide: DatasetsService, useClass: DatasetsServiceMock },
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: EventEmitter2, useClass: EventEmitter2 },
+        ConfigService,
       ],
     }).compile();
 
