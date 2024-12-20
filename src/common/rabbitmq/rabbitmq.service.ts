@@ -1,23 +1,24 @@
 import amqp, { Connection, Channel } from "amqplib/callback_api";
-import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy, OnApplicationShutdown  } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 /**
  * Service for publishing messages to a RabbitMQ queue.
  */
 @Injectable()
-export class RabbitMQService implements OnModuleDestroy {
+export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown  {
   private connectionOptions: amqp.Options.Connect;
   private connection: Connection;
   private channel: Channel;
+  rabbitMqEnabled: boolean;
 
   constructor(private configService: ConfigService) {
-    Logger.log("Initializing RabbitMQService.", "RabbitMQService");
-
-    const rabbitMqEnabled =
+    this.rabbitMqEnabled =
       this.configService.get<string>("rabbitMq.enabled") === "yes";
 
-    if (rabbitMqEnabled) {
+    if (this.rabbitMqEnabled) {
+      Logger.log("Initializing RabbitMQService.", "RabbitMQService");
+
       const hostname = this.configService.get<string>("rabbitMq.hostname");
       const port = this.configService.get<number>("rabbitMq.port");
       const username = this.configService.get<string>("rabbitMq.username");
@@ -61,14 +62,11 @@ export class RabbitMQService implements OnModuleDestroy {
                   return;
                 }
                 this.channel = channel;
-                Logger.log(this.channel);
               },
             );
           },
         );
       }
-    } else {
-      Logger.error("RabbitMQ is not enabled.", "RabbitMQService");
     }
   }
 
@@ -80,37 +78,45 @@ export class RabbitMQService implements OnModuleDestroy {
       });
       this.channel.bindQueue(queue, exchange, key);
     } catch (error) {
-      Logger.error(
+      throw new Error(
         `Could not connect to RabbitMQ queue ${queue} with exchange ${exchange} and key ${key}.`,
-        "RabbitMQService",
+        { cause: error },
       );
-      Logger.error(error);
     }
   }
 
-  sendMessage(queue: string, message: string) {
+  sendMessage(queue: string, exchange: string, key: string, message: string) {
     try {
+      this.connect(queue, exchange, key);
       this.channel.sendToQueue(queue, Buffer.from(message), {
         persistent: true,
       });
     } catch (error) {
-      Logger.error(
+      throw new Error(
         `Could not send message to RabbitMQ queue ${queue}.`,
-        "RabbitMQService",
+        { cause: error },
       );
     }
   }
 
-  onModuleDestroy() {
+  async close(): Promise<void> {
     if (this.channel) {
-      this.channel.close(() => {
+      await this.channel.close(() => {
         Logger.log("RabbitMQ channel closed.", "RabbitMQService");
       });
     }
     if (this.connection) {
-      this.connection.close(() => {
+      await this.connection.close(() => {
         Logger.log("RabbitMQ connection closed.", "RabbitMQService");
       });
     }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.close();
+  }
+
+  async onApplicationShutdown(signal?: string): Promise<void> {
+    await this.close();
   }
 }

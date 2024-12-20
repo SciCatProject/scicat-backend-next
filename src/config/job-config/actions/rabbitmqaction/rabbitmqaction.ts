@@ -23,10 +23,9 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
     private readonly rabbitMQService: RabbitMQService,
     options: RabbitMQJobActionOptions,
   ) {
-    Logger.log(
-      "Initializing RabbitMQJobAction. Params: " + JSON.stringify(options),
-      "RabbitMQJobAction",
-    );
+    if (!this.rabbitMQService.rabbitMqEnabled) {
+      throw new Error("RabbitMQService is not enabled.");
+    }
     this.queue = options.queue;
     this.exchange = options.exchange;
     this.key = options.key;
@@ -37,7 +36,11 @@ export class RabbitMQJobAction<T extends JobDto> implements JobAction<T> {
       "Performing RabbitMQJobAction: " + JSON.stringify(job),
       "RabbitMQJobAction",
     );
-    this.rabbitMQService.connect(this.queue, this.exchange, this.key);
-    this.rabbitMQService.sendMessage(this.queue, JSON.stringify(job));
+    this.rabbitMQService.sendMessage(
+      this.queue,
+      this.exchange,
+      this.key,
+      JSON.stringify(job)
+    );
   }
 }
