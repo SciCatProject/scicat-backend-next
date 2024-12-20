@@ -3,7 +3,7 @@ import {
   Injectable,
   Logger,
   OnModuleDestroy,
-  OnApplicationShutdown
+  OnApplicationShutdown,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
@@ -98,7 +98,7 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown {
       });
     } catch (error) {
       throw new Error(`Could not send message to RabbitMQ queue ${queue}.`, {
-        cause: error
+        cause: error,
       });
     }
   }
