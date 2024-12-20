@@ -259,12 +259,23 @@ export class DatasetsService {
   ): Promise<OutputDatasetDto | null> {
     const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
 
     const pipeline: PipelineStage[] = [{ $match: whereFilter }];
     if (!isEmpty(fieldsProjection)) {
       const projection = parsePipelineProjection(fieldsProjection);
       pipeline.push({ $project: projection });
     }
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
 
     this.addLookupFields(pipeline, filter.include);
 
