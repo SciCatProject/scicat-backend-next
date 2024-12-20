@@ -10,16 +10,14 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ProposalsModule } from "src/proposals/proposals.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { HttpModule } from "@nestjs/axios";
 
 @Module({
   imports: [
     AttachmentsModule,
-    ConfigModule,
     DatasetsModule,
     HttpModule.registerAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get("httpTimeOut"),
         maxRedirects: configService.get("httpMaxRedirects"),

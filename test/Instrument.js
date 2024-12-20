@@ -20,7 +20,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
   before(() => {
     db.collection("Instrument").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -97,7 +97,7 @@ describe("0900: Instrument: instrument management, creation, update, deletion an
       .send(TestData.InstrumentCorrect2)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.BadRequestStatusCode);
+      .expect(TestData.ConflictStatusCode);
   });
 
   it("0050: adds invalid instrument as ingestor, which should fail because it is missing the uniqeName", async () => {
