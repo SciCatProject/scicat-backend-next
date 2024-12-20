@@ -6,12 +6,10 @@ import { AccessGroupFromPayloadService } from "./access-group-from-payload.servi
 import { HttpService } from "@nestjs/axios";
 import { AccessGroupFromMultipleProvidersService } from "./access-group-from-multiple-providers.service";
 import { Logger } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
 /*
  * this is the default function which provides an empty array as groups
  */
 export const accessGroupServiceFactory = {
-  imports: [ConfigModule],
   provide: AccessGroupService,
   useFactory: (configService: ConfigService) => {
     Logger.debug("Service factory starting", "accessGroupServiceFactory");
