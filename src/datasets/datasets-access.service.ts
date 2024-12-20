@@ -9,6 +9,8 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ProposalClass } from "src/proposals/schemas/proposal.schema";
 import { Instrument } from "src/instruments/schemas/instrument.schema";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
+import { SampleClass } from "src/samples/schemas/sample.schema";
+import { Datablock } from "src/datablocks/schemas/datablock.schema";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsAccessService {
@@ -46,15 +48,15 @@ export class DatasetsAccessService {
         );
         const canViewAccess = ability.can(
           Action.OrigdatablockReadManyAccess,
-          ProposalClass,
+          OrigDatablock,
         );
         const canViewOwner = ability.can(
           Action.OrigdatablockReadManyOwner,
-          ProposalClass,
+          OrigDatablock,
         );
         const canViewPublic = ability.can(
           Action.OrigdatablockReadManyPublic,
-          ProposalClass,
+          OrigDatablock,
         );
 
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
@@ -63,37 +65,37 @@ export class DatasetsAccessService {
         const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
         const canViewAny = ability.can(
           Action.DatasetDatablockReadAny,
-          OrigDatablock,
+          Datablock,
         );
         const canViewAccess = ability.can(
           Action.DatasetDatablockReadAccess,
-          ProposalClass,
+          Datablock,
         );
         const canViewOwner = ability.can(
           Action.DatasetDatablockReadOwner,
-          ProposalClass,
+          Datablock,
         );
         const canViewPublic = ability.can(
           Action.DatasetDatablockReadPublic,
-          ProposalClass,
+          Datablock,
         );
 
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
       }
       case DatasetLookupKeysEnum.samples: {
         const ability = this.caslAbilityFactory.samplesInstanceAccess(user);
-        const canViewAny = ability.can(Action.SampleReadAny, OrigDatablock);
+        const canViewAny = ability.can(Action.SampleReadAny, SampleClass);
         const canViewAccess = ability.can(
           Action.SampleReadManyAccess,
-          ProposalClass,
+          SampleClass,
         );
         const canViewOwner = ability.can(
           Action.SampleReadManyOwner,
-          ProposalClass,
+          SampleClass,
         );
         const canViewPublic = ability.can(
           Action.SampleReadManyPublic,
-          ProposalClass,
+          SampleClass,
         );
 
         return { canViewAny, canViewOwner, canViewAccess, canViewPublic };
@@ -129,7 +131,7 @@ export class DatasetsAccessService {
     );
 
     if (access) {
-      const { canViewAny, canViewAccess, canViewOwner, canViewPublic } = access;
+      const { canViewAny, canViewAccess, canViewOwner } = access;
 
       if (!canViewAny) {
         if (canViewAccess) {
@@ -153,7 +155,7 @@ export class DatasetsAccessService {
               },
             },
           ];
-        } else if (canViewPublic) {
+        } else {
           fieldValue.$lookup.pipeline = [
             {
               $match: {

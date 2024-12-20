@@ -41,7 +41,6 @@ import {
   IDatasetFiltersV4,
 } from "./interfaces/dataset-filters.interface";
 import { SubDatasetsPublicInterceptor } from "./interceptors/datasets-public.interceptor";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
 import { UTCTimeInterceptor } from "src/common/interceptors/utc-time.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
@@ -71,10 +70,10 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { plainToInstance } from "class-transformer";
 
 @ApiBearerAuth()
 @ApiExtraModels(
-  CreateAttachmentDto,
   CreateDatasetDto,
   HistoryClass,
   TechniqueClass,
@@ -320,11 +319,16 @@ export class DatasetsV4Controller {
   async isValid(
     @Req() request: Request,
     @Body(PidValidationPipe)
-    createDatasetDto: CreateDatasetDto,
+    createDatasetDto: object,
   ) {
+    const createDatasetDtoInstance = plainToInstance(
+      CreateDatasetDto,
+      createDatasetDto,
+    );
+
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
-      createDatasetDto,
+      createDatasetDtoInstance,
       Action.DatasetCreate,
     );
 
