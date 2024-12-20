@@ -1,12 +1,17 @@
 import amqp, { Connection, Channel } from "amqplib/callback_api";
-import { Injectable, Logger, OnModuleDestroy, OnApplicationShutdown  } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnApplicationShutdown
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 /**
  * Service for publishing messages to a RabbitMQ queue.
  */
 @Injectable()
-export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown  {
+export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown {
   private connectionOptions: amqp.Options.Connect;
   private connection: Connection;
   private channel: Channel;
@@ -92,10 +97,9 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown  
         persistent: true,
       });
     } catch (error) {
-      throw new Error(
-        `Could not send message to RabbitMQ queue ${queue}.`,
-        { cause: error },
-      );
+      throw new Error(`Could not send message to RabbitMQ queue ${queue}.`, {
+        cause: error
+      });
     }
   }
 
@@ -116,7 +120,7 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown  
     await this.close();
   }
 
-  async onApplicationShutdown(signal?: string): Promise<void> {
+  async onApplicationShutdown(): Promise<void> {
     await this.close();
   }
 }
