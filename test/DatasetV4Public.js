@@ -1,19 +1,25 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
-var derivedDatasetMinPid = null;
+let derivedDatasetMinPid = null;
+let accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null;
 
 describe("2600: Datasets v4 public endpoints tests", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
-    const accessTokenAdminIngestor = await utils.getToken(appUrl, {
+
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
+    });
+
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
     });
 
     await request(appUrl)
@@ -32,11 +38,26 @@ describe("2600: Datasets v4 public endpoints tests", () => {
       .expect(TestData.EntryCreatedStatusCode);
 
     await request(appUrl)
-      .post("/api/v3/Datasets")
+      .post("/api/v4/datasets")
       .send({ ...TestData.CustomDatasetCorrect, isPublished: true })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode);
   });
+
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete("/api/v4/datasets/" + encodeURIComponent(item.pid))
+      .auth(accessTokenArchiveManager, { type: "bearer" })
+      .expect(TestData.SuccessfulDeleteStatusCode);
+
+    return response;
+  }
+
+  async function processArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
 
   describe("Fetching v4 public datasets", () => {
     it("0200: should fetch several public datasets using limits sort filter", async () => {
@@ -527,6 +548,19 @@ describe("2600: Datasets v4 public endpoints tests", () => {
           res.body.should.have.property("attachments");
           res.body.should.have.property("origdatablocks");
           res.body.should.have.property("samples");
+        });
+    });
+  });
+
+  describe("Cleanup datasets after the tests", () => {
+    it("0600: delete all dataset as archivemanager", async () => {
+      return await request(appUrl)
+        .get("/api/v4/datasets")
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          return processArray(res.body);
         });
     });
   });

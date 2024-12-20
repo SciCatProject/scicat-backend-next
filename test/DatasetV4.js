@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
-var utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 const { v4: uuidv4 } = require("uuid");
 
-var accessTokenAdminIngestor = null;
-var accessTokenArchiveManager = null;
-var accessTokenUser1 = null;
-var accessTokenUser2 = null;
-var derivedDatasetMinPid = null;
+let accessTokenAdminIngestor = null;
+let accessTokenArchiveManager = null;
+let accessTokenUser1 = null;
+let accessTokenUser2 = null;
+let derivedDatasetMinPid = null;
 
 describe("2500: Datasets v4 tests", () => {
-  before(() => {
+  before(async () => {
     db.collection("Dataset").deleteMany({});
-  });
-  beforeEach(async () => {
+
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -36,6 +35,21 @@ describe("2500: Datasets v4 tests", () => {
       password: TestData.Accounts["archiveManager"]["password"],
     });
   });
+
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete("/api/v4/datasets/" + encodeURIComponent(item.pid))
+      .auth(accessTokenArchiveManager, { type: "bearer" })
+      .expect(TestData.SuccessfulDeleteStatusCode);
+
+    return response;
+  }
+
+  async function processArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
 
   describe("Datasets validation tests", () => {
     it("0100: should not be able to validate dataset if not logged in", async () => {
@@ -84,7 +98,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0104: check if invalid derived dataset is valid", async () => {
       return request(appUrl)
-        .post("/api/v3/Datasets/isValid")
+        .post("/api/v4/datasets/isValid")
         .send(TestData.DerivedWrong)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.EntryValidStatusCode)
@@ -137,7 +151,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0113: adds a new minimal custom dataset", async () => {
       return request(appUrl)
-        .post("/api/v3/Datasets")
+        .post("/api/v4/datasets")
         .send(TestData.CustomDatasetCorrectMin)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.EntryCreatedStatusCode)
@@ -283,7 +297,7 @@ describe("2500: Datasets v4 tests", () => {
 
     it("0125: tries to add an incomplete derived dataset", async () => {
       return request(appUrl)
-        .post("/api/v3/Datasets")
+        .post("/api/v4/datasets")
         .send(TestData.DerivedWrongV4)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.BadRequestStatusCode)
@@ -954,6 +968,17 @@ describe("2500: Datasets v4 tests", () => {
 
           res.body.should.have.property("pid");
           res.body.should.have.property("datasetName");
+        });
+    });
+
+    it("0702: delete all dataset as archivemanager", async () => {
+      return await request(appUrl)
+        .get("/api/v4/datasets")
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          return processArray(res.body);
         });
     });
   });

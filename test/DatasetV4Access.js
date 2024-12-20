@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 "use strict";
 
-let utils = require("./LoginUtils");
+const utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
 let user1Token = null;
 let user2Token = null;
 let user3Token = null;
+let accessTokenArchiveManager = null;
+let accessTokenAdminIngestor = null;
 let derivedDatasetMinPid = null;
 let proposalId = null;
 let instrumentId = null;
@@ -24,9 +26,13 @@ describe("2700: Datasets v4 access tests", () => {
     db.collection("Instrument").deleteMany({});
     db.collection("Sample").deleteMany({});
 
-    const accessTokenAdminIngestor = await utils.getToken(appUrl, {
+    accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
+    });
+    accessTokenArchiveManager = await utils.getToken(appUrl, {
+      username: "archiveManager",
+      password: TestData.Accounts["archiveManager"]["password"],
     });
     user1Token = await utils.getToken(appUrl, {
       username: "user1",
@@ -116,11 +122,26 @@ describe("2700: Datasets v4 access tests", () => {
       .expect(TestData.EntryCreatedStatusCode);
 
     await request(appUrl)
-      .post("/api/v3/Datasets")
+      .post("/api/v4/datasets")
       .send({ ...TestData.CustomDatasetCorrect })
       .auth(accessTokenAdminIngestor, { type: "bearer" })
       .expect(TestData.EntryCreatedStatusCode);
   });
+
+  async function deleteDataset(item) {
+    const response = await request(appUrl)
+      .delete("/api/v4/datasets/" + encodeURIComponent(item.pid))
+      .auth(accessTokenArchiveManager, { type: "bearer" })
+      .expect(TestData.SuccessfulDeleteStatusCode);
+
+    return response;
+  }
+
+  async function processArray(array) {
+    for (const item of array) {
+      await deleteDataset(item);
+    }
+  }
 
   describe("Fetching v4 all datasets access", () => {
     it("0100: should fetch dataset relation fields with correct data included if provided in the filter and have the correct rights", async () => {
@@ -448,6 +469,19 @@ describe("2700: Datasets v4 access tests", () => {
           const [origdatablock] = firstDataset.origdatablocks;
           origdatablock.should.have.property("_id");
           origdatablock._id.should.be.eq(origDatablockId1);
+        });
+    });
+  });
+
+  describe("Cleanup datasets after the tests", () => {
+    it("0400: delete all dataset as archivemanager", async () => {
+      return await request(appUrl)
+        .get("/api/v4/datasets")
+        .auth(accessTokenAdminIngestor, { type: "bearer" })
+        .expect(TestData.SuccessfulDeleteStatusCode)
+        .expect("Content-Type", /json/)
+        .then((res) => {
+          return processArray(res.body);
         });
     });
   });
