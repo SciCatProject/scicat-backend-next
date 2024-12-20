@@ -333,7 +333,6 @@ describe("1600: PublishedData: Test of access to published data", () => {
     };
     var limits = {
       skip: 0,
-      limit: 2,
     };
     return request(appUrl)
       .get(
