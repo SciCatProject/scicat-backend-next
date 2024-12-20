@@ -70,6 +70,7 @@ import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { PidValidationPipe } from "./pipes/pid-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { plainToInstance } from "class-transformer";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -318,11 +319,16 @@ export class DatasetsV4Controller {
   async isValid(
     @Req() request: Request,
     @Body(PidValidationPipe)
-    createDatasetDto: CreateDatasetDto,
+    createDatasetDto: object,
   ) {
+    const createDatasetDtoInstance = plainToInstance(
+      CreateDatasetDto,
+      createDatasetDto,
+    );
+
     const datasetDto = await this.checkPermissionsForDatasetExtended(
       request,
-      createDatasetDto,
+      createDatasetDtoInstance,
       Action.DatasetCreate,
     );
 

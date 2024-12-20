@@ -99,7 +99,7 @@ describe("2500: Datasets v4 tests", () => {
     it("0104: check if invalid derived dataset is valid", async () => {
       return request(appUrl)
         .post("/api/v4/datasets/isValid")
-        .send(TestData.DerivedWrong)
+        .send(TestData.DerivedWrongV4)
         .auth(accessTokenAdminIngestor, { type: "bearer" })
         .expect(TestData.EntryValidStatusCode)
         .expect("Content-Type", /json/)
