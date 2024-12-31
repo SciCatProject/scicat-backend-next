@@ -152,11 +152,9 @@ jobs:
             --git-repo-id scicat-backend-next \
             --git-user-id SciCatProject \
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
+            if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
-            elif [ "${{ matrix.generator }}" == "python" ]; then
-              echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
-            elif [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
+            elif [ "${{ matrix.generator }}" == "python" ] || [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
             fi
             )
@@ -169,9 +167,12 @@ jobs:
   npm-publish:
     needs: generate-upload-sdk
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk_type: [typescript-angular, typescript-fetch]
     environment:
-      name: npm-sdk-package
-      url: https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts
+      name: ${{ matrix.sdk_type }}-sdk-package
+      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-angular' || 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-fetch' }}
 
     steps:
       - name: Checkout repository
@@ -183,19 +184,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Download TypeScript Angular SDK Artifact
+      - name: Download TypeScript SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-typescript-angular-${{github.sha}}
+          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
 
       - name: Publish package
         run: |
           npm install
           npm run build
-          cd dist
+          if [ "${{ matrix.sdk_type }}" == "typescript-angular" ]; then
+            # publish dist folder for typescript-angular
+            cd dist
+          fi
           npm publish --access public
-        working-directory: ./sdk/typescript-angular/
+        working-directory: ./sdk/${{ matrix.sdk_type }}/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -223,7 +227,7 @@ jobs:
       - name: Download Python SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-${{ matrix.sdk_type }}-${{github.sha}}
+          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
 
       - name: Install dependencies
