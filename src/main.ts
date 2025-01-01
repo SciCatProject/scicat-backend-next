@@ -15,9 +15,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
-  const configService: ConfigService<Record<string, unknown>, false> = app.get(
-    ConfigService,
-  );
+  const configService = app.get(ConfigService);
   const apiVersion = configService.get<string>("versions.api");
   const swaggerPath = `${configService.get<string>("swaggerPath")}`;
 
