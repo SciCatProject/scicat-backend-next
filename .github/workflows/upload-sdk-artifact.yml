@@ -7,7 +7,7 @@ on:
 
 env:
   NODE_VERSION: 20.x
-  SDK_VERSION: latest
+  SDK_VERSION: 0.0.1
 
 jobs:
   start-backend-and-upload-swagger-schema:
@@ -48,7 +48,7 @@ jobs:
       - start-backend-and-upload-swagger-schema
     strategy:
       matrix:
-        generator: [python, typescript-angular, python-pydantic-v1]
+        generator: [python, typescript-angular, typescript-fetch]
 
     steps:
       - name: Checkout repository
@@ -67,11 +67,9 @@ jobs:
           config-file: .github/openapi/${{ matrix.generator }}-config.json
           command-args: |
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
+            if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{env.SDK_VERSION}}";
             elif [ "${{ matrix.generator }}" == "python" ]; then
-              echo "--additional-properties=packageVersion=${{env.SDK_VERSION}}";
-            elif [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
               echo "--additional-properties=packageVersion=${{env.SDK_VERSION}}";
             fi
             )
