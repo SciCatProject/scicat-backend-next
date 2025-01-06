@@ -131,7 +131,7 @@ jobs:
       - start-backend-export-swagger
     strategy:
       matrix:
-        generator: [python, python-pydantic-v1, typescript-angular]
+        generator: [python, typescript-angular, typescript-fetch]
 
     steps:
       - name: Checkout repository
@@ -154,7 +154,7 @@ jobs:
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
-            elif [ "${{ matrix.generator }}" == "python" ] || [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
+            elif [ "${{ matrix.generator }}" == "python" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
             fi
             )
@@ -208,10 +208,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sdk_type: [python, python-pydantic-v1]
+        sdk_type: [python]
     environment:
       name: ${{ matrix.sdk_type }}-sdk-package
-      url: ${{ matrix.sdk_type == 'python' && 'https://pypi.org/project/scicat-sdk-py' || 'https://pypi.org/project/scicat-sdk-pydantic' }}
+      url: "https://pypi.org/project/scicat-sdk-py"
     permissions:
       id-token: write
 
