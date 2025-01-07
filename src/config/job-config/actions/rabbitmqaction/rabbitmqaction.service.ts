@@ -23,7 +23,7 @@ export class RabbitMQJobActionCreator implements JobActionCreator<JobDto> {
     return new RabbitMQJobAction(
       this.configService,
       this.rabbitMQService,
-      options
+      options,
     );
   }
 }
