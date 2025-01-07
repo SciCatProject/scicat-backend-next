@@ -15,67 +15,61 @@ export class RabbitMQService implements OnModuleDestroy, OnApplicationShutdown {
   private connectionOptions: amqp.Options.Connect;
   private connection: Connection;
   private channel: Channel;
-  rabbitMqEnabled: boolean;
 
-  constructor(private configService: ConfigService) {
-    this.rabbitMqEnabled =
-      this.configService.get<string>("rabbitMq.enabled") === "yes";
+  constructor(private readonly configService: ConfigService) {
+    Logger.log("Initializing RabbitMQService.", "RabbitMQService");
 
-    if (this.rabbitMqEnabled) {
-      Logger.log("Initializing RabbitMQService.", "RabbitMQService");
+    const hostname = this.configService.get<string>("rabbitMq.hostname");
+    const port = this.configService.get<number>("rabbitMq.port");
+    const username = this.configService.get<string>("rabbitMq.username");
+    const password = this.configService.get<string>("rabbitMq.password");
 
-      const hostname = this.configService.get<string>("rabbitMq.hostname");
-      const port = this.configService.get<number>("rabbitMq.port");
-      const username = this.configService.get<string>("rabbitMq.username");
-      const password = this.configService.get<string>("rabbitMq.password");
+    if (!hostname || !port || !username || !password) {
+      Logger.error(
+        "RabbitMQ is enabled but missing one or more config variables.",
+        "RabbitMQService",
+      );
+    } else {
+      this.connectionOptions = {
+        protocol: "amqp",
+        hostname: hostname,
+        port: port,
+        username: username,
+        password: password,
+      };
 
-      if (!hostname || !port || !username || !password) {
-        Logger.error(
-          "RabbitMQ is enabled but missing one or more config variables.",
-          "RabbitMQService",
-        );
-      } else {
-        this.connectionOptions = {
-          protocol: "amqp",
-          hostname: hostname,
-          port: port,
-          username: username,
-          password: password,
-        };
-
-        amqp.connect(
-          this.connectionOptions,
-          (connectionError: Error, connection: Connection) => {
-            if (connectionError) {
-              Logger.error(
-                "Connection error in RabbitMQService: " +
-                  JSON.stringify(connectionError.message),
-                "RabbitMQService",
-              );
-              return;
-            }
-            this.connection = connection;
-
-            this.connection.createChannel(
-              (channelError: Error, channel: Channel) => {
-                if (channelError) {
-                  Logger.error(
-                    "Channel error in RabbitMQService: " +
-                      JSON.stringify(channelError.message),
-                    "RabbitMQService",
-                  );
-                  return;
-                }
-                this.channel = channel;
-              },
+      amqp.connect(
+        this.connectionOptions,
+        (connectionError: Error, connection: Connection) => {
+          if (connectionError) {
+            Logger.error(
+              "Connection error in RabbitMQService: " +
+                JSON.stringify(connectionError.message),
+              "RabbitMQService",
             );
-          },
-        );
-      }
+            return;
+          }
+          this.connection = connection;
+
+          this.connection.createChannel(
+            (channelError: Error, channel: Channel) => {
+              if (channelError) {
+                Logger.error(
+                  "Channel error in RabbitMQService: " +
+                    JSON.stringify(channelError.message),
+                  "RabbitMQService",
+                );
+                return;
+              }
+              this.channel = channel;
+            },
+          );
+        },
+      );
     }
   }
 
-  connect(queue: string, exchange: string, key: string) {
+  private connect(queue: string, exchange: string, key: string) {
     try {
       this.channel.assertQueue(queue, { durable: true });
       this.channel.assertExchange(exchange, "topic", {
