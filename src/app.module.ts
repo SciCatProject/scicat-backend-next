@@ -32,7 +32,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
-import { MetricsAndLogsModule } from "./metrics-and-logs/metrics-and-logs.module";
+import { MetricsAndLogsModule } from "./metrics/metrics-and-logs.module";
 
 @Module({
   imports: [
