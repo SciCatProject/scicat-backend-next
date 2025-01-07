@@ -1,13 +1,13 @@
 import { Logger, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { MetricsAndLogsMiddleware } from "./middlewares/metrics-and-logs.middleware";
+import { AccessTrackingMiddleware } from "./middlewares/accessTracking.middleware";
 import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   imports: [ConfigModule, JwtModule],
   exports: [],
 })
-export class MetricsAndLogsModule implements NestModule {
+export class MetricsModule implements NestModule {
   constructor(private readonly configService: ConfigService) {}
 
   configure(consumer: MiddlewareConsumer) {
@@ -16,7 +16,7 @@ export class MetricsAndLogsModule implements NestModule {
 
     try {
       consumer
-        .apply(MetricsAndLogsMiddleware)
+        .apply(AccessTrackingMiddleware)
         .exclude(...exclude)
         .forRoutes(...include);
       Logger.log("Start collecting metrics", "MetricsModule");

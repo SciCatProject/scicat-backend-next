@@ -32,7 +32,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
-import { MetricsAndLogsModule } from "./metrics/metrics-and-logs.module";
+import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [
@@ -44,7 +44,7 @@ import { MetricsAndLogsModule } from "./metrics/metrics-and-logs.module";
       load: [configuration],
     }),
     ConditionalModule.registerWhen(
-      MetricsAndLogsModule,
+      MetricsModule,
       (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",
     ),
     LoggerModule,

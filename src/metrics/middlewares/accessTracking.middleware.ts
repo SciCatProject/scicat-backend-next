@@ -4,10 +4,10 @@ import { JwtService } from "@nestjs/jwt";
 import { parse } from "url";
 
 @Injectable()
-export class MetricsAndLogsMiddleware implements NestMiddleware {
+export class AccessTrackingMiddleware implements NestMiddleware {
   private requestCache = new Map<string, number>(); // Cache to store recent requests
-  private cacheStoreDuration = 1000;
-  private cacheResetInterval = 10 * 60 * 1000; // 10 minutes
+  private logIntervalDuration = 1000; // Log every 1 second to prevent spam
+  private cacheResetInterval = 10 * 60 * 1000; // Clear cache every 10 minutes to prevent memory leak
 
   constructor(private readonly jwtService: JwtService) {
     this.startCacheResetInterval();
@@ -22,7 +22,6 @@ export class MetricsAndLogsMiddleware implements NestMiddleware {
     if (!pathname || isBot) return;
 
     const startTime = Date.now();
-    //TODO: Implment the logic for checking if this is human or bot
     const authHeader = req.headers.authorization;
     const originIp = req.socket.remoteAddress;
     const userId = this.parseToken(authHeader);
@@ -37,9 +36,8 @@ export class MetricsAndLogsMiddleware implements NestMiddleware {
 
       const lastHitTime = this.requestCache.get(cacheKeyIdentifier);
 
-      console.log("===qieru", query);
       // Log only if the request was not recently logged
-      if (!lastHitTime || Date.now() - lastHitTime > this.cacheStoreDuration) {
+      if (!lastHitTime || Date.now() - lastHitTime > this.logIntervalDuration) {
         Logger.log("SciCatAccessLogs", {
           userId,
           originIp,
@@ -65,7 +63,7 @@ export class MetricsAndLogsMiddleware implements NestMiddleware {
       const { id } = this.jwtService.decode(token);
       return id;
     } catch (error) {
-      Logger.error("Error parsing token-> MetricsAndLogsMiddleware", error);
+      Logger.error("Error parsing token-> AccessTrackingMiddleware", error);
       return null;
     }
   }
