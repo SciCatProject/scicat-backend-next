@@ -6,7 +6,7 @@ import { RabbitMQService } from "./rabbitmq/rabbitmq.service";
 @Module({
   imports: [ConfigModule],
   providers: [
-    MailService, 
+    MailService,
     {
       provide: RabbitMQService,
       useFactory: (configService: ConfigService) => {

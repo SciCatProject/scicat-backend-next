@@ -20,6 +20,10 @@ export class RabbitMQJobActionCreator implements JobActionCreator<JobDto> {
     if (!isRabbitMQJobActionOptions(options)) {
       throw new Error("Invalid options for RabbitMQJobAction.");
     }
-    return new RabbitMQJobAction(this.configService, this.rabbitMQService, options);
+    return new RabbitMQJobAction(
+      this.configService,
+      this.rabbitMQService,
+      options
+    );
   }
 }
