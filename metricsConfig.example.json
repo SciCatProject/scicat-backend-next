@@ -11,7 +11,7 @@
       "version": "3"
     },
     {
-      "path": "datasets/other-endpoint",
+      "path": "datasets/:id",
       "method": 0,
       "version": "3"
     }
