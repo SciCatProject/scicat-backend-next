@@ -291,7 +291,7 @@ export class UpdateDatasetDto extends OwnableDto {
   readonly dataQualityMetrics?: number;
 
   @ApiProperty({
-    type: [String],
+    type: String,
     required: false,
     isArray: true,
     description:
