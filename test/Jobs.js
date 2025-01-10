@@ -1399,7 +1399,7 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         ],
       },
     };
-    console.log("the group job", newJob)
+
     return request(appUrl)
       .post("/api/v3/Jobs")
       .send(newJob)
@@ -1687,7 +1687,6 @@ describe.only("1100: Jobs: Test New Job Model", () => {
         ],
       },
     };
-    console.log("The user job", newJob)
 
     return request(appUrl)
       .post("/api/v3/Jobs")
