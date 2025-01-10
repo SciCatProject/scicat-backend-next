@@ -150,7 +150,7 @@ const jobValidate = {
   type: "validate"
 };
 
-describe.only("1100: Jobs: Test New Job Model", () => {
+describe("1100: Jobs: Test New Job Model", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
