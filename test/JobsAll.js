@@ -1063,6 +1063,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       .expect(TestData.AccessForbiddenStatusCode)
       .expect("Content-Type", /json/);
   });
+
   it("1750: Get admin's job as user from ADMIN_GROUP", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
@@ -1074,6 +1075,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("ownerUser").and.be.equal("admin");
       });
   });
+
   it("1760: Get user1's job as user from ADMIN_GROUP", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
@@ -1210,7 +1212,6 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       });
   });
 
-
   it("1890: Get anonymous user's job as normal user, which should be forbidden", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
@@ -1337,7 +1338,6 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
-
 
   it("2020: Fullquery jobs as a user from ADMIN_GROUPS that were created by anonymous user", async () => {
     const query = { createdBy: "anonymous" };

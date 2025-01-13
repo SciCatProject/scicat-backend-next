@@ -174,6 +174,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
+
   it("0360: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,

@@ -133,6 +133,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         datasetPid3 = res.body["pid"];
       });
   });
+
   it("0500: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,

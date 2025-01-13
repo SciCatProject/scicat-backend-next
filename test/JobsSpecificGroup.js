@@ -101,6 +101,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
   //   db.collection("Dataset").deleteMany({});
   //   db.collection("Job").deleteMany({});
   // });
+
   it("0010: adds dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
@@ -151,6 +152,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         datasetPid3 = res.body["pid"];
       });
   });
+
   it("0680: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#@group5' configuration", async () => {
     const newJob = {
       ...jobGroup5,
@@ -689,7 +691,6 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       .expect("Content-Type", /json/);
   });
 
-
   it("1570: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
@@ -742,7 +743,6 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       .expect("Content-Type", /json/);
   });
 
-
   it("1660: Access jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { where: { createdBy: "user5.2" } };
     return request(appUrl)
@@ -757,6 +757,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
+
   it("1870: Get job of another user in his/her group as normal user, which should be forbidden", async () => {
     return request(appUrl)
         .get(`/api/v3/Jobs/${encodedJobOwnedByUser52}`)
@@ -768,6 +769,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
           res.body.should.not.have.property("ownerUser");
         });
   });
+
   it("1880: Get job from his/her own group as normal user, which should be forbidden", async () => {
     return request(appUrl)
         .get(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
@@ -779,6 +781,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
           res.body.should.not.have.property("ownerUser");
         });
   });
+
   it("2010: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { createdBy: "user5.2" };
     return request(appUrl)
@@ -793,6 +796,20 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
+
+  it("2080: Fullquery jobs as another normal user (user5.2)", async () => { // 0760
+    return request(appUrl)
+      .get(`/api/v3/Jobs/fullquery`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser52}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
   it("2130: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const queryFields = { createdBy: "user5.1" };
     return request(appUrl)
@@ -820,19 +837,6 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
-      });
-  });
-
-  it("2080: Fullquery jobs as another normal user (user5.2)", async () => { // 0760
-    return request(appUrl)
-      .get(`/api/v3/Jobs/fullquery`)
-      .send({})
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenUser52}` })
-      .expect(TestData.SuccessfulGetStatusCode)
-      .expect("Content-Type", /json/)
-      .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
       });
   });
 });

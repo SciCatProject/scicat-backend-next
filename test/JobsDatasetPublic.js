@@ -120,6 +120,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
         datasetPid3 = res.body["pid"];
       });
   });
+
   it("0230: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
@@ -365,7 +366,6 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
-
 
   it("0320: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
