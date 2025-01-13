@@ -209,8 +209,7 @@ const configuration = () => {
       // Note: `process.env.METRICS_ENABLED` is directly used for conditional module loading in
       // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
       // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
-      enabled:
-        process.env.METRICS_ENABLED && process.env.METRICS_ENABLED === "yes",
+      enabled: process.env.METRICS_ENABLED || "no",
       config: jsonConfigMap.metricsConfig,
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,

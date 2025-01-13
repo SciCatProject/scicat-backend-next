@@ -12,7 +12,14 @@ export class MetricsModule implements NestModule {
 
   configure(consumer: MiddlewareConsumer) {
     const { include = [], exclude = [] } =
-      this.configService.get("metricsConfig") || {};
+      this.configService.get("metrics.config") || {};
+    if (!include.length && !exclude.length) {
+      Logger.error(
+        'Metrics middleware requires at least one "include" or "exclude" path in the metricsConfig.json file.',
+        "MetricsModule",
+      );
+      return;
+    }
 
     try {
       consumer
