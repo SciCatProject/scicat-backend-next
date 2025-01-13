@@ -43,6 +43,9 @@ import { MetricsModule } from "./metrics/metrics.module";
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    // NOTE: `ConditionalModule.registerWhen` directly uses `process.env` as it does not support
+    // dependency injection for `ConfigService`. This approach ensures compatibility while
+    // leveraging environment variables for conditional module loading.
     ConditionalModule.registerWhen(
       MetricsModule,
       (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",

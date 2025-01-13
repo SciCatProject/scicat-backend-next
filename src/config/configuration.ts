@@ -82,7 +82,6 @@ const configuration = () => {
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
-    metricsConfig: jsonConfigMap.metricsConfig,
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
     createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
@@ -206,7 +205,14 @@ const configuration = () => {
       mongoDBCollection: process.env.MONGODB_COLLECTION,
       defaultIndex: process.env.ES_INDEX ?? "dataset",
     },
-
+    metrics: {
+      // Note: `process.env.METRICS_ENABLED` is directly used for conditional module loading in
+      // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
+      // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
+      enabled:
+        process.env.METRICS_ENABLED && process.env.METRICS_ENABLED === "yes",
+      config: jsonConfigMap.metricsConfig,
+    },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
