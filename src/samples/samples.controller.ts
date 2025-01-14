@@ -410,7 +410,6 @@ export class SamplesController {
     required: false,
     type: String,
     // NOTE: This is custom example because the service function metadataKeys expects input like the following.
-
     example: '{ "fields": { "metadataKey": "chemical_formula" } }',
   })
   @ApiResponse({
