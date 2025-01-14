@@ -831,7 +831,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("0380: Adds a Status update to a job as unauthhenticated user for anonymous job in '#all' configuration", async () => {
+  it("0380: Adds a Status update to a job as unauthenticated user for anonymous job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -843,7 +843,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("0390: Adds a Status update to a job as unauthhenticated user for anouther group's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0390: Adds a Status update to a job as unauthenticated user for another group's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -855,7 +855,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("0400: Adds a Status update to a job as unauthhenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0400: Adds a Status update to a job as unauthenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
       .send({

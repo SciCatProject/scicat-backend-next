@@ -605,7 +605,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
       .expect("Content-Type", /json/);
   });
 
-  it("0280: Adds a Status update to a job as unauthhenticated user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
+  it("0280: Adds a Status update to a job as unauthenticated user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
