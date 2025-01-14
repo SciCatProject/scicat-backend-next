@@ -463,7 +463,7 @@ describe("2500: Datasets v4 tests", () => {
         });
     });
 
-    it("0205: should fetch all dataset relation fields if provided in the filter", async () => {
+    it("0205: should fetch all datasets with related items when requested with all relations", async () => {
       const filter = {
         include: ["all"],
       };
@@ -949,7 +949,7 @@ describe("2500: Datasets v4 tests", () => {
     });
   });
 
-  describe("Datasets v4 update tests", () => {
+  describe("Datasets v4 delete tests", () => {
     it("0700: should not be able to delete dataset if not logged in", () => {
       return request(appUrl)
         .delete(`/api/v4/datasets/${encodeURIComponent(derivedDatasetMinPid)}`)
