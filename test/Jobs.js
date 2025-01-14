@@ -135,7 +135,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0311: Add a new public job as a normal user himself/herself with a published dataset", async () => {
+  it("0040: Add a new public job as a normal user himself/herself with a published dataset", async () => {
     const newJob = {
       ...publicJob,
       ownerUser: "user5.1",
@@ -162,7 +162,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0312: Add a new public job as a normal user himself/herself with unpublished datasets, which should fail", async () => {
+  it("0050: Add a new public job as a normal user himself/herself with unpublished datasets, which should fail", async () => {
     const newJob = {
       ...publicJob,
       ownerUser: "user5.1",
@@ -189,7 +189,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0313: Add a new archive job as a normal user himself/herself with an archivable dataset", async () => {
+  it("0060: Add a new archive job as a normal user himself/herself with an archivable dataset", async () => {
     const newJob = {
       ...archiveJob,
       ownerUser: "user5.1",
@@ -213,7 +213,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0314: Add a new retrieve job as a normal user himself/herself with a non retrievable dataset, which should fail", async () => {
+  it("0070: Add a new retrieve job as a normal user himself/herself with a non retrievable dataset, which should fail", async () => {
     const newJob = {
       ...retrieveJob,
       ownerUser: "user5.1",
@@ -238,7 +238,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0315: Add a new public job as a normal user himself/herself with unknown files, which should fail", async () => {
+  it("0080: Add a new public job as a normal user himself/herself with unknown files, which should fail", async () => {
     const newJob = {
       ...publicJob,
       ownerUser: "user5.1",
@@ -263,7 +263,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  it("0316: Add a new public job as a normal user himself/herself choosing only specific files", async () => {
+  it("0090: Add a new public job as a normal user himself/herself choosing only specific files", async () => {
     const newJob = {
       ...publicJob,
       ownerUser: "user5.1",
@@ -288,7 +288,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
   });
 
-  describe("3120: Validate Job Action", () => {
+  describe("1115: Validate Job Action", () => {
 
     it("0010: create validate job fails without required parameters", async () => {
       const newJob = {

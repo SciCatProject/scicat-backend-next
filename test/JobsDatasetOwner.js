@@ -134,7 +134,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0500: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "admin",
@@ -163,7 +163,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0510: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
+  it("0050: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "admin",
@@ -192,7 +192,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0520: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetOwner' configuration", async () => {
+  it("0060: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -223,7 +223,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0530: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
+  it("0070: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerGroup: "group1",
@@ -253,7 +253,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0535: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
+  it("0080: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerGroup: "group5",
@@ -283,7 +283,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0540: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
+  it("0090: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
       jobParams: {
@@ -312,7 +312,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0550: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -339,7 +339,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0560: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0110: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "user1",
@@ -367,7 +367,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0570: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
+  it("0120: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets owned by his/her group", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "user5.1",
@@ -396,7 +396,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0580: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets not owned by his/her group, which should fail as forbidden", async () => {
+  it("0130: Add a new job as a normal user for himself/herself in '#datasetOwner' configuration with datasets not owned by his/her group, which should fail as forbidden", async () => {
     const newJob = {
       ...jobDatasetOwner,
       ownerUser: "user5.1",
@@ -421,7 +421,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0950: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
+  it("0140: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
@@ -434,7 +434,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("0960: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerUser' configuration", async () => {
+  it("0150: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -447,7 +447,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("0970: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
+  it("0160: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -460,7 +460,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("0980: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
+  it("0170: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -473,7 +473,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("0990: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
+  it("0180: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -486,7 +486,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1000: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0190: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -499,7 +499,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1010: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerUser' configuration", async () => {
+  it("0200: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -512,7 +512,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1020: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0210: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -525,7 +525,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1030: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0220: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -538,7 +538,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1040: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerUser' configuration", async () => {
+  it("0230: Adds a Status update to a job as a normal user  for his/her job in '#jobOwnerUser' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -551,7 +551,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1050: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0240: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -564,7 +564,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1060: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0250: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -577,7 +577,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1070: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0260: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -590,7 +590,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1080: Adds a Status update to a job as a normal user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0270: Adds a Status update to a job as a normal user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -603,7 +603,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1090: Adds a Status update to a job as unauthhenticated user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
+  it("0280: Adds a Status update to a job as unauthenticated user for anonymous user's group in '#jobOwnerUser' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -615,16 +615,4 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-  it("1100: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
-    return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
-      .send({
-        statusMessage: "update status of a job",
-        statusCode: "job finished/blocked/etc",
-      })
-      .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
-      .expect(TestData.SuccessfulPatchStatusCode)
-      .expect("Content-Type", /json/);
-  });
 });

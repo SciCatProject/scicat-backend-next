@@ -121,7 +121,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0230: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "admin",
@@ -148,7 +148,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0240: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0050: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "admin",
@@ -176,7 +176,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0250: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0060: Add a new job as a user from ADMIN_GROUPS for another user in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -204,7 +204,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0260: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0070: Add a new job as a user from ADMIN_GROUPS for another group in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerGroup: "group1",
@@ -231,7 +231,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0270: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0080: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {
@@ -257,7 +257,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0280: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0090: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -285,7 +285,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0290: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
+  it("0100: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user1",
@@ -313,7 +313,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0300: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with a published dataset", async () => {
+  it("0110: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with a published dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -340,7 +340,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0310: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should fail as forbidden", async () => {
+  it("0120: Add a new job as a normal user himself/herself in '#datasetPublic' configuration with unpublished datasets, which should fail as forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       ownerUser: "user5.1",
@@ -367,7 +367,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0320: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
+  it("0130: Add a new job as anonymous user in '#datasetPublic' configuration with all published datasets", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {
@@ -391,7 +391,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
       });
   });
 
-  it("0330: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
+  it("0140: Add a new job as anonymous user in '#datasetPublic' configuration with one unpublished dataset, which should fail as forbidden", async () => {
     const newJob = {
       ...jobDatasetPublic,
       jobParams: {
@@ -413,4 +413,5 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
+  
 });

@@ -119,7 +119,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0340: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+  it("0040: Add a new job as a user from ADMIN_GROUPS for himself/herself in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerUser: "admin",
@@ -147,7 +147,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0350: Add a new job as a user from ADMIN_GROUPS for another user in '#authenticated' configuration", async () => {
+  it("0050: Add a new job as a user from ADMIN_GROUPS for another user in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerUser: "user1",
@@ -175,7 +175,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0360: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
+  it("0060: Add a new job as a user from ADMIN_GROUPS for another group in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerGroup: "group1",
@@ -202,7 +202,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0370: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#authenticated' configuration", async () => {
+  it("0070: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       jobParams: {
@@ -228,7 +228,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0380: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
+  it("0080: Add a new job as a user from CREATE_JOB_GROUPS for himself/herself in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerUser: "user1",
@@ -256,7 +256,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0390: Add a new job as a normal user for himself/herself in '#authenticated' configuration", async () => {
+  it("0090: Add a new job as a normal user for himself/herself in '#authenticated' configuration", async () => {
     const newJob = {
       ...jobAuthenticated,
       ownerUser: "user5.1",
@@ -284,7 +284,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
       });
   });
 
-  it("0400: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
+  it("0100: Add a new job as unauthenticated user in '#authenticated' configuration, which should fail as forbidden", async () => {
     const newJob = {
       ...jobAuthenticated,
       jobParams: {
