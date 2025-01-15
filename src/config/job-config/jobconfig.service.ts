@@ -30,10 +30,7 @@ export class JobConfigService {
     @Inject(CREATE_JOB_ACTION_CREATORS)
     private create_creators: Record<string, JobActionCreator<CreateJobDto>>,
     @Inject(UPDATE_JOB_ACTION_CREATORS)
-    private update_creators: Record<
-      string,
-      JobActionCreator<UpdateJobDto>
-    >,
+    private update_creators: Record<string, JobActionCreator<UpdateJobDto>>,
     configService: ConfigService,
   ) {
     this.filePath = configService.get<string>("jobConfigurationFile") || "";
