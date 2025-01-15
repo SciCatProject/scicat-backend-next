@@ -38,12 +38,3 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Trigger ESS pipeline
-        uses: swapActions/trigger-swap-deployment@v1
-        with:
-          repository: ${{ github.event.repository.name }}
-          environment: develop
-          gh-trigger-url: ${{ secrets.GITLAB_TRIGGER_URL }}
-          gh-token: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
-          image-tag: ${{ github.sha }}

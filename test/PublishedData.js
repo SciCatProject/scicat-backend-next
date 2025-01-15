@@ -15,6 +15,7 @@ let accessTokenAdminIngestor = null,
   doi = null;
 
 const publishedData = { ...TestData.PublishedData };
+const defaultStatus = "pending_registration";
 
 const origDataBlock = { ...TestData.OrigDataBlockCorrect1 };
 
@@ -38,7 +39,7 @@ describe("1600: PublishedData: Test of access to published data", () => {
     db.collection("Dataset").deleteMany({});
     db.collection("PublishedData").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -65,7 +66,22 @@ describe("1600: PublishedData: Test of access to published data", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("publisher").and.be.string;
+        res.body.should.have.property("status").and.equal(defaultStatus);
         doi = encodeURIComponent(res.body["doi"]);
+      });
+  });
+
+  it("0015: adds a published data without specifying a status should assign the default status", async () => {
+    delete publishedData.status;
+    return request(appUrl)
+      .post("/api/v3/PublishedData")
+      .send(publishedData)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("status").and.equal(defaultStatus);
       });
   });
 

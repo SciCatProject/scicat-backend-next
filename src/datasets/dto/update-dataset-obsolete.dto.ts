@@ -297,6 +297,16 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   @IsOptional()
   @IsString()
   readonly proposalId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Run number assigned by the system to the data acquisition for the current dataset.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly runNumber?: string;
 }
 
 export class PartialUpdateDatasetObsoleteDto extends PartialType(

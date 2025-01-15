@@ -1,16 +1,8 @@
-import {
-  loadJobConfig,
-  registerCreateAction,
-  registerUpdateAction,
-} from "../jobs/config/jobconfig";
-import { LogJobAction } from "../jobs/actions/logaction";
-import { EmailJobAction } from "../jobs/actions/emailaction";
-import { URLAction } from "src/jobs/actions/urlaction";
-import { RabbitMQJobAction } from "src/jobs/actions/rabbitmqaction";
 import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
+import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -44,17 +36,19 @@ const configuration = () => {
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE ||
-    ("src/jobs/config/jobConfig.example.json" as string);
+    process.env.JOB_CONFIGURATION_FILE || ("" as string);
 
   const defaultLogger = {
     type: "DefaultLogger",
     modulePath: "./loggingProviders/defaultLogger",
     config: {},
   };
-  const jsonConfigMap: { [key: string]: object[] | boolean } = {};
+  const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
+    proposalTypes: {},
+  };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+    proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -71,15 +65,18 @@ const configuration = () => {
     }
   });
 
-  registerDefaultActions();
-  const job_configs = loadJobConfig(jobConfigurationFile);
+  // NOTE: Add the default proposal type here
+  Object.assign(jsonConfigMap.proposalTypes, {
+    DefaultProposal: DEFAULT_PROPOSAL_TYPE,
+  });
 
   const config = {
+    maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
       api: "3",
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
-    jobConfiguration: job_configs,
+    jobConfigurationFile: jobConfigurationFile,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
     deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
@@ -188,6 +185,7 @@ const configuration = () => {
     rabbitMq: {
       enabled: process.env.RABBITMQ_ENABLED ?? "no",
       hostname: process.env.RABBITMQ_HOSTNAME,
+      port: process.env.RABBITMQ_PORT,
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
@@ -217,24 +215,10 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);
 };
-
-/**
- * Registers built-in JobActions. Should be called exactly once.
- */
-export function registerDefaultActions() {
-  // Create
-  registerCreateAction(LogJobAction);
-  registerCreateAction(EmailJobAction);
-  registerCreateAction(URLAction);
-  registerCreateAction(RabbitMQJobAction);
-  // Update
-  registerUpdateAction(LogJobAction);
-  registerUpdateAction(EmailJobAction);
-  registerUpdateAction(RabbitMQJobAction);
-}
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
 

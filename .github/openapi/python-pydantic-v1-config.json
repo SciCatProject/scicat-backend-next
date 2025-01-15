@@ -1,5 +1,5 @@
 {
   "generatorName": "python-pydantic-v1",
-  "packageName": "scicat-sdk-pydantic",
-  "projectName": "scicat-sdk-pydantic"
+  "packageName": "scicat_sdk_pydantic",
+  "projectName": "scicat_sdk_pydantic"
 }

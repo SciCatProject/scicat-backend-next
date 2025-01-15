@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
+const { faker } = require("@faker-js/faker");
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
 
@@ -18,7 +19,7 @@ describe("1900: RawDataset: Raw Datasets", () => {
     db.collection("Dataset").deleteMany({});
     db.collection("Proposals").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessProposalToken = await utils.getToken(appUrl, {
       username: "proposalIngestor",
       password: TestData.Accounts["proposalIngestor"]["password"],
@@ -46,6 +47,8 @@ describe("1900: RawDataset: Raw Datasets", () => {
       .then((res) => {
         res.body.should.have.property("ownerGroup").and.be.string;
         res.body.should.have.property("proposalId").and.be.string;
+        // NOTE: Add real proposal in the testdata instead of fixed (non-existing) one
+        TestData.RawCorrect.proposalId = res.body["proposalId"];
         proposalId = encodeURIComponent(res.body["proposalId"]);
       });
   });
@@ -96,6 +99,10 @@ describe("1900: RawDataset: Raw Datasets", () => {
         res.body.should.have.property("instrumentId").and.be.string;
         res.body.should.have.property("proposalId").and.be.string;
         res.body.should.have.property("sampleId").and.be.string;
+        res.body.should.have.property("runNumber").and.be.string;
+        res.body.should.have
+          .property("runNumber")
+          .and.be.equal(TestData.RawCorrect.runNumber);
         pid = encodeURIComponent(res.body["pid"]);
       });
   });
@@ -274,6 +281,74 @@ describe("1900: RawDataset: Raw Datasets", () => {
           res.body.should.be.an("array");
         })
     );
+  });
+
+  it("0124: adds a new proposal for pattching in the existing dataset", async () => {
+    const newProposal = {
+      ...TestData.ProposalCorrectComplete,
+      proposalId: faker.string.numeric(8),
+    };
+    return request(appUrl)
+      .post("/api/v3/Proposals")
+      .send(newProposal)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessProposalToken}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("ownerGroup").and.be.string;
+        res.body.should.have.property("proposalId").and.be.string;
+        // NOTE: Add real proposal in the testdata instead of fixed (non-existing) one
+        TestData.PatchProposal1.proposalId = res.body["proposalId"];
+      });
+  });
+
+  it("0125: should update proposal of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchProposal1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("proposalId").and.be.string;
+        res.body.should.have
+          .property("proposalId")
+          .and.be.equal(TestData.PatchProposal1["proposalId"]);
+      });
+  });
+
+  it("0126: should update instrument of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchInstrument1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("instrumentId").and.be.string;
+        res.body.should.have
+          .property("instrumentId")
+          .and.be.equal(TestData.PatchInstrument1["instrumentId"]);
+      });
+  });
+
+  it("0127: should update sample of the dataset", async () => {
+    return request(appUrl)
+      .patch("/api/v3/datasets/" + pid)
+      .send(TestData.PatchSample1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("sampleId").and.be.string;
+        res.body.should.have
+          .property("sampleId")
+          .and.be.equal(TestData.PatchSample1["sampleId"]);
+      });
   });
 
   it("0130: should update comment of the dataset", async () => {

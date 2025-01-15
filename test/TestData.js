@@ -75,7 +75,7 @@ const TestData = {
   },
 
   ProposalCorrectComplete: {
-    proposalId: "20170267",
+    proposalId: faker.string.numeric(8),
     pi_email: "pi@uni.edu",
     pi_firstname: "principal",
     pi_lastname: "investigator",
@@ -102,7 +102,7 @@ const TestData = {
   },
 
   ProposalWrong_1: {
-    proposalId: "20170267",
+    proposalId: faker.string.numeric(8),
     pi_email: "pi@uni.edu",
     pi_firstname: "principal",
     pi_lastname: "investigator",
@@ -144,11 +144,11 @@ const TestData = {
   RawCorrectMin: {
     ownerGroup: faker.company.name(),
     creationLocation: faker.location.city(),
-    principalInvestigator: faker.internet.userName(),
+    principalInvestigator: faker.internet.username(),
     type: "raw",
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     datasetName: faker.string.sample(),
   },
@@ -231,7 +231,8 @@ const TestData = {
     isPublished: false,
     ownerGroup: "p13388",
     accessGroups: [],
-    proposalId: "10.540.16635/20110123",
+    proposalId: "",
+    runNumber: "123456",
     instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
     sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
     type: "raw",
@@ -319,6 +320,7 @@ const TestData = {
     proposalId: process.env.PID_PREFIX
       ? process.env.PID_PREFIX
       : "" + faker.string.numeric(6),
+    runNumber: faker.string.numeric(6),
     type: "raw",
     keywords: ["sls", "protein"],
   },
@@ -420,7 +422,7 @@ const TestData = {
     investigator: faker.internet.email(),
     inputDatasets: [faker.string.uuid()],
     usedSoftware: [faker.internet.url()],
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     contactEmail: faker.internet.email(),
     sourceFolder: faker.system.directoryPath(),
     creationTime: faker.date.past(),
@@ -454,6 +456,7 @@ const TestData = {
     accessGroups: [],
     type: "derived",
     proposalId: "10.540.16635/20110123",
+    runNumber: "654321",
     //instrumentId: "1f016ec4-7a73-11ef-ae3e-439013069377",
     //sampleId: "20c32b4e-7a73-11ef-9aec-5b9688aa3791i",
   },
@@ -732,62 +735,6 @@ const TestData = {
     ],
   },
 
-  ArchiveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "archive",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  RetrieveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "retrieve",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  PublicJob: {
-    emailJobInitiator: "firstname.lastname@gmail.com",
-    type: "public",
-    jobStatusMessage: "jobSubmitted",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-  },
-
   PublishedData: {
     creator: ["ESS"],
     publisher: "ESS",
@@ -834,6 +781,18 @@ const TestData = {
     name: "ESS-wrong",
   },
 
+  PatchProposal1: {
+    proposalId: "",
+  },
+
+  PatchInstrument1: {
+    instrumentId: "fb0f3b58-92c9-11ef-9aeb-632c6e2960a1",
+  },
+
+  PatchSample1: {
+    sampleId: "f3cfc114-92c9-11ef-8ed4-f3b97158e36b",
+  },
+
   PatchComment: {
     comment: "test",
   },
@@ -852,12 +811,12 @@ const TestData = {
   ScientificMetadataForElasticSearch: {
     ownerGroup: faker.company.name(),
     creationLocation: faker.location.city(),
-    principalInvestigator: faker.internet.userName(),
+    principalInvestigator: faker.internet.username(),
     type: "raw",
     datasetName: faker.string.sample(),
     creationTime: faker.date.past(),
     sourceFolder: faker.system.directoryPath(),
-    owner: faker.internet.userName(),
+    owner: faker.internet.username(),
     size: faker.number.int({ min: 0, max: 100000000 }),
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
