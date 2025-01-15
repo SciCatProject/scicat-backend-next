@@ -735,14 +735,14 @@ export class JobsController {
     }
 
     // Allow actions to validate DTO
-    await this.validateDTO(jobConfig.statusUpdate.actions, statusUpdateJobDto);
+    await this.validateDTO(jobConfig.update.actions, updateJobDto);
 
     // Update job in database
     const updatedJob = await this.jobsService.update(id, updateJobDto);
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      await this.performActions(jobConfig.statusUpdate.actions, updatedJob);
+      await this.performActions(jobConfig.update.actions, updatedJob);
     }
     return updatedJob;
   }

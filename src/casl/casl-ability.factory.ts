@@ -368,7 +368,7 @@ export class CaslAbilityFactory {
       cannot(Action.JobRead, JobClass);
       if (
         Object.values(this.jobConfigService.allJobConfigs).some(
-          (j) => j.statusUpdate.auth == UpdateJobAuth.All,
+          (j) => j.update.auth == UpdateJobAuth.All,
         )
       ) {
         can(Action.JobUpdate, JobClass);

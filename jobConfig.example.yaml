@@ -21,7 +21,7 @@ jobs:
           from: from
           subject: "[SciCat] Your {{type}} job was submitted successfully"
           bodyTemplateFile: src/common/email-templates/job-template-simplified.html
-    statusUpdate:
+    update:
       auth: archivemanager
       actions:
         - actionType: rabbitmq
@@ -39,5 +39,5 @@ jobs:
               required:
                 - pid
                 - files
-    statusUpdate:
+    update:
       auth: "#all"
