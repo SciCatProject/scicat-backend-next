@@ -58,8 +58,8 @@ export class EmailJobAction implements JobAction<JobDto> {
       to: this.toTemplate(job),
       from: this.from,
       subject: this.subjectTemplate(job),
+      html: this.bodyTemplate(job),
     };
-    mail.text = this.bodyTemplate(job);
     Logger.log(mail);
 
     // Send the email
