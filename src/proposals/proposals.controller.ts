@@ -67,7 +67,6 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { FindByIdAccessResponse } from "src/samples/samples.controller";
-import { FilterPipe } from "src/common/pipes/filter.pipe";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
