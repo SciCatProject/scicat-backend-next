@@ -54,8 +54,10 @@ import {
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
 import {
+  CountApiResponse,
   filterDescription,
   filterExample,
+  FullFacetFilters,
   FullFacetResponse,
   fullQueryExampleLimits,
   FullQueryFilters,
@@ -368,6 +370,38 @@ export class ProposalsController {
     return this.proposalsService.findAll(proposalFilters);
   }
 
+  // GET /proposals/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("proposals", (ability: AppAbility) =>
+    ability.can(Action.ProposalsRead, ProposalClass),
+  )
+  @Get("/count")
+  @ApiOperation({
+    summary: "It returns the number of proposals.",
+    description:
+      "It returns a number of proposals matching the where filter if provided.",
+  })
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Database filters to apply when retrieving count for proposals",
+    required: false,
+    type: String,
+    example: '{"where": {"proposalId": "189691"}}',
+  })
+  @ApiResponse({
+    status: 200,
+    type: CountApiResponse,
+    description:
+      "Return the number of proposals in the following format: { count: integer }",
+  })
+  async count(@Req() request: Request, @Query("filters") filters?: string) {
+    const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
+      this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
+
+    return this.proposalsService.count(proposalFilters);
+  }
+
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies("proposals", (ability: AppAbility) =>
@@ -454,7 +488,7 @@ export class ProposalsController {
       "Full facet query filters to apply when retrieving proposals\n" +
       proposalsFullQueryDescriptionFields,
     required: false,
-    type: String,
+    type: FullFacetFilters,
     example: proposalsFullQueryExampleFields,
   })
   @ApiResponse({
