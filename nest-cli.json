@@ -5,7 +5,12 @@
     "plugins": [{
       "name": "@nestjs/swagger",
       "options": {
-        "dtoFileNameSuffix": [".dto.ts", "sample.schema.ts"],
+        "dtoFileNameSuffix": [
+          ".dto.ts",
+          "sample.schema.ts",
+          "proposal.schema.ts",
+          "measurement-period.schema.ts"
+        ],
         "introspectComments": true
       }
     }]

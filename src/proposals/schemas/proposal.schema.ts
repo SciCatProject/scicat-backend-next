@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import { Document, Schema as MongooseSchema } from "mongoose";
 
 import { OwnableClass } from "src/common/schemas/ownable.schema";
@@ -21,12 +21,9 @@ export type ProposalDocument = ProposalClass & Document;
   minimize: false,
 })
 export class ProposalClass extends OwnableClass {
-  @ApiProperty({
-    type: String,
-    required: true,
-    description:
-      "Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended.",
-  })
+  /**
+   * Globally unique identifier of a proposal, eg. PID-prefix/internal-proposal-number. PID prefix is auto prepended.
+   */
   @Prop({
     type: String,
     unique: true,
@@ -34,16 +31,15 @@ export class ProposalClass extends OwnableClass {
   })
   proposalId: string;
 
+  @ApiHideProperty()
   @Prop({
     type: String,
   })
   _id: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Email of principal investigator.",
-  })
+  /**
+   * Email of principal investigator.
+   */
   @Prop({
     type: String,
     required: false,
@@ -51,112 +47,90 @@ export class ProposalClass extends OwnableClass {
   })
   pi_email?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "First name of principal investigator.",
-  })
+  /**
+   * First name of principal investigator.
+   */
   @Prop({
     type: String,
     required: false,
   })
   pi_firstname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Last name of principal investigator.",
-  })
+  /**
+   * Last name of principal investigator.
+   */
   @Prop({
     type: String,
     required: false,
   })
   pi_lastname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "Email of main proposer.",
-  })
+  /**
+   * Email of main proposer.
+   */
   @Prop({
     type: String,
     required: true,
   })
   email: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "First name of main proposer.",
-  })
+  /**
+   * First name of main proposer.
+   */
   @Prop({
     type: String,
     required: false,
   })
   firstname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Last name of main proposer.",
-  })
+  /**
+   * Last name of main proposer.
+   */
   @Prop({
     type: String,
     required: false,
   })
   lastname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "The title of the proposal.",
-  })
+  /**
+   * The title of the proposal.
+   */
   @Prop({
     type: String,
     required: true,
   })
   title: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "The proposal abstract.",
-  })
+  /**
+   * The proposal abstract.
+   */
   @Prop({
     type: String,
     required: false,
   })
   abstract?: string;
 
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description: "The date when the data collection starts.",
-  })
+  /**
+   * The date when the data collection starts.
+   */
   @Prop({
     type: Date,
     required: false,
   })
   startTime?: Date;
 
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description: "The date when data collection finishes.",
-  })
+  /**
+   * The date when data collection finishes.
+   */
   @Prop({
     type: Date,
     required: false,
   })
   endTime?: Date;
 
-  @ApiProperty({
-    type: MeasurementPeriodClass,
-    isArray: true,
-    required: false,
-    description:
-      "Embedded information used inside proposals to define which type of experiment has to be pursued, where (at which instrument) and when.",
-  })
+  /**
+   * Embedded information used inside proposals to define which type of experiment has to be pursued, where (at which instrument) and when.
+   */
   @Prop({
     type: [MeasurementPeriodSchema],
     required: false,
