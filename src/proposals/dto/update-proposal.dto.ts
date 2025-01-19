@@ -1,4 +1,4 @@
-import { ApiProperty, ApiTags, PartialType } from "@nestjs/swagger";
+import { ApiTags, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,

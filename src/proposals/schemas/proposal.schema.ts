@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Document, Schema as MongooseSchema } from "mongoose";
 
 import { OwnableClass } from "src/common/schemas/ownable.schema";
@@ -137,43 +137,30 @@ export class ProposalClass extends OwnableClass {
   })
   MeasurementPeriodList?: MeasurementPeriodClass[];
 
-  @ApiProperty({
-    type: MongooseSchema.Types.Mixed,
-    required: false,
-    default: {},
-    description: "JSON object containing the proposal metadata.",
-  })
+  /**
+   * JSON object containing the proposal metadata.
+   */
   @Prop({ type: MongooseSchema.Types.Mixed, required: false, default: {} })
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> = {};
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Parent proposal id",
-    default: null,
-    nullable: true,
-  })
+  /**
+   * Parent proposal id
+   */
   @Prop({
     type: String,
-    required: false,
     default: null,
     ref: "Proposal",
   })
-  parentProposalId: string;
+  parentProposalId: string | null = null;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    default: DEFAULT_PROPOSAL_TYPE,
-    description:
-      "Characterize type of proposal, use some of the configured values",
-  })
+  /**
+   * Characterize type of proposal, use some of the configured values
+   */
   @Prop({
     type: String,
-    required: true,
     default: DEFAULT_PROPOSAL_TYPE,
   })
-  type: string;
+  type: string = DEFAULT_PROPOSAL_TYPE;
 }
 
 export const ProposalSchema = SchemaFactory.createForClass(ProposalClass);
