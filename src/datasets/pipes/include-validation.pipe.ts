@@ -1,15 +1,7 @@
 import { PipeTransform, Injectable } from "@nestjs/common";
 import { BadRequestException } from "@nestjs/common/exceptions";
+import { isJsonString } from "src/common/utils";
 import { DATASET_LOOKUP_FIELDS } from "src/datasets/types/dataset-lookup";
-
-function isJsonString(str: string) {
-  try {
-    JSON.parse(str);
-  } catch {
-    return false;
-  }
-  return true;
-}
 
 @Injectable()
 export class IncludeValidationPipe

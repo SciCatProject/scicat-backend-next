@@ -28,6 +28,7 @@ import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
 import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
+import { AllowAny } from "src/auth/decorators/allow-any.decorator";
 
 @ApiExtraModels(HistoryClass, TechniqueClass, RelationshipClass)
 @ApiTags("datasets public v4")
@@ -44,6 +45,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public
+  @AllowAny()
   @Get()
   @ApiOperation({
     summary: "It returns a list of public datasets.",
@@ -78,6 +80,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public/fullfacets
+  @AllowAny()
   @Get("/fullfacet")
   @ApiQuery({
     name: "filters",
@@ -110,6 +113,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public/metadataKeys
+  @AllowAny()
   @Get("/metadataKeys")
   @ApiOperation({
     summary:
@@ -155,6 +159,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public/findOne
+  @AllowAny()
   @Get("/findOne")
   @ApiOperation({
     summary: "It returns the first public dataset found.",
@@ -190,6 +195,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public/count
+  @AllowAny()
   @Get("/count")
   @ApiOperation({
     summary: "It returns the number of public datasets.",
@@ -235,6 +241,7 @@ export class DatasetsPublicV4Controller {
   }
 
   // GET /datasets/public/:id
+  @AllowAny()
   @Get("/:pid")
   @ApiParam({
     name: "pid",

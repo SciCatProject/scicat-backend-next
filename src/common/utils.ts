@@ -1040,3 +1040,12 @@ const replaceLikeOperatorRecursive = (
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const isJsonString = (str: string) => {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+};
