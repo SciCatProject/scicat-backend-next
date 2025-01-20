@@ -71,7 +71,7 @@ jobs:
           command-args: |
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
-              echo "--additional-properties=npmVersion=${{env.SDK_VERSION}}";
+              echo "--additional-properties=npmVersion=${{env.SDK_VERSION}},paramNaming=original,modelPropertyNaming=original,enumPropertyNaming=original";
             elif [ "${{ matrix.generator }}" == "python" ]; then
               echo "--additional-properties=packageVersion=${{env.SDK_VERSION}}";
             fi
