@@ -1,5 +1,8 @@
 {
   "generatorName": "typescript-fetch",
   "npmName": "@scicatproject/scicat-sdk-ts-fetch",
-  "supportsES6": true
+  "supportsES6": true,
+  "paramNaming": "original",
+  "modelPropertyNaming": "original",
+  "enumPropertyNaming": "original"
 }

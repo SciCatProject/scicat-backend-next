@@ -153,7 +153,7 @@ jobs:
             --git-user-id SciCatProject \
             -o ./sdk/${{ matrix.generator }} $(
             if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
-              echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}},paramNaming=original,modelPropertyNaming=original,enumPropertyNaming=original";
+              echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
             elif [ "${{ matrix.generator }}" == "python" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
             fi
