@@ -2,5 +2,8 @@
   "generatorName": "typescript-angular",
   "npmName": "@scicatproject/scicat-sdk-ts-angular",
   "ngVersion": "16.2.12",
-  "withInterfaces": true
+  "withInterfaces": true,
+  "paramNaming": "original",
+  "modelPropertyNaming": "original",
+  "enumPropertyNaming": "original"
 }
