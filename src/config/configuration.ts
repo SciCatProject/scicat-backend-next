@@ -48,6 +48,7 @@ const configuration = () => {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
     datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
+    metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -204,7 +205,13 @@ const configuration = () => {
       mongoDBCollection: process.env.MONGODB_COLLECTION,
       defaultIndex: process.env.ES_INDEX ?? "dataset",
     },
-
+    metrics: {
+      // Note: `process.env.METRICS_ENABLED` is directly used for conditional module loading in
+      // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
+      // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
+      enabled: process.env.METRICS_ENABLED || "no",
+      config: jsonConfigMap.metricsConfig,
+    },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
