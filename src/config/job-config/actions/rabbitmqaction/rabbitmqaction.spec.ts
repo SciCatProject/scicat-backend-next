@@ -46,7 +46,14 @@ describe("RabbitMQJobAction", () => {
 
     await action.performJob(job);
 
-    expect(rabbitMQService.connect).toHaveBeenCalledWith("testQueue", "testExchange", "testKey");
-    expect(rabbitMQService.sendMessage).toHaveBeenCalledWith("testQueue", JSON.stringify(job));
+    expect(rabbitMQService.connect).toHaveBeenCalledWith(
+      "testQueue",
+      "testExchange",
+      "testKey",
+    );
+    expect(rabbitMQService.sendMessage).toHaveBeenCalledWith(
+      "testQueue",
+      JSON.stringify(job),
+    );
   });
 });

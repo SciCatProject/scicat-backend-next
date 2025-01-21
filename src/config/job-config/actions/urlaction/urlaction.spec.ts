@@ -8,7 +8,7 @@ describe("URLJobAction", () => {
     actionType: "url",
     url: "http://localhost:3000/api/v3/health?jobid={{id}}",
     method: "GET",
-    headers: { "accept": "application/json" },
+    headers: { accept: "application/json" },
     body: "This is the body.",
   };
 
@@ -47,14 +47,16 @@ describe("URLJobAction", () => {
   });
 
   it("should throw an error if the response is not ok", async () => {
-    const job = { id: "12345" } as any;
+    const job = { id: "12345" } as JobClass;
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 500,
       text: jest.fn().mockResolvedValue("Internal Server Error"),
     });
 
-    await expect(action.performJob(job)).rejects.toThrow("Got response: Internal Server Error");
+    await expect(action.performJob(job)).rejects.toThrow(
+      "Got response: Internal Server Error",
+    );
 
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:3000/api/v3/health?jobid=12345",
