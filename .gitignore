@@ -5,6 +5,7 @@ functionalAccounts.json
 datasetTypes.json
 proposalTypes.json
 loggers.json
+metricsConfig.json
 
 # Configs
 .env
