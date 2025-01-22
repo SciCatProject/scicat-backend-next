@@ -3,9 +3,8 @@ import { RabbitMQJobActionOptions } from "./rabbitmqaction.interface";
 import { CreateJobDto } from "../../../../jobs/dto/create-job.dto";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
-import amqp from "amqplib";
+import { ConfigService } from "@nestjs/config";
 
-jest.mock("amqplib");
 
 describe("RabbitMQJobAction", () => {
   const config: RabbitMQJobActionOptions = {
@@ -15,44 +14,30 @@ describe("RabbitMQJobAction", () => {
     key: "testKey",
   };
 
-  const rabbitMQService = {
-    connect: jest.fn(),
-    sendMessage: jest.fn(),
-  } as unknown as RabbitMQService;
-
+  const configService = new ConfigService();
+  const rabbitMQService = new RabbitMQService(configService);
   const action = new RabbitMQJobAction<CreateJobDto>(rabbitMQService, config);
 
-  beforeEach(() => {
-    (amqp.connect as jest.Mock).mockResolvedValue({
-      createChannel: jest.fn().mockResolvedValue({
-        assertQueue: jest.fn(),
-        sendToQueue: jest.fn(),
-        close: jest.fn(),
-      }),
-      close: jest.fn(),
-    });
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
+  const spyConnect = jest.spyOn(rabbitMQService, "connect");
+  const spySendMessage = jest.spyOn(rabbitMQService, "sendMessage");
 
   it("should be configured successfully", async () => {
     expect(action).toBeDefined();
   });
 
-  it("should send a message to the queue", async () => {
+  it("should connect and send a message to the queue", async () => {
     const job = { id: "12345" } as JobClass;
 
     await action.performJob(job);
 
-    expect(rabbitMQService.connect).toHaveBeenCalledWith(
-      "testQueue",
-      "testExchange",
-      "testKey",
+    expect(spyConnect).toHaveBeenCalledWith(
+      config.queue,
+      config.exchange,
+      config.key,
     );
-    expect(rabbitMQService.sendMessage).toHaveBeenCalledWith(
-      "testQueue",
+
+    expect(spySendMessage).toHaveBeenCalledWith(
+      config.queue,
       JSON.stringify(job),
     );
   });
