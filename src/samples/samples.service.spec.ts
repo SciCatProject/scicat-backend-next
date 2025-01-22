@@ -43,7 +43,6 @@ const mockSample: SampleClass = {
 
 describe("SamplesService", () => {
   let service: SamplesService;
-
   let sampleModel: Model<SampleClass>;
 
   beforeEach(async () => {
