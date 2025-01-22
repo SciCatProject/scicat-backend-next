@@ -3,9 +3,6 @@
 
 var utils = require("./LoginUtils");
 const { TestData } = require("./TestData");
-// Imports used for rabbitmq test
-require("dotenv").config();
-const amqp = require("amqplib");
 
 let accessTokenAdminIngestor = null,
   accessTokenUser1 = null,
@@ -50,9 +47,6 @@ const publicJob = {
 };
 const jobValidate = {
   type: "validate"
-};
-const jobRabbitMQ = {
-  type: "rabbitmq"
 };
 
 describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
