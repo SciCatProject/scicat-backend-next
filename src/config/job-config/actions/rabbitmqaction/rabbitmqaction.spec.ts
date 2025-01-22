@@ -5,7 +5,6 @@ import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
 import { ConfigService } from "@nestjs/config";
 
-
 describe("RabbitMQJobAction", () => {
   const config: RabbitMQJobActionOptions = {
     actionType: "rabbitmq",
