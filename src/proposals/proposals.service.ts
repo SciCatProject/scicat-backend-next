@@ -57,6 +57,16 @@ export class ProposalsService {
       .exec();
   }
 
+  async count(
+    filter: IFilters<ProposalDocument, IProposalFields>,
+  ): Promise<{ count: number }> {
+    const whereFilter: FilterQuery<ProposalDocument> = filter.where ?? {};
+
+    const count = await this.proposalModel.countDocuments(whereFilter).exec();
+
+    return { count };
+  }
+
   async fullquery(
     filter: IFilters<ProposalDocument, IProposalFields>,
   ): Promise<ProposalClass[]> {

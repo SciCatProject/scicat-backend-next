@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConditionalModule, ConfigModule, ConfigService } from "@nestjs/config";
 import { CaslModule } from "./casl/casl.module";
 import configuration from "./config/configuration";
 import { APP_GUARD, Reflector } from "@nestjs/core";
@@ -32,6 +32,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [
@@ -42,6 +43,13 @@ import { LoggerModule } from "./loggers/logger.module";
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    // NOTE: `ConditionalModule.registerWhen` directly uses `process.env` as it does not support
+    // dependency injection for `ConfigService`. This approach ensures compatibility while
+    // leveraging environment variables for conditional module loading.
+    ConditionalModule.registerWhen(
+      MetricsModule,
+      (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",
+    ),
     LoggerModule,
     DatablocksModule,
     DatasetsModule,
