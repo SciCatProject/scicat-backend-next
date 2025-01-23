@@ -29,7 +29,7 @@ describe("JobsController", () => {
       imports: [
         ConfigModule.forRoot({
           load: [
-            () => ({ 
+            () => ({
               jobConfigurationFile: path,
               rabbitMq: {
                 enabled: "yes",
