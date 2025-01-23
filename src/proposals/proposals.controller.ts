@@ -54,19 +54,21 @@ import {
 import { plainToInstance } from "class-transformer";
 import { validate, ValidatorOptions } from "class-validator";
 import {
-  CountApiResponse,
   filterDescription,
   filterExample,
-  FullFacetFilters,
-  FullFacetResponse,
   fullQueryExampleLimits,
-  FullQueryFilters,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { FindByIdAccessResponse } from "src/samples/samples.controller";
+import {
+  FullFacetResponse,
+  FullQueryFilters,
+  CountApiResponse,
+  FullFacetFilters,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("proposals")

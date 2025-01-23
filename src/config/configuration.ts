@@ -2,30 +2,29 @@ import * as fs from "fs";
 import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
-import { DatasetType } from "src/datasets/dataset-type.enum";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 const configuration = () => {
   const accessGroupsStaticValues =
-    process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
-  const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
-  const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
-  const createDatasetGroups =
-    process.env.CREATE_DATASET_GROUPS || ("#all" as string);
+    process.env.ACCESS_GROUPS_STATIC_VALUES || "";
+  const adminGroups = process.env.ADMIN_GROUPS || "";
+  const deleteGroups = process.env.DELETE_GROUPS || "";
+  const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
-    process.env.CREATE_DATASET_WITH_PID_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
   const createDatasetPrivilegedGroups =
-    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || "";
   const datasetCreationValidationEnabled =
     process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
   const datasetCreationValidationRegex =
-    process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
+    process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
+  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
-  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
+  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
 
@@ -33,7 +32,7 @@ const configuration = () => {
     process.env.OIDC_USERQUERY_FILTER || ("" as string);
 
   const oidcUsernameFieldMapping =
-    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -82,24 +81,24 @@ const configuration = () => {
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
-    adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
-    deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
-    createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
-    createDatasetWithPidGroups: createDatasetWithPidGroups
-      .split(",")
-      .map((v) => v.trim()),
-    createDatasetPrivilegedGroups: createDatasetPrivilegedGroups
-      .split(",")
-      .map((v) => v.trim()),
-    proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
-    sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
-    samplePrivilegedGroups: samplePrivilegedGroups
-      .split(",")
-      .map((v) => v.trim()),
-    datasetCreationValidationEnabled: datasetCreationValidationEnabled,
+    accessGroups: {
+      admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
+      delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],
+      createDataset: createDatasetGroups.split(",").map((v) => v.trim()),
+      createDatasetWithPid: createDatasetWithPidGroups
+        .split(",")
+        .map((v) => v.trim()),
+      createDatasetPrivileged: createDatasetPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
+      proposal: proposalGroups.split(",").map((v) => v.trim()),
+      sample: sampleGroups.split(",").map((v) => v.trim()),
+      samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
+      createJob: createJobGroups,
+      updateJob: updateJobGroups,
+    },
+    datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
-    createJobGroups: createJobGroups,
-    updateJobGroups: updateJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
@@ -234,5 +233,6 @@ const configuration = () => {
 };
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
+export type AccessGroupsType = ReturnType<typeof configuration>["accessGroups"];
 
 export default configuration;

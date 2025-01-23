@@ -9,9 +9,10 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
-  HttpException,
-  HttpStatus,
+  InternalServerErrorException,
+  ConflictException,
 } from "@nestjs/common";
+import { MongoError } from "mongodb";
 import { InstrumentsService } from "./instruments.service";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
@@ -57,14 +58,16 @@ export class InstrumentsController {
         await this.instrumentsService.create(createInstrumentDto);
       return instrument;
     } catch (error) {
-      let message;
-      if (error instanceof Error) message = error.message;
-      else message = String(error);
-      // we'll proceed, but let's report it
-      throw new HttpException(
-        `Instrument with the same unique name already exists: ${message}`,
-        HttpStatus.BAD_REQUEST,
-      );
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "Instrument with the same unique name already exists",
+        );
+      } else {
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+          { cause: error },
+        );
+      }
     }
   }
 
@@ -142,12 +145,19 @@ export class InstrumentsController {
         { _id: id },
         updateInstrumentDto,
       );
+
       return instrument;
-    } catch (e) {
-      throw new HttpException(
-        "Instrument with the same unique name already exists",
-        HttpStatus.BAD_REQUEST,
-      );
+    } catch (error) {
+      if ((error as MongoError).code === 11000) {
+        throw new ConflictException(
+          "Instrument with the same unique name already exists",
+        );
+      } else {
+        throw new InternalServerErrorException(
+          "Something went wrong. Please try again later.",
+          { cause: error },
+        );
+      }
     }
   }
 

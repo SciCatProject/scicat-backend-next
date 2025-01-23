@@ -36,13 +36,15 @@ import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [
-    AttachmentsModule,
-    AuthModule,
-    CaslModule,
-    CommonModule,
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
+      cache: true,
     }),
+    AuthModule,
+    CaslModule,
+    AttachmentsModule,
+    CommonModule,
     // NOTE: `ConditionalModule.registerWhen` directly uses `process.env` as it does not support
     // dependency injection for `ConfigService`. This approach ensures compatibility while
     // leveraging environment variables for conditional module loading.
@@ -59,7 +61,6 @@ import { MetricsModule } from "./metrics/metrics.module";
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const port = configService.get<string>("smtp.port");
         return {
@@ -88,7 +89,6 @@ import { MetricsModule } from "./metrics/metrics.module";
       inject: [ConfigService],
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>("mongodbUri"),
       }),

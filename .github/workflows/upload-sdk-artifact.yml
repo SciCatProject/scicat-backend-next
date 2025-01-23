@@ -33,6 +33,9 @@ jobs:
         env:
           MONGODB_URI: "mongodb://localhost:27017/scicat"
           JWT_SECRET: thisIsTheJwtSecret
+          # It disables the content property on some of the endpoints as the sdk generator complains about it.
+          # We want to keep it when the app is running to improve the swagger documentation and usage.
+          SDK_PACKAGE_SWAGGER_HELPERS_DISABLED: true
         run: |
           npm install -g wait-on && npm install
           npm run start & wait-on http://localhost:3000/api/v3/health --timeout 200000

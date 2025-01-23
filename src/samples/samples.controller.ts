@@ -57,7 +57,6 @@ import {
   filterDescription,
   filterExample,
   fullQueryExampleLimits,
-  FullQueryFilters,
   samplesFullQueryExampleFields,
 } from "src/common/utils";
 import { Request } from "express";
@@ -65,6 +64,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
 import { CreateSubAttachmentDto } from "src/attachments/dto/create-sub-attachment.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
+import { FullQueryFilters } from "src/common/types";
 
 export class FindByIdAccessResponse {
   @ApiProperty({ type: Boolean })

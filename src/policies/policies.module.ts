@@ -1,7 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { PoliciesService } from "./policies.service";
 import { PoliciesController } from "./policies.controller";
-import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Policy, PolicySchema } from "./schemas/policy.schema";
 import { AuthModule } from "src/auth/auth.module";
@@ -13,7 +12,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
   controllers: [PoliciesController],
   imports: [
     AuthModule,
-    ConfigModule,
     forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {

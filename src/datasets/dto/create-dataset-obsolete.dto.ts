@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { DatasetType } from "../dataset-type.enum";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
+import { DatasetType } from "../types/dataset-type.enum";
 
 export class CreateDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
