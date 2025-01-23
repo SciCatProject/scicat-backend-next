@@ -48,7 +48,6 @@ import {
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
-  parseBoolean,
 } from "src/common/utils";
 import {
   JobAction,

@@ -28,16 +28,18 @@ describe("JobsController", () => {
       controllers: [JobsController],
       imports: [
         ConfigModule.forRoot({
-          load: [() => ({ 
-            jobConfigurationFile: path,
-            rabbitMq: {
-              enabled: "yes",
-              hostname: "rabbitmq",
-              port: 5672,
-              username: "guest",
-              password: "guest",
-            },
-          })],
+          load: [
+            () => ({ 
+              jobConfigurationFile: path,
+              rabbitMq: {
+                enabled: "yes",
+                hostname: "rabbitmq",
+                port: 5672,
+                username: "guest",
+                password: "guest",
+              },
+            }),
+          ],
         }),
         MailerModule.forRoot(),
         CaslModule,
@@ -54,7 +56,7 @@ describe("JobsController", () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'rabbitMq.enabled') {
+              if (key === "rabbitMq.enabled") {
                 return true;
               }
               return null;
@@ -63,9 +65,9 @@ describe("JobsController", () => {
         },
       ],
     })
-    .overrideProvider(MailerService)
-    .useClass(MailerServiceMock)
-    .compile();
+      .overrideProvider(MailerService)
+      .useClass(MailerServiceMock)
+      .compile();
 
     controller = module.get<JobsController>(JobsController);
   });
