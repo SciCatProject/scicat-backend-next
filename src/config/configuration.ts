@@ -21,7 +21,7 @@ const configuration = () => {
     process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
@@ -95,7 +95,7 @@ const configuration = () => {
     datasetCreationValidationEnabled: datasetCreationValidationEnabled,
     datasetCreationValidationRegex: datasetCreationValidationRegex,
     createJobGroups: createJobGroups,
-    statusUpdateJobGroups: statusUpdateJobGroups,
+    updateJobGroups: updateJobGroups,
     deleteJobGroups: deleteJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {

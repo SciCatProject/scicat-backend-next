@@ -1,5 +1,5 @@
 import { CreateJobDto } from "../../jobs/dto/create-job.dto";
-import { StatusUpdateJobDto } from "../../jobs/dto/status-update-job.dto";
+import { UpdateJobDto } from "../../jobs/dto/update-job.dto";
 import { JobsAuth } from "../../jobs/types/jobs-auth.enum";
 import { JobClass } from "../../jobs/schemas/job.schema";
 
@@ -20,18 +20,18 @@ export interface JobConfig {
   jobType: string;
   configVersion: string;
   create: JobOperation<CreateJobDto>;
-  statusUpdate: JobOperation<StatusUpdateJobDto>;
+  update: JobOperation<UpdateJobDto>;
 }
 export interface JobConfigOptions {
   jobType: string;
   configVersion: string;
   create: JobOperationOptions;
-  statusUpdate: JobOperationOptions;
+  update: JobOperationOptions;
 }
 
-export type JobDto = CreateJobDto | StatusUpdateJobDto;
+export type JobDto = CreateJobDto | UpdateJobDto;
 /**
- * Encapsulates all information for a particular job operation (eg "create", "statusUpdate")
+ * Encapsulates all information for a particular job operation (eg "create", "update")
  */
 export interface JobOperation<DtoType extends JobDto> {
   auth: JobsAuth | undefined;
