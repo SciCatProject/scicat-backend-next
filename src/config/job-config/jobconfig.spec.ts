@@ -4,6 +4,8 @@ import { JobConfigService } from "./jobconfig.service";
 import { Test } from "@nestjs/testing";
 import { actionType as logActionType } from "./actions/logaction/logaction.interface";
 import { actionType as validateActionType } from "./actions/validateaction/validateaction.interface";
+import { actionType as urlActionType } from "./actions/urlaction/urlaction.interface";
+import { actionType as rabbitmqActionType } from "./actions/rabbitmqaction/rabbitmqaction.interface";
 import {
   CREATE_JOB_ACTION_CREATORS,
   UPDATE_JOB_ACTION_CREATORS,
@@ -15,6 +17,8 @@ const actionCreatorMock = {
 const creatorsMock = {
   [logActionType]: actionCreatorMock,
   [validateActionType]: actionCreatorMock,
+  [urlActionType]: actionCreatorMock,
+  [rabbitmqActionType]: actionCreatorMock,
 };
 const creatorProviders = [
   {

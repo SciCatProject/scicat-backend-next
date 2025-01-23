@@ -60,7 +60,6 @@ export class EmailJobAction implements JobAction<JobDto> {
       subject: this.subjectTemplate(job),
       html: this.bodyTemplate(job),
     };
-    Logger.log(mail);
 
     // Send the email
     await this.mailService.sendMail(mail);

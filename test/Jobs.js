@@ -12,8 +12,6 @@ let accessTokenAdminIngestor = null,
 let datasetPid1 = null,
   datasetPid2 = null,
   datasetPid3 = null,
-
-
   jobIdValidate1 = null,
   encodedJobIdValidate1 = null;
 
