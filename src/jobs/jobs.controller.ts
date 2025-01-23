@@ -82,14 +82,6 @@ export class JobsController {
     );
   }
 
-  publishJob() {
-    if (parseBoolean(this.configService.get<string>("rabbitMq.enabled"))) {
-      // TODO: This should publish the job to the message broker.
-      // job.publishJob(ctx.instance, "jobqueue");
-      console.log("Saved Job %s#%s and published to message broker");
-    }
-  }
-
   /**
    * Validate filter for GET
    */

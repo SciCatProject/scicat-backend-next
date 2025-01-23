@@ -5,20 +5,44 @@ import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
 import { ConfigService } from "@nestjs/config";
 
+jest.mock("@nestjs/config");
+
 describe("RabbitMQJobAction", () => {
-  const config: RabbitMQJobActionOptions = {
+  const options: RabbitMQJobActionOptions = {
     actionType: "rabbitmq",
     queue: "testQueue",
     exchange: "testExchange",
     key: "testKey",
   };
 
-  const configService = new ConfigService();
-  const rabbitMQService = new RabbitMQService(configService);
-  const action = new RabbitMQJobAction<CreateJobDto>(rabbitMQService, config);
+  const mockConfigService = {
+    get: jest.fn((key: string) => {
+      switch (key) {
+        case "rabbitMq.enabled":
+          return "yes";
+        case "rabbitMq.hostname":
+          return "rabbitmq";
+        case "rabbitMq.port":
+          return 5672;
+        case "rabbitMq.username":
+          return "guest";
+        case "rabbitMq.password":
+          return "guest";
+        default:
+          return null;
+      }
+    }),
+  };
 
-  const spyConnect = jest.spyOn(rabbitMQService, "connect");
-  const spySendMessage = jest.spyOn(rabbitMQService, "sendMessage");
+  const mockRabbitMQService = {
+    sendMessage: jest.fn(),
+  };
+
+  const action = new RabbitMQJobAction<CreateJobDto>(
+    mockConfigService as unknown as ConfigService,
+    mockRabbitMQService as unknown as RabbitMQService,
+    options,
+  );
 
   it("should be configured successfully", async () => {
     expect(action).toBeDefined();
@@ -29,14 +53,10 @@ describe("RabbitMQJobAction", () => {
 
     await action.performJob(job);
 
-    expect(spyConnect).toHaveBeenCalledWith(
-      config.queue,
-      config.exchange,
-      config.key,
-    );
-
-    expect(spySendMessage).toHaveBeenCalledWith(
-      config.queue,
+    expect(mockRabbitMQService.sendMessage).toHaveBeenCalledWith(
+      options.queue,
+      options.exchange,
+      options.key,
       JSON.stringify(job),
     );
   });
