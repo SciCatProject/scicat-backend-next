@@ -1,7 +1,7 @@
 import { UpdateDerivedDatasetObsoleteDto } from "./update-derived-dataset-obsolete.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsOptional, IsString } from "class-validator";
-import { DatasetType } from "../dataset-type.enum";
+import { DatasetType } from "../types/dataset-type.enum";
 
 export class CreateDerivedDatasetObsoleteDto extends UpdateDerivedDatasetObsoleteDto {
   @ApiProperty({

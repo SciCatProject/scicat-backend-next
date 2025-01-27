@@ -9,16 +9,27 @@ import { ConfigService } from "@nestjs/config";
 import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from "mongoose";
+import {
+  FilterQuery,
+  Model,
+  PipelineStage,
+  ProjectionType,
+  QueryOptions,
+  RootFilterQuery,
+  UpdateQuery,
+} from "mongoose";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
+  addApiVersionField,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
   createFullqueryFilter,
   extractMetadataKeys,
   parseLimitFilters,
+  parsePipelineProjection,
+  parsePipelineSort,
 } from "src/common/utils";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { InitialDatasetsService } from "src/initial-datasets/initial-datasets.service";
@@ -31,6 +42,13 @@ import {
   PartialUpdateDatasetWithHistoryDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { isEmpty } from "lodash";
+import { OutputDatasetDto } from "./dto/output-dataset.dto";
+import {
+  DatasetLookupKeysEnum,
+  DATASET_LOOKUP_FIELDS,
+} from "./types/dataset-lookup";
+import { DatasetsAccessService } from "./datasets-access.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class DatasetsService {
@@ -41,6 +59,7 @@ export class DatasetsService {
     private datasetModel: Model<DatasetDocument>,
     private initialDatasetsService: InitialDatasetsService,
     private logbooksService: LogbooksService,
+    private datasetsAccessService: DatasetsAccessService,
     @Inject(ElasticSearchService)
     private elasticSearchService: ElasticSearchService,
     @Inject(REQUEST) private request: Request,
@@ -50,8 +69,36 @@ export class DatasetsService {
     }
   }
 
+  addLookupFields(
+    pipeline: PipelineStage[],
+    datasetLookupFields?: DatasetLookupKeysEnum[],
+  ) {
+    if (datasetLookupFields?.includes(DatasetLookupKeysEnum.all)) {
+      datasetLookupFields = Object.keys(DATASET_LOOKUP_FIELDS).filter(
+        (field) => field !== DatasetLookupKeysEnum.all,
+      ) as DatasetLookupKeysEnum[];
+    }
+
+    datasetLookupFields?.forEach((field) => {
+      const fieldValue = DATASET_LOOKUP_FIELDS[field];
+
+      if (fieldValue) {
+        fieldValue.$lookup.as = field;
+
+        this.datasetsAccessService.addRelationFieldAccess(fieldValue);
+
+        pipeline.push(fieldValue);
+      }
+    });
+  }
+
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
     const username = (this.request.user as JWTUser).username;
+    // Add version to the datasets based on the apiVersion extracted from the route path or use default one
+    addApiVersionField(
+      createDatasetDto,
+      this.request.route.path || this.configService.get("versions.api"),
+    );
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
@@ -62,11 +109,10 @@ export class DatasetsService {
     return createdDataset.save();
   }
 
-  async findAll(
-    filter: IFilters<DatasetDocument, IDatasetFields>,
-  ): Promise<DatasetClass[]> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
-    const fieldsProjection: FilterQuery<DatasetDocument> = filter.fields ?? {};
+  async findAll(filter: FilterQuery<DatasetDocument>): Promise<DatasetClass[]> {
+    const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: ProjectionType<DatasetDocument> =
+      filter.fields ?? {};
     const { limit, skip, sort } = parseLimitFilters(filter.limits);
     const datasetPromise = this.datasetModel
       .find(whereFilter, fieldsProjection)
@@ -77,6 +123,41 @@ export class DatasetsService {
     const datasets = await datasetPromise.exec();
 
     return datasets;
+  }
+
+  async findAllComplete(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<OutputDatasetDto[]> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+      limit: 10,
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $limit: limits.limit || 10 });
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    this.addLookupFields(pipeline, filter.include);
+
+    const data = await this.datasetModel
+      .aggregate<OutputDatasetDto>(pipeline)
+      .exec();
+
+    return data;
   }
 
   async fullquery(
@@ -173,10 +254,42 @@ export class DatasetsService {
     return this.datasetModel.findOne(whereFilter, fieldsProjection).exec();
   }
 
+  async findOneComplete(
+    filter: FilterQuery<DatasetDocument>,
+  ): Promise<OutputDatasetDto | null> {
+    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const fieldsProjection: string[] = filter.fields ?? {};
+    const limits: QueryOptions<DatasetDocument> = filter.limits ?? {
+      skip: 0,
+      sort: { createdAt: "desc" },
+    };
+
+    const pipeline: PipelineStage[] = [{ $match: whereFilter }];
+    if (!isEmpty(fieldsProjection)) {
+      const projection = parsePipelineProjection(fieldsProjection);
+      pipeline.push({ $project: projection });
+    }
+
+    if (!isEmpty(limits.sort)) {
+      const sort = parsePipelineSort(limits.sort);
+      pipeline.push({ $sort: sort });
+    }
+
+    pipeline.push({ $skip: limits.skip || 0 });
+
+    this.addLookupFields(pipeline, filter.include);
+
+    const [data] = await this.datasetModel
+      .aggregate<OutputDatasetDto | undefined>(pipeline)
+      .exec();
+
+    return data || null;
+  }
+
   async count(
     filter: FilterQuery<DatasetDocument>,
   ): Promise<{ count: number }> {
-    const whereFilter: FilterQuery<DatasetDocument> = filter.where ?? {};
+    const whereFilter: RootFilterQuery<DatasetDocument> = filter.where ?? {};
     let count = 0;
     if (this.ESClient && !filter.where) {
       const totalDocCount = await this.datasetModel.countDocuments();
