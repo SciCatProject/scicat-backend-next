@@ -205,5 +205,19 @@
       { "TextFilter": true }
     ],
     "conditions": []
+  },
+  "datasetDetailViewLabelOption": {
+    "currentLabelSet": "ess",
+    "labelSets": {
+      "ess": {
+        "pid": "PID",
+        "description": "Description",
+        "principalInvestigator": "Principal Investigator",
+        "keywords": "Keywords",
+        "creationTime": "Creation Time",
+        "scientificMetadata": "Scientific Metadata",
+        "metadataJsonView": "Metadata JsonView"
+      }
+    }
   }
 }
