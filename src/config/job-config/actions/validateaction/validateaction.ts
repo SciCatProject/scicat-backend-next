@@ -12,6 +12,7 @@ import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobParams } from "src/jobs/types/job-types.enum";
 import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
+import { ModuleRef } from "@nestjs/core";
 type JSONData = JSONPathOptions["json"];
 
 /**
@@ -145,7 +146,7 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
   private datasets?: Record<string, ValidateFunction<CreateJobDto>>;
 
   constructor(
-    private datasetsService: DatasetsService,
+    private moduleRef: ModuleRef,
     options: ValidateCreateJobActionOptions,
     ajv?: Ajv,
   ) {
@@ -193,9 +194,16 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
         },
       },
     };
+
+    const datasetsService = await this.moduleRef.resolve(
+      DatasetsService,
+      undefined,
+      { strict: false },
+    );
+
     if (
-      this.datasetsService === undefined ||
-      this.datasetsService.findAll === undefined
+      datasetsService === undefined ||
+      datasetsService.findAll === undefined
     ) {
       Logger.error(
         `NestJS error. Dependency injection not working in ValidateCreateAction`,
@@ -205,7 +213,7 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    const result = await this.datasetsService.findAll(filter);
+    const result = await datasetsService.findAll(filter);
     if (result.length != datasetIds.length) {
       Logger.error(
         `Unable to get a dataset for job (${JSON.stringify(datasetIds)})`,

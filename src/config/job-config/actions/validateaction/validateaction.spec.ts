@@ -244,10 +244,6 @@ describe("ValidateAction", () => {
         ],
       }).compile();
 
-      // Run onModuleInit() methods
-      const app = module.createNestApplication();
-      await app.init();
-
       const config: ValidateCreateJobActionOptions = {
         actionType: "validate",
         datasets: {
@@ -264,7 +260,9 @@ describe("ValidateAction", () => {
     it("should be configured successfully", async () => {
       expect(action).toBeDefined();
       expect(action["datasets"]).toBeDefined();
-      expect(action["datasetsService"]).toBeDefined();
+      expect(action["moduleRef"]).toBeDefined();
+      const datasetsService = action["moduleRef"].resolve(DatasetsService);
+      expect(datasetsService).toBeDefined();
     });
 
     it("should fail without a dataset", async () => {

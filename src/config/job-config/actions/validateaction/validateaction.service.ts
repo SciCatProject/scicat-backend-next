@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import {
   JobActionCreator,
   JobActionOptions,
@@ -24,20 +24,15 @@ export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
 
 @Injectable()
 export class ValidateCreateJobActionCreator
-  implements JobActionCreator<CreateJobDto>, OnModuleInit
+  implements JobActionCreator<CreateJobDto>
 {
   private datasetsService: DatasetsService;
   constructor(private moduleRef: ModuleRef) {}
-
-  // Load late to avoid circular dependency with CaslModule
-  onModuleInit() {
-    this.datasetsService = this.moduleRef.get(DatasetsService);
-  }
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isValidateJobActionOptions(options)) {
       throw new Error("Invalid options for ValidateJobAction.");
     }
-    return new ValidateCreateJobAction(this.datasetsService, options);
+    return new ValidateCreateJobAction(this.moduleRef, options);
   }
 }
