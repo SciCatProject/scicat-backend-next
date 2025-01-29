@@ -97,6 +97,9 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
     json: JSONData,
     schemaMap: Record<string, ValidateFunction<T>>,
   ) {
+    // Convert Documents to plain objects if needed
+    json = toObject(json);
+
     for (const [path, schema] of Object.entries(schemaMap)) {
       const result: JSONData[] = JSONPath<JSONData[]>({ path, json });
       if (result !== null && result?.length > 0) {
@@ -233,4 +236,32 @@ function makeHttpException(message: string, status?: number): HttpException {
     },
     status,
   );
+}
+
+interface HasToObject<T> {
+  toObject(): T;
+}
+function isHasToObject<T>(obj: unknown): obj is HasToObject<T> {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "toObject" in obj &&
+    typeof obj.toObject === "function"
+  );
+}
+
+/**
+ * Calls .toObject() on the object if it exists
+ *
+ * Mongoose Documents use a Proxy mechanism which hides property names from reflection.
+ * Use this method to convert them to plain objects.
+ * @param json Any class
+ * @returns
+ */
+function toObject<T>(json: T | HasToObject<T>): T {
+  if (isHasToObject(json)) {
+    //json = JSON.parse(JSON.stringify(json));
+    return json.toObject();
+  }
+  return json;
 }
