@@ -32,6 +32,9 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { HttpModule, HttpService } from "@nestjs/axios";
+import { MSGraphMailTransport } from "./common/graph-mail";
+import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
 import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
@@ -61,17 +64,51 @@ import { MetricsModule } from "./metrics/metrics.module";
     LogbooksModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => {
-        const port = configService.get<string>("smtp.port");
+      imports: [ConfigModule, HttpModule],
+      useFactory: async (
+        configService: ConfigService,
+        httpService: HttpService,
+      ) => {
+        let transport: TransportType;
+        const transportType = configService
+          .get<string>("email.type")
+          ?.toLowerCase();
+        if (transportType === "smtp") {
+          transport = {
+            host: configService.get<string>("email.smtp.host"),
+            port: configService.get<number>("email.smtp.port"),
+            secure: configService.get<boolean>("email.smtp.secure"),
+          };
+        } else if (transportType === "ms365") {
+          const tenantId = configService.get<string>("email.ms365.tenantId"),
+            clientId = configService.get<string>("email.ms365.clientId"),
+            clientSecret = configService.get<string>(
+              "email.ms365.clientSecret",
+            );
+          if (tenantId === undefined) {
+            throw new Error("Missing MS365_TENANT_ID");
+          }
+          if (clientId === undefined) {
+            throw new Error("Missing MS365_CLIENT_ID");
+          }
+          if (clientSecret === undefined) {
+            throw new Error("Missing MS365_CLIENT_SECRET");
+          }
+          transport = new MSGraphMailTransport(httpService, {
+            tenantId,
+            clientId,
+            clientSecret,
+          });
+        } else {
+          throw new Error(
+            `Invalid EMAIL_TYPE: ${transportType}. Expect on of "smtp" or "ms365"`,
+          );
+        }
+
         return {
-          transport: {
-            host: configService.get<string>("smtp.host"),
-            port: port ? parseInt(port) : undefined,
-            secure:
-              configService.get<string>("smtp.secure") === "yes" ? true : false,
-          },
+          transport: transport,
           defaults: {
-            from: configService.get<string>("smtp.messageFrom"),
+            from: configService.get<string>("email.from"),
           },
           template: {
             dir: join(__dirname, "./common/email-templates"),
@@ -86,7 +123,7 @@ import { MetricsModule } from "./metrics/metrics.module";
           },
         };
       },
-      inject: [ConfigService],
+      inject: [ConfigService, HttpService],
     }),
     MongooseModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
