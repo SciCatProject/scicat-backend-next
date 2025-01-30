@@ -1305,6 +1305,10 @@ export class DatasetsController {
     isArray: false,
     description: "Return dataset with pid specified",
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Dataset not found",
+  })
   async findById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
