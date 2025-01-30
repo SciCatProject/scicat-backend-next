@@ -1008,9 +1008,16 @@ export class DatasetsController {
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    const results = await this.datasetsService.fullquery(parsedFilters);
+    const datasets = await this.datasetsService.fullquery(parsedFilters);
+    let outputDatasets: OutputDatasetObsoleteDto[] = [];
 
-    return results as OutputDatasetObsoleteDto[];
+    if (datasets && datasets.length > 0) {
+      outputDatasets = datasets.map((dataset) =>
+        this.convertCurrentToObsoleteSchema(dataset),
+      );
+    }
+
+    return outputDatasets as OutputDatasetObsoleteDto[];
   }
 
   // GET /fullfacets
