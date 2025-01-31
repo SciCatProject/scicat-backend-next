@@ -216,11 +216,19 @@ const configuration = () => {
     doiUsername: process.env.DOI_USERNAME,
     doiPassword: process.env.DOI_PASSWORD,
     site: process.env.SITE,
-    smtp: {
-      host: process.env.SMTP_HOST,
-      messageFrom: process.env.SMTP_MESSAGE_FROM,
-      port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE,
+    email: {
+      type: process.env.EMAIL_TYPE || "smtp",
+      from: process.env.EMAIL_FROM || process.env.SMTP_MESSAGE_FROM,
+      smtp: {
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: boolean(process.env?.SMTP_SECURE || false),
+      },
+      ms365: {
+        tenantId: process.env.MS365_TENANT_ID,
+        clientId: process.env.MS365_CLIENT_ID,
+        clientSecret: process.env.MS365_CLIENT_SECRET,
+      },
     },
     policyTimes: {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
