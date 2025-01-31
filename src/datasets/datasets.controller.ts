@@ -890,7 +890,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ) {
+  ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -944,7 +944,7 @@ export class DatasetsController {
         }),
       );
     }
-    return outputDatasets;
+    return outputDatasets as OutputDatasetObsoleteDto[];
   }
 
   // GET /datasets/fullquery
@@ -979,7 +979,7 @@ export class DatasetsController {
   async fullquery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ) {
+  ): Promise<OutputDatasetObsoleteDto[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -1008,9 +1008,16 @@ export class DatasetsController {
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    const results = await this.datasetsService.fullquery(parsedFilters);
+    const datasets = await this.datasetsService.fullquery(parsedFilters);
+    let outputDatasets: OutputDatasetObsoleteDto[] = [];
 
-    return results as OutputDatasetObsoleteDto[];
+    if (datasets && datasets.length > 0) {
+      outputDatasets = datasets.map((dataset) =>
+        this.convertCurrentToObsoleteSchema(dataset),
+      );
+    }
+
+    return outputDatasets as OutputDatasetObsoleteDto[];
   }
 
   // GET /fullfacets
