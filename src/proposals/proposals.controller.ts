@@ -68,6 +68,7 @@ import {
   FullQueryFilters,
   CountApiResponse,
   FullFacetFilters,
+  ProposalCountFilters,
 } from "src/common/types";
 
 @ApiBearerAuth()
@@ -388,8 +389,8 @@ export class ProposalsController {
     description:
       "Database filters to apply when retrieving count for proposals",
     required: false,
-    type: String,
-    example: '{"where": {"proposalId": "189691"}}',
+    type: ProposalCountFilters,
+    example: `{ fields: ${proposalsFullQueryExampleFields}}`,
   })
   @ApiResponse({
     status: 200,
@@ -397,11 +398,41 @@ export class ProposalsController {
     description:
       "Return the number of proposals in the following format: { count: integer }",
   })
-  async count(@Req() request: Request, @Query("filters") filters?: string) {
-    const proposalFilters: IFilters<ProposalDocument, IProposalFields> =
-      this.updateFiltersForList(request, JSON.parse(filters ?? "{}"));
+  async count(@Req() request: Request, @Query() filters: { fields?: string }) {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
 
-    return this.proposalsService.count(proposalFilters);
+    if (user) {
+      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
+      }
+    }
+
+    return this.proposalsService.count({ fields });
   }
 
   // GET /proposals/fullquery
