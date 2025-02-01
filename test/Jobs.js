@@ -94,6 +94,10 @@ const dataset1 = {
   isPublished: true,
   ownerGroup: "group1",
   accessGroups: ["group5"],
+  datasetlifecycle: {
+    archivable: true,
+    retrievable: false,
+  },
 };
 
 const dataset2 = {
@@ -101,6 +105,10 @@ const dataset2 = {
   isPublished: false,
   ownerGroup: "group2",
   accessGroups: [],
+  datasetlifecycle: {
+    archivable: true,
+    retrievable: true,
+  },
 };
 
 const dataset3 = {
@@ -108,6 +116,10 @@ const dataset3 = {
   isPublished: false,
   ownerGroup: "group5",
   accessGroups: ["group1"],
+  datasetlifecycle: {
+    archivable: true,
+    retrievable: true,
+  },
 };
 
 const jobAll = {
@@ -1044,7 +1056,7 @@ describe("1100: Jobs: Test New Job Model", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("The following datasets are not public.");
+        res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'isPublished'");
       });
   });
 
@@ -1089,11 +1101,11 @@ describe("1100: Jobs: Test New Job Model", () => {
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
-      .expect(TestData.ConflictStatusCode)
+      .expect(TestData.BadRequestStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.not.have.property("id");
-        res.body.should.have.property("message").and.be.equal("The following datasets are not in retrievable state for a retrieve job.");
+        res.body.should.have.property("message").and.be.equal("Invalid request. Invalid value for 'datasetlifecycle.retrievable'");
       });
   });
 
@@ -4468,6 +4480,12 @@ describe("1100: Jobs: Test New Job Model", () => {
         ...jobValidate,
         jobParams: {
           optionalParam: false,
+          datasetList: [
+            {
+              pid: datasetPid1,
+              files: [],
+            }
+          ],
         },
       };
 
@@ -4489,7 +4507,13 @@ describe("1100: Jobs: Test New Job Model", () => {
         type: "validate",
         jobParams: {
           requiredParam: 123,
-          arrayOfStrings: ["ok"]
+          arrayOfStrings: ["ok"],
+          datasetList: [
+            {
+              pid: datasetPid1,
+              files: [],
+            }
+          ],
         },
       };
 
@@ -4510,7 +4534,13 @@ describe("1100: Jobs: Test New Job Model", () => {
         type: "validate",
         jobParams: {
           requiredParam: "ok",
-          arrayOfStrings: "bad"
+          arrayOfStrings: "bad",
+          datasetList: [
+            {
+              pid: datasetPid1,
+              files: [],
+            }
+          ],
         },
       };
 
@@ -4531,7 +4561,13 @@ describe("1100: Jobs: Test New Job Model", () => {
         type: "validate",
         jobParams: {
           requiredParam: "ok",
-          arrayOfStrings: [123]
+          arrayOfStrings: [123],
+          datasetList: [
+            {
+              pid: datasetPid1,
+              files: [],
+            }
+          ],
         },
       };
 
@@ -4548,12 +4584,40 @@ describe("1100: Jobs: Test New Job Model", () => {
         });
     });
 
+    it("0045: create validate fails without datasetList", async () => {
+      const newDataset = {
+        type: "validate",
+        jobParams: {
+          requiredParam: "ok",
+          arrayOfStrings: ["ok"],
+        },
+      };
+
+      return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newDataset)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("type")
+        res.body.should.have.property("message").and.be.equal("'jobParams.datasetList' is required.");
+      });
+    });
+
     it("0050: create validate succeeds with the right types", async () => {
       const newDataset = {
         type: "validate",
         jobParams: {
           requiredParam: "ok",
-          arrayOfStrings: ["ok"]
+          arrayOfStrings: ["ok"],
+          datasetList: [
+            {
+              pid: datasetPid1,
+              files: [],
+            }
+          ],
         },
       };
 
@@ -4643,7 +4707,16 @@ describe("1100: Jobs: Test New Job Model", () => {
         .then((res) => {
           res.body.should.have.property("type").and.equal("validate");
           res.body.should.have.property("createdBy").and.equal("admin");
-          res.body.should.have.property("jobParams").that.deep.equals(update.jobResultObject);
+          res.body.should.have.property("jobParams").that.deep.equals({
+            requiredParam: "ok",
+            arrayOfStrings: ["ok"],
+            datasetList: [
+              {
+                pid: datasetPid1,
+                files: [],
+              }
+            ],
+          });
           res.body.should.have.property("jobResultObject").that.deep.equals(update.jobResultObject);
         });
     });

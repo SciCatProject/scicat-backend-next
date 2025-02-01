@@ -143,6 +143,9 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
  * creation, this form of the action is only applicable to the `CreateJobDto` and cannot
  * be included during an update operation.
  *
+ * Invalid request constraints result in a 400 error, while invalid dataset constraints
+ * return a 409 error.
+ *
  * See ValidateAction for more information about the form of `path` and `typecheck`.
  */
 export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
@@ -209,19 +212,20 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
       datasetsService.findAll === undefined
     ) {
       Logger.error(
-        `NestJS error. Dependency injection not working in ValidateCreateAction`,
+        `Unable to resolve DatasetService. This indicates an unexpected server state.`,
       );
       throw makeHttpException(
-        "NestJS error. Dependency injection not working in ValidateCreateAction.",
+        "Unable to resolve DatasetService. This indicates an unexpected server state.",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
     const result = await datasetsService.findAll(filter);
     if (result.length != datasetIds.length) {
       Logger.error(
         `Unable to get a dataset for job (${JSON.stringify(datasetIds)})`,
       );
-      throw makeHttpException(`Unable to get a dataset.`);
+      throw makeHttpException(`Unable to get a dataset.`, HttpStatus.CONFLICT);
     }
     return result;
   }

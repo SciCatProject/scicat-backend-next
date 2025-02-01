@@ -79,6 +79,9 @@ jobs:
               type: array
               items:
                 type: string
+          datasets:
+            datasetlifecycle.archivable:
+              const: true
     statusUpdate:
       auth: admin
       actions:
