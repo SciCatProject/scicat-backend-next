@@ -48,7 +48,6 @@ import {
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
-  parseBoolean,
 } from "src/common/utils";
 import {
   JobAction,
@@ -80,14 +79,6 @@ export class JobsController {
     this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
     );
-  }
-
-  publishJob() {
-    if (parseBoolean(this.configService.get<string>("rabbitMq.enabled"))) {
-      // TODO: This should publish the job to the message broker.
-      // job.publishJob(ctx.instance, "jobqueue");
-      console.log("Saved Job %s#%s and published to message broker");
-    }
   }
 
   /**
