@@ -53,7 +53,7 @@ jobs:
         with:
           app-id: ${{ secrets.WORKFLOW_DISPATCHER_APP_ID }}
           private-key: ${{ secrets.WORKFLOW_DISPATCHER_APP_PRIVATE_KEY }}
-          repositories: SciCatProject/scitacean
+          repositories: scitacean
 
       - name: Trigger test workflow in scitacean
         uses: actions/github-script@v6
