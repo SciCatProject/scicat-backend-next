@@ -67,7 +67,7 @@ jobs:
               ref: 'main',
               inputs: {
                 "backend-version": "latest",
-                "python-version": 3.13,
+                "python-version": "3.13",
                 "tox-env": "py313-full"
               }
             })
