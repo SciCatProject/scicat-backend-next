@@ -48,6 +48,7 @@ jobs:
           name: swagger-schema-${{ github.sha }}
           path: ./swagger-schema.json
       # TODO: following step needs to be removed after testing.
+
       - uses: actions/create-github-app-token@v1
         id: app-token
         with:
