@@ -207,8 +207,8 @@
     "conditions": []
   },
   "labelsLocalization": {
-    "dataset-default": {},
-    "dataset-custom" : {
+    "datasetDefault": {},
+    "datasetCustom" : {
       "pid": "PID",
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
@@ -217,7 +217,7 @@
       "scientificMetadata": "Scientific Metadata",
       "metadataJsonView": "Metadata JsonView"
     },
-    "proposal" : {
+    "proposalDefault" : {
       "General Information": "Proposal Information",
       "Title" : "Proposal Title",
       "Abstract" : "Abstract",
