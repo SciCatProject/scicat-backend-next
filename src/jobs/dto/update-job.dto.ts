@@ -2,7 +2,7 @@ import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsOptional, IsString, IsObject } from "class-validator";
 
 @ApiTags("jobs")
-export class StatusUpdateJobDto {
+export class UpdateJobDto {
   @ApiProperty({
     type: String,
     required: true,

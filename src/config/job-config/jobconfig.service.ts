@@ -15,7 +15,7 @@ import { JobConfigSchema } from "./jobconfig.schema";
 import { load } from "js-yaml";
 import * as fs from "fs";
 import { CreateJobDto } from "../../jobs/dto/create-job.dto";
-import { StatusUpdateJobDto } from "../../jobs/dto/status-update-job.dto";
+import { UpdateJobDto } from "../../jobs/dto/update-job.dto";
 import { ConfigService } from "@nestjs/config";
 
 /**
@@ -30,10 +30,7 @@ export class JobConfigService {
     @Inject(CREATE_JOB_ACTION_CREATORS)
     private create_creators: Record<string, JobActionCreator<CreateJobDto>>,
     @Inject(UPDATE_JOB_ACTION_CREATORS)
-    private update_creators: Record<
-      string,
-      JobActionCreator<StatusUpdateJobDto>
-    >,
+    private update_creators: Record<string, JobActionCreator<UpdateJobDto>>,
     configService: ConfigService,
   ) {
     this.filePath = configService.get<string>("jobConfigurationFile") || "";
@@ -104,8 +101,8 @@ export class JobConfigService {
         options.create,
         this.create_creators,
       ),
-      statusUpdate: this.parseJobOperation<StatusUpdateJobDto>(
-        options.statusUpdate,
+      update: this.parseJobOperation<UpdateJobDto>(
+        options.update,
         this.update_creators,
       ),
     };

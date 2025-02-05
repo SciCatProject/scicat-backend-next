@@ -5,7 +5,6 @@ export enum Action {
   ReadOwn = "readown",
   ReadAll = "readall",
   Update = "update",
-  StatusUpdate = "statusUpdate",
   Delete = "delete",
   ListOwn = "listown",
   ListAll = "listall",
@@ -182,7 +181,7 @@ export enum Action {
   // endpoint authorization
   JobCreate = "jobs_create",
   JobRead = "jobs_read",
-  JobStatusUpdate = "job_update",
+  JobUpdate = "job_update",
   JobDelete = "job_delete",
   // data instance authorization
   JobCreateConfiguration = "job_create_configuration",
@@ -190,9 +189,9 @@ export enum Action {
   JobCreateAny = "job_create_any",
   JobReadAccess = "job_read_access",
   JobReadAny = "job_read_any",
-  JobStatusUpdateConfiguration = "job_status_update_configuration",
-  JobStatusUpdateOwner = "job_status_update_owner",
-  JobStatusUpdateAny = "job_status_update_any",
+  JobUpdateConfiguration = "job_update_configuration",
+  JobUpdateOwner = "job_update_owner",
+  JobUpdateAny = "job_update_any",
   //JobDeleteAny = "job_delete_any",
 
   // -------------
