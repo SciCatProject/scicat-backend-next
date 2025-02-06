@@ -92,6 +92,30 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
 
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOW_DISPATCHER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_DISPATCHER_APP_PRIVATE_KEY }}
+          repositories: scitacean
+
+      - name: Trigger test workflow in scitacean
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: 'SciCatProject',
+              repo: 'scitacean',
+              workflow_id: 'test.yml',  
+              ref: 'main',
+              inputs: {
+                "backend-version": "${{steps.tag_version.outputs.new_tag}}",
+                "python-version": "3.13",
+                "tox-env": "py313-full"
+              }
+            })
+
   start-backend-export-swagger:
     runs-on: ubuntu-latest
     steps:
@@ -112,6 +136,9 @@ jobs:
         env:
           MONGODB_URI: "mongodb://localhost:27017/scicat"
           JWT_SECRET: thisIsTheJwtSecret
+          # It disables the content property on some of the endpoints as the sdk generator complains about it.
+          # We want to keep it when the app is running to improve the swagger documentation and usage.
+          SDK_PACKAGE_SWAGGER_HELPERS_DISABLED: true
         run: |
           npm install -g wait-on && npm install
           npm run start & wait-on http://localhost:3000/api/v3/health --timeout 200000

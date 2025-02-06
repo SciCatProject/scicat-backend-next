@@ -25,7 +25,6 @@ import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { User } from "./schemas/user.schema";
 import { AuthenticatedPoliciesGuard } from "../casl/guards/auth-check.guard";
-import { boolean } from "mathjs";
 import {
   filterUserIdentityDescription,
   filterUserIdentityExample,
@@ -138,7 +137,7 @@ export class UserIdentitiesController {
   })
   @ApiResponse({
     status: 201,
-    type: boolean,
+    type: Boolean,
     description:
       "Results is true if a registered user exists that have the emailed provided listed as main email",
   })

@@ -1,3 +1,4 @@
+import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
@@ -18,6 +19,7 @@ describe("PoliciesController", () => {
         CaslAbilityFactory,
         { provide: PoliciesService, useClass: PoliciesServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
+        ConfigService,
       ],
     }).compile();
 
