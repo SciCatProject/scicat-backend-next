@@ -12,6 +12,9 @@ import { LogbooksModule } from "src/logbooks/logbooks.module";
 import { PoliciesService } from "src/policies/policies.service";
 import { PoliciesModule } from "src/policies/policies.module";
 import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
+import { DatasetsV4Controller } from "./datasets.v4.controller";
+import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
+import { DatasetsAccessService } from "./datasets-access.service";
 import { CaslModule } from "src/casl/casl.module";
 
 @Module({
@@ -28,6 +31,7 @@ import { CaslModule } from "src/casl/casl.module";
       {
         name: DatasetClass.name,
         imports: [PoliciesModule],
+        inject: [PoliciesService],
         useFactory: (policyService: PoliciesService) => {
           const schema = DatasetSchema;
 
@@ -60,12 +64,15 @@ import { CaslModule } from "src/casl/casl.module";
 
           return schema;
         },
-        inject: [PoliciesService],
       },
     ]),
   ],
   exports: [DatasetsService],
-  controllers: [DatasetsController],
-  providers: [DatasetsService],
+  controllers: [
+    DatasetsPublicV4Controller,
+    DatasetsController,
+    DatasetsV4Controller,
+  ],
+  providers: [DatasetsService, DatasetsAccessService],
 })
 export class DatasetsModule {}

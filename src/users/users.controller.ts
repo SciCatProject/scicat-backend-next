@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -304,11 +305,21 @@ export class UsersController {
       ability.can(Action.UserUpdateOwn, User) ||
       ability.can(Action.UserUpdateAny, User),
   )
+  @ApiParam({ name: "id", type: String, description: "User ID" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      additionalProperties: true,
+      example: { field: "setting" },
+      description:
+        "External settings to update. This should be a key-value pair object containing the settings to modify.",
+    },
+  })
   @Patch("/:id/settings/external")
   async patchExternalSettings(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() externalSettings: Record<string, unknown>,
+    @Body() externalSettings = {},
   ): Promise<UserSettings | null> {
     await this.checkUserAuthorization(
       request,

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { Message, MessageSchema } from "./message.schema";
 
@@ -15,7 +15,10 @@ export class Logbook {
   @Prop()
   roomId: string;
 
-  @ApiProperty({ type: "array", items: { $ref: getSchemaPath(Message) } })
+  @ApiProperty({
+    isArray: true,
+    type: Message,
+  })
   @Prop([MessageSchema])
   messages: Message[];
 }

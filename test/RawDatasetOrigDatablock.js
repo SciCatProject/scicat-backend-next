@@ -18,7 +18,7 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
     db.collection("Dataset").deleteMany({});
     db.collection("OrigDatablock").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -448,13 +448,13 @@ describe("2000: RawDatasetOrigDatablock: Test OrigDatablocks and their relation 
       });
   });
 
-  it("0240: add a new origDatablock with invalid pid should fail", async () => {
+  it("0240: add a new origDatablock to the non-existent dataset should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({ ...origDatablockData1, datasetId: "wrong" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.NotFoundStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");

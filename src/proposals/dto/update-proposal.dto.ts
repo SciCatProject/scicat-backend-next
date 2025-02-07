@@ -1,4 +1,4 @@
-import { ApiProperty, ApiTags, PartialType } from "@nestjs/swagger";
+import { ApiTags, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -14,132 +14,100 @@ import { CreateMeasurementPeriodDto } from "./create-measurement-period.dto";
 
 @ApiTags("proposals")
 export class UpdateProposalDto extends OwnableDto {
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Email of principal investigator.",
-  })
+  /**
+   * Email of principal investigator.
+   */
   @IsOptional()
   @IsEmail()
   readonly pi_email?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "First name of principal investigator.",
-  })
+  /**
+   * First name of principal investigator.
+   */
   @IsOptional()
   @IsString()
   readonly pi_firstname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Last name of principal investigator.",
-  })
+  /**
+   * Last name of principal investigator.
+   */
   @IsOptional()
   @IsString()
   readonly pi_lastname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "Email of main proposer.",
-  })
+  /**
+   * Email of main proposer.
+   */
   @IsEmail()
   readonly email: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "First name of main proposer.",
-  })
+  /**
+   * First name of main proposer.
+   */
   @IsOptional()
   @IsString()
   readonly firstname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Last name of main proposer.",
-  })
+  /**
+   * Last name of main proposer.
+   */
   @IsOptional()
   @IsString()
   readonly lastname?: string;
 
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: "The title of the proposal.",
-  })
+  /**
+   * The title of the proposal.
+   */
   @IsString()
   readonly title: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "The proposal abstract.",
-  })
+  /**
+   * The proposal abstract.
+   */
   @IsOptional()
   @IsString()
   readonly abstract?: string;
 
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description: "The date when the data collection starts.",
-  })
+  /**
+   * The date when the data collection starts.
+   */
   @IsOptional()
   @IsDateString()
   readonly startTime?: Date;
 
-  @ApiProperty({
-    type: Date,
-    required: false,
-    description: "The date when data collection finishes.",
-  })
+  /**
+   * The date when data collection finishes.
+   */
   @IsOptional()
   @IsDateString()
   readonly endTime?: Date;
 
-  @ApiProperty({
-    type: CreateMeasurementPeriodDto,
-    isArray: true,
-    required: false,
-    description:
-      "Embedded information used inside proposals to define which type of experiment has to be pursued, where (at which instrument) and when.",
-  })
+  /**
+   * Embedded information used inside proposals to define which type of experiment has to be pursued, where (at which instrument) and when.
+   */
   @IsArray()
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateMeasurementPeriodDto)
   readonly MeasurementPeriodList?: CreateMeasurementPeriodDto[];
 
-  @ApiProperty({
-    type: Object,
-    required: false,
-    default: {},
-    description: "JSON object containing the proposal metadata.",
-  })
+  /**
+   * JSON object containing the proposal metadata.
+   */
   @IsOptional()
   @IsObject()
-  readonly metadata?: Record<string, unknown>;
+  readonly metadata?: Record<string, unknown> = {};
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: "Parent proposal id.",
-  })
+  /**
+   * Parent proposal id.
+   */
   @IsOptional()
   @IsString()
   readonly parentProposalId?: string;
 
-  @ApiProperty({
-    type: String,
-    required: false,
-    description:
-      "Characterize type of proposal, use some of the configured values",
-  })
+  /**
+   * Characterize type of proposal, use some of the configured values
+   */
   @IsOptional()
   @IsString()
   readonly type?: string;

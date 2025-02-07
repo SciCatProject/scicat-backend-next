@@ -176,6 +176,32 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
+  it("0091: should get proposal count", async () => {
+    return request(appUrl)
+      .get("/api/v3/Proposals/count")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body["count"].should.be.greaterThan(0);
+      });
+  });
+
+  it("0091: should get proposal count using filters", async () => {
+    const query = { where: { proposalId: { $in: [proposalId] } } };
+    return request(appUrl)
+      .get("/api/v3/Proposals/count")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body["count"].should.be.equal(1);
+      });
+  });
+
   it("0100: should add a new attachment to this proposal", async () => {
     let testAttachment = { ...TestData.AttachmentCorrect };
     testAttachment.proposalId = defaultProposalId;

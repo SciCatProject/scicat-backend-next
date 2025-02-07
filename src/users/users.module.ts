@@ -25,7 +25,6 @@ import { CaslModule } from "src/casl/casl.module";
 @Module({
   imports: [
     JwtModule.registerAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>("jwt.secret"),
         signOptions: { expiresIn: configService.get<number>("jwt.expiresIn") },

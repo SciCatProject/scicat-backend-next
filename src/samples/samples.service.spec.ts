@@ -43,7 +43,6 @@ const mockSample: SampleClass = {
 
 describe("SamplesService", () => {
   let service: SamplesService;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let sampleModel: Model<SampleClass>;
 
   beforeEach(async () => {

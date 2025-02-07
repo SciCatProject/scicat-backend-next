@@ -35,8 +35,10 @@ import { CaslModule } from "src/casl/casl.module";
           schema.pre<JobClass>("save", function (next) {
             // if _id is empty or different than job id,
             // set _id to job id
-            if (!this._id) {
+            if (!this._id && this.id) {
               this._id = this.id;
+            } else if (!this.id && this._id) {
+              this.id = this._id;
             }
             next();
           });

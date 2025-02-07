@@ -59,7 +59,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
    *
    * @throws {NotFoundException} If the 'url' parameter is not provided in the data object
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(options: URLJobActionOptions) {
     this.urlTemplate = compileJob(options.url);
 

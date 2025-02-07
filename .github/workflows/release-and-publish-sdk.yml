@@ -92,6 +92,30 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
 
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOW_DISPATCHER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_DISPATCHER_APP_PRIVATE_KEY }}
+          repositories: scitacean
+
+      - name: Trigger test workflow in scitacean
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: 'SciCatProject',
+              repo: 'scitacean',
+              workflow_id: 'test.yml',  
+              ref: 'main',
+              inputs: {
+                "backend-version": "${{steps.tag_version.outputs.new_tag}}",
+                "python-version": "3.13",
+                "tox-env": "py313-full"
+              }
+            })
+
   start-backend-export-swagger:
     runs-on: ubuntu-latest
     steps:
@@ -112,6 +136,9 @@ jobs:
         env:
           MONGODB_URI: "mongodb://localhost:27017/scicat"
           JWT_SECRET: thisIsTheJwtSecret
+          # It disables the content property on some of the endpoints as the sdk generator complains about it.
+          # We want to keep it when the app is running to improve the swagger documentation and usage.
+          SDK_PACKAGE_SWAGGER_HELPERS_DISABLED: true
         run: |
           npm install -g wait-on && npm install
           npm run start & wait-on http://localhost:3000/api/v3/health --timeout 200000
@@ -131,7 +158,7 @@ jobs:
       - start-backend-export-swagger
     strategy:
       matrix:
-        generator: [python, python-pydantic-v1, typescript-angular]
+        generator: [python, typescript-angular, typescript-fetch]
 
     steps:
       - name: Checkout repository
@@ -152,11 +179,9 @@ jobs:
             --git-repo-id scicat-backend-next \
             --git-user-id SciCatProject \
             -o ./sdk/${{ matrix.generator }} $(
-            if [ "${{ matrix.generator }}" == "typescript-angular" ]; then
+            if [ "${{ matrix.generator }}" == "typescript-angular" ] || [ "${{ matrix.generator }}" == "typescript-fetch" ]; then
               echo "--additional-properties=npmVersion=${{ needs.build-release.outputs.new_tag}}";
             elif [ "${{ matrix.generator }}" == "python" ]; then
-              echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
-            elif [ "${{ matrix.generator }}" == "python-pydantic-v1" ]; then
               echo "--additional-properties=packageVersion=${{ needs.build-release.outputs.new_tag}}";
             fi
             )
@@ -169,9 +194,12 @@ jobs:
   npm-publish:
     needs: generate-upload-sdk
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk_type: [typescript-angular, typescript-fetch]
     environment:
-      name: npm-sdk-package
-      url: https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts
+      name: ${{ matrix.sdk_type }}-sdk-package
+      url: ${{ matrix.sdk_type == 'typescript-angular' && 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-angular' || 'https://www.npmjs.com/package/@scicatproject/scicat-sdk-ts-fetch' }}
 
     steps:
       - name: Checkout repository
@@ -183,19 +211,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Download TypeScript Angular SDK Artifact
+      - name: Download TypeScript SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-typescript-angular-${{github.sha}}
+          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
 
       - name: Publish package
         run: |
           npm install
           npm run build
-          cd dist
+          if [ "${{ matrix.sdk_type }}" == "typescript-angular" ]; then
+            # publish dist folder for typescript-angular
+            cd dist
+          fi
           npm publish --access public
-        working-directory: ./sdk/typescript-angular/
+        working-directory: ./sdk/${{ matrix.sdk_type }}/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -204,10 +235,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sdk_type: [python, python-pydantic-v1]
+        sdk_type: [python]
     environment:
       name: ${{ matrix.sdk_type }}-sdk-package
-      url: ${{ matrix.sdk_type == 'python' && 'https://pypi.org/project/scicat-sdk-py' || 'https://pypi.org/project/scicat-sdk-pydantic' }}
+      url: "https://pypi.org/project/scicat-sdk-py"
     permissions:
       id-token: write
 
@@ -223,7 +254,7 @@ jobs:
       - name: Download Python SDK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sdk-${{ matrix.sdk_type }}-${{github.sha}}
+          name: sdk-${{ matrix.sdk_type }}-${{ github.sha }}
           path: ./sdk
 
       - name: Install dependencies

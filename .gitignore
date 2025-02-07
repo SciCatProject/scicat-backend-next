@@ -2,10 +2,12 @@
 /dist
 /node_modules
 functionalAccounts.json
+datasetTypes.json
 proposalTypes.json
 loggers.json
 jobConfig.json
 jobConfig.yaml
+metricsConfig.json
 
 # Configs
 .env

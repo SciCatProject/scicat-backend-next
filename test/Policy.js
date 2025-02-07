@@ -25,7 +25,7 @@ describe("1300: Policy: Simple Policy tests", () => {
   before(() => {
     db.collection("Policy").deleteMany({});
   });
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],

@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/quotes */
 import { Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
 import { format, unit, Unit, createUnit } from "mathjs";
 import { Expression, FilterQuery, Model, PipelineStage } from "mongoose";
-import { DatasetType } from "src/datasets/dataset-type.enum";
 import {
   IAxiosError,
   IFilters,
@@ -12,6 +10,7 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -32,7 +31,7 @@ export const convertToSI = (
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
-    Logger.warn(`Error converting unit to SI: {error}`);
+    Logger.warn(`Error converting unit to SI: ${error}`);
     return { valueSI: inputValue, unitSI: inputUnit };
   }
 };
@@ -281,12 +280,13 @@ export const handleAxiosRequestError = (
 export const updateTimesToUTC = <T>(dateKeys: (keyof T)[], instance: T): T => {
   dateKeys.forEach((key) => {
     if (instance[key]) {
-      const dateField = instance[key] as unknown as string;
+      const dateField = instance[key] as string;
       instance[key] = DateTime.fromISO(dateField, {
         zone: DateTime.local().zoneName as string,
-      }).toISO() as unknown as T[keyof T];
+      }).toISO() as T[keyof T];
     }
   });
+
   return instance;
 };
 
@@ -321,6 +321,24 @@ export const parseLimitFilters = (
     }
   }
   return { limit, skip, sort };
+};
+
+export const parsePipelineSort = (sort: Record<string, "asc" | "desc">) => {
+  const pipelineSort: Record<string, 1 | -1> = {};
+  for (const property in sort) {
+    pipelineSort[property] = sort[property] === "asc" ? 1 : -1;
+  }
+
+  return pipelineSort;
+};
+
+export const parsePipelineProjection = (fieldsProjection: string[]) => {
+  const pipelineProjection: Record<string, boolean> = {};
+  fieldsProjection.forEach((field) => {
+    pipelineProjection[field] = true;
+  });
+
+  return pipelineProjection;
 };
 
 export const parseLimitFiltersForPipeline = (
@@ -791,6 +809,16 @@ export const createFullfacetPipeline = <T, Y extends object>(
   return pipeline;
 };
 
+export const addApiVersionField = <T extends object>(
+  obj: T,
+  routePath: string,
+) => {
+  // Extract the number from the route path. For now this is the only solution.
+  const apiVersion = routePath.match(/(?<=\/v)(.*?)(?=\/)/gi)?.[0];
+
+  Object.assign(obj, { version: apiVersion });
+};
+
 export const addStatusFields = <T>(
   obj: T,
   statusCode: string,
@@ -1068,6 +1096,15 @@ const replaceLikeOperatorRecursive = (
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const isJsonString = (str: string) => {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
 };
 
 /**

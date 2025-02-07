@@ -1,0 +1,31 @@
+{
+  "include": [
+    {
+      "path": "*",
+      "method": 0,
+      "version": "3"
+    },
+    {
+      "path": "datasets/fullquery",
+      "method": 0,
+      "version": "3"
+    },
+    {
+      "path": "datasets/:id",
+      "method": 0,
+      "version": "3"
+    }
+  ],
+  "exclude": [
+    {
+      "path": "datasets/fullfacet",
+      "method": 0,
+      "version": "3"
+    },
+    {
+      "path": "datasets/metadataKeys",
+      "method": 0,
+      "version": "3"
+    }
+  ]
+}

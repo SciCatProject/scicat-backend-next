@@ -5,13 +5,11 @@ import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { SampleClass, SampleSchema } from "./schemas/sample.schema";
-import { ConfigModule } from "@nestjs/config";
 import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
     AttachmentsModule,
-    ConfigModule,
     CaslModule,
     DatasetsModule,
     MongooseModule.forFeatureAsync([

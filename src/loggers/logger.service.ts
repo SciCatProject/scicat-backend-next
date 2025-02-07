@@ -39,7 +39,7 @@ export class ScicatLogger implements Logger, OnModuleInit {
   private handleLogForwarding(method: keyof Logger, ...args: unknown[]): void {
     for (const logger of this.loggers) {
       try {
-        // eslint-disable-next-line @typescript-eslint/ban-types -- We need to call the method dynamically
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type -- We need to call the method dynamically
         (logger[method] as Function)(...args);
       } catch (error) {
         console.error(error);

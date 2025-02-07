@@ -745,13 +745,13 @@ describe("1200: OrigDatablockForRawDataset: Test OrigDatablocks and their relati
       });
   });
 
-  it("0400: add a new origDatablock with invalid pid should fail", async () => {
+  it("0400: add a new origDatablock to the non-existent dataset should fail", async () => {
     return request(appUrl)
       .post(`/api/v3/origdatablocks`)
       .send({ ...origDatablockData1, datasetId: "wrong" })
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
-      .expect(TestData.BadRequestStatusCode)
+      .expect(TestData.NotFoundStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("error");

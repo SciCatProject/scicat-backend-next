@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/quotes */
 import {
   Controller,
   Get,
@@ -11,9 +10,9 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  BadRequestException,
   Req,
   ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { OrigDatablocksService } from "./origdatablocks.service";
@@ -65,7 +64,7 @@ export class OrigDatablocksController {
   ) {
     const origDatablock = await this.origDatablocksService.findOne({ _id: id });
     if (!origDatablock) {
-      throw new BadRequestException("Invalid origDatablock Id");
+      throw new NotFoundException(`OrigDatablock: ${id} not found`);
     }
 
     await this.checkPermissionsForOrigDatablockExtended(
@@ -125,7 +124,9 @@ export class OrigDatablocksController {
     const user: JWTUser = request.user as JWTUser;
 
     if (!dataset) {
-      throw new BadRequestException(`Invalid datasetId: ${id}`);
+      throw new NotFoundException(
+        `Dataset: ${id} not found for attaching an origdatablock`,
+      );
     }
 
     const origDatablockInstance =

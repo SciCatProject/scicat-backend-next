@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/quotes */
 import {
   Body,
   Controller,
@@ -85,10 +84,6 @@ import { CreateDatasetDatablockDto } from "src/datablocks/dto/create-dataset-dat
 import {
   filterDescription,
   filterExample,
-  datasetsFullQueryDescriptionFields,
-  fullQueryDescriptionLimits,
-  datasetsFullQueryExampleFields,
-  fullQueryExampleLimits,
   replaceLikeOperator,
 } from "src/common/utils";
 import { HistoryClass } from "./schemas/history.schema";
@@ -96,14 +91,23 @@ import { TechniqueClass } from "./schemas/technique.schema";
 import { RelationshipClass } from "./schemas/relationship.schema";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { LogbooksService } from "src/logbooks/logbooks.service";
-import configuration from "src/config/configuration";
-import { DatasetType } from "./dataset-type.enum";
 import { OutputDatasetObsoleteDto } from "./dto/output-dataset-obsolete.dto";
 import { CreateDatasetDto } from "./dto/create-dataset.dto";
 import {
   PartialUpdateDatasetDto,
   UpdateDatasetDto,
 } from "./dto/update-dataset.dto";
+import { Logbook } from "src/logbooks/schemas/logbook.schema";
+import { ConfigService } from "@nestjs/config";
+import { AccessGroupsType } from "src/config/configuration";
+import { DatasetType } from "./types/dataset-type.enum";
+import {
+  CountApiResponse,
+  FullFacetFilters,
+  FullFacetResponse,
+  FullQueryFilters,
+  IsValidResponse,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -115,7 +119,7 @@ import {
   RelationshipClass,
 )
 @ApiTags("datasets")
-@Controller("datasets")
+@Controller({ path: "datasets", version: "3" })
 export class DatasetsController {
   constructor(
     private attachmentsService: AttachmentsService,
@@ -124,7 +128,22 @@ export class DatasetsController {
     private origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private logbooksService: LogbooksService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
+    this.datasetCreationValidationEnabled = this.configService.get<boolean>(
+      "datasetCreationValidationEnabled",
+    );
+    this.datasetCreationValidationRegex = this.configService.get<string>(
+      "datasetCreationValidationRegex",
+    );
+    this.datasetTypes = this.configService.get<string>("datasetTypes");
+  }
+  private accessGroups;
+  private datasetCreationValidationEnabled;
+  private datasetCreationValidationRegex;
+  private datasetTypes;
 
   getFilters(
     headers: Record<string, string>,
@@ -178,23 +197,46 @@ export class DatasetsController {
       DatasetClass,
     );
 
+    if (!mergedFilters.where) {
+      mergedFilters.where = {};
+    }
+
     if (!canViewAny) {
-      if (!mergedFilters.where) {
-        mergedFilters.where = {};
-      }
       if (canViewAccess) {
-        mergedFilters.where["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { sharedWith: { $in: user.email } },
-          { isPublished: true },
-        ];
+        if (mergedFilters.where["$and"]) {
+          mergedFilters.where["$and"].push({
+            $or: [
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+              { sharedWith: { $in: [user.email] } },
+              { isPublished: true },
+            ],
+          });
+        } else {
+          mergedFilters.where["$and"] = [
+            {
+              $or: [
+                { ownerGroup: { $in: user.currentGroups } },
+                { accessGroups: { $in: user.currentGroups } },
+                { sharedWith: { $in: [user.email] } },
+                { isPublished: true },
+              ],
+            },
+          ];
+        }
       } else if (canViewOwner) {
-        mergedFilters.where = [{ ownerGroup: { $in: user.currentGroups } }];
+        mergedFilters.where = {
+          ...mergedFilters.where,
+          ownerGroup: { $in: user.currentGroups },
+        };
       } else if (canViewPublic) {
         mergedFilters.where = { isPublished: true };
       }
     }
+
+    mergedFilters.where = this.convertObsoleteWhereFilterToCurrentSchema(
+      mergedFilters.where,
+    );
 
     return mergedFilters;
   }
@@ -207,82 +249,84 @@ export class DatasetsController {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
+    if (!dataset) {
+      throw new NotFoundException(`dataset: ${id} not found`);
+    }
 
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
 
-      let canDoAction = false;
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
 
-      if (group == Action.DatasetRead) {
-        canDoAction =
-          ability.can(Action.DatasetReadAny, DatasetClass) ||
-          ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-          ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-          ability.can(Action.DatasetReadOnePublic, datasetInstance);
-      } else if (group == Action.DatasetAttachmentRead) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
-      } else if (group == Action.DatasetAttachmentCreate) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetAttachmentUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetAttachmentDelete) {
-        canDoAction =
-          ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockRead) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockCreate) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetOrigdatablockDelete) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockRead) {
-        canDoAction =
-          ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
-          ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
-          ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
-      } else if (group == Action.DatasetDatablockCreate) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockUpdate) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
-      } else if (group == Action.DatasetDatablockDelete) {
-        canDoAction =
-          ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
-          ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
-      } else if (group == Action.DatasetLogbookRead) {
-        canDoAction =
-          ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
-          ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
-      }
-      if (!canDoAction) {
-        throw new ForbiddenException("Unauthorized access");
-      }
+    let canDoAction = false;
+
+    if (group == Action.DatasetRead) {
+      canDoAction =
+        ability.can(Action.DatasetReadAny, DatasetClass) ||
+        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+        ability.can(Action.DatasetReadOnePublic, datasetInstance);
+    } else if (group == Action.DatasetAttachmentRead) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentReadAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetAttachmentReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetAttachmentReadPublic, datasetInstance);
+    } else if (group == Action.DatasetAttachmentCreate) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetAttachmentUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetAttachmentDelete) {
+      canDoAction =
+        ability.can(Action.DatasetAttachmentDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetAttachmentDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockRead) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetOrigdatablockReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetOrigdatablockReadPublic, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockCreate) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetOrigdatablockDelete) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetOrigdatablockDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockRead) {
+      canDoAction =
+        ability.can(Action.DatasetOrigdatablockReadAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockReadOwner, datasetInstance) ||
+        ability.can(Action.DatasetDatablockReadAccess, datasetInstance) ||
+        ability.can(Action.DatasetDatablockReadPublic, datasetInstance);
+    } else if (group == Action.DatasetDatablockCreate) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockCreateAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockCreateOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockUpdate) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockUpdateAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockUpdateOwner, datasetInstance);
+    } else if (group == Action.DatasetDatablockDelete) {
+      canDoAction =
+        ability.can(Action.DatasetDatablockDeleteAny, DatasetClass) ||
+        ability.can(Action.DatasetDatablockDeleteOwner, datasetInstance);
+    } else if (group == Action.DatasetLogbookRead) {
+      canDoAction =
+        ability.can(Action.DatasetLogbookReadAny, DatasetClass) ||
+        ability.can(Action.DatasetLogbookReadOwner, datasetInstance);
+    }
+    if (!canDoAction) {
+      throw new ForbiddenException("Unauthorized access");
     }
 
     return dataset;
@@ -292,20 +336,22 @@ export class DatasetsController {
     const dataset = await this.datasetsService.findOne({ where: { pid: id } });
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
+    if (!dataset) {
+      throw new NotFoundException(`dataset: ${id} not found`);
+    }
 
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-      const canView =
-        ability.can(Action.DatasetReadAny, DatasetClass) ||
-        ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
-        ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
-        ability.can(Action.DatasetReadOnePublic, datasetInstance);
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
 
-      if (!canView) {
-        throw new ForbiddenException("Unauthorized access");
-      }
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    const canView =
+      ability.can(Action.DatasetReadAny, DatasetClass) ||
+      ability.can(Action.DatasetReadOneOwner, datasetInstance) ||
+      ability.can(Action.DatasetReadOneAccess, datasetInstance) ||
+      ability.can(Action.DatasetReadOnePublic, datasetInstance);
+
+    if (!canView) {
+      throw new ForbiddenException("Unauthorized access");
     }
 
     return dataset;
@@ -313,18 +359,18 @@ export class DatasetsController {
 
   getUserPermissionsFromGroups(user: JWTUser) {
     const userIsAdmin = user.currentGroups.some((g) =>
-      configuration().adminGroups.includes(g),
+      this.accessGroups?.admin.includes(g),
     );
     const userCanCreateDatasetPrivileged =
-      configuration().createDatasetPrivilegedGroups.some((value) =>
+      this.accessGroups?.createDatasetPrivileged.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithPid =
-      configuration().createDatasetWithPidGroups.some((value) =>
+      this.accessGroups?.createDatasetWithPid.some((value) =>
         user.currentGroups.includes(value),
       );
     const userCanCreateDatasetWithoutPid =
-      configuration().createDatasetGroups.some((value) =>
+      this.accessGroups?.createDataset.some((value) =>
         user.currentGroups.includes(value),
       );
 
@@ -340,6 +386,7 @@ export class DatasetsController {
     dataset:
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
       | DatasetClass,
   ): Promise<DatasetClass> {
     const datasetInstance = new DatasetClass();
@@ -355,59 +402,98 @@ export class DatasetsController {
 
   async checkPermissionsForObsoleteDatasetCreate(
     request: Request,
-    dataset: CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto,
+    dataset:
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ) {
     const user: JWTUser = request.user as JWTUser;
 
-    if (dataset) {
-      // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
-      const datasetInstance =
-        await this.generateDatasetInstanceForPermissions(dataset);
-      // instantiate the casl matrix for the user
-      const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
-      // check if he/she can create this dataset
-      const canCreate =
-        ability.can(Action.DatasetCreateAny, DatasetClass) ||
-        ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
-        ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
+    // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
+    const datasetInstance =
+      await this.generateDatasetInstanceForPermissions(dataset);
+    // instantiate the casl matrix for the user
+    const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
+    // check if he/she can create this dataset
+    const canCreate =
+      ability.can(Action.DatasetCreateAny, DatasetClass) ||
+      ability.can(Action.DatasetCreateOwnerNoPid, datasetInstance) ||
+      ability.can(Action.DatasetCreateOwnerWithPid, datasetInstance);
 
-      if (!canCreate) {
-        throw new ForbiddenException("Unauthorized to create this dataset");
+    if (!canCreate) {
+      throw new ForbiddenException("Unauthorized to create this dataset");
+    }
+
+    // now checks if we need to validate the pid
+    if (
+      this.datasetCreationValidationEnabled &&
+      this.datasetCreationValidationRegex &&
+      dataset.pid
+    ) {
+      const re = new RegExp(this.datasetCreationValidationRegex);
+
+      if (!re.test(dataset.pid)) {
+        throw new BadRequestException(
+          "PID is not following required standards",
+        );
       }
-
-      // now checks if we need to validate the pid
-      if (
-        configuration().datasetCreationValidationEnabled &&
-        configuration().datasetCreationValidationRegex &&
-        dataset.pid
-      ) {
-        const re = new RegExp(configuration().datasetCreationValidationRegex);
-
-        if (!re.test(dataset.pid)) {
-          throw new BadRequestException(
-            "PID is not following required standards",
-          );
-        }
-      }
-    } else {
-      throw new ForbiddenException("Unauthorized to create datasets");
     }
 
     return dataset;
   }
 
+  convertObsoleteWhereFilterToCurrentSchema(
+    whereFilter: Record<string, unknown>,
+  ): IFilters<DatasetDocument, IDatasetFields> {
+    if ("proposalId" in whereFilter) {
+      whereFilter.proposalIds = whereFilter.proposalId;
+      delete whereFilter.proposalId;
+    }
+    if ("sampleId" in whereFilter) {
+      whereFilter.sampleIds = whereFilter.sampleId;
+      delete whereFilter.sampleId;
+    }
+    if ("instrumentId" in whereFilter) {
+      whereFilter.instrumentIds = whereFilter.instrumentId;
+      delete whereFilter.instrumentId;
+    }
+    if ("investigator" in whereFilter) {
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.investigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.investigator;
+      }
+
+      delete whereFilter.investigator;
+    }
+    if ("principalInvestigator" in whereFilter) {
+      if (typeof whereFilter.investigator === "string") {
+        whereFilter.principalInvestigators = {
+          $in: [whereFilter.principalInvestigator],
+        };
+      } else {
+        whereFilter.principalInvestigators = whereFilter.principalInvestigator;
+      }
+      delete whereFilter.principalInvestigator;
+    }
+
+    return whereFilter;
+  }
   convertObsoleteToCurrentSchema(
     inputObsoleteDataset:
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
       | UpdateRawDatasetObsoleteDto
       | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto
       | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto,
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto,
   ): CreateDatasetDto | UpdateDatasetDto | PartialUpdateDatasetDto {
-    const propertiesModifier: Record<string, unknown> = {
-      version: "v3",
-    };
+    const propertiesModifier: Record<string, unknown> = {};
 
     if ("proposalId" in inputObsoleteDataset) {
       propertiesModifier.proposalIds = [
@@ -429,11 +515,22 @@ export class DatasetsController {
           (inputObsoleteDataset as CreateRawDatasetObsoleteDto).instrumentId,
         ];
       }
-    } else {
+      if ("principalInvestigator" in inputObsoleteDataset) {
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateRawDatasetObsoleteDto)
+            .principalInvestigator,
+        ];
+      }
+    } else if (
+      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto
+    ) {
       if ("investigator" in inputObsoleteDataset) {
-        propertiesModifier.principalInvestigator = (
-          inputObsoleteDataset as CreateDerivedDatasetObsoleteDto
-        ).investigator;
+        propertiesModifier.principalInvestigators = [
+          (inputObsoleteDataset as CreateDerivedDatasetObsoleteDto)
+            .investigator,
+        ];
       }
     }
 
@@ -443,7 +540,8 @@ export class DatasetsController {
       | PartialUpdateDatasetDto = {};
     if (
       inputObsoleteDataset instanceof CreateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto
+      inputObsoleteDataset instanceof CreateDerivedDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof CreateDatasetDto
     ) {
       outputDataset = {
         ...(inputObsoleteDataset as CreateDatasetDto),
@@ -451,7 +549,8 @@ export class DatasetsController {
       } as CreateDatasetDto;
     } else if (
       inputObsoleteDataset instanceof UpdateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto
+      inputObsoleteDataset instanceof UpdateDerivedDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof UpdateDatasetDto
     ) {
       outputDataset = {
         ...(inputObsoleteDataset as UpdateDatasetDto),
@@ -459,7 +558,8 @@ export class DatasetsController {
       } as UpdateDatasetDto;
     } else if (
       inputObsoleteDataset instanceof PartialUpdateRawDatasetObsoleteDto ||
-      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto
+      inputObsoleteDataset instanceof PartialUpdateDerivedDatasetObsoleteDto ||
+      inputObsoleteDataset instanceof PartialUpdateDatasetDto
     ) {
       outputDataset = {
         ...(inputObsoleteDataset as PartialUpdateDatasetDto),
@@ -475,18 +575,34 @@ export class DatasetsController {
   ): OutputDatasetObsoleteDto {
     const propertiesModifier: Record<string, unknown> = {};
     if (inputDataset) {
-      if ("proposalIds" in inputDataset) {
-        propertiesModifier.proposalId = inputDataset.proposalIds![0];
+      if ("proposalIds" in inputDataset && inputDataset.proposalIds?.length) {
+        propertiesModifier.proposalId = inputDataset.proposalIds[0];
       }
-      if ("sampleIds" in inputDataset) {
-        propertiesModifier.sampleId = inputDataset.sampleIds![0];
+      if ("sampleIds" in inputDataset && inputDataset.sampleIds?.length) {
+        propertiesModifier.sampleId = inputDataset.sampleIds[0];
       }
-      if ("instrumentIds" in inputDataset) {
-        propertiesModifier.instrumentId = inputDataset.instrumentIds![0];
+      if (
+        "instrumentIds" in inputDataset &&
+        inputDataset.instrumentIds?.length
+      ) {
+        propertiesModifier.instrumentId = inputDataset.instrumentIds[0];
       }
+
+      if (
+        "principalInvestigators" in inputDataset &&
+        inputDataset.principalInvestigators?.length
+      ) {
+        propertiesModifier.principalInvestigator =
+          inputDataset.principalInvestigators[0];
+      }
+
       if (inputDataset.type == "derived") {
-        if ("investigator" in inputDataset) {
-          propertiesModifier.investigator = inputDataset.principalInvestigator;
+        if (
+          "investigator" in inputDataset &&
+          inputDataset.principalInvestigators?.length
+        ) {
+          propertiesModifier.investigator =
+            inputDataset.principalInvestigators[0];
         }
       }
     }
@@ -511,23 +627,29 @@ export class DatasetsController {
   )
   @Post()
   @ApiOperation({
-    summary: "It creates a new dataset which can be a raw or derived one.",
+    summary:
+      "It creates a new dataset which can be a raw, derived or custom one.",
     description:
       "It creates a new dataset and returns it completed with systems fields.",
   })
-  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto)
+  @ApiExtraModels(
+    CreateRawDatasetObsoleteDto,
+    CreateDerivedDatasetObsoleteDto,
+    CreateDatasetDto,
+  )
   @ApiBody({
     description: "Input fields for the dataset to be created",
     required: true,
     schema: {
-      oneOf: [
+      anyOf: [
         { $ref: getSchemaPath(CreateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(CreateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(CreateDatasetDto) },
       ],
     },
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: OutputDatasetObsoleteDto,
     description: "Create a new dataset and return its representation in SciCat",
   })
@@ -536,15 +658,29 @@ export class DatasetsController {
     @Body()
     createDatasetObsoleteDto:
       | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto,
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto> {
     // validate dataset
+    let dtoType;
+    switch (createDatasetObsoleteDto.type) {
+      case DatasetType.Raw:
+        dtoType = CreateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = CreateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = CreateDatasetDto;
+        break;
+    }
     const validatedDatasetObsoleteDto = (await this.validateDatasetObsolete(
       createDatasetObsoleteDto,
-      createDatasetObsoleteDto.type === "raw"
-        ? CreateRawDatasetObsoleteDto
-        : CreateDerivedDatasetObsoleteDto,
-    )) as CreateRawDatasetObsoleteDto | CreateDerivedDatasetObsoleteDto;
+      dtoType,
+    )) as
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto;
 
     const obsoleteDatasetDto =
       await this.checkPermissionsForObsoleteDatasetCreate(
@@ -567,7 +703,7 @@ export class DatasetsController {
           "A dataset with this this unique key already exists!",
         );
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(error);
       }
     }
   }
@@ -576,17 +712,23 @@ export class DatasetsController {
     inputDatasetDto:
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto
       | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto,
+      | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto,
     dto: ClassConstructor<
       | CreateRawDatasetObsoleteDto
       | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
       | PartialUpdateRawDatasetObsoleteDto
       | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto
       | UpdateRawDatasetObsoleteDto
       | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto
     >,
   ) {
     const validateOptions: ValidatorOptions = {
@@ -604,17 +746,18 @@ export class DatasetsController {
 
     if (
       outputDatasetDto instanceof
-      (CreateRawDatasetObsoleteDto || CreateDerivedDatasetObsoleteDto)
+      (CreateRawDatasetObsoleteDto ||
+        CreateDerivedDatasetObsoleteDto ||
+        CreateDatasetDto)
     ) {
       if (
-        !(Object.values(DatasetType) as string[]).includes(
-          outputDatasetDto.type,
-        )
+        this.datasetTypes &&
+        !Object.values(this.datasetTypes).includes(outputDatasetDto.type)
       ) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
-            message: "Wrong dataset type!",
+            message: "Invalid dataset type!",
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -652,20 +795,25 @@ export class DatasetsController {
     description:
       "It validates the dataset provided as input, and returns true if the information is a valid dataset",
   })
-  @ApiExtraModels(CreateRawDatasetObsoleteDto, CreateDerivedDatasetObsoleteDto)
+  @ApiExtraModels(
+    CreateRawDatasetObsoleteDto,
+    CreateDerivedDatasetObsoleteDto,
+    CreateDatasetDto,
+  )
   @ApiBody({
     description: "Input fields for the dataset that needs to be validated",
     required: true,
     schema: {
-      oneOf: [
+      anyOf: [
         { $ref: getSchemaPath(CreateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(CreateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(CreateDatasetDto) },
       ],
     },
   })
   @ApiResponse({
-    status: 200,
-    type: Boolean,
+    status: HttpStatus.OK,
+    type: IsValidResponse,
     description:
       "Check if the dataset provided pass validation. It return true if the validation is passed",
   })
@@ -674,7 +822,8 @@ export class DatasetsController {
     @Body()
     createDatasetObsoleteDto:
       | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto,
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
   ): Promise<{ valid: boolean }> {
     await this.checkPermissionsForObsoleteDatasetCreate(
       request,
@@ -693,16 +842,27 @@ export class DatasetsController {
     );
     const errorsTestDerivedCorrect = await validate(dtoTestDerivedCorrect);
 
+    const dtoTestCustomCorrect = plainToInstance(
+      CreateDatasetDto,
+      createDatasetObsoleteDto,
+    );
+    const errorsTestCustomCorrect = await validate(dtoTestCustomCorrect);
+
     const valid =
-      errorsTestRawCorrect.length == 0 || errorsTestDerivedCorrect.length == 0;
+      errorsTestRawCorrect.length == 0 ||
+      errorsTestDerivedCorrect.length == 0 ||
+      errorsTestCustomCorrect.length == 0;
 
     return { valid: valid };
   }
 
   // GET /datasets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(MainDatasetsPublicInterceptor)
   @Get()
@@ -721,7 +881,7 @@ export class DatasetsController {
     example: filterExample,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: true,
     description: "Return the datasets requested",
@@ -730,7 +890,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<OutputDatasetObsoleteDto[] | null> {
+  ): Promise<OutputDatasetObsoleteDto[]> {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -777,18 +937,23 @@ export class DatasetsController {
               }),
             );
           } else {
+            /* eslint-disable @typescript-eslint/no-unused-expressions */
+            // TODO: check the eslint error  "Expected an assignment or function call and instead saw an expression"
             dataset;
           }
         }),
       );
     }
-    return outputDatasets;
+    return outputDatasets as OutputDatasetObsoleteDto[];
   }
 
   // GET /datasets/fullquery
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor, FullQueryInterceptor)
   @Get("/fullquery")
@@ -798,33 +963,23 @@ export class DatasetsController {
       "It returns a list of datasets matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Database filters to apply when retrieving datasets\n" +
-      datasetsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: datasetsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example:
+      '{"limits": {"limit": 1, "skip": 1, "order": "creationTime:desc"}, fields: {"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"}]}}',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: true,
-    description: "Return datasets requested",
+    description: "Return fullquery response for datasets requested",
   })
   async fullquery(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<OutputDatasetObsoleteDto[] | null> {
+  ): Promise<OutputDatasetObsoleteDto[]> {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -840,66 +995,55 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      // const canViewPublic = ability.can(
-      //   Action.DatasetReadManyPublic,
-      //   DatasetClass,
-      // );
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
       }
-      // else if (canViewPublic) {
-      //   fields.isPublished = true;
-      // }
     }
     const parsedFilters: IFilters<DatasetDocument, IDatasetFields> = {
       fields: fields,
       limits: JSON.parse(filters.limits ?? "{}"),
     };
 
-    const results = await this.datasetsService.fullquery(parsedFilters);
+    const datasets = await this.datasetsService.fullquery(parsedFilters);
+    let outputDatasets: OutputDatasetObsoleteDto[] = [];
 
-    return results as OutputDatasetObsoleteDto[];
+    if (datasets && datasets.length > 0) {
+      outputDatasets = datasets.map((dataset) =>
+        this.convertCurrentToObsoleteSchema(dataset),
+      );
+    }
+
+    return outputDatasets as OutputDatasetObsoleteDto[];
   }
 
   // GET /fullfacets
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/fullfacet")
-  @ApiOperation({
-    summary:
-      "It returns a list of dataset facets matching the filter provided.",
-    description:
-      "It returns a list of dataset facets matching the filter provided.<br>This endpoint still needs some work on the filter and facets specification.",
-  })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Define the filter conditions by specifying the name of values of fields requested. There is also support for a `text` search to look for strings anywhere in the dataset.",
-    required: false,
-    type: String,
-    example: {},
-  })
-  @ApiQuery({
-    name: "facets",
+    name: "filters",
     description:
       "Defines list of field names, for which facet counts should be calculated",
     required: false,
-    type: String,
-    example: '["type","creationLocation","ownerGroup","keywords"]',
+    type: FullFacetFilters,
+    example:
+      '{"facets": ["type","creationLocation","ownerGroup","keywords"], fields: {}}',
   })
   @ApiResponse({
-    status: 200,
-    type: Object,
+    status: HttpStatus.OK,
+    type: FullFacetResponse,
     isArray: true,
-    description: "Return datasets requested",
+    description: "Return fullfacet response for datasets requested",
   })
   async fullfacet(
     @Req() request: Request,
@@ -912,8 +1056,6 @@ export class DatasetsController {
     const canViewAny = ability.can(Action.DatasetReadAny, DatasetClass);
 
     if (!canViewAny && !fields.isPublished) {
-      // delete fields.isPublished;
-
       const canViewAccess = ability.can(
         Action.DatasetReadManyAccess,
         DatasetClass,
@@ -922,23 +1064,14 @@ export class DatasetsController {
         Action.DatasetReadManyOwner,
         DatasetClass,
       );
-      // const canViewPublic = ability.can(
-      //   Action.DatasetReadManyPublic,
-      //   DatasetClass,
-      // );
 
       if (canViewAccess) {
         fields.userGroups = fields.userGroups ?? [];
         fields.userGroups.push(...user.currentGroups);
-        // fields.isPublished = true;
-        // fields.sharedWith = user.email;
       } else if (canViewOwner) {
         fields.ownerGroup = fields.ownerGroup ?? [];
         fields.ownerGroup.push(...user.currentGroups);
       }
-      // else if (canViewPublic) {
-      //   fields.isPublished = true;
-      // }
     }
 
     const parsedFilters: IFacets<IDatasetFields> = {
@@ -950,8 +1083,11 @@ export class DatasetsController {
 
   // GET /datasets/metadataKeys
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @UseInterceptors(SubDatasetsPublicInterceptor)
   @Get("/metadataKeys")
@@ -977,15 +1113,15 @@ export class DatasetsController {
     example: '{ "skip": 0, "limit": 25, "order": "creationTime:desc" }',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: String,
     isArray: true,
-    description: "Return metadata keys list of datasets selected",
+    description: "Return metadata keys  for list of datasets selected",
   })
   async metadataKeys(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<string[]> {
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IDatasetFields = JSON.parse(filters.fields ?? "{}");
 
@@ -1029,8 +1165,11 @@ export class DatasetsController {
 
   // GET /datasets/findOne
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   @Get("/findOne")
   @ApiOperation({
@@ -1048,7 +1187,7 @@ export class DatasetsController {
     example: filterExample,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description: "Return the datasets requested",
   })
@@ -1104,8 +1243,11 @@ export class DatasetsController {
 
   // GET /datasets/count
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
   @Get("/count")
   @ApiOperation({
@@ -1122,7 +1264,8 @@ export class DatasetsController {
       '{"where": {"pid": "20.500.12269/4f8c991e-a879-4e00-9095-5bb13fb02ac4"}}',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
+    type: CountApiResponse,
     description:
       "Return the number of datasets in the following format: { count: integer }",
   })
@@ -1130,7 +1273,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Headers() headers: Record<string, string>,
     @Query(new FilterPipe()) queryFilter: { filter?: string },
-  ): Promise<{ count: number }> {
+  ) {
     const mergedFilters = replaceLikeOperator(
       this.updateMergedFiltersForList(
         request,
@@ -1144,29 +1287,29 @@ export class DatasetsController {
   // GET /datasets/:id
   //@UseGuards(PoliciesGuard)
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   @Get("/:pid")
-  @ApiOperation({
-    summary: "It returns the dataset requested.",
-    description: "It returns the dataset requested through the pid specified.",
-  })
   @ApiParam({
     name: "pid",
     description: "Id of the dataset to return",
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     isArray: false,
     description: "Return dataset with pid specified",
   })
-  async findById(
-    @Req() request: Request,
-    @Param("pid") id: string,
-  ): Promise<OutputDatasetObsoleteDto | null> {
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Dataset not found",
+  })
+  async findById(@Req() request: Request, @Param("pid") id: string) {
     const dataset = this.convertCurrentToObsoleteSchema(
       await this.checkPermissionsForDatasetObsolete(request, id),
     );
@@ -1200,20 +1343,22 @@ export class DatasetsController {
   @ApiExtraModels(
     PartialUpdateRawDatasetObsoleteDto,
     PartialUpdateDerivedDatasetObsoleteDto,
+    PartialUpdateDatasetDto,
   )
   @ApiBody({
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
     schema: {
-      oneOf: [
+      anyOf: [
         { $ref: getSchemaPath(PartialUpdateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(PartialUpdateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(PartialUpdateDatasetDto) },
       ],
     },
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
@@ -1224,24 +1369,38 @@ export class DatasetsController {
     @Body()
     updateDatasetObsoleteDto:
       | PartialUpdateRawDatasetObsoleteDto
-      | PartialUpdateDerivedDatasetObsoleteDto,
+      | PartialUpdateDerivedDatasetObsoleteDto
+      | PartialUpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    let dtoType;
+    switch (foundDataset.type) {
+      case DatasetType.Raw:
+        dtoType = PartialUpdateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = PartialUpdateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = PartialUpdateDatasetDto;
+        break;
+    }
     const validatedUpdateDatasetObsoleteDto =
       (await this.validateDatasetObsolete(
         updateDatasetObsoleteDto,
-        foundDataset.type === "raw"
-          ? PartialUpdateRawDatasetObsoleteDto
-          : PartialUpdateDerivedDatasetObsoleteDto,
+        dtoType,
       )) as
         | PartialUpdateRawDatasetObsoleteDto
-        | PartialUpdateDerivedDatasetObsoleteDto;
+        | PartialUpdateDerivedDatasetObsoleteDto
+        | PartialUpdateDatasetDto;
 
     // NOTE: We need DatasetClass instance because casl module can not recognize the type from dataset mongo database model. If other fields are needed can be added later.
     const datasetInstance =
@@ -1293,20 +1452,25 @@ export class DatasetsController {
     description: "Id of the dataset to modify",
     type: String,
   })
-  @ApiExtraModels(UpdateRawDatasetObsoleteDto, UpdateDerivedDatasetObsoleteDto)
+  @ApiExtraModels(
+    UpdateRawDatasetObsoleteDto,
+    UpdateDerivedDatasetObsoleteDto,
+    UpdateDatasetDto,
+  )
   @ApiBody({
     description:
       "Dataset object that needs to be updated. The whole dataset object with updated fields have to be passed in.",
     required: true,
     schema: {
-      oneOf: [
+      anyOf: [
         { $ref: getSchemaPath(UpdateRawDatasetObsoleteDto) },
         { $ref: getSchemaPath(UpdateDerivedDatasetObsoleteDto) },
+        { $ref: getSchemaPath(UpdateDatasetDto) },
       ],
     },
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description:
       "Update an existing dataset and return its representation in SciCat",
@@ -1317,20 +1481,33 @@ export class DatasetsController {
     @Body()
     updateDatasetObsoleteDto:
       | UpdateRawDatasetObsoleteDto
-      | UpdateDerivedDatasetObsoleteDto,
+      | UpdateDerivedDatasetObsoleteDto
+      | UpdateDatasetDto,
   ): Promise<OutputDatasetObsoleteDto | null> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
     }
 
     // NOTE: Default validation pipe does not validate union types. So we need custom validation.
+    let dtoType;
+    switch (foundDataset.type) {
+      case DatasetType.Raw:
+        dtoType = UpdateRawDatasetObsoleteDto;
+        break;
+      case DatasetType.Derived:
+        dtoType = UpdateDerivedDatasetObsoleteDto;
+        break;
+      default:
+        dtoType = UpdateDatasetDto;
+        break;
+    }
     const updateValidatedDto = await this.validateDatasetObsolete(
       updateDatasetObsoleteDto,
-      foundDataset.type === "raw"
-        ? UpdateRawDatasetObsoleteDto
-        : UpdateDerivedDatasetObsoleteDto,
+      dtoType,
     );
 
     const datasetInstance =
@@ -1349,14 +1526,14 @@ export class DatasetsController {
     }
 
     const updateDatasetDto =
-      await this.convertObsoleteToCurrentSchema(updateValidatedDto);
+      this.convertObsoleteToCurrentSchema(updateValidatedDto);
 
     const outputDatasetDto = await this.datasetsService.findByIdAndReplace(
       pid,
       updateDatasetDto as UpdateDatasetDto,
     );
 
-    return await this.convertCurrentToObsoleteSchema(outputDatasetDto);
+    return this.convertCurrentToObsoleteSchema(outputDatasetDto);
   }
 
   // DELETE /datasets/:id
@@ -1375,14 +1552,14 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    description: "No value is returned",
+    status: HttpStatus.OK,
+    type: DatasetClass,
+    description: "DatasetClass value is returned that is removed",
   })
-  async findByIdAndDelete(
-    @Req() request: Request,
-    @Param("pid") pid: string,
-  ): Promise<unknown> {
-    const foundDataset = await this.datasetsService.findOne({ where: { pid } });
+  async findByIdAndDelete(@Req() request: Request, @Param("pid") pid: string) {
+    const foundDataset = await this.datasetsService.findOne({
+      where: { pid },
+    });
 
     if (!foundDataset) {
       throw new NotFoundException();
@@ -1433,7 +1610,7 @@ export class DatasetsController {
     type: Array,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OutputDatasetObsoleteDto,
     description: "Return new value of the dataset",
   })
@@ -1446,7 +1623,7 @@ export class DatasetsController {
     const user: JWTUser = request.user as JWTUser;
     const ability = this.caslAbilityFactory.datasetInstanceAccess(user);
     const datasetToUpdate = await this.datasetsService.findOne({
-      where: { pid: pid },
+      where: { pid },
     });
 
     if (!datasetToUpdate) {
@@ -1483,8 +1660,11 @@ export class DatasetsController {
 
   // GET /datasets/:id/thumbnail
   @UseGuards(PoliciesGuard)
-  @CheckPolicies("datasets", (ability: AppAbility) =>
-    ability.can(Action.DatasetRead, DatasetClass),
+  @CheckPolicies(
+    "datasets",
+    (ability: AppAbility) =>
+      ability.can(Action.DatasetRead, DatasetClass) ||
+      ability.can(Action.DatasetReadOnePublic, DatasetClass),
   )
   // @UseGuards(PoliciesGuard)
   @Get("/:pid/thumbnail")
@@ -1499,7 +1679,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     description: "Return new value of the dataset",
   })
@@ -1548,7 +1728,7 @@ export class DatasetsController {
     type: CreateAttachmentDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: Attachment,
     description:
       "Returns the new attachment for the dataset identified by the pid specified",
@@ -1593,7 +1773,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     isArray: true,
     description:
@@ -1636,7 +1816,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Attachment,
     isArray: false,
     description: "Returns the attachment updated.",
@@ -1683,14 +1863,14 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned.",
   })
   async findOneAttachmentAndRemove(
     @Req() request: Request,
     @Param("pid") pid: string,
     @Param("aid") aid: string,
-  ): Promise<unknown> {
+  ) {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1699,7 +1879,7 @@ export class DatasetsController {
 
     return this.attachmentsService.findOneAndDelete({
       _id: aid,
-      pid,
+      datasetId: pid,
     });
   }
 
@@ -1730,7 +1910,7 @@ export class DatasetsController {
     type: CreateDatasetOrigDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: OrigDatablock,
     description: "It returns the new original datablock created",
   })
@@ -1792,7 +1972,7 @@ export class DatasetsController {
     type: CreateDatasetOrigDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     description:
       "It returns true if the values passed in are a valid original datablock",
   })
@@ -1836,7 +2016,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OrigDatablock,
     isArray: true,
     description:
@@ -1885,7 +2065,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: OrigDatablock,
     isArray: false,
     description:
@@ -1950,7 +2130,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned",
   })
   async findOneOrigDatablockAndRemove(
@@ -2013,7 +2193,7 @@ export class DatasetsController {
     type: CreateDatasetDatablockDto,
   })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     type: Datablock,
     description: "It returns the new datablock created",
   })
@@ -2067,7 +2247,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Datablock,
     isArray: true,
     description:
@@ -2113,7 +2293,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: Datablock,
     isArray: false,
     description:
@@ -2180,7 +2360,7 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: "No value is returned",
   })
   async findOneDatablockAndRemove(
@@ -2242,8 +2422,8 @@ export class DatasetsController {
     type: String,
   })
   @ApiResponse({
-    status: 200,
-    // type: Logbook,
+    status: HttpStatus.OK,
+    type: Logbook,
     isArray: false,
     description: "It returns all messages from specificied Logbook room",
   })
