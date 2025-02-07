@@ -67,6 +67,13 @@ export class ProposalsService {
         filter.fields,
       );
 
+    // NOTE: This is fix for the related proposals count.
+    // Maybe the total count should be refactored and be part of the fullquery or another separate endpoint that includes both data and the totalCount instead of making multiple requests.
+    if (filterQuery.$or) {
+      filterQuery.$or =
+        (filter.fields as FilterQuery<ProposalDocument>)?.$or || [];
+    }
+
     const count = await this.proposalModel.countDocuments(filterQuery).exec();
 
     return { count };
