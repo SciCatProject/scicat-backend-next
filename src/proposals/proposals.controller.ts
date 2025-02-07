@@ -402,33 +402,31 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
 
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 
@@ -466,33 +464,31 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 
@@ -537,33 +533,31 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const facets = JSON.parse(filters.facets ?? "[]");
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 
