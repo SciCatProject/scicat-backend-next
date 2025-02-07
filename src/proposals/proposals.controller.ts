@@ -233,12 +233,42 @@ export class ProposalsController {
           ProposalClass,
         );
         if (canViewAccess) {
-          mergedFilters.where["$or"] = [
-            { ownerGroup: { $in: user.currentGroups } },
-            { accessGroups: { $in: user.currentGroups } },
-          ];
+          if (!mergedFilters.where["$and"]) {
+            if (mergedFilters.where["$or"]) {
+              mergedFilters.where["$and"] = [
+                {
+                  $or: mergedFilters.where["$or"],
+                },
+                {
+                  $or: [
+                    { ownerGroup: { $in: user.currentGroups } },
+                    { accessGroups: { $in: user.currentGroups } },
+                  ],
+                },
+              ];
+            } else {
+              mergedFilters.where["$or"] = [
+                { ownerGroup: { $in: user.currentGroups } },
+                { accessGroups: { $in: user.currentGroups } },
+              ];
+            }
+          } else {
+            mergedFilters.where["$and"].push({
+              $or: [
+                { ownerGroup: { $in: user.currentGroups } },
+                { accessGroups: { $in: user.currentGroups } },
+              ],
+            });
+          }
         } else if (canViewOwner) {
-          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          if (mergedFilters.where) {
+            mergedFilters.where = {
+              ...mergedFilters.where,
+              ownerGroup: { $in: user.currentGroups },
+            };
+          } else {
+            mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          }
         } else if (canViewPublic) {
           mergedFilters.where.isPublished = true;
         }
