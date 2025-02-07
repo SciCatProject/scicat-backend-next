@@ -188,7 +188,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("0091:shouldgetproposal count using filters", async () => {
+  it("0091: should get proposal count using filters", async () => {
     const query = { proposalId: { $in: [proposalId] } };
     return request(appUrl)
       .get("/api/v3/Proposals/count")
@@ -269,7 +269,7 @@ describe("1500: Proposal: Simple Proposal", () => {
       });
   });
 
-  it("01150:shouldgetproposal count using $or filters", async () => {
+  it("01150: should get proposal count using $or filters", async () => {
     const query = {
       $or: [
         { proposalId: { $in: [proposalId] } },

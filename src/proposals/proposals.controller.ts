@@ -390,7 +390,7 @@ export class ProposalsController {
       "Database filters to apply when retrieving count for proposals",
     required: false,
     type: ProposalCountFilters,
-    example: `{ fields: ${proposalsFullQueryExampleFields}}`,
+    example: `{ fields: ${proposalsFullQueryExampleFields}, filter: ${filterExample}}`,
   })
   @ApiResponse({
     status: 200,
@@ -398,9 +398,13 @@ export class ProposalsController {
     description:
       "Return the number of proposals in the following format: { count: integer }",
   })
-  async count(@Req() request: Request, @Query() filters: { fields?: string }) {
+  async count(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; filter?: string },
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
+    const filter: IProposalFields = JSON.parse(filters.filter ?? "{}");
 
     const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
     const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
@@ -430,7 +434,7 @@ export class ProposalsController {
       }
     }
 
-    return this.proposalsService.count({ fields });
+    return this.proposalsService.count({ fields, where: filter });
   }
 
   // GET /proposals/fullquery
