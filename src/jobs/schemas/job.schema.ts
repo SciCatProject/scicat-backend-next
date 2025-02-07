@@ -19,19 +19,17 @@ export class JobClass extends OwnableClass {
     type: String,
     default: () => uuidv4(),
     description: "Globally unique identifier of a job.",
+    readOnly: true,
   })
-  @Prop({
-    type: String,
-    unique: true,
-    required: true,
-    default: () => uuidv4(),
-  })
-  id: string;
-
-  @Prop({
-    type: String,
-  })
+  @Prop({ type: String, default: () => uuidv4() })
   _id: string;
+
+  @ApiProperty({
+    type: String,
+    description: "Globally unique identifier of a job.",
+    readOnly: true,
+  })
+  id?: string;
 
   @ApiProperty({
     type: String,

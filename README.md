@@ -169,10 +169,15 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `REGISTER_DOI_URI` | string | | URI to the organization that registers the facility's DOIs. | |
 | `REGISTER_METADATA_URI` | string | | URI to the organization that registers the facility's published data metadata. | |
 | `SITE` | string | | The name of your site. | |
+| `EMAIL_TYPE` | string | Yes | The type of your email provider. Options are "smtp" or "ms365".  | "smtp" |
+| `EMAIL_FROM` | string | Yes | Email address that emails should be sent from. | |
 | `SMTP_HOST` | string | Yes | Host of SMTP server. | |
-| `SMTP_MESSAGE_FROM` | string | Yes | Email address that emails should be sent from. | |
-| `SMTP_PORT` | string | Yes | Port of SMTP server. | |
-| `SMTP_SECURE` | string | Yes | Secure of SMTP server. | |
+| `SMTP_MESSAGE_FROM` | string | Yes | (Deprecated) Alternate spelling of EMAIL_FROM.| |
+| `SMTP_PORT` | number | Yes | Port of SMTP server. | 587 |
+| `SMTP_SECURE` | bool | Yes | Use encrypted SMTPS. | "no" |
+| `MS365_TENANT_ID` | string | Yes | Tenant ID for sending emails over Microsoft Graph API. | |
+| `MS365_CLIENT_ID` | string | Yes | Client ID for sending emails over Microsoft Graph API | |
+| `MS365_CLIENT_SECRET` | string | Yes | Client Secret for sending emails over Microsoft Graph API | |
 | `POLICY_PUBLICATION_SHIFT` | integer | Yes | Embargo period expressed in years. | 3 years |
 | `POLICY_RETENTION_SHIFT` | integer | Yes | Retention period (how long the facility will hold on to data) expressed in years. | -1 (indefinitely) |
 | `ELASTICSEARCH_ENABLED` | string | | Flag to enable/disable the Elasticsearch endpoints. Values "yes" or "no". | "no" |
@@ -185,8 +190,8 @@ Valid environment variables for the .env file. See [.env.example](/.env.example)
 | `ES_REFRESH` | string | | If set to `wait_for`, Elasticsearch will wait till data is inserted into the specified index before returning a response. | false |
 | `LOGGERS_CONFIG_FILE` | string | | The file name for loggers configuration, located in the project root directory. | "loggers.json" |
 | `PROPOSAL_TYPES_FILE` | string | | The file name for proposal types configuration, located in the project root directory. | "proposalTypes.json" |
-| `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available| "explorer"|
-| `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size | "16mb"|
+| `SWAGGER_PATH` | string | Yes | swaggerPath is the path where the swagger UI will be available. | "explorer"|
+| `MAX_FILE_UPLOAD_SIZE` | string | Yes | Maximum allowed file upload size. | "16mb"|
 
 ## Migrating from the old SciCat Backend
 

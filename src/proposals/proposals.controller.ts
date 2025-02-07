@@ -16,6 +16,7 @@ import {
   ConflictException,
   Logger,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { ProposalsService } from "./proposals.service";
@@ -55,13 +56,20 @@ import { validate, ValidatorOptions } from "class-validator";
 import {
   filterDescription,
   filterExample,
-  fullQueryDescriptionLimits,
   fullQueryExampleLimits,
   proposalsFullQueryDescriptionFields,
   proposalsFullQueryExampleFields,
 } from "src/common/utils";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
+import { FindByIdAccessResponse } from "src/samples/samples.controller";
+import {
+  FullFacetResponse,
+  FullQueryFilters,
+  CountApiResponse,
+  FullFacetFilters,
+  ProposalCountFilters,
+} from "src/common/types";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -161,7 +169,7 @@ export class ProposalsController {
           return false;
       }
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -173,6 +181,10 @@ export class ProposalsController {
     const proposal = await this.proposalsService.findOne({
       proposalId: id,
     });
+
+    if (!proposal) {
+      throw new NotFoundException(`Proposal: ${id} not found`);
+    }
 
     const canDoAction = this.permissionChecker(group, proposal, request);
 
@@ -361,6 +373,68 @@ export class ProposalsController {
     return this.proposalsService.findAll(proposalFilters);
   }
 
+  // GET /proposals/count
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("proposals", (ability: AppAbility) =>
+    ability.can(Action.ProposalsRead, ProposalClass),
+  )
+  @Get("/count")
+  @ApiOperation({
+    summary: "It returns the number of proposals.",
+    description:
+      "It returns a number of proposals matching the where filter if provided.",
+  })
+  @ApiQuery({
+    name: "filters",
+    description:
+      "Database filters to apply when retrieving count for proposals",
+    required: false,
+    type: ProposalCountFilters,
+    example: `{ fields: ${proposalsFullQueryExampleFields}}`,
+  })
+  @ApiResponse({
+    status: 200,
+    type: CountApiResponse,
+    description:
+      "Return the number of proposals in the following format: { count: integer }",
+  })
+  async count(@Req() request: Request, @Query() filters: { fields?: string }) {
+    const user: JWTUser = request.user as JWTUser;
+    const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
+
+    if (user) {
+      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+
+      if (!canViewAll) {
+        const canViewAccess = ability.can(
+          Action.ProposalsReadManyAccess,
+          ProposalClass,
+        );
+        const canViewOwner = ability.can(
+          Action.ProposalsReadManyOwner,
+          ProposalClass,
+        );
+        const canViewPublic = ability.can(
+          Action.ProposalsReadManyPublic,
+          ProposalClass,
+        );
+        if (canViewAccess) {
+          fields.userGroups = fields.userGroups ?? [];
+          fields.userGroups.push(...user.currentGroups);
+          // fields.sharedWith = user.email;
+        } else if (canViewOwner) {
+          fields.ownerGroup = fields.ownerGroup ?? [];
+          fields.ownerGroup.push(...user.currentGroups);
+        } else if (canViewPublic) {
+          fields.isPublished = true;
+        }
+      }
+    }
+
+    return this.proposalsService.count({ fields });
+  }
+
   // GET /proposals/fullquery
   @UseGuards(PoliciesGuard)
   @CheckPolicies("proposals", (ability: AppAbility) =>
@@ -373,25 +447,14 @@ export class ProposalsController {
       "It returns a list of proposals matching the query provided.<br>This endpoint still needs some work on the query specification.",
   })
   @ApiQuery({
-    name: "fields",
-    description:
-      "Full query filters to apply when retrieving proposals\n" +
-      proposalsFullQueryDescriptionFields,
+    name: "filters",
+    description: "Defines query limits and fields",
     required: false,
-    type: String,
-    example: proposalsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+    type: FullQueryFilters,
+    example: `{"limits": ${fullQueryExampleLimits}, fields: ${proposalsFullQueryExampleFields}}`,
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     type: ProposalClass,
     isArray: true,
     description: "Return proposals requested",
@@ -458,12 +521,12 @@ export class ProposalsController {
       "Full facet query filters to apply when retrieving proposals\n" +
       proposalsFullQueryDescriptionFields,
     required: false,
-    type: String,
+    type: FullFacetFilters,
     example: proposalsFullQueryExampleFields,
   })
   @ApiResponse({
     status: 200,
-    type: ProposalClass,
+    type: FullFacetResponse,
     isArray: true,
     description: "Return proposals requested",
   })
@@ -564,9 +627,9 @@ export class ProposalsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: Boolean,
+    type: FindByIdAccessResponse,
     description:
-      "Returns true if the user has access to the specified proposal, otherwise false.",
+      "Returns canAccess property with boolean true if the user has access to the specified sample, otherwise false.",
   })
   async findByIdAccess(
     @Req() request: Request,

@@ -1,6 +1,5 @@
-import { IsEnum, IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { DatasetType } from "../dataset-type.enum";
 import { UpdateDatasetDto } from "./update-dataset.dto";
 
 export class CreateDatasetDto extends UpdateDatasetDto {
@@ -16,10 +15,9 @@ export class CreateDatasetDto extends UpdateDatasetDto {
   @ApiProperty({
     type: String,
     required: true,
-    enum: [DatasetType.Raw, DatasetType.Derived],
     description:
       "Characterize type of dataset, either 'raw' or 'derived'. Autofilled when choosing the proper inherited models.",
   })
-  @IsEnum(DatasetType)
+  @IsString()
   readonly type: string;
 }

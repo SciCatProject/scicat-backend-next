@@ -13,7 +13,7 @@ export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isValidateJobActionOptions(options)) {
-      throw new Error("Invalid options for ValidateJobAction.");
+      throw new Error(`Invalid options for ValidateJobAction: ${JSON.stringify(options)}`);
     }
     return new ValidateJobAction(options);
   }

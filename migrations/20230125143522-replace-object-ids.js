@@ -30,7 +30,7 @@ module.exports = {
         })
         .forEach(function (x) {
           var oldId = x._id;
-          // eslint-disable-next-line @typescript-eslint/quotes
+          // eslint-disable-next-line @/quotes
           x._id = UUID().toString().split('"')[1];
           console.info("   Update id " + oldId + " to id " + x._id);
           if (names[i] == "Sample") {

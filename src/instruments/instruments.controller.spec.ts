@@ -1,3 +1,4 @@
+import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { InstrumentsController } from "./instruments.controller";
@@ -15,6 +16,7 @@ describe("InstrumentsController", () => {
       providers: [
         { provide: InstrumentsService, useClass: InstrumentsServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        ConfigService,
       ],
     }).compile();
 
