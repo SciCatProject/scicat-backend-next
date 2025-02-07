@@ -1,5 +1,4 @@
 import { Module, forwardRef } from "@nestjs/common";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ElasticSearchServiceController } from "./elastic-search.controller";
 import { ElasticSearchService } from "./elastic-search.service";

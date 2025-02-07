@@ -62,7 +62,10 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  constructor(private configService: ConfigService, private jobConfigService: JobConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private jobConfigService: JobConfigService,
+  ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
   }
@@ -476,9 +479,7 @@ export class CaslAbilityFactory {
         }
       }
       if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.deleteJob.includes(g),
-        )
+        user.currentGroups.some((g) => this.accessGroups?.deleteJob.includes(g))
       ) {
         /**
          * authenticated users belonging to any of the group listed in DELETE_JOB_GROUPS
@@ -1737,9 +1738,7 @@ export class CaslAbilityFactory {
           ownerGroup: { $in: user.currentGroups },
         });
       } else if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.sample.includes(g),
-        ) ||
+        user.currentGroups.some((g) => this.accessGroups?.sample.includes(g)) ||
         this.accessGroups?.sample.includes("#all")
       ) {
         // -------------------------------------
