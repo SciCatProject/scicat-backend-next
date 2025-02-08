@@ -233,32 +233,29 @@ export class ProposalsController {
           ProposalClass,
         );
         if (canViewAccess) {
+          const accessCondition = {
+            $or: [
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+            ],
+          };
+
           if (!mergedFilters.where["$and"]) {
+            // If there's no $and condition yet
             if (mergedFilters.where["$or"]) {
+              // If $or exists, wrap both the existing $or and accessCondition in $and
               mergedFilters.where["$and"] = [
-                {
-                  $or: mergedFilters.where["$or"],
-                },
-                {
-                  $or: [
-                    { ownerGroup: { $in: user.currentGroups } },
-                    { accessGroups: { $in: user.currentGroups } },
-                  ],
-                },
+                { $or: mergedFilters.where["$or"] },
+                accessCondition,
               ];
+              delete mergedFilters.where["$or"]; // Remove $or after moving it to $and
             } else {
-              mergedFilters.where["$or"] = [
-                { ownerGroup: { $in: user.currentGroups } },
-                { accessGroups: { $in: user.currentGroups } },
-              ];
+              // If no $or exists, create one with accessCondition
+              mergedFilters.where["$or"] = accessCondition.$or;
             }
           } else {
-            mergedFilters.where["$and"].push({
-              $or: [
-                { ownerGroup: { $in: user.currentGroups } },
-                { accessGroups: { $in: user.currentGroups } },
-              ],
-            });
+            // If $and already exists, just add accessCondition
+            mergedFilters.where["$and"].push(accessCondition);
           }
         } else if (canViewOwner) {
           if (mergedFilters.where) {
@@ -420,7 +417,7 @@ export class ProposalsController {
       "Database filters to apply when retrieving count for proposals",
     required: false,
     type: ProposalCountFilters,
-    example: `{ fields: ${proposalsFullQueryExampleFields}, filter: ${filterExample}}`,
+    example: `{ fields: ${proposalsFullQueryExampleFields}, filter: '{"$or": [{"field1": "value" }, {"field2": "value"}]}'}`,
   })
   @ApiResponse({
     status: 200,
