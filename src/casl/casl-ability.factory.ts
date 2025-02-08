@@ -64,7 +64,7 @@ export type AppAbility = MongoAbility<PossibleAbilities, Conditions>;
 export class CaslAbilityFactory {
   constructor(
     private configService: ConfigService,
-    private jobConfigService: JobConfigService,
+    private jobConfigService: JobConfigService
   ) {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");

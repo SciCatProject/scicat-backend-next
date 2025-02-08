@@ -39,6 +39,7 @@ import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { AccessGroupsType } from "src/config/configuration";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import {
@@ -79,8 +80,10 @@ export class JobsController {
     this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
     );
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
   }
-
+  private accessGroups;
   /**
    * Validate filter for GET
    */
@@ -409,8 +412,7 @@ export class JobsController {
     }
     if (user) {
       // the request comes from a user who is logged in.
-      const adminGroups = this.configService.get<string[]>("adminGroups") || [];
-      if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      if (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {

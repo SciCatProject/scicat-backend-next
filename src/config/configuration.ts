@@ -3,29 +3,29 @@ import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
-import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 const configuration = () => {
   const accessGroupsStaticValues =
-    process.env.ACCESS_GROUPS_STATIC_VALUES || "";
-  const adminGroups = process.env.ADMIN_GROUPS || "";
-  const deleteGroups = process.env.DELETE_GROUPS || "";
-  const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
+    process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
+  const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
+  const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
+  const createDatasetGroups =
+    process.env.CREATE_DATASET_GROUPS || ("#all" as string);
   const createDatasetWithPidGroups =
-    process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
+    process.env.CREATE_DATASET_WITH_PID_GROUPS || ("" as string);
   const createDatasetPrivilegedGroups =
-    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || "";
+    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || ("" as string);
   const datasetCreationValidationEnabled =
     process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
   const datasetCreationValidationRegex =
-    process.env.DATASET_CREATION_VALIDATION_REGEX || "";
+    process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
-  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
+  const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
+  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
+  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
-  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
+  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
   const samplePrivilegedGroups =
     process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
 
@@ -33,7 +33,7 @@ const configuration = () => {
     process.env.OIDC_USERQUERY_FILTER || ("" as string);
 
   const oidcUsernameFieldMapping =
-    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
 
   const jobConfigurationFile =
     process.env.JOB_CONFIGURATION_FILE || ("" as string);
@@ -44,12 +44,10 @@ const configuration = () => {
     config: {},
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
-    datasetTypes: {},
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
-    datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
@@ -68,11 +66,6 @@ const configuration = () => {
     }
   });
 
-  // NOTE: Add the default dataset types here
-  Object.assign(jsonConfigMap.datasetTypes, {
-    Raw: DatasetType.Raw,
-    Derived: DatasetType.Derived,
-  });
   // NOTE: Add the default proposal type here
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
@@ -100,7 +93,7 @@ const configuration = () => {
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       createJob: createJobGroups,
-      updateJob: updateJobGroups,
+      updateJob: statusUpdateJobGroups,
       deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
@@ -238,7 +231,6 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
-    datasetTypes: jsonConfigMap.datasetTypes,
     proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);
