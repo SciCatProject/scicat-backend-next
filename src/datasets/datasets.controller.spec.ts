@@ -7,6 +7,7 @@ import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { ConfigService } from "@nestjs/config";
+import { HttpModule } from "@nestjs/axios";
 
 class AttachmentsServiceMock {}
 
@@ -24,7 +25,10 @@ describe("DatasetsController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DatasetsController],
-      imports: [CaslModule],
+      imports: [
+        CaslModule,
+        HttpModule,
+      ],
       providers: [
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
         { provide: LogbooksService, useClass: LogbooksServiceMock },

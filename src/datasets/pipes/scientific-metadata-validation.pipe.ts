@@ -9,18 +9,19 @@ import { CreateDerivedDatasetObsoleteDto } from "../dto/create-derived-dataset-o
 
 @Injectable()
 export class ScientificMetadataValidationPipe
-  implements PipeTransform<
-    CreateRawDatasetObsoleteDto |
-    CreateDerivedDatasetObsoleteDto |
-    CreateDatasetDto,
-    Promise<
-      CreateRawDatasetObsoleteDto |
-      CreateDerivedDatasetObsoleteDto |
-      CreateDatasetDto
+  implements
+    PipeTransform<
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto,
+      Promise<
+      | CreateRawDatasetObsoleteDto
+      | CreateDerivedDatasetObsoleteDto
+      | CreateDatasetDto
+      >
     >
-  >
 {
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   async transform(
     dataset:
@@ -28,14 +29,12 @@ export class ScientificMetadataValidationPipe
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto,
   ): Promise<
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
-    >
+    | CreateRawDatasetObsoleteDto
+    | CreateDerivedDatasetObsoleteDto
+    | CreateDatasetDto
+  >
   {
-    if (
-      dataset.scientificMetadata
-    ) {
+    if (dataset.scientificMetadata) {
       const { schemaUrl, metadata, ...rest } = dataset.scientificMetadata;
 
       if (typeof schemaUrl === "string" && typeof metadata === "object") {
@@ -47,14 +46,17 @@ export class ScientificMetadataValidationPipe
 
         try {
           const response = await firstValueFrom(
-            this.httpService.get<Record<string, any>>(
+            this.httpService.get<Record<string, unknown>>(
               dataset.scientificMetadata.schemaUrl as string,
             ),
           );
 
           const schema = response.data;
           const validator = new Validator();
-          const validationResult = validator.validate(dataset.scientificMetadata.metadata, schema);
+          const validationResult = validator.validate(
+            dataset.scientificMetadata.metadata,
+            schema,
+          );
 
           if (validationResult.errors.length > 0) {
             throw new BadRequestException(
