@@ -6,13 +6,12 @@ import { Policy, PolicySchema } from "./schemas/policy.schema";
 import { AuthModule } from "src/auth/auth.module";
 import { UsersModule } from "src/users/users.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   controllers: [PoliciesController],
   imports: [
     AuthModule,
-    CaslModule,
     forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {
@@ -22,7 +21,7 @@ import { CaslModule } from "src/casl/casl.module";
     ]),
     UsersModule,
   ],
-  providers: [PoliciesService],
+  providers: [PoliciesService, CaslAbilityFactory],
   exports: [PoliciesService],
 })
 export class PoliciesModule {}

@@ -5,7 +5,6 @@ import { InstrumentsController } from "./instruments.controller";
 import { InstrumentsService } from "./instruments.service";
 
 class InstrumentsServiceMock {}
-class CaslAbilityFactoryMock {}
 
 describe("InstrumentsController", () => {
   let controller: InstrumentsController;
@@ -14,8 +13,8 @@ describe("InstrumentsController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InstrumentsController],
       providers: [
+        CaslAbilityFactory,
         { provide: InstrumentsService, useClass: InstrumentsServiceMock },
-        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
         ConfigService,
       ],
     }).compile();

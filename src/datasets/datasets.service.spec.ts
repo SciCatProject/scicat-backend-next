@@ -16,8 +16,6 @@ class LogbooksServiceMock {}
 
 class ElasticSearchServiceMock {}
 
-class CaslAbilityFactoryMock {}
-
 const mockDataset: DatasetClass = {
   _id: "testId",
   pid: "testPid",
@@ -112,7 +110,7 @@ describe("DatasetsService", () => {
         },
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
-        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        CaslAbilityFactory,
       ],
     }).compile();
 

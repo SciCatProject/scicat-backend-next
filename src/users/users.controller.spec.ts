@@ -1,11 +1,11 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AuthService } from "src/auth/auth.service";
+import { CaslModule } from "src/casl/casl.module";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { Request } from "express";
 import { UserSettings } from "./schemas/user-settings.schema";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class UsersServiceMock {
   findByIdUserIdentity(id: string) {
@@ -37,7 +37,6 @@ const mockUserSettings = {
 };
 
 class AuthServiceMock {}
-class CaslAbilityFactoryMock {}
 
 describe("UsersController", () => {
   let controller: UsersController;
@@ -46,10 +45,10 @@ describe("UsersController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
+      imports: [CaslModule],
       providers: [
         { provide: AuthService, useClass: AuthServiceMock },
         { provide: UsersService, useClass: UsersServiceMock },
-        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
 

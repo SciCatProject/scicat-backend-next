@@ -10,8 +10,9 @@ import {
 import { RolesService } from "./roles.service";
 import { Role, RoleSchema } from "./schemas/role.schema";
 import { UserRole, UserRoleSchema } from "./schemas/user-role.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import {
   UserSettings,
   UserSettingsSchema,
@@ -20,7 +21,6 @@ import { UserIdentitiesController } from "./user-identities.controller";
 import { UserIdentitiesService } from "./user-identities.service";
 import { AuthService } from "src/auth/auth.service";
 import { accessGroupServiceFactory } from "src/auth/access-group-provider/access-group-service-factory";
-import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
@@ -31,8 +31,6 @@ import { CaslModule } from "src/casl/casl.module";
       }),
       inject: [ConfigService],
     }),
-    ConfigModule,
-    CaslModule,
     MongooseModule.forFeature([
       {
         name: UserIdentity.name,
@@ -58,6 +56,7 @@ import { CaslModule } from "src/casl/casl.module";
   ],
   providers: [
     AuthService,
+    CaslAbilityFactory,
     UsersService,
     UserIdentitiesService,
     RolesService,

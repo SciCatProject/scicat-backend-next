@@ -13,13 +13,12 @@ import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { CoreJobActionCreators } from "../config/job-config/actions/corejobactioncreators.module";
 import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
 import { CommonModule } from "src/common/common.module";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 @Module({
   controllers: [JobsController],
   imports: [
     CommonModule,
-    CaslModule,
     ConfigModule,
     CoreJobActionCreators,
     JobConfigModule,
@@ -47,6 +46,6 @@ import { CaslModule } from "src/casl/casl.module";
     PoliciesModule,
     OrigDatablocksModule,
   ],
-  providers: [JobsService, JobConfigService, EmailJobActionCreator],
+  providers: [CaslAbilityFactory, JobsService, JobConfigService, EmailJobActionCreator],
 })
 export class JobsModule {}

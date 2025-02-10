@@ -7,13 +7,13 @@ import { AuthController } from "./auth.controller";
 import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LdapStrategy } from "./strategies/ldap.strategy";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { UsersService } from "src/users/users.service";
 import { OidcConfig } from "src/config/configuration";
 import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
 import { accessGroupServiceFactory } from "./access-group-provider/access-group-service-factory";
 import { AccessGroupService } from "./access-group-provider/access-group.service";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 const OidcStrategyFactory = {
   provide: "OidcStrategy",
@@ -42,9 +42,7 @@ const OidcStrategyFactory = {
 
 @Module({
   imports: [
-    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>("jwt.secret"),
         signOptions: { expiresIn: configService.get<number>("jwt.expiresIn") },
@@ -56,7 +54,6 @@ const OidcStrategyFactory = {
       property: "user",
       session: false,
     }),
-    CaslModule,
     UsersModule,
   ],
   providers: [
@@ -64,6 +61,7 @@ const OidcStrategyFactory = {
     JwtStrategy,
     LdapStrategy,
     LocalStrategy,
+    CaslAbilityFactory,
     OidcStrategyFactory,
     accessGroupServiceFactory,
   ],

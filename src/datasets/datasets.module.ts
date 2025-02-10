@@ -3,8 +3,8 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
-import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
 import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
@@ -15,13 +15,10 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
-import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
     AttachmentsModule,
-    ConfigModule,
-    CaslModule,
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,
@@ -73,6 +70,6 @@ import { CaslModule } from "src/casl/casl.module";
     DatasetsController,
     DatasetsV4Controller,
   ],
-  providers: [DatasetsService, DatasetsAccessService],
+  providers: [DatasetsService, CaslAbilityFactory, DatasetsAccessService],
 })
 export class DatasetsModule {}
