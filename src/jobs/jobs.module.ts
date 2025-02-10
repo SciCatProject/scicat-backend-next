@@ -5,10 +5,8 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { JobClass, JobSchema } from "./schemas/job.schema";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
-import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { UsersModule } from "src/users/users.module";
-import { JobConfigModule } from "../config/job-config/jobconfig.module";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { CoreJobActionCreators } from "../config/job-config/actions/corejobactioncreators.module";
 import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
@@ -19,9 +17,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
   controllers: [JobsController],
   imports: [
     CommonModule,
-    ConfigModule,
     CoreJobActionCreators,
-    JobConfigModule,
     DatasetsModule,
     UsersModule,
     MongooseModule.forFeatureAsync([
