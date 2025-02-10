@@ -222,7 +222,7 @@ const configuration = () => {
       smtp: {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: boolean(process.env?.SMTP_SECURE || false),
+        secure: process.env?.SMTP_SECURE || "no",
       },
       ms365: {
         tenantId: process.env.MS365_TENANT_ID,
