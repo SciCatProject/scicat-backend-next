@@ -3,6 +3,7 @@ import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 const configuration = () => {
   const accessGroupsStaticValues =
@@ -44,10 +45,12 @@ const configuration = () => {
     config: {},
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
+    datasetTypes: {},
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+    datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
     metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
@@ -66,11 +69,15 @@ const configuration = () => {
     }
   });
 
+  // NOTE: Add the default dataset types here
+  Object.assign(jsonConfigMap.datasetTypes, {
+    Raw: DatasetType.Raw,
+    Derived: DatasetType.Derived,
+  });
   // NOTE: Add the default proposal type here
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
-
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -206,7 +213,7 @@ const configuration = () => {
       // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
       // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
       enabled: process.env.METRICS_ENABLED || "no",
-      config: jsonConfigMap.metricsConfig,
+      config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
@@ -231,6 +238,7 @@ const configuration = () => {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    datasetTypes: jsonConfigMap.datasetTypes,
     proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);

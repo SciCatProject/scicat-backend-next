@@ -412,7 +412,9 @@ export class JobsController {
     }
     if (user) {
       // the request comes from a user who is logged in.
-      if (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {
