@@ -66,8 +66,15 @@ export class ProposalsService {
         "proposalId",
         filter.fields,
       );
+    let countFilter = { ...filterQuery };
 
-    const count = await this.proposalModel.countDocuments(filterQuery).exec();
+    // NOTE: This is fix for the related proposals count.
+    // Maybe the total count should be refactored and be part of the fullquery or another separate endpoint that includes both data and the totalCount instead of making multiple requests.
+    if (filter.where) {
+      countFilter = { $and: [{ ...countFilter }, filter.where] };
+    }
+
+    const count = await this.proposalModel.countDocuments(countFilter).exec();
 
     return { count };
   }
