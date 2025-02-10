@@ -25,10 +25,7 @@ describe("DatasetsController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DatasetsController],
-      imports: [
-        CaslModule,
-        HttpModule,
-      ],
+      imports: [CaslModule, HttpModule],
       providers: [
         { provide: AttachmentsService, useClass: AttachmentsServiceMock },
         { provide: LogbooksService, useClass: LogbooksServiceMock },

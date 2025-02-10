@@ -15,9 +15,9 @@ export class ScientificMetadataValidationPipe
       | CreateDerivedDatasetObsoleteDto
       | CreateDatasetDto,
       Promise<
-      | CreateRawDatasetObsoleteDto
-      | CreateDerivedDatasetObsoleteDto
-      | CreateDatasetDto
+        | CreateRawDatasetObsoleteDto
+        | CreateDerivedDatasetObsoleteDto
+        | CreateDatasetDto
       >
     >
 {
@@ -32,8 +32,7 @@ export class ScientificMetadataValidationPipe
     | CreateRawDatasetObsoleteDto
     | CreateDerivedDatasetObsoleteDto
     | CreateDatasetDto
-  >
-  {
+  > {
     if (dataset.scientificMetadata) {
       const { schemaUrl, metadata, ...rest } = dataset.scientificMetadata;
 
