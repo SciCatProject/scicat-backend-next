@@ -22,6 +22,7 @@ const scientificMetadataFieldName = {
   unitAndValue: "with_unit_and_value_si",
   number: "with_number",
   string: "with_string",
+  directString: "beamtime_id",
 };
 
 const scientificMetadata = (values) => {
@@ -57,7 +58,7 @@ const scientificMetadata = (values) => {
       });
     });
 
-    it("0010: adds a new raw dataset with scientificMetadata", async () => {
+    it.only("0010: adds a new raw dataset with scientificMetadata", async () => {
       return request(appUrl)
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
@@ -73,6 +74,7 @@ const scientificMetadata = (values) => {
               scientificMetadataFieldName.unitAndValue,
               scientificMetadataFieldName.number,
               scientificMetadataFieldName.string,
+              scientificMetadataFieldName.directString,
             );
           pid = encodeURIComponent(res.body["pid"]);
         });
