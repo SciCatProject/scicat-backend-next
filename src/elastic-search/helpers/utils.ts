@@ -16,8 +16,13 @@ export const transformKey = (key: string): string => {
 export const addValueType = (obj: Record<string, unknown>) => {
   const newObj: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(obj)) {
+  // eslint-disable-next-line prefer-const
+  for (let [key, value] of Object.entries(obj)) {
     const newKey = transformKey(key);
+
+    if (!(value as Record<string, unknown>)?.value) {
+      value = { value: value };
+    }
 
     const isNumberValueType =
       typeof (value as Record<string, unknown>)?.value === "number";
