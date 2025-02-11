@@ -1131,6 +1131,7 @@ const TestData = {
     proposalId: faker.string.numeric(6),
     contactEmail: faker.internet.email(),
     scientificMetadata: {
+      beamtime_id: "11019650",
       with_unit_and_value_si: {
         value: 100,
         unit: "meters",
