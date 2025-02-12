@@ -145,6 +145,7 @@ const configuration = () => {
       callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/oidc/callback
       scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
       successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
+      additionalSucessURLs: process.env.OIDC_ADDITIONAL_SUCCESS_URLS?.split(","), // Additionally allowed success URLs (only origins) e.g. http://localhost:4200,http://frontend2.scicat/
       accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
