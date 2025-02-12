@@ -6,6 +6,7 @@ import {
   Res,
   Req,
   HttpCode,
+  Query,
 } from "@nestjs/common";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { AuthService } from "./auth.service";
@@ -16,6 +17,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
+  ApiQuery,
 } from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
@@ -79,6 +81,11 @@ export class AuthController {
   @AllowAny()
   @UseGuards(OidcAuthGuard)
   @Get("oidc")
+  @ApiQuery({
+    name: "successURL",
+    description: "The URL to redirect to in case of successful login",
+    required: false,
+  })
   async oidcLogin() {
     // this function is invoked when the oidc is set as an auth method. It's behaviour comes from the oidc strategy
   }
@@ -89,9 +96,9 @@ export class AuthController {
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
     const url = new URL(
+      res.req.session.successURL ||
       this.configService.get<OidcConfig>("oidc")?.successURL ||
-        res.req.headers["referer"] ||
-        "",
+      "",
     );
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);
