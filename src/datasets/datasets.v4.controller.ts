@@ -678,7 +678,7 @@ export class DatasetsV4Controller {
     description:
       "Fields that needs to be updated in the dataset. Only the fields that needs to be updated have to be passed in.",
     required: true,
-    type: UpdateDatasetDto,
+    type: PartialUpdateDatasetDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
