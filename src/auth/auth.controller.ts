@@ -16,6 +16,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
+  ApiQuery,
 } from "@nestjs/swagger";
 import { CredentialsDto } from "./dto/credentials.dto";
 import { LdapAuthGuard } from "./guards/ldap.guard";
@@ -79,6 +80,18 @@ export class AuthController {
   @AllowAny()
   @UseGuards(OidcAuthGuard)
   @Get("oidc")
+  @ApiQuery({
+    name: "client",
+    description: "The frontend client making the authentication request",
+    required: false,
+    example: "scicat",
+  })
+  @ApiQuery({
+    name: "returnURL",
+    description: "The URL path to redirect to in case of successful login",
+    required: false,
+    example: "/datasets",
+  })
   async oidcLogin() {
     // this function is invoked when the oidc is set as an auth method. It's behaviour comes from the oidc strategy
   }
@@ -89,16 +102,25 @@ export class AuthController {
   async loginCallback(@Res() res: Response) {
     const token = await this.authService.login(res.req.user as User);
     const url = new URL(
-      this.configService.get<OidcConfig>("oidc")?.successURL ||
-        res.req.headers["referer"] ||
+      this.configService.get<OidcConfig>("oidc")?.clientConfig[
+        res.req.session.client!
+      ].successURL ||
+        res.req.session.successURL || // only for MAXIV. The value is HTTP Referer of /oidc request. Recommended deprecating.
         "",
     );
     url.searchParams.append("access-token", token.access_token as string);
     url.searchParams.append("user-id", token.userId as string);
     url.searchParams.append(
       "returnUrl",
-      this.configService.get<OidcConfig>("oidc")?.returnURL || "/datasets",
+      res.req.session.returnURL ||
+        this.configService.get<OidcConfig>("oidc")?.clientConfig[
+          res.req.session.client!
+        ].returnURL ||
+        "/datasets",
     );
+    delete res.req.session.client;
+    delete res.req.session.successURL;
+    delete res.req.session.returnURL;
     res.redirect(url.toString());
   }
 
