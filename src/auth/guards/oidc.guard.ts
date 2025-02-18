@@ -1,4 +1,9 @@
-import { ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
@@ -6,10 +11,11 @@ import { OidcConfig } from "src/config/configuration";
 
 declare module "express-session" {
   interface SessionData {
+    client?: string;
+    returnURL?: string;
     successURL?: string;
   }
 }
-
 
 @Injectable()
 export class OidcAuthGuard extends AuthGuard("oidc") {
@@ -19,34 +25,25 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
 
   getRequest(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
-    const successURL = request.query.successURL;
-    const sessionID = request.sessionID;
-    console.log("oidc.guard.ts: ", sessionID, successURL)
-    if (successURL && typeof successURL === "string") {
-      if (!this.isValidSuccessURL(successURL)) {
-        throw new HttpException("Invalid successURL", HttpStatus.UNAUTHORIZED);
+    let client = request.query.client;
+    const returnURL = request.query.returnURL;
+    const oidcConfig = this.configService.get<OidcConfig>("oidc");
+    if (client && typeof client === "string") {
+      if (!oidcConfig?.frontendClients.includes(client)) {
+        throw new HttpException("Unauthorized client", HttpStatus.UNAUTHORIZED);
       }
-      request.session.successURL = successURL;
+    } else {
+      client = "scicat";
     }
-    else if (request.headers.referer) {
+    request.session.client = client;
+
+    if (returnURL && typeof returnURL === "string") {
+      request.session.returnURL = returnURL;
+    }
+    if (request.headers.referer) {
+      // For MAX IV, recommend deprecating and using config based successURL
       request.session.successURL = request.headers.referer;
     }
     return request;
   }
-
-  isValidSuccessURL(successURL : string) : boolean {
-    const oidcConfig = this.configService.get<OidcConfig>("oidc");
-    const allowedSuccessURLs = oidcConfig?.additionalSucessURLs;
-    try {
-      if (!allowedSuccessURLs) return false;
-      const successURLOrigin = new URL(successURL).origin;
-      console.log(successURL, successURLOrigin, allowedSuccessURLs);
-      return allowedSuccessURLs.some((url) => new URL(url).origin === successURLOrigin); 
-    }
-    catch (err) {
-      console.log("Error occured", err)
-      return false;
-    }
-  }
 }
-
