@@ -74,6 +74,41 @@ const configuration = () => {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
 
+  const oidcFrontendClients = (() => {
+    const clients = ["scicat"];
+    if (process.env.OIDC_FRONTEND_CLIENTS) {
+      clients.push(
+        ...process.env.OIDC_FRONTEND_CLIENTS.split(",").map((e) => e.trim()),
+      );
+    }
+    return [...new Set(clients)]; // dedupe in case "scicat" was already included
+  })();
+
+  const clientConfig = oidcFrontendClients.reduce(
+    (config, client) => {
+      const isDefault = client === "scicat";
+      config[client] = {
+        successURL:
+          process.env[
+            isDefault
+              ? "OIDC_SUCCESS_URL"
+              : `OIDC_${client.toUpperCase()}_SUCCESS_URL`
+          ],
+        returnURL:
+          process.env[
+            isDefault
+              ? "OIDC_RETURN_URL"
+              : `OIDC_${client.toUpperCase()}_RETURN_URL`
+          ],
+      };
+      return config;
+    },
+    {} as Record<
+      string,
+      { successURL: string | undefined; returnURL: string | undefined }
+    >,
+  );
+
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -144,12 +179,11 @@ const configuration = () => {
       clientSecret: process.env.OIDC_CLIENT_SECRET, // Example: Aa1JIw3kv3mQlGFWrE3gOdkH6xreAwro
       callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/oidc/callback
       scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
-      successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
-      additionalSucessURLs: process.env.OIDC_ADDITIONAL_SUCCESS_URLS?.split(","), // Additionally allowed success URLs (only origins) e.g. http://localhost:4200,http://frontend2.scicat/
       accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
-      returnURL: process.env.OIDC_RETURN_URL,
+      frontendClients: oidcFrontendClients,
+      clientConfig: clientConfig,
       userInfoMapping: {
         id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
         username:
