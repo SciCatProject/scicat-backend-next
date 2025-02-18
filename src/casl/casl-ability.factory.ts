@@ -125,7 +125,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetAttachmentDelete, DatasetClass);
       // -
       cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-      cannot(Action.DatasetOrigdatablockRead, DatasetClass);
+      can(Action.DatasetOrigdatablockRead, DatasetClass);
       cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
       // -
       cannot(Action.DatasetDatablockCreate, DatasetClass);
