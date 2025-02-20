@@ -349,7 +349,9 @@ export class PublishedDataController {
 
       if (this.configService.get<string>("site") !== "PSI") {
         console.log("posting to datacite");
+        console.log("registerDataciteMetadataOptions:");
         console.log(registerDataciteMetadataOptions);
+        console.log("registerDataciteDoiOptions:")
         console.log(registerDataciteDoiOptions);
 
         let res;
@@ -361,9 +363,9 @@ export class PublishedDataController {
             }),
           );
         } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
+          handleAxiosRequestError(err, "PublishedDataController.register.metadata");
           throw new HttpException(
-            `Error occurred: ${err}`,
+            `Error occurred 101: ${err}`,
             err.response.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
@@ -376,9 +378,9 @@ export class PublishedDataController {
             }),
           );
         } catch (err: any) {
-          handleAxiosRequestError(err, "PublishedDataController.register");
+          handleAxiosRequestError(err, "PublishedDataController.register.doioptions");
           throw new HttpException(
-            `Error occurred: ${err}`,
+            `Error occurred 102: ${err}`,
             err.response.status || HttpStatus.FAILED_DEPENDENCY,
           );
         }
@@ -389,6 +391,7 @@ export class PublishedDataController {
             data,
           );
         } catch (error) {
+          console.log('Error 103')
           console.error(error);
         }
 
