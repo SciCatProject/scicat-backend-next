@@ -208,7 +208,7 @@
   },
   "labelsLocalization": {
     "datasetDefault": {},
-    "datasetCustom" : {
+    "datasetCustom": {
       "pid": "PID",
       "description": "Description",
       "principalInvestigator": "Principal Investigator",
@@ -217,7 +217,7 @@
       "scientificMetadata": "Scientific Metadata",
       "metadataJsonView": "Metadata JsonView"
     },
-    "proposalDefault" : {
+    "proposalDefault": {
       "General Information": "Proposal Information",
       "Title": "Proposal Title",
       "Abstract": "Abstract",
@@ -231,5 +231,6 @@
       "Principal Investigator": "Principal Investigator",
       "Metadata": "Additional Information"
     }
-  }
+  },
+  "dateFormat": "yyyy-MM-dd HH:mm"
 }
