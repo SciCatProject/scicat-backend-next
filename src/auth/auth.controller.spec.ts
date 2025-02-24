@@ -112,4 +112,19 @@ describe("AuthController", () => {
     // Default returnUrl since returnUrl config is also unset
     expect(url.searchParams.get("returnUrl")).toEqual<string>("/datasets");
   });
+
+  it("should throw exception if both config and session.successURL are unset", async () => {
+    const mockResponse: Response = {
+      req: {
+        session: {
+          client: "maxiv",
+        } as unknown as Session,
+      },
+      redirect: jest.fn<void, [string]>(),
+    } as unknown as Response;
+    // Because the new URL(...) constructor fails for empty string
+    await expect(controller.loginCallback(mockResponse)).rejects.toThrow(
+      "Invalid URL",
+    );
+  });
 });

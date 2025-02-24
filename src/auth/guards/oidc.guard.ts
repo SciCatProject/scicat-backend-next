@@ -40,7 +40,10 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
     if (returnURL && typeof returnURL === "string") {
       request.session.returnURL = returnURL;
     }
-    if (request.headers.referer) {
+    if (
+      !oidcConfig?.clientConfig[client].successURL &&
+      request.headers.referer
+    ) {
       // For MAX IV, recommend deprecating and using config based successURL
       request.session.successURL = request.headers.referer;
     }

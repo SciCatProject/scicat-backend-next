@@ -8,6 +8,9 @@ import { Request } from "express";
 const config: Partial<ReturnType<typeof configuration>> = {
   oidc: {
     frontendClients: ["scicat"],
+    clientConfig: {
+      scicat: {},
+    },
   } as unknown as OidcConfig,
 };
 
@@ -48,5 +51,41 @@ describe("OidcAuthGuard", () => {
 
     expect(mockRequest.session.client).toBe("scicat");
     expect(mockRequest.session.returnURL).toBe("/datasets123");
+  });
+
+  it("should set default client if client is not provided in query", () => {
+    const mockRequest: Request = {
+      query: { returnURL: "/datasets123" },
+      session: {}, // Initially empty session
+      headers: {},
+    } as unknown as Request;
+    const mockExecutionContext: ExecutionContext = {
+      switchToHttp: () => ({
+        getRequest: () => mockRequest,
+      }),
+    } as ExecutionContext;
+
+    oidcAuthGuard.getRequest(mockExecutionContext);
+
+    expect(mockRequest.session.client).toBe("scicat");
+  });
+
+  it("should set successURL from referer header if OIDC_SUCCESS_URL config is unset", () => {
+    const mockRequest: Request = {
+      query: {},
+      session: {}, // Initially empty session
+      headers: { referer: "https//custom-scicat-frontend.com" },
+    } as unknown as Request;
+    const mockExecutionContext: ExecutionContext = {
+      switchToHttp: () => ({
+        getRequest: () => mockRequest,
+      }),
+    } as ExecutionContext;
+
+    oidcAuthGuard.getRequest(mockExecutionContext);
+
+    expect(mockRequest.session.successURL).toBe(
+      "https//custom-scicat-frontend.com",
+    );
   });
 });
