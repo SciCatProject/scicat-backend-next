@@ -404,18 +404,6 @@
         "order": 6
       },
       {
-        "type": "scientificMetadata",
-        "label": "Scientific Metadata JSON",
-        "viewMode": "json",
-        "order": 6
-      },
-      {
-        "type": "scientificMetadata",
-        "label": "Scientific Metadata Tree",
-        "viewMode": "tree",
-        "order": 6
-      },
-      {
         "type": "datasetJsonView",
         "label": "Dataset JsonView",
         "order": 7
