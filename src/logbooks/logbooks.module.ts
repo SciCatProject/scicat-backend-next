@@ -8,7 +8,7 @@ import { ProposalsModule } from "src/proposals/proposals.module";
 
 @Module({
   imports: [
-    ConfigModule, 
+    ConfigModule,
     CaslModule,
     HttpModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({

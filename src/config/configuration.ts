@@ -7,37 +7,33 @@ import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 const configuration = () => {
   const accessGroupsStaticValues =
-    process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
-  const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
-  const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
-  const createDatasetGroups =
-    process.env.CREATE_DATASET_GROUPS || ("#all" as string);
+    process.env.ACCESS_GROUPS_STATIC_VALUES || "";
+  const adminGroups = process.env.ADMIN_GROUPS || "";
+  const deleteGroups = process.env.DELETE_GROUPS || "";
+  const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
-    process.env.CREATE_DATASET_WITH_PID_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
   const createDatasetPrivilegedGroups =
-    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || "";
   const datasetCreationValidationEnabled =
     process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
   const datasetCreationValidationRegex =
-    process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
+    process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
-  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
+  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
+  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
-  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
-  const samplePrivilegedGroups =
-    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
 
-  const oidcUserQueryFilter =
-    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+  const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
   const oidcUsernameFieldMapping =
-    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
 
-  const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE || ("" as string);
+  const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || "";
 
   const defaultLogger = {
     type: "DefaultLogger",

@@ -11,7 +11,8 @@ import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { CoreJobActionCreators } from "../config/job-config/actions/corejobactioncreators.module";
 import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
 import { CommonModule } from "src/common/common.module";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+// import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   controllers: [JobsController],
@@ -20,6 +21,7 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
     CoreJobActionCreators,
     DatasetsModule,
     UsersModule,
+    CaslModule,
     MongooseModule.forFeatureAsync([
       {
         name: JobClass.name,
@@ -42,6 +44,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
     PoliciesModule,
     OrigDatablocksModule,
   ],
-  providers: [CaslAbilityFactory, JobsService, JobConfigService, EmailJobActionCreator],
+  providers: [JobsService, JobConfigService, EmailJobActionCreator],
 })
 export class JobsModule {}
