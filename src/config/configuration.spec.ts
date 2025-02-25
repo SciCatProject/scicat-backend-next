@@ -64,4 +64,13 @@ describe("configuration", () => {
       },
     });
   });
+
+  it("should throw error if client is defined but no OIDC_${CLIENT}_SUCCESS_URL is set", () => {
+    process.env.OIDC_FRONTEND_CLIENTS = "client1";
+    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com";
+
+    expect(configuration).toThrowError(
+      "Frontend client client1 is defined in OIDC_FRONTEND_CLIENTS but OIDC_CLIENT1_SUCCESS_URL is unset",
+    );
+  });
 });

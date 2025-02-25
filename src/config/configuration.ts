@@ -87,19 +87,26 @@ const configuration = () => {
   const clientConfig = oidcFrontendClients.reduce(
     (config, client) => {
       const isDefault = client === "scicat";
+      if (isDefault) {
+        config[client] = {
+          successURL: process.env.OIDC_SUCCESS_URL,
+          returnURL: process.env.OIDC_RETURN_URL,
+        };
+        return config;
+      }
+      if (!process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`]) {
+        throw new Error(
+          `Frontend client ${client} is defined in OIDC_FRONTEND_CLIENTS but OIDC_${client.toUpperCase()}_SUCCESS_URL is unset`,
+        );
+      }
+      if (!process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`]) {
+        console.warn(
+          `OIDC_${client.toUpperCase()}_RETURN_URL is unset. Will default to /datasets or dynamically provided returnURL in /oidc`,
+        );
+      }
       config[client] = {
-        successURL:
-          process.env[
-            isDefault
-              ? "OIDC_SUCCESS_URL"
-              : `OIDC_${client.toUpperCase()}_SUCCESS_URL`
-          ],
-        returnURL:
-          process.env[
-            isDefault
-              ? "OIDC_RETURN_URL"
-              : `OIDC_${client.toUpperCase()}_RETURN_URL`
-          ],
+        successURL: process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`],
+        returnURL: process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`],
       };
       return config;
     },
