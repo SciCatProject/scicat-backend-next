@@ -7,9 +7,13 @@ The configuration needs to be provided or mounted in `/src/config/frontend.confi
 
 ## Configuration guide
 
-The `datasetDetailComponent` configuration allows you to customize the display of dataset details using 4 template types. In the Component Configuration Table you can find the 4 template types. Each template type is rendered based on the order property, which controls the display priority.
+The `datasetDetailComponent` field allows you to customize the display of dataset details using 4 template types. Each template type is rendered based on the order property, which determines the display priority. The available template types are listed in the Component Configuration Table.
 
-You can define the labels directly using the label/source property, or use them as keys for localization. If no localization configuration is provided, the template will fallback to using the label as the default value.
+You can define labels directly using the `label/source` property, or use them as keys for localization. If no localization configuration is provided, the template will fall back to using the `label/source` as the default value.
+
+The `enableCustomizedComponent` flag enables or disables the dynamic component. If set to false, the default dataset detail component will be used. In the customization field, you can provide configuration for the components, including their types, labels, and other settings.
+
+Below you can find the example configuration, but for more advanced customizations, refer to the Component Configuration Table for detailed options on each template type and field configuration.
 
 ```json
 "datasetDetailComponent": {
