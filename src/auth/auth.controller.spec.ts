@@ -1,10 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { ConfigService } from "@nestjs/config";
-import configuration, { type OidcConfig } from "src/config/configuration";
 import { Response } from "express";
 import { Session } from "express-session";
+import { ConfigService } from "@nestjs/config";
 
 class AuthServiceMock {
   login() {
@@ -25,18 +24,6 @@ class AuthServiceMock {
   }
 }
 
-const config: Partial<ReturnType<typeof configuration>> = {
-  oidc: {
-    frontendClients: ["scicat"],
-    clientConfig: {
-      scicat: {
-        successURL: "https://scicatbackend.com/",
-      },
-      maxiv: {}, //simulate unset config
-    },
-  } as unknown as OidcConfig,
-};
-
 describe("AuthController", () => {
   let controller: AuthController;
 
@@ -44,10 +31,7 @@ describe("AuthController", () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
-        {
-          provide: ConfigService,
-          useValue: new ConfigService(config),
-        },
+        ConfigService,
         { provide: AuthService, useClass: AuthServiceMock },
       ],
     }).compile();
@@ -59,12 +43,13 @@ describe("AuthController", () => {
     expect(controller).toBeDefined();
   });
 
-  it("should redirect to successURL for the client from config", async () => {
+  it("should redirect to successURL for the client from session with returnUrl in query params", async () => {
     const mockResponse: Response = {
       req: {
         session: {
           client: "scicat",
           returnURL: "/datasets123",
+          successURL: "https://scicat-frontend.com/",
         } as unknown as Session,
       },
       redirect: jest.fn<void, [string]>(),
@@ -79,41 +64,14 @@ describe("AuthController", () => {
     console.log("redirectedURL is", redirectedUrl);
     const url = new URL(redirectedUrl);
     expect(url.origin).toEqual<string>(
-      new URL(config.oidc!.clientConfig["scicat"].successURL as string).origin,
+      new URL("https://scicat-frontend.com/").origin,
     );
     expect(url.searchParams.get("access-token")).toEqual<string>("xyz");
     expect(url.searchParams.get("user-id")).toEqual<string>("abc");
     expect(url.searchParams.get("returnUrl")).toEqual<string>("/datasets123");
   });
 
-  it("should redirect to successURL from session if config is unset", async () => {
-    const mockResponse: Response = {
-      req: {
-        session: {
-          client: "maxiv",
-          successURL: "https://custom-scicat-frontend.com/",
-        } as unknown as Session,
-      },
-      redirect: jest.fn<void, [string]>(),
-    } as unknown as Response;
-
-    await controller.loginCallback(mockResponse);
-
-    expect(mockResponse.redirect).toBeCalled();
-    const redirectedUrl = (
-      mockResponse.redirect as unknown as jest.Mock<void, [string]>
-    ).mock.calls[0][0];
-    const url = new URL(redirectedUrl);
-    expect(url.origin).toEqual<string>(
-      new URL("https://custom-scicat-frontend.com/").origin,
-    );
-    expect(url.searchParams.get("access-token")).toEqual<string>("xyz");
-    expect(url.searchParams.get("user-id")).toEqual<string>("abc");
-    // Default returnUrl since returnUrl config is also unset
-    expect(url.searchParams.get("returnUrl")).toEqual<string>("/datasets");
-  });
-
-  it("should throw exception if both config and session.successURL are unset", async () => {
+  it("should throw exception if successURL is not set", async () => {
     const mockResponse: Response = {
       req: {
         session: {

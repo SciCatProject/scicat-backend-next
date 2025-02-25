@@ -7,7 +7,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
-import { OidcConfig } from "src/config/configuration";
+import type { OidcConfig } from "src/config/configuration";
 
 declare module "express-session" {
   interface SessionData {
@@ -19,34 +19,57 @@ declare module "express-session" {
 
 @Injectable()
 export class OidcAuthGuard extends AuthGuard("oidc") {
+  oidcConfig?: OidcConfig;
   constructor(private configService: ConfigService) {
     super();
+    this.oidcConfig = this.configService.get<OidcConfig>("oidc");
   }
 
-  getRequest(context: ExecutionContext) {
+  getRequest(context: ExecutionContext): Request {
     const request = context.switchToHttp().getRequest<Request>();
-    let client = request.query.client;
-    const returnURL = request.query.returnURL;
-    const oidcConfig = this.configService.get<OidcConfig>("oidc");
+    if (request.path.endsWith("/auth/oidc/callback")) {
+      return request;
+    }
+
+    const client = this.getClient(request);
+    const returnURL = this.getReturnURL(request, client);
+    const successURL = this.getSuccessURL(request, client);
+
+    request.session.client = client;
+    request.session.returnURL = returnURL;
+    request.session.successURL = successURL;
+
+    return request;
+  }
+
+  private getClient(request: Readonly<Request>): string {
+    const client = request.query.client;
     if (client && typeof client === "string") {
-      if (!oidcConfig?.frontendClients.includes(client)) {
+      if (!this.oidcConfig?.frontendClients.includes(client)) {
         throw new HttpException("Unauthorized client", HttpStatus.UNAUTHORIZED);
       }
-    } else {
-      client = "scicat";
+      return client;
     }
-    request.session.client = client;
+    return "scicat";
+  }
 
+  private getReturnURL(request: Readonly<Request>, client: string): string {
+    const returnURL = request.query.returnURL;
     if (returnURL && typeof returnURL === "string") {
-      request.session.returnURL = returnURL;
+      return returnURL;
+    } else {
+      return this.oidcConfig?.clientConfig[client].returnURL || "/datasets";
     }
+  }
+
+  private getSuccessURL(request: Readonly<Request>, client: string): string {
     if (
-      !oidcConfig?.clientConfig[client].successURL &&
+      !this.oidcConfig?.clientConfig[client].successURL &&
       request.headers.referer
     ) {
       // For MAX IV, recommend deprecating and using config based successURL
-      request.session.successURL = request.headers.referer;
+      return request.headers.referer;
     }
-    return request;
+    return this.oidcConfig?.clientConfig[client].successURL || "";
   }
 }
