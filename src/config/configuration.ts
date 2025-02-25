@@ -21,22 +21,19 @@ const configuration = () => {
     process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
-  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const samplePrivilegedGroups =
-    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
 
-  const oidcUserQueryFilter =
-    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+  const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
   const oidcUsernameFieldMapping =
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
 
-  const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE || ("" as string);
+  const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || "";
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -77,7 +74,6 @@ const configuration = () => {
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
-
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -100,7 +96,7 @@ const configuration = () => {
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       createJob: createJobGroups,
-      updateJob: updateJobGroups,
+      updateJob: statusUpdateJobGroups,
       deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
@@ -213,7 +209,7 @@ const configuration = () => {
       // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
       // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
       enabled: process.env.METRICS_ENABLED || "no",
-      config: jsonConfigMap.metricsConfig,
+      config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,

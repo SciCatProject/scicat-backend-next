@@ -4,7 +4,6 @@ import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
 import { AttachmentsModule } from "src/attachments/attachments.module";
-import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
 import { InitialDatasetsModule } from "src/initial-datasets/initial-datasets.module";
@@ -19,9 +18,8 @@ import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
-    AttachmentsModule,
-    ConfigModule,
     CaslModule,
+    AttachmentsModule,
     DatablocksModule,
     OrigDatablocksModule,
     InitialDatasetsModule,

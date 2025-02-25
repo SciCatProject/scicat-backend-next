@@ -14,9 +14,9 @@ class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
-class ElasticSearchServiceMock {}
-
 class CaslAbilityFactoryMock {}
+
+class ElasticSearchServiceMock {}
 
 const mockDataset: DatasetClass = {
   _id: "testId",

@@ -1,10 +1,11 @@
-import { ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { InstrumentsController } from "./instruments.controller";
 import { InstrumentsService } from "./instruments.service";
 
 class InstrumentsServiceMock {}
+
 class CaslAbilityFactoryMock {}
 
 describe("InstrumentsController", () => {
@@ -12,11 +13,11 @@ describe("InstrumentsController", () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule],
       controllers: [InstrumentsController],
       providers: [
         { provide: InstrumentsService, useClass: InstrumentsServiceMock },
         { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
-        ConfigService,
       ],
     }).compile();
 

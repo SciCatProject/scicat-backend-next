@@ -5,10 +5,8 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { JobClass, JobSchema } from "./schemas/job.schema";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { PoliciesModule } from "src/policies/policies.module";
-import { ConfigModule } from "@nestjs/config";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { UsersModule } from "src/users/users.module";
-import { JobConfigModule } from "../config/job-config/jobconfig.module";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
 import { CoreJobActionCreators } from "../config/job-config/actions/corejobactioncreators.module";
 import { EmailJobActionCreator } from "src/config/job-config/actions/emailaction/emailaction.service";
@@ -19,12 +17,10 @@ import { CaslModule } from "src/casl/casl.module";
   controllers: [JobsController],
   imports: [
     CommonModule,
-    CaslModule,
-    ConfigModule,
     CoreJobActionCreators,
-    JobConfigModule,
     DatasetsModule,
     UsersModule,
+    CaslModule,
     MongooseModule.forFeatureAsync([
       {
         name: JobClass.name,
@@ -35,10 +31,8 @@ import { CaslModule } from "src/casl/casl.module";
           schema.pre<JobClass>("save", function (next) {
             // if _id is empty or different than job id,
             // set _id to job id
-            if (!this._id && this.id) {
+            if (!this._id) {
               this._id = this.id;
-            } else if (!this.id && this._id) {
-              this.id = this._id;
             }
             next();
           });

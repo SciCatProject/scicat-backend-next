@@ -7,9 +7,9 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class DatasetsServiceMock {}
 
-class LogbooksServiceMock {}
-
 class CaslAbilityFactoryMock {}
+
+class LogbooksServiceMock {}
 
 describe("DatasetsController", () => {
   let controller: DatasetsV4Controller;

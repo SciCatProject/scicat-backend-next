@@ -10,8 +10,10 @@ import {
 import { RolesService } from "./roles.service";
 import { Role, RoleSchema } from "./schemas/role.schema";
 import { UserRole, UserRoleSchema } from "./schemas/user-role.schema";
+import { ConfigModule } from "@nestjs/config";
+import { CaslModule } from "src/casl/casl.module";
 import { JwtModule } from "@nestjs/jwt";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import {
   UserSettings,
   UserSettingsSchema,
@@ -20,7 +22,6 @@ import { UserIdentitiesController } from "./user-identities.controller";
 import { UserIdentitiesService } from "./user-identities.service";
 import { AuthService } from "src/auth/auth.service";
 import { accessGroupServiceFactory } from "src/auth/access-group-provider/access-group-service-factory";
-import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [

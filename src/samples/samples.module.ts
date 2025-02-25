@@ -9,8 +9,8 @@ import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
-    AttachmentsModule,
     CaslModule,
+    AttachmentsModule,
     DatasetsModule,
     MongooseModule.forFeatureAsync([
       {
