@@ -388,7 +388,6 @@ export class JobsController {
     jobInstance.type = jobCreateDto.type;
     jobInstance.contactEmail = jobCreateDto.contactEmail;
     jobInstance.jobParams = jobCreateDto.jobParams;
-    jobInstance.datasetsValidation = false;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
     jobInstance.statusCode = "Initializing";
@@ -397,6 +396,8 @@ export class JobsController {
 
     // validate datasetList, if it exists in jobParams
     let datasetList: DatasetListDto[] = [];
+
+    let datasetsNoAccess = 0;
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
       datasetList = await this.validateDatasetList(
         jobCreateDto.jobParams,
@@ -508,9 +509,8 @@ export class JobsController {
       }
       const numberOfDatasetsWithAccess =
         await this.datasetsService.count(datasetsWhere);
-      const datasetsNoAccess =
-        datasetIds.length - numberOfDatasetsWithAccess.count;
-      jobInstance.datasetsValidation = datasetsNoAccess == 0;
+      datasetsNoAccess = datasetIds.length - numberOfDatasetsWithAccess.count;
+      // jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
 
     if (!user && jobCreateDto.ownerGroup) {
@@ -532,7 +532,7 @@ export class JobsController {
     const canCreate =
       ability.can(Action.JobCreateAny, JobClass) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
-      ability.can(Action.JobCreateConfiguration, jobInstance);
+      (ability.can(Action.JobCreateConfiguration, jobInstance) && (datasetsNoAccess == 0));
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");

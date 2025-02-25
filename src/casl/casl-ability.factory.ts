@@ -1377,9 +1377,7 @@ export class CaslAbilityFactory {
         can(Action.JobCreateConfiguration, JobClass);
       }
       if (jobConfiguration.create.auth === CreateJobAuth.DatasetPublic) {
-        can(Action.JobCreateConfiguration, JobClass, {
-          datasetsValidation: true,
-        });
+        can(Action.JobCreateConfiguration, JobClass);
       }
       if (jobConfiguration.statusUpdate.auth === StatusUpdateJobAuth.All) {
         can(Action.JobStatusUpdateConfiguration, JobClass, {
@@ -1452,9 +1450,7 @@ export class CaslAbilityFactory {
               (a) => jobConfiguration.create.auth === a,
             )
           ) {
-            can(Action.JobCreateConfiguration, JobClass, {
-              datasetsValidation: true,
-            });
+            can(Action.JobCreateConfiguration, JobClass);
           }
         }
         const jobUpdateInstanceAuthorizationValues = [
