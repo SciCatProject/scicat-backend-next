@@ -13,6 +13,7 @@ import { DatasetsService } from "src/datasets/datasets.service";
 import { JobParams } from "src/jobs/types/job-types.enum";
 import { DatasetListDto } from "src/jobs/dto/dataset-list.dto";
 import { ModuleRef } from "@nestjs/core";
+import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 type JSONData = JSONPathOptions["json"];
 
 /**
@@ -44,7 +45,7 @@ type JSONData = JSONPathOptions["json"];
  * </pre>
  *
  * This base class includes only the `request` field, which validates the request body
- * received from the client (aka the DTO). It is registed for the `update` job
+ * received from the client (aka the DTO). It is intended for the `update` job
  * operation.
  *
  * ValidateCreateAction extends this with an additional `datasets` field, which works
@@ -52,7 +53,7 @@ type JSONData = JSONPathOptions["json"];
  * `jobParams.datasetList`. This is used for the `create` job operation.
  */
 export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
-  private request: Record<string, ValidateFunction<T>>;
+  private request: Record<string, ValidateFunction>;
 
   getActionType(): string {
     return actionType;
@@ -71,21 +72,31 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
     }
   }
 
+  /**
+   * Compiles JSON schemas from the config file into Ajv validators
+   *
+   * @param ajv Ajv instance
+   * @param schemasMap An object mapping a JSON Path (as a string) to a JSON schema (an object)
+   */
   protected compileSchemas(
     ajv: Ajv,
     schemasMap: Record<string, unknown>,
-  ): Record<string, ValidateFunction<T>> {
+  ): Record<string, ValidateFunction> {
     return Object.fromEntries(
       Object.entries(schemasMap).map(([path, schema]) => {
         if (typeof schema !== "object" || schema === null) {
           throw new Error("Schema must be a valid object.");
         }
 
-        return [path, ajv.compile<T>(schema)];
+        return [path, ajv.compile(schema)];
       }),
     );
   }
 
+  /**
+   * Validate the current request
+   * @param dto Job DTO
+   */
   async validate(dto: T) {
     if (this.request) {
       // validate request body
@@ -93,17 +104,26 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
     }
   }
 
+  /**
+   * Perform the actual validation.
+   *
+   * This should be called by `validate` with the correct data to be validated
+   * @param json object to validate against (Job, Dataset, etc)
+   * @param schemaMap An object mapping a JSON Path (as a string) to a JSON schema (an object)
+   */
   protected validateJson(
     json: JSONData,
-    schemaMap: Record<string, ValidateFunction<T>>,
+    schemaMap: Record<string, ValidateFunction>,
   ) {
     // Convert Documents to plain objects if needed
     json = toObject(json);
 
     for (const [path, schema] of Object.entries(schemaMap)) {
+      // Compile the key to a JSONPath and apply it to the json data
       const result: JSONData[] = JSONPath<JSONData[]>({ path, json });
       if (result !== null && result?.length > 0) {
         result.forEach((entry) => {
+          // check each result against the Ajv schema
           if (!schema(entry)) {
             throw makeHttpException(
               `Invalid request. Invalid value for '${path}'`,
@@ -149,7 +169,7 @@ export class ValidateJobAction<T extends JobDto> implements JobAction<T> {
  * See ValidateAction for more information about the form of `path` and `typecheck`.
  */
 export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
-  private datasets?: Record<string, ValidateFunction<CreateJobDto>>;
+  private datasets?: Record<string, ValidateFunction>;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -169,18 +189,31 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
     }
   }
 
+  /**
+   * Validate the current request
+   *
+   * Validates the Job request and the datasets
+   * @param dto Job DTO
+   */
   async validate(dto: CreateJobDto): Promise<void> {
+    // Validate this.requests
     await super.validate(dto);
     if (!this.datasets) {
       return;
     }
+    // Validate this.datasets
     const datasets = await this.loadDatasets(dto);
     await Promise.all(
       datasets.map((dataset) => this.validateJson(dataset, this.datasets!)),
     );
   }
 
-  private async loadDatasets(dto: CreateJobDto) {
+  /**
+   * Loads any datasets mentioned in the jobParams from the database
+   * @param dto Job DTO, used to get the DatasetList
+   * @returns
+   */
+  private async loadDatasets(dto: CreateJobDto): Promise<DatasetClass[]> {
     // Require datasetList
     if (!(JobParams.DatasetList in dto.jobParams)) {
       throw makeHttpException(
@@ -231,6 +264,10 @@ export class ValidateCreateJobAction extends ValidateJobAction<CreateJobDto> {
   }
 }
 
+// Could be moved to a util module if used elsewhere.
+/**
+ * Helper function to generate HttpExceptions
+ */
 function makeHttpException(message: string, status?: number): HttpException {
   status = status || HttpStatus.BAD_REQUEST;
   return new HttpException(
@@ -242,6 +279,9 @@ function makeHttpException(message: string, status?: number): HttpException {
   );
 }
 
+/**
+ * Interface to duck-type Mongoose Documents
+ */
 interface HasToObject<T> {
   toObject(): T;
 }
