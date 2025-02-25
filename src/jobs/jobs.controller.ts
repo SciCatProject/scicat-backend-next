@@ -532,7 +532,8 @@ export class JobsController {
     const canCreate =
       ability.can(Action.JobCreateAny, JobClass) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
-      (ability.can(Action.JobCreateConfiguration, jobInstance) && (datasetsNoAccess == 0));
+      (ability.can(Action.JobCreateConfiguration, jobInstance) &&
+        datasetsNoAccess == 0);
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");

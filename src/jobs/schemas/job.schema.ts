@@ -94,7 +94,6 @@ export class JobClass extends OwnableClass {
   })
   jobParams: Record<string, unknown>;
 
-
   @ApiProperty({
     type: String,
     required: false,
