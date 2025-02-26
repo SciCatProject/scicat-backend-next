@@ -1,4 +1,9 @@
-import { IScientificFilter } from "src/common/interfaces/common.interface";
+import { FilterQuery } from "mongoose";
+import {
+  ILimitsFilter,
+  IScientificFilter,
+} from "src/common/interfaces/common.interface";
+import { DatasetLookupKeysEnum } from "../types/dataset-lookup";
 
 export interface IDatasetFields {
   mode?: Record<string, unknown>;
@@ -19,4 +24,11 @@ export interface IDatasetFields {
   userGroups?: string[];
   sharedWith?: string[];
   [key: string]: unknown;
+}
+
+export interface IDatasetFiltersV4<T, Y = null> {
+  where?: FilterQuery<T>;
+  include?: DatasetLookupKeysEnum[];
+  fields?: Y;
+  limits?: ILimitsFilter;
 }

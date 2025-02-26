@@ -1,15 +1,15 @@
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JobsController } from "./jobs.controller";
 import { JobsService } from "./jobs.service";
 import { UsersService } from "src/users/users.service";
+import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
 import { MailerModule, MailerService } from "@nestjs-modules/mailer";
-
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 class JobsServiceMock {}
 class DatasetsServiceMock {}
@@ -17,6 +17,8 @@ class OrigDatablocksServiceMock {}
 class UsersServiceMock {}
 class MailerServiceMock {}
 class JobsConfigMock {}
+class RabbitMQMock {}
+class CaslAbilityFactoryMock {}
 
 describe("JobsController", () => {
   let controller: JobsController;
@@ -27,10 +29,20 @@ describe("JobsController", () => {
       controllers: [JobsController],
       imports: [
         ConfigModule.forRoot({
-          load: [() => ({ jobConfigurationFile: path })],
+          load: [
+            () => ({
+              jobConfigurationFile: path,
+              rabbitMq: {
+                enabled: "yes",
+                hostname: "rabbitmq",
+                port: 5672,
+                username: "guest",
+                password: "guest",
+              },
+            }),
+          ],
         }),
         MailerModule.forRoot(),
-        CaslModule,
       ],
       providers: [
         { provide: JobConfigService, useClass: JobsConfigMock },
@@ -39,6 +51,19 @@ describe("JobsController", () => {
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: UsersService, useClass: UsersServiceMock },
         { provide: EventEmitter2, useClass: EventEmitter2 },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
+        { provide: RabbitMQService, useClass: RabbitMQMock },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === "rabbitMq.enabled") {
+                return true;
+              }
+              return null;
+            }),
+          },
+        },
       ],
     })
       .overrideProvider(MailerService)

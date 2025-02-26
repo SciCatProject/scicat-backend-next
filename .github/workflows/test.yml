@@ -155,7 +155,7 @@ jobs:
           ACCESS_GROUPS_STATIC_VALUES: "ess"
           CREATE_JOB_GROUPS: group1,group2
           UPDATE_JOB_GROUPS: group1
-          DELETE_JOB_GROUPS: "archivemanager"
+          DELETE_JOB_GROUPS: "archivemanager,admin"
           PROPOSAL_GROUPS: "proposalingestor"
           SAMPLE_PRIVILEGED_GROUPS: "sampleingestor"
           SAMPLE_GROUPS: "group1"
@@ -173,11 +173,17 @@ jobs:
           CLUSTER_NAME: es-cluster
           MEM_LIMIT: 4G
           JOB_CONFIGURATION_FILE: test/config/jobconfig.yaml
+          RABBITMQ_ENABLED: "yes"
+          RABBITMQ_HOSTNAME: "rabbitmq"
+          RABBITMQ_PORT: 5672
+          RABBITMQ_USERNAME: "guest"
+          RABBITMQ_PASSWORD: "guest"
 
         # Start mongo container and app before running api tests
         run: |
           cp CI/ESS/docker-compose.api.yaml docker-compose.yaml
           cp functionalAccounts.json.test functionalAccounts.json
+          cp datasetTypes.example.json datasetTypes.json
           cp proposalTypes.example.json proposalTypes.json
           docker compose up --build -d
           npm run test:api

@@ -39,6 +39,7 @@ import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { AccessGroupsType } from "src/config/configuration";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import {
@@ -48,7 +49,6 @@ import {
   fullQueryExampleLimits,
   jobsFullQueryExampleFields,
   jobsFullQueryDescriptionFields,
-  parseBoolean,
 } from "src/common/utils";
 import {
   JobAction,
@@ -66,6 +66,7 @@ import { JobConfigService } from "../config/job-config/jobconfig.service";
 @Controller("jobs")
 export class JobsController {
   jobDatasetAuthorization: Array<string> = [];
+  private accessGroups;
 
   constructor(
     private readonly jobsService: JobsService,
@@ -80,16 +81,10 @@ export class JobsController {
     this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
     );
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
   }
-
-  publishJob() {
-    if (parseBoolean(this.configService.get<string>("rabbitMq.enabled"))) {
-      // TODO: This should publish the job to the message broker.
-      // job.publishJob(ctx.instance, "jobqueue");
-      Logger.log("Saved Job %s#%s and published to message broker");
-    }
-  }
-
+  
   /**
    * Validate filter for GET
    */
@@ -339,8 +334,9 @@ export class JobsController {
     }
     if (user) {
       // the request comes from a user who is logged in.
-      const adminGroups = this.configService.get<string[]>("adminGroups") || [];
-      if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {

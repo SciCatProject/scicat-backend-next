@@ -100,7 +100,7 @@ export const job_v3 = (job: JobClass): JobV3 => {
     datasetList = job.jobParams[JobParams.DatasetList] as DatasetIdV3[];
   }
   return {
-    id: job.id,
+    id: job.id || job._id,
     emailJobInitiator: job.contactEmail,
     type: job.type,
     creationTime: job.createdAt,
