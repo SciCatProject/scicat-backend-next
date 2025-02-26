@@ -1,6 +1,6 @@
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JobsController } from "./jobs.controller";
@@ -18,6 +18,7 @@ class UsersServiceMock {}
 class MailerServiceMock {}
 class JobsConfigMock {}
 class RabbitMQMock {}
+class CaslAbilityFactoryMock {}
 
 describe("JobsController", () => {
   let controller: JobsController;
@@ -42,7 +43,6 @@ describe("JobsController", () => {
           ],
         }),
         MailerModule.forRoot(),
-        CaslModule,
       ],
       providers: [
         { provide: JobConfigService, useClass: JobsConfigMock },
@@ -51,6 +51,7 @@ describe("JobsController", () => {
         { provide: OrigDatablocksService, useClass: OrigDatablocksServiceMock },
         { provide: UsersService, useClass: UsersServiceMock },
         { provide: EventEmitter2, useClass: EventEmitter2 },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
         { provide: RabbitMQService, useClass: RabbitMQMock },
         {
           provide: ConfigService,

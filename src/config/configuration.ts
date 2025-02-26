@@ -3,40 +3,37 @@ import { merge } from "lodash";
 import localconfiguration from "./localconfiguration";
 import { boolean } from "mathjs";
 import { DEFAULT_PROPOSAL_TYPE } from "src/proposals/schemas/proposal.schema";
+import { DatasetType } from "src/datasets/types/dataset-type.enum";
 
 const configuration = () => {
   const accessGroupsStaticValues =
-    process.env.ACCESS_GROUPS_STATIC_VALUES || ("" as string);
-  const adminGroups = process.env.ADMIN_GROUPS || ("" as string);
-  const deleteGroups = process.env.DELETE_GROUPS || ("" as string);
-  const createDatasetGroups =
-    process.env.CREATE_DATASET_GROUPS || ("#all" as string);
+    process.env.ACCESS_GROUPS_STATIC_VALUES || "";
+  const adminGroups = process.env.ADMIN_GROUPS || "";
+  const deleteGroups = process.env.DELETE_GROUPS || "";
+  const createDatasetGroups = process.env.CREATE_DATASET_GROUPS || "#all";
   const createDatasetWithPidGroups =
-    process.env.CREATE_DATASET_WITH_PID_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_WITH_PID_GROUPS || "";
   const createDatasetPrivilegedGroups =
-    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || ("" as string);
+    process.env.CREATE_DATASET_PRIVILEGED_GROUPS || "";
   const datasetCreationValidationEnabled =
     process.env.DATASET_CREATION_VALIDATION_ENABLED || false;
   const datasetCreationValidationRegex =
-    process.env.DATASET_CREATION_VALIDATION_REGEX || ("" as string);
+    process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
-  const createJobGroups = process.env.CREATE_JOB_GROUPS || ("" as string);
-  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || ("" as string);
-  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || ("" as string);
+  const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
+  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
-  const proposalGroups = process.env.PROPOSAL_GROUPS || ("" as string);
-  const sampleGroups = process.env.SAMPLE_GROUPS || ("#all" as string);
-  const samplePrivilegedGroups =
-    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const proposalGroups = process.env.PROPOSAL_GROUPS || "";
+  const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
+  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
 
-  const oidcUserQueryFilter =
-    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+  const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
   const oidcUsernameFieldMapping =
-    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || ("" as string);
+    process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
 
-  const jobConfigurationFile =
-    process.env.JOB_CONFIGURATION_FILE || ("" as string);
+  const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || "";
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -44,11 +41,14 @@ const configuration = () => {
     config: {},
   };
   const jsonConfigMap: { [key: string]: object | object[] | boolean } = {
+    datasetTypes: {},
     proposalTypes: {},
   };
   const jsonConfigFileList: { [key: string]: string } = {
     loggers: process.env.LOGGERS_CONFIG_FILE || "loggers.json",
+    datasetTypes: process.env.DATASET_TYPES_FILE || "datasetTypes.json",
     proposalTypes: process.env.PROPOSAL_TYPES_FILE || "proposalTypes.json",
+    metricsConfig: process.env.METRICS_CONFIG_FILE || "metricsConfig.json",
   };
   Object.keys(jsonConfigFileList).forEach((key) => {
     const filePath = jsonConfigFileList[key];
@@ -65,11 +65,15 @@ const configuration = () => {
     }
   });
 
+  // NOTE: Add the default dataset types here
+  Object.assign(jsonConfigMap.datasetTypes, {
+    Raw: DatasetType.Raw,
+    Derived: DatasetType.Derived,
+  });
   // NOTE: Add the default proposal type here
   Object.assign(jsonConfigMap.proposalTypes, {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
-
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -78,25 +82,25 @@ const configuration = () => {
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
     jobConfigurationFile: jobConfigurationFile,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
-    adminGroups: adminGroups.split(",").map((v) => v.trim()) ?? [],
-    deleteGroups: deleteGroups.split(",").map((v) => v.trim()) ?? [],
-    createDatasetGroups: createDatasetGroups.split(",").map((v) => v.trim()),
-    createDatasetWithPidGroups: createDatasetWithPidGroups
-      .split(",")
-      .map((v) => v.trim()),
-    createDatasetPrivilegedGroups: createDatasetPrivilegedGroups
-      .split(",")
-      .map((v) => v.trim()),
-    proposalGroups: proposalGroups.split(",").map((v) => v.trim()),
-    sampleGroups: sampleGroups.split(",").map((v) => v.trim()),
-    samplePrivilegedGroups: samplePrivilegedGroups
-      .split(",")
-      .map((v) => v.trim()),
-    datasetCreationValidationEnabled: datasetCreationValidationEnabled,
+    accessGroups: {
+      admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
+      delete: deleteGroups.split(",").map((v) => v.trim()) ?? [],
+      createDataset: createDatasetGroups.split(",").map((v) => v.trim()),
+      createDatasetWithPid: createDatasetWithPidGroups
+        .split(",")
+        .map((v) => v.trim()),
+      createDatasetPrivileged: createDatasetPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
+      proposal: proposalGroups.split(",").map((v) => v.trim()),
+      sample: sampleGroups.split(",").map((v) => v.trim()),
+      samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
+      createJob: createJobGroups,
+      updateJob: statusUpdateJobGroups,
+      deleteJob: deleteJobGroups,
+    },
+    datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
-    createJobGroups: createJobGroups,
-    statusUpdateJobGroups: statusUpdateJobGroups,
-    deleteJobGroups: deleteJobGroups,
     logoutURL: process.env.LOGOUT_URL ?? "", // Example: http://localhost:3000/
     accessGroupsGraphQlConfig: {
       enabled: boolean(process.env?.ACCESS_GROUPS_GRAPHQL_ENABLED || false),
@@ -200,26 +204,43 @@ const configuration = () => {
       mongoDBCollection: process.env.MONGODB_COLLECTION,
       defaultIndex: process.env.ES_INDEX ?? "dataset",
     },
+    metrics: {
+      // Note: `process.env.METRICS_ENABLED` is directly used for conditional module loading in
+      // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
+      // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
+      enabled: process.env.METRICS_ENABLED || "no",
+      config: jsonConfigMap.metricsConfig || {},
+    },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
     doiUsername: process.env.DOI_USERNAME,
     doiPassword: process.env.DOI_PASSWORD,
     site: process.env.SITE,
-    smtp: {
-      host: process.env.SMTP_HOST,
-      messageFrom: process.env.SMTP_MESSAGE_FROM,
-      port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE,
+    email: {
+      type: process.env.EMAIL_TYPE || "smtp",
+      from: process.env.EMAIL_FROM || process.env.SMTP_MESSAGE_FROM,
+      smtp: {
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: boolean(process.env?.SMTP_SECURE || false),
+      },
+      ms365: {
+        tenantId: process.env.MS365_TENANT_ID,
+        clientId: process.env.MS365_CLIENT_ID,
+        clientSecret: process.env.MS365_CLIENT_SECRET,
+      },
     },
     policyTimes: {
       policyPublicationShiftInYears: process.env.POLICY_PUBLICATION_SHIFT ?? 3,
       policyRetentionShiftInYears: process.env.POLICY_RETENTION_SHIFT ?? -1,
     },
+    datasetTypes: jsonConfigMap.datasetTypes,
     proposalTypes: jsonConfigMap.proposalTypes,
   };
   return merge(config, localconfiguration);
 };
 
 export type OidcConfig = ReturnType<typeof configuration>["oidc"];
+export type AccessGroupsType = ReturnType<typeof configuration>["accessGroups"];
 
 export default configuration;

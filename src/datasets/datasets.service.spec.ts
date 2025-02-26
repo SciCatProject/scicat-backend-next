@@ -7,10 +7,14 @@ import { LogbooksService } from "src/logbooks/logbooks.service";
 import { ElasticSearchService } from "src/elastic-search/elastic-search.service";
 import { DatasetsService } from "./datasets.service";
 import { DatasetClass } from "./schemas/dataset.schema";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { DatasetsAccessService } from "./datasets-access.service";
 
 class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
+
+class CaslAbilityFactoryMock {}
 
 class ElasticSearchServiceMock {}
 
@@ -19,7 +23,7 @@ const mockDataset: DatasetClass = {
   pid: "testPid",
   owner: "testOwner",
   ownerEmail: "testOwner@email.com",
-  instrumentId: "testInstrumentId",
+  instrumentIds: ["testInstrumentId"],
   orcidOfOwner: "https://0000.0000.0000.0001",
   contactEmail: "testContact@email.com",
   sourceFolder: "/nfs/groups/beamlines/test/123456",
@@ -59,24 +63,20 @@ const mockDataset: DatasetClass = {
   createdAt: new Date("2021-11-11T12:29:02.083Z"),
   updatedAt: new Date("2021-11-11T12:29:02.083Z"),
   techniques: [],
-  principalInvestigator: "testInvestigator",
+  principalInvestigators: ["testInvestigator"],
   endTime: new Date("2021-12-11T12:29:02.083Z"),
   creationLocation: "test",
   dataFormat: "Test Format",
   scientificMetadata: {},
-  proposalId: "ABCDEF",
-  sampleId: "testSampleId",
-  attachments: [],
+  proposalIds: ["ABCDEF"],
+  sampleIds: ["testSampleId"],
   accessGroups: [],
   createdBy: "test user",
-  datablocks: [],
-  origdatablocks: [],
   ownerGroup: "test",
   relationships: [],
   sharedWith: [],
   updatedBy: "test",
   instrumentGroup: "test",
-  investigator: "test",
   inputDatasets: [],
   usedSoftware: [],
   jobParameters: {},
@@ -105,12 +105,14 @@ describe("DatasetsService", () => {
           },
         },
         DatasetsService,
+        DatasetsAccessService,
         {
           provide: InitialDatasetsService,
           useClass: InitialDatasetsServiceMock,
         },
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
 

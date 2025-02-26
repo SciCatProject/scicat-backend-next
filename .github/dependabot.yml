@@ -25,3 +25,11 @@ updates:
     labels:
       - "dependencies"
       - "npm"
+    groups:
+      nestjs:
+        patterns:
+          - "@nestjs*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
