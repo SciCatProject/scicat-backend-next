@@ -510,7 +510,6 @@ export class JobsController {
       const numberOfDatasetsWithAccess =
         await this.datasetsService.count(datasetsWhere);
       datasetsNoAccess = datasetIds.length - numberOfDatasetsWithAccess.count;
-      // jobInstance.datasetsValidation = datasetsNoAccess == 0;
     }
 
     if (!user && jobCreateDto.ownerGroup) {
