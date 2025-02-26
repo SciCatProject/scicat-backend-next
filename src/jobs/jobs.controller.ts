@@ -84,7 +84,7 @@ export class JobsController {
     this.accessGroups =
       this.configService.get<AccessGroupsType>("accessGroups");
   }
-  
+
   /**
    * Validate filter for GET
    */
