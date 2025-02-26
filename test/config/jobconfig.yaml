@@ -40,16 +40,31 @@ jobs:
   - jobType: archive
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            datasetlifecycle.archivable:
+              const: true
     statusUpdate:
       auth: "#all"
   - jobType: retrieve
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            datasetlifecycle.retrievable:
+              const: true
     statusUpdate:
       auth: "#all"
   - jobType: public
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            isPublished:
+              const: true
     statusUpdate:
       auth: "#all"
   - jobType: validate
@@ -64,6 +79,9 @@ jobs:
               type: array
               items:
                 type: string
+          datasets:
+            datasetlifecycle.archivable:
+              const: true
     statusUpdate:
       auth: admin
       actions:
