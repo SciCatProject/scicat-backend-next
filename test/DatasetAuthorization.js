@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 const utils = require("./LoginUtils");
@@ -560,6 +559,25 @@ describe("0300: DatasetAuthorization: Test access to dataset", () => {
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
       });
+  });
+
+  it("0375: access public dataset origdatablocks as unauthenticated user", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid1 + "/origdatablocks")
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(1);
+      });
+  });
+
+  it("0376: access dataset 3 origdatablocks as unauthenticated user, which should fail as forbidden", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + encodedDatasetPid3 + "/origdatablocks")
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .expect(TestData.AccessForbiddenStatusCode);
   });
 
   it("0380: access dataset 1 datablocks as User 3", async () => {
