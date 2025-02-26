@@ -88,6 +88,18 @@ const configuration = () => {
     (config, client) => {
       const isDefault = client === "scicat";
       if (isDefault) {
+        const successURL = process.env.OIDC_SUCCESS_URL;
+        if (
+          successURL &&
+          !(
+            new URL(successURL).pathname === "/login" ||
+            new URL(successURL).pathname == "/auth-callback"
+          )
+        ) {
+          throw new Error(
+            `OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found ${successURL}`,
+          );
+        }
         config[client] = {
           successURL: process.env.OIDC_SUCCESS_URL,
           returnURL: process.env.OIDC_RETURN_URL,

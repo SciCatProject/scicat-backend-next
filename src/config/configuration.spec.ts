@@ -6,14 +6,15 @@ describe("configuration", () => {
   });
 
   it("should generate clientConfig with default client 'scicat'", () => {
-    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com";
+    process.env.OIDC_SUCCESS_URL =
+      "https://default-success-url.com/auth-callback";
     process.env.OIDC_RETURN_URL = "/datasets";
 
     const config = configuration();
 
     expect(config.oidc.clientConfig).toEqual({
       scicat: {
-        successURL: "https://default-success-url.com",
+        successURL: "https://default-success-url.com/auth-callback",
         returnURL: "/datasets",
       },
     });
@@ -46,7 +47,7 @@ describe("configuration", () => {
 
   it("should deduplicate 'scicat' client if included in OIDC_FRONTEND_CLIENTS", () => {
     process.env.OIDC_FRONTEND_CLIENTS = "scicat,client1";
-    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com";
+    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/login";
     process.env.OIDC_RETURN_URL = "/datasets";
     process.env.OIDC_CLIENT1_SUCCESS_URL = "https://client1-success-url.com";
     process.env.OIDC_CLIENT1_RETURN_URL = "/client1-homepage";
@@ -55,7 +56,7 @@ describe("configuration", () => {
 
     expect(config.oidc.clientConfig).toEqual({
       scicat: {
-        successURL: "https://default-success-url.com",
+        successURL: "https://default-success-url.com/login",
         returnURL: "/datasets",
       },
       client1: {
@@ -67,10 +68,19 @@ describe("configuration", () => {
 
   it("should throw error if client is defined but no OIDC_${CLIENT}_SUCCESS_URL is set", () => {
     process.env.OIDC_FRONTEND_CLIENTS = "client1";
-    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com";
+    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/login";
 
     expect(configuration).toThrowError(
       "Frontend client client1 is defined in OIDC_FRONTEND_CLIENTS but OIDC_CLIENT1_SUCCESS_URL is unset",
+    );
+  });
+
+  it("should throw error if default successURL has path other than /auth-callback or /login", () => {
+    process.env.OIDC_SUCCESS_URL = "https://default-success-url.com/user";
+    process.env.OIDC_RETURN_URL = "/datasets";
+
+    expect(configuration).toThrowError(
+      "OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found https://default-success-url.com/user",
     );
   });
 });
