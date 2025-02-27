@@ -125,7 +125,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetAttachmentDelete, DatasetClass);
       // -
       cannot(Action.DatasetOrigdatablockCreate, DatasetClass);
-      cannot(Action.DatasetOrigdatablockRead, DatasetClass);
+      can(Action.DatasetOrigdatablockRead, DatasetClass);
       cannot(Action.DatasetOrigdatablockUpdate, DatasetClass);
       // -
       cannot(Action.DatasetDatablockCreate, DatasetClass);
@@ -442,74 +442,85 @@ export class CaslAbilityFactory {
     const { can, cannot, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
-    if (user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))) {
-      /*
+    if (!user) {
+      /**
+      /*  unauthenticated users
+      **/
+      can(Action.OrigdatablockRead, OrigDatablock);
+    } else {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.delete.includes(g))
+      ) {
+        /*
       / user that belongs to any of the group listed in DELETE_GROUPS
       */
 
-      can(Action.OrigdatablockDelete, OrigDatablock);
-    } else {
-      /*
+        can(Action.OrigdatablockDelete, OrigDatablock);
+      } else {
+        /*
       /  user that does not belong to any of the group listed in DELETE_GROUPS
       */
 
-      cannot(Action.OrigdatablockDelete, OrigDatablock);
-    }
+        cannot(Action.OrigdatablockDelete, OrigDatablock);
+      }
 
-    if (user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))) {
-      /*
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
+        /*
       / user that belongs to any of the group listed in ADMIN_GROUPS
       */
 
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDatasetPrivileged.includes(g),
-      )
-    ) {
-      /**
+        can(Action.OrigdatablockRead, OrigDatablock);
+        can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockUpdate, OrigDatablock);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetPrivileged.includes(g),
+        )
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_PRIVILEGED_GROUPS
       **/
 
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDatasetWithPid.includes(g),
-      ) ||
-      this.accessGroups?.createDatasetWithPid.includes("#all")
-    ) {
-      /**
+        can(Action.OrigdatablockRead, OrigDatablock);
+        can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockUpdate, OrigDatablock);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDatasetWithPid.includes(g),
+        ) ||
+        this.accessGroups?.createDatasetWithPid.includes("#all")
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_WITH_PID_GROUPS
       **/
 
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (
-      user.currentGroups.some((g) =>
-        this.accessGroups?.createDataset.includes(g),
-      ) ||
-      this.accessGroups?.createDataset.includes("#all")
-    ) {
-      /**
+        can(Action.OrigdatablockRead, OrigDatablock);
+        can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockUpdate, OrigDatablock);
+      } else if (
+        user.currentGroups.some((g) =>
+          this.accessGroups?.createDataset.includes(g),
+        ) ||
+        this.accessGroups?.createDataset.includes("#all")
+      ) {
+        /**
       /*  users belonging to CREATE_DATASET_GROUPS
       **/
 
-      can(Action.OrigdatablockRead, OrigDatablock);
-      can(Action.OrigdatablockCreate, OrigDatablock);
-      can(Action.OrigdatablockUpdate, OrigDatablock);
-    } else if (user) {
-      /**
+        can(Action.OrigdatablockRead, OrigDatablock);
+        can(Action.OrigdatablockCreate, OrigDatablock);
+        can(Action.OrigdatablockUpdate, OrigDatablock);
+      } else if (user) {
+        /**
       /*  authenticated users
       **/
 
-      can(Action.OrigdatablockRead, OrigDatablock);
-      cannot(Action.OrigdatablockCreate, OrigDatablock);
-      cannot(Action.OrigdatablockUpdate, OrigDatablock);
+        can(Action.OrigdatablockRead, OrigDatablock);
+        cannot(Action.OrigdatablockCreate, OrigDatablock);
+        cannot(Action.OrigdatablockUpdate, OrigDatablock);
+      }
     }
     return build({
       detectSubjectType: (item) =>
@@ -1192,11 +1203,11 @@ export class CaslAbilityFactory {
       /*  unauthenticated users
       **/
 
-      can(Action.OrigdatablockReadManyPublic, SampleClass);
-      can(Action.OrigdatablockReadOnePublic, SampleClass, {
+      can(Action.OrigdatablockReadManyPublic, OrigDatablock);
+      can(Action.OrigdatablockReadOnePublic, OrigDatablock, {
         isPublished: true,
       });
-      can(Action.DatasetOrigdatablockReadPublic, SampleClass, {
+      can(Action.DatasetOrigdatablockReadPublic, OrigDatablock, {
         isPublished: true,
       });
     } else {

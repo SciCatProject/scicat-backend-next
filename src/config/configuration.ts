@@ -74,6 +74,60 @@ const configuration = () => {
     DefaultProposal: DEFAULT_PROPOSAL_TYPE,
   });
 
+  const oidcFrontendClients = (() => {
+    const clients = ["scicat"];
+    if (process.env.OIDC_FRONTEND_CLIENTS) {
+      clients.push(
+        ...process.env.OIDC_FRONTEND_CLIENTS.split(",").map((e) => e.trim()),
+      );
+    }
+    return [...new Set(clients)]; // dedupe in case "scicat" was already included
+  })();
+
+  const clientConfig = oidcFrontendClients.reduce(
+    (config, client) => {
+      const isDefault = client === "scicat";
+      if (isDefault) {
+        const successURL = process.env.OIDC_SUCCESS_URL;
+        if (
+          successURL &&
+          !(
+            new URL(successURL).pathname === "/login" ||
+            new URL(successURL).pathname == "/auth-callback"
+          )
+        ) {
+          throw new Error(
+            `OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found ${successURL}`,
+          );
+        }
+        config[client] = {
+          successURL: process.env.OIDC_SUCCESS_URL,
+          returnURL: process.env.OIDC_RETURN_URL,
+        };
+        return config;
+      }
+      if (!process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`]) {
+        throw new Error(
+          `Frontend client ${client} is defined in OIDC_FRONTEND_CLIENTS but OIDC_${client.toUpperCase()}_SUCCESS_URL is unset`,
+        );
+      }
+      if (!process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`]) {
+        console.warn(
+          `OIDC_${client.toUpperCase()}_RETURN_URL is unset. Will default to /datasets or dynamically provided returnURL in /oidc`,
+        );
+      }
+      config[client] = {
+        successURL: process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`],
+        returnURL: process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`],
+      };
+      return config;
+    },
+    {} as Record<
+      string,
+      { successURL: string | undefined; returnURL: string | undefined }
+    >,
+  );
+
   const config = {
     maxFileUploadSizeInMb: process.env.MAX_FILE_UPLOAD_SIZE || "16mb", // 16MB by default
     versions: {
@@ -144,11 +198,11 @@ const configuration = () => {
       clientSecret: process.env.OIDC_CLIENT_SECRET, // Example: Aa1JIw3kv3mQlGFWrE3gOdkH6xreAwro
       callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/oidc/callback
       scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
-      successURL: process.env.OIDC_SUCCESS_URL, // Example: http://localhost:3000/explorer
       accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
       autoLogout: process.env.OIDC_AUTO_LOGOUT || false,
-      returnURL: process.env.OIDC_RETURN_URL,
+      frontendClients: oidcFrontendClients,
+      clientConfig: clientConfig,
       userInfoMapping: {
         id: process.env.OIDC_USERINFO_MAPPING_FIELD_ID,
         username:
