@@ -94,19 +94,6 @@ export class JobClass extends OwnableClass {
   })
   jobParams: Record<string, unknown>;
 
-  // dataset validation results
-  @ApiProperty({
-    type: Boolean,
-    required: true,
-    description:
-      "True if the user has the access requested to all the datasets listed on this job",
-  })
-  @Prop({
-    type: Boolean,
-    required: true,
-  })
-  datasetsValidation: boolean;
-
   @ApiProperty({
     type: String,
     required: false,
