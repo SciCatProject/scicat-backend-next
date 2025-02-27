@@ -49,7 +49,7 @@ export class UserSettings {
   userId: string;
 
   @ApiProperty({
-    type: "object",
+    type: Object,
     default: {},
     description:
       "A customizable object for storing the user's external settings, which can contain various nested properties and configurations.",

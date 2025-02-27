@@ -1,4 +1,4 @@
-import Strategy from "passport-ldapauth";
+import Strategy, { Options } from "passport-ldapauth";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@nestjs/config";
@@ -19,7 +19,9 @@ export class LdapStrategy extends PassportStrategy(Strategy, "ldap") {
     private usersService: UsersService,
     private accessGroupService: AccessGroupService,
   ) {
-    super(configService.get<Record<string, unknown>>("ldap"));
+    super(
+      configService.get<Record<string, unknown>>("ldap") as unknown as Options,
+    );
   }
 
   async validate(
