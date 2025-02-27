@@ -110,6 +110,7 @@ import {
   FullQueryFilters,
   IsValidResponse,
 } from "src/common/types";
+import { FinalEditInterceptor } from "./interceptors/final-edit.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -867,7 +868,7 @@ export class DatasetsController {
       ability.can(Action.DatasetRead, DatasetClass) ||
       ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
-  @UseInterceptors(MainDatasetsPublicInterceptor)
+  @UseInterceptors(MainDatasetsPublicInterceptor, FinalEditInterceptor)
   @Get()
   @ApiOperation({
     summary: "It returns a list of datasets.",

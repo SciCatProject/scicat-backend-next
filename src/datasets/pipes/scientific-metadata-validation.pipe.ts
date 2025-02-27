@@ -7,6 +7,13 @@ import { CreateDatasetDto } from "../dto/create-dataset.dto";
 import { CreateRawDatasetObsoleteDto } from "../dto/create-raw-dataset-obsolete.dto";
 import { CreateDerivedDatasetObsoleteDto } from "../dto/create-derived-dataset-obsolete.dto";
 
+interface MetadataSchema {
+  $defs: {
+    [key: string]: any; // Allow arbitrary keys
+    QuantityValue: { [key: string]: any }; // Define QuantityValue as an object with key-value pairs
+  };
+}
+
 @Injectable()
 export class ScientificMetadataValidationPipe
   implements
@@ -45,16 +52,20 @@ export class ScientificMetadataValidationPipe
 
         try {
           const response = await firstValueFrom(
-            this.httpService.get<Record<string, unknown>>(
+            this.httpService.get<MetadataSchema>(
               dataset.scientificMetadata.schemaUrl as string,
             ),
           );
 
           const schema = response.data;
+          // Expand QuantityValue properties to include unitSI and valueSI
+          schema.$defs.QuantityValue.properties.unitSI = { type: "string" };
+          schema.$defs.QuantityValue.properties.valueSI = { type: "number" };
+
           const validator = new Validator();
           const validationResult = validator.validate(
             dataset.scientificMetadata.metadata,
-            schema,
+            schema as object,
           );
 
           if (validationResult.errors.length > 0) {
