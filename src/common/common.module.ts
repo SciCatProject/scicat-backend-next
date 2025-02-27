@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { MailService } from "./mail.service";
 import { RabbitMQService } from "./rabbitmq/rabbitmq.service";
 
 @Module({
-  imports: [ConfigModule],
   providers: [
     MailService,
     {

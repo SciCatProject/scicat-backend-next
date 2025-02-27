@@ -1,12 +1,14 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { ProposalsService } from "src/proposals/proposals.service";
 import { LogbooksController } from "./logbooks.controller";
 import { LogbooksService } from "./logbooks.service";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class LogbooksServiceMock {}
-class ProposalsServiceMock {}
+
 class CaslAbilityFactoryMock {}
+
+class ProposalsServiceMock {}
 
 describe("LogbooksController", () => {
   let controller: LogbooksController;

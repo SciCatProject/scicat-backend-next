@@ -2,9 +2,12 @@ configVersion: v1.0 2024-03-01 6f3f38
 jobs:
   - jobType: archive
     create:
-      auth: "#all"
+      auth: "#datasetOwner"
       actions:
-        - actionType: log
+        - actionType: validate
+          datasets:
+            "datasetlifecycle.archivable":
+              const: true
         - actionType: url
           url: http://localhost:3000/api/v3/health?jobid={{id}}
           headers:
@@ -28,6 +31,17 @@ jobs:
           exchange: jobs.write
           queue: client.jobs.write
           key: jobqueue
+  - jobType: retrieve
+    create:
+      auth: "#datasetOwner"
+      actions:
+      - actionType: validate
+        datasets:
+          "datasetlifecycle.retrievable":
+            const: true
+    statusUpdate:
+      auth: "archivemanager"
+      actions: []
   - jobType: public
     create:
       auth: "#all"
@@ -39,5 +53,8 @@ jobs:
               required:
                 - pid
                 - files
+          datasets:
+            isPublished:
+              const: true
     statusUpdate:
-      auth: "#all"
+      auth: "archivemanager"

@@ -6,13 +6,14 @@ import {
   OrigDatablockSchema,
 } from "./schemas/origdatablock.schema";
 import { OrigDatablocksController } from "./origdatablocks.controller";
-import { DatasetsModule } from "src/datasets/datasets.module";
+
 import { CaslModule } from "src/casl/casl.module";
+import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [
-    forwardRef(() => DatasetsModule),
     CaslModule,
+    forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {
         name: OrigDatablock.name,

@@ -39,6 +39,7 @@ import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
+import { AccessGroupsType } from "src/config/configuration";
 import { Logger } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import {
@@ -54,7 +55,7 @@ import {
   JobDto,
   JobConfig,
 } from "../config/job-config/jobconfig.interface";
-import { JobType, DatasetState, JobParams } from "./types/job-types.enum";
+import { JobParams } from "./types/job-types.enum";
 import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { ConfigService } from "@nestjs/config";
@@ -65,6 +66,7 @@ import { JobConfigService } from "../config/job-config/jobconfig.service";
 @Controller("jobs")
 export class JobsController {
   jobDatasetAuthorization: Array<string> = [];
+  private accessGroups;
 
   constructor(
     private readonly jobsService: JobsService,
@@ -79,6 +81,8 @@ export class JobsController {
     this.jobDatasetAuthorization = Object.values(CreateJobAuth).filter((v) =>
       v.includes("#dataset"),
     );
+    this.accessGroups =
+      this.configService.get<AccessGroupsType>("accessGroups");
   }
 
   /**
@@ -100,7 +104,6 @@ export class JobsController {
    */
   async validateDatasetList(
     jobParams: Record<string, unknown>,
-    jobType: string,
   ): Promise<DatasetListDto[]> {
     const datasetList = jobParams[
       JobParams.DatasetList
@@ -149,8 +152,6 @@ export class JobsController {
 
     // check that all requested pids exist
     await this.checkDatasetPids(datasetListDtos);
-    // check that dataset state is compatible with the job type
-    await this.checkDatasetState(datasetListDtos, jobType);
     // check that all requested files exist
     await this.checkDatasetFiles(datasetListDtos);
 
@@ -188,79 +189,6 @@ export class JobsController {
       );
     }
     return;
-  }
-
-  /**
-   * Check that datasets are in a state at which the job can be performed:
-   * For retrieve jobs all datasets must be in state retrievable
-   * For archive jobs all datasets must be in state archivable
-   * For public jobs all datasets must be published
-   */
-  async checkDatasetState(
-    datasetList: DatasetListDto[],
-    jobType: string,
-  ): Promise<void> {
-    const datasetIds = datasetList.map((x) => x.pid);
-    switch (jobType) {
-      case JobType.Retrieve: // Intentional fall through
-      case JobType.Archive:
-        // can I archive some files of a dataset or is it always every file?
-        {
-          const filter = {
-            fields: {
-              pid: true,
-            },
-            where: {
-              [`datasetlifecycle.${DatasetState[jobType]}`]: false,
-              pid: {
-                $in: datasetIds,
-              },
-            },
-          };
-          const result = await this.datasetsService.findAll(filter);
-          if (result.length > 0) {
-            throw new HttpException(
-              {
-                status: HttpStatus.CONFLICT,
-                message: `The following datasets are not in ${DatasetState[jobType]} state for a ${jobType} job.`,
-                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
-              },
-              HttpStatus.CONFLICT,
-            );
-          }
-        }
-        break;
-      case JobType.Public:
-        // isPublished applies to the full dataset not the files
-        {
-          const filter = {
-            fields: {
-              pid: true,
-            },
-            where: {
-              [DatasetState.public]: true,
-              pid: {
-                $in: datasetIds,
-              },
-            },
-          };
-          const result = await this.datasetsService.findAll(filter);
-          if (result.length !== datasetIds.length) {
-            throw new HttpException(
-              {
-                status: HttpStatus.CONFLICT,
-                message: "The following datasets are not public.",
-                error: JSON.stringify(result.map(({ pid }) => ({ pid }))),
-              },
-              HttpStatus.CONFLICT,
-            );
-          }
-        }
-        break;
-      default:
-        // Do not check for other job types
-        break;
-    }
   }
 
   /**
@@ -399,10 +327,7 @@ export class JobsController {
 
     let datasetsNoAccess = 0;
     if (JobParams.DatasetList in jobCreateDto.jobParams) {
-      datasetList = await this.validateDatasetList(
-        jobCreateDto.jobParams,
-        jobCreateDto.type,
-      );
+      datasetList = await this.validateDatasetList(jobCreateDto.jobParams);
       jobInstance.jobParams = {
         ...jobInstance.jobParams,
         [JobParams.DatasetList]: datasetList,
@@ -410,8 +335,9 @@ export class JobsController {
     }
     if (user) {
       // the request comes from a user who is logged in.
-      const adminGroups = this.configService.get<string[]>("adminGroups") || [];
-      if (user.currentGroups.some((g) => adminGroups.includes(g))) {
+      if (
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
+      ) {
         // admin users
         let jobUser: JWTUser | null = user;
         if (user.username != jobCreateDto.ownerUser) {
@@ -499,12 +425,25 @@ export class JobsController {
       if (jobConfiguration.create.auth === "#datasetPublic") {
         datasetsWhere["where"]["isPublished"] = true;
       } else if (jobConfiguration.create.auth === "#datasetAccess") {
-        datasetsWhere["where"]["$or"] = [
-          { ownerGroup: { $in: user.currentGroups } },
-          { accessGroups: { $in: user.currentGroups } },
-          { isPublished: true },
-        ];
+        if (user) {
+          datasetsWhere["where"]["$or"] = [
+            { ownerGroup: { $in: user.currentGroups } },
+            { accessGroups: { $in: user.currentGroups } },
+            { isPublished: true },
+          ];
+        } else {
+          datasetsWhere["where"]["isPublished"] = true;
+        }
       } else if (jobConfiguration.create.auth === "#datasetOwner") {
+        if (!user) {
+          throw new HttpException(
+            {
+              status: HttpStatus.UNAUTHORIZED,
+              message: "User not authenticated",
+            },
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
         datasetsWhere["where"]["ownerGroup"] = { $in: user.currentGroups };
       }
       const numberOfDatasetsWithAccess =
