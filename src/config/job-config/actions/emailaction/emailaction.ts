@@ -17,7 +17,7 @@ import { MailService } from "src/common/mail.service";
  */
 export class EmailJobAction implements JobAction<JobDto> {
   private toTemplate: TemplateJob;
-  private from: string;
+  private from?: string = undefined;
   private subjectTemplate: TemplateJob;
   private bodyTemplate: TemplateJob;
 
@@ -36,7 +36,9 @@ export class EmailJobAction implements JobAction<JobDto> {
 
     Logger.log("EmailJobAction parameters are valid.", "EmailJobAction");
 
-    this.from = options.from as string;
+    if (options["from"]) {
+      this.from = options.from as string;
+    }
     this.toTemplate = compileJob(options.to);
     this.subjectTemplate = compileJob(options.subject);
 
@@ -60,7 +62,6 @@ export class EmailJobAction implements JobAction<JobDto> {
       subject: this.subjectTemplate(job),
       html: this.bodyTemplate(job),
     };
-    Logger.log(mail);
 
     // Send the email
     await this.mailService.sendMail(mail);

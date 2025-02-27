@@ -40,16 +40,31 @@ jobs:
   - jobType: archive
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            datasetlifecycle.archivable:
+              const: true
     update:
       auth: "#all"
   - jobType: retrieve
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            datasetlifecycle.retrievable:
+              const: true
     update:
       auth: "#all"
   - jobType: public
     create:
       auth: "#all"
+      actions:
+        - actionType: validate
+          datasets:
+            isPublished:
+              const: true
     update:
       auth: "#all"
   - jobType: validate
@@ -64,6 +79,9 @@ jobs:
               type: array
               items:
                 type: string
+          datasets:
+            datasetlifecycle.archivable:
+              const: true
     update:
       auth: admin
       actions:
@@ -86,3 +104,13 @@ jobs:
                       type: array
                       items:
                         type: string
+  - jobType: rabbitmq
+    create:
+      auth: "#all"
+      actions:
+        - actionType: rabbitmq
+          queue: testQueue
+          exchange: testExchange
+          key: testKey
+    update:
+      auth: "#all"

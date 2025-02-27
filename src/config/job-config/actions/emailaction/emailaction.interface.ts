@@ -5,7 +5,7 @@ export const actionType = "email";
 export interface EmailJobActionOptions extends JobActionOptions {
   actionType: typeof actionType;
   to: string;
-  from: string;
+  from?: string;
   subject: string;
   bodyTemplateFile: string;
 }
@@ -24,7 +24,7 @@ export function isEmailJobActionOptions(
   return (
     opts.actionType === actionType &&
     typeof opts.to === "string" &&
-    typeof opts.from === "string" &&
+    (opts.from === undefined || typeof opts.from === "string") &&
     typeof opts.subject === "string" &&
     typeof opts.bodyTemplateFile === "string"
   );

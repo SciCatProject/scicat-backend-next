@@ -1,9 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { UserIdentitiesController } from "./user-identities.controller";
 import { UserIdentitiesService } from "./user-identities.service";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class UserIdentitiesServiceMock {}
+
 class CaslAbilityFactoryMock {}
 
 describe("UserIdentitiesController", () => {

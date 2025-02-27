@@ -1,13 +1,16 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AttachmentsService } from "src/attachments/attachments.service";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { ProposalsController } from "./proposals.controller";
 import { ProposalsService } from "./proposals.service";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class AttachmentsServiceMock {}
+
 class DatasetsServiceMock {}
+
 class ProposalsServiceMock {}
+
 class CaslAbilityFactoryMock {}
 
 describe("ProposalsController", () => {
