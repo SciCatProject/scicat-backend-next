@@ -5,37 +5,37 @@ jobs:
       auth: "#all"
       actions:
         - actionType: log
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: public_access
     create:
       auth: "#datasetPublic"
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: authenticated_access
     create:
       auth: "#authenticated"
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: dataset_access
     create:
       auth: "#datasetAccess"
-    statusUpdate:
+    update:
       auth: "#jobOwnerGroup"
   - jobType: owner_access
     create:
       auth: "#datasetOwner"
-    statusUpdate:
+    update:
       auth: "#jobOwnerUser"
   - jobType: user_access
     create:
       auth: user5.1
-    statusUpdate:
+    update:
       auth: user5.1
   - jobType: group_access
     create:
       auth: "@group5"
-    statusUpdate:
+    update:
       auth: "@group5"
   - jobType: archive
     create:
@@ -45,7 +45,7 @@ jobs:
           datasets:
             datasetlifecycle.archivable:
               const: true
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: retrieve
     create:
@@ -55,7 +55,7 @@ jobs:
           datasets:
             datasetlifecycle.retrievable:
               const: true
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: public
     create:
@@ -65,7 +65,7 @@ jobs:
           datasets:
             isPublished:
               const: true
-    statusUpdate:
+    update:
       auth: "#all"
   - jobType: validate
     create:
@@ -82,7 +82,7 @@ jobs:
           datasets:
             datasetlifecycle.archivable:
               const: true
-    statusUpdate:
+    update:
       auth: admin
       actions:
         - actionType: validate
@@ -112,5 +112,5 @@ jobs:
           queue: testQueue
           exchange: testExchange
           key: testKey
-    statusUpdate:
+    update:
       auth: "#all"

@@ -17,7 +17,7 @@ import { Request } from "express";
 import { FilterQuery } from "mongoose";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
+import { UpdateJobDto } from "./dto/update-job.dto";
 import { DatasetListDto } from "./dto/dataset-list.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
@@ -561,7 +561,7 @@ export class JobsController {
           Job was created with configVersion ${jobInstance.configVersion}.
           Current configVersion is ${jobConfig.configVersion}.
         `,
-        "JobStatusUpdate",
+        "JobUpdate",
       );
     }
   }
@@ -610,21 +610,21 @@ export class JobsController {
   }
 
   /**
-   * Update job status
+   * Update job
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobStatusUpdate, JobClass),
+    ability.can(Action.JobUpdate, JobClass),
   )
   @Patch(":id")
   @ApiOperation({
-    summary: "It updates the status of an existing job.",
-    description: "It updates the status of an existing job.",
+    summary: "It updates an existing job.",
+    description: "It updates an existing job.",
   })
   @ApiBody({
-    description: "Status fields for the job to be updated",
+    description: "Fields for the job to be updated",
     required: true,
-    type: StatusUpdateJobDto,
+    type: UpdateJobDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -634,7 +634,7 @@ export class JobsController {
   async update(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() statusUpdateJobDto: StatusUpdateJobDto,
+    @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
@@ -656,26 +656,23 @@ export class JobsController {
       jobConfig,
     );
     // check if the user can update this job
-    const canUpdateStatus =
-      ability.can(Action.JobStatusUpdateAny, JobClass) ||
-      ability.can(Action.JobStatusUpdateOwner, currentJobInstance) ||
-      ability.can(Action.JobStatusUpdateConfiguration, currentJobInstance);
-    if (!canUpdateStatus) {
+    const canUpdate =
+      ability.can(Action.JobUpdateAny, JobClass) ||
+      ability.can(Action.JobUpdateOwner, currentJobInstance) ||
+      ability.can(Action.JobUpdateConfiguration, currentJobInstance);
+    if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
 
     // Allow actions to validate DTO
-    await this.validateDTO(jobConfig.statusUpdate.actions, statusUpdateJobDto);
+    await this.validateDTO(jobConfig.update.actions, updateJobDto);
 
     // Update job in database
-    const updatedJob = await this.jobsService.statusUpdate(
-      id,
-      statusUpdateJobDto,
-    );
+    const updatedJob = await this.jobsService.update(id, updateJobDto);
     // Perform the action that is specified in the update portion of the job configuration
     if (updatedJob !== null) {
       await this.checkConfigVersion(jobConfig, updatedJob);
-      await this.performActions(jobConfig.statusUpdate.actions, updatedJob);
+      await this.performActions(jobConfig.update.actions, updatedJob);
     }
     return updatedJob;
   }

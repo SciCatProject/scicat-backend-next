@@ -21,7 +21,7 @@ const configuration = () => {
     process.env.DATASET_CREATION_VALIDATION_REGEX || "";
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
-  const statusUpdateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
   const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
@@ -96,7 +96,7 @@ const configuration = () => {
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       createJob: createJobGroups,
-      updateJob: statusUpdateJobGroups,
+      updateJob: updateJobGroups,
       deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
@@ -222,7 +222,7 @@ const configuration = () => {
       smtp: {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: boolean(process.env?.SMTP_SECURE || false),
+        secure: process.env?.SMTP_SECURE || "no",
       },
       ms365: {
         tenantId: process.env.MS365_TENANT_ID,

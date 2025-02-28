@@ -28,11 +28,7 @@ import { UserSettings } from "src/users/schemas/user-settings.schema";
 import { User } from "src/users/schemas/user.schema";
 import { Action } from "./action.enum";
 import { JobConfigService } from "src/config/job-config/jobconfig.service";
-import {
-  CreateJobAuth,
-  StatusUpdateJobAuth,
-} from "src/jobs/types/jobs-auth.enum";
-
+import { CreateJobAuth, UpdateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobConfig } from "src/config/job-config/jobconfig.interface";
 
 type Subjects =
@@ -395,12 +391,12 @@ export class CaslAbilityFactory {
       cannot(Action.JobRead, JobClass);
       if (
         Object.values(this.jobConfigService.allJobConfigs).some(
-          (j) => j.statusUpdate.auth == StatusUpdateJobAuth.All,
+          (j) => j.update.auth == UpdateJobAuth.All,
         )
       ) {
-        can(Action.JobStatusUpdate, JobClass);
+        can(Action.JobUpdate, JobClass);
       } else {
-        cannot(Action.JobStatusUpdate, JobClass);
+        cannot(Action.JobUpdate, JobClass);
       }
       cannot(Action.JobDelete, JobClass);
     } else {
@@ -416,7 +412,7 @@ export class CaslAbilityFactory {
          */
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);
-        can(Action.JobStatusUpdate, JobClass);
+        can(Action.JobUpdate, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
@@ -455,7 +451,7 @@ export class CaslAbilityFactory {
           }
         }
         const jobUpdateEndPointAuthorizationValues = [
-          ...Object.values(StatusUpdateJobAuth),
+          ...Object.values(UpdateJobAuth),
           ...jobUserAuthorizationValues,
         ];
         if (
@@ -463,18 +459,18 @@ export class CaslAbilityFactory {
             this.accessGroups?.updateJob.includes(g),
           )
         ) {
-          can(Action.JobStatusUpdate, JobClass);
+          can(Action.JobUpdate, JobClass);
         } else {
           if (
             Object.values(this.jobConfigService.allJobConfigs).some(
               (j) =>
-                j.statusUpdate.auth &&
+                j.update.auth &&
                 jobUpdateEndPointAuthorizationValues.includes(
-                  j.statusUpdate.auth as string,
+                  j.update.auth as string,
                 ),
             )
           ) {
-            can(Action.JobStatusUpdate, JobClass);
+            can(Action.JobUpdate, JobClass);
           }
         }
       }
@@ -1406,8 +1402,8 @@ export class CaslAbilityFactory {
       if (jobConfiguration.create.auth === CreateJobAuth.DatasetPublic) {
         can(Action.JobCreateConfiguration, JobClass);
       }
-      if (jobConfiguration.statusUpdate.auth === StatusUpdateJobAuth.All) {
-        can(Action.JobStatusUpdateConfiguration, JobClass, {
+      if (jobConfiguration.update.auth === UpdateJobAuth.All) {
+        can(Action.JobUpdateConfiguration, JobClass, {
           ownerGroup: undefined,
         });
       }
@@ -1424,7 +1420,7 @@ export class CaslAbilityFactory {
          */
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
-        can(Action.JobStatusUpdateAny, JobClass);
+        can(Action.JobUpdateAny, JobClass);
       } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
@@ -1481,7 +1477,7 @@ export class CaslAbilityFactory {
           }
         }
         const jobUpdateInstanceAuthorizationValues = [
-          ...Object.values(StatusUpdateJobAuth).filter(
+          ...Object.values(UpdateJobAuth).filter(
             (v) => !String(v).includes("#job"),
           ),
           ...jobUserAuthorizationValues,
@@ -1494,32 +1490,32 @@ export class CaslAbilityFactory {
         ) {
           if (
             jobUpdateInstanceAuthorizationValues.some(
-              (a) => jobConfiguration.statusUpdate.auth === a,
+              (a) => jobConfiguration.update.auth === a,
             )
           ) {
-            can(Action.JobStatusUpdateConfiguration, JobClass);
+            can(Action.JobUpdateConfiguration, JobClass);
           }
-          can(Action.JobStatusUpdateOwner, JobClass, {
+          can(Action.JobUpdateOwner, JobClass, {
             ownerUser: user.username,
           });
-          can(Action.JobStatusUpdateOwner, JobClass, {
+          can(Action.JobUpdateOwner, JobClass, {
             ownerGroup: { $in: user.currentGroups },
           });
         } else {
           if (
             jobUpdateInstanceAuthorizationValues.some(
-              (a) => jobConfiguration.statusUpdate.auth === a,
+              (a) => jobConfiguration.update.auth === a,
             )
           ) {
-            can(Action.JobStatusUpdateConfiguration, JobClass);
+            can(Action.JobUpdateConfiguration, JobClass);
           }
-          if (jobConfiguration.statusUpdate.auth === "#jobOwnerUser") {
-            can(Action.JobStatusUpdateConfiguration, JobClass, {
+          if (jobConfiguration.update.auth === "#jobOwnerUser") {
+            can(Action.JobUpdateConfiguration, JobClass, {
               ownerUser: user.username,
             });
           }
-          if (jobConfiguration.statusUpdate.auth === "#jobOwnerGroup") {
-            can(Action.JobStatusUpdateConfiguration, JobClass, {
+          if (jobConfiguration.update.auth === "#jobOwnerGroup") {
+            can(Action.JobUpdateConfiguration, JobClass, {
               ownerGroup: { $in: user.currentGroups },
             });
           }

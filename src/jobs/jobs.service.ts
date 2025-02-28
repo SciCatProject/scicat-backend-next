@@ -20,7 +20,7 @@ import {
   parseLimitFilters,
 } from "src/common/utils";
 import { CreateJobDto } from "./dto/create-job.dto";
-import { StatusUpdateJobDto } from "./dto/status-update-job.dto";
+import { UpdateJobDto } from "./dto/update-job.dto";
 import { JobClass, JobDocument } from "./schemas/job.schema";
 import { IJobFields } from "./interfaces/job-filters.interface";
 
@@ -94,9 +94,9 @@ export class JobsService {
     return this.jobModel.findOne(filter).exec();
   }
 
-  async statusUpdate(
+  async update(
     id: string,
-    statusUpdateJobDto: StatusUpdateJobDto,
+    updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
     const existingJob = await this.jobModel.findOne({ id: id }).exec();
     if (!existingJob) {
@@ -108,13 +108,10 @@ export class JobsService {
       .findOneAndUpdate(
         { id: id },
         addStatusFields(
-          addUpdatedByField(
-            statusUpdateJobDto as UpdateQuery<JobDocument>,
-            username,
-          ),
-          statusUpdateJobDto.statusCode,
-          statusUpdateJobDto.statusMessage,
-          statusUpdateJobDto.jobResultObject,
+          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
+          updateJobDto.statusCode,
+          updateJobDto.statusMessage,
+          updateJobDto.jobResultObject,
         ),
         { new: true },
       )

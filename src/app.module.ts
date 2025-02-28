@@ -88,7 +88,7 @@ import { MetricsModule } from "./metrics/metrics.module";
           transport = {
             host: configService.get<string>("email.smtp.host"),
             port: configService.get<number>("email.smtp.port"),
-            secure: configService.get<boolean>("email.smtp.secure"),
+            secure: configService.get<string>("email.smtp.secure") === "yes",
           };
         } else if (transportType === "ms365") {
           const tenantId = configService.get<string>("email.ms365.tenantId"),

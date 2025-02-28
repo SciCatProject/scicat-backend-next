@@ -24,7 +24,7 @@ jobs:
           from: from
           subject: "[SciCat] Your {{type}} job was submitted successfully"
           bodyTemplateFile: src/common/email-templates/job-template-simplified.html
-    statusUpdate:
+    update:
       auth: archivemanager
       actions:
         - actionType: rabbitmq
@@ -39,7 +39,7 @@ jobs:
         datasets:
           "datasetlifecycle.retrievable":
             const: true
-    statusUpdate:
+    update:
       auth: "archivemanager"
       actions: []
   - jobType: public
@@ -56,5 +56,5 @@ jobs:
           datasets:
             isPublished:
               const: true
-    statusUpdate:
+    update:
       auth: "archivemanager"
