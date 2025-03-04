@@ -214,7 +214,7 @@ describe("1700: Randomized Datasets: permission test with bigger amount of data"
       password: TestData.Accounts["archiveManager"]["password"],
     });
   });
-  
+
   it("0010: access private dataset as unauthenticated user", async () => {
     await addAllDatasets();
     const randomGroup = randomIntFromInterval(1, 4);

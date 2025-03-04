@@ -1,0 +1,60 @@
+configVersion: v1.0 2024-03-01 6f3f38
+jobs:
+  - jobType: archive
+    create:
+      auth: "#datasetOwner"
+      actions:
+        - actionType: validate
+          datasets:
+            "datasetlifecycle.archivable":
+              const: true
+        - actionType: url
+          url: http://localhost:3000/api/v3/health?jobid={{id}}
+          headers:
+            accept: application/json
+        - actionType: rabbitmq
+          exchange: jobs.write
+          queue: client.jobs.write
+          key: jobqueue
+        - actionType: email
+          auth:
+            user: user
+            password: password
+          to: "{{contactEmail}}"
+          from: from
+          subject: "[SciCat] Your {{type}} job was submitted successfully"
+          bodyTemplateFile: src/common/email-templates/job-template-simplified.html
+    update:
+      auth: archivemanager
+      actions:
+        - actionType: rabbitmq
+          exchange: jobs.write
+          queue: client.jobs.write
+          key: jobqueue
+  - jobType: retrieve
+    create:
+      auth: "#datasetOwner"
+      actions:
+      - actionType: validate
+        datasets:
+          "datasetlifecycle.retrievable":
+            const: true
+    update:
+      auth: "archivemanager"
+      actions: []
+  - jobType: public
+    create:
+      auth: "#all"
+      actions:
+        - actionType: validate
+          request:
+            jobParams.datasetList[*]:
+              type: object
+              required:
+                - pid
+                - files
+          datasets:
+            isPublished:
+              const: true
+    update:
+      auth: "archivemanager"

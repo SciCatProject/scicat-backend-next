@@ -26,12 +26,21 @@ import { ProposalsService } from "./proposals/proposals.service";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
+import {
+  formatCamelCase,
+  unwrapJSON,
+  jsonify,
+  job_v3,
+  urlencode,
+  base64enc,
+} from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { JobConfigModule } from "./config/job-config/jobconfig.module";
+import { CoreJobActionCreators } from "./config/job-config/actions/corejobactioncreators.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { MSGraphMailTransport } from "./common/graph-mail";
 import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
@@ -55,6 +64,8 @@ import { MetricsModule } from "./metrics/metrics.module";
       MetricsModule,
       (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",
     ),
+    CoreJobActionCreators,
+    JobConfigModule,
     LoggerModule,
     DatablocksModule,
     DatasetsModule,
@@ -77,7 +88,7 @@ import { MetricsModule } from "./metrics/metrics.module";
           transport = {
             host: configService.get<string>("email.smtp.host"),
             port: configService.get<number>("email.smtp.port"),
-            secure: configService.get<boolean>("email.smtp.secure"),
+            secure: configService.get<string>("email.smtp.secure") === "yes",
           };
         } else if (transportType === "ms365") {
           const tenantId = configService.get<string>("email.ms365.tenantId"),
@@ -113,9 +124,13 @@ import { MetricsModule } from "./metrics/metrics.module";
           template: {
             dir: join(__dirname, "./common/email-templates"),
             adapter: new HandlebarsAdapter({
-              unwrapJSON: (json) => unwrapJSON(json),
-              keyToWord: (string) => formatCamelCase(string),
+              unwrapJSON: unwrapJSON,
+              keyToWord: formatCamelCase,
               eq: (a, b) => a === b,
+              jsonify: jsonify,
+              job_v3: job_v3,
+              urlencode: urlencode,
+              base64enc: base64enc,
             }),
             options: {
               strict: true,

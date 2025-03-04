@@ -3,11 +3,12 @@ import { InstrumentsService } from "./instruments.service";
 import { InstrumentsController } from "./instruments.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Instrument, InstrumentSchema } from "./schemas/instrument.schema";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   controllers: [InstrumentsController],
   imports: [
+    CaslModule,
     MongooseModule.forFeatureAsync([
       {
         name: Instrument.name,
@@ -27,6 +28,6 @@ import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
       },
     ]),
   ],
-  providers: [InstrumentsService, CaslAbilityFactory],
+  providers: [InstrumentsService],
 })
 export class InstrumentsModule {}

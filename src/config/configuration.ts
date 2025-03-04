@@ -22,17 +22,18 @@ const configuration = () => {
 
   const createJobGroups = process.env.CREATE_JOB_GROUPS || "";
   const updateJobGroups = process.env.UPDATE_JOB_GROUPS || "";
+  const deleteJobGroups = process.env.DELETE_JOB_GROUPS || "";
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const samplePrivilegedGroups =
-    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
 
-  const oidcUserQueryFilter =
-    process.env.OIDC_USERQUERY_FILTER || ("" as string);
+  const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
   const oidcUsernameFieldMapping =
     process.env.OIDC_USERINFO_MAPPING_FIELD_USERNAME || "";
+
+  const jobConfigurationFile = process.env.JOB_CONFIGURATION_FILE || "";
 
   const defaultLogger = {
     type: "DefaultLogger",
@@ -134,6 +135,7 @@ const configuration = () => {
       api: "3",
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
+    jobConfigurationFile: jobConfigurationFile,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     accessGroups: {
       admin: adminGroups.split(",").map((v) => v.trim()) ?? [],
@@ -150,6 +152,7 @@ const configuration = () => {
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
       createJob: createJobGroups,
       updateJob: updateJobGroups,
+      deleteJob: deleteJobGroups,
     },
     datasetCreationValidationEnabled: boolean(datasetCreationValidationEnabled),
     datasetCreationValidationRegex: datasetCreationValidationRegex,
@@ -168,7 +171,6 @@ const configuration = () => {
       enabled: boolean(process.env?.ACCESS_GROUPS_OIDCPAYLOAD_ENABLED || false),
       accessGroupProperty: process.env?.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups
     },
-
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
@@ -191,7 +193,6 @@ const configuration = () => {
         usernameAttr: process.env.LDAP_USERNAME ?? "displayName",
       },
     },
-
     oidc: {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
@@ -228,7 +229,6 @@ const configuration = () => {
       baseUrl:
         process.env.LOGBOOK_BASE_URL ?? "http://localhost:3030/scichatapi",
     },
-
     metadataKeysReturnLimit: process.env.METADATA_KEYS_RETURN_LIMIT
       ? parseInt(process.env.METADATA_KEYS_RETURN_LIMIT, 10)
       : undefined,
@@ -244,6 +244,7 @@ const configuration = () => {
     rabbitMq: {
       enabled: process.env.RABBITMQ_ENABLED ?? "no",
       hostname: process.env.RABBITMQ_HOSTNAME,
+      port: process.env.RABBITMQ_PORT,
       username: process.env.RABBITMQ_USERNAME,
       password: process.env.RABBITMQ_PASSWORD,
     },
@@ -263,7 +264,7 @@ const configuration = () => {
       // `ConditionalModule.registerWhen` as it does not support ConfigService injection. The purpose of
       // keeping `metrics.enabled` in the configuration is for other modules to use and maintain consistency.
       enabled: process.env.METRICS_ENABLED || "no",
-      config: jsonConfigMap.metricsConfig,
+      config: jsonConfigMap.metricsConfig || {},
     },
     registerDoiUri: process.env.REGISTER_DOI_URI,
     registerMetadataUri: process.env.REGISTER_METADATA_URI,
@@ -276,7 +277,7 @@ const configuration = () => {
       smtp: {
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: boolean(process.env?.SMTP_SECURE || false),
+        secure: process.env?.SMTP_SECURE || "no",
       },
       ms365: {
         tenantId: process.env.MS365_TENANT_ID,

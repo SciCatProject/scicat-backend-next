@@ -2,100 +2,134 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { JobType } from "../job-type.enum";
+import { OwnableClass } from "src/common/schemas/ownable.schema";
 
 export type JobDocument = JobClass & Document;
 
 @Schema({
   collection: "Job",
-  timestamps: { createdAt: "creationTime", updatedAt: false },
+  minimize: false,
+  timestamps: true,
   toJSON: {
     getters: true,
   },
 })
-export class JobClass {
+export class JobClass extends OwnableClass {
   @ApiProperty({
     type: String,
+    default: () => uuidv4(),
     description: "Globally unique identifier of a job.",
-    readOnly: true,
   })
-  @Prop({ type: String, default: () => uuidv4() })
+  @Prop({
+    type: String,
+    unique: true,
+    required: true,
+    default: () => uuidv4(),
+  })
+  id: string;
+
+  @Prop({
+    type: String,
+  })
   _id: string;
 
   @ApiProperty({
     type: String,
-    description: "Globally unique identifier of a job.",
-    readOnly: true,
-  })
-  id?: string;
-
-  @ApiProperty({
-    description: "The email of the person initiating the job request.",
-  })
-  @Prop({ type: String, required: true })
-  emailJobInitiator: string;
-
-  @ApiProperty({ description: "Type of job, e.g. archive, retrieve etc" })
-  @Prop({
-    type: String,
-    required: true,
-    enum: [JobType.Archive, JobType.Retrieve, JobType.Public],
-    default: JobType.Retrieve,
-  })
-  type: string;
-
-  @ApiProperty({
-    description:
-      "Time when job is created. Format according to chapter 5.6 internet date/time format in RFC 3339. This is handled automatically by mongoose with timestamps flag.",
-  })
-  @Prop({ type: Date })
-  creationTime: Date;
-
-  @ApiProperty({
-    description:
-      "Time when job should be executed. If not specified then the Job will be executed asap. Format according to chapter 5.6 internet date/time format in RFC 3339.",
-  })
-  @Prop({ type: Date, required: false })
-  executionTime: Date;
-
-  @ApiProperty({
-    description:
-      "Object of key-value pairs defining job input parameters, e.g. 'destinationPath' for retrieve jobs or 'tapeCopies' for archive jobs.",
-  })
-  @Prop({ type: Object, required: false })
-  jobParams: object;
-
-  @ApiProperty({ description: "Defines current status of job lifecycle." })
-  @Prop({ type: String, required: false })
-  jobStatusMessage: string;
-
-  @ApiProperty({
-    type: IDatasetList,
-    isArray: true,
-    required: false,
-    description:
-      "Array of objects with keys: pid, files. The value for the pid key defines the dataset ID, the value for the files key is an array of file names. This array is either an empty array, implying that all files within the dataset are selected or an explicit list of dataset-relative file paths, which should be selected.",
-  })
-  @Prop({ type: [Object], required: false })
-  datasetList: IDatasetList[];
-
-  @ApiProperty({ description: "Detailed return value after job is finished." })
-  @Prop({ type: Object, required: false })
-  jobResultObject: object;
-
-  @ApiProperty({
-    type: String,
-    description:
-      "Defines the group which owns the data, and therefore has unrestricted access to this data. Usually a pgroup like p12151",
+    description: "Defines the user that owns this job",
   })
   @Prop({
     type: String,
     index: true,
   })
-  ownerGroup: string;
-}
+  ownerUser: string;
 
+  // type
+  @ApiProperty({
+    type: String,
+    description:
+      "Type of job as defined in the job configuration, e.g. archive, retrieve, etc",
+    required: true,
+  })
+  @Prop({
+    type: String,
+    required: true,
+  })
+  type: string;
+
+  // status code
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: "Defines the current status code of the job.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  statusCode: string;
+
+  // status message
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "stores the latest message received with the last status update for the job.",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  statusMessage: string;
+
+  // parameters (instance)
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description:
+      "This is the equivalent object of the jobs parameters provided by the user.",
+  })
+  @Prop({
+    type: Object,
+    required: false,
+  })
+  jobParams: Record<string, unknown>;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "",
+    description:
+      "Email of the person to contact regarding this job. If the job is submitted anonymously, an email has to be provided",
+  })
+  @Prop({
+    type: String,
+    required: false,
+  })
+  contactEmail: string;
+
+  @ApiProperty({
+    type: Object,
+    description: "Configuration version that was used to create this job.",
+    required: true,
+  })
+  @Prop({
+    type: Object,
+    required: true,
+  })
+  configVersion: string;
+
+  // initially empty, then provided during update
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description: "Contains the dataset archiving results.",
+  })
+  @Prop({
+    type: Object,
+    required: false,
+  })
+  jobResultObject: Record<string, unknown>;
+}
 export const JobSchema = SchemaFactory.createForClass(JobClass);
 
 JobSchema.index({ "$**": "text" });

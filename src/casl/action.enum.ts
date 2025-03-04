@@ -179,17 +179,20 @@ export enum Action {
   // Jobs
   // --------------
   // endpoint authorization
-  JobsCreate = "jobs_create",
-  JobsRead = "jobs_read",
-  JobsUpdate = "jobs_update",
-  // --------------
+  JobCreate = "jobs_create",
+  JobRead = "jobs_read",
+  JobUpdate = "job_update",
+  JobDelete = "job_delete",
   // data instance authorization
-  JobsCreateOwner = "jobs_create_owner",
-  JobsCreateAny = "jobs_create_any",
-  JobsReadAccess = "jobs_read_access",
-  JobsReadAny = "jobs_read_any",
-  JobsUpdateAccess = "jobs_update_access",
-  JobsUpdateAny = "jobs_update_any",
+  JobCreateConfiguration = "job_create_configuration",
+  JobCreateOwner = "job_create_owner",
+  JobCreateAny = "job_create_any",
+  JobReadAccess = "job_read_access",
+  JobReadAny = "job_read_any",
+  JobUpdateConfiguration = "job_update_configuration",
+  JobUpdateOwner = "job_update_owner",
+  JobUpdateAny = "job_update_any",
+  //JobDeleteAny = "job_delete_any",
 
   // -------------
   // Users actions

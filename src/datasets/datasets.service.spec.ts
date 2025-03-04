@@ -14,6 +14,8 @@ class InitialDatasetsServiceMock {}
 
 class LogbooksServiceMock {}
 
+class CaslAbilityFactoryMock {}
+
 class ElasticSearchServiceMock {}
 
 const mockDataset: DatasetClass = {
@@ -110,7 +112,7 @@ describe("DatasetsService", () => {
         },
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: ElasticSearchService, useClass: ElasticSearchServiceMock },
-        CaslAbilityFactory,
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
 

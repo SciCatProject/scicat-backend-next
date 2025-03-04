@@ -14,7 +14,7 @@ describe("2200: Sample: Simple Sample", () => {
   before(() => {
     db.collection("Sample").deleteMany({});
     db.collection("Dataset").deleteMany({});
-  });  
+  });
   beforeEach(async() => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",

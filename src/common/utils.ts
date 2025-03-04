@@ -31,7 +31,7 @@ export const convertToSI = (
       .toJSON();
     return { valueSI: Number(quantity.value), unitSI: quantity.unit };
   } catch (error) {
-    console.error(error);
+    Logger.warn(`Error converting unit to SI: ${error}`);
     return { valueSI: inputValue, unitSI: inputUnit };
   }
 };
@@ -819,6 +819,24 @@ export const addApiVersionField = <T extends object>(
   Object.assign(obj, { version: apiVersion });
 };
 
+export const addStatusFields = <T>(
+  obj: T,
+  statusCode: string,
+  statusMessage: string,
+  jobResultObject: Record<string, unknown> | undefined,
+): T & {
+  statusCode: string;
+  statusMessage: string;
+  jobResultObject: Record<string, unknown> | undefined;
+} => {
+  return {
+    ...obj,
+    statusCode: statusCode,
+    statusMessage: statusMessage,
+    jobResultObject: jobResultObject,
+  };
+};
+
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,
@@ -844,6 +862,23 @@ export const addUpdatedByField = <T>(
     updatedBy: username,
   };
 };
+
+export const filterExampleSimplified =
+  '{ "where": { "field": "value" }, "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
+
+export const filterDescriptionSimplified =
+  '<pre>\n \
+{\n \
+  "where?": {\n \
+    "field": "value"\n \
+  },\n \
+  "limits?": {\n \
+    "limit": number,\n \
+    "skip": number,\n \
+    "order": [ascending, descending]\n \
+  }\n \
+}\n \
+</pre>';
 
 export const filterExample =
   '{ "where": { "field": "value" }, "include": [ { "relation": "target" } ], "fields": ["field1", "field2"], "limits": {"limit": 1, "skip": 1, "order": "asc"}}';
@@ -874,9 +909,6 @@ export const filterDescription =
 export const fullQueryExampleLimits =
   '{"limit": 1, "skip": 1, "order": "creationTime:desc"}';
 
-export const datasetsFullQueryExampleFields =
-  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
-
 export const fullQueryDescriptionLimits =
   '<pre>\n \
 {\n \
@@ -885,6 +917,9 @@ export const fullQueryDescriptionLimits =
   "order": [ascending, descending]\n \
 }\n \
 </pre>';
+
+export const datasetsFullQueryExampleFields =
+  '{"mode":{},"ownerGroup":["group1"],"scientific":[{"lhs":"sample","relation":"EQUAL_TO_STRING","rhs":"my sample"},{"lhs":"temperature","relation":"GREATER_THAN","rhs":10,"unit":"celsius"}]}';
 
 export const datasetsFullQueryDescriptionFields =
   '<pre>\n  \
@@ -915,6 +950,28 @@ export const datasetsFullQueryDescriptionFields =
   "_id": "item id", <optional>\n \
   "userGroups": ["group1", ...], <optional>\n \
   "sharedWith": ["email", ...], <optional>\n \
+}\n \
+  </pre>';
+
+export const jobsFullQueryExampleFields =
+  '{"ownerGroup":["group1"], "statusCode": "jobCreated"}';
+
+export const jobsFullQueryDescriptionFields =
+  '<pre>\n  \
+{\n \
+  "createdBy": string, <optional>\n \
+  "updatedBy": string, <optional>\n \
+  "createdAt": { <optional>\n \
+    "begin": string,\n \
+    "end": string,\n \
+  },\n \
+  "ownerGroup": string, <optional>\n \
+  "accessGroups": ["group1", ...], <optional>\n \
+  "type": string, <optional>\n \
+  "id": string, <optional>\n \
+  "statusCode": string, <optional>\n \
+  "statusMessage": string, <optional>\n \
+  ... <optional>\n \
 }\n \
   </pre>';
 
@@ -1049,3 +1106,14 @@ export const isJsonString = (str: string) => {
   }
   return true;
 };
+
+/**
+ * Accepts either an object or array of objects.
+ *
+ * Note that T should not extend Array (eg no nested arrays)
+ * @param x object or array of objects
+ * @returns array containing x
+ */
+export function oneOrMore<T>(x: T[] | T): T[] {
+  return Array.isArray(x) ? x : [x];
+}
