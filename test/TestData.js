@@ -176,6 +176,11 @@ const TestData = {
         value: 8500,
         unit: "",
       },
+      approx_distance_range: {
+        value: [1, 2],
+        unit: "cm",
+        type: "quantity_range",
+      },
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {
