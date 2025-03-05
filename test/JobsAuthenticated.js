@@ -133,7 +133,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -161,7 +161,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -188,7 +188,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -214,7 +214,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -242,7 +242,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -270,7 +270,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -296,7 +296,7 @@ describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs c
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .expect(TestData.AccessForbiddenStatusCode)
