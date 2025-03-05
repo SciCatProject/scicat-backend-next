@@ -58,7 +58,7 @@ const scientificMetadata = (values) => {
       });
     });
 
-    it.only("0010: adds a new raw dataset with scientificMetadata", async () => {
+    it("0010: adds a new raw dataset with scientificMetadata", async () => {
       return request(appUrl)
         .post("/api/v3/Datasets")
         .send(TestData.ScientificMetadataForElasticSearch)
