@@ -1,0 +1,60 @@
+services:
+  workarea:
+    container_name: workarea
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    cap_add:
+      - CAP_IPC_LOCK
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    depends_on:
+      - mongodb
+    ports:
+      - '3000:3000'
+  mongodb:
+    container_name: mongodb
+    image: bitnami/mongodb:latest
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+  scichat-loopback:
+    container_name: scichat-loopback
+    image: dacat/scichat-loopback:e2e
+    command: [ "./wait-for-it.sh", "mongodb:27017", "--", "node", "-r", "dotenv/config", "." ]
+    volumes:
+      - ".env.scichat-loopback:/workspace/.env"
+    depends_on:
+      - mongodb
+  es01:
+    container_name: es01
+    depends_on:
+      - mongodb
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    ports:
+      - '9200:9200'
+    environment:
+      - node.name=es01
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      - cluster.name=docker-cluster
+      - ELASTIC_PASSWORD=chanGeM3
+      - bootstrap.memory_lock=true
+    mem_limit: 4g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+volumes:
+  mongodb_data:
+    driver: local
+  es01:
+    driver: local

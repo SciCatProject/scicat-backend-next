@@ -1,0 +1,33 @@
+{
+  "name": "Node.js & MongoDB",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "workarea",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "/usr/local/bin/entrypoint.sh",
+  "remoteUser": "node",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "editor.tabSize": 2
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "mongodb.mongodb-vscode",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "DavidAnson.vscode-markdownlint",
+        "k--kato.intellij-idea-keybindings",
+        "christian-kohler.npm-intellisense",
+        "foxundermoon.shell-format",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-azuretools.vscode-docker",
+        "usernamehw.errorlens",
+        "MS-vsliveshare.vsliveshare"
+      ]
+    }
+  }
+}

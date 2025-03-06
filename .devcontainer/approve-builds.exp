@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+spawn pnpm approve-builds
+expect {
+    "There are no packages awaiting approval" {
+        puts "No packages to approve."
+        exit 0
+    }
+    "Choose which packages to build" {
+        send -- "a\r"
+    }
+}
+expect eof
