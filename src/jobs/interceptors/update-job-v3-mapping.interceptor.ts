@@ -21,7 +21,7 @@ export class UpdateJobV3MappingInterceptor implements NestInterceptor {
       newBody = {
         ...newBody,
         jobResultObject: dtoV3.jobResultObject,
-      }
+      };
     }
     request.body = newBody;
     return next.handle();

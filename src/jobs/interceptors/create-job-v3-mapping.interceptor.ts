@@ -25,7 +25,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       newBody = {
         ...newBody,
         ownerUser: dtoV3.jobParams.username,
-      }
+      };
     }
     request.body = newBody;
     return next.handle();
