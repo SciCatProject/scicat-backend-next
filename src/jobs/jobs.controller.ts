@@ -21,6 +21,8 @@ import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { DatasetListDto } from "./dto/dataset-list.dto";
+import { CreateJobDtoV3 } from "./dto/create-job.v3.dto";
+import { UpdateJobDtoV3 } from "./dto/update-job.v3.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
@@ -317,7 +319,9 @@ export class JobsController {
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
-    jobInstance.contactEmail = jobCreateDto.contactEmail;
+    if (jobCreateDto.contactEmail) {
+      jobInstance.contactEmail = jobCreateDto.contactEmail;
+    }
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
@@ -343,14 +347,16 @@ export class JobsController {
       ) {
         // admin users
         let jobUser: JWTUser | null = user;
-        if (user.username != jobCreateDto.ownerUser) {
+        if (jobCreateDto.ownerUser && user.username != jobCreateDto.ownerUser) {
           jobUser = await this.usersService.findByUsername2JWTUser(
             jobCreateDto.ownerUser,
           );
         }
         jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.contactEmail = jobUser?.email as string;
-        jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        jobInstance.contactEmail = jobCreateDto.contactEmail ?? jobUser?.email as string;
+        if (jobCreateDto.ownerGroup) {
+          jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        }
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {
@@ -373,7 +379,7 @@ export class JobsController {
           );
         }
         jobInstance.ownerUser = user.username;
-        jobInstance.contactEmail = user.email;
+        jobInstance.contactEmail = jobCreateDto.contactEmail ?? user.email;
         // check that ownerGroup is one of the user groups
         if (!user.currentGroups.includes(jobCreateDto.ownerGroup)) {
           throw new HttpException(
@@ -579,18 +585,16 @@ export class JobsController {
     // Map fields from v4 to v3
     jobV3._id = job._id;
     jobV3.id = job.id;
-    jobV3.emailJobInitiator = job.createdBy;
+    jobV3.emailJobInitiator = job.contactEmail;
     jobV3.type = job.type;
     jobV3.creationTime = job.createdAt;
-    jobV3.jobStatusMessage = job.statusMessage;
+    jobV3.jobStatusMessage = job.statusCode;
     jobV3.jobResultObject = job.jobResultObject;
     jobV3.ownerGroup = job.ownerGroup;
     // Remove datasetList from jobParams and assign it to jobV3.datasetList
     const { datasetList, ...jobParams } = job.jobParams;
     jobV3.datasetList = datasetList as DatasetListDto[];
-    // Store v4 configVersion in v3 jobParams
-    const newJobParams = { ...jobParams, configVersion: job.configVersion };
-    jobV3.jobParams = newJobParams;
+    jobV3.jobParams = jobParams;
     return jobV3;
   }
 
@@ -635,7 +639,7 @@ export class JobsController {
   @ApiBody({
     description: "Input fields for the job to be created",
     required: true,
-    type: CreateJobDto,
+    type: CreateJobDtoV3,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -745,7 +749,7 @@ export class JobsController {
   @ApiBody({
     description: "Fields for the job to be updated",
     required: true,
-    type: UpdateJobDto,
+    type: UpdateJobDtoV3,
   })
   @ApiResponse({
     status: HttpStatus.OK,
