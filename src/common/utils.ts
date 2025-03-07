@@ -26,19 +26,27 @@ export const convertToSI = (
   try {
     const normalizedUnit = inputUnit.normalize("NFC"); // catch and normalize the different versions of Å in unicode
     if (inputValue instanceof Array) {
-      const quantity: MathJSON[] = [];
-      inputValue.forEach((value) => {
-        quantity.push(
-          unit(value, normalizedUnit)
-            .to(unit(normalizedUnit).toSI().toJSON().unit)
-            .toJSON(),
+      if (inputValue.length === 2) {
+        const quantity: MathJSON[] = [];
+        inputValue.forEach((value) => {
+          quantity.push(
+            unit(value, normalizedUnit)
+              .to(unit(normalizedUnit).toSI().toJSON().unit)
+              .toJSON(),
+          );
+        });
+
+        const valueSI = quantity.map((q) => Number(q.value));
+        const unitSI = quantity[0].unit;
+
+        return { valueSI, unitSI };
+      } else {
+        console.error(
+          "More than two values provided in the quantity_range field",
+          JSON.stringify({ inputValue }),
         );
-      });
-
-      const valueSI = quantity.map((q) => Number(q.value));
-      const unitSI = quantity[0].unit;
-
-      return { valueSI, unitSI };
+        return { valueSI: inputValue, unitSI: inputUnit };
+      }
     }
     // Workaround related to a bug reported at https://github.com/josdejong/mathjs/issues/3097 and https://github.com/josdejong/mathjs/issues/2499
     const quantity = unit(inputValue, normalizedUnit)
