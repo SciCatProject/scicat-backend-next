@@ -155,7 +155,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -185,7 +185,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -214,7 +214,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -243,7 +243,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -273,7 +273,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -301,7 +301,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -331,7 +331,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -359,7 +359,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -385,7 +385,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -414,7 +414,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -442,7 +442,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser52}` })
@@ -456,7 +456,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0150: Adds a Status update to a job as a user from ADMIN_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -469,7 +469,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0160: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -482,7 +482,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0170: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -495,7 +495,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0180: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -508,7 +508,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0190: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -521,7 +521,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0200: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -534,7 +534,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0210: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -547,7 +547,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0220: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -560,7 +560,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0230: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -573,7 +573,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0240: Adds a Status update to a job as user5.1 for his/her job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -586,7 +586,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0250: Adds a Status update to a job as user5.1 for another user's job in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -599,7 +599,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0260: Adds a Status update to a job as user5.1 for his/her group in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -612,7 +612,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0270: Adds a Status update to a job as user5.1 for another user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -625,7 +625,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0280: Adds a Status update to a job as user5.1 for anonymous user's group in 'USER5.1' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -638,7 +638,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0290: Adds a Status update to a job as user5.2 for his/her job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser52}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -651,7 +651,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0300: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -664,7 +664,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
 
   it("0310: Adds a Status update to a job as user5.2 for another user in his/her group job in 'USER5.1' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -678,7 +678,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
   it("0320: Access jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const query = { where: { createdBy: "user5.1" } };
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
@@ -693,7 +693,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
   it("0330: Access jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { where: { createdBy: "user5.2" } };
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .query("filter=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
@@ -709,7 +709,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
     const queryFields = { createdBy: "user5.1" };
     const queryLimits = { limit: 1 };
     return request(appUrl)
-      .get(`/api/v3/Jobs/fullquery`)
+      .get(`/api/v4/Jobs/fullquery`)
       .send({})
       .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
       .query("limits=" + encodeURIComponent(JSON.stringify(queryLimits)))
@@ -725,7 +725,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
   it("0350: Fullquery jobs as a user from ADMIN_GROUPS that were created by User5.2", async () => {
     const query = { createdBy: "user5.2" };
     return request(appUrl)
-      .get(`/api/v3/Jobs/fullquery`)
+      .get(`/api/v4/Jobs/fullquery`)
       .send({})
       .query("fields=" + encodeURIComponent(JSON.stringify(query)))
       .set("Accept", "application/json")
@@ -740,7 +740,7 @@ describe("1180: Jobs: Test New Job Model Authorization for configuration set to 
   it("0360: Fullfacet jobs as a user from ADMIN_GROUPS that were created by User5.1", async () => {
     const queryFields = { createdBy: "user5.1" };
     return request(appUrl)
-      .get(`/api/v3/Jobs/fullfacet`)
+      .get(`/api/v4/Jobs/fullfacet`)
       .send({})
       .query("fields=" + encodeURIComponent(JSON.stringify(queryFields)))
       .set("Accept", "application/json")
