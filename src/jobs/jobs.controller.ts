@@ -270,13 +270,11 @@ export class JobsController {
    */
   async generateJobInstanceForPermissions(job: JobClass): Promise<JobClass> {
     const jobInstance = new JobClass();
-
     jobInstance._id = job._id;
     jobInstance.id = job.id;
     jobInstance.type = job.type;
     jobInstance.ownerGroup = job.ownerGroup;
     jobInstance.ownerUser = job.ownerUser;
-
     return jobInstance;
   }
 
@@ -340,7 +338,9 @@ export class JobsController {
       ) {
         // admin users
         let jobUser: JWTUser | null = user;
-        if (jobCreateDto.ownerUser && user.username != jobCreateDto.ownerUser) {
+        if (!jobCreateDto.ownerUser) {
+          jobUser = null;
+        } else if (user.username != jobCreateDto.ownerUser) {
           jobUser = await this.usersService.findByUsername2JWTUser(
             jobCreateDto.ownerUser,
           );
