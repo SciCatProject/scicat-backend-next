@@ -155,9 +155,8 @@ describe("1190: Jobs: Test Backwards Compatibility with api/v3", () => {
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.have.property("type").and.be.string;
-        res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        res.body.should.have.property("contactEmail").to.be.equal("admin@test.email");
+        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
+        res.body.should.have.property("emailJobInitiator").to.be.equal("admin@test.email");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
       });

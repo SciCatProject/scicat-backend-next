@@ -644,14 +644,15 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    type: JobClass,
+    type: JobClassV3,
     description: "Created job",
   })
   async createV3(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-  ): Promise<JobClass | null> {
-    return this.createJob(request, createJobDto);
+  ): Promise<JobClassV3 | null> {
+    const job = await this.createJob(request, createJobDto);
+    return job ? this.mapJobClassV4toV3(job) : null;
   }
 
   /**
@@ -754,15 +755,16 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: JobClass,
+    type: JobClassV3,
     description: "Updated job",
   })
   async updateV3(
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
-  ): Promise<JobClass | null> {
-    return this.updateJob(request, id, updateJobDto);
+  ): Promise<JobClassV3 | null> {
+    const job = await this.updateJob(request, id, updateJobDto);
+    return job ? this.mapJobClassV4toV3(job) : null;
   }
 
   /**
@@ -878,7 +880,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [JobClassV3],
     description: "Return jobs requested.",
   })
   async fullQueryV3(
@@ -962,7 +964,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [Object],
     description: "Return jobs requested.",
   })
   async fullFacet(
@@ -1066,7 +1068,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: JobClass,
+    type: JobClassV3,
     description: "Found job",
   })
   async findOneV3(
@@ -1180,7 +1182,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [JobClassV3],
     description: "Found jobs",
   })
   async findAllV3(
