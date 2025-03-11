@@ -34,7 +34,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       );
     }
 
-    let jobParams: JobParams = {
+    const jobParams: JobParams = {
       datasetList: dtoV3.datasetList ?? [],
       ...dtoV3.jobParams,
     };

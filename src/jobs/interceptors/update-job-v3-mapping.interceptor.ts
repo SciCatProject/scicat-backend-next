@@ -20,8 +20,7 @@ export class UpdateJobV3MappingInterceptor implements NestInterceptor {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          message:
-            "jobStatusMessage is required",
+          message: "jobStatusMessage is required",
         },
         HttpStatus.BAD_REQUEST,
       );

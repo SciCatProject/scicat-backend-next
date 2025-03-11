@@ -138,7 +138,7 @@ export class JobsService {
       jobParams = {
         ...jobParams,
         executionTime: executionTime as Date,
-      }
+      };
       newJobResultObject = jobResultObject;
     }
 
@@ -148,7 +148,10 @@ export class JobsService {
         { id: id },
         addStatusFields(
           addUpdatedJobParamsField(
-            addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
+            addUpdatedByField(
+              updateJobDto as UpdateQuery<JobDocument>,
+              username,
+            ),
             jobParams,
           ),
           updateJobDto.statusCode,
