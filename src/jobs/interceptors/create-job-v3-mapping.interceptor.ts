@@ -1,8 +1,6 @@
 import {
   CallHandler,
   ExecutionContext,
-  HttpException,
-  HttpStatus,
   Injectable,
   NestInterceptor,
 } from "@nestjs/common";
@@ -23,17 +21,6 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const dtoV3 = request.body as CreateJobDtoV3;
 
-    if (!dtoV3.emailJobInitiator) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          message:
-            "emailJobInitiator is required and should be a valid email address",
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     const jobParams: JobParams = {
       datasetList: dtoV3.datasetList ?? [],
       ...dtoV3.jobParams,
@@ -43,10 +30,15 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     }
 
     let newBody: CreateJobDto = {
-      contactEmail: dtoV3.emailJobInitiator,
       type: dtoV3.type,
       jobParams: jobParams,
     };
+    if (dtoV3.emailJobInitiator) {
+      newBody = {
+        ...newBody,
+        contactEmail: dtoV3.emailJobInitiator,
+      };
+    }
     if (typeof dtoV3.jobParams?.username === "string") {
       newBody = {
         ...newBody,

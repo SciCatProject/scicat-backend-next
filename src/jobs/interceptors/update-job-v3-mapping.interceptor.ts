@@ -30,19 +30,18 @@ export class UpdateJobV3MappingInterceptor implements NestInterceptor {
       statusCode: dtoV3.jobStatusMessage,
       statusMessage: dtoV3.jobStatusMessage,
     };
-    if (dtoV3.jobResultObject) {
-      let newjobResultObject = dtoV3.jobResultObject;
-      if (dtoV3.executionTime) {
-        newjobResultObject = {
-          ...newjobResultObject,
-          executionTime: dtoV3.executionTime,
-        };
-      }
-      newBody = {
-        ...newBody,
-        jobResultObject: newjobResultObject,
+
+    let newjobResultObject = dtoV3.jobResultObject;
+    if (dtoV3.executionTime) {
+      newjobResultObject = {
+        ...newjobResultObject,
+        executionTime: dtoV3.executionTime,
       };
     }
+    newBody = {
+      ...newBody,
+      jobResultObject: newjobResultObject,
+    };
     request.body = newBody;
     return next.handle();
   }
