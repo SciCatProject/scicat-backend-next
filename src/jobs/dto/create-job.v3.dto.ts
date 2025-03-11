@@ -25,5 +25,5 @@ export class CreateJobDtoV3 extends UpdateJobDtoV3 {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => DatasetListDto)
-  readonly datasetList: object[];
+  readonly datasetList: DatasetListDto[];
 }

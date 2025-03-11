@@ -7,7 +7,7 @@ export type JobDocumentV3 = JobClassV3 & Document;
 
 @Schema({
   collection: "Job",
-  timestamps: { createdAt: "creationTime", updatedAt: false },
+  timestamps: false,
   toJSON: {
     getters: true,
   },
@@ -79,17 +79,6 @@ export class JobClassV3 {
   @ApiProperty({ description: "Detailed return value after job is finished." })
   @Prop({ type: Object, required: false })
   jobResultObject: object;
-
-  @ApiProperty({
-    type: String,
-    description:
-      "Defines the group which owns the data, and therefore has unrestricted access to this data. Usually a pgroup like p12151",
-  })
-  @Prop({
-    type: String,
-    index: true,
-  })
-  ownerGroup: string;
 }
 
 export const JobSchema = SchemaFactory.createForClass(JobClassV3);

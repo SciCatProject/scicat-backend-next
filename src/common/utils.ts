@@ -837,6 +837,18 @@ export const addStatusFields = <T>(
   };
 };
 
+export const addUpdatedJobParamsField = <T>(
+  obj: T,
+  jobParams: Record<string, unknown> | undefined,
+): T & {
+  jobParams: Record<string, unknown> | undefined;
+} => {
+  return {
+    ...obj,
+    jobParams: jobParams,
+  };
+};
+
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,

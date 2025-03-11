@@ -591,11 +591,17 @@ export class JobsController {
     jobV3.creationTime = job.createdAt;
     jobV3.jobStatusMessage = job.statusCode;
     jobV3.jobResultObject = job.jobResultObject;
-    jobV3.ownerGroup = job.ownerGroup;
-    // Remove datasetList from jobParams and assign it to jobV3.datasetList
+    // Extract datasetList from jobParams
     const { datasetList, ...jobParams } = job.jobParams;
     jobV3.datasetList = datasetList as DatasetListDto[];
     jobV3.jobParams = jobParams;
+    // Extract executionTime from jobParams
+    if (job.jobParams.executionTime) {
+      const { datasetList, executionTime, ...jobParams } = job.jobParams;
+      jobV3.datasetList = datasetList as DatasetListDto[];
+      jobV3.executionTime = executionTime as Date;
+      jobV3.jobParams = jobParams;
+    }
     return jobV3;
   }
 
@@ -688,11 +694,11 @@ export class JobsController {
   /**
    * Update job implementation
    */
-  private async updateJob(
+  private async validateUpdateJob(
     request: Request,
     id: string,
     updateJobDto: UpdateJobDto,
-  ): Promise<JobClass | null> {
+  ): Promise<JobConfig> {
     Logger.log("updating job ", id);
     // Find existing job
     const currentJob = await this.jobsService.findOne({ id: id });
@@ -720,18 +726,9 @@ export class JobsController {
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
-
     // Allow actions to validate DTO
     await this.validateDTO(jobConfig.update.actions, updateJobDto);
-
-    // Update job in database
-    const updatedJob = await this.jobsService.update(id, updateJobDto);
-    // Perform the action that is specified in the update portion of the job configuration
-    if (updatedJob !== null) {
-      await this.checkConfigVersion(jobConfig, updatedJob);
-      await this.performActions(jobConfig.update.actions, updatedJob);
-    }
-    return updatedJob;
+    return jobConfig;
   }
 
   /**
@@ -763,8 +760,15 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClassV3 | null> {
-    const job = await this.updateJob(request, id, updateJobDto);
-    return job ? this.mapJobClassV4toV3(job) : null;
+    const jobConfig = await this.validateUpdateJob(request, id, updateJobDto);
+    // Update job in database
+    const updatedJob = await this.jobsService.updateV3(id, updateJobDto);
+    // Perform the action that is specified in the update portion of the job configuration
+    if (updatedJob !== null) {
+      await this.checkConfigVersion(jobConfig, updatedJob);
+      await this.performActions(jobConfig.update.actions, updatedJob);
+    }
+    return updatedJob ? this.mapJobClassV4toV3(updatedJob) : null;
   }
 
   /**
@@ -795,7 +799,15 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
-    return this.updateJob(request, id, updateJobDto);
+    const jobConfig = await this.validateUpdateJob(request, id, updateJobDto);
+    // Update job in database
+    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    // Perform the action that is specified in the update portion of the job configuration
+    if (updatedJob !== null) {
+      await this.checkConfigVersion(jobConfig, updatedJob);
+      await this.performActions(jobConfig.update.actions, updatedJob);
+    }
+    return updatedJob;
   }
 
   /**

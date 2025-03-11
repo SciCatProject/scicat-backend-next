@@ -13,6 +13,7 @@ import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
   addStatusFields,
+  addUpdatedJobParamsField,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
@@ -112,6 +113,47 @@ export class JobsService {
           updateJobDto.statusCode,
           updateJobDto.statusMessage,
           updateJobDto.jobResultObject,
+        ),
+        { new: true },
+      )
+      .exec();
+
+    return updatedJob;
+  }
+
+  async updateV3(
+    id: string,
+    updateJobDto: UpdateJobDto,
+  ): Promise<JobClass | null> {
+    const existingJob = await this.jobModel.findOne({ id: id }).exec();
+    if (!existingJob) {
+      throw new NotFoundException(`Job #${id} not found`);
+    }
+
+    let jobParams = existingJob.jobParams;
+    let newJobResultObject = updateJobDto.jobResultObject;
+    // extract executionTime from jobResultObject
+    if (newJobResultObject?.executionTime) {
+      const { executionTime, ...jobResultObject } = newJobResultObject;
+      jobParams = {
+        ...jobParams,
+        executionTime: executionTime as Date,
+      }
+      newJobResultObject = jobResultObject;
+    }
+
+    const username = this.getUsername();
+    const updatedJob = await this.jobModel
+      .findOneAndUpdate(
+        { id: id },
+        addStatusFields(
+          addUpdatedJobParamsField(
+            addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
+            jobParams,
+          ),
+          updateJobDto.statusCode,
+          updateJobDto.statusMessage,
+          newJobResultObject,
         ),
         { new: true },
       )
