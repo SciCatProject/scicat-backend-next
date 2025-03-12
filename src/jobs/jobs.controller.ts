@@ -346,7 +346,8 @@ export class JobsController {
           );
         }
         jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.contactEmail = jobCreateDto.contactEmail ?? jobUser?.email as string;
+        jobInstance.contactEmail =
+          jobCreateDto.contactEmail ?? (jobUser?.email as string);
         if (jobCreateDto.ownerGroup) {
           jobInstance.ownerGroup = jobCreateDto.ownerGroup;
         }
