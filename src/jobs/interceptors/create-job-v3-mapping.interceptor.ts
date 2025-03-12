@@ -15,6 +15,11 @@ interface JobParams {
   [key: string]: unknown;
 }
 
+/**
+ * POST/api/v3/jobs requires a CreateJobDtoV3 object as request body.
+ * This interceptor maps the CreateJobDtoV3 object to a CreateJobDto object,
+ * to ensure compatibility with POST/api/v4/jobs.
+ */
 @Injectable()
 export class CreateJobV3MappingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -25,6 +30,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       datasetList: dtoV3.datasetList ?? [],
       ...dtoV3.jobParams,
     };
+    // to preserve the executionTime field, if provided, add it to jobParams
     if (dtoV3.executionTime) {
       jobParams.executionTime = dtoV3.executionTime;
     }
@@ -39,6 +45,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
         contactEmail: dtoV3.emailJobInitiator,
       };
     }
+    // ensure compatibility with the FE, which provides the username field in jobParams
     if (typeof dtoV3.jobParams?.username === "string") {
       newBody = {
         ...newBody,

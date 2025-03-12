@@ -7,8 +7,7 @@ export class UpdateJobDtoV3 {
   readonly executionTime?: Date;
 
   @IsString()
-  @IsOptional()
-  readonly jobStatusMessage?: string;
+  readonly jobStatusMessage: string;
 
   @IsObject()
   @IsOptional()

@@ -132,7 +132,7 @@ export class JobsService {
 
     let jobParams = existingJob.jobParams;
     let newJobResultObject = updateJobDto.jobResultObject;
-    // extract executionTime from jobResultObject
+    // extract executionTime from jobResultObject and move it to jobParams
     if (newJobResultObject?.executionTime) {
       const { executionTime, ...jobResultObject } = newJobResultObject;
       jobParams = {

@@ -12,7 +12,8 @@ import { UpdateJobDtoV3 } from "./update-job.v3.dto";
 
 export class CreateJobDtoV3 extends UpdateJobDtoV3 {
   @IsEmail()
-  readonly emailJobInitiator: string;
+  @IsOptional()
+  readonly emailJobInitiator?: string;
 
   @IsString()
   readonly type: string;
@@ -22,7 +23,6 @@ export class CreateJobDtoV3 extends UpdateJobDtoV3 {
   readonly jobParams?: Record<string, unknown>;
 
   @IsArray()
-  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => DatasetListDto)
   readonly datasetList: DatasetListDto[];
