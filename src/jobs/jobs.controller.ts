@@ -153,6 +153,24 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
+      if (typeof datasetListDto.pid !== 'string') {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "In datasetList each 'pid' field should be a string.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!Array.isArray(datasetListDto.files)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "In datasetList each 'files' field should be an array.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     // check that all requested pids exist
