@@ -27,7 +27,7 @@ export class CreateJobDto {
   })
   @IsString()
   @IsOptional()
-  readonly ownerUser: string;
+  readonly ownerUser?: string;
 
   @ApiProperty({
     type: String,
@@ -37,7 +37,7 @@ export class CreateJobDto {
   })
   @IsString()
   @IsOptional()
-  readonly ownerGroup: string;
+  readonly ownerGroup?: string;
 
   @ApiProperty({
     type: String,
@@ -48,5 +48,5 @@ export class CreateJobDto {
   })
   @IsEmail()
   @IsOptional()
-  readonly contactEmail: string;
+  readonly contactEmail?: string;
 }

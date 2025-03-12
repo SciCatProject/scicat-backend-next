@@ -36,7 +36,6 @@ import {
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
@@ -74,7 +73,6 @@ export class JobsController {
     private readonly origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private readonly usersService: UsersService,
-    private eventEmitter: EventEmitter2,
     private configService: ConfigService,
     private jobConfigService: JobConfigService,
   ) {
@@ -314,7 +312,9 @@ export class JobsController {
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
-    jobInstance.contactEmail = jobCreateDto.contactEmail;
+    if (jobCreateDto.contactEmail) {
+      jobInstance.contactEmail = jobCreateDto.contactEmail;
+    }
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
@@ -340,14 +340,16 @@ export class JobsController {
       ) {
         // admin users
         let jobUser: JWTUser | null = user;
-        if (user.username != jobCreateDto.ownerUser) {
+        if (jobCreateDto.ownerUser && user.username != jobCreateDto.ownerUser) {
           jobUser = await this.usersService.findByUsername2JWTUser(
             jobCreateDto.ownerUser,
           );
         }
         jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.contactEmail = jobUser?.email as string;
-        jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        jobInstance.contactEmail = jobCreateDto.contactEmail ?? jobUser?.email as string;
+        if (jobCreateDto.ownerGroup) {
+          jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        }
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {
@@ -370,7 +372,7 @@ export class JobsController {
           );
         }
         jobInstance.ownerUser = user.username;
-        jobInstance.contactEmail = user.email;
+        jobInstance.contactEmail = jobCreateDto.contactEmail ?? user.email;
         // check that ownerGroup is one of the user groups
         if (!user.currentGroups.includes(jobCreateDto.ownerGroup)) {
           throw new HttpException(
@@ -554,7 +556,7 @@ export class JobsController {
     jobConfig: JobConfig,
     jobInstance: JobClass,
   ): Promise<void> {
-    // TODO - what shall we do when configVersion does not match?
+    // Give a warning when configVersion does not match
     if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
