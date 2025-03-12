@@ -153,7 +153,7 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (typeof datasetListDto.pid !== 'string') {
+      if (typeof datasetListDto.pid !== "string") {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
