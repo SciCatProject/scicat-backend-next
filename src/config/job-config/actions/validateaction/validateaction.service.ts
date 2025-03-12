@@ -5,7 +5,10 @@ import {
   JobDto,
 } from "../../jobconfig.interface";
 import { ValidateCreateJobAction, ValidateJobAction } from "./validateaction";
-import { isValidateJobActionOptions } from "./validateaction.interface";
+import {
+  isValidateCreateJobActionOptions,
+  isValidateJobActionOptions,
+} from "./validateaction.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { CreateJobDto } from "src/jobs/dto/create-job.dto";
 import { ModuleRef } from "@nestjs/core";
@@ -17,7 +20,7 @@ export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isValidateJobActionOptions(options)) {
       throw new Error(
-        `Invalid options for ValidateJobAction: ${JSON.stringify(options)}`,
+        `Invalid options for validate action: ${JSON.stringify(options)}`,
       );
     }
     return new ValidateJobAction(options);
@@ -32,8 +35,10 @@ export class ValidateCreateJobActionCreator
   constructor(private moduleRef: ModuleRef) {}
 
   public create<Options extends JobActionOptions>(options: Options) {
-    if (!isValidateJobActionOptions(options)) {
-      throw new Error("Invalid options for ValidateJobAction.");
+    if (!isValidateCreateJobActionOptions(options)) {
+      throw new Error(
+        "Invalid options for validate action: ${JSON.stringify(options)}",
+      );
     }
     return new ValidateCreateJobAction(this.moduleRef, options);
   }
