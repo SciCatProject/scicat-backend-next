@@ -20,7 +20,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe.only("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
+describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
