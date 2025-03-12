@@ -10,19 +10,16 @@ import { DatasetClass } from "../schemas/dataset.schema";
 
 @Injectable()
 export class FinalEditInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       map((data: DatasetClass[]) => {
-        const removeFields = (obj: any) => {
+        const removeFields = (obj: Record<string, unknown>) => {
           if (obj && typeof obj === "object") {
             for (const key in obj) {
               if (key === "unitSI" || key === "valueSI") {
                 delete obj[key];
               } else {
-                removeFields(obj[key]);
+                removeFields(obj[key] as Record<string, unknown>);
               }
             }
           }
