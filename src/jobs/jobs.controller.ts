@@ -146,7 +146,7 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (typeof datasetListDto.pid !== "string") {
+      if (typeof datasetListDto[JobParams.Pid] !== "string") {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
@@ -155,7 +155,7 @@ export class JobsController {
           HttpStatus.BAD_REQUEST,
         );
       }
-      if (!Array.isArray(datasetListDto.files)) {
+      if (!Array.isArray(datasetListDto[JobParams.Files])) {
         throw new HttpException(
           {
             status: HttpStatus.BAD_REQUEST,
