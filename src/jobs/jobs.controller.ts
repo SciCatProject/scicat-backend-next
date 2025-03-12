@@ -357,15 +357,22 @@ export class JobsController {
         // admin users
         let jobUser: JWTUser | null = user;
         if (!jobCreateDto.ownerUser) {
-          jobUser = null;
+          jobUser = user;
         } else if (user.username != jobCreateDto.ownerUser) {
           jobUser = await this.usersService.findByUsername2JWTUser(
             jobCreateDto.ownerUser,
           );
         }
-        jobInstance.ownerUser = jobUser?.username as string;
+        if (jobUser === null) {
+          Logger.log(
+            "Owner user was not found, using current user instead.",
+            "instanceAuthorizationJobCreate",
+          );
+        }
+        jobInstance.ownerUser = (jobUser?.username as string) ?? user.username;
         jobInstance.contactEmail =
-          jobCreateDto.contactEmail ?? (jobUser?.email as string);
+          jobCreateDto.contactEmail ?? (jobUser?.email as string); // prioritize contactEmail for anonymous users
+        // TODO: for users with scicat account, should it be the ownerUser's email or keep contactEmail ?
         if (jobCreateDto.ownerGroup) {
           jobInstance.ownerGroup = jobCreateDto.ownerGroup;
         }
