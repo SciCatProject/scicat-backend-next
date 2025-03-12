@@ -7,7 +7,9 @@ let accessTokenAdminIngestor = null,
   datasetPid1 = null,
   jobId1 = null,
   encodedJobOwnedByAdmin = null,
-  newJob1 = null;
+  newJob1 = null,
+  jobUpdateDto1 = null,
+  jobUpdateDto2 = null;
 
 const dataset1 = {
   ...TestData.RawCorrect,
@@ -183,18 +185,18 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  const jobUpdateDto = {
-    jobStatusMessage: "newJobStatus",
-    executionTime: "2045-01-01T00:00:00.000Z",
-    jobResultObject: {
-      resultParam: "ok",
-    },
-  };
-
   it("0070: Add a status update via /api/v3 to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    jobUpdateDto1 = {
+      jobStatusMessage: "newJobStatus",
+      executionTime: "2045-01-01T00:00:00.000Z",
+      jobResultObject: {
+        resultParam: "ok",
+      },
+    };
+
     return request(appUrl)
       .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
-      .send(jobUpdateDto)
+      .send(jobUpdateDto1)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulPatchStatusCode)
@@ -206,9 +208,9 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
         res.body.should.have.property("emailJobInitiator").to.be.equal(newJob1.emailJobInitiator);
         res.body.should.have.property("datasetList").that.deep.equals(newJob1.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals(newJob1.jobParams);
-        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto.jobStatusMessage);
-        res.body.should.have.property("executionTime").to.be.equal(jobUpdateDto.executionTime);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto.jobResultObject);
+        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have.property("executionTime").to.be.equal(jobUpdateDto1.executionTime);
+        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto1.jobResultObject);
       });
   });
 
@@ -224,7 +226,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
           datasetList: newJob1.datasetList,
           param: newJob1.jobParams.param,
           username: newJob1.jobParams.username,
-          executionTime: jobUpdateDto.executionTime
+          executionTime: jobUpdateDto1.executionTime
         };
         res.body.should.have.property("id");
         res.body.should.have.property("createdAt");
@@ -232,18 +234,75 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("configVersion").and.be.string;
         res.body.should.have.property("ownerUser").to.be.equal(newJob1.jobParams.username);
-        res.body.should.have.property("statusCode").to.be.equal(jobUpdateDto.jobStatusMessage);
-        res.body.should.have.property("statusMessage").to.be.equal(jobUpdateDto.jobStatusMessage);
+        res.body.should.have.property("statusCode").to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have.property("statusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
         res.body.should.have.property("contactEmail").to.be.equal(newJob1.emailJobInitiator);
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto.jobResultObject);
+        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto1.jobResultObject);
       });
   });
 
-  it("0090: Get jobs as a user from ADMIN_GROUPS", async () => {
+  it("0090: Add a status update via /api/v4 to a job that was created via /api/v3, as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    jobUpdateDto2 = {
+      statusCode: "statusCode",
+      statusMessage: "statusMessage",
+      jobResultObject: {
+        newParam: "test",
+      },
+    };
+
+    return request(appUrl)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
+      .send(jobUpdateDto2)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const expectedJobParams = {
+          datasetList: newJob1.datasetList,
+          param: newJob1.jobParams.param,
+          username: newJob1.jobParams.username,
+          executionTime: jobUpdateDto1.executionTime
+        };
+        res.body.should.have.property("id");
+        res.body.should.have.property("configVersion").and.be.string;
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("creationTime");
+        res.body.should.not.have.property("executionTime");
+        res.body.should.not.have.property("datasetList");
+        res.body.should.have.property("statusCode").to.be.equal(jobUpdateDto2.statusCode);
+        res.body.should.have.property("statusMessage").to.be.equal(jobUpdateDto2.statusMessage);
+        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto2.jobResultObject);
+        res.body.should.have.property("contactEmail").to.be.equal(newJob1.emailJobInitiator);
+        res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
+        res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
+      });
+  });
+
+  it("0100: Get via /api/v3 the job that was previously updated via /api/v4, as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.have.property("emailJobInitiator").to.be.equal(newJob1.emailJobInitiator);
+        res.body.should.have.property("datasetList").that.deep.equals(newJob1.datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals(newJob1.jobParams);
+        res.body.should.have.property("executionTime").to.be.equal(jobUpdateDto1.executionTime);
+        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto2.jobResultObject);
+        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto2.statusCode);
+      });
+  });
+
+  it("0110: Get jobs as a user from ADMIN_GROUPS", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/`)
-      .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -253,7 +312,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0100: Fullquery jobs as a user from ADMIN_GROUPS", async () => {
+  it("0120: Fullquery jobs as a user from ADMIN_GROUPS", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullquery`)
@@ -268,7 +327,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0110: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
+  it("0130: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -283,7 +342,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0120: Delete job created by admin as admin", async () => {
+  it("0140: Delete job created by admin as admin", async () => {
     return request(appUrl)
       .delete("/api/v3/Jobs/" + encodedJobOwnedByAdmin)
       .set("Accept", "application/json")
@@ -292,10 +351,9 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("0130: Get jobs as a user from ADMIN_GROUPS, which should be one less than before, proving that delete works", async () => {
+  it("0150: Get jobs as a user from ADMIN_GROUPS, which should be one less than before, proving that delete works", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/`)
-      .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
@@ -305,6 +363,78 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  // TODO a add v4 job and get it with v3
-  // TODO update a v4 job and get it with v3
+  it("0160: Add via /api/v4 a new job as a user from ADMIN_GROUPS in '#all' configuration", async () => {
+    newJob1 = {
+      ...jobAll,
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v4/Jobs")
+      .send(newJob1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have.property("id");
+        jobId1 = res.body["id"];
+        encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
+      });
+  });
+
+  it("0170: Get via /api/v3 the job that was previously added via /api/v4, as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const { datasetList, ...jobParams } = newJob1.jobParams;
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("emailJobInitiator");
+        res.body.should.not.have.property("executionTime");
+        res.body.should.have.property("datasetList").that.deep.equals(datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals(jobParams);
+        res.body.should.have.property("jobResultObject").that.deep.equals({});
+        res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
+      });
+  });
+
+  it("0180: Add a status update via /api/v3 to a job that was created via /api/v4, as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+    jobUpdateDto1 = {
+      jobStatusMessage: "newJobStatus",
+      executionTime: "2032-01-01T12:00:00.000Z",
+      jobResultObject: {
+        resultParam: "new param",
+      },
+    };
+
+    return request(appUrl)
+      .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
+      .send(jobUpdateDto1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.SuccessfulPatchStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        const { datasetList, ...jobParams } = newJob1.jobParams;
+        res.body.should.have.property("id");
+        res.body.should.have.property("creationTime");
+        res.body.should.have.property("type").and.be.string;
+        res.body.should.not.have.property("emailJobInitiator");
+        res.body.should.have.property("datasetList").that.deep.equals(datasetList);
+        res.body.should.have.property("jobParams").that.deep.equals(jobParams);
+        res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
+        res.body.should.have.property("executionTime").to.be.equal(jobUpdateDto1.executionTime);
+        res.body.should.have.property("jobResultObject").that.deep.equals(jobUpdateDto1.jobResultObject);
+      });
+  });
 });
