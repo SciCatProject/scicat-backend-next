@@ -120,7 +120,7 @@ export class CaslAbilityFactory {
       cannot(Action.DatasetUpdate, DatasetClass);
       // -
       cannot(Action.DatasetAttachmentCreate, DatasetClass);
-      cannot(Action.DatasetAttachmentRead, DatasetClass);
+      can(Action.DatasetAttachmentRead, DatasetClass);
       cannot(Action.DatasetAttachmentUpdate, DatasetClass);
       cannot(Action.DatasetAttachmentDelete, DatasetClass);
       // -
