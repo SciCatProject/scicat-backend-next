@@ -286,6 +286,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
   it("0090: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetOwner' configuration", async () => {
     const newJob = {
       ...jobDatasetOwner,
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -306,6 +307,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
