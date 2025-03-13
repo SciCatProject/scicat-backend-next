@@ -355,24 +355,28 @@ export class JobsController {
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
         // admin users
-        let jobUser: JWTUser | null = user;
-        if (!jobCreateDto.ownerUser) {
-          jobUser = user;
-        } else if (user.username != jobCreateDto.ownerUser) {
-          jobUser = await this.usersService.findByUsername2JWTUser(
-            jobCreateDto.ownerUser,
-          );
+        let jobUser: JWTUser | null = null;
+        if (jobCreateDto.ownerUser) {
+          if (user.username != jobCreateDto.ownerUser) {
+            jobUser = await this.usersService.findByUsername2JWTUser(
+              jobCreateDto.ownerUser,
+            );
+            if (jobUser === null) {
+              Logger.log(
+                "Owner user was not found, using current user instead.",
+                "instanceAuthorizationJobCreate",
+              );
+            }
+            jobInstance.ownerUser = (jobUser?.username as string) ?? user.username;
+          } else {
+            jobInstance.ownerUser = user.username;
+          }
         }
-        if (jobUser === null) {
-          Logger.log(
-            "Owner user was not found, using current user instead.",
-            "instanceAuthorizationJobCreate",
-          );
-        }
-        jobInstance.ownerUser = (jobUser?.username as string) ?? user.username;
+        // TODO throw error if no contactEmail is providedfor anynonymous case
+        // prioritize contactEmail for anonymous users
         jobInstance.contactEmail =
-          jobCreateDto.contactEmail ?? (jobUser?.email as string); // prioritize contactEmail for anonymous users
-        // TODO: for users with scicat account, should it be the ownerUser's email or keep contactEmail ?
+          jobCreateDto.contactEmail ?? (jobUser?.email as string) ?? user.email;
+        // TODO: ensure that the provided ownerGroup exists
         if (jobCreateDto.ownerGroup) {
           jobInstance.ownerGroup = jobCreateDto.ownerGroup;
         }
