@@ -22,7 +22,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
+describe("1190: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -300,7 +300,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0110: Get jobs as a user from ADMIN_GROUPS", async () => {
+  it("0110: Get via /api/v3 all accessible jobs as a user from ADMIN_GROUPS", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/`)
       .set("Accept", "application/json")
@@ -312,7 +312,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0120: Fullquery jobs as a user from ADMIN_GROUPS", async () => {
+  it("0120: Fullquery via /api/v3 all accessible jobs as a user from ADMIN_GROUPS", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullquery`)
@@ -327,7 +327,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0130: Fullfacet jobs as a user from ADMIN_GROUPS that were created by admin", async () => {
+  it("0130: Fullfacet via /api/v3 jobs that were created by admin as a user from ADMIN_GROUPS", async () => {
     const query = { createdBy: "admin" };
     return request(appUrl)
       .get(`/api/v3/Jobs/fullfacet`)
@@ -342,7 +342,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       });
   });
 
-  it("0140: Delete job created by admin as admin", async () => {
+  it("0140: Delete via /api/v3 a job created by admin as admin", async () => {
     return request(appUrl)
       .delete("/api/v3/Jobs/" + encodedJobOwnedByAdmin)
       .set("Accept", "application/json")
@@ -351,7 +351,7 @@ describe("1190: Jobs: Test Backwards Compatibility via /api/v3/Jobs", () => {
       .expect("Content-Type", /json/);
   });
 
-  it("0150: Get jobs as a user from ADMIN_GROUPS, which should be one less than before, proving that delete works", async () => {
+  it("0150: Get via /api/v3 all accessible jobs as a user from ADMIN_GROUPS, which should be one less than before, proving that delete works", async () => {
     return request(appUrl)
       .get(`/api/v3/Jobs/`)
       .set("Accept", "application/json")
