@@ -8,6 +8,7 @@ import { Observable } from "rxjs";
 import { CreateJobDtoV3 } from "../dto/create-job.v3.dto";
 import { CreateJobDto } from "../dto/create-job.dto";
 import { DatasetListDto } from "../dto/dataset-list.dto";
+import { re } from "mathjs";
 
 interface JobParams {
   datasetList?: DatasetListDto[];
@@ -38,13 +39,9 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     let newBody: CreateJobDto = {
       type: dtoV3.type,
       jobParams: jobParams,
+      contactEmail: dtoV3.emailJobInitiator ?? request.user.email,
     };
-    if (dtoV3.emailJobInitiator) {
-      newBody = {
-        ...newBody,
-        contactEmail: dtoV3.emailJobInitiator,
-      };
-    }
+
     // ensure compatibility with the FE, which provides the username field in jobParams
     if (typeof dtoV3.jobParams?.username === "string") {
       newBody = {

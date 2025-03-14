@@ -103,8 +103,8 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("datasetList").that.deep.equals(newJob.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
         res.body.should.have.property("jobResultObject").that.deep.equals({});
+        res.body.should.have.property("emailJobInitiator").to.be.equal(TestData.Accounts["admin"]["email"]);
         res.body.should.not.have.property("executionTime");
-        res.body.should.not.have.property("emailJobInitiator");
       });
   });
 
@@ -363,9 +363,10 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
       });
   });
 
-  it("0160: Add via /api/v4 a new job as a user from ADMIN_GROUPS in '#all' configuration", async () => {
+  it("0160: Add via /api/v4 a new anonymous job as a user from ADMIN_GROUPS in '#all' configuration", async () => {
     newJob1 = {
       ...jobAll,
+      contactEmail: "user@test.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -399,7 +400,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.not.have.property("emailJobInitiator");
+        res.body.should.have.property("emailJobInitiator").to.be.equal(newJob1.contactEmail);
         res.body.should.not.have.property("executionTime");
         res.body.should.have.property("datasetList").that.deep.equals(datasetList);
         res.body.should.have.property("jobParams").that.deep.equals(jobParams);
@@ -429,7 +430,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("id");
         res.body.should.have.property("creationTime");
         res.body.should.have.property("type").and.be.string;
-        res.body.should.not.have.property("emailJobInitiator");
+        res.body.should.have.property("emailJobInitiator");
         res.body.should.have.property("datasetList").that.deep.equals(datasetList);
         res.body.should.have.property("jobParams").that.deep.equals(jobParams);
         res.body.should.have.property("jobStatusMessage").to.be.equal(jobUpdateDto1.jobStatusMessage);
