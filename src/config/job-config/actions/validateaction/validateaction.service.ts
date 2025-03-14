@@ -31,7 +31,6 @@ export class ValidateJobActionCreator implements JobActionCreator<JobDto> {
 export class ValidateCreateJobActionCreator
   implements JobActionCreator<CreateJobDto>
 {
-  private datasetsService: DatasetsService;
   constructor(private moduleRef: ModuleRef) {}
 
   public create<Options extends JobActionOptions>(options: Options) {
