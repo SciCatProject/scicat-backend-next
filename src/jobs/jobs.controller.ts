@@ -36,7 +36,6 @@ import {
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { JobsConfigSchema } from "./types/jobs-config-schema.enum";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { AccessGroupsType } from "src/config/configuration";
@@ -74,7 +73,6 @@ export class JobsController {
     private readonly origDatablocksService: OrigDatablocksService,
     private caslAbilityFactory: CaslAbilityFactory,
     private readonly usersService: UsersService,
-    private eventEmitter: EventEmitter2,
     private configService: ConfigService,
     private jobConfigService: JobConfigService,
   ) {
@@ -144,6 +142,24 @@ export class JobsController {
             status: HttpStatus.BAD_REQUEST,
             message:
               "Dataset list is expected to contain sets of pid and files.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (typeof datasetListDto[JobParams.Pid] !== "string") {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "In datasetList each 'pid' field should be a string.",
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!Array.isArray(datasetListDto[JobParams.Files])) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            message: "In datasetList each 'files' field should be an array.",
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -272,13 +288,11 @@ export class JobsController {
    */
   async generateJobInstanceForPermissions(job: JobClass): Promise<JobClass> {
     const jobInstance = new JobClass();
-
     jobInstance._id = job._id;
     jobInstance.id = job.id;
     jobInstance.type = job.type;
     jobInstance.ownerGroup = job.ownerGroup;
     jobInstance.ownerUser = job.ownerUser;
-
     return jobInstance;
   }
 
@@ -314,7 +328,9 @@ export class JobsController {
     jobInstance._id = "";
     jobInstance.accessGroups = [];
     jobInstance.type = jobCreateDto.type;
-    jobInstance.contactEmail = jobCreateDto.contactEmail;
+    if (jobCreateDto.contactEmail) {
+      jobInstance.contactEmail = jobCreateDto.contactEmail;
+    }
     jobInstance.jobParams = jobCreateDto.jobParams;
     jobInstance.configVersion =
       jobConfiguration[JobsConfigSchema.ConfigVersion];
@@ -339,15 +355,45 @@ export class JobsController {
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
         // admin users
-        let jobUser: JWTUser | null = user;
-        if (user.username != jobCreateDto.ownerUser) {
-          jobUser = await this.usersService.findByUsername2JWTUser(
-            jobCreateDto.ownerUser,
+        let jobUser: JWTUser | null = null;
+        if (jobCreateDto.ownerUser) {
+          if (user.username != jobCreateDto.ownerUser) {
+            jobUser = await this.usersService.findByUsername2JWTUser(
+              jobCreateDto.ownerUser,
+            );
+            if (jobUser === null) {
+              Logger.log(
+                "Owner user was not found, using current user instead.",
+                "instanceAuthorizationJobCreate",
+              );
+            }
+            jobInstance.ownerUser =
+              (jobUser?.username as string) ?? user.username;
+          } else {
+            jobInstance.ownerUser = user.username;
+          }
+        }
+        if (jobCreateDto.ownerGroup) {
+          // TODO?: ensure that the provided ownerGroup exists
+          jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        }
+        if (
+          !jobCreateDto.ownerGroup &&
+          !jobCreateDto.ownerUser &&
+          !jobCreateDto.contactEmail
+        ) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                "Contact email should be specified for an anonymous job.",
+            },
+            HttpStatus.BAD_REQUEST,
           );
         }
-        jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.contactEmail = jobUser?.email as string;
-        jobInstance.ownerGroup = jobCreateDto.ownerGroup;
+        // prioritize jobCreateDto.contactEmail for anonymous users
+        jobInstance.contactEmail =
+          jobCreateDto.contactEmail ?? (jobUser?.email as string) ?? user.email;
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {
@@ -370,7 +416,7 @@ export class JobsController {
           );
         }
         jobInstance.ownerUser = user.username;
-        jobInstance.contactEmail = user.email;
+        jobInstance.contactEmail = jobCreateDto.contactEmail ?? user.email;
         // check that ownerGroup is one of the user groups
         if (!user.currentGroups.includes(jobCreateDto.ownerGroup)) {
           throw new HttpException(
@@ -554,7 +600,7 @@ export class JobsController {
     jobConfig: JobConfig,
     jobInstance: JobClass,
   ): Promise<void> {
-    // TODO - what shall we do when configVersion does not match?
+    // Give a warning when configVersion does not match
     if (jobConfig.configVersion !== jobInstance.configVersion) {
       Logger.log(
         `
