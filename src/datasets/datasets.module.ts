@@ -3,7 +3,6 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetClass, DatasetSchema } from "./schemas/dataset.schema";
 import { DatasetsController } from "./datasets.controller";
 import { DatasetsService } from "./datasets.service";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { OrigDatablocksModule } from "src/origdatablocks/origdatablocks.module";
 import { DatablocksModule } from "src/datablocks/datablocks.module";
@@ -15,9 +14,11 @@ import { ElasticSearchModule } from "src/elastic-search/elastic-search.module";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
 import { DatasetsPublicV4Controller } from "./datasets-public.v4.controller";
 import { DatasetsAccessService } from "./datasets-access.service";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
+    CaslModule,
     AttachmentsModule,
     DatablocksModule,
     OrigDatablocksModule,
@@ -70,6 +71,6 @@ import { DatasetsAccessService } from "./datasets-access.service";
     DatasetsController,
     DatasetsV4Controller,
   ],
-  providers: [DatasetsService, CaslAbilityFactory, DatasetsAccessService],
+  providers: [DatasetsService, DatasetsAccessService],
 })
 export class DatasetsModule {}

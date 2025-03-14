@@ -13,7 +13,7 @@ import { OidcConfig } from "src/config/configuration";
 import { BuildOpenIdClient, OidcStrategy } from "./strategies/oidc.strategy";
 import { accessGroupServiceFactory } from "./access-group-provider/access-group-service-factory";
 import { AccessGroupService } from "./access-group-provider/access-group.service";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
 
 const OidcStrategyFactory = {
   provide: "OidcStrategy",
@@ -42,6 +42,7 @@ const OidcStrategyFactory = {
 
 @Module({
   imports: [
+    CaslModule,
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>("jwt.secret"),
@@ -61,7 +62,6 @@ const OidcStrategyFactory = {
     JwtStrategy,
     LdapStrategy,
     LocalStrategy,
-    CaslAbilityFactory,
     OidcStrategyFactory,
     accessGroupServiceFactory,
   ],

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 //NOTE: Here we load and initialize some global variables that are used throughout the tests
+
 require("dotenv").config();
 var chaiHttp;
 var chai;
 
 const { MongoClient } = require("mongodb");
-
 const client = new MongoClient(process.env.MONGODB_URI);
 
 async function loadChai() {

@@ -1,11 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CaslModule } from "src/casl/casl.module";
 import { DatasetsService } from "./datasets.service";
 import { LogbooksService } from "src/logbooks/logbooks.service";
 import { ConfigModule } from "@nestjs/config";
 import { DatasetsV4Controller } from "./datasets.v4.controller";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 
 class DatasetsServiceMock {}
+
+class CaslAbilityFactoryMock {}
 
 class LogbooksServiceMock {}
 
@@ -15,10 +17,11 @@ describe("DatasetsController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DatasetsV4Controller],
-      imports: [CaslModule, ConfigModule],
+      imports: [ConfigModule],
       providers: [
         { provide: LogbooksService, useClass: LogbooksServiceMock },
         { provide: DatasetsService, useClass: DatasetsServiceMock },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
 

@@ -1,30 +1,52 @@
-import { Type } from "class-transformer";
-import {
-  IsArray,
-  IsEmail,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from "class-validator";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { DatasetListDto } from "./dataset-list.dto";
-import { UpdateJobDto } from "./update-job.dto";
+import { ApiProperty, ApiTags } from "@nestjs/swagger";
+import { IsEmail, IsObject, IsOptional, IsString } from "class-validator";
 
-export class CreateJobDto extends UpdateJobDto {
-  @IsEmail()
-  readonly emailJobInitiator: string;
-
+@ApiTags("jobs")
+export class CreateJobDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+    description: "Valid job type as defined in configuration.",
+  })
   @IsString()
   readonly type: string;
 
+  @ApiProperty({
+    type: Object,
+    required: true,
+    description: "Job's parameters as defined by job template in configuration",
+  })
   @IsObject()
-  @IsOptional()
-  readonly jobParams?: Record<string, unknown>;
+  readonly jobParams: Record<string, unknown>;
 
-  @IsArray()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "User that this job belongs to. Applicable only if requesting user has adequate permissions level",
+  })
+  @IsString()
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => DatasetListDto)
-  readonly datasetList: IDatasetList[];
+  readonly ownerUser?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      "Group that this job belongs to. Applicable only if requesting user has adequate permissions level",
+  })
+  @IsString()
+  @IsOptional()
+  readonly ownerGroup?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "",
+    description:
+      "Email to contact regarding this job. If the job is submitted anonymously, an email has to be provided",
+  })
+  @IsEmail()
+  @IsOptional()
+  readonly contactEmail?: string;
 }
