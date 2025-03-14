@@ -58,3 +58,30 @@ jobs:
               const: true
     update:
       auth: "archivemanager"
+  - jobType: filter_test
+    create:
+      auth: "#all"
+      actions:
+        - actionType: switch
+          # Either 'request' or 'datasets', analogous to validateaction
+          scope: datasets
+          # JSONPath to extract the value from the given scope
+          property: datasetlifecycle.storageLocation
+          # Cases are tested sequentially, with the first match applied (no fallthrough)
+          cases:
+              # match applies a regex. Assumes the property is a string
+            - match: /PSI.*/i
+              actions:
+              - actionType: log
+                performJob: "Sending job to PSI"
+              # schema applies an AJV schema
+            - schema:
+                const: ETHZ
+              actions:
+              - actionType: log
+                performJob: "Sending job to ETHZ"
+              # default case (no match or schema)
+            - actions:
+              - actionType: error
+                code: 400
+                message: Invalid storageLocation

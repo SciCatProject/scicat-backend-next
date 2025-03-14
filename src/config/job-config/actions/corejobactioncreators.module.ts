@@ -21,6 +21,12 @@ import {
   CREATE_JOB_ACTION_CREATORS,
   UPDATE_JOB_ACTION_CREATORS,
 } from "../jobconfig.interface";
+import { SwitchJobActionModule } from "./switchaction/switchaction.module";
+import {
+  SwitchCreateJobActionCreator,
+  SwitchUpdateJobActionCreator,
+} from "./switchaction/switchaction.service";
+import { actionType as switchActionType } from "./switchaction/switchaction.interface";
 
 /**
  * Provide a list of built-in job action creators.
@@ -35,6 +41,7 @@ import {
     ValidateJobActionModule,
     URLJobActionModule,
     RabbitMQJobActionModule,
+    SwitchJobActionModule,
   ],
   providers: [
     {
@@ -45,6 +52,7 @@ import {
         validateCreateJobActionCreator,
         urlJobActionCreator,
         rabbitMQJobActionCreator,
+        switchCreateJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -52,6 +60,7 @@ import {
           [validateActionType]: validateCreateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchCreateJobActionCreator,
         };
       },
       inject: [
@@ -60,6 +69,7 @@ import {
         ValidateCreateJobActionCreator,
         URLJobActionCreator,
         RabbitMQJobActionCreator,
+        SwitchCreateJobActionCreator,
       ],
     },
     {
@@ -70,6 +80,7 @@ import {
         validateJobActionCreator,
         urlJobActionCreator,
         rabbitMQJobActionCreator,
+        switchUpdateJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -77,6 +88,7 @@ import {
           [validateActionType]: validateJobActionCreator,
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
+          [switchActionType]: switchUpdateJobActionCreator,
         };
       },
       inject: [
@@ -85,6 +97,7 @@ import {
         ValidateJobActionCreator,
         URLJobActionCreator,
         RabbitMQJobActionCreator,
+        SwitchUpdateJobActionCreator,
       ],
     },
   ],
