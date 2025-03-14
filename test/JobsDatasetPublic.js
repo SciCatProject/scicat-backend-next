@@ -234,6 +234,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
   it("0080: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#datasetPublic' configuration with one unpublished dataset", async () => {
     const newJob = {
       ...jobDatasetPublic,
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -253,6 +254,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });

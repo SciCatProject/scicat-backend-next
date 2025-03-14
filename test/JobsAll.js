@@ -231,6 +231,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("contactEmail").and.be.equal("admin@scicat.project");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -240,6 +241,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       ...jobAll,
       ownerUser: "admin",
       ownerGroup: "admin",
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -258,6 +260,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
+        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId1 = res.body["id"];
         encodedJobOwnedByAdmin = encodeURIComponent(jobId1);
@@ -288,6 +291,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        res.body.should.have.property("contactEmail").to.be.equal("user1@your.site");
         jobId2 = res.body["id"];
         encodedJobOwnedByUser1 = encodeURIComponent(jobId2);
       });
@@ -315,15 +319,40 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("contactEmail").to.be.equal("admin@scicat.project");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup1 = encodeURIComponent(jobId3);
       });
   });
 
+  it("0105: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#all' configuration without contactEmail, which should fail", async () => {
+    const newJob = {
+      ...jobAll,
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Contact email should be specified for an anonymous job.");
+      });
+  });
+
   it("0110: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#all' configuration", async () => {
     const newJob = {
       ...jobAll,
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -342,6 +371,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
@@ -397,6 +427,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
+        res.body.should.have.property("contactEmail").and.be.equal("user1@your.site");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -506,6 +537,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
     const newJob = {
       ...jobAll,
       ownerGroup: "group5",
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -524,6 +556,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group5");
         res.body.should.have.property("ownerUser").and.be.equal("user5.1");
+        res.body.should.have.property("contactEmail").and.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId5 = res.body["id"];
         encodedJobOwnedByGroup5 = encodeURIComponent(jobId5);

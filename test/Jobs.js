@@ -303,6 +303,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0010: create validate job fails without required parameters", async () => {
       const newJob = {
         ...jobValidate,
+        contactEmail: "test@email.scicat",
         jobParams: {
           optionalParam: false,
           datasetList: [
@@ -330,6 +331,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0020: create validate job fails with the wrong types", async () => {
       const newJob = {
         type: "validate",
+        contactEmail: "test@email.scicat",
         jobParams: {
           requiredParam: 123,
           arrayOfStrings: ["ok"],
@@ -357,6 +359,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0030: create validate job fails with the wrong types", async () => {
       const newJob = {
         type: "validate",
+        contactEmail: "test@email.scicat",
         jobParams: {
           requiredParam: "ok",
           arrayOfStrings: "bad",
@@ -384,6 +387,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0040: create validate job fails with the wrong types", async () => {
       const newJob = {
         type: "validate",
+        contactEmail: "test@email.scicat",
         jobParams: {
           requiredParam: "ok",
           arrayOfStrings: [123],
@@ -412,6 +416,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0045: create validate fails without datasetList", async () => {
       const newDataset = {
         type: "validate",
+        contactEmail: "test@email.scicat",
         jobParams: {
           requiredParam: "ok",
           arrayOfStrings: ["ok"],
@@ -434,6 +439,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     it("0050: create validate succeeds with the right types", async () => {
       const newJob = {
         type: "validate",
+        contactEmail: "test@email.scicat",
         jobParams: {
           requiredParam: "ok",
           arrayOfStrings: ["ok"],

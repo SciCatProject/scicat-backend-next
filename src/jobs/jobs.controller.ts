@@ -362,20 +362,45 @@ export class JobsController {
         user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
         // admin users
-        let jobUser: JWTUser | null = user;
-        if (!jobCreateDto.ownerUser) {
-          jobUser = null;
-        } else if (user.username != jobCreateDto.ownerUser) {
-          jobUser = await this.usersService.findByUsername2JWTUser(
-            jobCreateDto.ownerUser,
-          );
+        let jobUser: JWTUser | null = null;
+        if (jobCreateDto.ownerUser) {
+          if (user.username != jobCreateDto.ownerUser) {
+            jobUser = await this.usersService.findByUsername2JWTUser(
+              jobCreateDto.ownerUser,
+            );
+            if (jobUser === null) {
+              Logger.log(
+                "Owner user was not found, using current user instead.",
+                "instanceAuthorizationJobCreate",
+              );
+            }
+            jobInstance.ownerUser =
+              (jobUser?.username as string) ?? user.username;
+          } else {
+            jobInstance.ownerUser = user.username;
+          }
         }
-        jobInstance.ownerUser = jobUser?.username as string;
-        jobInstance.contactEmail =
-          jobCreateDto.contactEmail ?? (jobUser?.email as string);
         if (jobCreateDto.ownerGroup) {
+          // TODO?: ensure that the provided ownerGroup exists
           jobInstance.ownerGroup = jobCreateDto.ownerGroup;
         }
+        if (
+          !jobCreateDto.ownerGroup &&
+          !jobCreateDto.ownerUser &&
+          !jobCreateDto.contactEmail
+        ) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              message:
+                "Contact email should be specified for an anonymous job.",
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        // prioritize jobCreateDto.contactEmail for anonymous users
+        jobInstance.contactEmail =
+          jobCreateDto.contactEmail ?? (jobUser?.email as string) ?? user.email;
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {

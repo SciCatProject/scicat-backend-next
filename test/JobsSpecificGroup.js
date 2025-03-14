@@ -304,6 +304,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
   it("0090: Add a new job as a user from ADMIN_GROUPS for anonymous user in '#@group5' configuration", async () => {
     const newJob = {
       ...jobGroup5,
+      contactEmail: "test@email.scicat",
       jobParams: {
         datasetList: [
           { pid: datasetPid1, files: [] },
@@ -323,6 +324,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         res.body.should.have.property("type").and.be.string;
         res.body.should.not.have.property("ownerGroup");
         res.body.should.not.have.property("ownerUser");
+        res.body.should.have.property("contactEmail").to.be.equal(newJob.contactEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId6 = res.body["id"];
         encodedJobOwnedByAnonym = encodeURIComponent(jobId6);
