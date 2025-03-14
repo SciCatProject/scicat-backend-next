@@ -1,10 +1,13 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AttachmentsService } from "./attachments.service";
+import { AttachmentsController } from "./attachments.controller";
 import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
   imports: [
+    CaslModule,
     MongooseModule.forFeatureAsync([
       {
         name: Attachment.name,
@@ -27,6 +30,7 @@ import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
       },
     ]),
   ],
+  controllers: [AttachmentsController],
   providers: [AttachmentsService],
   exports: [AttachmentsService],
 })
