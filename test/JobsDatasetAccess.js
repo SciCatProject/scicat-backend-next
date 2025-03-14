@@ -148,7 +148,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -179,7 +179,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -209,7 +209,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -239,7 +239,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -268,7 +268,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -299,7 +299,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -328,7 +328,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -356,7 +356,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
       },
     };
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -382,7 +382,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -413,7 +413,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -427,7 +427,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0140: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAdmin}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -440,7 +440,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0150: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -453,7 +453,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0160: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -466,7 +466,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0170: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -479,7 +479,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0180: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -492,7 +492,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0190: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -505,7 +505,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0200: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -518,7 +518,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0210: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -531,7 +531,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0220: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -544,7 +544,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0230: Adds a Status update to a job as a normal user for his/her job in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser51}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -557,7 +557,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0240: Adds a Status update to a job as a normal user for another user's job in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByUser1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -570,7 +570,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0250: Adds a Status update to a job as a normal user for his/her group in '#jobOwnerGroup' configuration", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup5}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -583,7 +583,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0260: Adds a Status update to a job as a normal user for another user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByGroup1}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -596,7 +596,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0270: Adds a Status update to a job as a normal user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
@@ -609,7 +609,7 @@ describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs 
 
   it("0280: Adds a Status update to a job as unauthenticated user for anonymous user's group in '#jobOwnerGroup' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
-      .patch(`/api/v3/Jobs/${encodedJobOwnedByAnonym}`)
+      .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
         statusMessage: "update status of a job",
         statusCode: "job finished/blocked/etc",
