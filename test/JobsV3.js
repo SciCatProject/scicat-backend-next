@@ -706,4 +706,71 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.be.an("array").to.have.lengthOf(3);
       });
   });
+
+  it("0330: Add via /api/v3 an anonymous job as user1, which should fail", async () => {
+    const newJob = {
+      ...jobUser,
+      datasetList: [
+        { pid: datasetPid1, files: [] },
+      ],
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+      });
+  });
+
+  it("0340: Add via /api/v3 an anonymous job as user1, providing another contactEmail, which should fail", async () => {
+    const newJob = {
+      ...jobUser,
+      emailJobInitiator: "user2@your.site",
+      datasetList: [
+        { pid: datasetPid1, files: [] },
+      ],
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. Owner group should be specified.");
+      });
+  });
+
+  it("0350: Add via /api/v3 a job for another user, as user1, which should fail", async () => {
+    const newJob = {
+      ...jobUser,
+      datasetList: [
+        { pid: datasetPid1, files: [] },
+      ],
+      jobParams: {
+        username: "user2",
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Invalid new job. User owning the job should match user logged in.");
+      });
+  });
 });
