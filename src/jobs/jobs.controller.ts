@@ -737,11 +737,11 @@ export class JobsController {
   /**
    * Update job implementation
    */
-  private async validateUpdateJob(
+  private async updateJob(
     request: Request,
     id: string,
     updateJobDto: UpdateJobDto,
-  ): Promise<JobConfig> {
+  ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
     const currentJob = await this.jobsService.findOne({ id: id });
@@ -771,7 +771,14 @@ export class JobsController {
     }
     // Allow actions to validate DTO
     await this.validateDTO(jobConfig.update.actions, updateJobDto);
-    return jobConfig;
+    // Update job in database
+    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    // Perform the action that is specified in the update portion of the job configuration
+    if (updatedJob !== null) {
+      await this.checkConfigVersion(jobConfig, updatedJob);
+      await this.performActions(jobConfig.update.actions, updatedJob);
+    }
+    return updatedJob;
   }
 
   /**
@@ -803,14 +810,8 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClassV3 | null> {
-    const jobConfig = await this.validateUpdateJob(request, id, updateJobDto);
-    // Update job in database
-    const updatedJob = await this.jobsService.updateV3(id, updateJobDto);
-    // Perform the action that is specified in the update portion of the job configuration
-    if (updatedJob !== null) {
-      await this.checkConfigVersion(jobConfig, updatedJob);
-      await this.performActions(jobConfig.update.actions, updatedJob);
-    }
+    Logger.log("Updating job v3 ", id);
+    const updatedJob = await this.updateJob(request, id, updateJobDto);
     return updatedJob ? this.mapJobClassV4toV3(updatedJob) : null;
   }
 
@@ -842,15 +843,7 @@ export class JobsController {
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
-    const jobConfig = await this.validateUpdateJob(request, id, updateJobDto);
-    // Update job in database
-    const updatedJob = await this.jobsService.update(id, updateJobDto);
-    // Perform the action that is specified in the update portion of the job configuration
-    if (updatedJob !== null) {
-      await this.checkConfigVersion(jobConfig, updatedJob);
-      await this.performActions(jobConfig.update.actions, updatedJob);
-    }
-    return updatedJob;
+    return await this.updateJob(request, id, updateJobDto);
   }
 
   /**

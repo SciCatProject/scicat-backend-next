@@ -135,7 +135,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("jobStatusMessage").to.be.equal("jobCreated");
         res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoByAdmin.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
         res.body.should.have.property("emailJobInitiator").to.be.equal(TestData.Accounts["admin"]["email"]);
         res.body.should.not.have.property("executionTime");
         encodedJobOwnedByAdmin = encodeURIComponent(res.body["id"]);
@@ -161,7 +160,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
         res.body.should.have.property("jobParams").that.deep.equals({ datasetList: jobCreateDtoByAdmin.datasetList });
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
       });
   });
 
@@ -213,7 +211,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("emailJobInitiator").to.be.equal(jobCreateDtoForUser1.emailJobInitiator);
         res.body.should.have.property("datasetList").that.deep.equals(jobCreateDtoForUser1.datasetList);
         res.body.should.have.property("jobParams").that.deep.equals({});
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
         encodedJobOwnedByUser1 = encodeURIComponent(res.body["id"]);
       });
   });
@@ -322,7 +319,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
       });
   });
 
@@ -351,7 +347,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
       });
   });
 
@@ -480,7 +475,6 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
         res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
-        res.body.should.have.property("jobResultObject").that.deep.equals({});
       });
   });
 

@@ -12,8 +12,6 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
-  addStatusFields,
-  addUpdatedJobParamsField,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
@@ -43,11 +41,10 @@ export class JobsService {
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = this.getUsername();
     const createdJob = new this.jobModel(
-      addStatusFields(
+      this.addStatusFields(
         addCreatedByFields(createJobDto, username),
         "jobCreated",
         "Job has been created.",
-        {},
       ),
     );
     return createdJob.save();
@@ -104,32 +101,6 @@ export class JobsService {
       throw new NotFoundException(`Job #${id} not found`);
     }
 
-    const username = this.getUsername();
-    const updatedJob = await this.jobModel
-      .findOneAndUpdate(
-        { id: id },
-        addStatusFields(
-          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
-          updateJobDto.statusCode,
-          updateJobDto.statusMessage,
-          updateJobDto.jobResultObject,
-        ),
-        { new: true },
-      )
-      .exec();
-
-    return updatedJob;
-  }
-
-  async updateV3(
-    id: string,
-    updateJobDto: UpdateJobDto,
-  ): Promise<JobClass | null> {
-    const existingJob = await this.jobModel.findOne({ id: id }).exec();
-    if (!existingJob) {
-      throw new NotFoundException(`Job #${id} not found`);
-    }
-
     let jobParams = existingJob.jobParams;
     let newJobResultObject = updateJobDto.jobResultObject;
     // extract executionTime from jobResultObject and move it to jobParams
@@ -146,17 +117,12 @@ export class JobsService {
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },
-        addStatusFields(
-          addUpdatedJobParamsField(
-            addUpdatedByField(
-              updateJobDto as UpdateQuery<JobDocument>,
-              username,
-            ),
-            jobParams,
-          ),
+        this.updateJobFields(
+          addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
           updateJobDto.statusCode,
           updateJobDto.statusMessage,
           newJobResultObject,
+          jobParams,
         ),
         { new: true },
       )
@@ -168,4 +134,40 @@ export class JobsService {
   async remove(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
     return this.jobModel.findOneAndDelete(filter).exec();
   }
+
+  private addStatusFields = <T>(
+    obj: T,
+    statusCode: string,
+    statusMessage: string,
+  ): T & {
+    statusCode: string;
+    statusMessage: string;
+  } => {
+    return {
+      ...obj,
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+    };
+  };
+
+  private updateJobFields = <T>(
+    obj: T,
+    statusCode: string,
+    statusMessage: string,
+    jobResultObject: Record<string, unknown> | undefined,
+    jobParams?: Record<string, unknown> | undefined,
+  ): T & {
+    statusCode: string;
+    statusMessage: string;
+    jobResultObject: Record<string, unknown> | undefined;
+    jobParams?: Record<string, unknown> | undefined;
+  } => {
+    return {
+      ...obj,
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+      jobResultObject: jobResultObject,
+      jobParams: jobParams,
+    };
+  };
 }
