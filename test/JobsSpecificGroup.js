@@ -97,7 +97,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
     });
   });
 
-  after(() => { 
+  after(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
   });

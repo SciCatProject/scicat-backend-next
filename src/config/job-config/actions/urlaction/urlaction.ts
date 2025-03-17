@@ -19,7 +19,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
 
   async performJob(job: JobClass) {
     const url = encodeURI(this.urlTemplate(job));
-    Logger.log(`Requesting ${url}`, "URLAction");
+    Logger.log(`(Job ${job.id}) Requesting ${url}`, "URLAction");
 
     const response = await fetch(url, {
       method: this.method,
@@ -34,18 +34,21 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
       body: this.bodyTemplate ? this.bodyTemplate(job) : undefined,
     });
 
-    Logger.log(`Request for ${url} returned ${response.status}`, "URLAction");
+    Logger.log(
+      `(Job ${job.id}) Request for ${url} returned ${response.status}`,
+      "URLAction",
+    );
     if (!response.ok) {
+      const text = await response.text();
+      Logger.error(`(Job ${job.id}) Got response: ${text}`);
       throw new HttpException(
         {
           status: response.status,
-          message: `Got response: ${await response.text()}`,
+          message: `Got response: ${text}`,
         },
         response.status,
       );
     }
-
-    // TODO do something with the response?
   }
 
   /**

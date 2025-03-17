@@ -120,7 +120,7 @@ describe("0400: DatasetFilter: Test retrieving datasets using filtering capabili
     accessTokenArchiveManager = await utils.getToken(appUrl, {
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
-    });  
+    });
   });
 
   afterEach((done) => {

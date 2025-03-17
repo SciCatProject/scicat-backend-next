@@ -415,5 +415,5 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
         res.body.should.have.property("message").and.be.equal("Unauthorized to create this job.");
       });
   });
-  
+
 });

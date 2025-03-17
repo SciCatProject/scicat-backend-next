@@ -20,7 +20,7 @@ actions are provided which should run after the request.
 
 Implementing an Action requires four (short) files:
 
-1. `action.ts` contains a class implementing `JobAction`. It's constructor can take any
+1. `action.ts` contains a class implementing `JobAction`. The constructor can take any
    arguments, but the existing actions take an `options` argument mirroring the expected
    yaml config. It does not need to be `@Injectable()`, since it is constructed by a
    JobActionCreator class.

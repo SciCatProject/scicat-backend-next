@@ -88,7 +88,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
     });
   });
 
-  after(() => { 
+  after(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
   });
