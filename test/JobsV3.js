@@ -22,7 +22,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe("1190: Jobs: Test Backwards Compatibility", () => {
+describe.only("1190: Jobs: Test Backwards Compatibility", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -77,6 +77,32 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
       .then((res) => {
         res.body.should.not.have.property("id");
         res.body.should.have.property("message").and.be.equal("List of passed datasets is empty.");
+      });
+  });
+
+  it("0025: Add via /api/v3 a new job making sure datasetList is not in jobParams, as a user from ADMIN_GROUPS in '#all' configuration, which should fail", async () => {
+    const newJob = {
+      ...jobAll,
+      datasetList: [
+        { pid: "test", files: [] },
+      ],
+      jobParams: {
+        datasetList: [
+          { pid: datasetPid1, files: [] },
+        ],
+      },
+    };
+
+    return request(appUrl)
+      .post("/api/v3/Jobs")
+      .send(newJob)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .expect(TestData.BadRequestStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.not.have.property("id");
+        res.body.should.have.property("message").and.be.equal("Datasets with pid test do not exist.");
       });
   });
 

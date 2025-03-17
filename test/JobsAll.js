@@ -337,7 +337,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })

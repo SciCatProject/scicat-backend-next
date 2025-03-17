@@ -8,7 +8,6 @@ import { Observable } from "rxjs";
 import { CreateJobDtoV3 } from "../dto/create-job.v3.dto";
 import { CreateJobDto } from "../dto/create-job.dto";
 import { DatasetListDto } from "../dto/dataset-list.dto";
-import { re } from "mathjs";
 
 interface JobParams {
   datasetList?: DatasetListDto[];
@@ -27,6 +26,10 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const dtoV3 = request.body as CreateJobDtoV3;
 
+    // ensure datasetList is a top level field in the dto and not included in jobParams
+    if (dtoV3.jobParams && Object.keys(dtoV3.jobParams).includes("datasetList")) {
+      delete dtoV3.jobParams.datasetList;
+    }
     const jobParams: JobParams = {
       datasetList: dtoV3.datasetList ?? [],
       ...dtoV3.jobParams,
