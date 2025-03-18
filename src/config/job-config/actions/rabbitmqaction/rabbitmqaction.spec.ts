@@ -1,5 +1,6 @@
 import { RabbitMQJobAction } from "./rabbitmqaction";
 import { RabbitMQJobActionOptions } from "./rabbitmqaction.interface";
+import { RabbitMQJobActionCreator } from "./rabbitmqaction.service";
 import { CreateJobDto } from "../../../../jobs/dto/create-job.dto";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { RabbitMQService } from "src/common/rabbitmq/rabbitmq.service";
@@ -59,5 +60,64 @@ describe("RabbitMQJobAction", () => {
       options.key,
       JSON.stringify(job),
     );
+  });
+
+  it("should throw an error if RabbitMQ is not enabled", async () => {
+    const mockConfigService = {
+      get: jest.fn((key: string) => {
+        switch (key) {
+          case "rabbitMq.enabled":
+            return "no";
+          default:
+            return null;
+        }
+      }),
+    };
+
+    expect(() => {
+      new RabbitMQJobAction<CreateJobDto>(
+        mockConfigService as unknown as ConfigService,
+        mockRabbitMQService as unknown as RabbitMQService,
+        options,
+      );
+    }).toThrowError("RabbitMQService is not enabled.");
+  });
+
+  it("should throw an error if options are invalid", async () => {
+    const mockConfigService = {
+      get: jest.fn((key: string) => {
+        switch (key) {
+          case "rabbitMq.enabled":
+            return "yes";
+          case "rabbitMq.hostname":
+            return "rabbitmq";
+          case "rabbitMq.port":
+            return 5672;
+          case "rabbitMq.username":
+            return "guest";
+          case "rabbitMq.password":
+            return "guest";
+          default:
+            return null;
+        }
+      }),
+    };
+
+    const invalidOptions = {
+      actionType: "rabbitmq",
+      queue: "testQueue",
+      exchange: "testExchange",
+    };
+
+    const rabbitMQJobActionCreator = new RabbitMQJobActionCreator(
+      mockConfigService as unknown as ConfigService,
+      mockRabbitMQService as unknown as RabbitMQService,
+    );
+
+    expect(() => {
+      rabbitMQJobActionCreator.create(
+        invalidOptions as RabbitMQJobActionOptions,
+      );
+    }).toThrowError("Invalid options for RabbitMQJobAction.");
   });
 });
