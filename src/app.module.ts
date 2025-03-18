@@ -31,6 +31,7 @@ import {
   base64enc,
 } from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
+import { RabbitMQModule } from "./common/rabbitmq/rabbitmq.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
@@ -70,6 +71,10 @@ import { MetricsModule } from "./metrics/metrics.module";
     JobsModule,
     LogbooksModule,
     EventEmitterModule.forRoot(),
+    ConditionalModule.registerWhen(
+      RabbitMQModule,
+      (env: NodeJS.ProcessEnv) => env.RABBITMQ_ENABLED === "yes",
+    ),
     MailerModule.forRootAsync({
       imports: [ConfigModule, HttpModule],
       useFactory: async (
