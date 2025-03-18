@@ -52,8 +52,13 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
     let newBody: CreateJobDto = {
       type: dtoV3.type,
       jobParams: jobParams,
-      contactEmail: dtoV3.emailJobInitiator ?? request.user.email,
     };
+    if (dtoV3.emailJobInitiator || request.user) {
+      newBody = {
+        ...newBody,
+        contactEmail: dtoV3.emailJobInitiator ?? request.user.email,
+      };
+    }
     // ensure compatibility with the FE, which provides the username field in jobParams
     // and compatibility the v4 which requires ownerUser and ownerGroup for jobs created by user
     if (Object.keys(jobParams).includes("username")) {
