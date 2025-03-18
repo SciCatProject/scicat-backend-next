@@ -158,7 +158,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -187,7 +187,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -212,7 +212,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -236,7 +236,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -261,7 +261,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -286,7 +286,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -316,7 +316,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .post("/api/v3/Jobs")
+        .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -345,7 +345,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .post("/api/v3/Jobs")
+        .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -373,7 +373,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .post("/api/v3/Jobs")
+        .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -401,7 +401,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .post("/api/v3/Jobs")
+        .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -424,7 +424,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newDataset)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -453,7 +453,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .post("/api/v3/Jobs")
+        .post("/api/v4/Jobs")
         .send(newJob)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -480,7 +480,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .patch(`/api/v4/Jobs/${encodedJobIdValidate1}`)
         .send(update)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -504,7 +504,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .patch(`/api/v4/Jobs/${encodedJobIdValidate1}`)
         .send(update)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -528,7 +528,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       };
 
       return request(appUrl)
-        .patch(`/api/v3/Jobs/${encodedJobIdValidate1}`)
+        .patch(`/api/v4/Jobs/${encodedJobIdValidate1}`)
         .send(update)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenAdmin}` })
