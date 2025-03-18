@@ -32,10 +32,9 @@ export class JobClass extends OwnableClass {
   })
   id: string;
 
-
   /**
-  * Defines the user that owns this job.
-  */
+   * Defines the user that owns this job.
+   */
   @Prop({
     type: String,
     index: true,

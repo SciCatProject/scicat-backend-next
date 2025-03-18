@@ -134,7 +134,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -162,7 +162,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -190,7 +190,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -217,7 +217,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -244,7 +244,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -273,7 +273,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -301,7 +301,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -328,7 +328,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -357,7 +357,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
@@ -380,7 +380,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .expect(TestData.EntryCreatedStatusCode)
@@ -405,7 +405,7 @@ describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs 
     };
 
     return request(appUrl)
-      .post("/api/v4/Jobs")
+      .post("/api/v3/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .expect(TestData.AccessForbiddenStatusCode)
