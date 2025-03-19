@@ -76,12 +76,12 @@ type DatasetIdV3 = {
 };
 interface JobV3 {
   id: string;
-  emailJobInitiator: string;
+  emailJobInitiator?: string;
   type: string;
   creationTime: Date;
   executionTime?: Date;
   jobParams: Record<string, unknown>;
-  jobStatusMessage: string;
+  jobStatusMessage?: string;
   datasetList: DatasetIdV3[];
   jobResultObject?: unknown;
 }
