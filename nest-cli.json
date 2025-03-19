@@ -9,7 +9,8 @@
           ".dto.ts",
           "sample.schema.ts",
           "proposal.schema.ts",
-          "measurement-period.schema.ts"
+          "measurement-period.schema.ts",
+          "job.schema.ts"
         ],
         "introspectComments": true
       }
