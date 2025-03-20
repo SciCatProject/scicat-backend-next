@@ -25,12 +25,11 @@ let datasetPid1 = null,
   encodedJobOwnedByGroup5 = null,
   jobId6 = null,
   encodedJobOwnedByAnonym = null;
-  encodedJobOwnedByGroup13 = null;
-  encodedJobOwnedByGroup12 = null;
-  encodedJobOwnedByGroup11 = null;
+  jobId7 = null,
+  jobId8 = null,
+  jobId12 = null;
+  jobId21 = null;
   jobId31 = null;
-  jobId32 = null;
-  jobId33 = null;
 
 
 const dataset1 = {
@@ -357,6 +356,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        jobId7 = res.body["id"];
       });
   });
 
@@ -385,6 +385,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
+        jobId8 = res.body["id"];
       });
   });
 
@@ -466,8 +467,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("ownerUser").and.be.equal("user1");
         res.body.should.have.property("ownerGroup").and.be.equal("group2");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        jobId31 = res.body["id"];
-        encodedJobOwnedByGroup11 = encodeURIComponent(jobId31);
+        jobId12 = res.body["id"];
       });
   });
 
@@ -495,8 +495,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("ownerUser").and.be.equal("user2");
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        jobId32 = res.body["id"];
-        encodedJobOwnedByGroup12 = encodeURIComponent(jobId32);
+        jobId21 = res.body["id"];
       });
   });
 
@@ -525,8 +524,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.should.have.property("ownerUser").and.be.equal("user3");
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
-        jobId33 = res.body["id"];
-        encodedJobOwnedByGroup13 = encodeURIComponent(jobId33);
+        jobId31 = res.body["id"];
       });
   });
 
@@ -735,6 +733,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(7);
+        res.body.map(job => job.id).should.include.members([jobId2, jobId3, jobId12, jobId31, jobId21, jobId7, jobId8]);
       });
   });
   it("0330: Access jobs as user2 ", async () => {
@@ -747,6 +746,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body.map(job => job.id).should.include.members([jobId12, jobId21]);
       });
   });
   it("0340: Access jobs as user3", async () => {
@@ -759,6 +759,20 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/)
       .then((res) => {
         res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body.map(job => job.id).should.include.members([jobId31]);
+      });
+  });
+  it("0340: Access jobs as user5", async () => {
+    return request(appUrl)
+      .get(`/api/v3/Jobs/`)
+      .send({})
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenUser51}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.be.an("array").to.have.lengthOf(2);
+        res.body.map(job => job.id).should.include.members([jobId4, jobId5]);
       });
   });
 });

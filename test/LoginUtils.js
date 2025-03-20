@@ -47,8 +47,7 @@ exports.getTokenAD = function (appUrl, user, cb) {
     });
 };
 
-
-exports.getEmail = function (appUrl, user) {
+exports.getTokenAndEmail = function (appUrl, user) {
   return new Promise((resolve, reject) => {
     request(appUrl)
       .post("/api/v3/auth/Login?include=user")
@@ -58,7 +57,7 @@ exports.getEmail = function (appUrl, user) {
         if (err) {
           reject(err);
         } else {
-          resolve(res.body.user.email);
+          resolve({token: res.body.id, userEmail: res.body.user.email});
         }
       });
   });

@@ -59,40 +59,42 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
   });
 
   beforeEach(async () => {
-    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+    const loginResponseAdminIngestor = await utils.getTokenAndEmail(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
     });
+    accessTokenAdminIngestor = loginResponseAdminIngestor.token;
 
-    accessTokenUser1 = await utils.getToken(appUrl, {
+    const loginResponseUser1 = await utils.getTokenAndEmail(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
     });
+    accessTokenUser1 = loginResponseUser1.token;
 
-    accessTokenUser51 = await utils.getToken(appUrl, {
+    const loginResponseUser51 = await utils.getTokenAndEmail(appUrl, {
       username: "user5.1",
       password: TestData.Accounts["user5.1"]["password"],
     });
+    accessTokenUser51 = loginResponseUser51.token;
 
-    accessTokenUser52 = await utils.getToken(appUrl, {
+    const loginResponseUser52 = await utils.getTokenAndEmail(appUrl, {
       username: "user5.2",
       password: TestData.Accounts["user5.2"]["password"],
     });
-
-    accessTokenAdmin = await utils.getToken(appUrl, {
+    accessTokenUser52 = loginResponseUser52.token;
+    
+    const loginResponseAdmin = await utils.getTokenAndEmail(appUrl, {
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
     });
+    accessTokenAdmin = loginResponseAdmin.token;
+    adminEmail = loginResponseAdmin.userEmail;
 
-    adminEmail = await utils.getEmail(appUrl, {
-      username: "admin",
-      password: TestData.Accounts["admin"]["password"],
-    });
-
-    accessTokenArchiveManager = await utils.getToken(appUrl, {
+    const loginResponseArchiveManager = await utils.getTokenAndEmail(appUrl, {
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
     });
+    accessTokenArchiveManager = loginResponseArchiveManager.token;
   });
 
   after(() => { 
