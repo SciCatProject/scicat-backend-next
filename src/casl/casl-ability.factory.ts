@@ -1454,7 +1454,7 @@ export class CaslAbilityFactory {
 
           can(Action.JobCreateOwner, JobClass, {
             ownerGroup: { $in: user.currentGroups },
-          });       
+          });
         } else {
           /**
            * authenticated users not belonging to any special group
@@ -1470,7 +1470,6 @@ export class CaslAbilityFactory {
               String(v).includes("#dataset"),
             ),
           ];
-   
 
           if (
             jobCreateInstanceAuthorizationValues.some(
