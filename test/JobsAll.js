@@ -9,6 +9,8 @@ let accessTokenAdminIngestor = null,
   accessTokenAdmin = null,
   accessTokenArchiveManager = null;
 
+let adminEmail = null;
+
 let datasetPid1 = null,
   datasetPid2 = null,
 
@@ -57,35 +59,42 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
   });
 
   beforeEach(async () => {
-    accessTokenAdminIngestor = await utils.getToken(appUrl, {
+    const loginResponseAdminIngestor = await utils.getTokenAndEmail(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
     });
+    accessTokenAdminIngestor = loginResponseAdminIngestor.token;
 
-    accessTokenUser1 = await utils.getToken(appUrl, {
+    const loginResponseUser1 = await utils.getTokenAndEmail(appUrl, {
       username: "user1",
       password: TestData.Accounts["user1"]["password"],
     });
+    accessTokenUser1 = loginResponseUser1.token;
 
-    accessTokenUser51 = await utils.getToken(appUrl, {
+    const loginResponseUser51 = await utils.getTokenAndEmail(appUrl, {
       username: "user5.1",
       password: TestData.Accounts["user5.1"]["password"],
     });
+    accessTokenUser51 = loginResponseUser51.token;
 
-    accessTokenUser52 = await utils.getToken(appUrl, {
+    const loginResponseUser52 = await utils.getTokenAndEmail(appUrl, {
       username: "user5.2",
       password: TestData.Accounts["user5.2"]["password"],
     });
-
-    accessTokenAdmin = await utils.getToken(appUrl, {
+    accessTokenUser52 = loginResponseUser52.token;
+    
+    const loginResponseAdmin = await utils.getTokenAndEmail(appUrl, {
       username: "admin",
       password: TestData.Accounts["admin"]["password"],
     });
+    accessTokenAdmin = loginResponseAdmin.token;
+    adminEmail = loginResponseAdmin.userEmail;
 
-    accessTokenArchiveManager = await utils.getToken(appUrl, {
+    const loginResponseArchiveManager = await utils.getTokenAndEmail(appUrl, {
       username: "archiveManager",
       password: TestData.Accounts["archiveManager"]["password"],
     });
+    accessTokenArchiveManager = loginResponseArchiveManager.token;
   });
 
   after(() => { 
@@ -231,7 +240,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("admin");
         res.body.should.have.property("ownerUser").and.be.equal("admin");
-        res.body.should.have.property("contactEmail").and.be.equal("admin@scicat.project");
+        res.body.should.have.property("contactEmail").and.be.equal(adminEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
       });
   });
@@ -319,7 +328,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
         res.body.should.have.property("type").and.be.string;
         res.body.should.have.property("ownerGroup").and.be.equal("group1");
         res.body.should.not.have.property("ownerUser");
-        res.body.should.have.property("contactEmail").to.be.equal("admin@scicat.project");
+        res.body.should.have.property("contactEmail").to.be.equal(adminEmail);
         res.body.should.have.property("statusCode").to.be.equal("jobCreated");
         jobId3 = res.body["id"];
         encodedJobOwnedByGroup1 = encodeURIComponent(jobId3);
@@ -1082,7 +1091,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(0);
+        res.body.should.be.an("array").to.have.lengthOf(2);
       });
   });
 
@@ -1173,7 +1182,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {

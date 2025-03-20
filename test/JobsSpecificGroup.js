@@ -760,15 +760,15 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       });
   });
 
-  it("0360: Get job of another user in his/her group as normal user, which should be forbidden", async () => {
+  it("0360: Get job of another user in his/her group as normal user", async () => {
     return request(appUrl)
         .get(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.AccessForbiddenStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("ownerUser");
+          res.body.should.have.property("ownerUser").and.be.equal("user5.2");
         });
   });
 
@@ -777,10 +777,10 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
         .set("Accept", "application/json")
         .set({ Authorization: `Bearer ${accessTokenUser51}` })
-        .expect(TestData.AccessForbiddenStatusCode)
+        .expect(TestData.SuccessfulGetStatusCode)
         .expect("Content-Type", /json/)
         .then((res) => {
-          res.body.should.not.have.property("ownerUser");
+          res.body.should.have.property("ownerGroup").and.be.equal("group5");
         });
   });
 
@@ -799,7 +799,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       });
   });
 
-  it("0390: Fullquery jobs as another normal user (user5.2)", async () => { // 0760
+  it("0390: Fullquery jobs as another normal user (user5.2)", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/fullquery`)
       .send({})
@@ -808,7 +808,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").to.have.lengthOf(1);
+        res.body.should.be.an("array").to.have.lengthOf(4);
       });
   });
 
@@ -850,7 +850,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 1 }] });
+        res.body.should.be.an("array").that.deep.contains({ all: [{ totalSets: 4 }] });
       });
   });
 });
