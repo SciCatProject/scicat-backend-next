@@ -1,7 +1,7 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
-import { DatasetListDto } from "../dto/dataset-list.dto";
+import { DatasetListDto } from "./dataset-list.dto";
 
-export class JobClassV3 {
+export class OutputJobV3Dto {
   @ApiHideProperty()
   _id: string;
 

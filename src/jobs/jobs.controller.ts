@@ -29,7 +29,7 @@ import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
-import { JobClassV3 } from "./schemas/job.v3.schema";
+import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -622,10 +622,10 @@ export class JobsController {
   /**
    * Transform a v4 job instance so that is compatible with v3
    * @param job: a JobClass instance (v4)
-   * @returns a JobClassV3 instance
+   * @returns a OutputJobV3Dto instance
    */
-  private mapJobClassV4toV3(job: JobClass): JobClassV3 {
-    const jobV3 = new JobClassV3();
+  private mapJobClassV4toV3(job: JobClass): OutputJobV3Dto {
+    const jobV3 = new OutputJobV3Dto();
     // Map fields from v4 to v3
     jobV3._id = job._id;
     jobV3.id = job.id;
@@ -693,13 +693,13 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    type: JobClassV3,
+    type: OutputJobV3Dto,
     description: "Created job",
   })
   async createV3(
     @Req() request: Request,
     @Body() createJobDto: CreateJobDto,
-  ): Promise<JobClassV3 | null> {
+  ): Promise<OutputJobV3Dto | null> {
     const job = await this.createJob(request, createJobDto);
     return job ? this.mapJobClassV4toV3(job) : null;
   }
@@ -802,14 +802,14 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: JobClassV3,
+    type: OutputJobV3Dto,
     description: "Updated job",
   })
   async updateV3(
     @Req() request: Request,
     @Param("id") id: string,
     @Body() updateJobDto: UpdateJobDto,
-  ): Promise<JobClassV3 | null> {
+  ): Promise<OutputJobV3Dto | null> {
     Logger.log("Updating job v3 ", id);
     const updatedJob = await this.updateJob(request, id, updateJobDto);
     return updatedJob ? this.mapJobClassV4toV3(updatedJob) : null;
@@ -928,13 +928,13 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClassV3],
+    type: [OutputJobV3Dto],
     description: "Return jobs requested.",
   })
   async fullQueryV3(
     @Req() request: Request,
     @Query() filters: { fields?: string; limits?: string },
-  ): Promise<JobClassV3[] | null> {
+  ): Promise<OutputJobV3Dto[] | null> {
     const jobs = await this.fullQueryJobs(request, filters);
     return jobs?.map(this.mapJobClassV4toV3) ?? null;
   }
@@ -1116,13 +1116,13 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: JobClassV3,
+    type: OutputJobV3Dto,
     description: "Found job",
   })
   async findOneV3(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<JobClassV3 | null> {
+  ): Promise<OutputJobV3Dto | null> {
     const job = await this.getJobById(request, id);
     return job ? this.mapJobClassV4toV3(job) : null;
   }
@@ -1230,15 +1230,15 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClassV3],
+    type: [OutputJobV3Dto],
     description: "Found jobs",
   })
   async findAllV3(
     @Req() request: Request,
     @Query("filter") filter?: string,
-  ): Promise<JobClassV3[]> {
+  ): Promise<OutputJobV3Dto[]> {
     const jobs = await this.getJobs(request, filter);
-    return jobs?.map(this.mapJobClassV4toV3) ?? ([] as JobClassV3[]);
+    return jobs?.map(this.mapJobClassV4toV3) ?? ([] as OutputJobV3Dto[]);
   }
 
   /**

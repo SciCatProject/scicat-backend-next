@@ -57,6 +57,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       newBody = {
         ...newBody,
         contactEmail: dtoV3.emailJobInitiator ?? request.user.email,
+        ownerGroup: "",
       };
     }
     // ensure compatibility with the FE, which provides the username field in jobParams
@@ -68,7 +69,7 @@ export class CreateJobV3MappingInterceptor implements NestInterceptor {
       newBody = {
         ...newBody,
         ownerUser: jobUser?.username,
-        ownerGroup: jobUser?.currentGroups[1],
+        ownerGroup: jobUser?.currentGroups[jobUser.currentGroups.length - 1],
       };
     }
     request.body = newBody;

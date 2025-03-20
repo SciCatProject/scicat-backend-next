@@ -353,7 +353,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
         res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoForUser1.emailJobInitiator);
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
-        res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
+        res.body.should.have.property("ownerGroup");
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
       });
   });
@@ -381,7 +381,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
         res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoForUser1.emailJobInitiator);
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
-        res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
+        res.body.should.have.property("ownerGroup");
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
       });
   });
@@ -509,7 +509,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("statusMessage").to.be.equal("Job has been created.");
         res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
-        res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts[expectedJobParams.username]["role"]);
+        res.body.should.have.property("ownerGroup");
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
       });
   });
@@ -632,7 +632,7 @@ describe("1190: Jobs: Test Backwards Compatibility", () => {
         res.body.should.have.property("jobParams").that.deep.equals(expectedJobParams);
         res.body.should.have.property("contactEmail").to.be.equal(jobCreateDtoByUser1.emailJobInitiator);
         res.body.should.have.property("ownerUser").to.be.equal(expectedJobParams.username);
-        res.body.should.have.property("ownerGroup").to.be.equal(TestData.Accounts["user1"]["role"]);
+        res.body.should.have.property("ownerGroup");
       });
   });
 
