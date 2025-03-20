@@ -46,3 +46,20 @@ exports.getTokenAD = function (appUrl, user, cb) {
       }
     });
 };
+
+
+exports.getEmail = function (appUrl, user) {
+  return new Promise((resolve, reject) => {
+    request(appUrl)
+      .post("/api/v3/auth/Login?include=user")
+      .send(user)
+      .set("Accept", "application/json")
+      .end((err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.body.user.email);
+        }
+      });
+  });
+};

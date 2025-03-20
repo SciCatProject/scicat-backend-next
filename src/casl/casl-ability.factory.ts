@@ -1437,6 +1437,12 @@ export class CaslAbilityFactory {
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
         ];
+        can(Action.JobReadAccess, JobClass, {
+          ownerGroup: { $in: user.currentGroups },
+        });
+        can(Action.JobReadAccess, JobClass, {
+          ownerUser: user.username,
+        });
         if (
           user.currentGroups.some((g) =>
             this.accessGroups?.createJob.includes(g),
@@ -1448,10 +1454,7 @@ export class CaslAbilityFactory {
 
           can(Action.JobCreateOwner, JobClass, {
             ownerGroup: { $in: user.currentGroups },
-          });
-          can(Action.JobReadAccess, JobClass, {
-            ownerGroup: { $in: user.currentGroups },
-          });
+          });       
         } else {
           /**
            * authenticated users not belonging to any special group
@@ -1467,11 +1470,8 @@ export class CaslAbilityFactory {
               String(v).includes("#dataset"),
             ),
           ];
+   
 
-          can(Action.JobReadAccess, JobClass, {
-            ownerGroup: { $in: user.currentGroups },
-            ownerUser: user.username,
-          });
           if (
             jobCreateInstanceAuthorizationValues.some(
               (a) => jobConfiguration.create.auth === a,
