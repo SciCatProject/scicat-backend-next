@@ -456,7 +456,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -484,7 +484,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -513,7 +513,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
     };
 
     return request(appUrl)
-      .post("/api/v3/Jobs")
+      .post("/api/v4/Jobs")
       .send(newJob)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
@@ -722,10 +722,9 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       .expect("Content-Type", /json/);
   });
 
-
   it("0320: Access jobs as a User1 ", async () => {
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser1}` })
@@ -736,9 +735,10 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.map(job => job.id).should.include.members([jobId2, jobId3, jobId12, jobId31, jobId21, jobId7, jobId8]);
       });
   });
+
   it("0330: Access jobs as user2 ", async () => {
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser2}` })
@@ -749,9 +749,10 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.map(job => job.id).should.include.members([jobId12, jobId21]);
       });
   });
+
   it("0340: Access jobs as user3", async () => {
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser3}` })
@@ -762,9 +763,10 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
         res.body.map(job => job.id).should.include.members([jobId31]);
       });
   });
+
   it("0340: Access jobs as user5", async () => {
     return request(appUrl)
-      .get(`/api/v3/Jobs/`)
+      .get(`/api/v4/Jobs/`)
       .send({})
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenUser51}` })
