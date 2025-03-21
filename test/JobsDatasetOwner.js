@@ -764,7 +764,7 @@ describe("1150: Jobs: Test New Job Model Authorization for #datasetOwner jobs co
       });
   });
 
-  it("0350: Access jobs as user5", async () => {
+  it("0350: Access jobs as user5.1", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/`)
       .send({})
