@@ -54,8 +54,8 @@ describe("JobsService", () => {
       ],
     }).compile();
 
-    service = module.get<JobsService>(JobsService);
-    model = module.get<Model<JobClass>>(getModelToken("JobClass"));
+    service = await module.resolve<JobsService>(JobsService);
+    model = await module.resolve<Model<JobClass>>(getModelToken("JobClass"));
   });
 
   it("should be defined", () => {

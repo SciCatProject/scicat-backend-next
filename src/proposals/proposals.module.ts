@@ -3,13 +3,14 @@ import { ProposalsService } from "./proposals.service";
 import { ProposalsController } from "./proposals.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ProposalClass, ProposalSchema } from "./schemas/proposal.schema";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
 import { AttachmentsModule } from "src/attachments/attachments.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
+    CaslModule,
     AttachmentsModule,
     forwardRef(() => DatasetsModule),
     MongooseModule.forFeatureAsync([
@@ -44,6 +45,6 @@ import { ConfigService } from "@nestjs/config";
   ],
   exports: [ProposalsService],
   controllers: [ProposalsController],
-  providers: [ProposalsService, CaslAbilityFactory],
+  providers: [ProposalsService],
 })
 export class ProposalsModule {}

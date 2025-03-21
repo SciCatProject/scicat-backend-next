@@ -1,13 +1,15 @@
 import { Module } from "@nestjs/common";
 import { LogbooksService } from "./logbooks.service";
 import { LogbooksController } from "./logbooks.controller";
-import { ConfigService } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { HttpModule } from "@nestjs/axios";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
 import { ProposalsModule } from "src/proposals/proposals.module";
 
 @Module({
   imports: [
+    ConfigModule,
+    CaslModule,
     HttpModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get("httpTimeOut"),
@@ -19,6 +21,6 @@ import { ProposalsModule } from "src/proposals/proposals.module";
   ],
   exports: [LogbooksService],
   controllers: [LogbooksController],
-  providers: [LogbooksService, CaslAbilityFactory],
+  providers: [LogbooksService],
 })
 export class LogbooksModule {}
