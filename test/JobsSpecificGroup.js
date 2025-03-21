@@ -772,7 +772,7 @@ describe("1170: Jobs: Test New Job Model Authorization for configuration set to 
         });
   });
 
-  it("0370: Get job from his/her own group as normal user, which should be forbidden", async () => {
+  it("0370: Get job from his/her own group as normal user", async () => {
     return request(appUrl)
         .get(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
         .set("Accept", "application/json")
