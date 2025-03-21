@@ -6,11 +6,13 @@ import {
   OrigDatablockSchema,
 } from "./schemas/origdatablock.schema";
 import { OrigDatablocksController } from "./origdatablocks.controller";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+
+import { CaslModule } from "src/casl/casl.module";
 import { DatasetsModule } from "src/datasets/datasets.module";
 
 @Module({
   imports: [
+    CaslModule,
     forwardRef(() => DatasetsModule),
     MongooseModule.forFeature([
       {
@@ -21,6 +23,6 @@ import { DatasetsModule } from "src/datasets/datasets.module";
   ],
   controllers: [OrigDatablocksController],
   exports: [OrigDatablocksService],
-  providers: [OrigDatablocksService, CaslAbilityFactory],
+  providers: [OrigDatablocksService],
 })
 export class OrigDatablocksModule {}

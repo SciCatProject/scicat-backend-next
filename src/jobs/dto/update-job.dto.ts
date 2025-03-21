@@ -1,18 +1,24 @@
-import { IsDateString, IsObject, IsOptional, IsString } from "class-validator";
-import { PartialType } from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
+import { IsOptional, IsString, IsObject } from "class-validator";
 
+@ApiTags("jobs")
 export class UpdateJobDto {
-  @IsDateString()
-  @IsOptional()
-  readonly executionTime?: Date;
-
+  /**
+   * Updated job status code for the current status.
+   */
   @IsString()
-  @IsOptional()
-  readonly jobStatusMessage?: string;
+  readonly statusCode: string;
 
+  /**
+   * Additional message about the current job status.
+   */
+  @IsString()
+  readonly statusMessage: string;
+
+  /**
+   * Additional information, i.e. dataset archiving results.
+   */
   @IsObject()
   @IsOptional()
   readonly jobResultObject?: Record<string, unknown>;
 }
-
-export class PartialUpdateJobDto extends PartialType(UpdateJobDto) {}
