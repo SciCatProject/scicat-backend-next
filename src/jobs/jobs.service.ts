@@ -12,7 +12,6 @@ import {
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import {
-  addStatusFields,
   addCreatedByFields,
   addUpdatedByField,
   createFullfacetPipeline,
@@ -42,11 +41,10 @@ export class JobsService {
   async create(createJobDto: CreateJobDto): Promise<JobDocument> {
     const username = this.getUsername();
     const createdJob = new this.jobModel(
-      addStatusFields(
+      this.addStatusFields(
         addCreatedByFields(createJobDto, username),
         "jobCreated",
         "Job has been created.",
-        {},
       ),
     );
     return createdJob.save();
@@ -103,15 +101,28 @@ export class JobsService {
       throw new NotFoundException(`Job #${id} not found`);
     }
 
+    let jobParams = existingJob.jobParams;
+    let newJobResultObject = updateJobDto.jobResultObject;
+    // extract executionTime from jobResultObject and move it to jobParams
+    if (newJobResultObject?.executionTime) {
+      const { executionTime, ...jobResultObject } = newJobResultObject;
+      jobParams = {
+        ...jobParams,
+        executionTime: executionTime as Date,
+      };
+      newJobResultObject = jobResultObject;
+    }
+
     const username = this.getUsername();
     const updatedJob = await this.jobModel
       .findOneAndUpdate(
         { id: id },
-        addStatusFields(
+        this.updateJobFields(
           addUpdatedByField(updateJobDto as UpdateQuery<JobDocument>, username),
           updateJobDto.statusCode,
           updateJobDto.statusMessage,
-          updateJobDto.jobResultObject,
+          newJobResultObject,
+          jobParams,
         ),
         { new: true },
       )
@@ -123,4 +134,40 @@ export class JobsService {
   async remove(filter: FilterQuery<JobDocument>): Promise<JobClass | null> {
     return this.jobModel.findOneAndDelete(filter).exec();
   }
+
+  private addStatusFields = <T>(
+    obj: T,
+    statusCode: string,
+    statusMessage: string,
+  ): T & {
+    statusCode: string;
+    statusMessage: string;
+  } => {
+    return {
+      ...obj,
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+    };
+  };
+
+  private updateJobFields = <T>(
+    obj: T,
+    statusCode: string,
+    statusMessage: string,
+    jobResultObject: Record<string, unknown> | undefined,
+    jobParams?: Record<string, unknown> | undefined,
+  ): T & {
+    statusCode: string;
+    statusMessage: string;
+    jobResultObject: Record<string, unknown> | undefined;
+    jobParams?: Record<string, unknown> | undefined;
+  } => {
+    return {
+      ...obj,
+      statusCode: statusCode,
+      statusMessage: statusMessage,
+      jobResultObject: jobResultObject,
+      jobParams: jobParams,
+    };
+  };
 }
