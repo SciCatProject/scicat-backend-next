@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
   Query,
   HttpStatus,
   HttpException,
   Req,
   ForbiddenException,
+  Version,
 } from "@nestjs/common";
 import { Request } from "express";
 import { FilterQuery } from "mongoose";
@@ -19,12 +21,15 @@ import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
 import { DatasetListDto } from "./dto/dataset-list.dto";
+import { CreateJobDtoV3 } from "./dto/create-job.v3.dto";
+import { UpdateJobDtoV3 } from "./dto/update-job.v3.dto";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { CreateJobAuth } from "src/jobs/types/jobs-auth.enum";
 import { JobClass, JobDocument } from "./schemas/job.schema";
+import { OutputJobV3Dto } from "./dto/output-job-v3.dto";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -59,6 +64,8 @@ import { IJobFields } from "./interfaces/job-filters.interface";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { ConfigService } from "@nestjs/config";
 import { JobConfigService } from "../config/job-config/jobconfig.service";
+import { CreateJobV3MappingInterceptor } from "./interceptors/create-job-v3-mapping.interceptor";
+import { UpdateJobV3MappingInterceptor } from "./interceptors/update-job-v3-mapping.interceptor";
 
 @ApiBearerAuth()
 @ApiTags("jobs")
@@ -613,30 +620,40 @@ export class JobsController {
   }
 
   /**
-   * Create job
+   * Transform a v4 job instance so that is compatible with v3
+   * @param job: a JobClass instance (v4)
+   * @returns a OutputJobV3Dto instance
    */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobCreate, JobClass),
-  )
-  @Post()
-  @ApiOperation({
-    summary: "It creates a new job.",
-    description: "It creates a new job.",
-  })
-  @ApiBody({
-    description: "Input fields for the job to be created",
-    required: true,
-    type: CreateJobDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    type: JobClass,
-    description: "Created job",
-  })
-  async create(
-    @Req() request: Request,
-    @Body() createJobDto: CreateJobDto,
+  private mapJobClassV4toV3(job: JobClass): OutputJobV3Dto {
+    const jobV3 = new OutputJobV3Dto();
+    // Map fields from v4 to v3
+    jobV3._id = job._id;
+    jobV3.id = job.id;
+    jobV3.emailJobInitiator = job.contactEmail;
+    jobV3.type = job.type;
+    jobV3.creationTime = job.createdAt;
+    jobV3.jobStatusMessage = job.statusCode;
+    jobV3.jobResultObject = job.jobResultObject;
+    // Extract datasetList from jobParams
+    const { datasetList, ...jobParams } = job.jobParams;
+    jobV3.datasetList = datasetList as DatasetListDto[];
+    jobV3.jobParams = jobParams;
+    // Extract executionTime from jobParams
+    if (job.jobParams.executionTime) {
+      const { datasetList, executionTime, ...jobParams } = job.jobParams;
+      jobV3.datasetList = datasetList as DatasetListDto[];
+      jobV3.executionTime = executionTime as Date;
+      jobV3.jobParams = jobParams;
+    }
+    return jobV3;
+  }
+
+  /**
+   * Create job implementation
+   */
+  private async createJob(
+    request: Request,
+    createJobDto: CreateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("Creating job!");
     // Validate that request matches the current configuration
@@ -656,31 +673,74 @@ export class JobsController {
   }
 
   /**
-   * Update job
+   * Create job v3
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobUpdate, JobClass),
+    ability.can(Action.JobCreate, JobClass),
   )
-  @Patch(":id")
+  @UseInterceptors(CreateJobV3MappingInterceptor)
+  @Post()
+  @Version("3")
   @ApiOperation({
-    summary: "It updates an existing job.",
-    description: "It updates an existing job.",
+    summary: "It creates a new job.",
+    description: "It creates a new job.",
   })
   @ApiBody({
-    description: "Fields for the job to be updated",
+    description: "Input fields for the job to be created",
     required: true,
-    type: UpdateJobDto,
+    type: CreateJobDtoV3,
   })
   @ApiResponse({
-    status: HttpStatus.OK,
-    type: JobClass,
-    description: "Updated job",
+    status: HttpStatus.CREATED,
+    type: OutputJobV3Dto,
+    description: "Created job",
   })
-  async update(
+  async createV3(
     @Req() request: Request,
-    @Param("id") id: string,
-    @Body() updateJobDto: UpdateJobDto,
+    @Body() createJobDto: CreateJobDto,
+  ): Promise<OutputJobV3Dto | null> {
+    const job = await this.createJob(request, createJobDto);
+    return job ? this.mapJobClassV4toV3(job) : null;
+  }
+
+  /**
+   * Create job v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobCreate, JobClass),
+  )
+  @Post()
+  @Version("4")
+  @ApiOperation({
+    summary: "It creates a new job.",
+    description: "It creates a new job.",
+  })
+  @ApiBody({
+    description: "Input fields for the job to be created",
+    required: true,
+    type: CreateJobDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: JobClass,
+    description: "Created job",
+  })
+  async createV4(
+    @Req() request: Request,
+    @Body() createJobDto: CreateJobDto,
+  ): Promise<JobClass | null> {
+    return this.createJob(request, createJobDto);
+  }
+
+  /**
+   * Update job implementation
+   */
+  private async updateJob(
+    request: Request,
+    id: string,
+    updateJobDto: UpdateJobDto,
   ): Promise<JobClass | null> {
     Logger.log("updating job ", id);
     // Find existing job
@@ -709,10 +769,8 @@ export class JobsController {
     if (!canUpdate) {
       throw new ForbiddenException("Unauthorized to update this job.");
     }
-
     // Allow actions to validate DTO
     await this.validateDTO(jobConfig.update.actions, updateJobDto);
-
     // Update job in database
     const updatedJob = await this.jobsService.update(id, updateJobDto);
     // Perform the action that is specified in the update portion of the job configuration
@@ -724,43 +782,76 @@ export class JobsController {
   }
 
   /**
-   * Get fullquery
+   * Update job v3
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
+    ability.can(Action.JobUpdate, JobClass),
   )
-  @Get("/fullquery")
+  @UseInterceptors(UpdateJobV3MappingInterceptor)
+  @Patch(":id")
+  @Version("3")
   @ApiOperation({
-    summary: "It returns a list of jobs matching the query provided.",
-    description: "It returns a list of jobs matching the query provided.",
+    summary: "It updates an existing job.",
+    description: "It updates an existing job.",
   })
-  @ApiQuery({
-    name: "fields",
-    description:
-      "Filters to apply when retrieving jobs.\n" +
-      jobsFullQueryDescriptionFields,
-    required: false,
-    type: String,
-    example: jobsFullQueryExampleFields,
-  })
-  @ApiQuery({
-    name: "limits",
-    description:
-      "Define further query parameters like skip, limit, order.\n" +
-      fullQueryDescriptionLimits,
-    required: false,
-    type: String,
-    example: fullQueryExampleLimits,
+  @ApiBody({
+    description: "Fields for the job to be updated",
+    required: true,
+    type: UpdateJobDtoV3,
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
-    description: "Return jobs requested.",
+    type: OutputJobV3Dto,
+    description: "Updated job",
   })
-  async fullQuery(
+  async updateV3(
     @Req() request: Request,
-    @Query() filters: { fields?: string; limits?: string },
+    @Param("id") id: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ): Promise<OutputJobV3Dto | null> {
+    Logger.log("Updating job v3 ", id);
+    const updatedJob = await this.updateJob(request, id, updateJobDto);
+    return updatedJob ? this.mapJobClassV4toV3(updatedJob) : null;
+  }
+
+  /**
+   * Update job v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobUpdate, JobClass),
+  )
+  @Patch(":id")
+  @Version("4")
+  @ApiOperation({
+    summary: "It updates an existing job.",
+    description: "It updates an existing job.",
+  })
+  @ApiBody({
+    description: "Fields for the job to be updated",
+    required: true,
+    type: UpdateJobDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: JobClass,
+    description: "Updated job",
+  })
+  async updateV4(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ): Promise<JobClass | null> {
+    return await this.updateJob(request, id, updateJobDto);
+  }
+
+  /**
+   * FullQuery implementation
+   */
+  private async fullQueryJobs(
+    request: Request,
+    filters: { fields?: string; limits?: string },
   ): Promise<JobClass[] | null> {
     try {
       const parsedFilters: IFilters<JobDocument, FilterQuery<JobDocument>> = {
@@ -805,6 +896,93 @@ export class JobsController {
   }
 
   /**
+   * Get fullquery v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullquery")
+  @Version("3")
+  @ApiOperation({
+    summary: "It returns a list of jobs matching the query provided.",
+    description: "It returns a list of jobs matching the query provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Filters to apply when retrieving jobs.\n" +
+      jobsFullQueryDescriptionFields,
+    required: false,
+    type: String,
+    example: jobsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order.\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [OutputJobV3Dto],
+    description: "Return jobs requested.",
+  })
+  async fullQueryV3(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<OutputJobV3Dto[] | null> {
+    const jobs = await this.fullQueryJobs(request, filters);
+    return jobs?.map(this.mapJobClassV4toV3) ?? null;
+  }
+
+  /**
+   * Get fullquery v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullquery")
+  @Version("4")
+  @ApiOperation({
+    summary: "It returns a list of jobs matching the query provided.",
+    description: "It returns a list of jobs matching the query provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Filters to apply when retrieving jobs.\n" +
+      jobsFullQueryDescriptionFields,
+    required: false,
+    type: String,
+    example: jobsFullQueryExampleFields,
+  })
+  @ApiQuery({
+    name: "limits",
+    description:
+      "Define further query parameters like skip, limit, order.\n" +
+      fullQueryDescriptionLimits,
+    required: false,
+    type: String,
+    example: fullQueryExampleLimits,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Return jobs requested.",
+  })
+  async fullQueryV4(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; limits?: string },
+  ): Promise<JobClass[] | null> {
+    return this.fullQueryJobs(request, filters);
+  }
+
+  /**
    * Get fullfacet
    */
   @UseGuards(PoliciesGuard)
@@ -812,6 +990,7 @@ export class JobsController {
     ability.can(Action.JobRead, JobClass),
   )
   @Get("/fullfacet")
+  @Version(["3", "4"])
   @ApiOperation({
     summary: "It returns a list of job facets matching the filter provided.",
     description:
@@ -833,7 +1012,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
+    type: [Object],
     description: "Return jobs requested.",
   })
   async fullFacet(
@@ -889,25 +1068,11 @@ export class JobsController {
   }
 
   /**
-   * Get job by id
+   * Get job by id implementation
    */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get(":id")
-  @ApiOperation({
-    summary: "It returns the requested job.",
-    description: "It returns the requested job.",
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: JobClass,
-    description: "Found job",
-  })
-  async findOne(
-    @Req() request: Request,
-    @Param("id") id: string,
+  private async getJobById(
+    request: Request,
+    id: string,
   ): Promise<JobClass | null> {
     const currentJob = await this.jobsService.findOne({ _id: id });
     if (currentJob === null) {
@@ -937,34 +1102,62 @@ export class JobsController {
   }
 
   /**
-   * Get jobs
+   * Get job by id v3
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobRead, JobClass),
   )
-  @Get()
+  @Get(":id")
+  @Version("3")
   @ApiOperation({
-    summary: "It returns a list of jobs.",
-    description:
-      "It returns a list of jobs. The list returned can be modified by providing a filter.",
-  })
-  @ApiQuery({
-    name: "filter",
-    description:
-      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
-    required: false,
-    type: String,
-    example: filterExampleSimplified,
+    summary: "It returns the requested job.",
+    description: "It returns the requested job.",
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    type: [JobClass],
-    description: "Found jobs",
+    type: OutputJobV3Dto,
+    description: "Found job",
   })
-  async findAll(
+  async findOneV3(
     @Req() request: Request,
-    @Query("filter") filter?: string,
+    @Param("id") id: string,
+  ): Promise<OutputJobV3Dto | null> {
+    const job = await this.getJobById(request, id);
+    return job ? this.mapJobClassV4toV3(job) : null;
+  }
+
+  /**
+   * Get job by id v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get(":id")
+  @Version("4")
+  @ApiOperation({
+    summary: "It returns the requested job.",
+    description: "It returns the requested job.",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: JobClass,
+    description: "Found job",
+  })
+  async findOneV4(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<JobClass | null> {
+    return this.getJobById(request, id);
+  }
+
+  /**
+   * Get jobs implementation
+   */
+  private async getJobs(
+    request: Request,
+    filter?: string,
   ): Promise<JobClass[]> {
     try {
       filter = filter ?? "{}";
@@ -1014,6 +1207,75 @@ export class JobsController {
   }
 
   /**
+   * Get jobs v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get()
+  @Version("3")
+  @ApiOperation({
+    summary: "It returns a list of jobs.",
+    description:
+      "It returns a list of jobs. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    required: false,
+    type: String,
+    example: filterExampleSimplified,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [OutputJobV3Dto],
+    description: "Found jobs",
+  })
+  async findAllV3(
+    @Req() request: Request,
+    @Query("filter") filter?: string,
+  ): Promise<OutputJobV3Dto[]> {
+    const jobs = await this.getJobs(request, filter);
+    return jobs?.map(this.mapJobClassV4toV3) ?? ([] as OutputJobV3Dto[]);
+  }
+
+  /**
+   * Get jobs v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get()
+  @Version("4")
+  @ApiOperation({
+    summary: "It returns a list of jobs.",
+    description:
+      "It returns a list of jobs. The list returned can be modified by providing a filter.",
+  })
+  @ApiQuery({
+    name: "filter",
+    description:
+      "Filters to apply when retrieve all jobs\n" + filterDescriptionSimplified,
+    required: false,
+    type: String,
+    example: filterExampleSimplified,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [JobClass],
+    description: "Found jobs",
+  })
+  async findAllV4(
+    @Req() request: Request,
+    @Query("filter") filter?: string,
+  ): Promise<JobClass[]> {
+    return this.getJobs(request, filter);
+  }
+
+  /**
    * Delete a job
    */
   @UseGuards(PoliciesGuard)
@@ -1021,6 +1283,7 @@ export class JobsController {
     ability.can(Action.JobDelete, JobClass),
   )
   @Delete(":id")
+  @Version(["3", "4"])
   @ApiOperation({
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",

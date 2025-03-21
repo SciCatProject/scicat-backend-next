@@ -819,24 +819,6 @@ export const addApiVersionField = <T extends object>(
   Object.assign(obj, { version: apiVersion });
 };
 
-export const addStatusFields = <T>(
-  obj: T,
-  statusCode: string,
-  statusMessage: string,
-  jobResultObject: Record<string, unknown> | undefined,
-): T & {
-  statusCode: string;
-  statusMessage: string;
-  jobResultObject: Record<string, unknown> | undefined;
-} => {
-  return {
-    ...obj,
-    statusCode: statusCode,
-    statusMessage: statusMessage,
-    jobResultObject: jobResultObject,
-  };
-};
-
 export const addCreatedByFields = <T>(
   obj: T,
   username: string,
