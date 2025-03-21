@@ -16,7 +16,7 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
     db.collection("Dataset").deleteMany({});
   });
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     accessTokenAdminIngestor = await utils.getToken(appUrl, {
       username: "adminIngestor",
       password: TestData.Accounts["adminIngestor"]["password"],
@@ -196,6 +196,46 @@ describe("0200: Dataset Simple: Check different dataset types and their inherita
           .property("ownerEmail")
           .and.equal(TestData.RawCorrect.ownerEmail);
         pidRaw1 = encodeURIComponent(res.body.pid);
+      });
+  });
+
+  it("0081: raw dataset should contain scientific metadata quantity range and correct ValueSI and UnitSI", async () => {
+    return request(appUrl)
+      .get("/api/v3/Datasets/" + pidRaw1)
+      .set("Accept", "application/json")
+      .set({ Authorization: `Bearer ${accessTokenAdminIngestor}` })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body.should.have
+          .property("scientificMetadata")
+          .and.to.be.a("object");
+
+        const scientificMetadata = res.body.scientificMetadata;
+
+        scientificMetadata.should.have
+          .property("approx_distance_range")
+          .and.to.be.a("object");
+
+        const approxDistanceRange = scientificMetadata.approx_distance_range;
+        approxDistanceRange.should.have
+          .property("unitSI")
+          .and.to.be.a("string")
+          .and.equal("m");
+        approxDistanceRange.should.have
+          .property("valueSI")
+          .and.to.be.a("array");
+        approxDistanceRange.should.have.property("value").and.to.be.a("array");
+        const valueSI = approxDistanceRange.valueSI;
+        const value = approxDistanceRange.value;
+
+        value.should.have.lengthOf(2);
+        value[0].should.be.a("number").and.equal(1);
+        value[1].should.be.a("number").and.equal(2);
+
+        valueSI.should.have.lengthOf(2);
+        valueSI[0].should.be.a("number").and.equal(0.01);
+        valueSI[1].should.be.a("number").and.equal(0.02);
       });
   });
 
