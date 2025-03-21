@@ -983,41 +983,11 @@ export class JobsController {
   }
 
   /**
-   * Get fullfacet
+   * FullFacet implementation
    */
-  @UseGuards(PoliciesGuard)
-  @CheckPolicies("jobs", (ability: AppAbility) =>
-    ability.can(Action.JobRead, JobClass),
-  )
-  @Get("/fullfacet")
-  @Version(["3", "4"])
-  @ApiOperation({
-    summary: "It returns a list of job facets matching the filter provided.",
-    description:
-      "It returns a list of job facets matching the filter provided.",
-  })
-  @ApiQuery({
-    name: "fields",
-    description:
-      "Define the filter conditions by specifying the name of values of fields requested.",
-    required: false,
-    type: String,
-  })
-  @ApiQuery({
-    name: "facets",
-    description:
-      "Define a list of field names, for which facet counts should be calculated.",
-    required: false,
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: [Object],
-    description: "Return jobs requested.",
-  })
-  async fullFacet(
-    @Req() request: Request,
-    @Query() filters: { fields?: string; facets?: string },
+  private async fullFacetJobs(
+    request: Request,
+    filters: { fields?: string; facets?: string },
   ): Promise<Record<string, unknown>[]> {
     try {
       const fields: IJobFields = JSON.parse(filters.fields ?? ("{}" as string));
@@ -1065,6 +1035,86 @@ export class JobsController {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  /**
+   * Get fullfacet v3
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullfacet")
+  @Version("3")
+  @ApiOperation({
+    summary: "It returns a list of job facets matching the filter provided.",
+    description:
+      "It returns a list of job facets matching the filter provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested.",
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: "facets",
+    description:
+      "Define a list of field names, for which facet counts should be calculated.",
+    required: false,
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [Object],
+    description: "Return jobs requested.",
+  })
+  async fullFacetV3(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    return this.fullFacetJobs(request, filters);
+  }
+
+  /**
+   * Get fullfacet v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobRead, JobClass),
+  )
+  @Get("/fullfacet")
+  @Version("4")
+  @ApiOperation({
+    summary: "It returns a list of job facets matching the filter provided.",
+    description:
+      "It returns a list of job facets matching the filter provided.",
+  })
+  @ApiQuery({
+    name: "fields",
+    description:
+      "Define the filter conditions by specifying the name of values of fields requested.",
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: "facets",
+    description:
+      "Define a list of field names, for which facet counts should be calculated.",
+    required: false,
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [Object],
+    description: "Return jobs requested.",
+  })
+  async fullFacetV4(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; facets?: string },
+  ): Promise<Record<string, unknown>[]> {
+    return this.fullFacetJobs(request, filters);
   }
 
   /**
@@ -1276,14 +1326,14 @@ export class JobsController {
   }
 
   /**
-   * Delete a job
+   * Delete a job v3
    */
   @UseGuards(PoliciesGuard)
   @CheckPolicies("jobs", (ability: AppAbility) =>
     ability.can(Action.JobDelete, JobClass),
   )
   @Delete(":id")
-  @Version(["3", "4"])
+  @Version("3")
   @ApiOperation({
     summary: "It deletes the requested job.",
     description: "It deletes the requested job.",
@@ -1293,7 +1343,43 @@ export class JobsController {
     type: undefined,
     description: "Deleted job",
   })
-  async remove(
+  async removeV3(
+    @Req() request: Request,
+    @Param("id") id: string,
+  ): Promise<unknown> {
+    const foundJob = await this.jobsService.findOne({ _id: id });
+    if (foundJob === null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: `Job id ${id} doesn't exist.`,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    Logger.log(`Deleting job with id ${id}!`);
+    return this.jobsService.remove({ _id: id });
+  }
+
+  /**
+   * Delete a job v4
+   */
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("jobs", (ability: AppAbility) =>
+    ability.can(Action.JobDelete, JobClass),
+  )
+  @Delete(":id")
+  @Version("4")
+  @ApiOperation({
+    summary: "It deletes the requested job.",
+    description: "It deletes the requested job.",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: undefined,
+    description: "Deleted job",
+  })
+  async removeV4(
     @Req() request: Request,
     @Param("id") id: string,
   ): Promise<unknown> {
