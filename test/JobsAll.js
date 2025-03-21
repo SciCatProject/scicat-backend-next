@@ -1167,7 +1167,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
 
   it("0600: Get his/her own job as user from CREATE_JOB_GROUP", async () => {
     return request(appUrl)
-      .get(`/api/v4/Jobs/${accessTokenUser1}`)
+      .get(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .set("Accept", "application/json")
       .set({ Authorization: `Bearer ${accessTokenAdmin}` })
       .expect(TestData.SuccessfulGetStatusCode)
