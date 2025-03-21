@@ -1,30 +1,38 @@
-import { Type } from "class-transformer";
-import {
-  IsArray,
-  IsEmail,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from "class-validator";
-import { IDatasetList } from "../interfaces/dataset-list.interface";
-import { DatasetListDto } from "./dataset-list.dto";
-import { UpdateJobDto } from "./update-job.dto";
+import { ApiTags } from "@nestjs/swagger";
+import { IsEmail, IsObject, IsOptional, IsString } from "class-validator";
 
-export class CreateJobDto extends UpdateJobDto {
-  @IsEmail()
-  readonly emailJobInitiator: string;
-
+@ApiTags("jobs")
+export class CreateJobDto {
+  /**
+   * Valid job type as defined in configuration.
+   */
   @IsString()
   readonly type: string;
 
+  /**
+   * Job's parameters as defined by job template in configuration.
+   */
   @IsObject()
-  @IsOptional()
-  readonly jobParams?: Record<string, unknown>;
+  readonly jobParams: Record<string, unknown>;
 
-  @IsArray()
+  /**
+   * User that this job belongs to. Applicable only if requesting user has adequate permissions level.
+   */
+  @IsString()
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => DatasetListDto)
-  readonly datasetList: IDatasetList[];
+  readonly ownerUser?: string;
+
+  /**
+   * Group that this job belongs to. Applicable only if requesting user has adequate permissions level.
+   */
+  @IsString()
+  @IsOptional()
+  readonly ownerGroup?: string;
+
+  /**
+   * Email to contact regarding this job. If the job is submitted anonymously, an email has to be provided.
+   */
+  @IsEmail()
+  @IsOptional()
+  readonly contactEmail?: string;
 }
