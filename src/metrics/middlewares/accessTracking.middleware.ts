@@ -2,21 +2,27 @@ import { Injectable, Logger, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { JwtService } from "@nestjs/jwt";
 import { parse } from "url";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AccessTrackingMiddleware implements NestMiddleware {
   private requestCache = new Map<string, number>(); // Cache to store recent requests
   private logIntervalDuration = 1000; // Log every 1 second to prevent spam
   private cacheResetInterval = 10 * 60 * 1000; // Clear cache every 10 minutes to prevent memory leak
+  private jwtSecret: string | undefined;
 
-  constructor(private readonly jwtService: JwtService) {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly confgiService: ConfigService,
+  ) {
     this.startCacheResetInterval();
+    this.jwtSecret = this.confgiService.get<string>("jwt.secret");
   }
   use(req: Request, res: Response, next: NextFunction) {
     const { query, pathname } = parse(req.originalUrl, true);
 
     const userAgent = req.headers["user-agent"];
-    // TODO: Better to use a library for this?
+
     const isBot = userAgent ? /bot|crawl|spider|slurp/i.test(userAgent) : false;
 
     if (!pathname || isBot) return;
@@ -55,16 +61,25 @@ export class AccessTrackingMiddleware implements NestMiddleware {
   }
 
   private parseToken(authHeader?: string) {
-    if (!authHeader) return "anonymous";
-    const token = authHeader.split(" ")[1];
-    if (!token) return "anonymous";
+    if (!authHeader || !authHeader.split(" ")[1]) {
+      return "anonymous";
+    }
+
+    const rawToken = authHeader.split(" ")[1];
 
     try {
-      const { id } = this.jwtService.decode(token);
-      return id;
+      const verifiedToken = this.jwtService.verify(rawToken, {
+        secret: this.jwtSecret,
+      });
+
+      return verifiedToken.id;
     } catch (error) {
+      if (error instanceof Error && error.name === "TokenExpiredError") {
+        return "anonymous";
+      }
+
       Logger.error("Error parsing token-> AccessTrackingMiddleware", error);
-      return null;
+      return "anonymous";
     }
   }
 

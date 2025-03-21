@@ -233,12 +233,39 @@ export class ProposalsController {
           ProposalClass,
         );
         if (canViewAccess) {
-          mergedFilters.where["$or"] = [
-            { ownerGroup: { $in: user.currentGroups } },
-            { accessGroups: { $in: user.currentGroups } },
-          ];
+          const accessCondition = {
+            $or: [
+              { ownerGroup: { $in: user.currentGroups } },
+              { accessGroups: { $in: user.currentGroups } },
+            ],
+          };
+
+          if (!mergedFilters.where["$and"]) {
+            // If there's no $and condition yet
+            if (mergedFilters.where["$or"]) {
+              // If $or exists, wrap both the existing $or and accessCondition in $and
+              mergedFilters.where["$and"] = [
+                { $or: mergedFilters.where["$or"] },
+                accessCondition,
+              ];
+              delete mergedFilters.where["$or"]; // Remove $or after moving it to $and
+            } else {
+              // If no $or exists, create one with accessCondition
+              mergedFilters.where["$or"] = accessCondition.$or;
+            }
+          } else {
+            // If $and already exists, just add accessCondition
+            mergedFilters.where["$and"].push(accessCondition);
+          }
         } else if (canViewOwner) {
-          mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          if (mergedFilters.where) {
+            mergedFilters.where = {
+              ...mergedFilters.where,
+              ownerGroup: { $in: user.currentGroups },
+            };
+          } else {
+            mergedFilters.where = { ownerGroup: { $in: user.currentGroups } };
+          }
         } else if (canViewPublic) {
           mergedFilters.where.isPublished = true;
         }
@@ -390,7 +417,7 @@ export class ProposalsController {
       "Database filters to apply when retrieving count for proposals",
     required: false,
     type: ProposalCountFilters,
-    example: `{ fields: ${proposalsFullQueryExampleFields}}`,
+    example: `{ fields: ${proposalsFullQueryExampleFields}, filter: '{"$or": [{"field1": "value" }, {"field2": "value"}]}'}`,
   })
   @ApiResponse({
     status: 200,
@@ -398,41 +425,43 @@ export class ProposalsController {
     description:
       "Return the number of proposals in the following format: { count: integer }",
   })
-  async count(@Req() request: Request, @Query() filters: { fields?: string }) {
+  async count(
+    @Req() request: Request,
+    @Query() filters: { fields?: string; filter?: string },
+  ) {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
+    const filter: IProposalFields = JSON.parse(filters.filter ?? "{}");
 
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 
-    return this.proposalsService.count({ fields });
+    return this.proposalsService.count({ fields, where: filter });
   }
 
   // GET /proposals/fullquery
@@ -466,33 +495,31 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const limits: ILimitsFilter = JSON.parse(filters.limits ?? "{}");
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 
@@ -537,33 +564,31 @@ export class ProposalsController {
     const user: JWTUser = request.user as JWTUser;
     const fields: IProposalFields = JSON.parse(filters.fields ?? "{}");
     const facets = JSON.parse(filters.facets ?? "[]");
-    if (user) {
-      const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
-      const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
+    const ability = this.caslAbilityFactory.proposalsInstanceAccess(user);
+    const canViewAll = ability.can(Action.ProposalsReadAny, ProposalClass);
 
-      if (!canViewAll) {
-        const canViewAccess = ability.can(
-          Action.ProposalsReadManyAccess,
-          ProposalClass,
-        );
-        const canViewOwner = ability.can(
-          Action.ProposalsReadManyOwner,
-          ProposalClass,
-        );
-        const canViewPublic = ability.can(
-          Action.ProposalsReadManyPublic,
-          ProposalClass,
-        );
-        if (canViewAccess) {
-          fields.userGroups = fields.userGroups ?? [];
-          fields.userGroups.push(...user.currentGroups);
-          // fields.sharedWith = user.email;
-        } else if (canViewOwner) {
-          fields.ownerGroup = fields.ownerGroup ?? [];
-          fields.ownerGroup.push(...user.currentGroups);
-        } else if (canViewPublic) {
-          fields.isPublished = true;
-        }
+    if (!canViewAll) {
+      const canViewAccess = ability.can(
+        Action.ProposalsReadManyAccess,
+        ProposalClass,
+      );
+      const canViewOwner = ability.can(
+        Action.ProposalsReadManyOwner,
+        ProposalClass,
+      );
+      const canViewPublic = ability.can(
+        Action.ProposalsReadManyPublic,
+        ProposalClass,
+      );
+      if (canViewAccess) {
+        fields.userGroups = fields.userGroups ?? [];
+        fields.userGroups.push(...user.currentGroups);
+        // fields.sharedWith = user.email;
+      } else if (canViewOwner) {
+        fields.ownerGroup = fields.ownerGroup ?? [];
+        fields.ownerGroup.push(...user.currentGroups);
+      } else if (canViewPublic) {
+        fields.isPublished = true;
       }
     }
 

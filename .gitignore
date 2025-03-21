@@ -5,6 +5,8 @@ functionalAccounts.json
 datasetTypes.json
 proposalTypes.json
 loggers.json
+jobConfig.json
+jobConfig.yaml
 metricsConfig.json
 
 # Configs
@@ -46,4 +48,3 @@ lerna-debug.log*
 /mongodb_data
 test-data/*
 .vscode*
-
