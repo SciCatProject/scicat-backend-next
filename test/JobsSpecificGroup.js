@@ -54,7 +54,7 @@ const jobGroup5 = {
   type: "group_access"
 };
 
-describe("1170: Jobs: Test New Job Model Authorization for configuration set to a specific group: @group5", () => {
+describe("1170: Jobs: Test New Job Model Authorization for group_access type: configuration set to a specific group - @group5", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
