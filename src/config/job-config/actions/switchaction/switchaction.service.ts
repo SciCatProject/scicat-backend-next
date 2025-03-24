@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import {
   CREATE_JOB_ACTION_CREATORS,
   JobActionCreator,
@@ -15,9 +15,7 @@ import { UpdateJobDto } from "src/jobs/dto/update-job.dto";
 export class SwitchUpdateJobActionCreator
   implements JobActionCreator<UpdateJobDto>
 {
-  constructor(
-    private moduleRef: ModuleRef,
-  ) {}
+  constructor(private moduleRef: ModuleRef) {}
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isSwitchJobActionOptions(options)) {
@@ -25,7 +23,11 @@ export class SwitchUpdateJobActionCreator
         `Invalid options for ValidateJobAction: ${JSON.stringify(options)}`,
       );
     }
-    return new SwitchJobAction<UpdateJobDto>(this.moduleRef, options, UPDATE_JOB_ACTION_CREATORS);
+    return new SwitchJobAction<UpdateJobDto>(
+      this.moduleRef,
+      options,
+      UPDATE_JOB_ACTION_CREATORS,
+    );
   }
 }
 
@@ -33,14 +35,16 @@ export class SwitchUpdateJobActionCreator
 export class SwitchCreateJobActionCreator
   implements JobActionCreator<CreateJobDto>
 {
-  constructor(
-    private moduleRef: ModuleRef,
-  ) {}
+  constructor(private moduleRef: ModuleRef) {}
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isSwitchJobActionOptions(options)) {
       throw new Error("Invalid options for ValidateJobAction.");
     }
-    return new SwitchCreateJobAction(this.moduleRef, options, CREATE_JOB_ACTION_CREATORS);
+    return new SwitchCreateJobAction(
+      this.moduleRef,
+      options,
+      CREATE_JOB_ACTION_CREATORS,
+    );
   }
 }

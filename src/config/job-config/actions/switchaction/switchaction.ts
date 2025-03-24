@@ -25,7 +25,7 @@ import {
   toObject,
 } from "../actionutils";
 import { makeHttpException } from "src/common/utils";
-import { HttpStatus, Inject, Logger } from "@nestjs/common";
+import { HttpStatus, Logger } from "@nestjs/common";
 
 /**
  * A Case gets matched against some target property.
@@ -48,7 +48,7 @@ class Case<Dto extends JobDto> {
   ) {
     return options.map((opt) => {
       if (!(opt.actionType in creators)) {
-        throw new Error(`Unknown action type ${opt.actionType}`);
+        throw new Error(`Unknown action type '${opt.actionType}'`);
       }
       return creators[opt.actionType].create(opt);
     });
@@ -130,7 +130,7 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
   constructor(
     protected moduleRef: ModuleRef,
     options: SwitchJobActionOptions,
-    creators_token: symbol|string,
+    creators_token: symbol | string,
     ajv?: Ajv,
   ) {
     const ajvDefined =
@@ -156,7 +156,6 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
         }
       });
     });
-
   }
 
   protected async resolveTarget(
@@ -199,8 +198,9 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
     return [];
   }
 
-
-  protected async resolveActionCreators(token: string|symbol): Promise<Record<string, JobActionCreator<Dto>>> {
+  protected async resolveActionCreators(
+    token: string | symbol,
+  ): Promise<Record<string, JobActionCreator<Dto>>> {
     const creators = await this.moduleRef.resolve(token, undefined, {
       strict: false,
     });
@@ -209,14 +209,9 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
       // This shouldn't happen unless the NestJS dependency graph is messed up.
       // It is left here for debugging.
       const token_str = typeof token === "symbol" ? token.description : token;
-      const msg = `Unable to resolve ${token_str}. This indicates an unexpected server state.`
-      Logger.error(
-        msg,
-      );
-      throw makeHttpException(
-        msg,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const msg = `Unable to resolve ${token_str}. This indicates an unexpected server state.`;
+      Logger.error(msg);
+      throw makeHttpException(msg, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return creators;
@@ -244,12 +239,11 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
 }
 
 export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
-
   protected async resolveTarget(
     scope: SwitchScope,
     job: CreateJobDto | JobClass,
   ): Promise<JSONData> {
-    if (scope == SwitchScope.Dataset) {
+    if (scope == SwitchScope.Datasets) {
       const datasetsService = await resolveDatasetService(this.moduleRef);
       const datasets = await loadDatasets(datasetsService, job);
 
@@ -258,10 +252,16 @@ export class SwitchCreateJobAction extends SwitchJobAction<CreateJobDto> {
     return super.resolveTarget(scope, job);
   }
 
-  protected async resolveActionCreators(): Promise<Record<string, JobActionCreator<CreateJobDto>>> {
-    const creators = await this.moduleRef.resolve(CREATE_JOB_ACTION_CREATORS, undefined, {
-      strict: false,
-    });
+  protected async resolveActionCreators(): Promise<
+    Record<string, JobActionCreator<CreateJobDto>>
+  > {
+    const creators = await this.moduleRef.resolve(
+      CREATE_JOB_ACTION_CREATORS,
+      undefined,
+      {
+        strict: false,
+      },
+    );
 
     if (creators === undefined || creators.length == 0) {
       // This shouldn't happen unless the NestJS dependency graph is messed up.
