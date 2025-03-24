@@ -27,6 +27,9 @@ import {
   SwitchUpdateJobActionCreator,
 } from "./switchaction/switchaction.service";
 import { actionType as switchActionType } from "./switchaction/switchaction.interface";
+import { ErrorJobActionModule } from "./erroraction/erroraction.module";
+import { ErrorJobActionCreator } from "./erroraction/erroraction.service";
+import { actionType as errorActionType } from "./erroraction/erroraction.interface";
 
 /**
  * Provide a list of built-in job action creators.
@@ -42,6 +45,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
     URLJobActionModule,
     RabbitMQJobActionModule,
     SwitchJobActionModule,
+    ErrorJobActionModule,
   ],
   providers: [
     {
@@ -53,6 +57,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
         urlJobActionCreator,
         rabbitMQJobActionCreator,
         switchCreateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -61,6 +66,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
           [switchActionType]: switchCreateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -70,6 +76,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
         URLJobActionCreator,
         RabbitMQJobActionCreator,
         SwitchCreateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
     {
@@ -81,6 +88,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
         urlJobActionCreator,
         rabbitMQJobActionCreator,
         switchUpdateJobActionCreator,
+        errorJobActionCreator,
       ) => {
         return {
           [logActionType]: logJobActionCreator,
@@ -89,6 +97,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
           [urlActionType]: urlJobActionCreator,
           [rabbitmqActionType]: rabbitMQJobActionCreator,
           [switchActionType]: switchUpdateJobActionCreator,
+          [errorActionType]: errorJobActionCreator,
         };
       },
       inject: [
@@ -98,6 +107,7 @@ import { actionType as switchActionType } from "./switchaction/switchaction.inte
         URLJobActionCreator,
         RabbitMQJobActionCreator,
         SwitchUpdateJobActionCreator,
+        ErrorJobActionCreator,
       ],
     },
   ],
