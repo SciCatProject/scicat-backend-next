@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { HttpStatus } from "@nestjs/common";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { ErrorJobAction } from "./erroraction";
 import { ErrorJobActionOptions } from "./erroraction.interface";
@@ -23,7 +23,7 @@ describe("ErrorJobAction", () => {
       type: "test_error",
     } as JobClass;
 
-    await expect(action.performJob(job)).rejects.toThrowError(
+    await expect(action.validate(job)).rejects.toThrowError(
       makeHttpException("JobType: test_error", HttpStatus.I_AM_A_TEAPOT),
     );
   });
