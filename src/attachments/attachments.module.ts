@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AttachmentsService } from "./attachments.service";
-import { AttachmentsController } from "./attachments.controller";
+import { AttachmentsController } from "./attachments.v4.controller";
 import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
 import { CaslModule } from "src/casl/casl.module";
 
@@ -11,8 +11,6 @@ import { CaslModule } from "src/casl/casl.module";
     MongooseModule.forFeatureAsync([
       {
         name: Attachment.name,
-        //schema: AttachmentSchema,
-
         useFactory: () => {
           const schema = AttachmentSchema;
 
@@ -20,7 +18,7 @@ import { CaslModule } from "src/casl/casl.module";
             // if _id is empty or differnet than pid,
             // set _id to pid
             if (!this._id) {
-              this._id = this.id;
+              this._id = this.aid;
             }
             next();
           });
