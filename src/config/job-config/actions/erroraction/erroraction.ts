@@ -1,7 +1,6 @@
 import { JobAction, JobDto } from "../../jobconfig.interface";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { ErrorJobActionOptions, actionType } from "./erroraction.interface";
-import { compileJob, TemplateJob } from "../../handlebar-utils";
 import { makeHttpException } from "src/common/utils";
 import { HttpStatus, Logger } from "@nestjs/common";
 import { compile, TemplateDelegate } from "handlebars";

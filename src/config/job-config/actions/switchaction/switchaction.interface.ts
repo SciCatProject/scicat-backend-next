@@ -4,7 +4,7 @@ export const actionType = "switch";
 
 export enum SwitchScope {
   Request = "request",
-  Dataset = "dataset",
+  Datasets = "datasets",
 }
 
 export interface SwitchJobActionOptions extends JobActionOptions {
@@ -39,6 +39,7 @@ export function isSwitchJobActionOptions(
     return (
       opts.actionType === actionType &&
       typeof opts.scope === "string" &&
+      Object.values(SwitchScope).includes(opts.scope as SwitchScope) &&
       typeof opts.property === "string" &&
       Array.isArray(opts.cases) &&
       opts.cases.every(isCaseOptions)
