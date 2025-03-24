@@ -51,7 +51,7 @@ const jobUser51 = {
   type: "user_access"
 };
 
-describe("1180: Jobs: Test New Job Model Authorization for configuration set to a specific user: USER5.1", () => {
+describe("1180: Jobs: Test New Job Model Authorization for user_access type: configuration set to a specific user: USER5.1", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
