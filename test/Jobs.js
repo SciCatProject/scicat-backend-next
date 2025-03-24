@@ -413,7 +413,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         });
     });
 
-    it("0045: create validate fails without datasetList", async () => {
+    it("0050: create validate fails without datasetList", async () => {
       const newDataset = {
         type: "validate",
         contactEmail: "test@email.scicat",
@@ -436,7 +436,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
       });
     });
 
-    it("0050: create validate succeeds with the right types", async () => {
+    it("0060: create validate succeeds with the right types", async () => {
       const newJob = {
         type: "validate",
         contactEmail: "test@email.scicat",
@@ -469,7 +469,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
         });
     });
 
-    it("0060: update validate fails without the required parameters", async () => {
+    it("0070: update validate fails without the required parameters", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",
@@ -493,7 +493,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
 
     });
 
-    it("0070: update validate fails with incorrect types", async () => {
+    it("0080: update validate fails with incorrect types", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",
@@ -517,7 +517,7 @@ describe("1110: Jobs: Test New Job Model: possible real configurations", () => {
     });
 
 
-    it("0080: updating validate succeeds with the required parameters", async () => {
+    it("0090: updating validate succeeds with the required parameters", async () => {
       const update = {
         statusCode: "finished",
         statusMessage: "done",

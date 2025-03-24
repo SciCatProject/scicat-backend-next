@@ -49,7 +49,7 @@ const jobDatasetAccess = {
   type: "dataset_access"
 };
 
-describe("1140: Jobs: Test New Job Model Authorization for #dataset_access jobs configuration", () => {
+describe("1140: Jobs: Test New Job Model Authorization for dataset_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
