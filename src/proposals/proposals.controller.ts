@@ -39,8 +39,8 @@ import { Action } from "src/casl/action.enum";
 import { ProposalClass, ProposalDocument } from "./schemas/proposal.schema";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
-import { PartialUpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { CreateAttachmentObsoleteDto } from "src/attachments/dto-obsolete/create-attachment-obsolete.dto";
+import { PartialUpdateAttachmentObsoleteDto } from "src/attachments/dto-obsolete/update-attachment-obsolete.dto";
 import { DatasetsService } from "src/datasets/datasets.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { IProposalFields } from "./interfaces/proposal-filters.interface";
@@ -768,9 +768,9 @@ export class ProposalsController {
       "Id of the proposal we would like to create a new attachment for",
     type: String,
   })
-  @ApiExtraModels(CreateAttachmentDto)
+  @ApiExtraModels(CreateAttachmentObsoleteDto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateAttachmentObsoleteDto,
   })
   @ApiResponse({
     status: 201,
@@ -781,7 +781,7 @@ export class ProposalsController {
   async createAttachment(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
+    @Body() createAttachmentDto: CreateAttachmentObsoleteDto,
   ): Promise<Attachment> {
     await this.checkPermissionsForProposal(
       request,
@@ -866,7 +866,7 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
-    @Body() updateAttachmentDto: PartialUpdateAttachmentDto,
+    @Body() updateAttachmentDto: PartialUpdateAttachmentObsoleteDto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForProposal(
       request,
