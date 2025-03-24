@@ -1,9 +1,11 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CaslModule } from "src/casl/casl.module";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
 import { UserIdentitiesController } from "./user-identities.controller";
 import { UserIdentitiesService } from "./user-identities.service";
 
 class UserIdentitiesServiceMock {}
+
+class CaslAbilityFactoryMock {}
 
 describe("UserIdentitiesController", () => {
   let controller: UserIdentitiesController;
@@ -11,9 +13,9 @@ describe("UserIdentitiesController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserIdentitiesController],
-      imports: [CaslModule],
       providers: [
         { provide: UserIdentitiesService, useClass: UserIdentitiesServiceMock },
+        { provide: CaslAbilityFactory, useClass: CaslAbilityFactoryMock },
       ],
     }).compile();
 

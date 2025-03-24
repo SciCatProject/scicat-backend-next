@@ -1,14 +1,15 @@
 import { Module, forwardRef } from "@nestjs/common";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory";
+import { CaslModule } from "src/casl/casl.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { DatasetsModule } from "src/datasets/datasets.module";
 import { ElasticSearchServiceController } from "./elastic-search.controller";
 import { ElasticSearchService } from "./elastic-search.service";
 import { SearchQueryService } from "./providers/query-builder.service";
 
 @Module({
-  imports: [forwardRef(() => DatasetsModule)],
+  imports: [forwardRef(() => DatasetsModule), ConfigModule, CaslModule],
   controllers: [ElasticSearchServiceController],
-  providers: [ElasticSearchService, SearchQueryService, CaslAbilityFactory],
+  providers: [ElasticSearchService, SearchQueryService, ConfigService],
   exports: [ElasticSearchService, SearchQueryService],
 })
 export class ElasticSearchModule {}
