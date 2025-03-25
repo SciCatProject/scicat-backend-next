@@ -370,7 +370,7 @@ export class CaslAbilityFactory {
   }
 
   attachmentEndpointAccess(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     /*
@@ -398,8 +398,6 @@ export class CaslAbilityFactory {
         can(Action.AttachmentCreateEndpoint, Attachment);
         can(Action.AttachmentUpdateEndpoint, Attachment);
         can(Action.AttachmentDeleteEndpoint, Attachment);
-
-        can(Action.Admin, Attachment);
       }
     }
 
@@ -1857,7 +1855,7 @@ export class CaslAbilityFactory {
   }
 
   attachmentInstanceAccess(user: JWTUser) {
-    const { can, cannot, build } = new AbilityBuilder(
+    const { can, build } = new AbilityBuilder(
       createMongoAbility<PossibleAbilities, Conditions>,
     );
     // -------------------------------------
@@ -1889,7 +1887,7 @@ export class CaslAbilityFactory {
         can(Action.AttachmentUpdateInstance, Attachment);
         can(Action.AttachmentDeleteInstance, Attachment);
 
-        can(Action.Admin, Attachment);
+        can(Action.accessAny, Attachment);
       } else if (
         user.currentGroups.some((g) =>
           this.accessGroups?.attachmentPrivileged.includes(g),
