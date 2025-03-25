@@ -116,9 +116,9 @@ export class AttachmentsController {
       filter.where = {};
     }
     const ability = this.caslAbilityFactory.attachmentInstanceAccess(user);
-    const isAdmin = ability.can(Action.Admin, Attachment);
+    const canAccessAny = ability.can(Action.accessAny, Attachment);
 
-    if (!isAdmin) {
+    if (!canAccessAny) {
       if (filter.where["$and"]) {
         filter.where["$and"].push({
           $or: [
