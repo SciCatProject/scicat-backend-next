@@ -62,26 +62,46 @@ class Case<Dto extends JobDto> {
 }
 
 /**
- * Match either a regex or a string literal
+ * Match a literal
  */
-class RegexCase<Dto extends JobDto> extends Case<Dto> {
-  private match: RegExp | string;
+class MatchCase<Dto extends JobDto> extends Case<Dto> {
+  private match: string | number | boolean | null;
   constructor(
-    options: { match: string; actions: JobActionOptions[] },
+    options: {
+      match: string | number | boolean | null;
+      actions: JobActionOptions[];
+    },
     creators: Record<string, JobActionCreator<Dto>>,
   ) {
     super(options, creators);
-    this.match = this.parseMatch(options.match);
+    this.match = options.match;
   }
 
-  private parseMatch(str: string): RegExp | string {
+  public matches(target: JSONData) {
+    return this.match == target;
+  }
+}
+
+/**
+ * Match a regex
+ */
+class RegexCase<Dto extends JobDto> extends Case<Dto> {
+  private regex: RegExp;
+  constructor(
+    options: { regex: string; actions: JobActionOptions[] },
+    creators: Record<string, JobActionCreator<Dto>>,
+  ) {
+    super(options, creators);
+    this.regex = this.parseRegex(options.regex);
+  }
+
+  private parseRegex(str: string): RegExp {
     // Try to parse the string as a slash-delimited regex
     const match = str.match(/^\/(.*)\/([a-z]*)$/);
     if (match) {
       return new RegExp(match[1], match[2]);
     }
-    // Default to string
-    return str;
+    throw new Error(`Expected slash-delimited regex. Got '${str}'`);
   }
 
   public matches(target: JSONData) {
@@ -90,12 +110,8 @@ class RegexCase<Dto extends JobDto> extends Case<Dto> {
         `Property ${target} was expected to be a string.`,
       );
     }
-    // exact string match
-    if (typeof this.match === "string") {
-      return this.match == target;
-    }
     // regex match
-    return this.match.test(target);
+    return this.regex.test(target);
   }
 }
 
@@ -149,8 +165,10 @@ export class SwitchJobAction<Dto extends JobDto> implements JobAction<Dto> {
       return options.cases.map((caseOptions: CaseOptions) => {
         if ("schema" in caseOptions) {
           return new SchemaCase<Dto>(caseOptions, creators, ajvDefined);
-        } else if ("match" in caseOptions) {
+        } else if ("regex" in caseOptions) {
           return new RegexCase<Dto>(caseOptions, creators);
+        } else if ("match" in caseOptions) {
+          return new MatchCase<Dto>(caseOptions, creators);
         } else {
           return new Case<Dto>(caseOptions, creators);
         }

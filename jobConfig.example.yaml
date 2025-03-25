@@ -1,8 +1,18 @@
+# This is an example job configuration file.
+# To use, customize this and set $JOB_CONFIGURATION_PATH in your environment.
+# Both JSON and YAML syntax are accepted.
+
+# An arbitrary string, stored in each job. Change the version after changes.
 configVersion: v1.0 2024-03-01 6f3f38
+# Main array defining job types
+# jobType can be arbitrary, but 'archive', 'retrieve' and 'public' are conventional
 jobs:
   - jobType: archive
+    # Run when POST requests create new jobs
     create:
+      # Authorization to create this job type
       auth: "#datasetOwner"
+      # List of actions to run sequentially
       actions:
         - actionType: validate
           datasets:
@@ -24,6 +34,7 @@ jobs:
           from: from
           subject: "[SciCat] Your {{type}} job was submitted successfully"
           bodyTemplateFile: src/common/email-templates/job-template-simplified.html
+    # Run when PATCH requests change existing jobs
     update:
       auth: archivemanager
       actions:
@@ -31,6 +42,7 @@ jobs:
           exchange: jobs.write
           queue: client.jobs.write
           key: jobqueue
+
   - jobType: retrieve
     create:
       auth: "#datasetOwner"
@@ -39,9 +51,38 @@ jobs:
         datasets:
           "datasetlifecycle.retrievable":
             const: true
+      - actionType: switch
+        # Either 'request' or 'datasets', analogous to validateaction
+        scope: datasets
+        # JSONPath to extract the value from the given scope
+        property: creationLocation
+        # Cases are tested sequentially, with the first match applied (no fallthrough)
+        cases:
+            # match a literal value
+          - match: V20
+            actions:
+            - actionType: log
+              performJob: "This dataset came from V20"
+            # match a regular expression
+          - regex: /^\/PSI/i
+            actions:
+            - actionType: log
+              performJob: "This dataset came from PSI"
+            # apply a JSON Schema
+          - schema:
+              const: MAXIV
+            actions:
+            - actionType: log
+              performJob: "The JSON Schema way of matching a literal MAXIV"
+            # default case (no match or schema)
+          - actions:
+            - actionType: error
+              code: 400
+              message: Invalid creationLocation
     update:
       auth: "archivemanager"
       actions: []
+
   - jobType: public
     create:
       auth: "#all"
@@ -58,30 +99,3 @@ jobs:
               const: true
     update:
       auth: "archivemanager"
-  - jobType: filter_test
-    create:
-      auth: "#all"
-      actions:
-        - actionType: switch
-          # Either 'request' or 'datasets', analogous to validateaction
-          scope: datasets
-          # JSONPath to extract the value from the given scope
-          property: datasetlifecycle.storageLocation
-          # Cases are tested sequentially, with the first match applied (no fallthrough)
-          cases:
-              # match applies a regex. Assumes the property is a string
-            - match: /PSI.*/i
-              actions:
-              - actionType: log
-                performJob: "Sending job to PSI"
-              # schema applies an AJV schema
-            - schema:
-                const: ETHZ
-              actions:
-              - actionType: log
-                performJob: "Sending job to ETHZ"
-              # default case (no match or schema)
-            - actions:
-              - actionType: error
-                code: 400
-                message: Invalid storageLocation

@@ -54,7 +54,7 @@ describe("SwitchAction", () => {
         actions: [{ actionType: "case_string" }],
       },
       {
-        match: "/regex.*match$/i",
+        regex: "/regex.*match$/i",
         actions: [{ actionType: "case_regex" }],
       },
       {
