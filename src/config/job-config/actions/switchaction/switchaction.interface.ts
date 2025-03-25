@@ -17,7 +17,8 @@ export interface SwitchJobActionOptions extends JobActionOptions {
 export type CaseOptions =
   | DefaultCaseOptions
   | SwitchCaseOptions
-  | MatchCaseOptions;
+  | MatchCaseOptions
+  | RegexCaseOptions;
 
 export interface DefaultCaseOptions {
   actions: JobActionOptions[];
@@ -26,8 +27,12 @@ export interface SwitchCaseOptions extends DefaultCaseOptions {
   schema: object;
 }
 export interface MatchCaseOptions extends DefaultCaseOptions {
-  match: string;
+  match: string | number | boolean | null;
 }
+export interface RegexCaseOptions extends DefaultCaseOptions {
+  regex: string;
+}
+
 /**
  * Type guard for SwitchJobActionOptions
  */
