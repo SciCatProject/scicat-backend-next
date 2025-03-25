@@ -1,8 +1,8 @@
 import { IsDateString } from "class-validator";
-import { CreateAttachmentObsoleteDto } from "./create-attachment-obsolete.dto";
+import { CreateAttachmentV3Dto } from "./create-attachment.v3.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class OutputAttachmentObsoleteDto extends CreateAttachmentObsoleteDto {
+export class OutputAttachmentV3Dto extends CreateAttachmentV3Dto {
   @ApiProperty({
     type: Date,
     required: true,
