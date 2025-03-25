@@ -14,8 +14,8 @@ import {
 import { isEmpty } from "lodash";
 import { CreateAttachmentDto } from "./dto/create-attachment.dto";
 import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
-import { PartialUpdateAttachmentObsoleteDto } from "./dto-obsolete/update-attachment-obsolete.dto";
-import { CreateAttachmentObsoleteDto } from "./dto-obsolete/create-attachment-obsolete.dto";
+import { PartialUpdateAttachmentV3Dto } from "./dto-obsolete/update-attachment.v3.dto";
+import { CreateAttachmentV3Dto } from "./dto-obsolete/create-attachment.v3.dto";
 import { AttachmentRelationTargetType } from "./types/relationship-filter.enum";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -26,7 +26,7 @@ export class AttachmentsService {
   ) {}
 
   async create(
-    createAttachmentDto: CreateAttachmentObsoleteDto | CreateAttachmentDto,
+    createAttachmentDto: CreateAttachmentV3Dto | CreateAttachmentDto,
   ): Promise<Attachment> {
     const username = (this.request?.user as JWTUser).username;
 
@@ -93,7 +93,7 @@ export class AttachmentsService {
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
     updateAttachmentDto:
-      | PartialUpdateAttachmentObsoleteDto
+      | PartialUpdateAttachmentV3Dto
       | PartialUpdateAttachmentDto,
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
@@ -165,9 +165,9 @@ export class AttachmentsService {
 
   private convertObsoleteDtoToCurrentSchema(
     attachmentDto:
-      | CreateAttachmentObsoleteDto
+      | CreateAttachmentV3Dto
       | CreateAttachmentDto
-      | PartialUpdateAttachmentObsoleteDto
+      | PartialUpdateAttachmentV3Dto
       | PartialUpdateAttachmentDto,
   ): CreateAttachmentDto | PartialUpdateAttachmentDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

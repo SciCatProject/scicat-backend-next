@@ -43,7 +43,7 @@ import {
   SampleWithAttachmentsAndDatasets,
 } from "./schemas/sample.schema";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentObsoleteDto } from "src/attachments/dto-obsolete/create-attachment-obsolete.dto";
+import { CreateAttachmentV3Dto } from "src/attachments/dto-obsolete/create-attachment.v3.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
 import { DatasetClass } from "src/datasets/schemas/dataset.schema";
 import { DatasetsService } from "src/datasets/datasets.service";
@@ -62,7 +62,7 @@ import {
 import { Request } from "express";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interface";
-import { CreateSubAttachmentObsoleteDto } from "src/attachments/dto-obsolete/create-sub-attachment-obsolete.dto";
+import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { FullQueryFilters } from "src/common/types";
 
@@ -663,9 +663,9 @@ export class SamplesController {
     description:
       "It creates a new attachment related to the sample id provided and returns it completed with system fields.",
   })
-  @ApiExtraModels(CreateAttachmentObsoleteDto)
+  @ApiExtraModels(CreateAttachmentV3Dto)
   @ApiBody({
-    type: CreateSubAttachmentObsoleteDto,
+    type: CreateSubAttachmentV3Dto,
   })
   @ApiParam({
     name: "id",
@@ -681,7 +681,7 @@ export class SamplesController {
   async createAttachments(
     @Req() request: Request,
     @Param("id") id: string,
-    @Body() createAttachmentDto: CreateSubAttachmentObsoleteDto,
+    @Body() createAttachmentDto: CreateSubAttachmentV3Dto,
   ): Promise<Attachment | null> {
     const sample = await this.checkPermissionsForSample(
       request,
@@ -693,7 +693,7 @@ export class SamplesController {
         "Not able to create attachment for this sample",
       );
     }
-    const createAttachment: CreateAttachmentObsoleteDto = {
+    const createAttachment: CreateAttachmentV3Dto = {
       ...createAttachmentDto,
       sampleId: id,
       ownerGroup: sample.ownerGroup,
