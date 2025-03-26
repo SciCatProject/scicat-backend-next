@@ -316,7 +316,7 @@ export class ElasticSearchService implements OnModuleInit {
 
       const totalCount = body.hits.hits.length || 0;
 
-      const data = body.hits.hits.map((item) => item._id);
+      const data = body.hits.hits.map((item) => item._id || "");
       return {
         totalCount,
         data,
