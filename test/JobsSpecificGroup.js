@@ -102,7 +102,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
     db.collection("Job").deleteMany({});
   });
 
-  it("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -119,7 +119,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       });
   });
 
-  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -136,7 +136,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       });
   });
 
-  it("0030: adds dataset 3 as Admin Ingestor", async () => {
+  it("0030: Add dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
@@ -472,7 +472,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       });
   });
 
-  it("0150: Adds a new job as user3 for himself/herself in #@group5 configuration, which should fail as forbidden", async () => {
+  it("0150: Add a new job as user3 for himself/herself in #@group5 configuration, which should fail as forbidden", async () => {
     const newJob = {
       ...jobGroup5,
       ownerUser: "user3",
@@ -498,7 +498,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       });
   });
 
-  it("0160: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '@group5' configuration", async () => {
+  it("0160: Add a status update to a job as a user from ADMIN_GROUPS for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
@@ -511,7 +511,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0170: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '@group5' configuration", async () => {
+  it("0170: Add a Status update to a job as a user from ADMIN_GROUPS for another group's job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -524,7 +524,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0180: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
+  it("0180: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -537,7 +537,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0190: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
+  it("0190: Add a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -550,7 +550,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0200: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '@group5' configuration", async () => {
+  it("0200: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -563,7 +563,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0210: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '@group5' configuration, which should fail as forbidden", async () => {
+  it("0210: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -576,7 +576,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0220: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '@group5' configuration", async () => {
+  it("0220: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -589,7 +589,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0230: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '@group5' configuration, which should fail as forbidden", async () => {
+  it("0230: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -602,7 +602,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0240: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '@group5' configuration, which should fail as forbidden", async () => {
+  it("0240: Add a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -615,7 +615,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0250: Adds a Status update to a job as user5.1 for his/her job in '@group5' configuration", async () => {
+  it("0250: Add a Status update to a job as user5.1 for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -628,7 +628,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0260: Adds a Status update to a job as user5.1 for another user's job in '@group5' configuration", async () => {
+  it("0260: Add a Status update to a job as user5.1 for another user's job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -641,7 +641,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0270: Adds a Status update to a job as user5.1 for his/her group in '@group5' configuration", async () => {
+  it("0270: Add a Status update to a job as user5.1 for his/her group in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -654,7 +654,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0280: Adds a Status update to a job as user5.1 for another user's group in '@group5' configuration", async () => {
+  it("0280: Add a Status update to a job as user5.1 for another user's group in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -667,7 +667,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0290: Adds a Status update to a job as user5.1 for anonymous user's group in '@group5' configuration", async () => {
+  it("0290: Add a Status update to a job as user5.1 for anonymous user's group in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -680,7 +680,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0300: Adds a Status update to a job as user5.2 for his/her job in '@group5' configuration", async () => {
+  it("0300: Add a Status update to a job as user5.2 for his/her job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser52}`)
       .send({
@@ -693,7 +693,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0310: Adds a Status update to a job as user5.2 for user's 5.1 in same group job in '@group5' configuration", async () => {
+  it("0310: Add a Status update to a job as user5.2 for user's 5.1 in same group job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -706,7 +706,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0320: Adds a Status update to a job as user5.2 for another user in his/her group job in '@group5' configuration", async () => {
+  it("0320: Add a Status update to a job as user5.2 for another user in his/her group job in '@group5' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -719,7 +719,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0330: Adds a Status update to a job as user3 for his/her job in '@group5' configuration, which should fail as forbidden", async () => {
+  it("0330: Add a Status update to a job as user3 for his/her job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser3}`)
       .send({
@@ -732,7 +732,7 @@ describe("1170: Jobs: Test New Job Model Authorization for group_access type: co
       .expect("Content-Type", /json/);
   });
 
-  it("0340: Adds a Status update to a job as user3 for user's 5.1 job in '@group5' configuration, which should fail as forbidden", async () => {
+  it("0340: Add a Status update to a job as user3 for user's 5.1 job in '@group5' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
