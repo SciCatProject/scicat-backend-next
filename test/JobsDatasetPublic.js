@@ -36,7 +36,7 @@ const jobDatasetPublic = {
     type: "public_access",
   }
 
-describe("1160: Jobs: Test New Job Model Authorization for #dataset_public jobs configuration", () => {
+describe("1160: Jobs: Test New Job Model Authorization for public_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});

@@ -35,7 +35,7 @@ const jobAuthenticated = {
   type: "authenticated_access"
 };
 
-describe("1130: Jobs: Test New Job Model Authorization for #authenticated jobs configuration", () => {
+describe("1130: Jobs: Test New Job Model Authorization for authenticated_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});

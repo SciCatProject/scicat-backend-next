@@ -52,7 +52,7 @@ const jobAll = {
   type: "all_access",
 };
 
-describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
+describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type", () => {
   before(() => {
     db.collection("Dataset").deleteMany({});
     db.collection("Job").deleteMany({});
@@ -1169,7 +1169,7 @@ describe("1120: Jobs: Test New Job Model Authorization for #all jobs", () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .set("Accept", "application/json")
-      .set({ Authorization: `Bearer ${accessTokenAdmin}` })
+      .set({ Authorization: `Bearer ${accessTokenUser1}` })
       .expect(TestData.SuccessfulGetStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
