@@ -86,10 +86,12 @@
       "order": 2,
       "label": "Notebook All",
       "files": "all",
+      "type": "json",
       "icon": "/assets/icons/jupyter_logo.png",
-      "url": "https://www.scicat.info/notebook/all",
+      "url": "http://localhost:8000/notebook",
       "target": "_blank",
-      "authorization": ["#datasetAccess", "#datasetPublic"]
+      "authorization": ["#datasetAccess", "#datasetPublic"],
+      "payload": "{\"template_id\":\"c975455e-ede3-11ef-94fb-138c9cd51fc0\",\"parameters\":{\"dataset\":\"{{ datasetPid }}\",\"directory\":\"{{ sourceFolder }}\",\"files\": {{ filesPath }},\"jwt\":\"{{ jwt }}\",\"scicat_url\":\"https://staging.scicat.ess.url\",\"file_server_url\":\"sftserver2.esss.dk\",\"file_server_port\":\"22\"}}"
     },
     {
       "id": "fa3ce6ee-482d-11ef-95e9-ff2c80dd50bd",
@@ -403,7 +405,6 @@
         "order": 6
       },
       {
-<<<<<<< HEAD
         "type": "scientificMetadata",
         "label": "Scientific Metadata JSON",
         "viewMode": "json",
@@ -416,8 +417,6 @@
         "order": 6
       },
       {
-=======
->>>>>>> 7a2c9b06d0db86b20af83db675b51c015e82d617
         "type": "datasetJsonView",
         "label": "Dataset JsonView",
         "order": 7
