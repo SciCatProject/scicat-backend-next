@@ -135,6 +135,7 @@ const configuration = () => {
       api: "3",
     },
     swaggerPath: process.env.SWAGGER_PATH || "explorer",
+    swaggerTitle: process.env.SWAGGER_TITLE || "SciCat backend swagger API",
     jobConfigurationFile: jobConfigurationFile,
     loggerConfigs: jsonConfigMap.loggers || [defaultLogger],
     accessGroups: {

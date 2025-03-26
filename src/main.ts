@@ -18,6 +18,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const apiVersion = configService.get<string>("versions.api");
   const swaggerPath = `${configService.get<string>("swaggerPath")}`;
+  const swaggerTitle = `${configService.get<string>("swaggerTitle")}`;
 
   const scicatLogger = app.get<ScicatLogger>(ScicatLogger);
 
@@ -38,7 +39,7 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle("SciCat backend API")
+    .setTitle(swaggerTitle)
     .setDescription("This is the API for the SciCat Backend")
     .setVersion(`api/v${apiVersion}`)
     .addBearerAuth()
@@ -46,6 +47,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   const swaggerOptions: SwaggerCustomOptions = {
+    customfavIcon: "../favicon.ico",
+    customSiteTitle: swaggerTitle,
     swaggerOptions: {
       docExpansion: "none",
     },

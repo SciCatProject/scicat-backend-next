@@ -403,7 +403,6 @@
         "order": 6
       },
       {
-<<<<<<< HEAD
         "type": "scientificMetadata",
         "label": "Scientific Metadata JSON",
         "viewMode": "json",
@@ -416,8 +415,6 @@
         "order": 6
       },
       {
-=======
->>>>>>> 7a2c9b06d0db86b20af83db675b51c015e82d617
         "type": "datasetJsonView",
         "label": "Dataset JsonView",
         "order": 7
