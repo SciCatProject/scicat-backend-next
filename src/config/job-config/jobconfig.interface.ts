@@ -24,9 +24,9 @@ export interface JobConfig {
 }
 export interface JobConfigOptions {
   jobType: string;
-  configVersion: string;
-  create: JobOperationOptions;
-  update: JobOperationOptions;
+  configVersion?: string;
+  create?: JobOperationOptions;
+  update?: JobOperationOptions;
 }
 
 export type JobDto = CreateJobDto | UpdateJobDto;
@@ -34,11 +34,11 @@ export type JobDto = CreateJobDto | UpdateJobDto;
  * Encapsulates all information for a particular job operation (eg "create", "update")
  */
 export interface JobOperation<DtoType extends JobDto> {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth | string;
   actions: JobAction<DtoType>[];
 }
 export interface JobOperationOptions {
-  auth: JobsAuth | undefined;
+  auth: JobsAuth | string;
   actions?: JobActionOptions[];
 }
 

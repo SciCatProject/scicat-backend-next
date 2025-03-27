@@ -94,15 +94,17 @@ export class JobConfigService {
         `No configVersion set for job type ${options.jobType} in ${this.filePath}`,
       );
     }
+    const createOptions = options.create || { auth: "" };
+    const updateOptions = options.update || { auth: "" };
     return {
       jobType: options.jobType,
       configVersion: options.configVersion,
       create: this.parseJobOperation<CreateJobDto>(
-        options.create,
+        createOptions,
         this.create_creators,
       ),
       update: this.parseJobOperation<UpdateJobDto>(
-        options.update,
+        updateOptions,
         this.update_creators,
       ),
     };
