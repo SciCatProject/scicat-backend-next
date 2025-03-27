@@ -79,7 +79,7 @@ describe("2250: Sample Authorization", () => {
       password: TestData.Accounts["archiveManager"]["password"],
     });
   });
-  
+
   it("0010: adds sample 1 as Admin Ingestor with owner group its own group", async () => {
     let sample = {
       ...TestData.SampleCorrect,

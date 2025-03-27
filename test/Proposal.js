@@ -189,7 +189,7 @@ describe("1500: Proposal: Simple Proposal", () => {
   });
 
   it("0091: should get proposal count using filters", async () => {
-    const query = { where: { proposalId: { $in: [proposalId] } } };
+    const query = { proposalId: { $in: [proposalId] } };
     return request(appUrl)
       .get("/api/v3/Proposals/count")
       .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
@@ -266,6 +266,26 @@ describe("1500: Proposal: Simple Proposal", () => {
         proposalWithParentId = res.body.proposalId;
         res.body.should.have.property("parentProposalId").and.be.string;
         res.body.parentProposalId.should.be.equal(proposalId);
+      });
+  });
+
+  it("01150: should get proposal count using $or filters", async () => {
+    const query = {
+      $or: [
+        { proposalId: { $in: [proposalId] } },
+        { parentProposalId: { $in: [proposalId] } },
+      ],
+    };
+
+    return request(appUrl)
+      .get("/api/v3/Proposals/count")
+      .set({ Authorization: `Bearer ${accessTokenProposalIngestor}` })
+      .query("filter=" + encodeURIComponent(JSON.stringify(query)))
+      .set("Accept", "application/json")
+      .expect(TestData.SuccessfulGetStatusCode)
+      .expect("Content-Type", /json/)
+      .then((res) => {
+        res.body["count"].should.be.equal(2);
       });
   });
 

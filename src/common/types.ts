@@ -32,6 +32,9 @@ export class FullFacetResponse implements IFullFacets {
 export class ProposalCountFilters {
   @ApiPropertyOptional()
   fields?: string;
+
+  @ApiPropertyOptional()
+  filter?: string;
 }
 
 export class CountApiResponse {

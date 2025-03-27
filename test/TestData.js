@@ -176,6 +176,11 @@ const TestData = {
         value: 8500,
         unit: "",
       },
+      approx_distance_range: {
+        value: [1, 2],
+        unit: "cm",
+        type: "quantity_range",
+      },
       beamlineParameters: {
         Monostripe: "Ru/C",
         "Ring current": {
@@ -986,62 +991,6 @@ const TestData = {
       "creationLocation",
       "ownerGroup",
       "keywords",
-    ],
-  },
-
-  ArchiveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "archive",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  RetrieveJob: {
-    emailJobInitiator: "scicatarchivemanger@psi.ch",
-    type: "retrieve",
-    jobStatusMessage: "jobForwarded",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
-    ],
-    jobResultObject: {
-      status: "okay",
-      message: "All systems okay",
-    },
-  },
-
-  PublicJob: {
-    emailJobInitiator: "firstname.lastname@gmail.com",
-    type: "public",
-    jobStatusMessage: "jobSubmitted",
-    datasetList: [
-      {
-        pid: "dummy",
-        files: [],
-      },
-      {
-        pid: "dummy",
-        files: [],
-      },
     ],
   },
 
