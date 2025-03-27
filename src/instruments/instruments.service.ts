@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
 import { IFilters } from "src/common/interfaces/common.interface";
+import { CountApiResponse } from "src/common/types";
 import { parseLimitFilters } from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
@@ -34,6 +35,14 @@ export class InstrumentsService {
     const instruments = await instrumentPromise.exec();
 
     return instruments;
+  }
+
+  async count(filter: IFilters<InstrumentDocument>): Promise<CountApiResponse> {
+    const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
+
+    const count = await this.instrumentModel.countDocuments(whereFilter).exec();
+
+    return { count };
   }
 
   async findOne(
