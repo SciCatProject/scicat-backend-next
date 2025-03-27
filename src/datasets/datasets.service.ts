@@ -147,9 +147,9 @@ export class DatasetsService {
       pipeline.push({ $sort: sort });
     }
 
-    pipeline.push({ $limit: limits.limit || 10 });
-
     pipeline.push({ $skip: limits.skip || 0 });
+
+    pipeline.push({ $limit: limits.limit || 10 });
 
     this.addLookupFields(pipeline, filter.include);
 
