@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { inspect } from "util";
 import { DateTime } from "luxon";
 import { format, unit, Unit, createUnit, MathJSON } from "mathjs";
@@ -1121,4 +1121,23 @@ export const isJsonString = (str: string) => {
  */
 export function oneOrMore<T>(x: T[] | T): T[] {
   return Array.isArray(x) ? x : [x];
+}
+
+/**
+ * Helper function to generate HttpExceptions
+ * @param message error message
+ * @param status HTTP error code. Default: 400 BAD_REQUEST
+ */
+export function makeHttpException(
+  message: string,
+  status?: number,
+): HttpException {
+  status = status || HttpStatus.BAD_REQUEST;
+  return new HttpException(
+    {
+      status: status,
+      message: message,
+    },
+    status,
+  );
 }
