@@ -1,6 +1,7 @@
 module.exports = {
   async up(db, client) {
     await db.collection("Dataset").updateMany({}, [
+      { principalInvestigators: { $exists: false } },
       {
         $set: {
           principalInvestigators: ["$principalInvestigator"],

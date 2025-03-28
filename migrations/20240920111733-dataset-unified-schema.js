@@ -4,15 +4,32 @@ module.exports = {
     // See https://github.com/seppevs/migrate-mongo/#creating-a-new-migration-script
     // Example:
     // await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: true}});
-    await db.collection("Dataset").updateMany({}, [
-      {
-        $set: {
-          proposalIds: ["$proposalId"],
-          instrumentIds: ["$instrumentId"],
-          sampleIds: ["$sampleId"],
-        },
-      },
-    ]);
+    // await db.collection("Dataset").updateMany({}, [
+    //   {
+    //     $set: {
+    //       proposalIds: ["$proposalId"],
+    //       instrumentIds: ["$instrumentId"],
+    //       sampleIds: ["$sampleId"],
+    //     },
+    //   },
+    // ]);
+
+    await db.collection("Dataset").updateMany(
+      { proposalIds: { $exists: false } }, 
+      { $set: { proposalIds: ["$proposalId"] } }
+    );
+    
+    await db.collection("Dataset").updateMany(
+      { instrumentIds: { $exists: false } }, 
+      { $set: { instrumentIds: ["$instrumentId"] } }
+    );
+    
+    await db.collection("Dataset").updateMany(
+      { sampleIds: { $exists: false } }, 
+      { $set: { sampleIds: ["$sampleId"] } }
+    );
+
+
     await db.collection("Dataset").updateMany({ type: "derived" }, [
       {
         $set: {
