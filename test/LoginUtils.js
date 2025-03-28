@@ -1,36 +1,35 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 var request = require("supertest");
 
-exports.getToken = function (appUrl, user) {
+function loginWithPassword(appUrl, user) {
   return new Promise((resolve, reject) => {
     request(appUrl)
-      .post("/api/v3/auth/Login?include=user")
+      .post("/api/v3/auth/Login")
       .send(user)
       .set("Accept", "application/json")
       .end((err, res) => {
         if (err) {
           reject(err);
         } else {
-          resolve(res.body.id);
+          resolve(res.body);
         }
       });
   });
 };
 
-exports.getIdAndToken = function (appUrl, user) {
-  return new Promise((resolve, reject) => {
-    request(appUrl)
-      .post("/api/v3/auth/Login?include=user")
-      .send(user)
-      .set("Accept", "application/json")
-      .end((err, res) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ userId: res.body.userId, token: res.body.id });
-        }
-      });
-  });
+exports.getToken = async function (appUrl, user) {  
+  const responseBody = await loginWithPassword(appUrl, user);
+  return responseBody.id;
+};
+
+exports.getIdAndToken = async function (appUrl, user) {
+  const responseBody = await loginWithPassword(appUrl, user);
+  return { userId: responseBody.userId, token: responseBody.id }
+};
+
+exports.getTokenAndEmail = async function (appUrl, user) {
+  const responseBody = await loginWithPassword(appUrl, user);
+  return { token: responseBody.id, userEmail: responseBody.user.email}
 };
 
 exports.getTokenAD = function (appUrl, user, cb) {
@@ -45,20 +44,4 @@ exports.getTokenAD = function (appUrl, user, cb) {
         cb(res.body.access_token);
       }
     });
-};
-
-exports.getTokenAndEmail = function (appUrl, user) {
-  return new Promise((resolve, reject) => {
-    request(appUrl)
-      .post("/api/v3/auth/Login?include=user")
-      .send(user)
-      .set("Accept", "application/json")
-      .end((err, res) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({token: res.body.id, userEmail: res.body.user.email});
-        }
-      });
-  });
 };
