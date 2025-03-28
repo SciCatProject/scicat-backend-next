@@ -273,6 +273,15 @@ export class UpdateDatasetObsoleteDto extends OwnableDto {
   @ApiProperty({
     type: String,
     required: false,
+    description: "Link to schema for scientific metadata validation.",
+  })
+  @IsOptional()
+  @IsString()
+  readonly scientificMetadataSchema?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
     description: "Comment the user has about a given dataset.",
   })
   @IsOptional()
