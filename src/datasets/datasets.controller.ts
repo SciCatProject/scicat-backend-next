@@ -49,9 +49,9 @@ import {
   SubDatasetsPublicInterceptor,
 } from "./interceptors/datasets-public.interceptor";
 import { Attachment } from "src/attachments/schemas/attachment.schema";
-import { CreateAttachmentDto } from "src/attachments/dto/create-attachment.dto";
+import { CreateAttachmentV3Dto } from "src/attachments/dto-obsolete/create-attachment.v3.dto";
 import { AttachmentsService } from "src/attachments/attachments.service";
-import { UpdateAttachmentDto } from "src/attachments/dto/update-attachment.dto";
+import { UpdateAttachmentV3Dto } from "src/attachments/dto-obsolete/update-attachment.v3.dto";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { CreateOrigDatablockDto } from "src/origdatablocks/dto/create-origdatablock.dto";
 import { OrigDatablocksService } from "src/origdatablocks/origdatablocks.service";
@@ -111,7 +111,7 @@ import {
 
 @ApiBearerAuth()
 @ApiExtraModels(
-  CreateAttachmentDto,
+  CreateAttachmentV3Dto,
   CreateDerivedDatasetObsoleteDto,
   CreateRawDatasetObsoleteDto,
   HistoryClass,
@@ -1723,9 +1723,9 @@ export class DatasetsController {
       "Persisten identifier of the dataset we would like to create a new attachment for",
     type: String,
   })
-  @ApiExtraModels(CreateAttachmentDto)
+  @ApiExtraModels(CreateAttachmentV3Dto)
   @ApiBody({
-    type: CreateAttachmentDto,
+    type: CreateAttachmentV3Dto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -1736,7 +1736,7 @@ export class DatasetsController {
   async createAttachment(
     @Req() request: Request,
     @Param("pid") pid: string,
-    @Body() createAttachmentDto: CreateAttachmentDto,
+    @Body() createAttachmentDto: CreateAttachmentV3Dto,
   ): Promise<Attachment | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
@@ -1745,7 +1745,7 @@ export class DatasetsController {
     );
 
     if (dataset) {
-      const createAttachment: CreateAttachmentDto = {
+      const createAttachment: CreateAttachmentV3Dto = {
         ...createAttachmentDto,
         datasetId: pid,
         ownerGroup: dataset.ownerGroup,
@@ -1825,7 +1825,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Param("aid") aid: string,
-    @Body() updateAttachmentDto: UpdateAttachmentDto,
+    @Body() updateAttachmentDto: UpdateAttachmentV3Dto,
   ): Promise<Attachment | null> {
     await this.checkPermissionsForDatasetExtended(
       request,
