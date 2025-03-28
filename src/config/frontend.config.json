@@ -174,7 +174,7 @@
         "name": "metadata",
         "order": 9,
         "type": "standard",
-        "enabled": false
+        "enabled": true
       },
       {
         "name": "proposalId",
@@ -191,6 +191,12 @@
       {
         "name": "dataStatus",
         "order": 12,
+        "type": "standard",
+        "enabled": false
+      },
+      {
+        "name": "comment",
+        "order": 13,
         "type": "standard",
         "enabled": false
       }
