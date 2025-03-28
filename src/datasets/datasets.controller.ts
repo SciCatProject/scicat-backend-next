@@ -69,6 +69,8 @@ import { DataFile } from "src/common/schemas/datafile.schema";
 import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.interceptor";
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
+import { ExtractPhysicalQuantitiesInterceptor } from "src/common/interceptors/extract-physical-quantities.interceptor";
+import { ReturnPhysicalQuantitiesInterceptor } from "src/common/interceptors/return-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
@@ -626,7 +628,8 @@ export class DatasetsController {
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
-    new FormatPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
+    new ExtractPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
+    new ReturnPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
   )
   @UsePipes(ScientificMetadataValidationPipe)
   @Post()

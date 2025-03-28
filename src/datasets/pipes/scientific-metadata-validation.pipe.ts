@@ -33,38 +33,28 @@ export class ScientificMetadataValidationPipe
     | CreateDerivedDatasetObsoleteDto
     | CreateDatasetDto
   > {
-    if (dataset.scientificMetadata) {
-      const { schemaUrl, metadata, ...rest } = dataset.scientificMetadata;
+    if (dataset.scientificMetadata && dataset.scientificMetadataSchema) {
+      try {
+        const response = await firstValueFrom(
+          this.httpService.get<Record<string, unknown>>(
+            dataset.scientificMetadataSchema,
+          ),
+        );
 
-      if (typeof schemaUrl === "string" && typeof metadata === "object") {
-        if (Object.keys(rest).length > 0) {
+        const schema = response.data;
+        const validator = new Validator();
+        const validationResult = validator.validate(
+          dataset.scientificMetadata,
+          schema,
+        );
+
+        if (validationResult.errors.length > 0) {
           throw new BadRequestException(
-            "To proceed with validation, scientificMetadata should only contain the fields 'schemaUrl' and 'metadata'.",
+            "The scientific metadata do not conform to the given schema.",
           );
         }
-
-        try {
-          const response = await firstValueFrom(
-            this.httpService.get<Record<string, unknown>>(
-              dataset.scientificMetadata.schemaUrl as string,
-            ),
-          );
-
-          const schema = response.data;
-          const validator = new Validator();
-          const validationResult = validator.validate(
-            dataset.scientificMetadata.metadata,
-            schema,
-          );
-
-          if (validationResult.errors.length > 0) {
-            throw new BadRequestException(
-              "The scientific metadata do not conform to the given schema.",
-            );
-          }
-        } catch (error) {
-          throw new BadRequestException(error);
-        }
+      } catch (error) {
+        throw new BadRequestException(error);
       }
     }
     return dataset;
