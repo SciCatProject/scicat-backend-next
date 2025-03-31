@@ -70,7 +70,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
     db.collection("Job").deleteMany({});
   });
 
-  it("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -87,7 +87,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -104,7 +104,7 @@ describe("1160: Jobs: Test New Job Model Authorization for public_access jobs ty
       });
   });
 
-  it("0030: adds dataset 3 as Admin Ingestor", async () => {
+  it("0030: Add dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)

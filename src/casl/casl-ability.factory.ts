@@ -1587,6 +1587,7 @@ export class CaslAbilityFactory {
        */
 
       can(Action.ProposalsCreateAny, ProposalClass);
+      can(Action.ProposalsUpdateAny, ProposalClass);
       can(Action.ProposalsReadManyAccess, ProposalClass);
       can(Action.ProposalsReadOneAccess, ProposalClass, {
         ownerGroup: { $in: user.currentGroups },

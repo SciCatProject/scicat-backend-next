@@ -102,7 +102,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
     db.collection("Job").deleteMany({});
   });
 
-  it("0010: adds dataset 1 as Admin Ingestor", async () => {
+  it("0010: Add dataset 1 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset1)
@@ -119,7 +119,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0020: adds dataset 2 as Admin Ingestor", async () => {
+  it("0020: Add dataset 2 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset2)
@@ -136,7 +136,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0030: adds dataset 3 as Admin Ingestor", async () => {
+  it("0030: Add dataset 3 as Admin Ingestor", async () => {
     return request(appUrl)
       .post("/api/v3/Datasets")
       .send(dataset3)
@@ -644,7 +644,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0220: Adds a new job as unauthenticated user in '#all' configuration", async () => {
+  it("0220: Add a new job as unauthenticated user in '#all' configuration", async () => {
     const newJob = {
       ...jobAll,
       jobParams: {
@@ -668,7 +668,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0230: Adds a new job as unauthenticated user for another user in '#all' configuration, which should fail as bad request", async () => {
+  it("0230: Add a new job as unauthenticated user for another user in '#all' configuration, which should fail as bad request", async () => {
     const newJob = {
       ...jobAll,
       ownerGroup: "group1",
@@ -691,7 +691,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0240: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
+  it("0240: Add a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .send({
@@ -704,7 +704,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0250: Adds a Status update to a job as a user from ADMIN_GROUPS for another user's job in '#all' configuration", async () => {
+  it("0250: Add a status update to a job as a user from ADMIN_GROUPS for another user's job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -717,7 +717,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0260: Adds a Status update to a job as a user from ADMIN_GROUPS for another group's job in '#all' configuration", async () => {
+  it("0260: Add a status update to a job as a user from ADMIN_GROUPS for another group's job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -730,7 +730,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0270: Adds a Status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#all' configuration", async () => {
+  it("0270: Add a status update to a job as a user from ADMIN_GROUPS for anonymous user's job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -743,7 +743,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0280: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#all' configuration", async () => {
+  it("0280: Add a status update to a job as a user from UPDATE_JOB_GROUPS for his/her job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -756,7 +756,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0290: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#all' configuration", async () => {
+  it("0290: Add a status update to a job as a user from UPDATE_JOB_GROUPS for another user's job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -769,7 +769,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0300: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
+  it("0300: Add a status update to a job as a user from UPDATE_JOB_GROUPS for his/her group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -782,7 +782,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0310: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#all' configuration", async () => {
+  it("0310: Add a status update to a job as a user from UPDATE_JOB_GROUPS for another user's group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -795,7 +795,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0320: Adds a Status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#all' configuration", async () => {
+  it("0320: Add a status update to a job as a user from UPDATE_JOB_GROUPS for anonymous user's group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -808,7 +808,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0330: Adds a Status update to a job as a normal user for his/her job in '#all' configuration", async () => {
+  it("0330: Add a status update to a job as a normal user for his/her job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser51}`)
       .send({
@@ -821,7 +821,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0340: Adds a Status update to a job as a normal user for another user's job in '#all' configuration", async () => {
+  it("0340: Add a status update to a job as a normal user for another user's job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -834,7 +834,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0350: Adds a Status update to a job as a normal user for his/her group in '#all' configuration", async () => {
+  it("0350: Add a status update to a job as a normal user for his/her group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup5}`)
       .send({
@@ -847,7 +847,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0360: Adds a Status update to a job as a normal user for another user's group in '#all' configuration", async () => {
+  it("0360: Add a status update to a job as a normal user for another user's group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -860,7 +860,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0370: Adds a Status update to a job as a normal user for anonymous user's group in '#all' configuration", async () => {
+  it("0370: Add a status update to a job as a normal user for anonymous user's group in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -873,7 +873,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0380: Adds a Status update to a job as unauthenticated user for anonymous job in '#all' configuration", async () => {
+  it("0380: Add a status update to a job as unauthenticated user for anonymous job in '#all' configuration", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByAnonym}`)
       .send({
@@ -885,7 +885,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0390: Adds a Status update to a job as unauthenticated user for another group's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0390: Add a status update to a job as unauthenticated user for another group's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByGroup1}`)
       .send({
@@ -897,7 +897,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0400: Adds a Status update to a job as unauthenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
+  it("0400: Add a status update to a job as unauthenticated user for another user's job in '#all' configuration, which should fail as forbidden", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/${encodedJobOwnedByUser1}`)
       .send({
@@ -909,7 +909,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       .expect("Content-Type", /json/);
   });
 
-  it("0410: Adds a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration with non-existing jobId, which should fail as bad request", async () => {
+  it("0410: Add a status update to a job as a user from ADMIN_GROUPS for his/her job in '#all' configuration with non-existing jobId, which should fail as bad request", async () => {
     return request(appUrl)
       .patch(`/api/v4/Jobs/badJobId`)
       .send({
@@ -1215,7 +1215,7 @@ describe("1120: Jobs: Test New Job Model Authorization for all_access jobs type"
       });
   });
 
-  it("0640: Get admin's job as normal, which should be forbidden", async () => {
+  it("0640: Get admin's job as normal user, which should be forbidden", async () => {
     return request(appUrl)
       .get(`/api/v4/Jobs/${encodedJobOwnedByAdmin}`)
       .set("Accept", "application/json")
