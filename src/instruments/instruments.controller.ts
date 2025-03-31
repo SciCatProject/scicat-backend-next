@@ -29,7 +29,11 @@ import { AppAbility } from "src/casl/casl-ability.factory";
 import { Action } from "src/casl/action.enum";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
-import { IFilters } from "src/common/interfaces/common.interface";
+import {
+  CompleteResponse,
+  IFilters,
+  IFiltersNew,
+} from "src/common/interfaces/common.interface";
 import {
   filterDescription,
   filterExample,
@@ -87,6 +91,26 @@ export class InstrumentsController {
       JSON.parse(filter ?? "{}"),
     );
     return this.instrumentsService.findAll(instrumentFilter);
+  }
+
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies("instruments", (ability: AppAbility) =>
+    ability.can(Action.InstrumentRead, Instrument),
+  )
+  @Get("/complete")
+  @ApiQuery({
+    name: "filters",
+    description: "Database filters to apply when retrieve all instruments",
+    required: false,
+  })
+  async findAllComplete(
+    @Query("filters") filters?: string,
+  ): Promise<CompleteResponse<Instrument>> {
+    const instrumentFilter: IFiltersNew<InstrumentDocument> = JSON.parse(
+      filters ?? "{}",
+    );
+
+    return this.instrumentsService.findAllComplete(instrumentFilter);
   }
 
   @UseGuards(PoliciesGuard)

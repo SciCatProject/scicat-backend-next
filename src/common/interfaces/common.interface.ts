@@ -47,6 +47,18 @@ export interface IFilters<T, Y = null> {
   limits?: ILimitsFilter;
 }
 
+export interface IFiltersNew<T> {
+  textSearch?: string;
+  where?: FilterQuery<T>;
+  limits?: ILimitsFilter;
+  fields?: string[];
+}
+
+export interface CompleteResponse<T> {
+  data: T[];
+  totalCount: number;
+}
+
 export interface IFacets<T> {
   fields?: T;
   facets?: string[];

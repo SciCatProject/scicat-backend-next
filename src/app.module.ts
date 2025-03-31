@@ -144,6 +144,7 @@ import { MetricsModule } from "./metrics/metrics.module";
     MongooseModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>("mongodbUri"),
+        sanitizeFilter: true,
       }),
       inject: [ConfigService],
     }),

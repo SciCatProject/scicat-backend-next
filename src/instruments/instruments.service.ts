@@ -1,12 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model } from "mongoose";
-import { IFilters } from "src/common/interfaces/common.interface";
+import { FilterQuery, Model, PipelineStage } from "mongoose";
+import {
+  CompleteResponse,
+  IFilters,
+  IFiltersNew,
+  ILimitsFilter,
+} from "src/common/interfaces/common.interface";
 import { CountApiResponse } from "src/common/types";
-import { parseLimitFilters } from "src/common/utils";
+import { parseLimitFilters, parsePipelineProjection } from "src/common/utils";
 import { CreateInstrumentDto } from "./dto/create-instrument.dto";
 import { PartialUpdateInstrumentDto } from "./dto/update-instrument.dto";
 import { Instrument, InstrumentDocument } from "./schemas/instrument.schema";
+import { parsePipelineSort } from "src/common/utils";
 
 @Injectable()
 export class InstrumentsService {
@@ -35,6 +41,57 @@ export class InstrumentsService {
     const instruments = await instrumentPromise.exec();
 
     return instruments;
+  }
+
+  buildFacetPipeline(
+    limits: ILimitsFilter | undefined,
+    fields: string[] | undefined,
+  ) {
+    const { limit, skip, sort } = parseLimitFilters(limits);
+
+    const facet: PipelineStage.Facet = {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        count: [{ $count: "totalCount" }],
+      },
+    };
+
+    if (sort && typeof sort === "object") {
+      const sortParsed = parsePipelineSort(sort);
+
+      facet.$facet.data.push({ $sort: sortParsed });
+    }
+
+    if (fields) {
+      const project: PipelineStage.Project["$project"] =
+        parsePipelineProjection(fields);
+
+      facet.$facet.data.push({ $project: project });
+    }
+
+    return facet;
+  }
+
+  async findAllComplete(
+    filter: IFiltersNew<InstrumentDocument>,
+  ): Promise<CompleteResponse<Instrument>> {
+    const whereFilter: FilterQuery<InstrumentDocument> = filter.where ?? {};
+
+    const $match: PipelineStage.Match = { $match: whereFilter };
+
+    const $facet = this.buildFacetPipeline(filter.limits, filter.fields);
+    const $project = {
+      $project: {
+        data: 1,
+        totalCount: { $arrayElemAt: ["$count.totalCount", 0] },
+      },
+    };
+
+    const pipeline: PipelineStage[] = [$match, $facet, $project];
+
+    const [result] = await this.instrumentModel.aggregate(pipeline).exec();
+
+    return result;
   }
 
   async count(filter: IFilters<InstrumentDocument>): Promise<CountApiResponse> {
