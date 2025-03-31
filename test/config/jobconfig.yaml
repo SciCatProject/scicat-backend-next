@@ -104,13 +104,3 @@ jobs:
                       type: array
                       items:
                         type: string
-  - jobType: rabbitmq
-    create:
-      auth: "#all"
-      actions:
-        - actionType: rabbitmq
-          queue: testQueue
-          exchange: testExchange
-          key: testKey
-    update:
-      auth: "#all"
