@@ -1,4 +1,4 @@
-import { Logger, Module, OnApplicationBootstrap } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatasetsModule } from "./datasets/datasets.module";
 import { AuthModule } from "./auth/auth.module";
@@ -19,19 +19,25 @@ import { PoliciesModule } from "./policies/policies.module";
 import { InitialDatasetsModule } from "./initial-datasets/initial-datasets.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { InstrumentsModule } from "./instruments/instruments.module";
-import { RabbitMQMessageBroker } from "@user-office-software/duo-message-broker";
-import { IProposalAcceptedMessage } from "./common/interfaces/common.interface";
-import { CreateProposalDto } from "./proposals/dto/create-proposal.dto";
-import { ProposalsService } from "./proposals/proposals.service";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
-import { formatCamelCase, unwrapJSON } from "./common/handlebars-helpers";
+import {
+  formatCamelCase,
+  unwrapJSON,
+  jsonify,
+  job_v3,
+  urlencode,
+  base64enc,
+} from "./common/handlebars-helpers";
 import { CommonModule } from "./common/common.module";
+import { RabbitMQModule } from "./common/rabbitmq/rabbitmq.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AdminModule } from "./admin/admin.module";
 import { HealthModule } from "./health/health.module";
 import { LoggerModule } from "./loggers/logger.module";
+import { JobConfigModule } from "./config/job-config/jobconfig.module";
+import { CoreJobActionCreators } from "./config/job-config/actions/corejobactioncreators.module";
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { MSGraphMailTransport } from "./common/graph-mail";
 import { TransportType } from "@nestjs-modules/mailer/dist/interfaces/mailer-options.interface";
@@ -55,6 +61,8 @@ import { MetricsModule } from "./metrics/metrics.module";
       MetricsModule,
       (env: NodeJS.ProcessEnv) => env.METRICS_ENABLED === "yes",
     ),
+    CoreJobActionCreators,
+    JobConfigModule,
     LoggerModule,
     DatablocksModule,
     DatasetsModule,
@@ -63,6 +71,10 @@ import { MetricsModule } from "./metrics/metrics.module";
     JobsModule,
     LogbooksModule,
     EventEmitterModule.forRoot(),
+    ConditionalModule.registerWhen(
+      RabbitMQModule,
+      (env: NodeJS.ProcessEnv) => env.RABBITMQ_ENABLED === "yes",
+    ),
     MailerModule.forRootAsync({
       imports: [ConfigModule, HttpModule],
       useFactory: async (
@@ -77,7 +89,7 @@ import { MetricsModule } from "./metrics/metrics.module";
           transport = {
             host: configService.get<string>("email.smtp.host"),
             port: configService.get<number>("email.smtp.port"),
-            secure: configService.get<boolean>("email.smtp.secure"),
+            secure: configService.get<string>("email.smtp.secure") === "yes",
           };
         } else if (transportType === "ms365") {
           const tenantId = configService.get<string>("email.ms365.tenantId"),
@@ -113,9 +125,13 @@ import { MetricsModule } from "./metrics/metrics.module";
           template: {
             dir: join(__dirname, "./common/email-templates"),
             adapter: new HandlebarsAdapter({
-              unwrapJSON: (json) => unwrapJSON(json),
-              keyToWord: (string) => formatCamelCase(string),
+              unwrapJSON: unwrapJSON,
+              keyToWord: formatCamelCase,
               eq: (a, b) => a === b,
+              jsonify: jsonify,
+              job_v3: job_v3,
+              urlencode: urlencode,
+              base64enc: base64enc,
             }),
             options: {
               strict: true,
@@ -149,77 +165,4 @@ import { MetricsModule } from "./metrics/metrics.module";
     },
   ],
 })
-export class AppModule implements OnApplicationBootstrap {
-  constructor(
-    private configService: ConfigService,
-    private proposalsService: ProposalsService,
-  ) {}
-
-  async onApplicationBootstrap() {
-    const rabbitMqEnabled =
-      this.configService.get<string>("rabbitMq.enabled") === "yes"
-        ? true
-        : false;
-
-    if (rabbitMqEnabled) {
-      const hostname = this.configService.get<string>("rabbitMq.hostname");
-      const username = this.configService.get<string>("rabbitMq.username");
-      const password = this.configService.get<string>("rabbitMq.password");
-
-      if (!hostname || !username || !password) {
-        Logger.error(
-          "RabbitMQ enabled but missing one or more config variables",
-          "AppModule",
-        );
-        return;
-      }
-
-      const rabbitMq = new RabbitMQMessageBroker();
-
-      await rabbitMq.setup({
-        hostname,
-        username,
-        password,
-      });
-
-      await rabbitMq.listenOnBroadcast(async (type, message: unknown) => {
-        if (type === "PROPOSAL_ACCEPTED") {
-          Logger.log(
-            "PROPOSAL_ACCEPTED: " + JSON.stringify(message),
-            "AppModule",
-          );
-
-          const proposalAcceptedMessage = message as IProposalAcceptedMessage;
-
-          const proposal: CreateProposalDto = {
-            proposalId: proposalAcceptedMessage.shortCode,
-            title: proposalAcceptedMessage.title,
-            pi_email: proposalAcceptedMessage.proposer?.email,
-            pi_firstname: proposalAcceptedMessage.proposer?.firstName,
-            pi_lastname: proposalAcceptedMessage.proposer?.lastName,
-            email: proposalAcceptedMessage.proposer?.email,
-            firstname: proposalAcceptedMessage.proposer?.firstName,
-            lastname: proposalAcceptedMessage.proposer?.lastName,
-            abstract: proposalAcceptedMessage.abstract,
-            ownerGroup: "ess",
-            accessGroups: [],
-          };
-
-          try {
-            const createdProposal =
-              await this.proposalsService.create(proposal);
-            Logger.log(
-              `Proposal created/updated: ${createdProposal.proposalId}`,
-              "AppModule",
-            );
-          } catch (error) {
-            Logger.error(
-              "Creating/updating proposal failed: " + error,
-              "AppModule",
-            );
-          }
-        }
-      });
-    }
-  }
-}
+export class AppModule {}

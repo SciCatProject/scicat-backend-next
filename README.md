@@ -35,34 +35,37 @@ Thank you for your interest in contributing to our project!
 
 ## Get started
 
-1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
-2. `npm install`
-3. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
-4. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
-5. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
-6. _Optional_ Add [proposalTypes.json](#prpopsal-types-configuration) file to the root folder and configure the proposal types.
-7. `npm run start:dev`
-8. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
-9. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
+1. Ensure you have up-to-date LTS versions of Node.js and npm installed (https://nodejs.org/en).
+2. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
+3. `npm install`
+4. Add _.env_ file to project root folder. See [Environment variables](#environment-variables).
+5. _Optional_ Add [functionalAccounts.json](#local-user-accounts) file to project root folder to create local users.
+6. _Optional_ Add [loggers.json](#loggers-configuration) file to the root folder and configure multiple loggers.
+7. _Optional_ Add [proposalTypes.json](#proposal-types-configuration) file to the root folder and configure the proposal types.
+8. _Optional_ Add [datasetTypes.json](#dataset-types-configuration) file to the root folder and configure the dataset types.
+9. `npm run start:dev`
+10. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+11. To be able to run the e2e tests with the same setup as in the Github actions you will need to run `npm run  prepare:local` and after that run `npm run start:dev`. This will start all needed containers and copy some configuration to the right place.
 
 ## Develop in a container using the docker-compose.dev file
 
 1. `git clone https://github.com/SciCatProject/scicat-backend-next.git`
-2. docker-compose -f docker-compose.dev.yaml up -d
+2. `docker-compose -f docker-compose.dev.yaml up -d`
 3. _Optional_ Mount [functionalAccounts.json](#local-user-accounts) file to a volume in the container to create local users.
 4. _Optional_ Mount [loggers.json](#loggers-configuration) file to a volume in the container to configure multiple loggers.
-5. _Optional_ Mount [proposalTypes.json](#prpopsal-types-configuration) file to a volume in the container to configure the proposal types.
-6. _Optional_ change the container env variables
-7. Attach to the container
-8. `npm run start:dev`
-9. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
+5. _Optional_ Mount [proposalTypes.json](#proposal-types-configuration) file to a volume in the container to configure the proposal types.
+6. _Optional_ Mount [datasetTypes.json](#dataset-types-configuration) file to a volume in the container to configure the dataset types.
+7. _Optional_ Change the container env variables.
+8. Attach to the container.
+9. `npm run start:dev`
+10. Go to http://localhost:3000/explorer to get an overview of available endpoints and database schemas.
 
 ## Test the app
 
 1. **Running the unit tests:** `npm run test`
 2. **Running the e2e(api) tests:**
 
-- First of all run `npm run prepare:local` to prepare the local environment for starting
+- First of all run `npm run prepare:local` to prepare the local docker environment for starting.
 - After that run `npm run test:api` which will start the backend locally and run both `jest` and `mocha` e2e(api) tests.
 - [Optional] If you want to run only the mocha tests you will need to start the backend locally with `npm run start` and then use `npm run test:api:mocha`
 - [Optional] If you want to run only the jest tests you can use `npm run test:api:jest`
@@ -74,13 +77,13 @@ There are multiple ways to configure your SciCat instance.
 In order to configure a SciCat instance run on barebone OS, there are three options:
 
 1. Edit directly the file `src/config/configuration.ts`
-2. Create a `.env` file with your local value of the variables listed in the next session. Only the variables that are required by your installation should be defined. To create your `.env` file, you can copy and edit the sample `.env.example` provided with in code
+2. Create a `.env` file with your local value of the variables listed in the next session. Only the variables that are required by your installation should be defined. To create your `.env` file, you can copy and edit the sample `.env.example` provided with the code.
 3. Define in your environment all the necessary variables (list provided below), prior running SciCat.
 
 If SciCat runs in a containeraized environment, like docker or kubernetes, you can run the release image and specify your configuration using one of the following two methods:
 
-1. create `.env` and mount it directly in your container.
-2. define the necessary environment variables directly in your container.
+1. Create `.env` and mount it directly in your container.
+2. Define the necessary environment variables directly in your container.
 
 More information are provided in the official documentation.
 
@@ -98,11 +101,17 @@ Providing a file called _loggers.json_ at the root of the project, locally or in
 
 The `loggers.json.example` file in the root directory showcases the example of configuration structure for the one or multiple loggers. `logger.service.ts` file contains the configuration handling process logic, and `src/loggers/loggingProviders/grayLogger.ts` includes actual usecase of grayLogger.
 
-### Prpopsal types configuration
+### Proposal types configuration
 
 Providing a file called _proposalTypes.json_ at the root of the project, locally or in the container, will be automatically loaded into the application configuration service under property called `proposalTypes` and used for validation against proposal creation and update.
 
 The `proposalTypes.json.example` file in the root directory showcases the example of configuration structure for proposal types.
+
+### Dataset types configuration
+
+When providing a file called _datasetTypes.json_ at the root of the project, locally or in the container, it will be automatically loaded into the application configuration service under property called `datasetTypes` and used for validation against dataset creation and update. The types `Raw` and `Derived` are always valid dataset types by default.
+
+The `datasetTypes.json.example` file in the root directory showcases an example of configuration structure for dataset types.
 
 ## Environment variables
 
