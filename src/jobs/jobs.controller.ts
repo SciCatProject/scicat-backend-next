@@ -520,11 +520,18 @@ export class JobsController {
       jobConfiguration,
     );
     // check if the user can create this job
-    const canCreate =
+    let canCreate = false;
+    if (jobConfiguration.create.auth === "#admin") {
+      canCreate =
+      ability.can(Action.JobCreateAny, JobClass) 
+    }else{
+      canCreate =
       ability.can(Action.JobCreateAny, JobClass) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
         datasetsNoAccess == 0);
+
+    }
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
