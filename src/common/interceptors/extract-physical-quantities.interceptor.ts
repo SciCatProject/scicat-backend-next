@@ -8,7 +8,9 @@ import { Observable } from "rxjs";
 import { appendSIUnitToPhysicalQuantity } from "../utils";
 
 @Injectable()
-export class ExtractPhysicalQuantitiesInterceptor<T> implements NestInterceptor {
+export class ExtractPhysicalQuantitiesInterceptor<T>
+  implements NestInterceptor
+{
   propName: keyof T;
 
   constructor(propName: keyof T) {
@@ -23,33 +25,40 @@ export class ExtractPhysicalQuantitiesInterceptor<T> implements NestInterceptor 
     const instance: unknown = (req.body as T)[this.propName];
 
     if (req.body[this.propName]) {
-      const appendedObject = appendSIUnitToPhysicalQuantity(
-        instance as object,
-      );
-      req.body[this.propName][`${String(this.propName)}SI`] = flatObjectForSIFields(appendedObject);
+      const appendedObject = appendSIUnitToPhysicalQuantity(instance as object);
+      req.body[this.propName][`${String(this.propName)}SI`] =
+        flatObjectForSIFields(appendedObject as AnyObject);
     }
     return next.handle();
   }
 }
 
-type AnyObject = { [key: string]: any };
+type AnyObject = { [key: string]: unknown };
 
 function flatObjectForSIFields(
   obj: AnyObject,
-  parentKey = '',
+  parentKey = "",
   result: AnyObject = {},
 ): AnyObject {
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const newKey = parentKey ? `${parentKey}.${key}` : key;
-      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+      if (
+        typeof obj[key] === "object" &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
         // Recursively process nested objects
-        flatObjectForSIFields(obj[key], newKey, result);
+        flatObjectForSIFields(obj[key] as AnyObject, newKey, result);
       } else if (Array.isArray(obj[key])) {
         // Handle arrays by flattening each element
-        obj[key].forEach((item: any, index: number) => {
-          if (typeof item === 'object' && item !== null) {
-            flatObjectForSIFields(item, `${newKey}[${index}]`, result);
+        obj[key].forEach((item: unknown, index: number) => {
+          if (typeof item === "object" && item !== null) {
+            flatObjectForSIFields(
+              item as AnyObject,
+              `${newKey}[${index}]`,
+              result,
+            );
           }
         });
       } else {

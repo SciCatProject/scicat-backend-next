@@ -627,8 +627,12 @@ export class DatasetsController {
   @UseInterceptors(
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
-    new ExtractPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
+    new ExtractPhysicalQuantitiesInterceptor<DatasetClass>(
+      "scientificMetadata",
+    ),
+    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>(
+      "scientificMetadata",
+    ),
   )
   @UsePipes(ScientificMetadataValidationPipe)
   @Post()
@@ -872,7 +876,9 @@ export class DatasetsController {
   )
   @UseInterceptors(
     MainDatasetsPublicInterceptor,
-    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
+    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>(
+      "scientificMetadata",
+    ),
   )
   @Get()
   @ApiOperation({

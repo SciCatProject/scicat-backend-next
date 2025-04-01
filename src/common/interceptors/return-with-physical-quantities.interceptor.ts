@@ -8,7 +8,10 @@ import { Observable } from "rxjs";
 import { OutputDatasetObsoleteDto } from "../../datasets/dto/output-dataset-obsolete.dto";
 
 @Injectable()
-export class ReturnWithPhysicalQuantitiesInterceptor<T extends OutputDatasetObsoleteDto> implements NestInterceptor {
+export class ReturnWithPhysicalQuantitiesInterceptor<
+  T extends OutputDatasetObsoleteDto,
+> implements NestInterceptor
+{
   propName: keyof T;
 
   constructor(propName: keyof T) {
@@ -22,7 +25,10 @@ export class ReturnWithPhysicalQuantitiesInterceptor<T extends OutputDatasetObso
     return new Observable((subscriber) => {
       next.handle().subscribe({
         next: (data) => {
-          if (data[this.propName] && data[this.propName][`${String(this.propName)}SI`]) {
+          if (
+            data[this.propName] &&
+            data[this.propName][`${String(this.propName)}SI`]
+          ) {
             data = {
               ...data,
               [this.propName]: mergeSIFields(
@@ -42,7 +48,7 @@ export class ReturnWithPhysicalQuantitiesInterceptor<T extends OutputDatasetObso
   }
 }
 
-type AnyObject = { [key: string]: any };
+type AnyObject = { [key: string]: unknown };
 
 function mergeSIFields(original: AnyObject, flattenedSI: AnyObject): AnyObject {
   // Deep clone original to avoid mutations
@@ -50,13 +56,17 @@ function mergeSIFields(original: AnyObject, flattenedSI: AnyObject): AnyObject {
   for (const flatKey in flattenedSI) {
     const value = flattenedSI[flatKey];
     // Split the dot notation path into parts
-    const keys = flatKey.split('.');
+    const keys = flatKey.split(".");
     let current = result;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
       // Ensure the path exists, create object if missing
-      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+      if (
+        !(key in current) ||
+        typeof current[key] !== "object" ||
+        current[key] === null
+      ) {
         current[key] = {};
       }
       current = current[key];
