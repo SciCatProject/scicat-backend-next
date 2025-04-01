@@ -70,7 +70,7 @@ import { MultiUTCTimeInterceptor } from "src/common/interceptors/multi-utc-time.
 import { FullQueryInterceptor } from "./interceptors/fullquery.interceptor";
 import { FormatPhysicalQuantitiesInterceptor } from "src/common/interceptors/format-physical-quantities.interceptor";
 import { ExtractPhysicalQuantitiesInterceptor } from "src/common/interceptors/extract-physical-quantities.interceptor";
-import { ReturnPhysicalQuantitiesInterceptor } from "src/common/interceptors/return-physical-quantities.interceptor";
+import { ReturnWithPhysicalQuantitiesInterceptor } from "src/common/interceptors/return-with-physical-quantities.interceptor";
 import { IFacets, IFilters } from "src/common/interfaces/common.interface";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError, ValidatorOptions } from "class-validator";
@@ -112,7 +112,6 @@ import {
   FullQueryFilters,
   IsValidResponse,
 } from "src/common/types";
-import { FinalEditInterceptor } from "./interceptors/final-edit.interceptor";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -629,7 +628,7 @@ export class DatasetsController {
     new UTCTimeInterceptor<DatasetClass>(["creationTime"]),
     new UTCTimeInterceptor<DatasetClass>(["endTime"]),
     new ExtractPhysicalQuantitiesInterceptor<DatasetClass>("scientificMetadata"),
-    new ReturnPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
+    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
   )
   @UsePipes(ScientificMetadataValidationPipe)
   @Post()
@@ -871,7 +870,10 @@ export class DatasetsController {
       ability.can(Action.DatasetRead, DatasetClass) ||
       ability.can(Action.DatasetReadManyPublic, DatasetClass),
   )
-  @UseInterceptors(MainDatasetsPublicInterceptor, FinalEditInterceptor)
+  @UseInterceptors(
+    MainDatasetsPublicInterceptor,
+    new ReturnWithPhysicalQuantitiesInterceptor<OutputDatasetObsoleteDto>("scientificMetadata"),
+  )
   @Get()
   @ApiOperation({
     summary: "It returns a list of datasets.",

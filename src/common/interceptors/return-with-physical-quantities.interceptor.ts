@@ -8,7 +8,7 @@ import { Observable } from "rxjs";
 import { OutputDatasetObsoleteDto } from "../../datasets/dto/output-dataset-obsolete.dto";
 
 @Injectable()
-export class ReturnPhysicalQuantitiesInterceptor<T extends OutputDatasetObsoleteDto> implements NestInterceptor {
+export class ReturnWithPhysicalQuantitiesInterceptor<T extends OutputDatasetObsoleteDto> implements NestInterceptor {
   propName: keyof T;
 
   constructor(propName: keyof T) {
@@ -22,7 +22,6 @@ export class ReturnPhysicalQuantitiesInterceptor<T extends OutputDatasetObsolete
     return new Observable((subscriber) => {
       next.handle().subscribe({
         next: (data) => {
-          console.log('Before:', data);
           if (data[this.propName] && data[this.propName][`${String(this.propName)}SI`]) {
             data = {
               ...data,
@@ -33,7 +32,6 @@ export class ReturnPhysicalQuantitiesInterceptor<T extends OutputDatasetObsolete
             };
             delete data[this.propName][`${String(this.propName)}SI`];
           }
-          console.log('After:', data);
           subscriber.next(data);
           subscriber.complete();
         },
