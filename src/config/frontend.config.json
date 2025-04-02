@@ -216,7 +216,9 @@
       "creationTime": "Creation Time",
       "scientificMetadata": "Scientific Metadata",
       "metadataJsonView": "Metadata JsonView",
-      "datasetName": "Dataset Name"
+      "datasetName": "Dataset Name",
+      "scientificMetadata.run_number.value": "Run Number",
+      "scientificMetadata.start_time": "Start Time"
     },
     "proposalDefault": {
       "General Information": "Proposal Information",
@@ -235,7 +237,7 @@
   },
   "dateFormat": "yyyy-MM-dd HH:mm",
   "datasetDetailComponent": {
-    "enableCustomizedComponent": false,
+    "enableCustomizedComponent": true,
     "customization": [
       {
         "type": "regular",
@@ -246,12 +248,12 @@
         "fields": [
           {
             "element": "text",
-            "source": "scientificMetadata",
+            "source": "scientificMetadata.start_time",
             "order": 0
           },
           {
             "element": "copy",
-            "source": "description",
+            "source": "scientificMetadata.run_number.value",
             "order": 1
           },
           {
@@ -281,7 +283,7 @@
         "label": "Gallery",
         "order": 1,
         "col": 2,
-        "row": 1,
+        "row": 2,
         "options": {
           "limit": 5,
           "size": "medium"
@@ -291,7 +293,7 @@
         "type": "regular",
         "label": "Contact Information",
         "order": 2,
-        "col": 3,
+        "col": 2,
         "row": 1,
         "fields": [
           {
@@ -310,7 +312,7 @@
         "type": "regular",
         "label": "Files Information",
         "order": 3,
-        "col": 3,
+        "col": 2,
         "row": 1,
         "fields": [
           {
@@ -353,12 +355,12 @@
         "row": 1,
         "fields": [
           {
-            "element": "tag",
+            "element": "internalLink",
             "source": "proposalIds",
             "order": 0
           },
           {
-            "element": "tag",
+            "element": "internalLink",
             "source": "instrumentIds",
             "order": 1
           },
@@ -373,7 +375,7 @@
             "order": 3
           },
           {
-            "element": "text",
+            "element": "internalLink",
             "source": "creationLocation",
             "order": 4
           }
