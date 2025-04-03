@@ -31,7 +31,7 @@ module.exports = {
                         { $ifNull: ["$datasetId", false] },
                         [
                           {
-                            targetIds: ["$datasetId"],
+                            targetId: "$datasetId",
                             targetType: "dataset",
                             relationType: "is attached to",
                           },
@@ -45,7 +45,7 @@ module.exports = {
                         { $ifNull: ["$sampleId", false] },
                         [
                           {
-                            targetIds: ["$sampleId"],
+                            targetId: "$sampleId",
                             targetType: "sample",
                             relationType: "is attached to",
                           },
@@ -59,7 +59,7 @@ module.exports = {
                         { $ifNull: ["$proposalId", false] },
                         [
                           {
-                            targetIds: ["$proposalId"],
+                            targetId: "$proposalId",
                             targetType: "proposal",
                             relationType: "is attached to",
                           },
@@ -104,10 +104,7 @@ module.exports = {
                   },
                 },
                 in: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$$datasetRel.targetIds", 0] },
-                    "$$REMOVE",
-                  ],
+                  $ifNull: ["$$datasetRel.targetId", "$$REMOVE"],
                 },
               },
             },
@@ -128,10 +125,7 @@ module.exports = {
                   },
                 },
                 in: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$$sampleRel.targetIds", 0] },
-                    "$$REMOVE",
-                  ],
+                  $ifNull: ["$$sampleRel.targetId", "$$REMOVE"],
                 },
               },
             },
@@ -152,10 +146,7 @@ module.exports = {
                   },
                 },
                 in: {
-                  $ifNull: [
-                    { $arrayElemAt: ["$$proposalRel.targetIds", 0] },
-                    "$$REMOVE",
-                  ],
+                  $ifNull: ["$$proposalRel.targetId", "$$REMOVE"],
                 },
               },
             },

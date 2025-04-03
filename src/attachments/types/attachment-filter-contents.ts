@@ -8,7 +8,7 @@ const FILTERS: Record<"limits" | "fields" | "where" | "include", object> = {
   where: {
     type: "object",
     example: {
-      "relationships.targetIds": "{ $in: ['123', '456'] }",
+      "relationships.targetId": "datasetId",
       "relationships.targetType": "dataset",
       "relationships.relationType": "is attached to",
     },

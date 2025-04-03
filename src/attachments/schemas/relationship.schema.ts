@@ -8,12 +8,12 @@ export type RelationshipDocument = AttachmentRelationshipClass & Document;
 @Schema({ _id: false })
 export class AttachmentRelationshipClass {
   @ApiProperty({
-    type: [String],
+    type: String,
     description: "Array of entity target IDs.",
-    default: [],
+    default: "",
   })
-  @Prop({ type: [String], default: [] })
-  targetIds: string[];
+  @Prop({ type: String, default: "" })
+  targetId: string;
 
   @ApiProperty({
     enum: AttachmentRelationTargetType,

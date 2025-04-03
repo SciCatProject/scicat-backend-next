@@ -26,7 +26,7 @@ export class AttachmentsService {
   ) {}
 
   async create(
-    createAttachmentDto: CreateAttachmentV3Dto | CreateAttachmentDto,
+    createAttachmentDto: CreateAttachmentV3Dto,
   ): Promise<Attachment> {
     const username = (this.request?.user as JWTUser).username;
 
@@ -68,9 +68,9 @@ export class AttachmentsService {
       pipeline.push({ $sort: sort });
     }
 
-    pipeline.push({ $limit: limits.limit || 10 });
-
     pipeline.push({ $skip: limits.skip || 0 });
+
+    pipeline.push({ $limit: limits.limit || 10 });
 
     const data = await this.attachmentModel
       .aggregate<Attachment>(pipeline)
@@ -92,9 +92,7 @@ export class AttachmentsService {
 
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
-    updateAttachmentDto:
-      | PartialUpdateAttachmentV3Dto
-      | PartialUpdateAttachmentDto,
+    updateAttachmentDto: PartialUpdateAttachmentV3Dto,
   ): Promise<Attachment | null> {
     const username = (this.request?.user as JWTUser).username;
     const convertedFilter =
@@ -128,17 +126,17 @@ export class AttachmentsService {
 
     if ("sampleId" in filter) {
       whereFilter = {
-        "relationships.targetIds": { $in: [filter.sampleId] },
+        "relationships.targetId": filter.sampleId,
         "relationships.targetType": AttachmentRelationTargetType.SAMPLE,
       };
     } else if ("datasetId" in filter) {
       whereFilter = {
-        "relationships.targetIds": { $in: [filter.datasetId] },
+        "relationships.targetId": filter.datasetId,
         "relationships.targetType": AttachmentRelationTargetType.DATASET,
       };
     } else if ("proposalId" in filter) {
       whereFilter = {
-        "relationships.targetIds": { $in: [filter.proposalId] },
+        "relationships.targetId": filter.proposalId,
         "relationships.targetType": AttachmentRelationTargetType.PROPOSAL,
       };
     } else {
@@ -164,11 +162,7 @@ export class AttachmentsService {
   }
 
   private convertObsoleteDtoToCurrentSchema(
-    attachmentDto:
-      | CreateAttachmentV3Dto
-      | CreateAttachmentDto
-      | PartialUpdateAttachmentV3Dto
-      | PartialUpdateAttachmentDto,
+    attachmentDto: CreateAttachmentV3Dto | PartialUpdateAttachmentV3Dto,
   ): CreateAttachmentDto | PartialUpdateAttachmentDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const converted = { ...attachmentDto } as any;
@@ -176,7 +170,7 @@ export class AttachmentsService {
     if ("datasetId" in converted && converted.datasetId) {
       converted.relationships = [
         {
-          targetIds: [converted.datasetId],
+          targetId: converted.datasetId,
           targetType: AttachmentRelationTargetType.DATASET,
           relationType: "is attached to",
         },
@@ -185,7 +179,7 @@ export class AttachmentsService {
     } else if ("sampleId" in converted && converted.sampleId) {
       converted.relationships = [
         {
-          targetIds: [converted.sampleId],
+          targetIds: converted.sampleId,
           targetType: AttachmentRelationTargetType.SAMPLE,
           relationType: "is attached to",
         },
@@ -194,7 +188,7 @@ export class AttachmentsService {
     } else if ("proposalId" in converted && converted.proposalId) {
       converted.relationships = [
         {
-          targetIds: [converted.proposalId],
+          targetIds: converted.proposalId,
           targetType: AttachmentRelationTargetType.PROPOSAL,
           relationType: "is attached to",
         },

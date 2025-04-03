@@ -27,7 +27,6 @@ import { Request } from "express";
 import { PoliciesGuard } from "src/casl/guards/policies.guard";
 import { CheckPolicies } from "src/casl/decorators/check-policies.decorator";
 import { AppAbility, CaslAbilityFactory } from "src/casl/casl-ability.factory";
-import { AttachmentsService } from "./attachments.service";
 import { JWTUser } from "src/auth/interfaces/jwt-user.interface";
 import { Attachment, AttachmentDocument } from "./schemas/attachment.schema";
 import { Action } from "src/casl/action.enum";
@@ -42,16 +41,16 @@ import { AttachmentFilterValidationPipe } from "./pipes/attachment-filter-valida
 import { CreateAttachmentDto } from "./dto/create-attachment.dto";
 import { OutputAttachmentDto } from "./dto/output-attachment.dto";
 import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
+import { AttachmentsV4Service as AttachmentService } from "./attachments.v4.service";
 
 @ApiBearerAuth()
 @ApiTags("attachments v4")
 @Controller({ path: "attachments", version: "4" })
-export class AttachmentsController {
+export class AttachmentsV4Controller {
   constructor(
-    private attachmentsService: AttachmentsService,
+    private attachmentsService: AttachmentService,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
-
   private generateAttachmentInstanceForPermissions(
     attachment: Attachment | CreateAttachmentDto,
   ): Attachment {
@@ -223,7 +222,7 @@ export class AttachmentsController {
       parsedFilter,
     );
 
-    return this.attachmentsService.findAllComplete(mergedFilters);
+    return this.attachmentsService.findAll(mergedFilters);
   }
 
   // GET /attachments/:aid
