@@ -25,7 +25,7 @@ module.exports = {
                 },
                 {
                   $concatArrays: [
-                    // Add dataset relationship if exists
+                    // Add dataset relationship if datasetId exists
                     {
                       $cond: [
                         { $ifNull: ["$datasetId", false] },
@@ -39,7 +39,7 @@ module.exports = {
                         [],
                       ],
                     },
-                    // Add sample relationship if exists
+                    // Add sample relationship if sampleId exists
                     {
                       $cond: [
                         { $ifNull: ["$sampleId", false] },
@@ -53,7 +53,7 @@ module.exports = {
                         [],
                       ],
                     },
-                    // Add proposal relationship if exists
+                    // Add proposal relationship if proposalId exists
                     {
                       $cond: [
                         { $ifNull: ["$proposalId", false] },
