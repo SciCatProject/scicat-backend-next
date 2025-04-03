@@ -17,6 +17,8 @@ import { PartialUpdateAttachmentDto } from "./dto/update-attachment.dto";
 import { PartialUpdateAttachmentV3Dto } from "./dto-obsolete/update-attachment.v3.dto";
 import { CreateAttachmentV3Dto } from "./dto-obsolete/create-attachment.v3.dto";
 import { AttachmentRelationTargetType } from "./types/relationship-filter.enum";
+import { OutputAttachmentV3Dto } from "./dto-obsolete/output-attachment.v3.dto";
+import { OutputAttachmentDto } from "./dto/output-attachment.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AttachmentsService {
@@ -27,7 +29,7 @@ export class AttachmentsService {
 
   async create(
     createAttachmentDto: CreateAttachmentV3Dto,
-  ): Promise<Attachment> {
+  ): Promise<OutputAttachmentV3Dto> {
     const username = (this.request?.user as JWTUser).username;
 
     const convertedDto =
@@ -35,12 +37,17 @@ export class AttachmentsService {
     const createdAttachment = new this.attachmentModel(
       addCreatedByFields(convertedDto, username),
     );
-    return createdAttachment.save();
+    const newAttachment = await createdAttachment.save();
+    const newAttachmentObj = newAttachment.toObject();
+    const revertedNewAttachment =
+      this.revertCurrentSchemaToObsoleteDto(newAttachmentObj);
+
+    return revertedNewAttachment;
   }
 
   async findAll(
     filter: FilterQuery<AttachmentDocument>,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     const convertedFilter =
       this.convertObsoleteWhereFilterToCurrentSchema(filter);
 
@@ -48,7 +55,7 @@ export class AttachmentsService {
   }
   async findAllComplete(
     filter: FilterQuery<AttachmentDocument>,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     const whereFilter: FilterQuery<AttachmentDocument> = filter.where ?? {};
     const fieldsProjection: string[] = filter.fields ?? {};
     const limits: QueryOptions<AttachmentDocument> = filter.limits ?? {
@@ -76,24 +83,36 @@ export class AttachmentsService {
       .aggregate<Attachment>(pipeline)
       .exec();
 
-    return data;
+    const revertedData = data.map((item) => {
+      return this.revertCurrentSchemaToObsoleteDto(item);
+    });
+
+    return revertedData;
   }
 
   async findOne(
     filter: FilterQuery<AttachmentDocument>,
     projection?: Record<string, unknown>,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     const convertedFilter =
       this.convertObsoleteWhereFilterToCurrentSchema(filter);
-    return this.attachmentModel
+
+    const result = await this.attachmentModel
       .findOne(convertedFilter, projection ?? {})
       .exec();
+
+    if (result) {
+      const revertedResult = this.revertCurrentSchemaToObsoleteDto(result);
+      return revertedResult;
+    }
+
+    return result;
   }
 
   async findOneAndUpdate(
     filter: FilterQuery<AttachmentDocument>,
     updateAttachmentDto: PartialUpdateAttachmentV3Dto,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     const username = (this.request?.user as JWTUser).username;
     const convertedFilter =
       this.convertObsoleteWhereFilterToCurrentSchema(filter);
@@ -107,6 +126,11 @@ export class AttachmentsService {
         { new: true },
       )
       .exec();
+
+    if (result) {
+      const revertedResult = this.revertCurrentSchemaToObsoleteDto(result);
+      return revertedResult;
+    }
 
     return result;
   }
@@ -166,36 +190,61 @@ export class AttachmentsService {
   ): CreateAttachmentDto | PartialUpdateAttachmentDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const converted = { ...attachmentDto } as any;
-
+    converted.relationships = converted.relationships || [];
     if ("datasetId" in converted && converted.datasetId) {
-      converted.relationships = [
-        {
-          targetId: converted.datasetId,
-          targetType: AttachmentRelationTargetType.DATASET,
-          relationType: "is attached to",
-        },
-      ];
+      converted.relationships.push({
+        targetId: converted.datasetId,
+        targetType: AttachmentRelationTargetType.DATASET,
+        relationType: "is attached to",
+      });
       delete converted.datasetId;
-    } else if ("sampleId" in converted && converted.sampleId) {
-      converted.relationships = [
-        {
-          targetIds: converted.sampleId,
-          targetType: AttachmentRelationTargetType.SAMPLE,
-          relationType: "is attached to",
-        },
-      ];
+    }
+    if ("sampleId" in converted && converted.sampleId) {
+      converted.relationships.push({
+        targetId: converted.sampleId,
+        targetType: AttachmentRelationTargetType.SAMPLE,
+        relationType: "is attached to",
+      });
       delete converted.sampleId;
-    } else if ("proposalId" in converted && converted.proposalId) {
-      converted.relationships = [
-        {
-          targetIds: converted.proposalId,
-          targetType: AttachmentRelationTargetType.PROPOSAL,
-          relationType: "is attached to",
-        },
-      ];
+    }
+    if ("proposalId" in converted && converted.proposalId) {
+      converted.relationships.push({
+        targetId: converted.proposalId,
+        targetType: AttachmentRelationTargetType.PROPOSAL,
+        relationType: "is attached to",
+      });
       delete converted.proposalId;
     }
 
     return converted;
+  }
+  private revertCurrentSchemaToObsoleteDto(
+    dto: OutputAttachmentDto,
+  ): OutputAttachmentV3Dto {
+    if (!dto.relationships || dto.relationships.length === 0) {
+      return dto;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reverted = { ...dto } as any;
+
+    for (const relation of reverted.relationships) {
+      switch (relation.targetType) {
+        case AttachmentRelationTargetType.DATASET:
+          reverted.datasetId = relation.targetId || "";
+          break;
+        case AttachmentRelationTargetType.SAMPLE:
+          reverted.sampleId = relation.targetId || "";
+          break;
+        case AttachmentRelationTargetType.PROPOSAL:
+          reverted.proposalId = relation.targetId || "";
+          break;
+      }
+    }
+
+    reverted.id = reverted.aid;
+
+    delete reverted.aid;
+    delete reverted.relationships;
+    return reverted;
   }
 }

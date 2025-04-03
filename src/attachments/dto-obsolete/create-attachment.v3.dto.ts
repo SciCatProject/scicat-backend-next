@@ -4,7 +4,7 @@ import { UpdateAttachmentV3Dto } from "./update-attachment.v3.dto";
 export class CreateAttachmentV3Dto extends UpdateAttachmentV3Dto {
   @IsOptional()
   @IsString()
-  readonly aid?: string;
+  readonly id?: string;
 
   @IsOptional()
   @IsString()

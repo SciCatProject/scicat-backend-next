@@ -108,6 +108,7 @@ import {
   FullQueryFilters,
   IsValidResponse,
 } from "src/common/types";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 @ApiBearerAuth()
 @ApiExtraModels(
@@ -1737,7 +1738,7 @@ export class DatasetsController {
     @Req() request: Request,
     @Param("pid") pid: string,
     @Body() createAttachmentDto: CreateAttachmentV3Dto,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     const dataset = await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1782,7 +1783,7 @@ export class DatasetsController {
   async findAllAttachments(
     @Req() request: Request,
     @Param("pid") pid: string,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
@@ -1826,7 +1827,7 @@ export class DatasetsController {
     @Param("pid") pid: string,
     @Param("aid") aid: string,
     @Body() updateAttachmentDto: UpdateAttachmentV3Dto,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     await this.checkPermissionsForDatasetExtended(
       request,
       pid,
