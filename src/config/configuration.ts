@@ -89,21 +89,21 @@ const configuration = () => {
     (config, client) => {
       const isDefault = client === "scicat";
       if (isDefault) {
-        const successURL = process.env.OIDC_SUCCESS_URL;
+        const successUrl = process.env.OIDC_SUCCESS_URL;
         if (
-          successURL &&
+          successUrl &&
           !(
-            new URL(successURL).pathname === "/login" ||
-            new URL(successURL).pathname == "/auth-callback"
+            new URL(successUrl).pathname === "/login" ||
+            new URL(successUrl).pathname == "/auth-callback"
           )
         ) {
           throw new Error(
-            `OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found ${successURL}`,
+            `OIDC_SUCCESS_URL must be <frontend-base-url>/login or <frontend-base-url>/auth-callback for the default client scicat but found ${successUrl}`,
           );
         }
         config[client] = {
-          successURL: process.env.OIDC_SUCCESS_URL,
-          returnURL: process.env.OIDC_RETURN_URL,
+          successUrl: process.env.OIDC_SUCCESS_URL,
+          returnUrl: process.env.OIDC_RETURN_URL,
         };
         return config;
       }
@@ -114,18 +114,18 @@ const configuration = () => {
       }
       if (!process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`]) {
         console.warn(
-          `OIDC_${client.toUpperCase()}_RETURN_URL is unset. Will default to /datasets or dynamically provided returnURL in /oidc`,
+          `OIDC_${client.toUpperCase()}_RETURN_URL is unset. Will default to /datasets or dynamically provided returnUrl in /oidc`,
         );
       }
       config[client] = {
-        successURL: process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`],
-        returnURL: process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`],
+        successUrl: process.env[`OIDC_${client.toUpperCase()}_SUCCESS_URL`],
+        returnUrl: process.env[`OIDC_${client.toUpperCase()}_RETURN_URL`],
       };
       return config;
     },
     {} as Record<
       string,
-      { successURL: string | undefined; returnURL: string | undefined }
+      { successUrl: string | undefined; returnUrl: string | undefined }
     >,
   );
 

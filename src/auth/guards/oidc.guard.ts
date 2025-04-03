@@ -12,8 +12,8 @@ import type { OidcConfig } from "src/config/configuration";
 declare module "express-session" {
   interface SessionData {
     client?: string;
-    returnURL?: string;
-    successURL?: string;
+    returnUrl?: string;
+    successUrl?: string;
   }
 }
 
@@ -32,12 +32,12 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
     }
 
     const client = this.getClient(request);
-    const returnURL = this.getReturnURL(request, client);
-    const successURL = this.getSuccessURL(request, client);
+    const returnUrl = this.getReturnUrl(request, client);
+    const successUrl = this.getSuccessUrl(request, client);
 
     request.session.client = client;
-    request.session.returnURL = returnURL;
-    request.session.successURL = successURL;
+    request.session.returnUrl = returnUrl;
+    request.session.successUrl = successUrl;
 
     return request;
   }
@@ -53,23 +53,21 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
     return "scicat";
   }
 
-  private getReturnURL(request: Readonly<Request>, client: string): string {
-    const returnURL = request.query.returnURL;
-    if (returnURL && typeof returnURL === "string") {
-      return returnURL;
+  private getReturnUrl(request: Readonly<Request>, client: string): string {
+    const returnUrl = request.query.returnUrl;
+    if (returnUrl && typeof returnUrl === "string") {
+      return returnUrl;
     } else {
-      return this.oidcConfig?.clientConfig[client].returnURL || "/datasets";
+      return this.oidcConfig?.clientConfig[client].returnUrl || "/datasets";
     }
   }
 
-  private getSuccessURL(request: Readonly<Request>, client: string): string {
-    if (
-      !this.oidcConfig?.clientConfig[client].successURL &&
-      request.headers.referer
-    ) {
-      // For MAX IV, recommend deprecating and using config based successURL
-      return request.headers.referer;
-    }
-    return this.oidcConfig?.clientConfig[client].successURL || "";
+  private getSuccessUrl(request: Readonly<Request>, client: string): string {
+    // For MAX IV, recommend deprecating referer and using config-based successUrl only.
+    return (
+      this.oidcConfig?.clientConfig[client].successUrl ||
+      request.headers.referer ||
+      ""
+    );
   }
 }
