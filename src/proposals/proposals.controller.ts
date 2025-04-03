@@ -70,6 +70,7 @@ import {
   FullFacetFilters,
   ProposalCountFilters,
 } from "src/common/types";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 @ApiBearerAuth()
 @ApiTags("proposals")
@@ -782,7 +783,7 @@ export class ProposalsController {
     @Req() request: Request,
     @Param("pid") proposalId: string,
     @Body() createAttachmentDto: CreateAttachmentV3Dto,
-  ): Promise<Attachment> {
+  ): Promise<OutputAttachmentV3Dto> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -823,7 +824,7 @@ export class ProposalsController {
   async findAllAttachments(
     @Req() request: Request,
     @Param("pid") proposalId: string,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,
@@ -867,7 +868,7 @@ export class ProposalsController {
     @Param("pid") proposalId: string,
     @Param("aid") attachmentId: string,
     @Body() updateAttachmentDto: PartialUpdateAttachmentV3Dto,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     await this.checkPermissionsForProposal(
       request,
       proposalId,

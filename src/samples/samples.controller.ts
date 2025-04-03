@@ -65,6 +65,7 @@ import { IDatasetFields } from "src/datasets/interfaces/dataset-filters.interfac
 import { CreateSubAttachmentV3Dto } from "src/attachments/dto-obsolete/create-sub-attachment.v3.dto";
 import { AuthenticatedPoliciesGuard } from "src/casl/guards/auth-check.guard";
 import { FullQueryFilters } from "src/common/types";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class FindByIdAccessResponse {
   @ApiProperty({ type: Boolean })
@@ -682,7 +683,7 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
     @Body() createAttachmentDto: CreateSubAttachmentV3Dto,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     const sample = await this.checkPermissionsForSample(
       request,
       id,
@@ -729,7 +730,7 @@ export class SamplesController {
   async findAllAttachments(
     @Req() request: Request,
     @Param("id") id: string,
-  ): Promise<Attachment[]> {
+  ): Promise<OutputAttachmentV3Dto[]> {
     await this.checkPermissionsForSample(
       request,
       id,
@@ -769,7 +770,7 @@ export class SamplesController {
     @Req() request: Request,
     @Param("id") id: string,
     @Param("fk") attachmentId: string,
-  ): Promise<Attachment | null> {
+  ): Promise<OutputAttachmentV3Dto | null> {
     await this.checkPermissionsForSample(
       request,
       id,
