@@ -197,7 +197,7 @@ const configuration = () => {
       issuer: process.env.OIDC_ISSUER, // Example: https://identity.esss.dk/realm/ess
       clientID: process.env.OIDC_CLIENT_ID, // Example: scicat
       clientSecret: process.env.OIDC_CLIENT_SECRET, // Example: Aa1JIw3kv3mQlGFWrE3gOdkH6xreAwro
-      callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/oidc/callback
+      callbackURL: process.env.OIDC_CALLBACK_URL, // Example: http://localhost:3000/api/v3/auth/oidc/callback
       scope: process.env.OIDC_SCOPE, // Example: "openid profile email"
       accessGroups: process.env.OIDC_ACCESS_GROUPS, // Example: None
       accessGroupProperty: process.env.OIDC_ACCESS_GROUPS_PROPERTY, // Example: groups

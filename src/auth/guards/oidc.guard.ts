@@ -27,6 +27,9 @@ export class OidcAuthGuard extends AuthGuard("oidc") {
 
   getRequest(context: ExecutionContext): Request {
     const request = context.switchToHttp().getRequest<Request>();
+    // Check to prevent us from re-creating session info when we're coming back from successful auth.
+    // Note that this hard-wired comparison is unstable:
+    // OIDC_CALLBACK_URL may not be configured to end with "/auth/oidc/callback".
     if (request.path.endsWith("/auth/oidc/callback")) {
       return request;
     }
