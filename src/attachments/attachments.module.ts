@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AttachmentsService } from "./attachments.service";
-import { AttachmentsController } from "./attachments.v4.controller";
+import { AttachmentsV4Controller } from "./attachments.v4.controller";
 import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
 import { CaslModule } from "src/casl/casl.module";
+import { AttachmentsV4Service } from "./attachments.v4.service";
 
 @Module({
   imports: [
@@ -28,8 +29,8 @@ import { CaslModule } from "src/casl/casl.module";
       },
     ]),
   ],
-  controllers: [AttachmentsController],
-  providers: [AttachmentsService],
+  controllers: [AttachmentsV4Controller],
+  providers: [AttachmentsService, AttachmentsV4Service],
   exports: [AttachmentsService],
 })
 export class AttachmentsModule {}
