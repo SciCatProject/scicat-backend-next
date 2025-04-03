@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 import { OwnableDto } from "../../common/dto/ownable.dto";
 import { PartialType } from "@nestjs/swagger";
 
@@ -9,9 +9,6 @@ export class UpdateAttachmentV3Dto extends OwnableDto {
 
   @IsString()
   readonly caption: string;
-
-  @IsBoolean()
-  isPublished: boolean;
 }
 
 export class PartialUpdateAttachmentV3Dto extends PartialType(
