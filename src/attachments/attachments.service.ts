@@ -50,7 +50,6 @@ export class AttachmentsService {
   ): Promise<OutputAttachmentV3Dto[]> {
     const convertedFilter =
       this.convertObsoleteWhereFilterToCurrentSchema(filter);
-
     return await this.findAllComplete({ where: convertedFilter });
   }
   async findAllComplete(
@@ -99,6 +98,7 @@ export class AttachmentsService {
 
     const result = await this.attachmentModel
       .findOne(convertedFilter, projection ?? {})
+      .lean()
       .exec();
 
     if (result) {
@@ -125,6 +125,7 @@ export class AttachmentsService {
         addUpdatedByField(convertedDto, username),
         { new: true },
       )
+      .lean()
       .exec();
 
     if (result) {
@@ -140,7 +141,7 @@ export class AttachmentsService {
   ): Promise<unknown> {
     const convertedFilter =
       this.convertObsoleteWhereFilterToCurrentSchema(filter);
-    return this.attachmentModel.findOneAndDelete(convertedFilter).exec();
+    return this.attachmentModel.findOneAndDelete(convertedFilter).lean().exec();
   }
 
   convertObsoleteWhereFilterToCurrentSchema(
@@ -227,6 +228,7 @@ export class AttachmentsService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reverted = { ...dto } as any;
 
+    console.log("==reverted", reverted);
     for (const relation of reverted.relationships) {
       switch (relation.targetType) {
         case AttachmentRelationTargetType.DATASET:
