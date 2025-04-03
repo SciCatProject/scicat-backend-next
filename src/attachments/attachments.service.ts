@@ -228,7 +228,6 @@ export class AttachmentsService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reverted = { ...dto } as any;
 
-    console.log("==reverted", reverted);
     for (const relation of reverted.relationships) {
       switch (relation.targetType) {
         case AttachmentRelationTargetType.DATASET:
