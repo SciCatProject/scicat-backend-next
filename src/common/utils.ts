@@ -7,10 +7,12 @@ import {
   IAxiosError,
   IFilters,
   ILimitsFilter,
+  ILimitsFilterV4,
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
 import { DatasetType } from "src/datasets/types/dataset-type.enum";
+import { isEmpty } from "lodash";
 
 // add Å to mathjs accepted units as equivalent to angstrom
 const isAlphaOriginal = Unit.isValidAlpha;
@@ -362,6 +364,46 @@ export const parsePipelineProjection = (fieldsProjection: string[]) => {
   });
 
   return pipelineProjection;
+};
+
+export const buildDataCountFacetPipeline = (
+  limits: ILimitsFilterV4 | undefined,
+  fields: string[] | undefined,
+) => {
+  const skip = limits?.skip || 0;
+  const limit = limits?.limit || 10;
+
+  const facet: PipelineStage.Facet = {
+    $facet: {
+      data: [{ $skip: skip }, { $limit: limit }],
+      count: [{ $count: "totalCount" }],
+    },
+  };
+
+  if (limits?.sort && !isEmpty(limits?.sort)) {
+    const sortParsed = parsePipelineSort(limits.sort);
+
+    facet.$facet.data.push({ $sort: sortParsed });
+  }
+
+  if (fields) {
+    const project: PipelineStage.Project["$project"] =
+      parsePipelineProjection(fields);
+
+    facet.$facet.data.push({ $project: project });
+  }
+
+  return facet;
+};
+
+// NOTE: This returns default projection of the data and totalCount fields for findAll complete endpoints
+export const getDefaultDataCountProject = (): PipelineStage.Project => {
+  return {
+    $project: {
+      data: 1,
+      totalCount: { $arrayElemAt: ["$count.totalCount", 0] },
+    },
+  };
 };
 
 export const parseLimitFiltersForPipeline = (

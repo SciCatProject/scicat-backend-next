@@ -47,16 +47,17 @@ export interface IFilters<T, Y = null> {
   limits?: ILimitsFilter;
 }
 
-export interface IFiltersNew<T> {
-  textSearch?: string;
+export interface IFiltersV4<T> {
   where?: FilterQuery<T>;
-  limits?: ILimitsFilter;
+  include?: string[];
   fields?: string[];
+  limits?: ILimitsFilterV4;
 }
 
-export interface CompleteResponse<T> {
-  data: T[];
-  totalCount: number;
+export interface ILimitsFilterV4 {
+  limit: number;
+  skip: number;
+  sort: Record<string, "asc" | "desc">;
 }
 
 export interface IFacets<T> {

@@ -27,8 +27,8 @@ import {
 import { DatasetLookupKeysEnum } from "./types/dataset-lookup";
 import { IncludeValidationPipe } from "./pipes/include-validation.pipe";
 import { FilterValidationPipe } from "./pipes/filter-validation.pipe";
-import { getSwaggerDatasetFilterContent } from "./types/dataset-filter-content";
 import { AllowAny } from "src/auth/decorators/allow-any.decorator";
+import { getSwaggerFilterContent } from "src/common/swagger-filter-content";
 
 @ApiExtraModels(HistoryClass, TechniqueClass, RelationshipClass)
 @ApiTags("datasets public v4")
@@ -58,7 +58,7 @@ export class DatasetsPublicV4Controller {
       "Database filters to apply when retrieving the public datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent(),
+    content: getSwaggerFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -171,12 +171,7 @@ export class DatasetsPublicV4Controller {
     description: "Database filters to apply when retrieving public dataset",
     required: true,
     type: String,
-    content: getSwaggerDatasetFilterContent({
-      where: true,
-      include: true,
-      fields: true,
-      limits: true,
-    }),
+    content: getSwaggerFilterContent(),
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -208,7 +203,7 @@ export class DatasetsPublicV4Controller {
       "Database filters to apply when retrieving count for public datasets",
     required: false,
     type: String,
-    content: getSwaggerDatasetFilterContent({
+    content: getSwaggerFilterContent({
       where: true,
       include: false,
       fields: false,
