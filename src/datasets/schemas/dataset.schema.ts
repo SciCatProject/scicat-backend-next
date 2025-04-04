@@ -333,6 +333,14 @@ export class DatasetClass extends OwnableClass {
   @ApiProperty({
     type: String,
     required: false,
+    description: "Link to schema for scientific metadata validation.",
+  })
+  @Prop({ type: String, required: false })
+  readonly scientificMetadataSchema?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
     description:
       "Short comment provided by the user about a given dataset. This is additional to the description field.",
   })
