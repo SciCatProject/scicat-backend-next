@@ -1,15 +1,17 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AttachmentsService } from "./attachments.service";
+import { AttachmentsV4Controller } from "./attachments.v4.controller";
 import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
+import { CaslModule } from "src/casl/casl.module";
+import { AttachmentsV4Service } from "./attachments.v4.service";
 
 @Module({
   imports: [
+    CaslModule,
     MongooseModule.forFeatureAsync([
       {
         name: Attachment.name,
-        //schema: AttachmentSchema,
-
         useFactory: () => {
           const schema = AttachmentSchema;
 
@@ -17,7 +19,7 @@ import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
             // if _id is empty or differnet than pid,
             // set _id to pid
             if (!this._id) {
-              this._id = this.id;
+              this._id = this.aid;
             }
             next();
           });
@@ -27,7 +29,8 @@ import { Attachment, AttachmentSchema } from "./schemas/attachment.schema";
       },
     ]),
   ],
-  providers: [AttachmentsService],
+  controllers: [AttachmentsV4Controller],
+  providers: [AttachmentsService, AttachmentsV4Service],
   exports: [AttachmentsService],
 })
 export class AttachmentsModule {}

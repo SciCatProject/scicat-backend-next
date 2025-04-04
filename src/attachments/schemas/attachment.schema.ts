@@ -1,8 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ApiProperty } from "@nestjs/swagger";
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  getSchemaPath,
+} from "@nestjs/swagger";
 import { Document } from "mongoose";
 import { OwnableClass } from "src/common/schemas/ownable.schema";
 import { v4 as uuidv4 } from "uuid";
+import {
+  AttachmentRelationshipClass,
+  AttachmentRelationshipSchema,
+} from "./relationship.schema";
 
 export type AttachmentDocument = Attachment & Document;
 
@@ -20,7 +28,7 @@ export class Attachment extends OwnableClass {
     default: () => uuidv4(),
     sparse: true,
   })
-  id: string;
+  aid: string;
 
   @Prop({
     type: String,
@@ -42,17 +50,15 @@ export class Attachment extends OwnableClass {
   @Prop({ type: String })
   caption: string;
 
-  @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Dataset", index: true, required: false })
-  datasetId: string;
-
-  @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Proposal", required: false })
-  proposalId: string;
-
-  @ApiProperty({ type: String, required: false })
-  @Prop({ type: String, ref: "Sample", required: false })
-  sampleId: string;
+  @ApiPropertyOptional({
+    type: Array,
+    items: { $ref: getSchemaPath(AttachmentRelationshipClass) },
+    default: [],
+    description:
+      "Array of relationships with other entities. It contains relationship type, target ids and target entity type.",
+  })
+  @Prop({ type: [AttachmentRelationshipSchema], default: [] })
+  relationships?: AttachmentRelationshipClass[];
 }
 
 export const AttachmentSchema = SchemaFactory.createForClass(Attachment);

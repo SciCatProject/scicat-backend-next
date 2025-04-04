@@ -26,7 +26,11 @@ const configuration = () => {
 
   const proposalGroups = process.env.PROPOSAL_GROUPS || "";
   const sampleGroups = process.env.SAMPLE_GROUPS || "#all";
-  const samplePrivilegedGroups = process.env.SAMPLE_PRIVILEGED_GROUPS || "";
+  const samplePrivilegedGroups =
+    process.env.SAMPLE_PRIVILEGED_GROUPS || ("" as string);
+  const attachmentGroups = process.env.ATTACHMENT_GROUPS || "#all";
+  const attachmentPrivilegedGroups =
+    process.env.ATTACHMENT_PRIVILEGED_GROUPS || ("" as string);
 
   const oidcUserQueryFilter = process.env.OIDC_USERQUERY_FILTER || "";
 
@@ -150,6 +154,10 @@ const configuration = () => {
       proposal: proposalGroups.split(",").map((v) => v.trim()),
       sample: sampleGroups.split(",").map((v) => v.trim()),
       samplePrivileged: samplePrivilegedGroups.split(",").map((v) => v.trim()),
+      attachment: attachmentGroups.split(",").map((v) => v.trim()),
+      attachmentPrivileged: attachmentPrivilegedGroups
+        .split(",")
+        .map((v) => v.trim()),
       createJob: createJobGroups,
       updateJob: updateJobGroups,
       deleteJob: deleteJobGroups,

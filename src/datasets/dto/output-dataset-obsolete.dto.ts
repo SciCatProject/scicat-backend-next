@@ -8,11 +8,11 @@ import {
 } from "class-validator";
 import { ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { UpdateDatasetObsoleteDto } from "./update-dataset-obsolete.dto";
-import { Attachment } from "src/attachments/schemas/attachment.schema";
 import { Type } from "class-transformer";
 import { OrigDatablock } from "src/origdatablocks/schemas/origdatablock.schema";
 import { Datablock } from "src/datablocks/schemas/datablock.schema";
 import { DatasetType } from "../types/dataset-type.enum";
+import { OutputAttachmentV3Dto } from "src/attachments/dto-obsolete/output-attachment.v3.dto";
 
 export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
   @ApiProperty({
@@ -166,15 +166,15 @@ export class OutputDatasetObsoleteDto extends UpdateDatasetObsoleteDto {
 
   @ApiProperty({
     type: "array",
-    items: { $ref: getSchemaPath(Attachment) },
+    items: { $ref: getSchemaPath(OutputAttachmentV3Dto) },
     required: false,
     description:
       "Small, less than 16 MB attachments, envisaged for png/jpeg previews.",
   })
   @IsOptional()
   @IsArray()
-  @Type(() => Attachment)
-  attachments?: Attachment[];
+  @Type(() => OutputAttachmentV3Dto)
+  attachments?: OutputAttachmentV3Dto[];
 
   @ApiProperty({
     type: "array",
