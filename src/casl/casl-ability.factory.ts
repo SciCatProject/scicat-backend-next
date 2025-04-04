@@ -414,22 +414,19 @@ export class CaslAbilityFactory {
         can(Action.JobCreate, JobClass);
         can(Action.JobUpdate, JobClass);
       } else if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.createJob.includes(g),
-        )
+        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
       ) {
         /**
          * authenticated users belonging to any of the group listed in CREATE_JOBS_GROUPS
          */
         can(Action.JobRead, JobClass);
         can(Action.JobCreate, JobClass);
-      }else if (
-        user.currentGroups.some((g) =>
-          this.accessGroups?.updateJob.includes(g),
-        )
+      } else if (
+        user.currentGroups.some((g) => this.accessGroups?.updateJob.includes(g))
       ) {
+        can(Action.JobRead, JobClass);
         can(Action.JobUpdate, JobClass);
-      } else{
+      } else {
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
@@ -1423,7 +1420,7 @@ export class CaslAbilityFactory {
        */
       // check if this user is part of the admin group
       if (
-        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) 
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g))
       ) {
         /**
          * authenticated users belonging to any of the group listed in ADMIN_GROUPS
@@ -1431,12 +1428,20 @@ export class CaslAbilityFactory {
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
         can(Action.JobUpdateAny, JobClass);
-      } else if(
-        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g)) 
+      } else if (
+        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
       ) {
         can(Action.JobReadAny, JobClass);
         can(Action.JobCreateAny, JobClass);
-      }else {
+      } else if (
+        user.currentGroups.some((g) => this.accessGroups?.updateJob.includes(g))
+      ) {
+        can(Action.JobUpdateAny, JobClass);
+        can(Action.JobReadAny, JobClass);
+      } else {
+        /**
+         * authenticated users not belonging to any special group
+         */
         const jobUserAuthorizationValues = [
           ...user.currentGroups.map((g) => "@" + g),
           user.username,
@@ -1448,9 +1453,6 @@ export class CaslAbilityFactory {
           ownerUser: user.username,
         });
 
-        /**
-         * authenticated users not belonging to any special group
-         */
         const jobCreateInstanceAuthorizationValues = [
           ...Object.values(CreateJobAuth).filter(
             (v) => !String(v).includes("#dataset"),
@@ -1477,7 +1479,7 @@ export class CaslAbilityFactory {
         ) {
           can(Action.JobCreateConfiguration, JobClass);
         }
-        
+
         const jobUpdateInstanceAuthorizationValues = [
           ...Object.values(UpdateJobAuth).filter(
             (v) => !String(v).includes("#job"),
@@ -1485,14 +1487,6 @@ export class CaslAbilityFactory {
           ...jobUserAuthorizationValues,
         ];
 
-        if (
-          user.currentGroups.some((g) =>
-            this.accessGroups?.updateJob.includes(g),
-          )
-        ) {
-          can(Action.JobUpdateAny, JobClass);
-          can(Action.JobReadAny, JobClass);
-        }
         if (
           jobUpdateInstanceAuthorizationValues.some(
             (a) => jobConfiguration.update.auth === a,

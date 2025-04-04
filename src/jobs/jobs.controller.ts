@@ -359,9 +359,10 @@ export class JobsController {
     if (user) {
       // the request comes from a user who is logged in.
       if (
-        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) || user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
+        user.currentGroups.some((g) => this.accessGroups?.admin.includes(g)) ||
+        user.currentGroups.some((g) => this.accessGroups?.createJob.includes(g))
       ) {
-        // admin users
+        // admin users and users  in CREATE_JOB group
         let jobUser: JWTUser | null = null;
         if (jobCreateDto.ownerUser) {
           if (user.username != jobCreateDto.ownerUser) {
@@ -401,6 +402,8 @@ export class JobsController {
         // prioritize jobCreateDto.contactEmail for anonymous users
         jobInstance.contactEmail =
           jobCreateDto.contactEmail ?? (jobUser?.email as string) ?? user.email;
+
+        console.log(jobInstance);
       } else {
         // check if we have ownerGroup
         if (!jobCreateDto.ownerGroup) {
@@ -520,18 +523,11 @@ export class JobsController {
       jobConfiguration,
     );
     // check if the user can create this job
-    let canCreate = false;
-    if (jobConfiguration.create.auth === "#admin") {
-      canCreate =
-      ability.can(Action.JobCreateAny, JobClass) 
-    }else{
-      canCreate =
+    const canCreate =
       ability.can(Action.JobCreateAny, JobClass) ||
       ability.can(Action.JobCreateOwner, jobInstance) ||
       (ability.can(Action.JobCreateConfiguration, jobInstance) &&
         datasetsNoAccess == 0);
-
-    }
 
     if (!canCreate) {
       throw new ForbiddenException("Unauthorized to create this job.");
