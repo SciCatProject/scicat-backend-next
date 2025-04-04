@@ -22,6 +22,7 @@ const scientificMetadataFieldName = {
   unitAndValue: "with_unit_and_value_si",
   number: "with_number",
   string: "with_string",
+  directString: "beamtime_id",
 };
 
 const scientificMetadata = (values) => {
@@ -73,6 +74,7 @@ const scientificMetadata = (values) => {
               scientificMetadataFieldName.unitAndValue,
               scientificMetadataFieldName.number,
               scientificMetadataFieldName.string,
+              scientificMetadataFieldName.directString,
             );
           pid = encodeURIComponent(res.body["pid"]);
         });
